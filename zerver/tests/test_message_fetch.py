@@ -521,6 +521,18 @@ class NarrowBuilderTest(ZulipTestCase):
 
         self.assertRaises(BadNarrowOperatorError, _build_query, term)
 
+    # Test that the underscore version of "pm-with" works.
+    def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
+        term = dict(operator="pm_with", operand=self.hamlet_email)
+        self._do_add_term_test(
+            term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
+        )
+
+    # Test that the underscore version of "group-pm-with" works.
+    def test_add_term_using_underscore_version_of_group_pm_with_operator(self) -> None:
+        term = dict(operator="group_pm_with", operand=self.othello_email)
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
     def _do_add_term_test(
         self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None
     ) -> None:
