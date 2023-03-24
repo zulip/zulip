@@ -177,11 +177,12 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
 
     // When the modal is opened for moving the whole topic from left sidebar,
     // we do not have any message object and so we disable the stream input
-    // based on the move_messages_between_streams_policy setting. In other
-    // cases message row, message object is available and thus we check
-    // the time-based permissions as well in the below if block to enable or
-    // disable the stream input.
+    // based on the move_messages_between_streams_policy setting and topic
+    // input based on edit_topic_policy. In other cases, message object is
+    // available and thus we check the time-based permissions as well in the
+    // below if block to enable or disable the stream and topic input.
     let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
+    args.disable_topic_input = !settings_data.user_can_move_messages_to_another_topic();
 
     let modal_heading = $t_html({defaultMessage: "Move topic"});
     if (message !== undefined) {
