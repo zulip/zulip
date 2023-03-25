@@ -1671,16 +1671,16 @@ div.focused_table {
 }
 
 .messagebox-content:hover {
-    background-color: hsl(240, 8%, 90%);
+    background-color: hsl(240, 9%, 91%);
     transition: 0.5s;
 }
 
 .messagebox-content:hover .message_length_controller {
-    background-color: hsl(240, 8%, 90%);
+    background-color: hsl(240, 9%, 91%);
 }
 
 .messagebox-content:hover .message_length_controller:hover {
-    background-color: hsl(243, 55%, 85%);
+    background-color: hsl(243, 57%, 86%);
 }
 
 .bookend {
