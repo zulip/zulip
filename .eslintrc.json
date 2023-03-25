@@ -188,7 +188,7 @@
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}],
-                "@typescript-eslint/no-use-before-define": "error",
+                "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
                 "@typescript-eslint/no-useless-constructor": "error",
                 "@typescript-eslint/prefer-includes": "error",
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",
