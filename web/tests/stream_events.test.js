@@ -16,6 +16,7 @@ const stream_list = mock_esm("../src/stream_list");
 const stream_muting = mock_esm("../src/stream_muting");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
     update_settings_for_subscribed: noop,
+    update_empty_left_panel_message: noop,
 });
 const unread_ui = mock_esm("../src/unread_ui");
 
@@ -299,6 +300,8 @@ test("marked_subscribed (normal)", ({override}) => {
         list_updated = true;
     });
 
+    $("#manage_streams_container .stream-row:not(.notdisplayed)").length = 0;
+
     stream_events.mark_subscribed(sub, [], "blue");
 
     const args = stream_list_stub.get_args("sub");
@@ -326,6 +329,8 @@ test("marked_subscribed (color)", ({override}) => {
     stream_data.add_sub(sub);
 
     override(color_data, "pick_color", () => "green");
+
+    $("#manage_streams_container .stream-row:not(.notdisplayed)").length = 0;
 
     // narrow state is undefined
     {
@@ -355,6 +360,8 @@ test("marked_subscribed (emails)", ({override}) => {
     const subs_stub = make_stub();
     override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
 
+    $("#manage_streams_container .stream-row:not(.notdisplayed)").length = 0;
+
     assert.ok(!stream_data.is_subscribed_by_name(sub.name));
 
     const user_ids = [15, 20, 25, me.user_id];
@@ -379,6 +386,8 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
 
+    $("#manage_streams_container .stream-row:not(.notdisplayed)").length = 0;
+
     stream_events.mark_unsubscribed(sub);
     const args = stub.get_args("sub");
     assert.deepEqual(args.sub, sub);
@@ -402,6 +411,8 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
     override(unread_ui, "hide_mark_as_read_turned_off_banner", noop);
+
+    $("#manage_streams_container .stream-row:not(.notdisplayed)").length = 0;
 
     stream_events.mark_unsubscribed(sub);
 

@@ -26,6 +26,24 @@
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
+                <div class="no-streams-to-show">
+                    <div class="subscribed_streams_tab_empty_text">
+                        <span>
+                            {{t 'You are not subscribed to any streams.'}}
+                            {{#if can_view_all_streams}}
+                            <a href="#streams/all">{{t 'View all streams'}}</a>
+                            {{/if}}
+                        </span>
+                    </div>
+                    <div class="all_streams_tab_empty_text">
+                        <span>
+                            {{t 'There are no streams you can view in this organization.'}}
+                            {{#if can_create_streams}}
+                                <a href="#streams/new">{{t 'Create a stream'}}</a>
+                            {{/if}}
+                        </span>
+                    </div>
+                </div>
                 <div class="streams-list" data-simplebar>
                 </div>
             </div>

@@ -129,6 +129,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok(!$denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
+        $("#manage_streams_container .stream-row:not(.notdisplayed)").length = 0;
         const stream_ids = stream_settings_ui.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,
