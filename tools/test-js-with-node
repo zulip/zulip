@@ -75,7 +75,7 @@ EXEMPT_FILES = make_set(
         "web/src/copy_and_paste.js",
         "web/src/csrf.ts",
         "web/src/css_variables.js",
-        "web/src/dark_theme.js",
+        "web/src/dark_theme.ts",
         "web/src/debug.ts",
         "web/src/deprecated_feature_notice.js",
         "web/src/desktop_integration.js",
