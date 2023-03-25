@@ -209,6 +209,8 @@ def do_invite_users(
 ) -> None:
     num_invites = len(invitee_emails)
 
+    # Ties: Actual logic of handling new invite
+
     check_invite_limit(user_profile.realm, num_invites)
     if settings.BILLING_ENABLED:
         from corporate.lib.registration import check_spare_licenses_available_for_inviting_new_users
@@ -295,6 +297,8 @@ def do_invite_users(
     # the PreregistrationUser objects and trigger the email invitations.
     for email in validated_emails:
         # The logged in user is the referrer.
+
+        # Ties: Creation of prereg users
         prereg_user = PreregistrationUser(
             email=email, referred_by=user_profile, invited_as=invite_as, realm=user_profile.realm
         )

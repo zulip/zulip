@@ -85,6 +85,8 @@ def invite_users_backend(
             )
         streams.append(stream)
 
+    # Ties: Seems like this is the place where the backend call for invites gets handled
+
     do_invite_users(
         user_profile,
         invitee_emails,

@@ -2304,7 +2304,10 @@ class PreregistrationUser(models.Model):
     # store it here to use it to prepopulate the full name field in the registration form:
     full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated = models.BooleanField(default=False)
+
+    # Ties: Probably add field here to store flag is notification needs to be send
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
+    
     streams = models.ManyToManyField("Stream")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)
