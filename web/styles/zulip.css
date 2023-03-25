@@ -1660,30 +1660,27 @@ div.focused_table {
     display: none;
     text-align: center;
     color: hsl(242, 58%, 55%);
-    background-color:transparent;
+    background-color: transparent;
     border-radius: 5px;
-    border-color:hsl(200, 67%, 83%);
-    font-weight:540;
-    
-    
+    border-color: hsl(200, 67%, 83%);
+    font-weight: 540;
+
     /* Easy to make message-uncollapse */
     margin-top: 12px;
     margin-bottom: 6px;
 }
 
-.messagebox-content:hover{
-      background-color: hsl(240, 8%, 90%);
-      transition: 0.5s;
+.messagebox-content:hover {
+    background-color: hsl(240, 8%, 90%);
+    transition: 0.5s;
 }
 
-
-.messagebox-content:hover .message_length_controller{
-    background-color:hsl(240, 8%, 90%) ;
-    
+.messagebox-content:hover .message_length_controller {
+    background-color: hsl(240, 8%, 90%);
 }
-.messagebox-content:hover .message_length_controller:hover{
-    background-color:hsl(243, 55%, 85%) ;
-    
+
+.messagebox-content:hover .message_length_controller:hover {
+    background-color: hsl(243, 55%, 85%);
 }
 
 .bookend {
