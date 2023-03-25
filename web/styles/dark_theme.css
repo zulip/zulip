@@ -180,6 +180,13 @@
         }
     }
 
+    #navbar-middle .column-middle-inner,
+    #userlist-toggle-button,
+    .top_navbar_full_width,
+    #message_view_header {
+        background-color: hsl(0deg 0% 13%);
+    }
+
     & body,
     .app-main,
     .column-middle,
