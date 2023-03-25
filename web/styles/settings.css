@@ -1412,7 +1412,9 @@ $option_title_width: 180px;
 #profile-settings,
 #edit-user-form {
     .custom_user_field {
-        padding-bottom: 20px;
+        padding-bottom: 50px;
+        position: relative;
+        top: -15px;
 
         .field_hint {
             color: hsl(0, 0%, 67%);
