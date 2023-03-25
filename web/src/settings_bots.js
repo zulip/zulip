@@ -603,6 +603,9 @@ export function set_up() {
         },
     });
 
+    new ClipboardJS("#copy_email");
+    new ClipboardJS("#copy_api_key");
+
     $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
