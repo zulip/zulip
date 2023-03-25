@@ -355,6 +355,20 @@ h4.user_group_setting_subsection_title {
         margin: 0 -2px;
     }
 
+    .left .no-streams-to-show,
+    .right .nothing-selected {
+        display: block;
+        margin-top: calc(45vh - 75px);
+        text-align: center;
+        font-size: 1em;
+        margin-left: 2em;
+        margin-right: 2em;
+
+        & span {
+            color: hsl(0deg 0% 67%);
+        }
+    }
+
     .left {
         border-right: 1px solid hsl(0deg 0% 87%);
 
@@ -370,17 +384,6 @@ h4.user_group_setting_subsection_title {
         width: calc(50% + 1px);
 
         .nothing-selected {
-            display: block;
-            margin-top: calc(45vh - 75px);
-            text-align: center;
-            font-size: 1em;
-            margin-left: 2em;
-            margin-right: 2em;
-
-            & span {
-                color: hsl(0deg 0% 67%);
-            }
-
             & button {
                 padding: 6px 10px 8px;
                 display: block;
