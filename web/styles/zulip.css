@@ -1669,10 +1669,6 @@ div.focused_table {
     /* Easy to make message-uncollapse */
     margin-top: 12px;
     margin-bottom: 6px;
-
-    /* &:hover {
-        background-color: hsl(243, 55%, 85%);
-    } */
 }
 
 .messagebox-content:hover{
@@ -1689,22 +1685,6 @@ div.focused_table {
     background-color:hsl(243, 55%, 85%) ;
     
 }
-
-
-/* .messagebox-content:has(.message_length_controller:hover){
-    background-color:  hsl(243, 55%, 85%);
-} */
-
-/* .messagebox-content:hover{
-    background-color:  hsl(243, 55%, 85%);
-} */
-
-/* .message_length_controller:hover {
-
-    background-color: hsl(243, 55%, 85%);
-    transition: 0.8s;
-} */
-
 
 .bookend {
     margin-top: 10px;
