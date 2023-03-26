@@ -2302,9 +2302,7 @@ class StripeTest(StripeTestCase):
         # Ensure that the other "contact support" footer is not displayed, since that would be
         # duplicate.
         self.assert_not_in_success_response(
-            [
-                'Contact <a href="mailto:support@zulip.com">support@zulip.com</a> for billing history.'
-            ],
+            ['<a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.'],
             response,
         )
 
@@ -2324,9 +2322,7 @@ class StripeTest(StripeTestCase):
             response,
         )
         self.assert_in_success_response(
-            [
-                'Contact <a href="mailto:support@zulip.com">support@zulip.com</a> for billing history.'
-            ],
+            ['<a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.'],
             response,
         )
 
