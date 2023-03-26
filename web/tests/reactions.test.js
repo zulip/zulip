@@ -891,7 +891,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             class: "message_reaction",
             message_id,
             label: "translated: Bob van Roberts reacted with :zulip:",
-            still_url: undefined,
+            still_url: null,
             reaction_type: clean_reaction_object.reaction_type,
             vote_text: "",
         });

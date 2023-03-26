@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const events = require("./lib/events");
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const blueslip = require("./lib/zblueslip");
 
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
@@ -12,9 +13,15 @@ const emoji = zrequire("emoji");
 
 const realm_emoji = events.test_realm_emojis;
 
-emoji.initialize({realm_emoji, emoji_codes});
-
 run_test("sanity check", () => {
+    // Invalid emoji data
+    emoji_codes.names = [...emoji_codes.names, "invalid_emoji"];
+    blueslip.expect("error", "No codepoint for emoji name invalid_emoji");
+    emoji.initialize({realm_emoji, emoji_codes});
+
+    // Valid data
+    emoji_codes.names = emoji_codes.names.filter((name) => name !== "invalid_emoji");
+    emoji.initialize({realm_emoji, emoji_codes});
     assert.equal(emoji.get_server_realm_emoji_data(), realm_emoji);
 });
 
