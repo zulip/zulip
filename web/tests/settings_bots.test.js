@@ -20,14 +20,6 @@ const bot_data_params = {
 };
 
 function ClipboardJS(sel) {
-    assert.equal(sel, "#copy_email");
-}
-
-function ClipboardJS(sel) {
-    assert.equal(sel, "#copy_api_key");
-}
-
-function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
 mock_cjs("clipboard", ClipboardJS);
