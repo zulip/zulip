@@ -46,7 +46,7 @@ from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.upload.base import create_attachment
 from zerver.lib.url_encoding import near_message_url
-from zerver.lib.user_topics import set_topic_mutes
+from zerver.lib.user_topics import set_topic_visibility_policy
 from zerver.models import (
     Attachment,
     Message,
@@ -54,6 +54,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_display_recipient,
     get_realm,
     get_stream,
@@ -3132,7 +3133,7 @@ class GetOldMessagesTest(ZulipTestCase):
         muted_topics = [
             ["England", "muted"],
         ]
-        set_topic_mutes(hamlet, muted_topics)
+        set_topic_visibility_policy(hamlet, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # send a muted message
         muted_message_id = self.send_stream_message(cordelia, "England", topic_name="muted")
@@ -3399,7 +3400,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ["web stuff", "css"],
             ["bogus", "bogus"],
         ]
-        set_topic_mutes(user_profile, muted_topics)
+        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         query_params = dict(
             anchor="first_unread",
@@ -3440,7 +3441,7 @@ class GetOldMessagesTest(ZulipTestCase):
         muted_topics = [
             ["irrelevant_stream", "irrelevant_topic"],
         ]
-        set_topic_mutes(user_profile, muted_topics)
+        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # If nothing relevant is muted, then exclude_muting_conditions()
         # should return an empty list.
@@ -3462,7 +3463,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ["Scotland", "golf"],
             ["web stuff", "css"],
         ]
-        set_topic_mutes(user_profile, muted_topics)
+        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # And verify that our query will exclude them.
         narrow = [

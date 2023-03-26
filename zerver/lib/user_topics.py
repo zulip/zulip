@@ -76,10 +76,11 @@ def get_topic_mutes(
     ]
 
 
-def set_topic_mutes(
+def set_topic_visibility_policy(
     user_profile: UserProfile,
-    muted_topics: List[List[str]],
-    date_muted: Optional[datetime.datetime] = None,
+    topics: List[List[str]],
+    visibility_policy: int,
+    last_updated: Optional[datetime.datetime] = None,
 ) -> None:
     """
     This is only used in tests.
@@ -87,12 +88,12 @@ def set_topic_mutes(
 
     UserTopic.objects.filter(
         user_profile=user_profile,
-        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        visibility_policy=visibility_policy,
     ).delete()
 
-    if date_muted is None:
-        date_muted = timezone_now()
-    for stream_name, topic_name in muted_topics:
+    if last_updated is None:
+        last_updated = timezone_now()
+    for stream_name, topic_name in topics:
         stream = get_stream(stream_name, user_profile.realm)
         recipient_id = stream.recipient_id
         assert recipient_id is not None
@@ -102,8 +103,8 @@ def set_topic_mutes(
             stream_id=stream.id,
             recipient_id=recipient_id,
             topic_name=topic_name,
-            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
-            last_updated=date_muted,
+            visibility_policy=visibility_policy,
+            last_updated=last_updated,
         )
 
 
@@ -167,14 +168,16 @@ def set_user_topic_visibility_policy_in_database(
     return True
 
 
-def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -> bool:
-    is_muted = UserTopic.objects.filter(
+def topic_has_visibility_policy(
+    user_profile: UserProfile, stream_id: int, topic_name: str, visibility_policy: int
+) -> bool:
+    has_visibility_policy = UserTopic.objects.filter(
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
-        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        visibility_policy=visibility_policy,
     ).exists()
-    return is_muted
+    return has_visibility_policy
 
 
 def exclude_topic_mutes(
