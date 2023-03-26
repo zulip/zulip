@@ -52,7 +52,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
 from zerver.lib.url_preview.types import UrlEmbedData
-from zerver.lib.user_topics import build_topic_mute_checker, topic_is_muted
+from zerver.lib.user_topics import build_topic_mute_checker, topic_has_visibility_policy
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -64,6 +64,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_display_recipient_by_id,
     get_usermessage_by_message_id,
     query_for_ids,
@@ -1293,7 +1294,9 @@ def apply_unread_message_event(
         if (
             stream_id not in state["muted_stream_ids"]
             # This next check hits the database.
-            and not topic_is_muted(user_profile, stream_id, topic)
+            and not topic_has_visibility_policy(
+                user_profile, stream_id, topic, UserTopic.VisibilityPolicy.MUTED
+            )
         ):
             state["unmuted_stream_msgs"].add(message_id)
 

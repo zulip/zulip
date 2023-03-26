@@ -9,7 +9,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import (
     get_topic_mutes,
-    topic_is_muted,
+    topic_has_visibility_policy,
 )
 from zerver.models import UserProfile, UserTopic, get_stream
 
@@ -107,7 +107,11 @@ class MutedTopicsTests(ZulipTestCase):
                 self.assert_json_success(result)
 
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-            self.assertTrue(topic_is_muted(user, stream.id, "verona3"))
+            self.assertTrue(
+                topic_has_visibility_policy(
+                    user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
+                )
+            )
 
             do_set_user_topic_visibility_policy(
                 user,
@@ -162,7 +166,11 @@ class MutedTopicsTests(ZulipTestCase):
 
             self.assert_json_success(result)
             self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-            self.assertFalse(topic_is_muted(user, stream.id, "verona3"))
+            self.assertFalse(
+                topic_has_visibility_policy(
+                    user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
+                )
+            )
 
     def test_muted_topic_add_invalid(self) -> None:
         user = self.example_user("hamlet")
