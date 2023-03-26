@@ -13,11 +13,11 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
-import {csrf_token} from "./csrf";
+import { csrf_token } from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget} from "./dropdown_list_widget";
-import {$t, $t_html} from "./i18n";
-import {page_params} from "./page_params";
+import { DropdownListWidget } from "./dropdown_list_widget";
+import { $t, $t_html } from "./i18n";
+import { page_params } from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
@@ -131,11 +131,11 @@ export function generate_botserverrc_content(email, api_key, token) {
 export const bot_creation_policy_values = {
     admins_only: {
         code: 3,
-        description: $t({defaultMessage: "Admins"}),
+        description: $t({ defaultMessage: "Admins" }),
     },
     everyone: {
         code: 1,
-        description: $t({defaultMessage: "Admins, moderators and members"}),
+        description: $t({ defaultMessage: "Admins, moderators and members" }),
     },
     restricted: {
         code: 2,
@@ -248,7 +248,7 @@ export function add_a_new_bot() {
                 dialog_widget.close_modal();
             },
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                ui_report.error($t_html({ defaultMessage: "Failed" }), xhr, $("#dialog_error"));
                 dialog_widget.hide_dialog_spinner();
             },
         });
@@ -316,8 +316,8 @@ export function add_a_new_bot() {
         form_id: "create_bot_form",
         help_link: "/help/add-a-bot-or-integration",
         html_body,
-        html_heading: $t_html({defaultMessage: "Add a new bot"}),
-        html_submit_button: $t_html({defaultMessage: "Add"}),
+        html_heading: $t_html({ defaultMessage: "Add a new bot" }),
+        html_submit_button: $t_html({ defaultMessage: "Add" }),
         loading_spinner: true,
         on_click: create_a_new_bot,
         on_shown: () => $("#create_bot_type").trigger("focus"),
@@ -331,10 +331,10 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
     const html_body = render_settings_deactivation_bot_modal();
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
+        html_heading: $t_html({ defaultMessage: "Deactivate {name}?" }, { name: bot.full_name }),
         help_link: "/help/deactivate-or-reactivate-a-bot",
         html_body,
-        html_submit_button: $t_html({defaultMessage: "Deactivate"}),
+        html_submit_button: $t_html({ defaultMessage: "Deactivate" }),
         on_click: handle_confirm,
         loading_spinner,
     });
@@ -408,25 +408,29 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
                 dialog_widget.close_modal();
             },
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                ui_report.error($t_html({ defaultMessage: "Failed" }), xhr, $("#dialog_error"));
                 dialog_widget.hide_dialog_spinner();
             },
         });
     }
 
     function edit_bot_post_render() {
+        $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
         const owner_id = bot_data.get(user_id).owner_id;
 
         const user_ids = people.get_active_human_ids();
         const users_list = user_ids.map((user_id) => ({
             name: people.get_full_name(user_id),
             value: user_id.toString(),
+            on_update(value) {
+                $("#edit_bot_modal .dialog_submit_button").prop("disabled", value === null);
+            },
         }));
 
         const opts = {
             widget_name: "edit_bot_owner",
             data: users_list,
-            default_text: $t({defaultMessage: "No owner"}),
+            default_text: $t({ defaultMessage: "No owner" }),
             value: owner_id,
         };
         // Note: Rendering this is quite expensive in
@@ -459,6 +463,16 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             );
         }
 
+        $("#bot-edit-form").on("input", "input, select", (e) => {
+            if ($(e.target).hasClass("no-input-change-detection")) {
+                // Don't enable the save button if the target element is a
+                // dropdown_list_widget, since it is handled by the dropdown_list_widget's
+                // `on_update` function.
+                return;
+            }
+            $("#edit_bot_modal .dialog_submit_button").prop("disabled", false);
+        });
+
         // Hide the avatar if the user has uploaded an image
         $("#bot-edit-form").on("input", ".edit_bot_avatar_file_input", () => {
             $("#current_bot_avatar_image").hide();
@@ -484,7 +498,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Manage bot"}),
+        html_heading: $t_html({ defaultMessage: "Manage bot" }),
         html_body,
         id: "edit_bot_modal",
         on_click: submit_bot_details,
@@ -546,7 +560,7 @@ export function set_up() {
                     dialog_widget.close_modal();
                 },
                 error(xhr) {
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    ui_report.error($t_html({ defaultMessage: "Failed" }), xhr, $("#dialog_error"));
                     dialog_widget.hide_dialog_spinner();
                 },
             });
