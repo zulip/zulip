@@ -34,6 +34,7 @@ export const page_params: {
     realm_name: string;
     realm_org_type: number;
     realm_plan_type: number;
+    realm_private_message_policy: number;
     realm_push_notifications_enabled: boolean;
     realm_sentry_key: string | undefined;
     realm_uri: string;

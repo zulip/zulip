@@ -13,6 +13,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import type {DisplayRecipientUser, Message, MessageWithBooleans} from "./types";
 import * as util from "./util";
 
 export type ProfileData = {
@@ -247,11 +248,15 @@ function sort_numerically(user_ids: number[]): number[] {
     return user_ids;
 }
 
-export function huddle_string(message) {
+export function huddle_string(message: Message): string | undefined {
     if (message.type !== "private") {
         return undefined;
     }
 
+    assert(
+        typeof message.display_recipient !== "string",
+        "Private messages should have list of recipients",
+    );
     let user_ids = message.display_recipient.map((recip) => recip.id);
 
     user_ids = user_ids.filter(
@@ -454,7 +459,7 @@ export function get_recipients(user_ids_string: string): string {
     return names.join(", ");
 }
 
-export function pm_reply_user_string(message) {
+export function pm_reply_user_string(message: Message): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -464,7 +469,7 @@ export function pm_reply_user_string(message) {
     return user_ids.join(",");
 }
 
-export function pm_reply_to(message) {
+export function pm_reply_to(message: Message): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -531,10 +536,15 @@ export function pm_lookup_key(user_ids_string: string): string {
     return pm_lookup_key_from_user_ids(user_ids);
 }
 
-export function all_user_ids_in_pm(message) {
+export function all_user_ids_in_pm(message: Message): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
     }
+
+    assert(
+        typeof message.display_recipient !== "string",
+        "Private messages should have list of recipients",
+    );
 
     if (message.display_recipient.length === 0) {
         blueslip.error("Empty recipient list in message");
@@ -547,10 +557,17 @@ export function all_user_ids_in_pm(message) {
     return user_ids;
 }
 
-export function pm_with_user_ids(message) {
+export function pm_with_user_ids(
+    message: Message & {reply_to?: string; url?: string},
+): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
     }
+
+    assert(
+        typeof message.display_recipient !== "string",
+        "Private messages should have list of recipients",
+    );
 
     if (message.display_recipient.length === 0) {
         blueslip.error("Empty recipient list in message");
@@ -562,7 +579,7 @@ export function pm_with_user_ids(message) {
     return sorted_other_user_ids(user_ids);
 }
 
-export function pm_perma_link(message) {
+export function pm_perma_link(message: Message): string | undefined {
     const user_ids = all_user_ids_in_pm(message);
 
     if (!user_ids) {
@@ -582,7 +599,7 @@ export function pm_perma_link(message) {
     return url;
 }
 
-export function pm_with_url(message) {
+export function pm_with_url(message: Message): string | undefined {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -730,7 +747,7 @@ export function format_small_avatar_url(raw_url: string): string {
     return url.href;
 }
 
-export function sender_is_bot(message) {
+export function sender_is_bot(message: Message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
         return person.is_bot;
@@ -738,7 +755,7 @@ export function sender_is_bot(message) {
     return false;
 }
 
-export function sender_is_guest(message) {
+export function sender_is_guest(message: Message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
         return person.is_guest;
@@ -832,7 +849,7 @@ export function sender_info_for_recent_topics_row(sender_ids: number[]): SenderI
     return senders_info;
 }
 
-export function small_avatar_url(message) {
+export function small_avatar_url(message: Message): string {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
     // us avoid unnecessary network trips.  (For user-uploaded avatars,
@@ -1070,11 +1087,11 @@ export function get_recipient_count(person: User | PseudoMentionUser): number {
     */
     const count = pm_recipient_count_dict.get(person.user_id);
 
-    return count || 0;
+    return count ?? 0;
 }
 
 export function incr_recipient_count(user_id: number): void {
-    const old_count = pm_recipient_count_dict.get(user_id) || 0;
+    const old_count = pm_recipient_count_dict.get(user_id) ?? 0;
     pm_recipient_count_dict.set(user_id, old_count + 1);
 }
 
@@ -1421,8 +1438,8 @@ function make_user(user_id: number, email: string, full_name: string): User {
     };
 }
 
-function get_involved_people(message) {
-    let involved_people;
+function get_involved_people(message: MessageWithBooleans): DisplayRecipientUser[] {
+    let involved_people: DisplayRecipientUser[];
 
     switch (message.type) {
         case "stream":
@@ -1431,11 +1448,16 @@ function get_involved_people(message) {
                     full_name: message.sender_full_name,
                     id: message.sender_id,
                     email: message.sender_email,
+                    is_mirror_dummy: false,
                 },
             ];
             break;
 
         case "private":
+            assert(
+                typeof message.display_recipient !== "string",
+                "Private messages should have list of recipients",
+            );
             involved_people = message.display_recipient;
             break;
 
@@ -1446,7 +1468,7 @@ function get_involved_people(message) {
     return involved_people;
 }
 
-export function extract_people_from_message(message) {
+export function extract_people_from_message(message: MessageWithBooleans): void {
     const involved_people = get_involved_people(message);
 
     // Add new people involved in this message to the people list
@@ -1468,7 +1490,7 @@ export function extract_people_from_message(message) {
 }
 
 function safe_lower(s?: string | null): string {
-    return (s || "").toLowerCase();
+    return (s ?? "").toLowerCase();
 }
 
 export function matches_user_settings_search(person: User, value: string): boolean {
@@ -1492,10 +1514,17 @@ export function filter_for_user_settings_search(persons: User[], query: string):
     return persons.filter((person) => matches_user_settings_search(person, query));
 }
 
-export function maybe_incr_recipient_count(message) {
+export function maybe_incr_recipient_count(
+    message: MessageWithBooleans & {sent_by_me: boolean},
+): void {
     if (message.type !== "private") {
         return;
     }
+
+    assert(
+        typeof message.display_recipient !== "string",
+        "Private messages should have list of recipients",
+    );
 
     if (!message.sent_by_me) {
         return;
