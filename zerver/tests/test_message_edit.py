@@ -1357,7 +1357,7 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
         change_all_topic_name = "Topic 1 edited"
 
-        # This code path adds 9 (1 + 4/user with muted topics) + 1 to
+        # This code path adds 19 (10 + 4/user with muted topics + 1) to
         # the number of database queries for moving a topic.
         with self.assert_database_query_count(19):
             check_update_message(
