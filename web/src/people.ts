@@ -12,6 +12,7 @@ import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import {Message} from "./types";
 import * as util from "./util";
 
 export type ProfileData = {
@@ -236,7 +237,7 @@ function sort_numerically(user_ids: number[]): number[] {
     return user_ids;
 }
 
-export function huddle_string(message) {
+export function huddle_string(message: Message): string | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -521,7 +522,7 @@ export function pm_lookup_key(user_ids_string: string): string {
     return pm_lookup_key_from_user_ids(user_ids);
 }
 
-export function all_user_ids_in_pm(message) {
+export function all_user_ids_in_pm(message): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -537,7 +538,7 @@ export function all_user_ids_in_pm(message) {
     return user_ids;
 }
 
-export function pm_with_user_ids(message) {
+export function pm_with_user_ids(message): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -552,7 +553,7 @@ export function pm_with_user_ids(message) {
     return sorted_other_user_ids(user_ids);
 }
 
-export function group_pm_with_user_ids(message) {
+export function group_pm_with_user_ids(message): number[] | undefined {
     if (message.type !== "private") {
         return undefined;
     }
@@ -573,7 +574,7 @@ export function group_pm_with_user_ids(message) {
     return undefined;
 }
 
-export function pm_perma_link(message) {
+export function pm_perma_link(message): string | undefined {
     const user_ids = all_user_ids_in_pm(message);
 
     if (!user_ids) {
@@ -593,7 +594,7 @@ export function pm_perma_link(message) {
     return uri;
 }
 
-export function pm_with_url(message) {
+export function pm_with_url(message): string {
     const user_ids = pm_with_user_ids(message);
 
     if (!user_ids) {
@@ -740,7 +741,7 @@ export function format_small_avatar_url(raw_url: string): string {
     return url.href;
 }
 
-export function sender_is_bot(message) {
+export function sender_is_bot(message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
         return person.is_bot;
@@ -748,7 +749,7 @@ export function sender_is_bot(message) {
     return false;
 }
 
-export function sender_is_guest(message) {
+export function sender_is_guest(message): boolean {
     if (message.sender_id) {
         const person = get_by_user_id(message.sender_id);
         return person.is_guest;
@@ -815,7 +816,7 @@ export function sender_info_for_recent_topics_row(sender_ids: number[]): SenderI
     return senders_info;
 }
 
-export function small_avatar_url(message) {
+export function small_avatar_url(message): string {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
     // us avoid unnecessary network trips.  (For user-uploaded avatars,
@@ -1347,7 +1348,7 @@ export function report_late_add(user_id: number, email: string): void {
     }
 }
 
-export function extract_people_from_message(message) {
+export function extract_people_from_message(message): void {
     let involved_people;
 
     switch (message.type) {
@@ -1418,7 +1419,7 @@ export function filter_for_user_settings_search(persons: User[], query: string):
     return persons.filter((person) => matches_user_settings_search(person, query));
 }
 
-export function maybe_incr_recipient_count(message) {
+export function maybe_incr_recipient_count(message): void {
     if (message.type !== "private") {
         return;
     }
