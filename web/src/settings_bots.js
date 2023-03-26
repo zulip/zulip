@@ -621,3 +621,6 @@ export function set_up() {
         add_a_new_bot();
     });
 }
+
+new ClipboardJS("#copy_email");
+new ClipboardJS("#copy_api_key");
