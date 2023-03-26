@@ -610,11 +610,8 @@ ul {
         border-radius: 0;
         border: none;
 
-        pointer-events: none;
-
         .popover-inner {
             background-color: hsl(0deg 0% 100%);
-            pointer-events: all;
         }
     }
 
