@@ -78,3 +78,13 @@ export type AjaxRequestHandler = (args: {
     success?(response_data: unknown, textStatus: string, jqXHR: JQuery.jqXHR): void;
     error?(xhr: JQuery.jqXHR, error_type: string, xhn: string): void;
 }) => void;
+
+// TODO/ typescript: Move this to settings_ui
+export type DoSettingsChangeOptions = {
+    success_msg_html?: string;
+    failure_msg_html?: string;
+    success_continuation?: (data: unknown) => void;
+    error_continuation?: (xhr: JQuery.jqXHR) => void;
+    sticky: boolean;
+    $error_msg_element?: JQuery;
+};
