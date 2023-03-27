@@ -7,6 +7,7 @@ import render_settings_admin_auth_methods_list from "../templates/settings/admin
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
+import {add} from "date-fns";
 import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
@@ -25,6 +26,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
+import {user_settings} from "./user_settings";
 
 const meta = {
     loaded: false,
@@ -35,6 +37,9 @@ export function reset() {
 }
 
 const MAX_CUSTOM_TIME_LIMIT_SETTING_VALUE = 2147483647;
+
+let custom_expiration_time_input = 10;
+let custom_expiration_time_unit = "days";
 
 export function maybe_disable_widgets() {
     if (page_params.is_owner) {
@@ -702,29 +707,128 @@ export function discard_property_element_changes(elem, for_realm_default_setting
     update_dependent_subsettings(property_name);
 }
 
+export function valid_to(delete_in) {
+    const time_valid = Number.parseFloat(delete_in);
+    if (!time_valid) {
+        if (delete_in === "immediately") {
+            return $t({defaultMessage: "Data will be deleted Immediately"});
+        }else{
+            return $t({defaultMessage: "Never deleted"});
+        }
+    }
+
+    const valid_to = add(new Date(), {minutes: time_valid});
+    const options = {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: !user_settings.twenty_four_hour_time,
+    };
+    return $t(
+        {defaultMessage: "Data to be deleted on {date}"},
+        {date: valid_to.toLocaleTimeString([], options)},
+    );
+}
+
+function get_expiration_time_in_minutes() {
+    switch (custom_expiration_time_unit) {
+        case "hours":
+            return custom_expiration_time_input * 60;
+        case "days":
+            return custom_expiration_time_input * 24 * 60;
+        case "weeks":
+            return custom_expiration_time_input * 7 * 24 * 60;
+        default:
+            return custom_expiration_time_input;
+    }
+}
+
+export function set_delete_on_text() {
+    if ($("#delete_in").val() === "custom") {
+        $("#delete_on").hide();
+        $("#custom_delete_on").text(valid_to(get_expiration_time_in_minutes()));
+    } else {
+        $("#delete_on").show();
+        $("#delete_on").text(valid_to($("#delete_in").val()));
+    }
+}
+
+export function set_custom_time_inputs_visibility() {
+    if ($("#delete_in").val() === "custom") {
+        $("#custom-expiration-time-input").val(custom_expiration_time_input);
+        $("#custom-expiration-time-unit").val(custom_expiration_time_unit);
+        $("#custom-deactivate-realm-expiration-time").show();
+    } else {
+        $("#custom-deactivate-realm-expiration-time").hide();
+    }
+}
+
 export function deactivate_organization(e) {
     e.preventDefault();
     e.stopPropagation();
 
+    let delete_on = $("#delete_on").val();
+    const data = {
+        realm_deletion_in_minutes: delete_on,
+    };
+
     function do_deactivate_realm() {
         channel.post({
             url: "/json/realm/deactivate",
+            data,
             error(xhr) {
                 ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
             },
         });
     }
 
-    const html_body = render_settings_deactivate_realm_modal();
+    const time_unit_choices = ["minutes", "hours", "days", "weeks"];
+
+    const html_body = render_settings_deactivate_realm_modal({
+        is_admin: page_params.is_admin,
+        is_owner: page_params.is_owner,
+        development_environment: page_params.development_environment,
+        delete_in_options: settings_config.realm_deactivation_in_values,
+        time_choices: time_unit_choices,
+    });
+
+    function deactivate_realm_modal_post_render(){
+        set_custom_time_inputs_visibility();
+        set_delete_on_text();
+
+        $("#delete_in").on("change", () => {
+            set_custom_time_inputs_visibility();
+            set_delete_on_text();
+        });
+    
+        $("#delete_on").text(valid_to($("#delete_in").val()));
+    
+        $("#custom-expiration-time-input").on("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                return;
+            }
+        });
+    
+        $(".custom-expiration-time").on("change", () => {
+            custom_expiration_time_input = $("#custom-expiration-time-input").val();
+            custom_expiration_time_unit = $("#custom-expiration-time-unit").val();
+            $("#custom_delete_on").text(valid_to(get_expiration_time_in_minutes()));
+        });
+    }
 
     dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Deactivate organization"}),
         help_link: "/help/deactivate-your-organization",
         html_body,
+        id: "deactivate-realm-user-modal",
         on_click: do_deactivate_realm,
         close_on_submit: false,
         focus_submit_on_open: true,
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
+        post_render: deactivate_realm_modal_post_render,
     });
 }
 

@@ -497,6 +497,54 @@ export const expires_in_values = {
     },
 };
 
+export const realm_deactivation_in_values = {
+    // Backend support for this configuration is not available yet.
+    // hour: {
+    //     value: 1,
+    //     description: $t({defaultMessage: "1 hour"}),
+    //     default: false,
+    // },
+    immediately: {
+        value: "immediately",
+        description: $t({defaultMessage: "0 day"}),
+        default: false,
+    },
+    fourteenDays: {
+        value: 14 * 24 * 60,
+        description: $t({defaultMessage: "14 days"}),
+        default: false,
+    },
+    thirtyDays: {
+        value: 30 * 24 * 60,
+        description: $t({defaultMessage: "30 days"}),
+        default: false,
+    },
+    nintyDays: {
+        value: 90 * 24 * 60,
+        description: $t({defaultMessage: "90 days"}),
+        default: false,
+    },
+    oneYear: {
+        value: 365 * 24 * 60,
+        description: $t({defaultMessage: "1 Year"}),
+        default: false,
+    },
+    never: {
+        // Ideally we'd just store `null`, not the string `"null"`, but
+        // .val() will read null back as `""`.  Custom logic in
+        // get_common_realm_data converts this back to `null`
+        // before sending to the server.
+        value: "null",
+        description: $t({defaultMessage: "Never delete"}),
+        default: false,
+    },
+    custom: {
+        value: "custom",
+        description: $t({defaultMessage: "Custom"}),
+        default: false,
+    },
+};
+
 const user_role_array = Object.values(user_role_values);
 export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 

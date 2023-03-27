@@ -2242,11 +2242,10 @@ textarea.invitee_emails {
     }
 }
 
-#invite-user-modal {
-    #custom-expiration-time-input,
-    #invite-user-form {
-        margin: 0;
-    }
+#custom-expiration-time-input,
+#invite-user-form,
+#deactivate-realm-form {
+    margin: 0;
 }
 
 select.invite-expires-in,
@@ -2293,15 +2292,13 @@ select.invite-as {
     top: 1px;
 }
 
-#custom-invite-expiration-time {
-    #custom-expiration-time-input {
-        width: 5ch;
-        margin-right: 15px;
-    }
+#custom-expiration-time-input {
+    width: 5ch;
+    margin-right: 15px;
+}
 
-    #custom-expiration-time-unit {
-        width: auto;
-    }
+#custom-expiration-time-unit {
+    width: auto;
 }
 
 .empty_feed_notice {
