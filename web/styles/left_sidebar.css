@@ -21,14 +21,14 @@ $before_unread_count_padding: 3px;
             content: "#";
             line-height: 0;
             font-size: 18px;
-            font-weight: 800;
+            font-weight: 700;
         }
     }
 }
 
 .stream-privacy {
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 700;
     min-width: $left_col_size;
     text-align: center;
 
