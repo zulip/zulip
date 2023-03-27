@@ -30,7 +30,7 @@ export function autosize_textarea($textarea) {
     }
 }
 
-export function smart_insert($textarea, syntax) {
+export function smart_insert_inline($textarea, syntax) {
     function is_space(c) {
         return c === " " || c === "\t" || c === "\n";
     }
@@ -68,11 +68,43 @@ export function smart_insert($textarea, syntax) {
     autosize_textarea($textarea);
 }
 
-export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea")) {
+export function smart_insert_block($textarea, syntax) {
+    const pos = $textarea.caret();
+    const before_str = $textarea.val().slice(0, pos);
+    const after_str = $textarea.val().slice(pos);
+
+    // count the number of newlines between the cursor and the content.
+    const newlines_before = before_str.match(/(\n)+$/)?.[0].length ?? 0;
+    const newlines_after = after_str.match(/^(\n)+/)?.[0].length ?? 0;
+
+    if (pos > 0 && newlines_before < 2) {
+        syntax = "\n".repeat(2 - newlines_before) + syntax;
+    }
+
+    if (newlines_after < 2) {
+        syntax = syntax + "\n".repeat(2 - newlines_after);
+    }
+
+    // text-field-edit ensures `$textarea` is focused before inserting
+    // the new syntax.
+    insert($textarea[0], syntax);
+
+    autosize_textarea($textarea);
+}
+
+export function insert_syntax_and_focus(
+    syntax,
+    $textarea = $("#compose-textarea"),
+    display = "inline",
+) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert.
-    smart_insert($textarea, syntax);
+    if (display === "inline") {
+        smart_insert_inline($textarea, syntax);
+    } else if (display === "block") {
+        smart_insert_block($textarea, syntax);
+    }
 }
 
 export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {

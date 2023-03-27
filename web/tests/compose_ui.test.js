@@ -110,7 +110,7 @@ run_test("insert_syntax_and_focus", ({override}) => {
     compose_ui.insert_syntax_and_focus(":octopus:");
 });
 
-run_test("smart_insert", ({override}) => {
+run_test("smart_insert_inline", ({override}) => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
     function override_with_expected_syntax(expected_syntax) {
@@ -120,38 +120,49 @@ run_test("smart_insert", ({override}) => {
         });
     }
     override_with_expected_syntax(" :smile: ");
-    compose_ui.smart_insert($textbox, ":smile:");
+    compose_ui.smart_insert_inline($textbox, ":smile:");
 
     override_with_expected_syntax(" :airplane: ");
-    compose_ui.smart_insert($textbox, ":airplane:");
+    compose_ui.smart_insert_inline($textbox, ":airplane:");
 
     $textbox.caret(0);
     override_with_expected_syntax(":octopus: ");
-    compose_ui.smart_insert($textbox, ":octopus:");
+    compose_ui.smart_insert_inline($textbox, ":octopus:");
 
     $textbox.caret($textbox.val().length);
     override_with_expected_syntax(" :heart: ");
-    compose_ui.smart_insert($textbox, ":heart:");
-
-    // Test handling of spaces for ```quote
-    $textbox = make_textbox("");
-    $textbox.caret(0);
-    override_with_expected_syntax("```quote\nquoted message\n```\n");
-    compose_ui.smart_insert($textbox, "```quote\nquoted message\n```\n");
-
-    $textbox = make_textbox("");
-    $textbox.caret(0);
-    override_with_expected_syntax("translated: [Quoting…]\n");
-    compose_ui.smart_insert($textbox, "translated: [Quoting…]\n");
+    compose_ui.smart_insert_inline($textbox, ":heart:");
 
     $textbox = make_textbox("abc");
     $textbox.caret(3);
     override_with_expected_syntax(" test with space ");
-    compose_ui.smart_insert($textbox, " test with space");
+    compose_ui.smart_insert_inline($textbox, " test with space");
 
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
     // like emojis and file links.
+});
+
+run_test("smart_insert_block", ({override}) => {
+    let $textbox = make_textbox("");
+    $textbox.caret(0);
+    function override_with_expected_syntax(expected_syntax) {
+        override(text_field_edit, "insert", (elt, syntax) => {
+            assert.equal(elt, "textarea");
+            assert.equal(syntax, expected_syntax);
+        });
+    }
+
+    // Test handling of spaces for ```quote
+    $textbox = make_textbox("");
+    $textbox.caret(0);
+    override_with_expected_syntax("```quote\nquoted message\n```\n\n");
+    compose_ui.smart_insert_block($textbox, "```quote\nquoted message\n```");
+
+    $textbox = make_textbox("");
+    $textbox.caret(0);
+    override_with_expected_syntax("translated: [Quoting…]\n\n");
+    compose_ui.smart_insert_block($textbox, "translated: [Quoting…]");
 });
 
 run_test("replace_syntax", ({override}) => {
@@ -282,23 +293,21 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
             return this;
         }
         /* istanbul ignore if */
-        if (typeof arg !== "string") {
-            console.info(arg);
-            throw new Error("We expected the actual code to pass in a string.");
-        }
+        // if (typeof arg !== "string") {
+        //     console.info(arg);
+        //     throw new Error("We expected the actual code to pass in a string.");
+        // }
 
-        const before = textarea_val.slice(0, textarea_caret_pos);
-        const after = textarea_val.slice(textarea_caret_pos);
+        // const before = textarea_val.slice(0, textarea_caret_pos);
+        // const after = textarea_val.slice(textarea_caret_pos);
 
-        textarea_val = before + arg + after;
-        textarea_caret_pos += arg.length;
+        // textarea_val = before + arg + after;
+        // textarea_caret_pos += arg.length;
+        /* istanbul ignore next */
         return this;
     };
+
     $("#compose-textarea")[0] = "compose-textarea";
-    override(text_field_edit, "insert", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
-        assert.equal(syntax, "translated: [Quoting…]\n");
-    });
 
     function set_compose_content_with_caret(content) {
         const caret_position = content.indexOf("%");
@@ -318,6 +327,13 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
         $("#compose-textarea").trigger("blur");
     }
 
+    function override_with_expected_syntax(expected_syntax) {
+        override(text_field_edit, "insert", (elt, syntax) => {
+            assert.equal(elt, "compose-textarea");
+            assert.equal(syntax, expected_syntax);
+        });
+    }
+
     function override_with_quote_text(quote_text) {
         override(text_field_edit, "replace", (elt, old_syntax, new_syntax) => {
             assert.equal(elt, "compose-textarea");
@@ -331,19 +347,28 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
             );
         });
     }
-    let quote_text = "Testing caret position";
-    override_with_quote_text(quote_text);
+
+    // If the caret is positioned in between the text, we should
+    // add two newlines before and after the quoted message.
+    override_with_expected_syntax("\n\ntranslated: [Quoting…]\n\n");
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
+
+    // checks the syntax of the quoted message before replacement of the placeholder.
     compose_actions.quote_and_reply();
 
+    let quote_text = "Testing caret position";
+    override_with_quote_text(quote_text);
+
+    // checks the syntax of the quoted message after replacement of the placeholder.
     success_function({
         raw_content: quote_text,
     });
 
     reset_test_state();
 
-    // If the caret is initially positioned at 0, it should not
+    // If the caret is initially positioned at 0, we should not
     // add a newline before the quoted message.
+    override_with_expected_syntax("translated: [Quoting…]\n\n");
     set_compose_content_with_caret("%hello there");
     compose_actions.quote_and_reply();
 
@@ -383,6 +408,36 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     compose_actions.quote_and_reply();
 
     quote_text = "Testing with compose-box containing whitespaces and newlines only.";
+    override_with_quote_text(quote_text);
+    success_function({
+        raw_content: quote_text,
+    });
+
+    reset_test_state();
+
+    // If the caret is surrounded by less than two newlines on
+    // either side, we should add newlines such that the quoted
+    // message is enclosed within two newlines on either side.
+    override_with_expected_syntax("\ntranslated: [Quoting…]\n\n");
+    set_compose_content_with_caret("hello\n%there");
+    compose_actions.quote_and_reply();
+
+    quote_text = "Testing with caret surrounded by less than two newlines.";
+    override_with_quote_text(quote_text);
+    success_function({
+        raw_content: quote_text,
+    });
+
+    reset_test_state();
+
+    // If the caret is surrounded by atleat two newlines on
+    // either side, we should respect this and not add any
+    // additional newlines.
+    override_with_expected_syntax("translated: [Quoting…]");
+    set_compose_content_with_caret("hello\n\n\n%\n\nthere");
+    compose_actions.quote_and_reply();
+
+    quote_text = "Testing with caret surrounded by atleat two newlines.";
     override_with_quote_text(quote_text);
     success_function({
         raw_content: quote_text,

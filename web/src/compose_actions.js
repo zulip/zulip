@@ -536,25 +536,19 @@ export function quote_and_reply(opts) {
     const message = message_lists.current.selected_message();
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
-    if (compose_state.has_message_content()) {
-        // The user already started typing a message,
-        // so we won't re-open the compose box.
-        // (If you did re-open the compose box, you
+    if (!compose_state.has_message_content()) {
+        // The user has not started typing a message,
+        // so we will open the compose box. (If you
+        // did re-open the compose box when the user
+        // has already started typing a message, you
         // are prone to glitches where you select the
         // text, plus it's a complicated codepath that
         // can have other unintended consequences.)
 
-        if ($textarea.caret() !== 0) {
-            // Insert a newline before quoted message if there is
-            // already some content in the compose box and quoted
-            // message is not being inserted at the beginning.
-            $textarea.caret("\n");
-        }
-    } else {
         respond_to_message(opts);
     }
 
-    compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea);
+    compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 
     function replace_content(message) {
         // Final message looks like:
