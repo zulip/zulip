@@ -76,7 +76,7 @@
 .create_user_group_plus_button,
 .create_stream_plus_button {
     font-size: 24px;
-    font-weight: 500;
+    font-weight: 400;
     position: relative;
     top: 2px;
     border: 1px solid hsl(0deg 0% 80%);
