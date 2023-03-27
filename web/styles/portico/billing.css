@@ -3,7 +3,7 @@
 }
 
 .billing-upgrade-page {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     background-color: hsl(0deg 0% 98%);
     height: 100vh;
 
@@ -151,7 +151,7 @@
         & span {
             background: 0;
             box-shadow: none;
-            font-family: "Source Sans 3", sans-serif;
+            font-family: "Source Sans 3 VF", sans-serif;
             line-height: 20px;
         }
     }

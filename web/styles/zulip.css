@@ -24,7 +24,7 @@ body {
     width: 100%;
     font-size: 14px;
     line-height: calc(20 / 14);
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
     transition: background-color 200ms linear;
@@ -236,7 +236,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
     line-height: normal;
@@ -720,7 +720,7 @@ body.has-overlay-scrollbar {
 
 textarea,
 input {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
