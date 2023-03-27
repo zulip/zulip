@@ -40,30 +40,37 @@ class UserGroupTestCase(ZulipTestCase):
         realm = get_realm("zulip")
         user_group = UserGroup.objects.filter(realm=realm).first()
         assert user_group is not None
-        membership = UserGroupMembership.objects.filter(user_group=user_group).values_list(
-            "user_profile_id", flat=True
-        )
         empty_user_group = check_add_user_group(realm, "newgroup", [], acting_user=None)
 
         user_groups = user_groups_in_realm_serialized(realm)
-        self.assert_length(user_groups, 9)
+        self.assert_length(user_groups, 10)
         self.assertEqual(user_groups[0]["id"], user_group.id)
-        self.assertEqual(user_groups[0]["name"], UserGroup.OWNERS_GROUP_NAME)
-        self.assertEqual(user_groups[0]["description"], "Owners of this organization")
-        self.assertEqual(set(user_groups[0]["members"]), set(membership))
+        self.assertEqual(user_groups[0]["name"], UserGroup.NOBODY_GROUP_NAME)
+        self.assertEqual(user_groups[0]["description"], "Nobody")
+        self.assertEqual(user_groups[0]["members"], [])
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
+
+        owners_system_group = UserGroup.objects.get(name=UserGroup.OWNERS_GROUP_NAME, realm=realm)
+        membership = UserGroupMembership.objects.filter(user_group=owners_system_group).values_list(
+            "user_profile_id", flat=True
+        )
+        self.assertEqual(user_groups[1]["id"], owners_system_group.id)
+        self.assertEqual(user_groups[1]["name"], UserGroup.OWNERS_GROUP_NAME)
+        self.assertEqual(user_groups[1]["description"], "Owners of this organization")
+        self.assertEqual(set(user_groups[1]["members"]), set(membership))
+        self.assertEqual(user_groups[1]["direct_subgroup_ids"], [])
 
         admins_system_group = UserGroup.objects.get(
             name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm
         )
-        self.assertEqual(user_groups[1]["id"], admins_system_group.id)
+        self.assertEqual(user_groups[2]["id"], admins_system_group.id)
         # Check that owners system group is present in "direct_subgroup_ids"
-        self.assertEqual(user_groups[1]["direct_subgroup_ids"], [user_group.id])
+        self.assertEqual(user_groups[2]["direct_subgroup_ids"], [owners_system_group.id])
 
-        self.assertEqual(user_groups[8]["id"], empty_user_group.id)
-        self.assertEqual(user_groups[8]["name"], "newgroup")
-        self.assertEqual(user_groups[8]["description"], "")
-        self.assertEqual(user_groups[8]["members"], [])
+        self.assertEqual(user_groups[9]["id"], empty_user_group.id)
+        self.assertEqual(user_groups[9]["name"], "newgroup")
+        self.assertEqual(user_groups[9]["description"], "")
+        self.assertEqual(user_groups[9]["members"], [])
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
@@ -221,7 +228,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 9)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
         # Test invalid member error
         params = {
@@ -231,7 +238,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user ID: 1111")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 9)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
         # Test we cannot create group with same name again
         params = {
@@ -241,7 +248,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "User group 'support' already exists.")
-        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 9)
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
     def test_user_group_get(self) -> None:
         # Test success
@@ -323,11 +330,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.client_post("/json/user_groups/create", info=params)
         user_group = UserGroup.objects.get(name="support")
         # Test success
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
+        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 10)
         self.assertEqual(UserGroupMembership.objects.count(), 47)
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
-        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 8)
+        self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
         self.assertEqual(UserGroupMembership.objects.count(), 46)
         # Test when invalid user group is supplied
         result = self.client_delete("/json/user_groups/1111")
@@ -456,7 +463,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             if error_msg is None:
                 self.assert_json_success(result)
                 # One group already exists in the test database.
-                self.assert_length(UserGroup.objects.filter(realm=realm), 9)
+                self.assert_length(UserGroup.objects.filter(realm=realm), 10)
             else:
                 self.assert_json_error(result, error_msg)
 
@@ -466,7 +473,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             result = self.client_delete(f"/json/user_groups/{user_group.id}")
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assert_length(UserGroup.objects.filter(realm=realm), 8)
+                self.assert_length(UserGroup.objects.filter(realm=realm), 9)
             else:
                 self.assert_json_error(result, error_msg)
 

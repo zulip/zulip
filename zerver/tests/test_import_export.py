@@ -435,10 +435,10 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         exported_usergroups = data["zerver_usergroup"]
-        self.assert_length(exported_usergroups, 8)
-        self.assertEqual(exported_usergroups[1]["name"], "@role:administrators")
-        self.assertFalse("direct_members" in exported_usergroups[1])
-        self.assertFalse("direct_subgroups" in exported_usergroups[1])
+        self.assert_length(exported_usergroups, 9)
+        self.assertEqual(exported_usergroups[2]["name"], "@role:administrators")
+        self.assertFalse("direct_members" in exported_usergroups[2])
+        self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]

@@ -15293,7 +15293,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [8, 9]
+              example: [9, 10]
           required: false
       responses:
         "200":
@@ -17605,7 +17605,7 @@ components:
         The ID of the target user group.
       schema:
         type: integer
-      example: 29
+      example: 33
       required: true
     QueueId:
       name: queue_id

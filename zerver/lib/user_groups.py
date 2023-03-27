@@ -237,8 +237,15 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         realm=realm,
         is_system_group=True,
     )
+    nobody_system_group = UserGroup(
+        name=UserGroup.NOBODY_GROUP_NAME,
+        description="Nobody",
+        realm=realm,
+        is_system_group=True,
+    )
     # Order of this list here is important to create correct GroupGroupMembership objects
     system_user_groups_list = [
+        nobody_system_group,
         role_system_groups_dict[UserProfile.ROLE_REALM_OWNER],
         role_system_groups_dict[UserProfile.ROLE_REALM_ADMINISTRATOR],
         role_system_groups_dict[UserProfile.ROLE_MODERATOR],
@@ -251,7 +258,8 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     UserGroup.objects.bulk_create(system_user_groups_list)
 
     subgroup_objects = []
-    subgroup, remaining_groups = system_user_groups_list[0], system_user_groups_list[1:]
+    # "Nobody" system group is not a subgroup of any user group, since it is already empty.
+    subgroup, remaining_groups = system_user_groups_list[1], system_user_groups_list[2:]
     for supergroup in remaining_groups:
         subgroup_objects.append(GroupGroupMembership(subgroup=subgroup, supergroup=supergroup))
         subgroup = supergroup
