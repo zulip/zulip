@@ -723,7 +723,5 @@ $(async () => {
         });
         Object.assign(page_params, state);
     }
-    blueslip.measure_time("initialize_everything", () => {
-        initialize_everything();
-    });
+    initialize_everything();
 });

@@ -437,14 +437,8 @@ export function render_left_panel_superset() {
     // For annoying legacy reasons we render all the subs we are
     // allowed to know about and put them in the DOM, then we do
     // a second pass where we filter/sort them.
-    const html = blueslip.measure_time("render left panel", () => {
-        const sub_rows = stream_settings_data.get_updated_unsorted_subs();
-
-        const template_data = {
-            subscriptions: sub_rows,
-        };
-
-        return render_browse_streams_list(template_data);
+    const html = render_browse_streams_list({
+        subscriptions: stream_settings_data.get_updated_unsorted_subs(),
     });
 
     ui.get_content_element($("#manage_streams_container .streams-list")).html(html);

@@ -116,8 +116,6 @@ function make_zblueslip() {
         return ex.message;
     };
 
-    lib.measure_time = (label, f) => f();
-
     return lib;
 }
 
