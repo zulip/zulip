@@ -757,7 +757,7 @@ nav {
             border: 2px solid hsl(0deg 0% 100%);
 
             font-size: 1.2em;
-            font-weight: 500;
+            font-weight: 400;
             color: hsl(148deg 23% 51%);
 
             box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
@@ -988,7 +988,7 @@ nav {
                 top: 3px;
 
                 font-size: 2.5rem;
-                font-weight: 500;
+                font-weight: 400;
                 line-height: 0.9;
 
                 opacity: 0.4;
@@ -2117,7 +2117,7 @@ nav {
 
     font-size: 0.8rem;
     font-weight: 600;
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     margin-top: 10px;
 }
 
@@ -2597,7 +2597,7 @@ nav {
     padding: 10px 0 10px 25px;
 
     font-size: 0.9em;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .pricing-model .pricing-container ul.feature-list li::before {

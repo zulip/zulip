@@ -33,7 +33,7 @@ html {
 .bottom-text {
     text-align: center;
     margin-top: 20px;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 0.9em;
 
     & a {
@@ -49,7 +49,7 @@ html {
 .bottom-text-large {
     text-align: center;
     margin-top: 20px;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 1.2em;
 
     & a {
@@ -436,7 +436,7 @@ html {
         padding: 10px;
         margin: 10px 0;
         font-size: 1rem;
-        font-weight: 500;
+        font-weight: 400;
         line-height: 1.5;
         color: hsl(0deg 0% 27%);
 
@@ -1165,7 +1165,7 @@ button#register_auth_button_gitlab {
 
         .email {
             font-size: 0.95em;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         & img,
