@@ -257,7 +257,7 @@ def do_set_realm_user_default_setting(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
+def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile], realm_scheduled_deletion_date: Optional[int]) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -266,9 +266,10 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     """
     if realm.deactivated:
         return
-
     realm.deactivated = True
-    realm.save(update_fields=["deactivated"])
+    realm.scheduled_deletion_date = realm_scheduled_deletion_date
+
+    realm.save(update_fields=["scheduled_deletion_date", "deactivated"])
 
     if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices(realm)

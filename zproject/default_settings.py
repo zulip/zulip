@@ -356,6 +356,9 @@ SYSTEM_ONLY_REALMS = {"zulip"}
 # Default deadline for demo organizations
 DEMO_ORG_DEADLINE_DAYS = 30
 
+# Default deadline for demo organizations
+REALM_DELETION_DAYS = 0
+
 # Alternate hostnames to serve particular realms on, in addition to
 # their usual subdomains.  Keys are realm string_ids (aka subdomains),
 # and values are alternate hosts.

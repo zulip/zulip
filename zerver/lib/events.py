@@ -353,7 +353,10 @@ def fetch_initial_state_data(
             state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
                 realm.demo_organization_scheduled_deletion_date
             )
-
+        if realm.scheduled_deletion_date is not None:
+            state["realm_scheduled_deletion_date"] = datetime_to_timestamp(
+                realm.scheduled_deletion_date
+            )
         # Presence system parameters for client behavior.
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
         state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS

@@ -10137,6 +10137,11 @@ paths:
                           field values on individual user objects to display users' profiles.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
+                      realm_scheduled_deletion_date:
+                        type: integer
+                        description: |
+                          The UNIX timestamp (UTC) when the organization will be
+                          automatically deleted.
                       custom_profile_field_types:
                         type: object
                         description: |

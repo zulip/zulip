@@ -174,6 +174,7 @@ class HomeTest(ZulipTestCase):
         "realm_presence_disabled",
         "realm_private_message_policy",
         "realm_push_notifications_enabled",
+        "realm_scheduled_deletion_date",
         "realm_send_welcome_emails",
         "realm_signup_notifications_stream_id",
         "realm_upload_quota_mib",

@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.translation import gettext as _
@@ -33,6 +34,7 @@ from zerver.lib.validator import (
     check_dict,
     check_int,
     check_int_in,
+    check_none_or,
     check_string_in,
     check_string_or_int,
     to_non_negative_int,
@@ -41,6 +43,7 @@ from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, User
 from zerver.views.user_settings import check_settings_values
 
 ORG_TYPE_IDS: List[int] = [t["id"] for t in Realm.ORG_TYPES.values()]
+REALM_DELETION_MINUTES: Optional[int] = 24 * 60 * settings.REALM_DELETION_DAYS
 
 
 @require_realm_admin
@@ -355,9 +358,14 @@ def update_realm(
 
 @require_realm_owner
 @has_request_variables
-def deactivate_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
+def deactivate_realm(
+    request: HttpRequest, 
+    user: UserProfile, 
+    realm_deletion_in_minutes: Optional[int] = REQ(
+        json_validator=check_none_or(check_int), default=REALM_DELETION_MINUTES
+    ),) -> HttpResponse:
     realm = user.realm
-    do_deactivate_realm(realm, acting_user=user)
+    do_deactivate_realm(realm, acting_user=user, realm_scheduled_deletion_date=realm_deletion_in_minutes)
     return json_success(request)
 
 
