@@ -54,11 +54,7 @@ function process_result(data, opts) {
         message_util.add_old_messages(messages, opts.msg_list);
     }
 
-    if (
-        opts.msg_list === message_lists.current &&
-        opts.msg_list.narrowed &&
-        opts.msg_list.empty()
-    ) {
+    if (opts.msg_list === message_lists.current && opts.msg_list.empty()) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
         narrow_banner.show_empty_narrow_message();

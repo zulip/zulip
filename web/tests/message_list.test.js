@@ -23,6 +23,7 @@ set_global("document", {
     },
 });
 
+const narrow_data = mock_esm("../src/narrow");
 const narrow_state = mock_esm("../src/narrow_state");
 const stream_data = mock_esm("../src/stream_data");
 
@@ -63,6 +64,7 @@ run_test("basics", ({override}) => {
         },
     ];
 
+    narrow_data.handle_empty_narrow_message_home = () => false;
     assert.equal(list.empty(), true);
 
     list.append(messages, true);

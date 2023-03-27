@@ -5,6 +5,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
+import * as narrow from "./narrow";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -115,6 +116,7 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
+        narrow.handle_empty_narrow_message_home();
         if (this.narrowed && !this.empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
@@ -427,6 +429,7 @@ export class MessageList {
         this.data.reset_select_to_closest();
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
+        narrow.handle_empty_narrow_message_home();
 
         if (this.narrowed) {
             if (this.empty()) {

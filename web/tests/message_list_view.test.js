@@ -44,6 +44,7 @@ const {Filter} = zrequire("../src/filter");
 const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
 const muted_users = zrequire("muted_users");
+const narrow = zrequire("narrow");
 
 let next_timestamp = 1500000000;
 
@@ -705,6 +706,7 @@ test("render_windows", () => {
         });
 
         const view = list.view;
+        narrow.handle_empty_narrow_message_home = () => false;
 
         // Stub out functionality that is not core to the rendering window
         // logic.

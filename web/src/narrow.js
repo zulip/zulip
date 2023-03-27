@@ -173,6 +173,16 @@ export function update_narrow_title(filter) {
     notifications.redraw_title();
 }
 
+export function handle_empty_narrow_message_home() {
+    if (message_lists.current === message_lists.home) {
+        if (message_lists.home.empty()) {
+            narrow_banner.show_empty_narrow_message();
+        } else {
+            narrow_banner.hide_empty_narrow_message();
+        }
+    }
+}
+
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
@@ -1071,6 +1081,7 @@ export function deactivate(coming_from_recent_topics = false) {
     reset_ui_state();
     handle_middle_pane_transition();
     hashchange.save_narrow();
+    handle_empty_narrow_message_home();
 
     if (message_lists.current.selected_id() !== -1) {
         const preserve_pre_narrowing_screen_position =
