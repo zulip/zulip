@@ -1029,7 +1029,7 @@ nav {
         min-width: 650px;
 
         .number {
-            font-weight: 800;
+            font-weight: 700;
 
             &.one {
                 color: hsl(0deg 0% 100% / 40%);
@@ -3889,7 +3889,7 @@ nav {
     overflow: hidden;
     transition: border-color 0.3s, background-color 0.3s;
     transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
-    font-weight: 800;
+    font-weight: 700;
     padding: 15px 5px;
 
     &:focus {
@@ -3942,7 +3942,7 @@ nav {
 
     & blockquote::before {
         font-size: 20px;
-        font-weight: 800;
+        font-weight: 700;
     }
 
     & cite {

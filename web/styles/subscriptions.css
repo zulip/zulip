@@ -832,7 +832,7 @@ h4.user_group_setting_subsection_title {
             &.hash::after {
                 top: -1px;
                 font-size: 1.09em;
-                font-weight: 800;
+                font-weight: 700;
             }
 
             .zulip-icon-globe {
