@@ -915,7 +915,8 @@ input[type="checkbox"] {
     }
 }
 
-.admin-profile-field-form #custom_external_account_url_pattern input {
+.admin-profile-field-form #custom_external_account_url_pattern input,
+#edit-custom-profile-field-form-modal .custom_external_account_detail input {
     width: 70%;
 }
 
