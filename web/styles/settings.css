@@ -1478,7 +1478,7 @@ $option_title_width: 180px;
             top: 2px;
             padding-left: 5px;
             color: hsl(0deg 0% 58%);
-            font-weight: lighter;
+            font-weight: 200;
         }
 
         &.dropdown-toggle {
