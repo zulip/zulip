@@ -207,28 +207,3 @@ export function measure_time<T>(label: string, f: () => T): T {
     timings.set(label, elapsed);
     return ret;
 }
-
-// Produces an easy-to-read preview on an HTML element.  Currently
-// only used for including in error report emails; be sure to discuss
-// with other developers before using it in a user-facing context
-// because it is not XSS-safe.
-export function preview_node(node: JQuery | HTMLElement): string {
-    if (!(node instanceof HTMLElement)) {
-        node = node[0];
-    }
-
-    const tag = node.tagName.toLowerCase();
-    const className = node.className.length ? node.className : false;
-    const id = node.id.length ? node.id : false;
-
-    const node_preview =
-        "<" +
-        tag +
-        (id ? " id='" + id + "'" : "") +
-        (className ? " class='" + className + "'" : "") +
-        "></" +
-        tag +
-        ">";
-
-    return node_preview;
-}
