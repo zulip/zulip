@@ -30,7 +30,8 @@
     }
 
     /************************* MODAL DARK THEME *******************/
-    .dialog_cancel_button {
+    .dialog_cancel_button,
+    .message_edit_cancel {
         background-color: hsl(211deg 29% 14%);
         color: hsl(0deg 0% 100%);
         border: 1px solid hsl(0deg 0% 0% / 60%);

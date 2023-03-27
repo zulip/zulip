@@ -266,7 +266,7 @@ export function stream_and_topic_exist_in_edit_history(message, stream_id, topic
 
 export function hide_message_edit_spinner($row) {
     $row.find(".loader").hide();
-    $row.find(".message_edit_save span").show();
+    $row.find(".message_edit_save span").css("display", "inline-flex").show();
     $row.find(".message_edit_save").removeClass("disable-btn");
     $row.find(".message_edit_cancel").removeClass("disable-btn");
 }
@@ -506,7 +506,7 @@ function edit_message($row, raw_content) {
 
     // Add tooltip and timer
     if (is_editable && page_params.realm_message_content_edit_limit_seconds > 0) {
-        $row.find(".message-edit-timer").show();
+        $row.find(".message-edit-timer").css("display", "inline-flex").show();
 
         // Give them at least 10 seconds.
         // If you change this number also change edit_limit_buffer in

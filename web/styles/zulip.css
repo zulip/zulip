@@ -1532,27 +1532,56 @@ div.focused_table {
     max-height: 24em;
 }
 
-.message_edit_countdown_timer {
-    text-align: right;
-    display: inline;
-    color: hsl(0deg 0% 63%);
-}
+.edit-controls {
+    display: flex;
+    flex-wrap: wrap;
 
-.message_edit_tooltip {
-    display: inline;
-    color: hsl(0deg 0% 63%);
-}
+    .btn-wrapper {
+        cursor: not-allowed;
+    }
 
-.message-edit-timer {
-    float: right;
-    display: none;
-    margin-top: 5px;
-}
+    .disable-btn {
+        pointer-events: none;
+    }
 
-.message-edit-feature-group {
-    display: inline-flex;
-    margin: 0 auto -5px 10px;
-    align-items: baseline;
+    .message_edit_countdown_timer {
+        text-align: right;
+        display: inline;
+        color: hsl(0deg 0% 63%);
+    }
+
+    .message_edit_tooltip {
+        display: inline;
+        color: hsl(0deg 0% 63%);
+    }
+
+    .message-edit-timer {
+        display: none;
+        margin-top: 5px;
+        white-space: nowrap;
+    }
+
+    .message-edit-feature-group {
+        display: inline-flex;
+        margin: 0 auto -5px 0;
+        align-items: baseline;
+    }
+
+    .message-edit-buttons {
+        display: inline-flex;
+        gap: 5px;
+        margin-left: 15px;
+
+        .message_edit_save {
+            background-color: hsl(240deg 96% 68%) !important;
+            color: hsl(0deg 0% 100%) !important;
+        }
+
+        .message_edit_cancel {
+            background: hsl(0deg 0% 100%);
+            border: 1px solid hsl(300deg 2% 11% / 30%) !important;
+        }
+    }
 }
 
 .message_edit_save .loader {
@@ -1563,16 +1592,6 @@ div.focused_table {
     margin-top: -10px;
     top: 6px;
     width: 30px;
-}
-
-.edit-controls {
-    .btn-wrapper {
-        cursor: not-allowed;
-    }
-
-    .disable-btn {
-        pointer-events: none;
-    }
 }
 
 .topic_edit {
@@ -2819,6 +2838,27 @@ select.invite-as {
         width: calc(90% - 30px);
         left: 5%;
         top: 5%;
+    }
+}
+
+@media (max-width: 847px) and (min-width: 768px), (max-width: 467px) {
+    .message-edit-buttons {
+        margin-top: 5px;
+        margin-right: 5px;
+        margin-left: 0 !important;
+    }
+
+    .message-edit-timer {
+        margin-top: 10px !important;
+    }
+}
+
+@media (max-width: 1302px) and (min-width: 1200px),
+    (max-width: 1059px) and (min-width: 992px),
+    (max-width: 958px) and (min-width: 768px),
+    (max-width: 685px) {
+    .message-edit-timer {
+        order: 1;
     }
 }
 
