@@ -872,6 +872,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__email_address_visibility: {
+        type: "user_settings",
+        op: "update",
+        property: "email_address_visibility",
+        value: 5,
+    },
+
     user_settings__emojiset: {
         type: "user_settings",
         op: "update",
