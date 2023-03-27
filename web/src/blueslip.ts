@@ -10,7 +10,6 @@ import $ from "jquery";
 
 import * as blueslip_stacktrace from "./blueslip_stacktrace";
 import {page_params} from "./page_params";
-import * as ui_report from "./ui_report";
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
@@ -61,7 +60,7 @@ const last_report_attempt = new Map<string, number>();
 function report_error(
     msg: string,
     stack = "No stacktrace available",
-    {show_ui_msg = false, more_info}: {show_ui_msg?: boolean; more_info?: unknown} = {},
+    more_info?: unknown,
 ): void {
     if (page_params.development_environment) {
         // In development, we display blueslip errors in the web UI,
@@ -97,7 +96,6 @@ function report_error(
             web_version: ZULIP_VERSION,
             message: msg,
             stacktrace: stack,
-            ui_message: show_ui_msg,
             more_info: JSON.stringify(more_info),
             href: window.location.href,
             user_agent: window.navigator.userAgent,
@@ -106,42 +104,8 @@ function report_error(
         timeout: 3 * 1000,
         success() {
             reported_errors.add(key);
-            if (show_ui_msg && ui_report !== undefined) {
-                // There are a few races here (and below in the error
-                // callback):
-                // 1) The ui_report module or something it requires might
-                //    not have been compiled or initialized yet.
-                // 2) The DOM might not be ready yet and so fetching
-                //    the #home-error div might fail.
-
-                // For (1) we just don't show the message if the ui
-                // hasn't been loaded yet.  The user will probably
-                // get another error once it does.  We can't solve
-                // (2) by using $(document).ready because the
-                // callback never gets called (I think what's going
-                // on here is if the exception was raised by a
-                // function that was called as a result of the DOM
-                // becoming ready then the internal state of jQuery
-                // gets messed up and our callback never gets
-                // invoked).  In any case, it will pretty clear that
-                // something is wrong with the page and the user will
-                // probably try to reload anyway.
-                ui_report.client_error(
-                    "Oops.  It seems something has gone wrong. " +
-                        "The error has been reported to the fine " +
-                        "folks at Zulip, but, in the mean time, " +
-                        "please try reloading the page.",
-                    $("#home-error"),
-                );
-            }
         },
         error() {
-            if (show_ui_msg && ui_report !== undefined) {
-                ui_report.client_error(
-                    "Oops.  It seems something has gone wrong. Please try reloading the page.",
-                    $("#home-error"),
-                );
-            }
         },
     });
 }
@@ -223,7 +187,7 @@ export function warn(msg: string, more_info?: unknown): void {
 export function error(msg: string, more_info?: unknown, stack = new Error("dummy").stack): void {
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
-    report_error(msg, stack, {more_info});
+    report_error(msg, stack, more_info);
 
     if (page_params.development_environment) {
         throw new BlueslipError(msg, more_info);

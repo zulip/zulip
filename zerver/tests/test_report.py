@@ -142,7 +142,6 @@ class TestReport(ZulipTestCase):
             dict(
                 message="hello",
                 stacktrace="trace",
-                ui_message=True,
                 user_agent="agent",
                 href="href",
                 log="log",
@@ -156,7 +155,7 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         report = m.call_args[0][1]["report"]
-        for k in set(params) - {"ui_message", "more_info"}:
+        for k in set(params) - {"more_info"}:
             self.assertEqual(report[k], params[k])
 
         self.assertEqual(report["more_info"], dict(foo="bar", draft_content="'**xxxxx**'"))
