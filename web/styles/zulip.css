@@ -1589,6 +1589,7 @@ div.focused_table {
 
 #inline_topic_edit {
     margin-bottom: 5px;
+    width: 206px;
 
     &.header-v {
         height: 18px;
