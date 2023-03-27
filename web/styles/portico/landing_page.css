@@ -4122,7 +4122,7 @@ nav {
                     margin: 0 0 -10px;
                     width: 100%;
                     text-align: center;
-                    font-weight: 550;
+                    font-weight: 600;
                     color: hsl(169deg 46% 33%);
                 }
             }
@@ -4346,7 +4346,7 @@ nav {
                 }
 
                 & h1 {
-                    font-weight: 550;
+                    font-weight: 600;
                     font-size: clamp(24px, 2.5vw, 32px);
                 }
 
