@@ -96,6 +96,20 @@ const default_popover_props = {
        to generate the required html */
 };
 
+const left_sidebar_tippy_options = {
+    placement: "right",
+    popperOptions: {
+        modifiers: [
+            {
+                name: "flip",
+                options: {
+                    fallbackPlacements: "bottom",
+                },
+            },
+        ],
+    },
+};
+
 export function any_active() {
     return (
         left_sidebar_stream_setting_popover_displayed ||
@@ -478,24 +492,7 @@ export function initialize() {
 
     // Starred messages popover
     tippy_no_propagation(".starred-messages-sidebar-menu-icon", {
-        placement: "right",
-        maxWidth: "none",
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: "bottom",
-                    },
-                },
-                {
-                    name: "preventOverflow",
-                    options: {
-                        padding: 40,
-                    },
-                },
-            ],
-        },
+        ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
             starred_messages_popover_instance = instance;
