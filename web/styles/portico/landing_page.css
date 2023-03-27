@@ -309,7 +309,7 @@ nav {
                     position: absolute;
                     bottom: -15px;
                     left: calc(50% - 4px);
-                    font-weight: 100;
+                    font-weight: 200;
                     transform: scaleX(2) scaleY(0.5);
                 }
             }
@@ -3314,7 +3314,7 @@ nav {
                 top: 10px;
                 right: 25px;
 
-                font-weight: 100;
+                font-weight: 200;
                 font-size: 3em;
                 color: initial;
             }
