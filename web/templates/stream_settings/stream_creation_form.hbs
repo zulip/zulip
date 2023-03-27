@@ -8,7 +8,7 @@
                 <label for="create_stream_name">
                     {{t "Stream name" }}
                 </label>
-                <input type="text" name="stream_name" id="create_stream_name"
+                <input type="text" name="stream_name" id="create_stream_name" class="settings_text_input"
                   placeholder="{{t 'Stream name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
                 <div id="stream_name_error" class="stream_creation_error"></div>
             </section>
@@ -17,7 +17,7 @@
                     {{t "Stream description" }}
                     {{> ../help_link_widget link="/help/change-the-stream-description" }}
                 </label>
-                <input type="text" name="stream_description" id="create_stream_description"
+                <input type="text" name="stream_description" id="create_stream_description" class="settings_text_input"
                   placeholder="{{t 'Stream description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
             </section>
             <section class="block" id="make-invite-only">

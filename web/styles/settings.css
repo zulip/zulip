@@ -381,6 +381,10 @@ td .button {
     }
 }
 
+.settings_text_input {
+    width: 206px;
+}
+
 #admin-user-list,
 #admin-bot-list {
     .table tr:first-of-type td {
