@@ -196,14 +196,3 @@ export function error(msg: string, more_info?: unknown, stack = new Error("dummy
     // This function returns to its caller in production!  To raise a
     // fatal error even in production, use throw new Error(…) instead.
 }
-
-export const timings = new Map();
-
-export function measure_time<T>(label: string, f: () => T): T {
-    const t1 = performance.now();
-    const ret = f();
-    const t2 = performance.now();
-    const elapsed = t2 - t1;
-    timings.set(label, elapsed);
-    return ret;
-}
