@@ -118,9 +118,6 @@ function make_zblueslip() {
 
     lib.measure_time = (label, f) => f();
 
-    /* istanbul ignore next */
-    lib.preview_node = (node) => "node:" + node;
-
     return lib;
 }
 
