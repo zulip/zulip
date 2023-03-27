@@ -3,9 +3,9 @@
      * which have different font-family, we force font-family
      * for tooltips here.
      */
-    font-family: "Source Sans 3", sans-serif !important;
+    font-family: "Source Sans 3 VF", sans-serif !important;
     word-wrap: break-word;
-    /* Contains stylistic variant of upper-case character "I" in Source Sans 3 */
+    /* Contains stylistic variant of upper-case character "I" in Source Sans 3 VF */
     font-feature-settings: "ss01" on;
 
     /* Affects all tippy tooltips not using any theme. */

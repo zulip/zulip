@@ -1,6 +1,6 @@
 body {
     background-color: hsl(0deg 0% 98%);
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     line-height: 150%;
     height: 100%;
     font-weight: 300;
@@ -948,7 +948,7 @@ input.new-organization-button {
     min-height: calc(100vh - 290px);
     height: 100%;
     background-color: hsl(163deg 42% 85%);
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
 }
 
 .error_page .container {
