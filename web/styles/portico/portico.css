@@ -325,19 +325,6 @@ img.screenshot {
     content: " - ";
 }
 
-.landing-page {
-    padding: 2em 0;
-
-    & h2,
-    h4 {
-        font-weight: lighter;
-    }
-
-    & p {
-        font-size: 120%;
-    }
-}
-
 .platform-icon {
     width: 33%;
 }
