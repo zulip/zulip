@@ -10,7 +10,7 @@ import "../../third/bootstrap/css/bootstrap-btn.css";
 import "simplebar/dist/simplebar.css";
 import "font-awesome/css/font-awesome.css";
 import "../../images/icons/zulip-icons.font";
-import "source-sans/source-sans-3.css";
+import "source-sans/source-sans-3VF.css";
 import "source-code-pro/source-code-pro.css";
 import "../../styles/alerts.css";
 import "../../styles/modal.css";
