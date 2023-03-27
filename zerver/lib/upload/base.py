@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
 
 from django.utils.translation import gettext as _
-from markupsafe import Markup
 from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
 from PIL.Image import DecompressionBombError
 
@@ -52,7 +51,7 @@ def sanitize_name(value: str) -> str:
     value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
     assert value not in {"", ".", ".."}
-    return Markup(value)
+    return value
 
 
 class BadImageError(JsonableError):

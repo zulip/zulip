@@ -10,6 +10,7 @@ class zulip_ops::teleport::node {
     owner  => 'root',
     group  => 'root',
     mode   => '0644',
+    notify => Service['teleport_node'],
   }
   concat::fragment { 'teleport_node_base':
     target => '/etc/teleport_node.yaml',
@@ -17,17 +18,5 @@ class zulip_ops::teleport::node {
     order  => '01',
   }
 
-  file { "${zulip::common::supervisor_conf_dir}/teleport_node.conf":
-    ensure  => file,
-    require => [
-      Package[supervisor],
-      Package[teleport],
-      Concat['/etc/teleport_node.yaml'],
-    ],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/teleport_node.conf',
-    notify  => Service[$zulip::common::supervisor_service],
-  }
+  zulip_ops::teleport::part { 'node': }
 }

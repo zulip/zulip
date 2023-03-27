@@ -51,6 +51,7 @@
         "import/first": "error",
         "import/newline-after-import": "error",
         "import/no-self-import": "error",
+        "import/no-unresolved": ["error", {"ignore": ["^date-fns-tz$|^js-cookie$|^katex$"]}],
         "import/no-useless-path-segments": "error",
         "import/order": ["error", {"alphabetize": {"order": "asc"}, "newlines-between": "always"}],
         "import/unambiguous": "error",
@@ -145,6 +146,7 @@
         {
             "files": ["**/*.ts"],
             "extends": [
+                "plugin:@typescript-eslint/recommended",
                 "plugin:@typescript-eslint/recommended-requiring-type-checking",
                 "plugin:import/typescript"
             ],
@@ -164,7 +166,6 @@
             "rules": {
                 // Disable base rule to avoid conflict
                 "no-duplicate-imports": "off",
-                "no-unused-vars": "off",
                 "no-useless-constructor": "off",
                 "no-use-before-define": "off",
 
@@ -178,6 +179,7 @@
                 "@typescript-eslint/member-ordering": "error",
                 "@typescript-eslint/no-duplicate-imports": "error",
                 "@typescript-eslint/no-extraneous-class": "error",
+                "@typescript-eslint/no-non-null-assertion": "off",
                 "@typescript-eslint/no-parameter-properties": "error",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unsafe-argument": "off",
@@ -186,7 +188,7 @@
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}],
-                "@typescript-eslint/no-use-before-define": "error",
+                "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
                 "@typescript-eslint/no-useless-constructor": "error",
                 "@typescript-eslint/prefer-includes": "error",
                 "@typescript-eslint/prefer-string-starts-ends-with": "error",

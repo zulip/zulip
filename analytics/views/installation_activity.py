@@ -38,7 +38,7 @@ if settings.BILLING_ENABLED:
     )
 
 
-def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
+def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
     query = SQL(
         """
         select
@@ -78,7 +78,7 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
         min_cnt = min(raw_cnts[1:])
         max_cnt = max(raw_cnts[1:])
 
-        def format_count(cnt: int, style: Optional[str] = None) -> str:
+        def format_count(cnt: int, style: Optional[str] = None) -> Markup:
             if style is not None:
                 good_bad = style
             elif cnt == min_cnt:
@@ -88,9 +88,11 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
             else:
                 good_bad = "neutral"
 
-            return f'<td class="number {good_bad}">{cnt}</td>'
+            return Markup('<td class="number {good_bad}">{cnt}</td>').format(
+                good_bad=good_bad, cnt=cnt
+            )
 
-        cnts = format_count(raw_cnts[0], "neutral") + "".join(map(format_count, raw_cnts[1:]))
+        cnts = format_count(raw_cnts[0], "neutral") + Markup().join(map(format_count, raw_cnts[1:]))
         result[string_id] = dict(cnts=cnts)
 
     return result
@@ -304,7 +306,8 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     day_end = timestamp_to_datetime(time.time())
     day_start = day_end - timedelta(hours=24)
 
-    output = "Per-user online duration for the last 24 hours:\n"
+    output = Markup()
+    output += "Per-user online duration for the last 24 hours:\n"
     total_duration = timedelta(0)
 
     all_intervals = (
@@ -335,7 +338,7 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
 
     for string_id, realm_intervals in itertools.groupby(all_intervals, by_string_id):
         realm_duration = timedelta(0)
-        output += f"<hr>{string_id}\n"
+        output += Markup("<hr>") + f"{string_id}\n"
         for email, intervals in itertools.groupby(realm_intervals, by_email):
             duration = timedelta(0)
             for interval in intervals:
@@ -352,7 +355,7 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     output += f"\nTotal duration:                      {total_duration}\n"
     output += f"\nTotal duration in minutes:           {total_duration.total_seconds() / 60.}\n"
     output += f"Total duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}"
-    content = Markup("<pre>" + output + "</pre>")
+    content = Markup("<pre>{}</pre>").format(output)
     return content, realm_minutes
 
 

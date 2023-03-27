@@ -42,7 +42,6 @@
             </tbody>
             {{#unless for_realm_settings}}
             <tbody id="stream-specific-notify-table">
-                {{> ../settings/stream_specific_notification_row }}
             </tbody>
             {{/unless}}
         </table>
@@ -145,6 +144,13 @@
                   autocomplete="off"
                   id="{{prefix}}email_notification_batching_period_edit_minutes"/>
             </div>
+        </div>
+
+        <div class="input-group">
+            <label for="realm_name_in_email_notifications_policy" class="dropdown-title">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
+            <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
+            </select>
         </div>
 
         {{#each notification_settings.email_message_notification_settings}}

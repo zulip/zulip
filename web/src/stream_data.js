@@ -746,6 +746,7 @@ export function create_streams(streams) {
         // We handle subscriber stuff in other events.
 
         const attrs = {
+            stream_weekly_traffic: null,
             subscribers: [],
             subscribed: false,
             ...stream,

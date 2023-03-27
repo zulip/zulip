@@ -10,8 +10,8 @@
         margin: -12.5px 0 0 -12.5px;
         border-radius: 50%;
         position: absolute;
-        background-color: hsla(196, 100%, 82%, 0.3);
-        border: 2px solid hsl(215, 47%, 50%);
+        background-color: hsl(196deg 100% 82% / 30%);
+        border: 2px solid hsl(215deg 47% 50%);
         top: 50%;
         left: 50%;
     }
@@ -23,9 +23,9 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
         border-radius: 50%;
-        border: 1px solid hsl(205, 100%, 70%);
+        border: 1px solid hsl(205deg 100% 70%);
         transform: scale(2.2);
         opacity: 0;
         animation: pulsate 5s ease-out 0.375s 5;
@@ -39,7 +39,7 @@
             left: -5px;
             bottom: 3px;
             transform: rotate(7deg);
-            color: hsl(215, 47%, 50%);
+            color: hsl(215deg 47% 50%);
             font-size: 2.75em;
             font-weight: 600;
         }
@@ -74,14 +74,14 @@
 /* popover */
 .hotspot.overlay {
     z-index: 104;
-    background-color: hsla(191, 7%, 20%, 0.15);
+    background-color: hsl(191deg 7% 20% / 15%);
 
     .hotspot-popover {
         position: fixed;
         width: 250px;
         text-align: left;
-        box-shadow: 0 5px 10px hsla(223, 4%, 54%, 0.2);
-        border: 1px solid hsl(0, 0%, 80%);
+        box-shadow: 0 5px 10px hsl(223deg 4% 54% / 20%);
+        border: 1px solid hsl(0deg 0% 80%);
         border-radius: 4px;
 
         /* arrows */
@@ -111,12 +111,12 @@
             }
 
             &::after {
-                border-bottom-color: hsl(164, 44%, 47%);
+                border-bottom-color: hsl(164deg 44% 47%);
                 margin-right: -12px;
             }
 
             &::before {
-                border-bottom-color: hsl(0, 0%, 80%);
+                border-bottom-color: hsl(0deg 0% 80%);
                 margin-right: -13px;
             }
         }
@@ -129,12 +129,12 @@
             }
 
             &::after {
-                border-right-color: hsl(0, 0%, 100%);
+                border-right-color: hsl(0deg 0% 100%);
                 margin-top: -12px;
             }
 
             &::before {
-                border-right-color: hsl(0, 0%, 80%);
+                border-right-color: hsl(0deg 0% 80%);
                 margin-top: -13px;
             }
         }
@@ -147,12 +147,12 @@
             }
 
             &::after {
-                border-top-color: hsl(0, 0%, 100%);
+                border-top-color: hsl(0deg 0% 100%);
                 margin-right: -12px;
             }
 
             &::before {
-                border-top-color: hsl(0, 0%, 80%);
+                border-top-color: hsl(0deg 0% 80%);
                 margin-right: -13px;
             }
         }
@@ -165,12 +165,12 @@
             }
 
             &::after {
-                border-left-color: hsl(0, 0%, 100%);
+                border-left-color: hsl(0deg 0% 100%);
                 margin-top: -12px;
             }
 
             &::before {
-                border-left-color: hsl(0, 0%, 80%);
+                border-left-color: hsl(0deg 0% 80%);
                 margin-top: -13px;
             }
         }
@@ -180,23 +180,23 @@
         padding: 0 15px;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
-        background-color: hsl(164, 44%, 47%);
+        background-color: hsl(164deg 44% 47%);
     }
 
     .hotspot-title {
         margin: 0;
         font-size: 1.15em;
         font-weight: 600;
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
     }
 
     .hotspot-popover-content {
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
         padding: 15px;
     }
 
     .hotspot-popover-bottom {
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
         height: 90px;
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
@@ -225,15 +225,15 @@
     border: none;
     font-size: 1.15em;
     font-weight: 600;
-    color: hsl(0, 0%, 100%);
-    background-color: hsl(164, 44%, 47%);
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(164deg 44% 47%);
     border-radius: 4px;
     white-space: normal;
     padding: 7px 20px;
     outline: none;
 
     &:hover {
-        background-color: hsl(164, 44%, 56%);
+        background-color: hsl(164deg 44% 56%);
     }
 }
 

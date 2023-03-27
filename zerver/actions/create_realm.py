@@ -5,7 +5,6 @@ from typing import Any, Dict, Optional
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import internal_send_stream_message
 from zerver.actions.realm_settings import (
@@ -24,9 +23,13 @@ from zerver.models import (
     RealmUserDefault,
     Stream,
     UserProfile,
+    get_org_type_display_name,
     get_realm,
     get_system_bot,
 )
+
+if settings.CORPORATE_ENABLED:
+    from corporate.lib.support import get_support_url
 
 
 def do_change_realm_subdomain(
@@ -254,25 +257,36 @@ def do_create_realm(
         # We use acting_user=None for setting the initial plan type.
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
-    admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
-    # Send a notification to the admin realm
-    signup_message = _("Signups enabled")
+    # Send a notification to the admin realm when a new organization registers.
+    if settings.CORPORATE_ENABLED:
+        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
 
-    try:
-        signups_stream = get_signups_stream(admin_realm)
-        topic = realm.display_subdomain
+        support_url = get_support_url(realm)
+        organization_type = get_org_type_display_name(realm.org_type)
 
-        internal_send_stream_message(
-            sender,
-            signups_stream,
-            topic,
-            signup_message,
+        message = "[{name}]({support_link}) ([{subdomain}]({realm_link})). Organization type: {type}".format(
+            name=realm.name,
+            subdomain=realm.display_subdomain,
+            realm_link=realm.uri,
+            support_link=support_url,
+            type=organization_type,
         )
-    except Stream.DoesNotExist:  # nocoverage
-        # If the signups stream hasn't been created in the admin
-        # realm, don't auto-create it to send to it; just do nothing.
-        pass
+        topic = "new organizations"
+
+        try:
+            signups_stream = get_signups_stream(admin_realm)
+
+            internal_send_stream_message(
+                sender,
+                signups_stream,
+                topic,
+                message,
+            )
+        except Stream.DoesNotExist:  # nocoverage
+            # If the signups stream hasn't been created in the admin
+            # realm, don't auto-create it to send to it; just do nothing.
+            pass
 
     setup_realm_internal_bots(realm)
     return realm

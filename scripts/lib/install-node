@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version=18.14.1
+version=18.15.0
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="node-v$version-linux-x64.tar.xz"
-        sha256=ea3bd72ad5ccaa1d9bcb40da69a60f249d29672d41740fe8f3e976d0e9078f65
+        sha256=c8c5fa53ce0c0f248e45983e86368e0b1daf84b77e88b310f769c3cfc12682ef
         ;;
 
     aarch64)
         tarball="node-v$version-linux-arm64.tar.xz"
-        sha256=52f33439dcca865bbb70194091f6ce0c02b2a32d5a744901f175fff1ca6d0c86
+        sha256=98ea6ed0a1ae55334ab2c03c34d5e52c6dc3dee8f236c0afc08ab1c964506633
         ;;
 esac
 
 check_version() {
     out="$(node --version)" && [ "$out" = "v$version" ] \
-        && [ /usr/local/bin/yarn -ef /srv/zulip-node/lib/node_modules/corepack/dist/yarn.js ]
+        && [ /usr/local/bin/pnpm -ef /srv/zulip-node/lib/node_modules/corepack/dist/pnpm.js ]
 }
 
 if ! check_version 2>/dev/null; then

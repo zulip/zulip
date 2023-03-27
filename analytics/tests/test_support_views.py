@@ -342,7 +342,7 @@ class TestSupportEndpoint(ZulipTestCase):
         """
         Unspecified org type is special in that it is marked to not be shown
         on the registration page (because organitions are not meant to be able to choose it),
-        but should be correctly shown at the /support endpoint.
+        but should be correctly shown at the /support/ endpoint.
         """
         realm = get_realm("zulip")
 

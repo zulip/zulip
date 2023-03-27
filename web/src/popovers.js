@@ -56,11 +56,6 @@ let userlist_placement = "right";
 
 let list_of_popovers = [];
 
-export function initialize() {
-    overlays.register_pre_open_hook(hide_all);
-    overlays.register_pre_close_hook(hide_all);
-}
-
 export function clear_for_testing() {
     $current_message_info_popover_elem = undefined;
     $current_user_info_popover_elem = undefined;
@@ -1147,7 +1142,6 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();
-    stream_popover.hide_starred_messages_popover();
     stream_popover.hide_drafts_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
@@ -1220,4 +1214,9 @@ export function compute_placement(
     }
 
     return placement;
+}
+
+export function initialize() {
+    overlays.register_pre_open_hook(hide_all);
+    overlays.register_pre_close_hook(hide_all);
 }

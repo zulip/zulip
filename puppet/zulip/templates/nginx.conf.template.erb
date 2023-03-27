@@ -6,7 +6,7 @@ include /etc/nginx/modules-enabled/*.conf;
 
 worker_rlimit_nofile 1000000;
 events {
-    worker_connections 1000000;
+    worker_connections <%= @worker_connections %>;
 
     use epoll;
 

@@ -8,29 +8,29 @@
     margin-left: 3%;
     margin-right: 3%;
     padding: 20px 10px 15px;
-    background-color: hsla(0, 0%, 100%, 0.48);
-    box-shadow: 0 0 40px hsla(0, 0%, 0%, 0.06);
+    background-color: hsl(0deg 0% 100% / 48%);
+    box-shadow: 0 0 40px hsl(0deg 0% 0% / 6%);
 
-    textarea {
-        color: hsl(0, 0%, 33%);
-        background-color: hsl(0, 0%, 100%);
+    & textarea {
+        color: hsl(0deg 0% 33%);
+        background-color: hsl(0deg 0% 100%);
         border-radius: 4px;
         vertical-align: middle;
-        border: 1px solid hsl(0, 0%, 80%);
+        border: 1px solid hsl(0deg 0% 80%);
         padding: 4px 6px;
         margin-bottom: 10px;
 
         font-size: 14px;
 
-        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
         transition: border linear 0.2s, box-shadow linear 0.2s;
 
         &:focus {
-            border-color: hsla(206.5, 80%, 62%, 0.8);
+            border-color: hsl(206.5deg 80% 62% / 80%);
             outline: 0;
 
-            box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
-                0 0 8px hsla(206.5, 80%, 62%, 0.6);
+            box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.5deg 80% 62% / 60%);
         }
 
         &:read-only {
@@ -38,23 +38,23 @@
         }
     }
 
-    select,
+    & select,
     textarea,
     input {
         font-family: inherit;
     }
 
-    select {
+    & select {
         height: 30px;
         padding: 4px 6px;
         width: 220px;
         font-size: 14px;
-        color: hsl(0, 0%, 33%);
+        color: hsl(0deg 0% 33%);
         border-radius: 4px;
-        border: 1px solid hsl(0, 0%, 80%);
+        border: 1px solid hsl(0deg 0% 80%);
         margin-bottom: 10px;
         cursor: pointer;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
         vertical-align: middle;
     }
 }
@@ -69,7 +69,7 @@
     width: 100%;
     height: 500px;
     resize: vertical;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 .top-navbar {
@@ -101,7 +101,7 @@
 }
 
 .optional {
-    color: hsl(0, 0%, 50%);
+    color: hsl(0deg 0% 50%);
 }
 
 .pad-small {

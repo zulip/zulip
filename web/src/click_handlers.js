@@ -18,7 +18,6 @@ import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
-import * as hotspots from "./hotspots";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -27,7 +26,6 @@ import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
@@ -474,6 +472,9 @@ export function initialize() {
     function do_render_buddy_list_tooltip(
         $elem,
         title_data,
+        get_target_node,
+        check_reference_removed,
+        subtree = false,
         parent_element_to_append = null,
         is_custom_observer_needed = true,
     ) {
@@ -503,23 +504,15 @@ export function initialize() {
                 if (!is_custom_observer_needed) {
                     return;
                 }
-                // For both buddy list and top left corner pm list, `target_node`
-                // is their parent `ul` element. We cannot use MutationObserver
-                // directly on the reference element because it will be removed
-                // and we need to attach it on an element which will remain in the
-                // DOM which is their parent `ul`.
-                const target_node = $(instance.reference).parents("ul").get(0);
+                // We cannot use MutationObserver directly on the reference element because
+                // it will be removed and we need to attach it on an element which will remain in the DOM.
+                const target_node = get_target_node(instance);
                 // We only need to know if any of the `li` elements were removed.
-                const config = {attributes: false, childList: true, subtree: false};
+                const config = {attributes: false, childList: true, subtree};
                 const callback = function (mutationsList) {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
-                        if (
-                            Array.prototype.includes.call(
-                                mutation.removedNodes,
-                                instance.reference.parentElement,
-                            )
-                        ) {
+                        if (check_reference_removed(mutation, instance)) {
                             instance.hide();
                         }
                     }
@@ -537,11 +530,29 @@ export function initialize() {
         const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
         const user_id_string = $elem.attr("data-user-id");
         const title_data = buddy_data.get_title_data(user_id_string, false);
-        do_render_buddy_list_tooltip($elem.parent(), title_data);
+
+        // `target_node` is the `ul` element since it stays in DOM even after updates.
+        function get_target_node(tippy_instance) {
+            return $(tippy_instance.reference).parents("ul").get(0);
+        }
+
+        function check_reference_removed(mutation, instance) {
+            return Array.prototype.includes.call(
+                mutation.removedNodes,
+                instance.reference.parentElement,
+            );
+        }
+
+        do_render_buddy_list_tooltip(
+            $elem.parent(),
+            title_data,
+            get_target_node,
+            check_reference_removed,
+        );
     });
 
     // PM LIST TOOLTIPS
-    $("body").on("mouseenter", "#pm_user_status", (e) => {
+    $("body").on("mouseenter", ".pm_user_status", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
         const user_ids_string = $elem.attr("data-user-ids-string");
@@ -549,7 +560,28 @@ export function initialize() {
         const is_group = JSON.parse($elem.attr("data-is-group"));
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
-        do_render_buddy_list_tooltip($elem, title_data);
+
+        // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
+        function get_target_node() {
+            return document.querySelector("#left_sidebar_scroll_container");
+        }
+
+        // Whole list is just replaced, so we need to check for that.
+        function check_reference_removed(mutation, instance) {
+            return Array.prototype.includes.call(
+                mutation.removedNodes,
+                $(instance.reference).parents(".pm-list")[0],
+            );
+        }
+
+        const check_subtree = true;
+        do_render_buddy_list_tooltip(
+            $elem,
+            title_data,
+            get_target_node,
+            check_reference_removed,
+            check_subtree,
+        );
     });
 
     // Recent conversations PMs
@@ -562,7 +594,8 @@ export function initialize() {
             return;
         }
         const title_data = recent_topics_ui.get_pm_tooltip_data(user_ids_string);
-        do_render_buddy_list_tooltip($elem, title_data, undefined, false);
+        const noop = () => {};
+        do_render_buddy_list_tooltip($elem, title_data, noop, noop, false, undefined, false);
     });
 
     // MISC
@@ -762,59 +795,6 @@ export function initialize() {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
 
-    // HOTSPOTS
-
-    // open
-    $("body").on("click", ".hotspot-icon", function (e) {
-        // hide icon
-        hotspots.close_hotspot_icon(this);
-
-        // show popover
-        const [, hotspot_name] = /^hotspot_(.*)_icon$/.exec(
-            $(e.target).closest(".hotspot-icon").attr("id"),
-        );
-        const overlay_name = "hotspot_" + hotspot_name + "_overlay";
-
-        overlays.open_overlay({
-            name: overlay_name,
-            $overlay: $(`#${CSS.escape(overlay_name)}`),
-            on_close: function () {
-                // close popover
-                $(this).css({display: "block"});
-                $(this).animate(
-                    {opacity: 1},
-                    {
-                        duration: 300,
-                    },
-                );
-            }.bind(this),
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    // confirm
-    $("body").on("click", ".hotspot.overlay .hotspot-confirm", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const overlay_name = $(this).closest(".hotspot.overlay").attr("id");
-
-        const [, hotspot_name] = /^hotspot_(.*)_overlay$/.exec(overlay_name);
-
-        // Comment below to disable marking hotspots as read in production
-        hotspots.post_hotspot_as_read(hotspot_name);
-
-        overlays.close_overlay(overlay_name);
-        $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
-    });
-
-    // stop propagation
-    $("body").on("click", ".hotspot.overlay .hotspot-popover", (e) => {
-        e.stopPropagation();
-    });
-
     // GEAR MENU
 
     $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
@@ -892,6 +872,7 @@ export function initialize() {
                 !$(e.target).closest(".popover").length &&
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
+                !$(e.target).closest(".typeahead").length &&
                 !$(e.target).closest(".enter_sends").length &&
                 $(e.target).closest("body").length
             ) {

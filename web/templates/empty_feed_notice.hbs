@@ -1,8 +1,8 @@
 <div class="empty_feed_notice">
     <h4> {{ title }} </h4>
-    {{#if (or search_data.query_words search.topic_query search_data.stream_query)}}
+    {{#if search_data}}
     <div>
-        {{#if search_data.has_stop_word}}{{#tr}}Some common words were excluded from your search.{{/tr}} <br/>{{/if}}{{#tr}}You searched for:{{/tr}}
+        {{#if search_data.has_stop_word}}{{t "Some common words were excluded from your search." }} <br/>{{/if}}{{t "You searched for:" }}
         {{#if search_data.stream_query}}
         <span>stream: {{search_data.stream_query}}</span>
         {{/if}}

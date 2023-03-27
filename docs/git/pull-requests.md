@@ -116,17 +116,17 @@ branch to your fork, you will see a **Compare & pull request** button.
 A pull request template will open with some information pre-filled in.
 Provide (or update) the title for your pull request and write a first comment.
 
-If your pull request has an effect on the visuals of a component, you will want
-to include a screenshot of this change or a GIF/screencast of the interaction in
-your first comment. You can find a list of tools you can use for this
-[here][screenshots-gifs].
+If your pull request makes UI changes, always include one or more still
+screenshots to demonstrate your changes. If it seems helpful, add a screen
+capture of the new functionality as well. You can find a list of tools you can
+use for this [here][screenshots-gifs].
 
 See the documentation for creating [reviewable pull requests][reviewable-prs]
 for more guidance and tips when writing pull request comments. If the repository
 has a self-review checklist in the pull request template, make sure that all the
 relevant points have been addressed before submitting it.
 
-When ready, click the **Create pull request** to submit the pull request.
+When ready, click the **Create pull request** button to submit the pull request.
 Remember to mark your pull request as a [draft][github-help-draft-pr] if it is a
 work-in-progress.
 

@@ -2,10 +2,10 @@
 <div class="input-group {{#if is_disabled}}control-label-disabled{{/if}}">
     <label class="checkbox">
         <input type="checkbox" class="{{setting_name}} inline-block setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="boolean"
-          id="{{prefix}}{{setting_name}}" {{#if is_checked}}checked="checked"{{/if}} {{#if is_disabled}}disabled{{/if}} />
+          id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" {{#if is_checked}}checked="checked"{{/if}} {{#if is_disabled}}disabled{{/if}} />
         <span></span>
     </label>
-    <label for="{{prefix}}{{setting_name}}" class="inline {{setting_name}}_label" id="{{prefix}}{{setting_name}}_label">
+    <label for="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" class="inline {{setting_name}}_label" id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}_label">
         {{label}}
         {{#if label_parens_text}}
         (<i>{{label_parens_text}}</i>)

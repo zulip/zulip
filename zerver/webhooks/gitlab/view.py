@@ -132,11 +132,19 @@ def get_merge_request_updated_event_body(payload: WildValue, include_title: bool
 
 def get_merge_request_event_body(payload: WildValue, action: str, include_title: bool) -> str:
     pull_request = payload["object_attributes"]
+    target_branch = None
+    base_branch = None
+    if action == "merged":
+        target_branch = pull_request["source_branch"].tame(check_string)
+        base_branch = pull_request["target_branch"].tame(check_string)
+
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
         pull_request["url"].tame(check_string),
         pull_request["iid"].tame(check_int),
+        target_branch=target_branch,
+        base_branch=base_branch,
         type="MR",
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
@@ -151,8 +159,8 @@ def get_merge_request_open_or_updated_body(
         action,
         pull_request["url"].tame(check_string),
         pull_request["iid"].tame(check_int),
-        pull_request["source_branch"].tame(check_string),
-        pull_request["target_branch"].tame(check_string),
+        pull_request["source_branch"].tame(check_string) if action == "created" else None,
+        pull_request["target_branch"].tame(check_string) if action == "created" else None,
         pull_request["description"].tame(check_string),
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type="MR",

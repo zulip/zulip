@@ -33,7 +33,7 @@ communities such as open-source projects and research communities.
 
 !!! warn ""
     Self-hosted Zulip servers must enable support for web-public streams in their
-    [server settings](https://zulip.readthedocs.io/en/latest/production/settings.html)
+    [server settings](https://zulip.readthedocs.io/en/stable/production/settings.html)
     by setting `WEB_PUBLIC_STREAMS_ENABLED = True` prior to proceeding.
 
 {start_tabs}

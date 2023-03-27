@@ -6,4 +6,4 @@ If you'd like to help by contributing as a translator, see the
 [Zulip translation guidelines][translating-zulip] to get started.
 
 [transifex-zulip]: https://www.transifex.com/zulip/zulip/
-[translating-zulip]: https://zulip.readthedocs.io/en/latest/translating/translating.html
+[translating-zulip]: https://zulip.readthedocs.io/en/stable/translating/translating.html

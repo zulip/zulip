@@ -161,8 +161,17 @@ const rt = zrequire("recent_topics_ui");
 const recent_topics_util = zrequire("recent_topics_util");
 const rt_data = zrequire("recent_topics_data");
 
-people.is_my_user_id = (id) => id === 1;
-people.sender_info_for_recent_topics_row = (ids) => ids;
+people.add_active_user({
+    email: "alice@zulip.com",
+    user_id: 1,
+    full_name: "Alice Smith",
+});
+people.add_active_user({
+    email: "fred@zulip.com",
+    user_id: 2,
+    full_name: "Fred Flintstone",
+});
+people.initialize_current_user(1);
 
 let id = 0;
 
@@ -277,7 +286,7 @@ function generate_topic_data(topic_info_array) {
     $.clear_all_elements();
     const data = [];
 
-    for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
+    for (const [stream_id, topic, unread_count, muted] of topic_info_array) {
         data.push({
             other_senders_count: 0,
             other_sender_names_html: "",
@@ -287,7 +296,7 @@ function generate_topic_data(topic_info_array) {
             last_msg_time: "Just now",
             last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",
-            senders: [1, 2],
+            senders: people.sender_info_for_recent_topics_row([1, 2]),
             stream: "stream" + stream_id,
             stream_color: "",
             stream_id,
@@ -297,9 +306,7 @@ function generate_topic_data(topic_info_array) {
             topic_url: "https://www.example.com",
             unread_count,
             mention_in_unread: false,
-            muted,
             topic_muted: muted,
-            participated,
         });
     }
     return data;
@@ -398,7 +405,7 @@ test("test_filter_all", ({mock_template}) => {
     });
 
     // topic is not muted
-    row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
+    row_data = generate_topic_data([[1, "topic-1", 0, false]]);
     i = row_data.length;
     rt.clear_for_tests();
     stub_out_filter_buttons();
@@ -411,7 +418,7 @@ test("test_filter_all", ({mock_template}) => {
         {last_msg_id: 1, participated: true, type: "stream"},
     ];
 
-    row_data = [...row_data, ...generate_topic_data([[1, "topic-7", 1, true, true]])];
+    row_data = [...row_data, ...generate_topic_data([[1, "topic-7", 1, true]])];
     i = row_data.length;
     // topic is muted (=== hidden)
     stub_out_filter_buttons();
@@ -419,7 +426,7 @@ test("test_filter_all", ({mock_template}) => {
 
     // Test search
     expected.search_val = "topic-1";
-    row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
+    row_data = generate_topic_data([[1, "topic-1", 0, false]]);
     i = row_data.length;
     rt.set_default_focus();
     $(".home-page-input").trigger("focus");
@@ -453,15 +460,15 @@ test("test_filter_unread", ({mock_template}) => {
     let i = 0;
 
     const row_data = generate_topic_data([
-        // stream_id, topic, unread_count,  muted, participated
-        [4, "topic-10", 1, false, true],
-        [1, "topic-7", 1, true, true],
-        [1, "topic-6", 1, false, true],
-        [1, "topic-5", 1, false, true],
-        [1, "topic-4", 1, false, false],
-        [1, "topic-3", 1, false, false],
-        [1, "topic-2", 1, false, true],
-        [1, "topic-1", 0, false, true],
+        // stream_id, topic, unread_count,  muted
+        [4, "topic-10", 1, false],
+        [1, "topic-7", 1, true],
+        [1, "topic-6", 1, false],
+        [1, "topic-5", 1, false],
+        [1, "topic-4", 1, false],
+        [1, "topic-3", 1, false],
+        [1, "topic-2", 1, false],
+        [1, "topic-1", 0, false],
     ]);
 
     mock_template("recent_topic_row.hbs", false, (data) => {
@@ -573,15 +580,15 @@ test("test_filter_participated", ({mock_template}) => {
     });
 
     const row_data = generate_topic_data([
-        // stream_id, topic, unread_count,  muted, participated
-        [4, "topic-10", 1, false, true],
-        [1, "topic-7", 1, true, true],
-        [1, "topic-6", 1, false, true],
-        [1, "topic-5", 1, false, true],
-        [1, "topic-4", 1, false, false],
-        [1, "topic-3", 1, false, false],
-        [1, "topic-2", 1, false, true],
-        [1, "topic-1", 0, false, true],
+        // stream_id, topic, unread_count,  muted
+        [4, "topic-10", 1, false],
+        [1, "topic-7", 1, true],
+        [1, "topic-6", 1, false],
+        [1, "topic-5", 1, false],
+        [1, "topic-4", 1, false],
+        [1, "topic-3", 1, false],
+        [1, "topic-2", 1, false],
+        [1, "topic-1", 0, false],
     ]);
     let i = 0;
 
@@ -683,7 +690,7 @@ test("test_update_unread_count", () => {
     rt.process_messages(messages);
 
     // update a message
-    generate_topic_data([[1, "topic-7", 1, false, true]]);
+    generate_topic_data([[1, "topic-7", 1, false]]);
     rt.update_topic_unread_count(messages[9]);
 });
 
@@ -704,7 +711,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     let all_topics = rt_data.get();
 
     // update a message
-    generate_topic_data([[1, "topic-7", 1, false, true]]);
+    generate_topic_data([[1, "topic-7", 1, false]]);
     stub_out_filter_buttons();
     expected_data_to_replace_in_list_widget = [
         {
@@ -813,7 +820,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 
     // update_topic_is_muted now relies on external libraries completely
     // so we don't need to check anythere here.
-    generate_topic_data([[1, topic1, 0, false, true]]);
+    generate_topic_data([[1, topic1, 0, false]]);
     $(".home-page-input").trigger("focus");
     assert.equal(rt.update_topic_is_muted(stream1, topic1), true);
     // a topic gets muted which we are not tracking

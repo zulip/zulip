@@ -173,6 +173,7 @@ MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zuli
 RABBITMQ_HOST = "127.0.0.1"
 RABBITMQ_PORT = 5672
 RABBITMQ_USERNAME = "zulip"
+RABBITMQ_USE_TLS = False
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
 REMOTE_POSTGRES_HOST = ""

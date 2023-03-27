@@ -9,12 +9,12 @@
         border-radius: 4px;
         overflow: hidden;
 
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
     }
 
     .overlay-tabs {
         padding: 10px 0;
-        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+        border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
 
         .tab-switcher {
             margin-left: 15px;
@@ -23,7 +23,7 @@
         .exit {
             float: right;
             font-size: 1.5rem;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
             font-weight: 600;
             margin: 0 15px;
             cursor: pointer;
@@ -46,13 +46,13 @@
                 table-layout: fixed;
             }
 
-            th {
+            & th {
                 font-weight: 400;
             }
         }
     }
 
-    td.operator {
+    & td.operator {
         font-size: 0.9em;
     }
 }
@@ -63,7 +63,7 @@
     vertical-align: middle;
     display: table;
 
-    td.definition {
+    & td.definition {
         /* keeps dividing line at same width for all tables in model. */
         width: calc(50% - 11px);
         text-align: right;
@@ -77,7 +77,7 @@
         font-size: 0.9em !important;
         line-height: 12px;
 
-        kbd {
+        & kbd {
             font-size: 0.9em;
         }
     }
@@ -88,13 +88,13 @@
         padding: 0 0.2em 0.2em;
     }
 
-    th {
+    & th {
         width: 245px;
         text-align: center;
         /* aligns table name with dividing line */
     }
 
-    td:not(.definition) {
+    & td:not(.definition) {
         text-align: left;
         white-space: normal;
         font-weight: bold;

@@ -14,7 +14,9 @@ import * as people from "./people";
 import * as spectators from "./spectators";
 import {user_settings} from "./user_settings";
 
-export const view = {}; // function namespace
+export const view = {
+    waiting_for_server_request_ids: new Set(),
+}; // function namespace
 
 export function get_local_reaction_id(reaction_info) {
     return [reaction_info.reaction_type, reaction_info.emoji_code].join(",");
@@ -78,6 +80,14 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     const operation = has_reacted ? "remove" : "add";
     const reaction = create_reaction(message_id, reaction_info);
 
+    // To avoid duplicate requests to the server, we construct a
+    // unique request ID combining the message ID and the local ID,
+    // which identifies just which emoji to use.
+    const reaction_request_id = [message_id, local_id].join(",");
+    if (view.waiting_for_server_request_ids.has(reaction_request_id)) {
+        return;
+    }
+
     if (operation === "add") {
         add_reaction(reaction);
     } else {
@@ -87,17 +97,17 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     const args = {
         url: "/json/messages/" + message_id + "/reactions",
         data: reaction_info,
-        success() {},
+        success() {
+            view.waiting_for_server_request_ids.delete(reaction_request_id);
+        },
         error(xhr) {
+            view.waiting_for_server_request_ids.delete(reaction_request_id);
             const response = channel.xhr_error_message("Error sending reaction", xhr);
-            // Errors are somewhat common here, due to race conditions
-            // where the user tries to add/remove the reaction when there is already
-            // an in-flight request.  We eventually want to make this a blueslip
-            // error, rather than a warning, but we need to implement either
-            // #4291 or #4295 first.
-            blueslip.warn(response);
+            blueslip.error(response);
         },
     };
+
+    view.waiting_for_server_request_ids.add(reaction_request_id);
     if (operation === "add") {
         channel.post(args);
     } else if (operation === "remove") {
@@ -306,6 +316,7 @@ view.insert_new_reaction = function (clean_reaction_object, message, user_id) {
     context.emoji_alt_code = user_settings.emojiset === "text";
     context.is_realm_emoji =
         context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
+    context.vote_text = ""; // Updated below
 
     if (user_id === page_params.user_id) {
         context.class = "message_reaction reacted";

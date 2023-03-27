@@ -114,6 +114,14 @@ Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, mo
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: web/images/icons/search.svg
+Copyright: 2015-present Ionic (http://ionic.io/)
+License: Expat
+
+Files: web/images/icons/close.svg
+Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+

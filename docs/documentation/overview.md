@@ -107,7 +107,7 @@ See our guide on [writing help center articles](helpcenter.md).
 
 ### Integrations documentation
 
-Zulip's [integrations documentation](https://zulip.com/integrations)
+Zulip's [integrations documentation](https://zulip.com/integrations/)
 is user-facing documentation explaining to end users how to set up each
 of Zulip's more than 100 integrations. There is a detailed [guide on
 documenting integrations](integrations.md), including style guidelines

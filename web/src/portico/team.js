@@ -60,7 +60,7 @@ function exclude_bot_contributors(contributor) {
     return contributor.github_username !== "dependabot[bot]";
 }
 
-// TODO (for v2 of /team contributors):
+// TODO (for v2 of /team/ contributors):
 //   - Make tab header responsive.
 //   - Display full name instead of GitHub username.
 export default function render_tabs() {

@@ -38,7 +38,7 @@
             </h3>
             <ul>
                 <li><a href="/help/getting-started-with-zulip">{{ _("Getting started") }}</a></li>
-                <li><a href="/help">{{ _("Help center") }}</a></li>
+                <li><a href="/help/">{{ _("Help center") }}</a></li>
                 <li><a href="/development-community/" target="_blank">{{ _("Community chat") }}</a></li>
                 <li class="extra_margin"><a href="/help/contact-support">{{ _("Contact support") }}</a></li>
                 <li>
@@ -106,10 +106,10 @@
             {% endif %}
             <div class="footer__legal-spacer"></div>
             {% if not corporate_enabled %}
-            <a href="/help">{{ _("Help center") }}</a>
+            <a href="/help/">{{ _("Help center") }}</a>
             {% endif %}
-            <a href="{{ root_domain_uri }}/terms/">{{ _("Terms of Service") }}</a>
-            <a href="{{ root_domain_uri }}/privacy/">{{ _("Privacy policy") }}</a>
+            <a href="{{ root_domain_uri }}/policies/terms">{{ _("Terms of Service") }}</a>
+            <a href="{{ root_domain_uri }}/policies/privacy">{{ _("Privacy policy") }}</a>
             {% if corporate_enabled %}
             <a href="https://zulip.com/attribution/">{{ _("Website attributions") }}</a>
             {% endif %}

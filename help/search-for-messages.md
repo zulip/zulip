@@ -52,10 +52,10 @@ Zulip offers the following filters based on the location of the message.
 * `stream:design topic:new+logo`: Search within the topic "new logo" in
   **#design**.
 * `is:private`: Search all your direct messages.
-* `dm-with:Bo Lin`: Search 1-on-1 direct messages between you and Bo.
-* `dm-with:Bo Lin, Elena García`: Search group direct messages
+* `pm-with:Bo Lin`: Search 1-on-1 direct messages between you and Bo.
+* `pm-with:Bo Lin, Elena García`: Search group direct messages
   between you, Bo, and Elena.
-* `group-dm-with:Bo Lin`: Search all group direct message
+* `group-pm-with:Bo Lin`: Search all group direct message
   conversations that include you and Bo, as well as any other users.
 * `streams:public`: Search the history of all [public
   streams](/help/change-the-privacy-of-a-stream) in the organization, including
@@ -87,7 +87,9 @@ Zulip offers the following filters based on the location of the message.
 ### Search your important messages
 
 * `is:alerted`: Search messages that contain your [alert
-  words](/help/dm-mention-alert-notifications#alert-words).
+  words](/help/dm-mention-alert-notifications#alert-words). Messages are
+  included in the search results based on the alerts you had configured when you
+  received the message.
 * `is:mentioned`: Search messages where you were
   [mentioned](/help/mention-a-user-or-group).
 * `is:starred`: Search your [starred messages](/help/star-a-message).

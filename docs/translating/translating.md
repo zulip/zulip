@@ -189,6 +189,7 @@ translators can understand and preserve those decisions:
 - [French](french.md)
 - [German](german.md)
 - [Hindi](hindi.md)
+- [Japanese](japanese.md)
 - [Polish](polish.md)
 - [Russian](russian.md)
 - [Spanish](spanish.md)

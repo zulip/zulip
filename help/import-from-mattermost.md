@@ -184,7 +184,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current
@@ -216,7 +216,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     unzip latest_export.zip -d /tmp/my_mattermost_export

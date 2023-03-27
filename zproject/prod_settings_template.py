@@ -584,6 +584,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # RABBITMQ_PORT = 5672
 ## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = "zulip"
+## To access the RabbitMQ server over TLS, set this to True; this is
+## generally only necessary if RabbitMQ is running on a separate,
+## cloud-managed, host.
+# RABBITMQ_USE_TLS = False
 
 ########
 ## Redis configuration.

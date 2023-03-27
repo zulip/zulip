@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/browser";
-import {HttpClient as HttpClientIntegration} from "@sentry/integrations";
 import {BrowserTracing} from "@sentry/tracing";
 import _ from "lodash";
 
@@ -48,15 +47,12 @@ if (page_params.server_sentry_dsn) {
     Sentry.init({
         dsn: page_params.server_sentry_dsn,
         environment: page_params.server_sentry_environment || "development",
+        tunnel: "/error_tracing",
 
         release: "zulip-server@" + ZULIP_VERSION,
         integrations: [
             new BrowserTracing({
                 tracePropagationTargets: url_matches,
-            }),
-            new HttpClientIntegration({
-                failedRequestStatusCodes: [500, 502, 503, 504],
-                failedRequestTargets: url_matches,
             }),
         ],
         allowUrls: url_matches,

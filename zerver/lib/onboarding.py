@@ -23,14 +23,10 @@ def missing_any_realm_internal_bots() -> bool:
         bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
         for bot in settings.REALM_INTERNAL_BOTS
     ]
-    bot_counts = {
-        email: count
-        for email, count in UserProfile.objects.filter(email__in=bot_emails)
-        .values_list("email")
-        .annotate(Count("id"))
-    }
     realm_count = Realm.objects.count()
-    return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
+    return UserProfile.objects.filter(email__in=bot_emails).values("email").annotate(
+        count=Count("id")
+    ).filter(count=realm_count).count() != len(bot_emails)
 
 
 def create_if_missing_realm_internal_bots() -> None:
@@ -122,7 +118,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
     # message from the user to Welcome Bot, select the appropriate reply.
     if human_response_lower in ["app", "apps"]:
         return _(
-            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
             "Zulip also works great in a browser."
         )
     elif human_response_lower == "profile":

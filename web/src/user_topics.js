@@ -8,7 +8,7 @@ import {get_time_from_date_muted} from "./util";
 const muted_topics = new Map();
 
 export const visibility_policy = {
-    VISIBILITY_POLICY_INHERIT: 0,
+    INHERIT: 0,
     MUTED: 1,
     UNMUTED: 2,
     FOLLOWED: 3,
@@ -74,7 +74,7 @@ export function set_user_topic(user_topic) {
         case visibility_policy.MUTED:
             add_muted_topic(stream_id, topic, date_muted);
             break;
-        case visibility_policy.VISIBILITY_POLICY_INHERIT:
+        case visibility_policy.INHERIT:
             remove_muted_topic(stream_id, topic);
             break;
     }

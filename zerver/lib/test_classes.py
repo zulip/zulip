@@ -173,7 +173,9 @@ class ZulipTestCase(TestCase):
             extra_output_finder
         ), tee_stdout_and_find_extra_console_output(extra_output_finder):
             test_result = super().run(result)
-        if extra_output_finder.full_extra_output:
+        if extra_output_finder.full_extra_output and (
+            test_result is None or test_result.wasSuccessful()
+        ):
             exception_message = f"""
 ---- UNEXPECTED CONSOLE OUTPUT DETECTED ----
 

@@ -7,6 +7,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -95,6 +96,8 @@ export function build_page() {
         notification_settings: settings_config.all_notifications(user_settings).settings,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
+        realm_name_in_email_notifications_policy_values:
+            settings_config.realm_name_in_email_notifications_policy_values,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
             settings_config.all_notifications(user_settings).show_push_notifications_tooltip,
@@ -118,12 +121,22 @@ export function build_page() {
     $(".settings-box").html(rendered_settings_tab);
 }
 
+export function open_settings_overlay() {
+    overlays.open_overlay({
+        name: "settings",
+        $overlay: $("#settings_overlay_container"),
+        on_close() {
+            browser_history.exit_overlay();
+        },
+    });
+}
+
 export function launch(section) {
     build_page();
     admin.build_page();
     settings_sections.reset_sections();
 
-    overlays.open_settings();
+    open_settings_overlay();
     settings_panel_menu.normal_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("settings");
 }

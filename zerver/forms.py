@@ -51,7 +51,7 @@ if settings.BILLING_ENABLED:
 
 # We don't mark this error for translation, because it's displayed
 # only to MIT users.
-MIT_VALIDATION_ERROR = (
+MIT_VALIDATION_ERROR = Markup(
     "That user does not exist at MIT or is a"
     ' <a href="https://ist.mit.edu/email-lists">mailing list</a>.'
     " If you want to sign up an alias for Zulip,"
@@ -76,7 +76,7 @@ def email_is_not_mit_mailing_list(email: str) -> None:
             if e.rcode == DNS.Status.NXDOMAIN:
                 # This error is Markup only because 1. it needs to render HTML
                 # 2. It's not formatted with any user input.
-                raise ValidationError(Markup(MIT_VALIDATION_ERROR))
+                raise ValidationError(MIT_VALIDATION_ERROR)
             else:
                 raise AssertionError("Unexpected DNS error")
 

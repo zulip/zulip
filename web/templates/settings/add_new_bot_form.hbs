@@ -53,9 +53,9 @@
             </div>
         </div>
         <div id="config_inputbox">
-            {{#each realm_embedded_bots as |bot index|}}
-                {{#each bot.config as |config_value config_key|}}
-                    {{> ../embedded_bot_config_item botname=bot.name key=config_key value=config_value}}
+            {{#each realm_embedded_bots}}
+                {{#each config}}
+                    {{> ../embedded_bot_config_item botname=../name key=@key value=this}}
                 {{/each}}
             {{/each}}
         </div>

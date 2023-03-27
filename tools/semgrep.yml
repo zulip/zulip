@@ -42,17 +42,30 @@ rules:
         - zerver/migrations/0387_reupload_realmemoji_again.py
         - pgroonga/migrations/0002_html_escape_subject.py
 
+  - id: html-format
+    languages: [python]
+    pattern-either:
+      - pattern: markupsafe.Markup(... .format(...))
+      - pattern: markupsafe.Markup(f"...")
+      - pattern: markupsafe.Markup(... + ...)
+    severity: ERROR
+    message: "Do not write an HTML injection vulnerability please"
+
   - id: sql-format
     languages: [python]
     pattern-either:
       - pattern: ... .execute("...".format(...))
       - pattern: ... .execute(f"...")
+      - pattern: ... .execute(... + ...)
       - pattern: psycopg2.sql.SQL(... .format(...))
       - pattern: psycopg2.sql.SQL(f"...")
+      - pattern: psycopg2.sql.SQL(... + ...)
       - pattern: django.db.migrations.RunSQL(..., "..." .format(...), ...)
       - pattern: django.db.migrations.RunSQL(..., f"...", ...)
+      - pattern: django.db.migrations.RunSQL(..., ... + ..., ...)
       - pattern: django.db.migrations.RunSQL(..., [..., "..." .format(...), ...], ...)
       - pattern: django.db.migrations.RunSQL(..., [..., f"...", ...], ...)
+      - pattern: django.db.migrations.RunSQL(..., [..., ... + ..., ...], ...)
     severity: ERROR
     message: "Do not write a SQL injection vulnerability please"
 

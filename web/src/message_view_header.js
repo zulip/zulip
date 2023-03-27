@@ -60,7 +60,7 @@ function make_message_view_header(filter) {
         // the "title" is passed as a variable and doesn't get translated (nor should it)
         message_view_header.sub_count_tooltip_text = $t(
             {defaultMessage: "This stream has {count} subscribers."},
-            {count: message_view_header.sub_count, title: message_view_header.title},
+            {count: message_view_header.sub_count},
         );
         message_view_header.stream_settings_link =
             "#streams/" + current_stream.stream_id + "/" + current_stream.name;

@@ -80,9 +80,12 @@ def cleanup_name(name: str) -> str:
         ":": "",
         ".": "",
         ",": "",
+        "(": "",
+        ")": "",
         "&": "and",
-        "‘": "'",
-        "’": "'",
+        "‘": "",
+        "’": "",
+        "'": "",
     }
     for before, after in replacements.items():
         name = name.replace(before, after)

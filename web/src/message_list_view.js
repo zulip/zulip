@@ -116,12 +116,12 @@ function update_group_date(group, message_container, prev) {
     const today = new Date();
 
     // Show the date in the recipient bar if the previous message was from a different day.
-    group.show_recipient_bar_date = !same_day(message_container, prev);
+    group.date_unchanged = same_day(message_container, prev);
     group.group_date_html = timerender.render_date(time, today)[0].outerHTML;
 }
 
 function clear_group_date(group) {
-    group.show_recipient_bar_date = true;
+    group.date_unchanged = false;
     group.group_date_html = undefined;
 }
 
@@ -1414,12 +1414,9 @@ export class MessageListView {
     }
 
     _maybe_format_me_message(message_container) {
-        if (message_container.is_hidden) {
-            // If the message is to be hidden anyway, no need to render
-            // it differently.
-            return;
-        }
-        if (message_container.msg.is_me_message) {
+        // If the message is to be hidden anyway, no need to render
+        // it differently.
+        if (!message_container.is_hidden && message_container.msg.is_me_message) {
             // Slice the '<p>/me ' off the front, and '</p>' off the first line
             // 'p' tag is sliced off to get sender in the same line as the
             // first line of the message
@@ -1534,5 +1531,28 @@ export class MessageListView {
         const today = new Date();
         const rendered_date = timerender.render_date(time, undefined, today);
         $sticky_header.find(".recipient_row_date").html(rendered_date);
+
+        // The following prevents a broken looking situation where
+        // there's a recipient row (possibly partially) visible just
+        // above the sticky recipient row, with an identical
+        // date. (E.g., both displaying "today"). We avoid this by
+        // hiding the date display on the non-sticky previous
+        // recipient row.
+        $(".hide-date-separator-header").removeClass("hide-date-separator-header");
+        // This corner case only occurs when the date is unchanged
+        // from the previous recipient row.
+        if ($sticky_header.find(".recipient_row_date.recipient_row_date_unchanged").length) {
+            const $prev_recipient_row = $sticky_header
+                .closest(".recipient_row")
+                .prev(".recipient_row");
+            if (!$prev_recipient_row.length) {
+                return;
+            }
+            const $prev_header_date_row = $prev_recipient_row.find(".recipient_row_date");
+            // Check if the recipient row before sticky header is a date separator.
+            if (!$prev_header_date_row.hasClass("recipient_row_date_unchanged")) {
+                $prev_header_date_row.addClass("hide-date-separator-header");
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ import render_hotspot_overlay from "../templates/hotspot_overlay.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 
@@ -55,6 +56,10 @@ const HOTSPOT_LOCATIONS = new Map([
         },
     ],
 ]);
+
+const meta = {
+    opened_hotspot_name: null,
+};
 
 export function post_hotspot_as_read(hotspot_name) {
     channel.post({
@@ -235,7 +240,7 @@ function insert_hotspot_into_DOM(hotspot) {
 }
 
 export function is_open() {
-    return $(".hotspot.overlay").hasClass("show");
+    return meta.opened_hotspot_name !== null;
 }
 
 export function close_hotspot_icon(elem) {
@@ -271,4 +276,58 @@ export function load_new(new_hotspots) {
 
 export function initialize() {
     load_new(page_params.hotspots);
+
+    // open
+    $("body").on("click", ".hotspot-icon", function (e) {
+        // hide icon
+        close_hotspot_icon(this);
+
+        // show popover
+        const [, hotspot_name] = /^hotspot_(.*)_icon$/.exec(
+            $(e.target).closest(".hotspot-icon").attr("id"),
+        );
+        const overlay_name = "hotspot_" + hotspot_name + "_overlay";
+
+        overlays.open_overlay({
+            name: overlay_name,
+            $overlay: $(`#${CSS.escape(overlay_name)}`),
+            on_close: function () {
+                // close popover
+                $(this).css({display: "block"});
+                $(this).animate(
+                    {opacity: 1},
+                    {
+                        duration: 300,
+                    },
+                );
+
+                meta.opened_hotspot_name = null;
+            }.bind(this),
+        });
+
+        meta.opened_hotspot_name = hotspot_name;
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    // confirm
+    $("body").on("click", ".hotspot.overlay .hotspot-confirm", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const overlay_name = $(this).closest(".hotspot.overlay").attr("id");
+
+        const [, hotspot_name] = /^hotspot_(.*)_overlay$/.exec(overlay_name);
+
+        // Comment below to disable marking hotspots as read in production
+        post_hotspot_as_read(hotspot_name);
+
+        overlays.close_overlay(overlay_name);
+        $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
+    });
+
+    // stop propagation
+    $("body").on("click", ".hotspot.overlay .hotspot-popover", (e) => {
+        e.stopPropagation();
+    });
 }

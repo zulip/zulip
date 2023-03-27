@@ -18,8 +18,8 @@
                         <ul class="feature-list">
                             <li>10,000 messages of search history</li>
                             <li>File storage up to 5 GB total</li>
-                            <li><a href="/features">Full-featured</a> team chat service</li>
-                            <li><a href="/integrations">Hundreds of integrations</a></li>
+                            <li><a href="/features/">Full-featured</a> team chat service</li>
+                            <li><a href="/integrations/">Hundreds of integrations</a></li>
                             <li>Advanced <a href="/help/roles-and-permissions">roles</a> and <a href="/help/stream-permissions">permissions</a></li>
                             <li><a href="/help/roles-and-permissions">Guest accounts</a></li>
                         </ul>
@@ -35,7 +35,7 @@
                             </a>
                             {% elif realm.plan_type == realm.PLAN_TYPE_LIMITED or sponsorship_pending %}
                             <div class="pricing-details"></div>
-                            <a href='/upgrade' class="button black-current-value" type="button">
+                            <a href='/upgrade/' class="button black-current-value" type="button">
                                 Current plan
                             </a>
                             {% endif %}
@@ -72,7 +72,7 @@
                                 </div>
                             </div>
                             {% if not realm %}
-                            <a href="/upgrade" class="button green">
+                            <a href="/upgrade/" class="button green">
                                 {% if free_trial_days %}
                                 Start {{ free_trial_days }} day free trial
                                 {% else %}
@@ -88,11 +88,11 @@
                                 {% endif %}
                             </a>
                             {% elif sponsorship_pending %}
-                            <a href="/billing" class="button black-current-value" type="button">
+                            <a href="/billing/" class="button black-current-value" type="button">
                                 Sponsorship pending
                             </a>
                             {% else %}
-                            <a href="/upgrade" class="button green">
+                            <a href="/upgrade/" class="button green">
                                 {% if free_trial_days %}
                                 Start {{ free_trial_days }} day free trial
                                 {% else %}

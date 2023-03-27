@@ -52,7 +52,6 @@
         <div id="compose_banners"></div>
         <div class="composition-area">
             <form id="send_message_form" action="/json/messages" method="post">
-                {{ csrf_input }}
                 <div class="compose_table">
                     <div id="compose_top">
                         <div id="compose_top_right" class="order-2">
@@ -145,7 +144,7 @@
 
 <template id="add-global-time-tooltip">
     <div>
-        <span>{{#tr}}Add global time{{/tr}}</span><br/>
-        <span class="tooltip-inner-content italic">{{#tr}}Everyone sees global times in their own time zone.{{/tr}}</span>
+        <span>{{t "Add global time" }}</span><br/>
+        <span class="tooltip-inner-content italic">{{t "Everyone sees global times in their own time zone." }}</span>
     </div>
 </template>

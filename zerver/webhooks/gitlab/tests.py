@@ -369,7 +369,7 @@ A trivial change that should probably be ignored.
 
     def test_merge_request_updated_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\nupdated desc\n~~~"
+        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek):\n\n~~~ quote\nupdated desc\n~~~"
         self.check_webhook(
             "merge_request_hook__merge_request_updated", expected_topic, expected_message
         )
@@ -383,7 +383,7 @@ A trivial change that should probably be ignored.
 
     def test_merge_request_merged_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
+        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) from `tomek` to `master`."
 
         self.check_webhook(
             "merge_request_hook__merge_request_merged", expected_topic, expected_message
@@ -589,7 +589,7 @@ A trivial change that should probably be ignored.
 
     def test_system_merge_request_merged_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
+        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) from `tomek` to `master`."
 
         self.check_webhook("system_hook__merge_request_merged", expected_topic, expected_message)
 

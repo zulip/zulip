@@ -60,7 +60,7 @@ If you learn of any unauthorized use of your password or account, contact
 
 ### Privacy and Copyright Protection
 
-The Kandra Labs [privacy policy](/privacy) explains how we treat your
+The Kandra Labs [privacy policy](/policies/privacy) explains how we treat your
 personal data and protect your privacy when you use our Services. By using our
 Services, you agree that Kandra Labs can use such data in accordance with our
 privacy policy.

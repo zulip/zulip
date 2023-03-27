@@ -6,16 +6,9 @@ class zulip_ops::profile::teleport {
     group  => 'root',
     mode   => '0644',
     source => 'puppet:///modules/zulip_ops/teleport_server.yaml',
+    notify => Service['teleport_server'],
   }
-  file { "${zulip::common::supervisor_conf_dir}/teleport_server.conf":
-    ensure  => file,
-    require => [ Package[supervisor], Package[teleport], File['/etc/teleport_server.yaml'] ],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/teleport_server.conf',
-    notify  => Service[$zulip::common::supervisor_service],
-  }
+  zulip_ops::teleport::part { 'server': }
 
   # https://goteleport.com/docs/admin-guide/#ports
   # Port 443 is outward-facing, for UI

@@ -16,7 +16,7 @@ possible.
 Most existing integrations send content from a third-party product into
 Zulip.
 
-* Search Zulip's [list of native integrations](/integrations) for the
+* Search Zulip's [list of native integrations](/integrations/) for the
   third-party product. Each integration has a page describing how to set it
   up.
 

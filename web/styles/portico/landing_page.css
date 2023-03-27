@@ -5,8 +5,8 @@ html {
 
 body {
     margin: 0;
-    background-color: hsl(0, 0%, 100%) !important;
-    color: hsl(0, 0%, 27%);
+    background-color: hsl(0deg 0% 100%) !important;
+    color: hsl(0deg 0% 27%);
     line-height: normal;
 
     max-width: 100vw;
@@ -44,11 +44,11 @@ ul {
 a {
     position: relative;
     cursor: pointer;
-    color: hsl(170, 47%, 33%);
+    color: hsl(170deg 47% 33%);
 
     &:hover,
     &:visited {
-        color: hsl(170, 47%, 33%);
+        color: hsl(170deg 47% 33%);
     }
 
     &:hover,
@@ -109,15 +109,15 @@ ol a:hover {
 }
 
 .box-shadow {
-    box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
+    box-shadow: 0 0 80px hsl(0deg 0% 0% / 12%);
 }
 
 .grey {
-    color: hsl(0, 0%, 60%);
+    color: hsl(0deg 0% 60%);
 }
 
 .dark-grey {
-    color: hsl(0, 0%, 40%);
+    color: hsl(0deg 0% 40%);
 }
 
 .bold {
@@ -133,7 +133,7 @@ ol a:hover {
 }
 
 *::selection {
-    background-color: hsla(31, 84%, 60%, 0.3);
+    background-color: hsl(31deg 84% 60% / 30%);
 }
 
 .center {
@@ -147,42 +147,42 @@ button {
 
     font-family: inherit;
     font-size: 0.7em;
-    background-color: hsl(0, 0%, 100%);
-    color: hsl(0, 0%, 27%);
+    background-color: hsl(0deg 0% 100%);
+    color: hsl(0deg 0% 27%);
 
     line-height: 20px;
     border-radius: 4px;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid hsl(0deg 0% 80%);
     outline: none;
 
     &:active {
-        background-color: hsl(0, 0%, 98%);
-        border-color: hsl(0, 0%, 73%);
+        background-color: hsl(0deg 0% 98%);
+        border-color: hsl(0deg 0% 73%);
     }
 
     &.green {
-        color: hsl(0, 0%, 100%);
-        background-color: hsl(170, 47%, 53%);
-        border-color: hsl(169, 45%, 43%);
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(170deg 47% 53%);
+        border-color: hsl(169deg 45% 43%);
 
         &:hover {
-            background-color: hsl(170, 47%, 58%);
+            background-color: hsl(170deg 47% 58%);
         }
 
         &:active {
-            background-color: hsl(170, 47%, 48%);
+            background-color: hsl(170deg 47% 48%);
         }
     }
 
     &.black-current-value {
-        color: hsl(0, 0%, 20%);
+        color: hsl(0deg 0% 20%);
         background-color: transparent;
-        border-color: hsl(0, 0%, 53%);
+        border-color: hsl(0deg 0% 53%);
     }
 }
 
 .silver {
-    color: hsl(0, 0%, 100%) !important;
+    color: hsl(0deg 0% 100%) !important;
     opacity: 0.8;
 
     &:hover {
@@ -199,7 +199,7 @@ button {
 nav {
     width: calc(100% - 80px);
     position: absolute;
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 
     padding: 40px;
 
@@ -210,40 +210,40 @@ nav {
     }
 
     &.white {
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
 
-        li {
-            a,
+        & li {
+            & a,
             a:hover,
             a:visited {
-                color: hsl(0, 0%, 27%);
+                color: hsl(0deg 0% 27%);
             }
         }
 
-        ul {
-            li {
+        & ul {
+            & li {
                 &.active {
                     &::after {
-                        color: hsl(0, 0%, 27%);
+                        color: hsl(0deg 0% 27%);
                     }
                 }
             }
         }
 
         .brand.logo {
-            span {
-                color: hsl(0, 0%, 27%);
+            & span {
+                color: hsl(0deg 0% 27%);
             }
         }
 
         .hamburger {
-            fill: hsl(0, 0%, 27%);
+            fill: hsl(0deg 0% 27%);
         }
     }
 
     .hamburger {
         display: none;
-        fill: hsl(0, 0%, 100%);
+        fill: hsl(0deg 0% 100%);
         cursor: pointer;
         margin-top: 3px;
     }
@@ -257,11 +257,11 @@ nav {
     .logo {
         top: 7px;
 
-        span {
+        & span {
             position: relative;
             left: 5px;
             top: 1px;
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
             font-weight: 600;
             vertical-align: top;
             text-transform: uppercase;
@@ -270,7 +270,7 @@ nav {
         }
     }
 
-    ul {
+    & ul {
         float: right;
         list-style-type: none;
         font-weight: 400;
@@ -288,13 +288,13 @@ nav {
             user-select: none;
         }
 
-        li,
+        & li,
         div.dropdown-label {
             position: relative;
             display: inline-block;
             margin: 10px;
 
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
 
             opacity: 0.7;
 
@@ -314,7 +314,7 @@ nav {
                 }
             }
 
-            i.fa-chevron-down {
+            & i.fa-chevron-down {
                 position: relative;
                 top: -2px;
                 font-size: 0.6em;
@@ -327,19 +327,19 @@ nav {
     .nav-dropdown {
         padding-bottom: 3px;
 
-        ul {
+        & ul {
             width: 300px;
         }
 
         @media (width > 1024px) {
-            ul.product-options {
+            & ul.product-options {
                 width: 125px;
             }
 
-            ul.solutions-options {
+            & ul.solutions-options {
                 width: 450px;
 
-                div.dropdown-column {
+                & div.dropdown-column {
                     float: left;
 
                     &:first-of-type {
@@ -348,10 +348,10 @@ nav {
                 }
             }
 
-            ul.resources-options {
+            & ul.resources-options {
                 width: 350px;
 
-                div.dropdown-column {
+                & div.dropdown-column {
                     float: left;
 
                     &:first-of-type {
@@ -362,12 +362,12 @@ nav {
         }
     }
 
-    li {
-        a,
+    & li {
+        & a,
         a:hover,
         a:visited {
             text-decoration: none;
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
             font-size: 1.05em;
         }
     }
@@ -414,7 +414,7 @@ nav {
         z-index: -1;
     }
 
-    section {
+    & section {
         max-width: 1440px;
         display: flex;
         flex: 1 1 auto;
@@ -422,7 +422,7 @@ nav {
         justify-content: space-around;
         margin: 40px auto;
         padding: 0 30px;
-        color: hsl(219, 21%, 21%);
+        color: hsl(219deg 21% 21%);
 
         &.hero {
             display: flex;
@@ -436,9 +436,9 @@ nav {
 
             max-width: none;
 
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
 
-            background-color: hsla(0, 0%, 0%, 0.1);
+            background-color: hsl(0deg 0% 0% / 10%);
 
             .copy {
                 max-width: 800px;
@@ -447,12 +447,12 @@ nav {
                 text-align: center;
             }
 
-            h1 {
+            & h1 {
                 margin: 0;
                 font-size: 3.7em;
             }
 
-            h2 {
+            & h2 {
                 font-size: 1.8em;
                 margin: 30px auto 0;
 
@@ -463,7 +463,7 @@ nav {
             .image {
                 height: 400px;
                 width: 40%;
-                background-color: hsla(0, 0%, 0%, 0.05);
+                background-color: hsl(0deg 0% 0% / 5%);
             }
         }
 
@@ -476,10 +476,10 @@ nav {
             padding: 50px;
             /* this should only be a thing if the section above is not white */
             margin-top: 0;
-            background-color: hsl(219, 21%, 21%);
-            color: hsl(219, 76%, 93%);
+            background-color: hsl(219deg 21% 21%);
+            color: hsl(219deg 76% 93%);
 
-            img {
+            & img {
                 &.overflow-wave {
                     width: 685px;
                     right: 0;
@@ -493,7 +493,7 @@ nav {
                 }
             }
 
-            h3 {
+            & h3 {
                 font-size: 3em;
             }
 
@@ -501,13 +501,13 @@ nav {
                 width: 50%;
             }
 
-            p {
+            & p {
                 font-size: 1.2em;
             }
 
-            a.cta {
+            & a.cta {
                 font-size: 1em;
-                color: hsl(170, 52%, 70%);
+                color: hsl(170deg 52% 70%);
             }
         }
 
@@ -528,7 +528,7 @@ nav {
             .features {
                 max-width: 500px;
 
-                h2 {
+                & h2 {
                     margin: 0;
                 }
 
@@ -545,10 +545,10 @@ nav {
             padding: 50px 100px;
             max-width: calc(1000px);
 
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             border-radius: 10px;
 
-            box-shadow: 10px 20px 80px hsla(0, 0%, 0%, 0.15);
+            box-shadow: 10px 20px 80px hsl(0deg 0% 0% / 15%);
             margin: 100px auto 150px;
             text-align: center;
 
@@ -560,7 +560,7 @@ nav {
                 max-height: 40vw;
             }
 
-            h2 {
+            & h2 {
                 position: relative;
 
                 margin-bottom: 120px;
@@ -578,7 +578,7 @@ nav {
 
                 z-index: 1;
 
-                h3 {
+                & h3 {
                     position: relative;
 
                     margin: 15px 0 15px 50px;
@@ -586,7 +586,7 @@ nav {
                     font-size: 1.2em;
                     font-weight: 400;
 
-                    color: hsl(0, 0%, 53%);
+                    color: hsl(0deg 0% 53%);
 
                     &::before {
                         content: " ";
@@ -614,8 +614,8 @@ nav {
 
                 background: linear-gradient(
                     135deg,
-                    hsla(0, 0%, 0%, 0.05),
-                    hsla(0, 0%, 0%, 0.2)
+                    hsl(0deg 0% 0% / 5%),
+                    hsl(0deg 0% 0% / 20%)
                 );
                 border-radius: 4px;
 
@@ -633,7 +633,7 @@ nav {
             vertical-align: top;
         }
 
-        h2 {
+        & h2 {
             font-size: 2.5em;
             text-align: center;
             margin: 0 10px;
@@ -647,14 +647,14 @@ nav {
             color: inherit;
         }
 
-        a {
+        & a {
             &.feature-block {
                 &:hover {
-                    box-shadow: 0 3px 10px hsl(0, 0%, 75%);
+                    box-shadow: 0 3px 10px hsl(0deg 0% 75%);
                 }
 
                 &:active {
-                    box-shadow: 0 3px 10px hsl(0, 0%, 50%);
+                    box-shadow: 0 3px 10px hsl(0deg 0% 50%);
                 }
             }
         }
@@ -678,12 +678,12 @@ nav {
     }
 
     .feature-block {
-        h3 {
+        & h3 {
             font-size: 1.2em;
             font-weight: 600;
         }
 
-        p {
+        & p {
             margin: 0;
 
             opacity: 0.8;
@@ -694,7 +694,7 @@ nav {
 /* -- hello page -- */
 .portico-landing.hello {
     background-color: transparent;
-    color: hsl(219, 23%, 33%);
+    color: hsl(219deg 23% 33%);
 
     .hero-buttons {
         margin-top: 40px;
@@ -705,7 +705,7 @@ nav {
     position: relative;
     padding: 60px 50px 30px;
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 
     overflow: hidden;
 
@@ -715,61 +715,61 @@ nav {
 
         text-align: center;
 
-        p {
+        & p {
             font-weight: 400;
             opacity: 0.85;
         }
     }
 
-    header {
+    & header {
         width: 850px;
         display: inline-block;
         text-align: left;
 
-        h1 {
+        & h1 {
             font-size: 3em;
             font-weight: 400;
 
-            text-shadow: 0 0 20px hsla(0, 0%, 100%, 0.2);
+            text-shadow: 0 0 20px hsl(0deg 0% 100% / 20%);
         }
 
-        p {
+        & p {
             margin: 30px 0;
 
             font-size: 1.5em;
             font-weight: 300;
             line-height: 1.4;
-            text-shadow: 0 0 5px hsla(164, 74%, 15%, 0.3),
-                0 0 20px hsla(0, 0%, 100%, 0.2);
+            text-shadow: 0 0 5px hsl(164deg 74% 15% / 30%),
+                0 0 20px hsl(0deg 0% 100% / 20%);
         }
 
-        a {
+        & a {
             display: block;
             margin: 20px auto 0;
             text-align: center;
         }
 
-        button {
+        & button {
             margin-top: 0;
             padding: 12px 20px;
 
-            background-color: hsl(0, 0%, 100%);
-            border: 2px solid hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
+            border: 2px solid hsl(0deg 0% 100%);
 
             font-size: 1.2em;
             font-weight: 500;
-            color: hsl(148, 23%, 51%);
+            color: hsl(148deg 23% 51%);
 
-            box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
+            box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
 
             transition: all 0.2s ease;
 
             &:hover {
-                box-shadow: 0 3px 10px hsla(0, 0%, 100%, 0.2);
+                box-shadow: 0 3px 10px hsl(0deg 0% 100% / 20%);
             }
 
             &:active {
-                box-shadow: 0 3px 20px hsla(0, 0%, 100%, 0.5);
+                box-shadow: 0 3px 20px hsl(0deg 0% 100% / 50%);
             }
         }
     }
@@ -784,40 +784,40 @@ nav {
     &.dark-blue {
         background: linear-gradient(
             10deg,
-            hsla(196, 58%, 14%, 0) 50%,
-            hsla(196, 58%, 14%, 0.7)
+            hsl(196deg 58% 14% / 0%) 50%,
+            hsl(196deg 58% 14% / 70%)
         );
     }
 
     &.green {
         background: linear-gradient(
             -25deg,
-            hsla(156, 47%, 47%, 0) 40%,
-            hsl(156, 47%, 47%)
+            hsl(156deg 47% 47% / 0%) 40%,
+            hsl(156deg 47% 47%)
         );
     }
 
     &.blue {
         background: linear-gradient(
             25deg,
-            hsla(196, 38%, 51%, 0) 40%,
-            hsl(196, 38%, 51%)
+            hsl(196deg 38% 51% / 0%) 40%,
+            hsl(196deg 38% 51%)
         );
     }
 
     &.sunburst {
         background: linear-gradient(
             5deg,
-            hsla(49, 71%, 68%, 0) 20%,
-            hsl(49, 71%, 68%)
+            hsl(49deg 71% 68% / 0%) 20%,
+            hsl(49deg 71% 68%)
         );
     }
 
     &.white-fade {
         background: linear-gradient(
             0deg,
-            hsl(0, 0%, 98%) 0%,
-            hsla(0, 0%, 98%, 0) 40%
+            hsl(0deg 0% 98%) 0%,
+            hsl(0deg 0% 98% / 0%) 40%
         );
     }
 }
@@ -853,8 +853,12 @@ nav {
 /* -- compare css -- */
 .compare,
 .compare-education {
-    background: linear-gradient(198deg, hsl(170, 34%, 47%), hsl(146, 31%, 60%));
-    color: hsl(0, 0%, 100%);
+    background: linear-gradient(
+        198deg,
+        hsl(170deg 34% 47%),
+        hsl(146deg 31% 60%)
+    );
+    color: hsl(0deg 0% 100%);
 
     .table-container {
         overflow-x: auto;
@@ -875,7 +879,7 @@ nav {
         z-index: 2;
     }
 
-    table {
+    & table {
         min-width: 550px;
         padding: 33px;
         border: 20px solid transparent;
@@ -883,9 +887,9 @@ nav {
         text-align: left;
         border-collapse: collapse;
         font-weight: 400;
-        color: hsla(0, 0%, 100%, 0.8);
+        color: hsl(0deg 0% 100% / 80%);
 
-        thead th {
+        & thead th {
             &:last-of-type {
                 width: 120px;
             }
@@ -895,21 +899,21 @@ nav {
             }
         }
 
-        td:not(:first-of-type),
+        & td:not(:first-of-type),
         th:not(:first-of-type) {
             text-align: center;
         }
     }
 
-    thead {
-        border-bottom: 3px solid hsla(0, 0%, 0%, 0.1);
+    & thead {
+        border-bottom: 3px solid hsl(0deg 0% 0% / 10%);
 
-        th {
+        & th {
             font-weight: 600;
             padding: 15px 0;
             font-size: 18px;
 
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
 
             &.normal {
                 font-weight: normal;
@@ -918,12 +922,12 @@ nav {
 
             &:nth-of-type(1) {
                 width: 28%;
-                background-color: hsl(222, 24%, 31%);
+                background-color: hsl(222deg 24% 31%);
             }
 
             &:nth-of-type(2) {
                 width: 18%;
-                background-color: hsl(187, 94%, 20%);
+                background-color: hsl(187deg 94% 20%);
             }
 
             &:nth-of-type(3),
@@ -931,7 +935,7 @@ nav {
             &:nth-of-type(5),
             &:nth-of-type(6) {
                 width: 18%;
-                background-color: hsl(162, 67%, 25%);
+                background-color: hsl(162deg 67% 25%);
             }
         }
     }
@@ -940,25 +944,25 @@ nav {
         position: static;
     }
 
-    tbody tr {
-        border-bottom: 1px solid hsla(360, 0%, 100%, 0.03);
+    & tbody tr {
+        border-bottom: 1px solid hsl(360deg 0% 100% / 3%);
 
-        td {
+        & td {
             padding: 10px 0;
 
             &:nth-of-type(1) {
-                background-color: hsl(222, 20%, 40%);
+                background-color: hsl(222deg 20% 40%);
             }
 
             &:nth-of-type(2) {
-                background-color: hsl(186.9, 90.3%, 28.4%);
+                background-color: hsl(186.9deg 90.3% 28.4%);
             }
 
             &:nth-of-type(3),
             &:nth-of-type(4),
             &:nth-of-type(5),
             &:nth-of-type(6) {
-                background-color: hsl(162, 44%, 38%);
+                background-color: hsl(162deg 44% 38%);
             }
 
             &.no {
@@ -990,7 +994,7 @@ nav {
                 opacity: 0.4;
             }
 
-            a {
+            & a {
                 font-size: 0.9rem;
                 font-weight: 400;
                 text-transform: uppercase;
@@ -998,7 +1002,7 @@ nav {
         }
     }
 
-    p {
+    & p {
         font-weight: 300;
     }
 
@@ -1009,30 +1013,30 @@ nav {
 
         line-height: 1.2;
 
-        color: hsl(0, 24%, 23%);
+        color: hsl(0deg 24% 23%);
 
-        a {
-            color: hsl(170, 47%, 73%);
+        & a {
+            color: hsl(170deg 47% 73%);
         }
     }
 }
 
 .compare-education {
-    color: hsl(0, 0%, 0%);
+    color: hsl(0deg 0% 0%);
     background: none;
 
-    table {
+    & table {
         min-width: 650px;
 
         .number {
             font-weight: 800;
 
             &.one {
-                color: hsl(0, 0%, 100%, 0.4);
+                color: hsl(0deg 0% 100% / 40%);
             }
         }
 
-        td:first-of-type {
+        & td:first-of-type {
             padding: 10px 10px 10px 0;
         }
     }
@@ -1041,18 +1045,18 @@ nav {
 /* -- faq css -- */
 .faqs {
     position: relative;
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsl(0deg 0% 98%);
 
     .padded-content {
         position: relative;
         z-index: 1;
     }
 
-    header {
+    & header {
         max-width: 700px;
         margin: 0 auto;
 
-        h1 span {
+        & h1 span {
             vertical-align: top;
         }
     }
@@ -1061,11 +1065,11 @@ nav {
         margin: 50px auto;
         max-width: 700px;
         font-size: 1.2em;
-        color: hsl(223, 6%, 25%);
+        color: hsl(223deg 6% 25%);
 
         .question {
             font-weight: 600;
-            color: hsl(222, 20%, 40%);
+            color: hsl(222deg 20% 40%);
             font-size: 1.1em;
         }
 
@@ -1081,7 +1085,7 @@ nav {
     }
 
     .faq-header-link {
-        color: hsl(0, 0%, 0%);
+        color: hsl(0deg 0% 0%);
 
         &:hover {
             text-decoration: underline;
@@ -1095,7 +1099,7 @@ nav {
         height: 6px;
         margin: 8px 0;
 
-        background-color: hsl(0, 0%, 93%);
+        background-color: hsl(0deg 0% 93%);
         border-radius: 3px;
 
         &.small {
@@ -1121,19 +1125,19 @@ nav {
         }
 
         &.red {
-            background-color: hsl(350, 42%, 77%);
+            background-color: hsl(350deg 42% 77%);
         }
 
         &.blue {
-            background-color: hsl(193, 42%, 77%);
+            background-color: hsl(193deg 42% 77%);
         }
 
         &.green {
-            background-color: hsl(119, 42%, 77%);
+            background-color: hsl(119deg 42% 77%);
         }
 
         &.orange {
-            background-color: hsl(30, 42%, 77%);
+            background-color: hsl(30deg 42% 77%);
         }
     }
 
@@ -1144,7 +1148,7 @@ nav {
 
             width: 20px;
             height: 20px;
-            background-color: hsl(0, 0%, 73%);
+            background-color: hsl(0deg 0% 73%);
             border-radius: 4px;
         }
 
@@ -1155,12 +1159,12 @@ nav {
             width: 50px;
             margin-top: 0;
 
-            background-color: hsl(0, 0%, 73%);
+            background-color: hsl(0deg 0% 73%);
         }
     }
 
     .navbar {
-        background-color: hsl(170, 48%, 54%);
+        background-color: hsl(170deg 48% 54%);
         padding: 10px;
     }
 
@@ -1189,10 +1193,10 @@ nav {
             padding: 3px 5px 0;
             margin: 0 5px;
 
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             border-radius: 4px;
 
-            box-shadow: 0 0 15px hsla(0, 0%, 0%, 0.01);
+            box-shadow: 0 0 15px hsl(0deg 0% 0% / 1%);
         }
     }
 }
@@ -1207,9 +1211,9 @@ nav {
     padding: 10px 30px;
 
     border-radius: 12px;
-    box-shadow: 0 0 50px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 0 50px hsl(0deg 0% 0% / 20%);
 
-    background-color: hsl(0, 0%, 27%);
+    background-color: hsl(0deg 0% 27%);
 
     z-index: 1;
 
@@ -1223,7 +1227,7 @@ nav {
         height: 10px;
 
         border-radius: 5px;
-        background-color: hsl(0, 0%, 13%);
+        background-color: hsl(0deg 0% 13%);
     }
 
     &::after {
@@ -1236,7 +1240,7 @@ nav {
         height: 25px;
 
         border-radius: 13px;
-        background-color: hsl(0, 0%, 73%);
+        background-color: hsl(0deg 0% 73%);
     }
 
     .main-page {
@@ -1246,17 +1250,17 @@ nav {
         width: calc(100% - 30px);
         margin: 10px;
 
-        border: 5px solid hsl(0, 0%, 13%);
+        border: 5px solid hsl(0deg 0% 13%);
         border-radius: 4px;
 
-        background-color: hsl(0, 0%, 98%);
+        background-color: hsl(0deg 0% 98%);
     }
 }
 
 .portico-landing.hello .features {
     padding: 50px 0 100px;
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 .portico-landing.hello .open-source {
@@ -1265,14 +1269,14 @@ nav {
     position: relative;
     z-index: 1;
 
-    background-color: hsl(217, 22%, 93%);
+    background-color: hsl(217deg 22% 93%);
 
     .flex {
         min-height: 0;
         padding: 50px 0;
     }
 
-    img {
+    & img {
         margin: 0 2%;
         width: 28%;
         max-width: 500px;
@@ -1287,7 +1291,7 @@ nav {
         text-align: left;
     }
 
-    h2 {
+    & h2 {
         font-weight: normal;
     }
 }
@@ -1331,7 +1335,7 @@ nav {
 }
 
 .portico-landing .tour {
-    color: hsl(0, 0%, 0%);
+    color: hsl(0deg 0% 0%);
     width: 1200px;
     max-width: 100%;
     margin: 0 auto;
@@ -1343,11 +1347,11 @@ nav {
     margin: 20px auto;
     padding: 30px 20px;
     background: linear-gradient(
-        hsla(220, 20%, 97%, 0.4),
-        hsla(220, 20%, 97%, 0.9)
+        hsl(220deg 20% 97% / 40%),
+        hsl(220deg 20% 97% / 90%)
     );
     border-radius: 12px;
-    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.02);
+    box-shadow: 0 3px 10px hsl(0deg 0% 0% / 2%);
     position: relative;
 }
 
@@ -1355,9 +1359,13 @@ nav {
     padding: 11px 25px;
     font-size: 1.2rem;
     font-weight: 400;
-    color: hsl(0, 0%, 100%);
-    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
-    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
+    color: hsl(0deg 0% 100%);
+    background: linear-gradient(
+        145deg,
+        hsl(191deg 56% 55%),
+        hsl(169deg 65% 42%)
+    );
+    box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
     border: 0;
     position: absolute;
     left: 50%;
@@ -1369,8 +1377,8 @@ nav {
     z-index: 10;
 
     &:hover {
-        background-color: hsl(169, 65%, 42%);
-        box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.3);
+        background-color: hsl(169deg 65% 42%);
+        box-shadow: 0 3px 10px hsl(0deg 0% 0% / 30%);
     }
 }
 
@@ -1380,7 +1388,7 @@ nav {
     display: block;
     width: 100%;
     max-width: 100%;
-    border: 1px solid hsl(0, 0%, 87%);
+    border: 1px solid hsl(0deg 0% 87%);
     opacity: 0.4;
 }
 
@@ -1417,7 +1425,7 @@ nav {
         width: 300px;
     }
 
-    img {
+    & img {
         max-width: 100%;
 
         &.zulip-streams-selected {
@@ -1447,7 +1455,7 @@ nav {
 }
 
 .tour .carousel-inner img {
-    border: 1px solid hsl(210, 8%, 95%);
+    border: 1px solid hsl(210deg 8% 95%);
 
     &.centered-image {
         display: block;
@@ -1507,7 +1515,7 @@ nav {
         text-align: center;
         vertical-align: top;
 
-        img {
+        & img {
             border: 0;
             display: block;
             margin: 0 auto;
@@ -1523,22 +1531,26 @@ nav {
     font-size: 1.2rem;
     line-height: 20px;
     font-weight: 400;
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 
-    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
-    box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.2);
+    background: linear-gradient(
+        145deg,
+        hsl(191deg 56% 55%),
+        hsl(169deg 65% 42%)
+    );
+    box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
     border-radius: 4px;
 
     &:hover {
-        background-color: hsl(169, 65%, 42%);
-        box-shadow: 0 3px 10px hsla(0, 0%, 0%, 0.3);
+        background-color: hsl(169deg 65% 42%);
+        box-shadow: 0 3px 10px hsl(0deg 0% 0% / 30%);
     }
 }
 
 .tour .carousel-control {
     background: 0;
     border: 0;
-    color: hsl(223, 13%, 52%);
+    color: hsl(223deg 13% 52%);
     font-size: 2em;
     top: 50%;
     font-weight: 400;
@@ -1546,7 +1558,7 @@ nav {
     border-radius: 0;
 
     &:hover {
-        color: hsl(220, 23%, 33%);
+        color: hsl(220deg 23% 33%);
     }
 
     &.right {
@@ -1568,7 +1580,7 @@ nav {
     top: auto;
     right: auto;
 
-    li {
+    & li {
         position: relative;
         flex: 0 1 auto;
         width: 10px;
@@ -1578,7 +1590,7 @@ nav {
         margin-left: 10px;
         text-indent: -999px;
         cursor: pointer;
-        background-color: hsl(222, 12%, 66%);
+        background-color: hsl(222deg 12% 66%);
         transition: background 0.1s ease;
 
         &::before {
@@ -1602,14 +1614,14 @@ nav {
         }
 
         &.active {
-            background-color: hsl(220, 23%, 33%);
+            background-color: hsl(220deg 23% 33%);
         }
     }
 }
 
 .portico-landing .testimonials {
-    color: hsl(0, 0%, 100%);
-    background-color: hsl(168, 43%, 24%);
+    color: hsl(0deg 0% 100%);
+    background-color: hsl(168deg 43% 24%);
 }
 
 .portico-landing .testimonials .text-header .text-content {
@@ -1640,7 +1652,7 @@ nav {
 
 .portico-landing .testimonials .fa-chevron-left,
 .portico-landing .testimonials .fa-chevron-right {
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
     opacity: 0.5;
     position: absolute;
     font-size: 36px;
@@ -1675,7 +1687,7 @@ nav {
     margin-top: 5px;
     margin-bottom: 30px;
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
     opacity: 0.7;
     font-weight: 400;
     font-style: normal;
@@ -1696,7 +1708,7 @@ nav {
     width: 60%;
     margin: 0 auto;
     border: none;
-    border-bottom: 1px solid hsla(0, 0%, 100%, 0.2);
+    border-bottom: 1px solid hsl(0deg 0% 100% / 20%);
 }
 
 .portico-landing .testimonials .company-container {
@@ -1726,7 +1738,7 @@ nav {
     height: 60px;
     width: calc(25% - 44px);
 
-    background-color: hsl(0, 0%, 67%);
+    background-color: hsl(0deg 0% 67%);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -1789,9 +1801,13 @@ nav {
     padding: 200px 80px 100px;
     margin-top: -50px;
 
-    background: linear-gradient(145deg, hsl(191, 56%, 55%), hsl(169, 65%, 42%));
+    background: linear-gradient(
+        145deg,
+        hsl(191deg 56% 55%),
+        hsl(169deg 65% 42%)
+    );
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 }
 
 .portico-landing.hello .apps .triangle {
@@ -1802,16 +1818,16 @@ nav {
     height: 0;
     border-style: solid;
     border-width: 150px 100vw 0 0;
-    border-color: hsl(0, 0%, 98%) transparent transparent transparent;
+    border-color: hsl(0deg 0% 98%) transparent transparent transparent;
 }
 
 .portico-landing.hello .apps .arrow {
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
     font-weight: 400;
 }
 
 .portico-landing.hello .apps .arrow::before {
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 .portico-landing.hello .apps .left-side,
@@ -1892,13 +1908,13 @@ nav {
     padding: 0 5px;
     transition: all 0.3s ease;
     margin: 10px 5px;
-    color: hsl(219, 23%, 33%);
+    color: hsl(219deg 23% 33%);
     border-radius: 5px;
-    border: 1px solid hsl(206, 44%, 93%);
+    border: 1px solid hsl(206deg 44% 93%);
 }
 
 .portico-landing.hello .integrations .integration-icons .group:hover {
-    border: 1px solid hsl(170, 47%, 53%);
+    border: 1px solid hsl(170deg 47% 53%);
 }
 
 .portico-landing.hello .integrations .integration-logo {
@@ -1959,17 +1975,21 @@ nav {
 
 .portico-landing.apps .main,
 .portico-landing.features-app .main {
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 .portico-landing.apps .hero {
     position: relative;
 
     padding: 100px 50px 50px;
-    background: linear-gradient(35deg, hsl(197, 100%, 16%), hsl(166, 45%, 49%));
+    background: linear-gradient(
+        35deg,
+        hsl(197deg 100% 16%),
+        hsl(166deg 45% 49%)
+    );
     height: 600px;
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 
     overflow: hidden;
 }
@@ -2013,7 +2033,7 @@ nav {
 }
 
 .portico-landing.apps .hero .info .cta {
-    text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
+    text-shadow: 0 0 60px hsl(0deg 0% 0% / 30%);
     max-width: 600px;
 }
 
@@ -2040,7 +2060,7 @@ nav {
 }
 
 .portico-landing.apps .other-apps {
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     padding: 50px 50px 120px;
 
     text-align: center;
@@ -2066,7 +2086,7 @@ nav {
     border-radius: 70px;
 
     /* Reset color since we don't want default link styling. */
-    color: hsl(0, 0%, 27%);
+    color: hsl(0deg 0% 27%);
 
     font-size: 3em;
     text-align: center;
@@ -2075,7 +2095,7 @@ nav {
 }
 
 .portico-landing.apps .other-apps .apps .icon:hover {
-    background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
+    background: linear-gradient(-45deg, hsl(0deg 0% 83%), hsl(0deg 0% 98%));
 }
 
 .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
@@ -2114,7 +2134,7 @@ nav {
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
     padding-top: 0;
-    color: hsl(223, 6%, 25%);
+    color: hsl(223deg 6% 25%);
 }
 
 .portico-landing.why-page .main {
@@ -2132,8 +2152,8 @@ nav {
         padding: 50px 50px 70px;
     }
 
-    background-color: hsl(153, 32%, 55%);
-    color: hsl(0, 0%, 100%);
+    background-color: hsl(153deg 32% 55%);
+    color: hsl(0deg 0% 100%);
 }
 
 .portico-landing.why-page .hero.small-hero {
@@ -2163,20 +2183,20 @@ nav {
 }
 
 .portico-landing.why-page .main blockquote {
-    background-color: hsl(0, 0%, 100%);
-    border-color: hsl(168, 24%, 51%);
+    background-color: hsl(0deg 0% 100%);
+    border-color: hsl(168deg 24% 51%);
     padding: 20px 30px;
     margin-top: 20px;
     font-size: 1.05em;
 
-    p {
+    & p {
         line-height: 1.5;
         margin: 0;
         font-weight: 400;
-        color: hsl(220, 23%, 33%);
+        color: hsl(220deg 23% 33%);
     }
 
-    p:last-child {
+    & p:last-child {
         margin-top: 10px;
     }
 }
@@ -2209,7 +2229,7 @@ nav {
     font-size: 0.8em;
     font-weight: normal;
     line-height: 100%;
-    color: hsl(0, 0%, 53%);
+    color: hsl(0deg 0% 53%);
 }
 
 .portico-landing.why-page .team h2 {
@@ -2240,7 +2260,7 @@ nav {
     background-position: center;
 
     .bg-dimmer {
-        background-color: hsl(224, 52%, 12%, 0.75);
+        background-color: hsl(224deg 52% 12% / 75%);
     }
 }
 
@@ -2275,7 +2295,7 @@ nav {
     top: 0;
     left: 0;
 
-    background-color: hsla(224, 52%, 12%, 0.7);
+    background-color: hsl(224deg 52% 12% / 70%);
 
     z-index: 0;
 }
@@ -2286,8 +2306,8 @@ nav {
 }
 
 .portico-landing.why-page .testimonials {
-    background-color: hsl(168, 43%, 24%);
-    color: hsl(0, 0%, 100%);
+    background-color: hsl(168deg 43% 24%);
+    color: hsl(0deg 0% 100%);
     margin-bottom: 40px;
 }
 
@@ -2324,7 +2344,7 @@ nav {
     margin-top: 5px;
     margin-bottom: 30px;
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
     opacity: 0.7;
     font-weight: 400;
     line-height: 140%;
@@ -2356,7 +2376,7 @@ nav {
 
     transform: translateY(50px);
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 .portico-landing.hello .apps .screen.android {
@@ -2369,10 +2389,10 @@ nav {
 
     background: linear-gradient(
         90deg,
-        hsl(0, 0%, 27%) 0%,
-        hsl(0, 0%, 33%) 8%,
-        hsl(0, 0%, 33%) 92%,
-        hsl(0, 0%, 27%) 100%
+        hsl(0deg 0% 27%) 0%,
+        hsl(0deg 0% 33%) 8%,
+        hsl(0deg 0% 33%) 92%,
+        hsl(0deg 0% 27%) 100%
     );
 }
 
@@ -2390,14 +2410,14 @@ nav {
 
     width: 40px;
     height: 5px;
-    background-color: hsl(0, 0%, 80%);
+    background-color: hsl(0deg 0% 80%);
 }
 
 .portico-landing.hello .apps .screen.ios::after {
     top: auto;
     bottom: 7px;
     left: calc(50% - 12.5px);
-    background-color: hsl(0, 0%, 80%);
+    background-color: hsl(0deg 0% 80%);
 }
 
 .portico-landing.hello .apps .screen.android::before {
@@ -2410,17 +2430,17 @@ nav {
     left: calc(50% - 17.5px);
 
     border-radius: 8px;
-    background-color: hsl(0, 0%, 13%);
+    background-color: hsl(0deg 0% 13%);
     width: 35px;
     height: 20px;
 }
 
 .portico-landing.hello .apps .screen.ios .main-page {
-    border-color: hsl(0, 0%, 87%);
+    border-color: hsl(0deg 0% 87%);
 }
 
 .portico-landing.hello .apps .screen.android .main-page {
-    border-color: hsl(0, 0%, 13%);
+    border-color: hsl(0deg 0% 13%);
 }
 
 /* -- gradients -- */
@@ -2441,40 +2461,40 @@ nav {
 .gradients .gradient.dark-blue {
     background: linear-gradient(
         10deg,
-        hsla(196, 58%, 14%, 0) 50%,
-        hsla(196, 58%, 14%, 0.7)
+        hsl(196deg 58% 14% / 0%) 50%,
+        hsl(196deg 58% 14% / 70%)
     );
 }
 
 .gradients .gradient.green {
     background: linear-gradient(
         -25deg,
-        hsla(156, 47%, 47%, 0) 40%,
-        hsl(156, 47%, 47%)
+        hsl(156deg 47% 47% / 0%) 40%,
+        hsl(156deg 47% 47%)
     );
 }
 
 .gradients .gradient.blue {
     background: linear-gradient(
         25deg,
-        hsla(196, 38%, 51%, 0) 40%,
-        hsl(196, 38%, 51%)
+        hsl(196deg 38% 51% / 0%) 40%,
+        hsl(196deg 38% 51%)
     );
 }
 
 .gradients .gradient.sunburst {
     background: linear-gradient(
         5deg,
-        hsla(49, 71%, 68%, 0) 20%,
-        hsl(49, 71%, 68%)
+        hsl(49deg 71% 68% / 0%) 20%,
+        hsl(49deg 71% 68%)
     );
 }
 
 .gradients .gradient.white-fade {
     background: linear-gradient(
         0deg,
-        hsl(0, 0%, 100%) 0%,
-        hsla(0, 0%, 98%, 0) 40%
+        hsl(0deg 0% 100%) 0%,
+        hsl(0deg 0% 98% / 0%) 40%
     );
 }
 
@@ -2488,7 +2508,7 @@ nav {
     font-size: 2.5em;
     margin: 0;
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 }
 
 .portico-landing.plans .main .padded-content > h2 {
@@ -2498,7 +2518,7 @@ nav {
 
     margin-bottom: 50px;
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 }
 
 .pricing-model .pricing-container {
@@ -2514,7 +2534,7 @@ nav {
     padding: 10px;
     margin-bottom: 3px;
 
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 
     font-size: 2em;
     font-weight: 300;
@@ -2528,10 +2548,10 @@ nav {
     width: 300px;
     height: 500px;
 
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
 
     text-align: left;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 
     transition-property: all;
     transition-duration: 0.3s;
@@ -2556,14 +2576,14 @@ nav {
 
 .pricing-model .pricing-container hr {
     border: none;
-    border-bottom: 2px solid hsl(170, 47%, 53%);
+    border-bottom: 2px solid hsl(170deg 47% 53%);
     margin: 15px 0;
 }
 
 .pricing-model .pricing-container .text-content .description {
     font-size: 0.9em;
     font-weight: 400;
-    color: hsl(0, 0%, 53%);
+    color: hsl(0deg 0% 53%);
 }
 
 .pricing-model .pricing-container ul.feature-list {
@@ -2602,7 +2622,7 @@ nav {
     width: 100%;
     height: 150px;
 
-    background-color: hsl(0, 0%, 93%);
+    background-color: hsl(0deg 0% 93%);
 }
 
 .pricing-model .pricing-container .text-content .price::before {
@@ -2614,7 +2634,7 @@ nav {
 
     font-size: 2rem;
     font-weight: 300;
-    color: hsl(0, 0%, 53%);
+    color: hsl(0deg 0% 53%);
 }
 
 .pricing-model .pricing-container .text-content .price {
@@ -2635,7 +2655,7 @@ nav {
 
     font-size: 0.9em;
     font-weight: 400;
-    color: hsl(0, 0%, 53%);
+    color: hsl(0deg 0% 53%);
 
     text-align: left;
     white-space: nowrap;
@@ -2656,7 +2676,7 @@ nav {
 }
 
 .pricing-model .pricing-container .price-box:focus .button {
-    box-shadow: 0 0 25px hsl(169, 48%, 60%);
+    box-shadow: 0 0 25px hsl(169deg 48% 60%);
     animation: box-shadow-pulse 2s infinite;
 }
 
@@ -2665,7 +2685,7 @@ nav {
     height: 55px;
 
     .pricing-period {
-        color: hsl(0, 0%, 27%);
+        color: hsl(0deg 0% 27%);
     }
 }
 
@@ -2684,23 +2704,23 @@ nav {
     &.plans_top_faq {
         font-size: 17px;
         font-weight: 400;
-        color: hsl(0, 0%, 53%);
+        color: hsl(0deg 0% 53%);
         padding-top: 0;
 
-        p {
+        & p {
             padding: 10px;
         }
 
-        p:first-child {
+        & p:first-child {
             margin-top: -20px;
         }
 
-        p:last-child {
+        & p:last-child {
             margin-bottom: 30px;
         }
     }
 
-    p {
+    & p {
         width: 80%;
         margin: auto;
         text-align: center;
@@ -2716,7 +2736,7 @@ nav {
     height: 25px;
 
     font-weight: 400;
-    color: hsl(0, 0%, 53%);
+    color: hsl(0deg 0% 53%);
     font-style: italic;
     text-align: center;
 
@@ -2744,20 +2764,20 @@ nav {
 }
 
 .portico-landing.jobs .what-were-building {
-    background-color: hsl(217, 22%, 93%);
+    background-color: hsl(217deg 22% 93%);
 }
 
 @keyframes box-shadow-pulse {
     0% {
-        box-shadow: 0 0 0 hsla(170, 47%, 60%, 1);
+        box-shadow: 0 0 0 hsl(170deg 47% 60%);
     }
 
     50% {
-        box-shadow: 0 0 25px hsla(170, 47%, 60%, 0.8);
+        box-shadow: 0 0 25px hsl(170deg 47% 60% / 80%);
     }
 
     100% {
-        box-shadow: 0 0 0 hsla(170, 47%, 60%, 1);
+        box-shadow: 0 0 0 hsl(170deg 47% 60%);
     }
 }
 
@@ -2886,12 +2906,12 @@ nav {
             margin: 0 auto;
             text-align: center;
 
-            span {
-                color: hsl(0, 0%, 100%);
+            & span {
+                color: hsl(0deg 0% 100%);
             }
         }
 
-        ul {
+        & ul {
             display: block;
             margin: 20px auto 0;
             float: none;
@@ -2900,7 +2920,7 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             &.messages {
                 display: block;
                 text-align: center;
@@ -2998,7 +3018,7 @@ nav {
     }
 
     .portico-landing.hello .hero {
-        header {
+        & header {
             width: calc(100% - 50px);
         }
     }
@@ -3006,7 +3026,7 @@ nav {
 
 @media (width <= 906px) {
     .portico-landing.features-app {
-        section {
+        & section {
             &.notifications {
                 padding: 50px 10px;
 
@@ -3083,7 +3103,7 @@ nav {
             display: block;
         }
 
-        img {
+        & img {
             display: block;
             width: 300px;
             margin: 0 auto;
@@ -3140,7 +3160,7 @@ nav {
     }
 
     .portico-landing.hello .hero {
-        header {
+        & header {
             width: 600px;
         }
     }
@@ -3150,13 +3170,13 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             padding: 0 20px;
 
             &.hero {
                 padding: 50px;
 
-                h1 {
+                & h1 {
                     font-size: 3em;
                 }
             }
@@ -3244,7 +3264,7 @@ nav {
             height: 450px;
         }
 
-        header {
+        & header {
             width: auto;
         }
     }
@@ -3260,11 +3280,11 @@ nav {
             z-index: 11;
 
             > ul.show {
-                outline-color: hsla(203, 43%, 22%, 0.7);
+                outline-color: hsl(203deg 43% 22% / 70%);
             }
         }
 
-        ul {
+        & ul {
             margin-top: 0;
             text-align: left;
 
@@ -3276,10 +3296,10 @@ nav {
             width: 300px;
             padding-left: 30px;
 
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             transform: translate(-350px, 0);
 
-            box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
+            box-shadow: 0 0 80px hsl(0deg 0% 0% / 12%);
 
             overflow-y: auto;
 
@@ -3299,7 +3319,7 @@ nav {
                 color: initial;
             }
 
-            li,
+            & li,
             div.dropdown div.dropdown-label {
                 display: block;
                 font-size: 1.5em;
@@ -3319,17 +3339,17 @@ nav {
                 }
             }
 
-            div.dropdown div.dropdown-label.first {
+            & div.dropdown div.dropdown-label.first {
                 margin-top: 30px;
             }
 
-            div.dropdown ul.dropdown-list {
+            & div.dropdown ul.dropdown-list {
                 position: relative;
                 box-shadow: none;
                 padding-left: 10px;
                 border: none;
 
-                li {
+                & li {
                     &:hover {
                         background-color: unset;
                     }
@@ -3337,16 +3357,16 @@ nav {
             }
 
             .nav-dropdown {
-                ul.resources-options,
+                & ul.resources-options,
                 ul.solutions-options {
-                    div.dropdown-column {
+                    & div.dropdown-column {
                         float: none;
 
                         &:first-child {
                             padding-bottom: 20px;
                         }
 
-                        li.nav-header {
+                        & li.nav-header {
                             font-size: 1em;
                         }
                     }
@@ -3355,7 +3375,7 @@ nav {
         }
 
         &.portico-header {
-            div.content ul div.nav-dropdown {
+            & div.content ul div.nav-dropdown {
                 display: block;
                 padding-bottom: 0;
             }
@@ -3375,7 +3395,7 @@ nav {
         font-size: 1.5rem;
         line-height: 30px;
         text-align: right;
-        color: hsl(0, 0%, 27%);
+        color: hsl(0deg 0% 27%);
 
         background-size: 40px auto;
         background-image: url("../../images/zulip-logo.svg");
@@ -3393,7 +3413,7 @@ nav {
     nav ul li a,
     nav ul div.dropdown div.dropdown-label,
     .portico-header .dropdown-pill .realm-name {
-        color: hsl(0, 0%, 27%) !important;
+        color: hsl(0deg 0% 27%) !important;
     }
 
     .portico-landing.apps .main ul.sidebar {
@@ -3446,9 +3466,9 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             &.keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -100px;
                     }
@@ -3460,7 +3480,7 @@ nav {
 
 @media (width <= 550px) {
     .portico-landing.features-app {
-        section {
+        & section {
             &.hero {
                 padding: 50px 20px 20px;
             }
@@ -3468,7 +3488,7 @@ nav {
             &.messages {
                 padding: 0 20px;
 
-                h2 {
+                & h2 {
                     font-size: 2em;
                 }
 
@@ -3506,7 +3526,7 @@ nav {
             font-size: 90%;
         }
 
-        img {
+        & img {
             max-width: 100%;
 
             &.zulip-streams {
@@ -3605,24 +3625,24 @@ nav {
     .gradients .gradient.green {
         background: linear-gradient(
             -25deg,
-            hsla(156, 47%, 47%, 0) 10%,
-            hsl(156, 47%, 47%) 80%
+            hsl(156deg 47% 47% / 0%) 10%,
+            hsl(156deg 47% 47%) 80%
         );
     }
 
     .gradients .gradient.blue {
         background: linear-gradient(
             25deg,
-            hsla(196, 38%, 51%, 0) 10%,
-            hsl(196, 38%, 51%) 80%
+            hsl(196deg 38% 51% / 0%) 10%,
+            hsl(196deg 38% 51%) 80%
         );
     }
 
     .gradients .gradient.sunburst {
         background: linear-gradient(
             5deg,
-            hsla(49, 71%, 68%, 0) 20%,
-            hsl(49, 71%, 68%) 80%
+            hsl(49deg 71% 68% / 0%) 20%,
+            hsl(49deg 71% 68%) 80%
         );
     }
 
@@ -3646,9 +3666,9 @@ nav {
     }
 
     .portico-landing.features-app {
-        section {
+        & section {
             &.keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -92px;
                     }
@@ -3660,9 +3680,9 @@ nav {
 
 @media (width <= 360px) {
     .portico-landing.features-app {
-        section {
+        & section {
             .keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -88px;
                     }
@@ -3675,9 +3695,9 @@ nav {
 /* For iPhone 5/SE device */
 @media (width <= 320px) {
     .portico-landing.features-app {
-        section {
+        & section {
             .keyboard-shortcuts {
-                img {
+                & img {
                     &.overflow-wave {
                         top: -78px;
                     }
@@ -3701,7 +3721,7 @@ nav {
 #download-android-apk,
 #download-mac-arm64 {
     display: inline-block;
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
     font-size: 13px;
     padding-left: 10px;
 }
@@ -3759,17 +3779,17 @@ nav {
     }
 
     .feature-text {
-        h1 {
+        & h1 {
             font-size: 30px;
             font-weight: 600;
         }
 
-        ul {
+        & ul {
             list-style: none;
             margin-left: 0;
         }
 
-        ul li {
+        & ul li {
             margin-bottom: 15px;
 
             &::before {
@@ -3792,33 +3812,33 @@ nav {
     }
 
     .feature-image {
-        img,
+        & img,
         div.quote {
             width: 400px;
         }
 
         @media (width < 1024px) {
-            div.quote {
+            & div.quote {
                 width: 300px;
             }
         }
 
         @media (width < 768px) {
-            div.quote {
+            & div.quote {
                 width: auto;
             }
         }
     }
 
     .feature-icon {
-        img,
+        & img,
         div.quote {
             width: 100px;
         }
     }
 
     .topics-image {
-        border: solid 2px hsl(0, 0%, 60%);
+        border: solid 2px hsl(0deg 0% 60%);
     }
 }
 
@@ -3829,10 +3849,10 @@ nav {
 .discounts-section {
     text-align: center;
 
-    header {
-        b {
+    & header {
+        & b {
             font-weight: 600;
-            color: hsl(169, 45%, 43%);
+            color: hsl(169deg 45% 43%);
         }
     }
 }
@@ -3858,7 +3878,7 @@ nav {
     border: 2px solid;
     border-radius: 4px;
     background: none;
-    color: hsl(169, 45%, 43%);
+    color: hsl(169deg 45% 43%);
     vertical-align: middle;
     position: relative;
     z-index: 1;
@@ -3876,20 +3896,20 @@ nav {
         outline: none;
     }
 
-    p {
+    & p {
         font-weight: 600;
         margin-bottom: 0;
     }
 
     &:hover {
-        border-color: hsl(169, 45%, 43%);
-        background-color: hsl(170, 47%, 53%);
-        color: hsl(0, 0%, 100%);
+        border-color: hsl(169deg 45% 43%);
+        background-color: hsl(170deg 47% 53%);
+        color: hsl(0deg 0% 100%);
     }
 }
 
 .quote {
-    background: hsl(218, 46%, 43%);
+    background: hsl(218deg 46% 43%);
     padding: 1em;
     border-radius: 1em;
     font-weight: 400;
@@ -3897,8 +3917,8 @@ nav {
     display: flex;
     flex-direction: column;
 
-    a {
-        color: hsl(0, 0%, 100%);
+    & a {
+        color: hsl(0deg 0% 100%);
 
         &.case-study-link {
             margin-left: 20px;
@@ -3912,36 +3932,36 @@ nav {
 
     .author,
     blockquote {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
         margin: 5px 20px 20px;
     }
 
-    blockquote {
+    & blockquote {
         font-size: 18px;
     }
 
-    blockquote::before {
+    & blockquote::before {
         font-size: 20px;
         font-weight: 800;
     }
 
-    cite {
+    & cite {
         font-style: normal;
     }
 }
 
 .intro_quote {
-    blockquote {
+    & blockquote {
         font-size: 17px;
         font-weight: 400;
-        color: hsl(223, 6%, 25%);
-        border-left: 6px solid hsl(218, 46%, 43%);
+        color: hsl(223deg 6% 25%);
+        border-left: 6px solid hsl(218deg 46% 43%);
         position: relative;
-        background: hsl(0, 0%, 93%);
+        background: hsl(0deg 0% 93%);
         padding: 20px;
     }
 
-    blockquote::after {
+    & blockquote::after {
         content: "";
     }
 
@@ -3968,8 +3988,8 @@ nav {
     }
 
     .hero {
-        a {
-            color: hsl(170, 76%, 64%);
+        & a {
+            color: hsl(170deg 76% 64%);
         }
     }
 
@@ -3978,16 +3998,16 @@ nav {
         flex-flow: row wrap;
         justify-content: center;
 
-        a {
-            color: hsl(170, 47%, 33%);
+        & a {
+            color: hsl(170deg 47% 33%);
             font-weight: 600;
             font-size: 15px;
             margin: 10px;
 
             &:hover {
-                color: hsl(0, 0%, 100%);
-                background-color: hsl(170, 47%, 33%);
-                border-color: hsl(170, 47%, 33%);
+                color: hsl(0deg 0% 100%);
+                background-color: hsl(170deg 47% 33%);
+                border-color: hsl(170deg 47% 33%);
             }
         }
     }
@@ -3997,7 +4017,7 @@ nav {
             margin: 10px;
         }
 
-        h1 {
+        & h1 {
             margin-top: 20px;
             text-align: center;
             font-weight: 600;
@@ -4005,13 +4025,13 @@ nav {
             padding-bottom: 0;
         }
 
-        ul {
+        & ul {
             margin: auto;
             max-width: 800px;
             padding: 30px;
         }
 
-        p {
+        & p {
             margin: auto;
             max-width: 800px;
             padding: 30px;
@@ -4032,7 +4052,7 @@ nav {
     max-width: 800px;
     margin: auto;
 
-    h1 {
+    & h1 {
         text-align: center;
         font-weight: 600;
         margin-bottom: 0;
@@ -4083,7 +4103,7 @@ nav {
                     font-size: 34px;
                 }
 
-                a {
+                & a {
                     margin-top: 76px;
                 }
             }
@@ -4097,13 +4117,13 @@ nav {
                     padding-bottom: 10px;
                 }
 
-                p {
+                & p {
                     padding: 0;
                     margin: 0 0 -10px;
                     width: 100%;
                     text-align: center;
                     font-weight: 550;
-                    color: hsl(169, 46%, 33%);
+                    color: hsl(169deg 46% 33%);
                 }
             }
         }
@@ -4112,7 +4132,7 @@ nav {
 
 .portico-landing.why-page.case-study-page {
     .bg-dimmer {
-        background-color: hsl(224, 52%, 12%, 0.86);
+        background-color: hsl(224deg 52% 12% / 86%);
     }
 }
 
@@ -4121,7 +4141,7 @@ nav {
     margin: 50px auto 0;
     padding: 0 4vw;
 
-    h1 {
+    & h1 {
         font-size: 36px;
         font-weight: 600;
     }
@@ -4135,7 +4155,7 @@ nav {
             margin: 0 10px;
         }
 
-        p {
+        & p {
             padding: 10px;
         }
 
@@ -4156,7 +4176,7 @@ nav {
             }
 
             .plan-title {
-                color: hsl(0, 0%, 0%);
+                color: hsl(0deg 0% 0%);
             }
         }
     }
@@ -4170,7 +4190,7 @@ nav {
     .discounts-section {
         margin: 30px;
 
-        h1 {
+        & h1 {
             font-weight: 700 !important;
             font-size: 26px !important;
         }
@@ -4181,7 +4201,7 @@ nav {
     padding-bottom: 120px;
 
     .bg-dimmer {
-        background-color: hsla(224, 52%, 12%, 0.85);
+        background-color: hsl(224deg 52% 12% / 85%);
     }
 
     .padded-content {
@@ -4196,10 +4216,10 @@ nav {
     }
 
     .discounts-section .register-buttons a {
-        color: hsl(169, 71%, 64%);
+        color: hsl(169deg 71% 64%);
 
         &:hover {
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
         }
     }
 }
@@ -4211,7 +4231,7 @@ nav {
         margin: auto;
         margin-top: 30px;
 
-        a {
+        & a {
             min-height: 40px;
             padding: 7px 0;
         }
@@ -4219,7 +4239,7 @@ nav {
 
     @media (width <= 768px) {
         .register-buttons {
-            a {
+            & a {
                 margin: 10px calc(5vw - 10px);
                 width: clamp(130px, 40vw, 200px);
                 font-size: 13px;
@@ -4229,7 +4249,7 @@ nav {
 }
 
 .self-hosting-page {
-    p {
+    & p {
         font-size: 18px !important;
     }
 
@@ -4242,7 +4262,7 @@ nav {
             padding: 30px;
 
             &:nth-child(even) {
-                background: hsl(171, 49%, 39%, 0.21);
+                background: hsl(171deg 49% 39% / 21%);
                 border-radius: 10px;
             }
         }
@@ -4260,7 +4280,7 @@ nav {
         height: 0;
         border-style: solid;
         border-width: 150px 100vw 0 0;
-        border-color: hsl(0, 0%, 100%) transparent transparent transparent;
+        border-color: hsl(0deg 0% 100%) transparent transparent transparent;
     }
 
     .quote {
@@ -4272,11 +4292,11 @@ nav {
         border-radius: 0;
         background: linear-gradient(
             145deg,
-            hsl(191, 56%, 55%),
-            hsl(169, 65%, 42%)
+            hsl(191deg 56% 55%),
+            hsl(169deg 65% 42%)
         );
 
-        blockquote {
+        & blockquote {
             max-width: 700px;
             margin: auto;
             font-size: 24px;
@@ -4292,7 +4312,7 @@ nav {
         flex-direction: column;
         width: 100%;
         margin: 0;
-        background: hsl(171, 49%, 39%, 0.21);
+        background: hsl(171deg 49% 39% / 21%);
         padding: 50px 0;
 
         .feature-row {
@@ -4311,21 +4331,21 @@ nav {
                 flex-direction: column;
                 width: 40vw;
                 height: 350px;
-                box-shadow: 0 1px 1px 0 hsla(193, 100%, 7.1%, 0.3),
-                    1px 1px 1px 0 hsla(193, 100%, 7.1%, 0.15),
-                    -1px 1px 1px 0 hsla(193, 100%, 7.1%, 0.15);
+                box-shadow: 0 1px 1px 0 hsl(193deg 100% 7.1% / 30%),
+                    1px 1px 1px 0 hsl(193deg 100% 7.1% / 15%),
+                    -1px 1px 1px 0 hsl(193deg 100% 7.1% / 15%);
 
-                background: hsl(0, 0%, 100%);
+                background: hsl(0deg 0% 100%);
                 text-align: left;
                 margin: 10px 0;
                 padding: 50px 30px 0;
-                border-top: 5px solid hsl(171, 49%, 39%);
+                border-top: 5px solid hsl(171deg 49% 39%);
 
                 @media (width < 1000px) {
                     height: 400px;
                 }
 
-                h1 {
+                & h1 {
                     font-weight: 550;
                     font-size: clamp(24px, 2.5vw, 32px);
                 }
@@ -4333,7 +4353,7 @@ nav {
                 .feature-icon {
                     align-self: center;
 
-                    img {
+                    & img {
                         max-width: 100px;
                     }
                 }
@@ -4365,8 +4385,8 @@ nav {
             padding: 50px;
             background: linear-gradient(
                 180deg,
-                hsl(191, 56%, 55%),
-                hsl(169, 65%, 42%)
+                hsl(191deg 56% 55%),
+                hsl(169deg 65% 42%)
             );
 
             @media (width <= 540px) {
@@ -4377,9 +4397,43 @@ nav {
                 }
             }
 
-            h1 {
-                color: hsl(0, 0%, 100%);
+            & h1 {
+                color: hsl(0deg 0% 100%);
             }
+        }
+    }
+}
+
+.try-zulip-now-page {
+    .bottom-register-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .try-now-button {
+        padding: 11px 25px;
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: hsl(0deg 0% 100%);
+        background: linear-gradient(
+            145deg,
+            hsl(191deg 56% 55%),
+            hsl(169deg 65% 42%)
+        );
+        box-shadow: 0 3px 10px hsl(0deg 0% 0% / 20%);
+        border: 0;
+        width: 200px;
+        height: 50px;
+        outline: none;
+        border-radius: 4px;
+
+        &:visited {
+            color: hsl(0deg 0% 100%);
+        }
+
+        &:hover {
+            background-color: hsl(169deg 65% 42%);
+            box-shadow: 0 3px 10px hsl(0deg 0% 0% / 30%);
         }
     }
 }

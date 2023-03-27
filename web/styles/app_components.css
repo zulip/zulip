@@ -15,15 +15,15 @@
 
 kbd {
     display: inline-block;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid hsl(0deg 0% 80%);
     border-radius: 4px;
     font-weight: 600;
     white-space: nowrap;
-    background-color: hsl(0, 0%, 98%);
-    color: hsl(0, 0%, 20%);
+    background-color: hsl(0deg 0% 98%);
+    color: hsl(0deg 0% 20%);
     margin: 0.25em 0.1em;
     padding: 0.1em 0.4em;
-    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+    text-shadow: 0 1px 0 hsl(0deg 0% 100%);
     /* Prevent selection */
     user-select: none;
 }
@@ -76,7 +76,7 @@ kbd {
 }
 
 .box-shadow {
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
 }
 
 .clear-float {
@@ -110,7 +110,7 @@ evidence Edge may have bugs in its handling of placeholder opacity
 CSS: https://github.com/necolas/normalize.css/issues/741
 */
 .placeholder {
-    color: hsl(0, 0%, 45%);
+    color: hsl(0deg 0% 45%);
     opacity: 1;
 }
 
@@ -130,10 +130,10 @@ input::placeholder {
         line-height: normal;
         text-align: center;
 
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
         color: inherit;
         outline: none;
-        border: 1px solid hsl(0, 0%, 80%);
+        border: 1px solid hsl(0deg 0% 80%);
         border-radius: 2px;
 
         box-shadow: none;
@@ -157,11 +157,11 @@ input::placeholder {
         }
 
         &.green {
-            background-color: hsl(150, 31%, 53%);
+            background-color: hsl(150deg 31% 53%);
         }
 
         &.grey {
-            background-color: hsl(0, 0%, 67%);
+            background-color: hsl(0deg 0% 67%);
         }
 
         &.small {
@@ -172,83 +172,83 @@ input::placeholder {
 
         &:hover,
         &:focus {
-            border-color: hsl(0, 0%, 60%);
+            border-color: hsl(0deg 0% 60%);
         }
 
         &:active {
-            border-color: hsl(0, 0%, 60%);
+            border-color: hsl(0deg 0% 60%);
             color: inherit;
-            background-color: hsl(0, 0%, 95%);
+            background-color: hsl(0deg 0% 95%);
         }
 
         &.sea-green {
-            color: hsl(156, 41%, 40%);
-            border-color: hsl(156, 28%, 70%);
+            color: hsl(156deg 41% 40%);
+            border-color: hsl(156deg 28% 70%);
 
             &:hover,
             &:focus {
-                border-color: hsl(156, 30%, 50%);
+                border-color: hsl(156deg 30% 50%);
             }
 
             &:active {
-                border-color: hsl(156, 30%, 40%);
-                color: hsl(156, 44%, 43%);
-                background-color: hsl(154, 33%, 96%);
+                border-color: hsl(156deg 30% 40%);
+                color: hsl(156deg 44% 43%);
+                background-color: hsl(154deg 33% 96%);
             }
         }
 
         &.btn-warning {
-            color: hsl(35, 70%, 56%);
-            border-color: hsl(35, 98%, 84%);
+            color: hsl(35deg 70% 56%);
+            border-color: hsl(35deg 98% 84%);
 
             &:hover,
             &:focus {
-                border-color: hsl(35, 55%, 70%);
+                border-color: hsl(35deg 55% 70%);
             }
 
             &:active {
-                color: hsl(35, 82%, 40%);
-                border-color: hsl(35, 55%, 70%);
-                background-color: hsl(33, 48%, 96%);
+                color: hsl(35deg 82% 40%);
+                border-color: hsl(35deg 55% 70%);
+                background-color: hsl(33deg 48% 96%);
             }
         }
 
         &.btn-danger {
-            color: hsl(357, 64%, 72%);
-            border-color: hsl(4, 56%, 82%);
+            color: hsl(357deg 64% 72%);
+            border-color: hsl(4deg 56% 82%);
 
             &:hover,
             &:focus {
-                border-color: hsl(2, 46%, 68%);
+                border-color: hsl(2deg 46% 68%);
             }
 
             &:active {
-                color: hsl(357, 55%, 63%);
-                border-color: hsl(2, 46%, 68%);
-                background-color: hsl(7, 82%, 98%);
+                color: hsl(357deg 55% 63%);
+                border-color: hsl(2deg 46% 68%);
+                background-color: hsl(7deg 82% 98%);
             }
         }
 
         &.btn-link {
-            color: hsl(208, 56%, 53%);
+            color: hsl(208deg 56% 53%);
             text-decoration: none;
 
             &:hover,
             &:focus {
-                color: hsl(208, 56%, 38%);
+                color: hsl(208deg 56% 38%);
             }
         }
 
         &:disabled {
             cursor: not-allowed;
             filter: saturate(0);
-            background-color: hsl(0, 0%, 93%);
-            color: hsl(0, 3%, 52%);
+            background-color: hsl(0deg 0% 93%);
+            color: hsl(0deg 3% 52%);
 
             &:hover {
-                background-color: hsl(0, 0%, 93%);
-                color: hsl(156, 39%, 54%);
-                border-color: hsl(156, 39%, 77%);
+                background-color: hsl(0deg 0% 93%);
+                color: hsl(156deg 39% 54%);
+                border-color: hsl(156deg 39% 77%);
             }
         }
     }
@@ -270,7 +270,7 @@ input::placeholder {
             overflow: hidden;
             vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
             padding: 3px 10px;
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
             cursor: pointer;
             justify-content: center;
             align-items: center;
@@ -280,7 +280,7 @@ input::placeholder {
             }
 
             &:not(.selected) {
-                border: 1px solid hsl(0, 0%, 80%);
+                border: 1px solid hsl(0deg 0% 80%);
             }
 
             &.first {
@@ -298,16 +298,16 @@ input::placeholder {
 
             &.selected {
                 position: relative;
-                background-color: hsl(0, 0%, 53%);
-                color: hsl(0, 0%, 100%);
-                border: 1px solid hsl(0, 0%, 47%);
+                background-color: hsl(0deg 0% 53%);
+                color: hsl(0deg 0% 100%);
+                border: 1px solid hsl(0deg 0% 47%);
                 z-index: 2;
             }
 
             &.disabled {
                 pointer-events: none;
-                color: hsl(0, 0%, 80%);
-                border-color: hsl(0, 0%, 87%);
+                color: hsl(0deg 0% 80%);
+                border-color: hsl(0deg 0% 87%);
             }
         }
 
@@ -341,7 +341,7 @@ div.overlay {
     height: 100%;
     -webkit-overflow-scrolling: touch;
 
-    background-color: hsla(0, 0%, 13%, 0.8);
+    background-color: hsl(0deg 0% 13% / 80%);
     z-index: 105;
 
     pointer-events: none;
@@ -385,7 +385,7 @@ div.overlay {
 
 .clear_search_button {
     &:hover {
-        color: hsl(0, 0%, 0%);
+        color: hsl(0deg 0% 0%);
     }
 
     &:disabled {
@@ -403,7 +403,7 @@ div.overlay {
         text-align: center;
         padding-top: 8px;
         padding-left: 4px;
-        color: hsl(0, 0%, 80%);
+        color: hsl(0deg 0% 80%);
         text-shadow: none;
         outline: none !important;
         box-shadow: none;
@@ -420,16 +420,16 @@ div.overlay {
 .grey-box {
     margin: 0;
     padding: 5px 10px;
-    background-color: hsl(0, 0%, 98%);
-    border: 1px solid hsl(0, 0%, 87%);
+    background-color: hsl(0deg 0% 98%);
+    border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
 
     list-style-type: none;
 }
 
 .white-box {
-    background-color: hsl(0, 0%, 100%);
-    border: 1px solid hsl(0, 0%, 87%);
+    background-color: hsl(0deg 0% 100%);
+    border: 1px solid hsl(0deg 0% 87%);
 }
 
 .guest-avatar {
@@ -438,7 +438,7 @@ div.overlay {
 
     &::after {
         content: " ";
-        background-color: hsl(0, 0%, 47%);
+        background-color: hsl(0deg 0% 47%);
         position: absolute;
         bottom: -30%;
         right: -30%;
@@ -473,16 +473,16 @@ div.overlay {
     overflow: hidden;
     white-space: nowrap;
 
-    input {
+    & input {
         padding-right: 20px;
     }
 }
 
 .stream-selection-header-colorblock {
     /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
-    box-shadow: inset 0 2px 1px -2px hsl(0, 0%, 20%),
-        inset 2px 0 1px -2px hsl(0, 0%, 20%),
-        inset 0 -2px 1px -2px hsl(0, 0%, 20%);
+    box-shadow: inset 0 2px 1px -2px hsl(0deg 0% 20%),
+        inset 2px 0 1px -2px hsl(0deg 0% 20%),
+        inset 0 -2px 1px -2px hsl(0deg 0% 20%);
     width: 10px;
     border-radius: 3px 0 0 3px;
     border-bottom: 0;
@@ -532,9 +532,9 @@ div.overlay {
 }
 
 .upgrade-tip:hover {
-    color: hsl(0, 0%, 20%);
-    border: 1px solid hsl(49, 20%, 60%);
-    box-shadow: 0 0 4px hsla(199, 79%, 56%, 0.2);
+    color: hsl(0deg 0% 20%);
+    border: 1px solid hsl(49deg 20% 60%);
+    box-shadow: 0 0 4px hsl(199deg 79% 56% / 20%);
 
     text-decoration: none;
 }
@@ -544,14 +544,14 @@ div.overlay {
 .tip {
     position: relative;
     display: block;
-    background-color: hsl(46, 63%, 95%);
-    border: 1px solid hsl(49, 20%, 84%);
+    background-color: hsl(46deg 63% 95%);
+    border: 1px solid hsl(49deg 20% 84%);
     border-radius: 4px;
     padding: 10px;
     margin: 10px 0;
     font-size: 1rem;
     line-height: 1.5;
-    color: hsl(0, 0%, 40%);
+    color: hsl(0deg 0% 40%);
 
     &::before {
         display: inline;
@@ -579,8 +579,8 @@ div.overlay {
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
-    background-color: hsl(105, 2%, 50%);
-    color: hsl(0, 0%, 100%);
+    background-color: hsl(105deg 2% 50%);
+    color: hsl(0deg 0% 100%);
 }
 
 .unread_mention_info:not(:empty) {
@@ -635,11 +635,11 @@ div.overlay {
 }
 
 .animated-purple-button {
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
     transition: all 80ms linear;
     box-shadow: none;
     /* This color just passes WCAG AA */
-    background-color: hsl(240, 96%, 68%);
+    background-color: hsl(240deg 96% 68%);
     cursor: pointer;
     border: none;
     border-radius: 4px;
@@ -648,13 +648,13 @@ div.overlay {
 
     &:hover {
         /* This color passes WCAG AAA */
-        background-color: hsl(240, 41%, 50%);
-        box-shadow: 0 1px 4px hsl(0, 0%, 0%, 0.3);
+        background-color: hsl(240deg 41% 50%);
+        box-shadow: 0 1px 4px hsl(0deg 0% 0% / 30%);
     }
 
     &:focus {
-        background-color: hsl(240, 41%, 50%);
-        box-shadow: 0 1px 4px 0 hsl(235, 18%, 7%);
+        background-color: hsl(240deg 41% 50%);
+        box-shadow: 0 1px 4px 0 hsl(235deg 18% 7%);
         outline: none;
     }
 }
@@ -662,21 +662,21 @@ div.overlay {
 .color_animated_button {
     display: flex;
     justify-content: center;
-    background-color: hsl(0, 0%, 90%);
-    color: hsl(0, 0%, 0%);
+    background-color: hsl(0deg 0% 90%);
+    color: hsl(0deg 0% 0%);
     border-radius: 4px;
 
-    span {
-        color: hsl(0, 0%, 0%);
+    & span {
+        color: hsl(0deg 0% 0%);
     }
 
     &:hover {
         cursor: pointer;
-        background-color: hsl(240, 96%, 68%);
-        color: hsl(0, 0%, 100%);
+        background-color: hsl(240deg 96% 68%);
+        color: hsl(0deg 0% 100%);
 
-        span {
-            color: hsl(0, 0%, 100%);
+        & span {
+            color: hsl(0deg 0% 100%);
             transition: all 0.2s ease;
         }
 
@@ -697,11 +697,11 @@ div.overlay {
     table-layout: auto;
     border-collapse: separate;
 
-    thead th {
+    & thead th {
         color: inherit;
-        background-color: hsl(0, 0%, 100%);
-        border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
-        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+        background-color: hsl(0deg 0% 100%);
+        border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
+        border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
 
         &.active::after,
         &[data-sort]:hover::after {
@@ -725,7 +725,7 @@ div.overlay {
 
         &[data-sort]:hover {
             cursor: pointer;
-            background-color: hsla(0, 0%, 95%) !important;
+            background-color: hsl(0deg 0% 95%) !important;
             transition: background-color 100ms ease-in-out;
 
             &:not(.active)::after {
@@ -752,10 +752,10 @@ div.overlay {
 
     .save-discard-widget-button {
         border-radius: 5px;
-        border: 1px solid hsl(0, 0%, 80%);
+        border: 1px solid hsl(0deg 0% 80%);
         padding: 3px 14px 4px 11px;
         text-decoration: none;
-        color: hsl(0, 0%, 47%);
+        color: hsl(0deg 0% 47%);
         min-width: 80px;
         /* Limit the height of the button */
         line-height: 1.2;
@@ -763,32 +763,32 @@ div.overlay {
 
         &:hover,
         &:focus {
-            border: 1px solid hsl(0, 0%, 61%);
+            border: 1px solid hsl(0deg 0% 61%);
 
             .discard-button.save-discard-widget-button-text {
-                color: hsl(0, 0%, 18%);
+                color: hsl(0deg 0% 18%);
             }
         }
 
         &.primary {
-            background-color: hsl(156, 30%, 50%);
-            color: hsl(0, 0%, 100%);
-            border: 1px solid hsl(155, 30%, 50%);
+            background-color: hsl(156deg 30% 50%);
+            color: hsl(0deg 0% 100%);
+            border: 1px solid hsl(155deg 30% 50%);
 
             &:hover,
             &:focus {
-                background-color: hsl(166, 35%, 57%);
-                border: 1px solid hsl(166, 35%, 57%);
+                background-color: hsl(166deg 35% 57%);
+                border: 1px solid hsl(166deg 35% 57%);
             }
 
             .save-discard-widget-button-icon {
                 font-weight: lighter;
-                color: hsl(0, 0%, 100%);
+                color: hsl(0deg 0% 100%);
             }
 
             &.saving {
-                background-color: hsl(156, 14%, 40%);
-                border-color: hsl(156, 14%, 40%);
+                background-color: hsl(156deg 14% 40%);
+                border-color: hsl(156deg 14% 40%);
             }
         }
 
@@ -840,5 +840,17 @@ div.overlay {
 
     &.hashtag:empty::after {
         font-size: 1em;
+    }
+}
+
+#settings_content,
+#stream_settings,
+#edit_bot_modal {
+    .dropdown-list-widget .dropdown-list-wrapper {
+        width: fit-content;
+
+        & span {
+            width: fit-content;
+        }
     }
 }

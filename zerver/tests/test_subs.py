@@ -33,7 +33,7 @@ from zerver.actions.streams import (
     do_change_stream_post_policy,
     do_deactivate_stream,
 )
-from zerver.actions.user_groups import add_subgroups_to_user_group
+from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -82,7 +82,6 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -1729,13 +1728,13 @@ class StreamAdminTest(ZulipTestCase):
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"description": "See https://zulip.com/team"},
+                {"description": "See https://zulip.com/team/"},
             )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
         self.assertEqual(
             stream.rendered_description,
-            '<p>See <a href="https://zulip.com/team">https://zulip.com/team</a></p>',
+            '<p>See <a href="https://zulip.com/team/">https://zulip.com/team/</a></p>',
         )
 
     def test_change_stream_description_requires_admin(self) -> None:
@@ -2566,14 +2565,14 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_can_remove_subscribers_group(self) -> None:
         realm = get_realm("zulip")
-        leadership_group = create_user_group(
+        leadership_group = check_add_user_group(
+            realm,
             "leadership",
             [self.example_user("iago"), self.example_user("shiva")],
-            realm,
             acting_user=None,
         )
-        managers_group = create_user_group(
-            "managers", [self.example_user("hamlet")], realm=realm, acting_user=None
+        managers_group = check_add_user_group(
+            realm, "managers", [self.example_user("hamlet")], acting_user=None
         )
         add_subgroups_to_user_group(managers_group, [leadership_group], acting_user=None)
         cordelia = self.example_user("cordelia")

@@ -4,7 +4,7 @@
     line-height: 1.5;
     overflow: auto;
 
-    h1[id],
+    & h1[id],
     h2[id],
     h3[id],
     h4[id] {
@@ -15,7 +15,7 @@
         }
     }
 
-    h2[id],
+    & h2[id],
     h3[id],
     h4[id] {
         &::before {
@@ -24,8 +24,8 @@
         }
     }
 
-    h1 {
-        border-bottom: 1px solid hsl(0, 0%, 93%);
+    & h1 {
+        border-bottom: 1px solid hsl(0deg 0% 93%);
         padding-bottom: 10px;
         margin-bottom: 15px;
 
@@ -44,20 +44,20 @@
         }
     }
 
-    h2 {
+    & h2 {
         font-size: 1.5em;
         line-height: 1.25;
         margin: 20px 0 5px;
     }
 
-    h3 {
+    & h3 {
         font-size: 1.25em;
         line-height: 1.25;
         opacity: 1;
         margin: 20px 0 5px;
     }
 
-    h1,
+    & h1,
     h2,
     h3 {
         font-weight: 700;
@@ -78,7 +78,7 @@
         }
     }
 
-    h5,
+    & h5,
     h6 {
         margin: 10px 0;
         line-height: 20px;
@@ -87,7 +87,7 @@
     /* Since markdown doesn't make it easy to put an HTML element around a
        markdown table, we instead have a model of putting an empty div
        before it to configure a specific table's styling. */
-    div.centered_table + table td:not(:first-child),
+    & div.centered_table + table td:not(:first-child),
     div.centered_table + table th {
         text-align: center;
     }
@@ -108,11 +108,11 @@
         left: calc(30px);
     }
 
-    li {
+    & li {
         line-height: 150%;
     }
 
-    ol {
+    & ol {
         counter-reset: item;
         list-style: none;
 
@@ -133,8 +133,8 @@
                 vertical-align: top;
                 padding: 3px 6.5px 3px 7.5px;
                 margin-right: 5px;
-                background-color: hsl(170, 48%, 54%);
-                color: hsl(0, 0%, 100%);
+                background-color: hsl(170deg 48% 54%);
+                color: hsl(0deg 0% 100%);
                 border-radius: 100%;
                 font-size: 0.9em;
                 line-height: 1.1;
@@ -142,9 +142,9 @@
             }
 
             .codehilite {
-                background-color: hsl(0, 0%, 100%);
+                background-color: hsl(0deg 0% 100%);
 
-                pre {
+                & pre {
                     white-space: pre;
                     overflow-x: auto;
                 }
@@ -166,11 +166,11 @@
         }
     }
 
-    ul {
+    & ul {
         margin: 0 10px 15px 25px;
 
         /* Avoid extra whitespace after nested bulleted lists. */
-        ul {
+        & ul {
             margin: 0 20px;
         }
 
@@ -190,9 +190,9 @@
     .content {
         padding: 30px;
         max-width: 700px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 100%);
 
-        ol li p:not(:first-child) {
+        & ol li p:not(:first-child) {
             display: block;
         }
 
@@ -204,7 +204,7 @@
             }
         }
 
-        i.zulip-icon {
+        & i.zulip-icon {
             margin: 0 2px 2px;
             vertical-align: middle;
         }
@@ -214,23 +214,23 @@
         }
     }
 
-    a {
-        color: hsl(176, 46%, 41%);
+    & a {
+        color: hsl(176deg 46% 41%);
         font-weight: 600;
 
-        code {
-            color: hsl(176, 46%, 41%);
+        & code {
+            color: hsl(176deg 46% 41%);
         }
     }
 
-    strong {
+    & strong {
         font-weight: 600;
     }
 
-    img {
+    & img {
         vertical-align: top;
-        box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.05);
-        border: 1px solid hsl(0, 0%, 87%);
+        box-shadow: 0 0 4px hsl(0deg 0% 0% / 5%);
+        border: 1px solid hsl(0deg 0% 87%);
         border-radius: 4px;
 
         &.inline {
@@ -263,25 +263,25 @@
     .keyboard_tip {
         position: relative;
         display: block;
-        background-color: hsl(210, 22%, 96%);
-        border: 1px solid hsl(210, 22%, 90%);
+        background-color: hsl(210deg 22% 96%);
+        border: 1px solid hsl(210deg 22% 90%);
         border-radius: 4px;
         padding: 10px;
         margin: 5px 0;
 
-        p {
+        & p {
             margin-bottom: 0;
         }
 
-        p:first-of-type {
+        & p:first-of-type {
             display: inline;
         }
     }
 
     .tip,
     .keyboard_tip {
-        background-color: hsl(46, 63%, 95%);
-        border: 1px solid hsl(46, 63%, 84%);
+        background-color: hsl(46deg 63% 95%);
+        border: 1px solid hsl(46deg 63% 84%);
     }
 
     .tip::before {
@@ -306,16 +306,16 @@
         border-radius: 6px;
 
         &.grey {
-            border: 1px solid hsl(0, 0%, 80%);
+            border: 1px solid hsl(0deg 0% 80%);
         }
 
         &.grey-line {
-            border: 1px solid hsl(0, 0%, 80%);
+            border: 1px solid hsl(0deg 0% 80%);
             top: 2px;
 
             &::after {
                 content: "";
-                background: hsl(0, 0%, 80%);
+                background: hsl(0deg 0% 80%);
                 height: 1.5px;
                 width: 6px;
                 display: block;
@@ -324,34 +324,34 @@
         }
 
         &.orange {
-            border: 1px solid hsl(29, 84%, 51%);
+            border: 1px solid hsl(29deg 84% 51%);
             background: linear-gradient(
                 to bottom,
-                hsla(0, 0%, 100%, 0) 50%,
-                hsla(29, 84%, 51%, 1) 50%
+                hsl(0deg 0% 100% / 0%) 50%,
+                hsl(29deg 84% 51%) 50%
             );
         }
 
         &.green {
-            border: 1px solid hsl(106, 74%, 44%);
-            background-color: hsla(106, 74%, 44%, 0.3);
+            border: 1px solid hsl(106deg 74% 44%);
+            background-color: hsl(106deg 74% 44% / 30%);
         }
 
         &.green.solid {
-            background-color: hsl(106, 74%, 44%);
+            background-color: hsl(106deg 74% 44%);
         }
     }
 
-    kbd {
+    & kbd {
         /* Same as kbd in app_components.css */
         display: inline-block;
-        border: 1px solid hsl(0, 0%, 80%);
+        border: 1px solid hsl(0deg 0% 80%);
         border-radius: 4px;
         font-weight: 600;
         white-space: nowrap;
-        background-color: hsl(0, 0%, 98%);
-        color: hsl(0, 0%, 20%);
-        text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 98%);
+        color: hsl(0deg 0% 20%);
+        text-shadow: 0 1px 0 hsl(0deg 0% 100%);
         /* Different from app_components.css */
         /* Removed margin setting */
         font-size: 0.85em;
@@ -366,23 +366,23 @@
         }
     }
 
-    code {
+    & code {
         /* Same font-family as zulip.css */
         font-family: "Source Code Pro", monospace;
         /* Same as base rules for code elements in rendered_markdown.css */
         font-size: 0.825em;
         unicode-bidi: embed;
         direction: ltr;
-        color: hsl(0, 0%, 0%);
+        color: hsl(0deg 0% 0%);
         border-radius: 3px;
         /* Different from base rules for code elements in rendered_markdown.css */
         white-space: initial;
         padding: 0 4px;
-        background-color: hsl(0, 0%, 93%);
+        background-color: hsl(0deg 0% 93%);
     }
 
-    pre {
-        code {
+    & pre {
+        & code {
             font-size: 14px;
             white-space: pre-wrap;
             padding: 0;
@@ -393,15 +393,15 @@
     }
 
     .code-section {
-        ol {
+        & ol {
             margin-left: 15px;
             margin-top: 10px;
         }
 
-        ul.nav {
+        & ul.nav {
             margin: 0;
 
-            li {
+            & li {
                 display: inline-block;
                 padding: 5px 14px;
                 margin: 0;
@@ -409,11 +409,11 @@
                 cursor: pointer;
 
                 &.active {
-                    color: hsl(176, 46%, 41%);
+                    color: hsl(176deg 46% 41%);
                     margin-bottom: -1px;
 
-                    border: 1px solid hsl(0, 0%, 87%);
-                    border-bottom: 1px solid hsl(0, 0%, 100%);
+                    border: 1px solid hsl(0deg 0% 87%);
+                    border-bottom: 1px solid hsl(0deg 0% 100%);
                     border-radius: 4px 4px 0 0;
                 }
             }
@@ -426,7 +426,7 @@
         .blocks {
             padding: 10px;
             margin-bottom: 10px;
-            border: 1px solid hsl(0, 0%, 87%);
+            border: 1px solid hsl(0deg 0% 87%);
 
             & > div {
                 display: none;
