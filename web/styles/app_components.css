@@ -782,7 +782,7 @@ div.overlay {
             }
 
             .save-discard-widget-button-icon {
-                font-weight: lighter;
+                font-weight: 400;
                 color: hsl(0deg 0% 100%);
             }
 
@@ -815,7 +815,7 @@ div.overlay {
             vertical-align: middle;
             margin-right: 3px;
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .save-discard-widget-button-text {
