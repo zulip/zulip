@@ -1080,7 +1080,7 @@ td.pointer {
     cursor: pointer;
     vertical-align: top;
     border: none;
-    padding: 3px 5px;
+    padding: 0 5px;
 
     &:hover .message_controls,
     &:focus-within .message_controls,
@@ -1183,6 +1183,12 @@ td.pointer {
             .messagebox {
                 border-radius: 0 0 7px 7px;
                 padding-bottom: 5px;
+            }
+        }
+
+        .message_header + .message_row {
+            .messagebox {
+                padding-top: 5px;
             }
         }
     }
@@ -1438,7 +1444,8 @@ td.pointer {
 .selected_message {
     .messagebox-content {
         outline: 1px solid hsl(217deg 64% 59% / 60%);
-        border-radius: 3px;
+        border-radius: 5px;
+        outline-offset: -1px;
     }
 }
 
