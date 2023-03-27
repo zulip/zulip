@@ -2504,6 +2504,83 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
         self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
 
+    def test_restricted_access_to_users(self) -> None:
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        shiva = self.example_user("shiva")
+        zoe = self.example_user("ZOE")
+        polonius = self.example_user("polonius")
+
+        self.set_up_db_for_testing_user_access()
+
+        self.login("polonius")
+        with self.assert_database_query_count(9):
+            result = orjson.loads(self.client_get("/json/users").content)
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        # The user can access 3 bot users and 7 human users.
+        self.assert_length(accessible_users, 10)
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        # The user can access the following 7 human users -
+        # 1. Hamlet and Iago - they are subscribed to common streams.
+        # 2. Prospero - Because Polonius sent a DM to Prospero when
+        # they were allowed to access all users.
+        # 3. Aaron and Zoe - Because they are particapting in a
+        # group DM with Polonius.
+        # 4. Shiva - Because Shiva sent a DM to Polonius.
+        # 5. Polonius - A user can obviously access themselves.
+        self.assert_length(accessible_human_users, 7)
+        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
+        self.assertCountEqual(
+            accessible_user_ids,
+            [polonius.id, hamlet.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id],
+        )
+
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id])
+
+        do_deactivate_user(hamlet, acting_user=None)
+        do_deactivate_user(aaron, acting_user=None)
+        do_deactivate_user(shiva, acting_user=None)
+        result = orjson.loads(self.client_get("/json/users").content)
+        accessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] != UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        self.assert_length(accessible_users, 9)
+        # Guests can only access those deactivated users who were involved in
+        # DMs and not those who were subscribed to some common streams.
+        accessible_human_users = [user for user in accessible_users if not user["is_bot"]]
+        self.assert_length(accessible_human_users, 6)
+        accessible_user_ids = [user["user_id"] for user in accessible_human_users]
+        self.assertCountEqual(
+            accessible_user_ids, [polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id]
+        )
+
+        inaccessible_users = [
+            user
+            for user in result["members"]
+            if user["full_name"] == UserProfile.INACCESSIBLE_USER_NAME
+        ]
+        inaccessible_user_ids = [user["user_id"] for user in inaccessible_users]
+        self.assertCountEqual(
+            inaccessible_user_ids, [cordelia.id, desdemona.id, othello.id, hamlet.id]
+        )
+
 
 class DeleteUserTest(ZulipTestCase):
     def test_do_delete_user(self) -> None:

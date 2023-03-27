@@ -49,7 +49,10 @@ from typing_extensions import override
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_set_realm_property,
+)
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -1940,6 +1943,41 @@ Output:
     def soft_deactivate_user(self, user: UserProfile) -> None:
         do_soft_deactivate_users([user])
         assert user.long_term_idle
+
+    def set_up_db_for_testing_user_access(self) -> None:
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        zoe = self.example_user("ZOE")
+        shiva = self.example_user("shiva")
+        realm = get_realm("zulip")
+        # Polonius is subscribed to "Verona" by default, so we unsubscribe
+        # it so that it becomes easier to test the restricted access.
+        self.unsubscribe(polonius, "Verona")
+
+        self.make_stream("test_stream1")
+        self.make_stream("test_stream2", invite_only=True)
+
+        self.subscribe(othello, "test_stream1")
+        self.send_stream_message(othello, "test_stream1", content="test message", topic_name="test")
+        self.unsubscribe(othello, "test_stream1")
+
+        self.subscribe(polonius, "test_stream1")
+        self.subscribe(polonius, "test_stream2")
+        self.subscribe(hamlet, "test_stream1")
+        self.subscribe(iago, "test_stream2")
+
+        self.send_personal_message(polonius, prospero)
+        self.send_personal_message(shiva, polonius)
+        self.send_huddle_message(aaron, [polonius, zoe])
+
+        members_group = UserGroup.objects.get(name="role:members", realm=realm)
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
 
 
 class ZulipTestCase(ZulipTestCaseMixin, TestCase):
