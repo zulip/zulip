@@ -17,15 +17,15 @@
             <div class="input" contenteditable="true"></div>
         </div>
         {{else if is_date_field }}
-        <input class="custom_user_field_value datepicker" data-field-id="{{ field.id }}" type="text"
+        <input class="custom_user_field_value datepicker modal_text_input" data-field-id="{{ field.id }}" type="text"
           value="{{ field_value.value }}" />
         <span class="remove_date"><i class="fa fa-close"></i></span>
         {{else if is_url_field }}
-        <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
+        <input class="custom_user_field_value modal_text_input" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
         {{else if is_pronouns_field}}
-        <input class="custom_user_field_value pronouns_type_field" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
+        <input class="custom_user_field_value pronouns_type_field modal_text_input" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{else}}
-        <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
+        <input class="custom_user_field_value modal_text_input" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{/if}}
     </div>
 </div>
