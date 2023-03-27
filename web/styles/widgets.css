@@ -90,6 +90,15 @@
         margin: 0 0 5px;
         padding: 0;
     }
+
+    & input {
+        &.poll-question,
+        &.poll-option,
+        &.add-task,
+        &.add-desc {
+            width: 206px;
+        }
+    }
 }
 
 .poll-widget {
