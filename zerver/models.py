@@ -283,6 +283,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     string_id = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True)
 
     date_created = models.DateTimeField(default=timezone_now)
+    scheduled_deletion_date = models.DateTimeField(default=None, null=True)
     demo_organization_scheduled_deletion_date = models.DateTimeField(default=None, null=True)
     deactivated = models.BooleanField(default=False)
 
