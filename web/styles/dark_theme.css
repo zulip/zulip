@@ -668,20 +668,18 @@
         }
     }
 
-.messagebox-content:hover{
-      background-color: hsl(240, 1%, 14%);
-      transition: 0.5s;
-}
+    .messagebox-content:hover {
+        background-color: hsl(240, 1%, 14%);
+        transition: 0.5s;
+    }
 
+    .messagebox-content:hover .message_length_controller {
+        background-color: hsl(240, 1%, 10%);
+    }
 
-.messagebox-content:hover .message_length_controller{
-    background-color:hsl(240, 1%, 10%) ;
-    
-}
-.messagebox-content:hover .message_length_controller:hover{
-    background-color:hsl(240, 5%, 8%) ;
-    
-}
+    .messagebox-content:hover .message_length_controller:hover {
+        background-color: hsl(240, 5%, 8%);
+    }
 
     .nav .dropdown-menu::after,
     .popover.bottom .arrow {
