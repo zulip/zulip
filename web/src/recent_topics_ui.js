@@ -6,6 +6,7 @@ import render_recent_topics_filters from "../templates/recent_topics_filters.hbs
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
+import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
@@ -726,6 +727,15 @@ function topic_sort(a, b) {
 }
 
 function topic_offset_to_visible_area(topic_row) {
+    const $topic_row = $(topic_row);
+    if ($topic_row.length === 0) {
+        // TODO: There is a possibility of topic_row being undefined here
+        // which logically doesn't makes sense. Find out the case and
+        // document it here.
+        // We return undefined here since we don't know anything about the
+        // topic and the callers will take care of undefined being returned.
+        return undefined;
+    }
     const $scroll_container = $("#recent_topics_table .table_fix_head");
     const thead_height = 30;
     const under_closed_compose_region_height = 50;
@@ -734,8 +744,8 @@ function topic_offset_to_visible_area(topic_row) {
     const scroll_container_bottom =
         scroll_container_top + $scroll_container.height() - under_closed_compose_region_height;
 
-    const topic_row_top = $(topic_row).offset().top;
-    const topic_row_bottom = topic_row_top + $(topic_row).height();
+    const topic_row_top = $topic_row.offset().top;
+    const topic_row_bottom = topic_row_top + $topic_row.height();
 
     // Topic is above the visible scroll region.
     if (topic_row_top < scroll_container_top) {
@@ -760,6 +770,11 @@ function set_focus_to_element_in_center() {
     }
     let $topic_row = $topic_rows.eq(row_focus);
     const topic_offset = topic_offset_to_visible_area($topic_row);
+    if (topic_offset === undefined) {
+        // We don't need to return here since technically topic_offset is not visible.
+        blueslip.error(`Unable to get topic from row number ${row_focus}.`);
+    }
+
     if (topic_offset !== "visible") {
         // Get the element at the center of the table.
         const position = table_wrapper_element.getBoundingClientRect();
