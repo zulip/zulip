@@ -13,7 +13,7 @@ const compose = mock_esm("../src/compose", {
     finish: noop,
 });
 const compose_validate = mock_esm("../src/compose_validate", {
-    warn_for_text_overflow_when_tries_to_send: () => true,
+    validate_message_length: () => true,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
