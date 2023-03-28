@@ -80,6 +80,7 @@ export function get_unmatched_streams_for_notification_settings() {
         if (make_table_row) {
             settings_values.stream_name = row.name;
             settings_values.stream_id = row.stream_id;
+            settings_values.color = row.color;
             settings_values.invite_only = row.invite_only;
             settings_values.is_web_public = row.is_web_public;
 
