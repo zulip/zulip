@@ -2305,9 +2305,9 @@ class PreregistrationUser(models.Model):
     full_name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated = models.BooleanField(default=False)
 
-    # Ties: Probably add field here to store flag is notification needs to be send
     referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)
-    
+    send_notification = models.BooleanField(default=True)
+
     streams = models.ManyToManyField("Stream")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)

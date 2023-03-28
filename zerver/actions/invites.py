@@ -203,13 +203,12 @@ def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
     streams: Collection[Stream],
+    send_notification: bool,
     *,
     invite_expires_in_minutes: Optional[int],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
     num_invites = len(invitee_emails)
-
-    # Ties: Actual logic of handling new invite
 
     check_invite_limit(user_profile.realm, num_invites)
     if settings.BILLING_ENABLED:
@@ -297,10 +296,12 @@ def do_invite_users(
     # the PreregistrationUser objects and trigger the email invitations.
     for email in validated_emails:
         # The logged in user is the referrer.
-
-        # Ties: Creation of prereg users
         prereg_user = PreregistrationUser(
-            email=email, referred_by=user_profile, invited_as=invite_as, realm=user_profile.realm
+            email=email, 
+            referred_by=user_profile, 
+            invited_as=invite_as, 
+            realm=user_profile.realm,
+            send_notification=send_notification
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
