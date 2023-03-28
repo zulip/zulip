@@ -598,7 +598,7 @@ export function check_overflow_text() {
     return text.length;
 }
 
-export function warn_for_text_overflow_when_tries_to_send() {
+export function validate_message_length() {
     if (compose_state.message_content().length > page_params.max_message_length) {
         $("#compose-textarea").addClass("flash");
         setTimeout(() => $("#compose-textarea").removeClass("flash"), 1500);
@@ -624,7 +624,7 @@ export function validate() {
         );
         return false;
     }
-    if (!warn_for_text_overflow_when_tries_to_send()) {
+    if (!validate_message_length()) {
         return false;
     }
 
