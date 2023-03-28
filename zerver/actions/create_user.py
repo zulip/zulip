@@ -211,8 +211,6 @@ def process_new_human_user(
         and prereg_user.send_notification
     ):
         # This is a cross-realm private message.
-
-        # Most likely check here for the flag if notification needs to be send
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
                 get_system_bot(settings.NOTIFICATION_BOT, prereg_user.referred_by.realm_id),
