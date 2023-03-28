@@ -261,6 +261,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
             is_select_field,
             field_choices,
+            for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
         });
         $(element_id).append(html);
     }
