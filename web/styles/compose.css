@@ -133,7 +133,7 @@
         width: 100%;
     }
 
-    #private-message .to_text {
+    #compose-private-recipient .to_text {
         vertical-align: middle;
 
         font-weight: 600;
@@ -632,12 +632,12 @@ input.recipient_box {
     }
 }
 
-#stream-message,
-#private-message {
+#compose-stream-recipient,
+#compose-private-recipient {
     display: flex;
 }
 
-#private-message {
+#compose-private-recipient {
     align-items: center;
     width: 100%;
 }
