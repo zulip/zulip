@@ -280,6 +280,20 @@ export function initialize() {
                 user_settings.enter_sends = selected_behaviour;
                 $(`.enter_sends_${!selected_behaviour}`).hide();
                 $(`.enter_sends_${selected_behaviour}`).show();
+                if (user_settings.enter_sends) {
+                    $("#compose-send-button").attr(
+                        "data-tooltip-template-id",
+                        "send-enter-tooltip-template",
+                    );
+                } else {
+                    $("#compose-send-button").attr(
+                        "data-tooltip-template-id",
+                        "send-ctrl-enter-tooltip-template",
+                    );
+                }
+                // Destroy the existing tippy tooltip so that a new tooltip is created
+                // with a template corresponding to the updated data-tooltip-template-id.
+                $("#compose-send-button")[0]._tippy?.destroy();
 
                 // Refocus in the content box so you can continue typing or
                 // press Enter to send.
