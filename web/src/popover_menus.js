@@ -46,6 +46,20 @@ let message_actions_popover_keyboard_toggle = false;
 let compose_control_buttons_popover_instance;
 let starred_messages_popover_instance;
 
+const popover_instances = {
+    compose_control_buttons: null,
+    starred_messages: null,
+};
+
+export function sidebar_menu_instance_handle_keyboard(instance, key) {
+    const items = get_popover_items_for_instance(instance);
+    popovers.popover_items_handle_keyboard(key, items);
+}
+
+export function get_visible_instance() {
+    return Object.values(popover_instances).find(Boolean);
+}
+
 export function actions_popped() {
     return message_actions_popover_displayed;
 }
