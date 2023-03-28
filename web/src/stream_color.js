@@ -55,7 +55,9 @@ function update_table_stream_color(table, stream_name, color) {
     for (const label of $stream_labels) {
         const $label = $(label);
         if ($label.text().trim() === stream_name) {
-            $label.closest(".message_header_stream").css({background: recipient_bar_color});
+            $label
+                .closest(".message_header_stream .message-header-contents")
+                .css({background: recipient_bar_color});
         }
     }
 }
