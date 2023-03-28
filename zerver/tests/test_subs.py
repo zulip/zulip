@@ -4422,7 +4422,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Now add ourselves
         with self.capture_send_event_calls(expected_num_events=2) as events:
-            with self.assert_database_query_count(13):
+            with self.assert_database_query_count(12):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -4731,28 +4731,36 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_bulk_subscribe_MIT(self) -> None:
         mit_user = self.mit_user("starnine")
+        num_streams = 15
 
         realm = get_realm("zephyr")
-        stream_names = [f"stream_{i}" for i in range(40)]
+        stream_names = [f"stream_{i}" for i in range(num_streams)]
         streams = [self.make_stream(stream_name, realm=realm) for stream_name in stream_names]
 
         for stream in streams:
             stream.is_in_zephyr_realm = True
             stream.save()
 
-        # Make sure Zephyr mirroring realms such as MIT do not get
-        # any tornado subscription events
-        with self.capture_send_event_calls(expected_num_events=0):
-            with self.assert_database_query_count(5):
+        # Verify that peer_event events are never sent in Zephyr
+        # realm. This does generate stream creation events from
+        # send_stream_creation_events_for_private_streams.
+        with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
+            with self.assert_database_query_count(num_streams + 12):
                 self.common_subscribe_to_streams(
                     mit_user,
                     stream_names,
                     dict(principals=orjson.dumps([mit_user.id]).decode()),
                     subdomain="zephyr",
-                    allow_fail=True,
                 )
+            # num_streams stream creation events:
+            self.assertEqual(
+                {(event["event"]["type"], event["event"]["op"]) for event in events[0:num_streams]},
+                {("stream", "create")},
+            )
+            # Followed by one subscription event:
+            self.assertEqual(events[num_streams]["event"]["type"], "subscription")
 
-        with self.capture_send_event_calls(expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=1):
             bulk_remove_subscriptions(
                 realm,
                 users=[mit_user],
