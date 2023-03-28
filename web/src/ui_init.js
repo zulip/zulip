@@ -367,7 +367,11 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $("#stream_message_recipient_stream").on("change", function () {
-        stream_bar.decorate(this.value, $("#stream-message .message_header_stream"), true);
+        stream_bar.decorate(
+            this.value,
+            $("#compose-stream-recipient .message_header_stream"),
+            true,
+        );
     });
 
     $(window).on("blur", () => {
