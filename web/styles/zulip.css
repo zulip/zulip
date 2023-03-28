@@ -1180,6 +1180,11 @@ td.pointer {
             border-radius: 0 0 7px 7px;
             border-bottom: 1px solid var(--color-message-list-border);
 
+            .unread-marker-fill {
+                border-radius: 0 0 0 7px;
+                height: calc(100% - 2px);
+            }
+
             .messagebox {
                 border-radius: 0 0 7px 7px;
                 padding-bottom: 5px;
@@ -1432,8 +1437,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    background-color: hsl(107deg 74% 29%);
-    width: 2px;
+    border-left: 2px solid hsl(107deg 74% 29%);
     height: 100%;
 }
 
