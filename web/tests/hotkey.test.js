@@ -67,7 +67,6 @@ const popovers = mock_esm("../src/popovers", {
 const popover_menus = mock_esm("../src/popover_menus", {
     actions_popped: () => false,
     get_visible_instance: () => undefined,
-    is_starred_messages_visible: () => false,
 });
 const reactions = mock_esm("../src/reactions");
 const search = mock_esm("../src/search");
