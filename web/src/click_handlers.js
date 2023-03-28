@@ -774,7 +774,7 @@ export function initialize() {
                 });
             },
         );
-        //$("#settings-dropdown").dropdown("toggle");
+        $("#settings-dropdown").dropdown("toggle");
         e.preventDefault();
         e.stopPropagation();
     });
