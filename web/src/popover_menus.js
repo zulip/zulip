@@ -40,7 +40,6 @@ import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
-export let compose_enter_sends_popover_displayed = false;
 let message_actions_popover_keyboard_toggle = false;
 
 const popover_instances = {
@@ -51,6 +50,7 @@ const popover_instances = {
     message_actions: null,
     stream_settings: null,
     compose_mobile_button: null,
+    compose_enter_sends: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -68,6 +68,10 @@ export function get_compose_control_buttons_popover() {
 
 export function get_starred_messages_popover() {
     return popover_instances.starred_messages;
+}
+
+export function is_compose_enter_sends_popover_displayed() {
+    return popover_instances.compose_enter_sends?.state.isVisible;
 }
 
 function get_popover_items_for_instance(instance) {
@@ -116,7 +120,7 @@ const left_sidebar_tippy_options = {
 };
 
 export function any_active() {
-    return compose_enter_sends_popover_displayed || get_visible_instance();
+    return Boolean(get_visible_instance());
 }
 
 function on_show_prep(instance) {
@@ -279,9 +283,9 @@ export function initialize() {
                     }),
                 ),
             );
-            compose_enter_sends_popover_displayed = true;
         },
         onMount(instance) {
+            popover_instances.compose_enter_sends = instance;
             common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
 
             $(instance.popper).one("click", ".enter_sends_choice", (e) => {
@@ -307,7 +311,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            compose_enter_sends_popover_displayed = false;
+            popover_instances.compose_enter_sends = undefined;
         },
     });
 
