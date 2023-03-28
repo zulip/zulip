@@ -1310,6 +1310,26 @@ class EditMessageTest(EditMessageTestCase):
         self.subscribe(aaron, stream_name)
         self.login_user(aaron)
 
+        def assert_is_topic_muted(
+            user_profile: UserProfile,
+            stream_id: int,
+            topic_name: str,
+            *,
+            muted: bool,
+        ) -> None:
+            if muted:
+                self.assertTrue(
+                    topic_has_visibility_policy(
+                        user_profile, stream_id, topic_name, UserTopic.VisibilityPolicy.MUTED
+                    )
+                )
+            else:
+                self.assertFalse(
+                    topic_has_visibility_policy(
+                        user_profile, stream_id, topic_name, UserTopic.VisibilityPolicy.MUTED
+                    )
+                )
+
         already_muted_topic = "Already muted topic"
         muted_topics = [
             [stream_name, "Topic1"],
@@ -1357,51 +1377,15 @@ class EditMessageTest(EditMessageTestCase):
                     user["muted_topics"] = get_topic_mutes(muting_user)
                     break
 
-        self.assertFalse(
-            topic_has_visibility_policy(
-                hamlet, stream.id, "Topic1", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                cordelia, stream.id, "Topic1", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, stream.id, "Topic1", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                hamlet, stream.id, "Topic2", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                cordelia, stream.id, "Topic2", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, stream.id, "Topic2", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                hamlet, stream.id, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                cordelia, stream.id, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, stream.id, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(hamlet, stream.id, "Topic1", muted=False)
+        assert_is_topic_muted(cordelia, stream.id, "Topic1", muted=False)
+        assert_is_topic_muted(aaron, stream.id, "Topic1", muted=False)
+        assert_is_topic_muted(hamlet, stream.id, "Topic2", muted=True)
+        assert_is_topic_muted(cordelia, stream.id, "Topic2", muted=True)
+        assert_is_topic_muted(aaron, stream.id, "Topic2", muted=False)
+        assert_is_topic_muted(hamlet, stream.id, change_all_topic_name, muted=True)
+        assert_is_topic_muted(cordelia, stream.id, change_all_topic_name, muted=True)
+        assert_is_topic_muted(aaron, stream.id, change_all_topic_name, muted=False)
 
         change_later_topic_name = "Topic 1 edited again"
         check_update_message(
@@ -1414,16 +1398,8 @@ class EditMessageTest(EditMessageTestCase):
             send_notification_to_new_thread=False,
             content=None,
         )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                hamlet, stream.id, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                hamlet, stream.id, change_later_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(hamlet, stream.id, change_all_topic_name, muted=False)
+        assert_is_topic_muted(hamlet, stream.id, change_later_topic_name, muted=True)
 
         # Make sure we safely handle the case of the new topic being already muted.
         with self.assertLogs(level="INFO") as info_logs:
@@ -1444,16 +1420,8 @@ class EditMessageTest(EditMessageTestCase):
                 f"INFO:root:User {cordelia.id} tried to set visibility_policy to its current value of {UserTopic.VisibilityPolicy.MUTED}",
             },
         )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                hamlet, stream.id, change_later_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                hamlet, stream.id, already_muted_topic, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(hamlet, stream.id, change_later_topic_name, muted=False)
+        assert_is_topic_muted(hamlet, stream.id, already_muted_topic, muted=True)
 
         change_one_topic_name = "Topic 1 edited change_one"
         check_update_message(
@@ -1466,16 +1434,8 @@ class EditMessageTest(EditMessageTestCase):
             send_notification_to_new_thread=False,
             content=None,
         )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                hamlet, stream.id, change_one_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                hamlet, stream.id, change_later_topic_name, UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(hamlet, stream.id, change_one_topic_name, muted=True)
+        assert_is_topic_muted(hamlet, stream.id, change_later_topic_name, muted=False)
 
         # Move topic between two public streams.
         desdemona = self.example_user("desdemona")
@@ -1502,36 +1462,12 @@ class EditMessageTest(EditMessageTestCase):
                 content=None,
             )
 
-        self.assertFalse(
-            topic_has_visibility_policy(
-                desdemona, stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                cordelia, stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                desdemona, new_public_stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                cordelia, new_public_stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, new_public_stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(desdemona, stream.id, "New topic", muted=False)
+        assert_is_topic_muted(cordelia, stream.id, "New topic", muted=False)
+        assert_is_topic_muted(aaron, stream.id, "New topic", muted=False)
+        assert_is_topic_muted(desdemona, new_public_stream.id, "New topic", muted=True)
+        assert_is_topic_muted(cordelia, new_public_stream.id, "New topic", muted=True)
+        assert_is_topic_muted(aaron, new_public_stream.id, "New topic", muted=False)
 
         # Move topic to a private stream.
         message_id = self.send_stream_message(
@@ -1560,36 +1496,12 @@ class EditMessageTest(EditMessageTestCase):
         # Cordelia is not subscribed to the private stream, so
         # Cordelia should have had the topic unmuted, while Desdemona
         # should have had her muted topic record moved.
-        self.assertFalse(
-            topic_has_visibility_policy(
-                desdemona, stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                cordelia, stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                desdemona, new_private_stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                cordelia, new_private_stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, new_private_stream.id, "New topic", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(desdemona, stream.id, "New topic", muted=False)
+        assert_is_topic_muted(cordelia, stream.id, "New topic", muted=False)
+        assert_is_topic_muted(aaron, stream.id, "New topic", muted=False)
+        assert_is_topic_muted(desdemona, new_private_stream.id, "New topic", muted=True)
+        assert_is_topic_muted(cordelia, new_private_stream.id, "New topic", muted=False)
+        assert_is_topic_muted(aaron, new_private_stream.id, "New topic", muted=False)
 
         # Move topic between two public streams with change in topic name.
         desdemona = self.example_user("desdemona")
@@ -1615,42 +1527,12 @@ class EditMessageTest(EditMessageTestCase):
                 content=None,
             )
 
-        self.assertFalse(
-            topic_has_visibility_policy(
-                desdemona, stream.id, "New topic 2", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                cordelia, stream.id, "New topic 2", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, stream.id, "New topic 2", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                desdemona,
-                new_public_stream.id,
-                "changed topic name",
-                UserTopic.VisibilityPolicy.MUTED,
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                cordelia,
-                new_public_stream.id,
-                "changed topic name",
-                UserTopic.VisibilityPolicy.MUTED,
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, new_public_stream.id, "changed topic name", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(desdemona, stream.id, "New topic 2", muted=False)
+        assert_is_topic_muted(cordelia, stream.id, "New topic 2", muted=False)
+        assert_is_topic_muted(aaron, stream.id, "New topic 2", muted=False)
+        assert_is_topic_muted(desdemona, new_public_stream.id, "changed topic name", muted=True)
+        assert_is_topic_muted(cordelia, new_public_stream.id, "changed topic name", muted=True)
+        assert_is_topic_muted(aaron, new_public_stream.id, "changed topic name", muted=False)
 
         # Moving only half the messages doesn't move MutedTopic records.
         second_message_id = self.send_stream_message(
@@ -1668,45 +1550,12 @@ class EditMessageTest(EditMessageTestCase):
                 content=None,
             )
 
-        self.assertTrue(
-            topic_has_visibility_policy(
-                desdemona,
-                new_public_stream.id,
-                "changed topic name",
-                UserTopic.VisibilityPolicy.MUTED,
-            )
-        )
-        self.assertTrue(
-            topic_has_visibility_policy(
-                cordelia,
-                new_public_stream.id,
-                "changed topic name",
-                UserTopic.VisibilityPolicy.MUTED,
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, new_public_stream.id, "changed topic name", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                desdemona,
-                new_public_stream.id,
-                "final topic name",
-                UserTopic.VisibilityPolicy.MUTED,
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                cordelia, new_public_stream.id, "final topic name", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
-        self.assertFalse(
-            topic_has_visibility_policy(
-                aaron, new_public_stream.id, "final topic name", UserTopic.VisibilityPolicy.MUTED
-            )
-        )
+        assert_is_topic_muted(desdemona, new_public_stream.id, "changed topic name", muted=True)
+        assert_is_topic_muted(cordelia, new_public_stream.id, "changed topic name", muted=True)
+        assert_is_topic_muted(aaron, new_public_stream.id, "changed topic name", muted=False)
+        assert_is_topic_muted(desdemona, new_public_stream.id, "final topic name", muted=False)
+        assert_is_topic_muted(cordelia, new_public_stream.id, "final topic name", muted=False)
+        assert_is_topic_muted(aaron, new_public_stream.id, "final topic name", muted=False)
 
     @mock.patch("zerver.actions.message_edit.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
