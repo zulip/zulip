@@ -289,7 +289,7 @@ export function initialize() {
         content: $t({defaultMessage: "Change send shortcut"}),
         onShow() {
             // Don't show tooltip if the popover is displayed.
-            if (popover_menus.compose_enter_sends_popover_displayed) {
+            if (popover_menus.is_compose_enter_sends_popover_displayed()) {
                 return false;
             }
             return true;
