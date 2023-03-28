@@ -22,7 +22,6 @@ from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.user_topics import (
-    get_topic_mutes,
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
     topic_has_visibility_policy,
@@ -1292,7 +1291,7 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
-    @mock.patch("zerver.actions.message_edit.send_event")
+    @mock.patch("zerver.actions.user_topics.send_event")
     def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
@@ -1339,24 +1338,19 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(hamlet, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        # Returns the users that need to be notified when a message topic is changed
-        def notify(user_id: int) -> Dict[str, Any]:
-            um = UserMessage.objects.get(message=message_id)
-            if um.user_profile_id == user_id:
-                return {
-                    "id": user_id,
-                    "flags": um.flags_list(),
-                }
+        # users that need to be notified by send_event in the case of change-topic-name operation.
+        users_to_be_notified_via_muted_topics_event: List[int] = []
+        users_to_be_notified_via_user_topic_event: List[int] = []
+        for user_topic in get_users_with_user_topic_visibility_policy(stream.id, "Topic1"):
+            # We are appending the same data twice because 'user_topic' event notifies
+            # the user during delete and create operation.
+            users_to_be_notified_via_user_topic_event.append(user_topic.user_profile_id)
+            users_to_be_notified_via_user_topic_event.append(user_topic.user_profile_id)
+            # 'muted_topics' event notifies the user of muted topics during create
+            # operation only.
+            users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
-            else:
-                return {
-                    "id": user_id,
-                    "flags": ["read"],
-                }
-
-        users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
         change_all_topic_name = "Topic 1 edited"
-
         # This code path adds 17 (10 + 4/visibility_policy + 1/user + 1) to
         # the number of database queries for moving a topic.
         with self.assert_database_query_count(17):
@@ -1371,13 +1365,24 @@ class EditMessageTest(EditMessageTestCase):
                 content=None,
             )
 
-        for user_topic in get_users_with_user_topic_visibility_policy(
-            stream.id, change_all_topic_name
-        ):
-            for user in users_to_be_notified:
-                if user_topic.user_profile_id == user["id"]:
-                    user["muted_topics"] = get_topic_mutes(user_topic.user_profile)
-                    break
+        # Extract the send_event call where event type is 'user_topic' or 'muted_topics.
+        # Here we assert that the expected users are notified properly.
+        users_notified_via_muted_topics_event: List[int] = []
+        users_notified_via_user_topic_event: List[int] = []
+        for call_args in mock_send_event.call_args_list:
+            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "user_topic":
+                users_notified_via_user_topic_event.append(*arg_notified_users)
+            elif arg_event["type"] == "muted_topics":
+                users_notified_via_muted_topics_event.append(*arg_notified_users)
+        self.assertEqual(
+            sorted(users_notified_via_muted_topics_event),
+            sorted(users_to_be_notified_via_muted_topics_event),
+        )
+        self.assertEqual(
+            sorted(users_notified_via_user_topic_event),
+            sorted(users_to_be_notified_via_user_topic_event),
+        )
 
         assert_is_topic_muted(hamlet, stream.id, "Topic1", muted=False)
         assert_is_topic_muted(cordelia, stream.id, "Topic1", muted=False)
