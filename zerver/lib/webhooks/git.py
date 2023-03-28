@@ -190,6 +190,13 @@ def get_pull_request_event_message(
     else:
         main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(**kwargs)
 
+    if target_branch and base_branch:
+        branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
+            target=target_branch,
+            base=base_branch,
+        )
+        main_message = f"{main_message} {branch_info}"
+
     if assignees:
         assignees_string = ""
         if len(assignees) == 1:
@@ -209,13 +216,6 @@ def get_pull_request_event_message(
     elif assignee:
         assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
         main_message = f"{main_message} {assignee_info}"
-
-    if target_branch and base_branch:
-        branch_info = PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
-            target=target_branch,
-            base=base_branch,
-        )
-        main_message = f"{main_message} {branch_info}"
 
     punctuation = ":" if message else "."
     if (
