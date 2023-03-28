@@ -43,8 +43,6 @@ import {user_settings} from "./user_settings";
 export let compose_enter_sends_popover_displayed = false;
 let message_actions_popover_keyboard_toggle = false;
 
-let compose_control_buttons_popover_instance;
-
 const popover_instances = {
     compose_control_buttons: null,
     starred_messages: null,
@@ -65,7 +63,7 @@ export function get_visible_instance() {
 }
 
 export function get_compose_control_buttons_popover() {
-    return compose_control_buttons_popover_instance;
+    return popover_instances.compose_control_buttons;
 }
 
 export function get_starred_messages_popover() {
@@ -118,11 +116,7 @@ const left_sidebar_tippy_options = {
 };
 
 export function any_active() {
-    return (
-        compose_control_buttons_popover_instance ||
-        compose_enter_sends_popover_displayed ||
-        get_visible_instance()
-    );
+    return compose_enter_sends_popover_displayed || get_visible_instance();
 }
 
 function on_show_prep(instance) {
@@ -265,12 +259,12 @@ export function initialize() {
                     }),
                 ),
             );
-            compose_control_buttons_popover_instance = instance;
+            popover_instances.compose_control_buttons = instance;
             popovers.hide_all_except_sidebars();
         },
         onHidden(instance) {
             instance.destroy();
-            compose_control_buttons_popover_instance = undefined;
+            popover_instances.compose_control_buttons = undefined;
         },
     });
 
