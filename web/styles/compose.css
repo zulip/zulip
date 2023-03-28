@@ -565,6 +565,11 @@ input.recipient_box {
     }
 }
 
+#compose-send-button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .enter_sends_choices {
     .enter_sends_choice {
         display: flex;

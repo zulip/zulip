@@ -58,6 +58,8 @@ const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
+upload.get_upload_status = () => false;
+
 function reset_jquery() {
     // Avoid leaks.
     $.clear_all_elements();

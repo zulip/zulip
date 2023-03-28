@@ -8,9 +8,16 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+
+let uploads_in_progress = false;
+
+export function get_upload_status() {
+    return uploads_in_progress;
+}
 
 // Show the upload button only if the browser supports it.
 export function feature_check($upload_button) {
@@ -112,7 +119,8 @@ export function get_item(key, config, file_id) {
 
 export function hide_upload_banner(uppy, config, file_id) {
     get_item("upload_banner", config, file_id).remove();
-    if (uppy.getFiles().length === 0) {
+    uploads_in_progress = uppy.getFiles().length !== 0;
+    if (compose_validate.should_enable_send_button()) {
         get_item("send_button", config).prop("disabled", false);
     }
 }
@@ -130,11 +138,15 @@ function add_upload_banner(config, banner_type, banner_text, file_id) {
 }
 
 export function show_error_message(
+    uppy,
     config,
     message = $t({defaultMessage: "An unknown error occurred."}),
     file_id = null,
 ) {
-    get_item("send_button", config).prop("disabled", false);
+    uploads_in_progress = uppy.getFiles().length !== 0;
+    if (compose_validate.should_enable_send_button()) {
+        get_item("send_button", config).prop("disabled", false);
+    }
     if (file_id) {
         $(`${get_item("upload_banner_identifier", config, file_id)} .moving_bar`).hide();
         get_item("upload_banner", config, file_id).removeClass("info").addClass("error");
@@ -153,6 +165,7 @@ export async function upload_files(uppy, config, files) {
     }
     if (page_params.max_file_upload_size_mib === 0) {
         show_error_message(
+            uppy,
             config,
             $t({
                 defaultMessage: "File and image uploads have been disabled for this organization.",
@@ -171,7 +184,7 @@ export async function upload_files(uppy, config, files) {
     if (get_item("markdown_preview_hide_button", config).is(":visible")) {
         get_item("markdown_preview_hide_button", config).trigger("click");
     }
-
+    uploads_in_progress = true;
     get_item("send_button", config).prop("disabled", true);
 
     for (const file of files) {
@@ -360,13 +373,13 @@ export function setup_upload(config) {
         if (info.type === "error") {
             // The remaining errors are mostly frontend errors like file being too large
             // for upload.
-            show_error_message(config, info.message);
+            show_error_message(uppy, config, info.message);
         }
     });
 
     uppy.on("upload-error", (file, error, response) => {
         const message = response ? response.body.msg : undefined;
-        show_error_message(config, message, file.id);
+        show_error_message(uppy, config, message, file.id);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
         compose_ui.autosize_textarea(get_item("textarea", config));
     });

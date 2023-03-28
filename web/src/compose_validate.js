@@ -19,6 +19,7 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import * as upload from "./upload";
 import * as util from "./util";
 
 let user_acknowledged_wildcard = false;
@@ -618,6 +619,13 @@ function validate_private_message() {
     return true;
 }
 
+export function should_enable_send_button() {
+    const text = compose_state.message_content();
+    const max_length = page_params.max_message_length;
+
+    return !(text.length > max_length) && !upload.get_upload_status();
+}
+
 export function check_overflow_text() {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
@@ -652,9 +660,10 @@ export function check_overflow_text() {
     } else {
         $indicator.text("");
         $("#compose-textarea").removeClass("over_limit");
-
-        $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
+        if (should_enable_send_button()) {
+            $("#compose-send-button").prop("disabled", false);
+        }
     }
 
     return text.length;

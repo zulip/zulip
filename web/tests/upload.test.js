@@ -18,7 +18,11 @@ mock_esm("@uppy/core", {
     },
 });
 mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
-
+mock_esm("../src/compose_validate", {
+    should_enable_send_button() {
+        return true;
+    },
+});
 const compose_actions = mock_esm("../src/compose_actions");
 mock_esm("../src/csrf", {csrf_token: "csrf_token"});
 
@@ -164,6 +168,11 @@ test("get_item", () => {
 });
 
 test("show_error_message", ({mock_template}) => {
+    const uppy = {
+        getFiles() {
+            return 0;
+        },
+    };
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
 
@@ -176,7 +185,7 @@ test("show_error_message", ({mock_template}) => {
 
     $("#compose-send-button").prop("disabled", true);
 
-    upload.show_error_message({mode: "compose"}, "Error message");
+    upload.show_error_message(uppy, {mode: "compose"}, "Error message");
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.ok(banner_shown);
 
@@ -185,12 +194,13 @@ test("show_error_message", ({mock_template}) => {
         assert.equal(data.banner_text, "translated: An unknown error occurred.");
         banner_shown = true;
     });
-    upload.show_error_message({mode: "compose"});
+    upload.show_error_message(uppy, {mode: "compose"});
 });
 
 test("upload_files", async ({mock_template, override_rewire}) => {
     $("#compose_banners .upload_banner").remove = () => {};
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
+    $("#compose-send-button").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
 
     let files = [
@@ -212,6 +222,9 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         },
         removeFile() {
             remove_file_called = true;
+        },
+        getFiles() {
+            return 0;
         },
     };
     let hide_upload_banner_called = false;
@@ -499,6 +512,9 @@ test("uppy_events", ({override_rewire, mock_template}) => {
                     },
                 ],
             }),
+            getFiles() {
+                return 0;
+            },
         };
     };
     upload.setup_upload({mode: "compose"});
