@@ -44,7 +44,6 @@ let message_actions_popover_displayed = false;
 let message_actions_popover_keyboard_toggle = false;
 
 let compose_control_buttons_popover_instance;
-let starred_messages_popover_instance;
 
 const popover_instances = {
     compose_control_buttons: null,
@@ -64,16 +63,12 @@ export function actions_popped() {
     return message_actions_popover_displayed;
 }
 
-export function is_starred_messages_visible() {
-    return starred_messages_popover_instance?.state.isVisible;
-}
-
 export function get_compose_control_buttons_popover() {
     return compose_control_buttons_popover_instance;
 }
 
 export function get_starred_messages_popover() {
-    return starred_messages_popover_instance;
+    return popover_instances.starred_messages;
 }
 
 function get_popover_items_for_instance(instance) {
@@ -88,11 +83,6 @@ function get_popover_items_for_instance(instance) {
     }
 
     return $current_elem.find("li:not(.divider):visible a");
-}
-
-export function starred_messages_sidebar_menu_handle_keyboard(key) {
-    const items = get_popover_items_for_instance(starred_messages_popover_instance);
-    popovers.popover_items_handle_keyboard(key, items);
 }
 
 const default_popover_props = {
@@ -131,7 +121,7 @@ export function any_active() {
         compose_control_buttons_popover_instance ||
         compose_enter_sends_popover_displayed ||
         message_actions_popover_displayed ||
-        is_starred_messages_visible()
+        get_visible_instance()
     );
 }
 
@@ -509,7 +499,7 @@ export function initialize() {
         ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
-            starred_messages_popover_instance = instance;
+            popover_instances.starred_messages = instance;
 
             $popper.one("click", "#unstar_all_messages", () => {
                 starred_messages_ui.confirm_unstar_all_messages();
@@ -542,7 +532,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            starred_messages_popover_instance = undefined;
+            popover_instances.starred_messages = undefined;
         },
     });
 }
