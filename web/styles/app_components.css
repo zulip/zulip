@@ -845,6 +845,7 @@ div.overlay {
 
 #settings_content,
 #stream_settings,
+#stream-creation,
 #edit_bot_modal {
     .dropdown-list-widget .dropdown-list-wrapper {
         width: fit-content;
