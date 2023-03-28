@@ -850,6 +850,7 @@ div.overlay {
         width: fit-content;
 
         & span {
+            min-width: 210px;
             width: fit-content;
         }
     }
