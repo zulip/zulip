@@ -357,6 +357,16 @@ export function process_escape_key(e) {
 }
 
 function handle_popover_events(event_name) {
+    const popover_menu_visible_instance = popover_menus.get_visible_instance();
+
+    if (popover_menu_visible_instance) {
+        popover_menus.sidebar_menu_instance_handle_keyboard(
+            popover_menu_visible_instance,
+            event_name,
+        );
+        return true;
+    }
+
     if (popover_menus.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
