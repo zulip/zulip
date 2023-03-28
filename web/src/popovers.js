@@ -558,11 +558,6 @@ export function focus_first_action_popover_item() {
     focus_first_popover_item($items);
 }
 
-export function actions_menu_handle_keyboard(key) {
-    const $items = get_action_menu_menu_items();
-    popover_items_handle_keyboard(key, $items);
-}
-
 export function message_info_popped() {
     return $current_message_info_popover_elem !== undefined;
 }
