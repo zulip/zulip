@@ -92,7 +92,7 @@ def team_view(request: HttpRequest) -> HttpResponse:
         with open(settings.CONTRIBUTOR_DATA_FILE_PATH, "rb") as f:
             data = orjson.loads(f.read())
     except FileNotFoundError:
-        data = {"contributors": {}, "date": "Never ran."}
+        data = {"contributors": [], "date": "Never ran."}
 
     return TemplateResponse(
         request,

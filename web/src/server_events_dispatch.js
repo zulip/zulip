@@ -733,6 +733,11 @@ export function dispatch_normal_event(event) {
                 activity.redraw_user(page_params.user_id);
                 break;
             }
+            if (event.property === "email_address_visibility") {
+                user_settings.email_address_visibility = event.value;
+                $("#user_email_address_visibility").val(event.value);
+                break;
+            }
             settings_display.update_page(event.property);
             break;
         }

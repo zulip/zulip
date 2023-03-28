@@ -1822,6 +1822,50 @@ class EditMessageTest(EditMessageTestCase):
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
+    def test_move_message_to_preexisting_topic(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
+            "iago",
+            "test move stream",
+            "new stream",
+            "test",
+            # Set the user's translation language to German to test that
+            # it is overridden by the realm's default language.
+            "de",
+        )
+
+        self.send_stream_message(
+            sender=self.example_user("iago"),
+            stream_name="new stream",
+            topic_name="test",
+            content="Always here",
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+            },
+            HTTP_ACCEPT_LANGUAGE="de",
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 5)
+        self.assertEqual(
+            messages[4].content,
+            f"3 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
     def test_move_message_realm_admin_cant_move_to_another_realm(self) -> None:
         user_profile = self.example_user("iago")
         self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
@@ -1971,6 +2015,44 @@ class EditMessageTest(EditMessageTestCase):
             f"2 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
+    def test_move_message_to_preexisting_topic_change_later(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        self.send_stream_message(
+            sender=self.example_user("iago"),
+            stream_name="new stream",
+            topic_name="test",
+            content="Always here",
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id_later}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[1].content,
+            f"2 messages were moved from this topic to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 4)
+        self.assertEqual(messages[0].id, msg_id_later)
+        self.assertEqual(
+            messages[3].content,
+            f"2 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
     def test_move_message_to_stream_change_later_all_moved(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
@@ -1999,6 +2081,43 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             messages[3].content,
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_preexisting_topic_change_later_all_moved(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        self.send_stream_message(
+            sender=self.example_user("iago"),
+            stream_name="new stream",
+            topic_name="test",
+            content="Always here",
+        )
+
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_later",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 5)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[4].content,
+            f"3 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_to_stream_change_one(self) -> None:
@@ -2032,6 +2151,44 @@ class EditMessageTest(EditMessageTestCase):
             f"A message was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
+    def test_move_message_to_preexisting_topic_change_one(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        self.send_stream_message(
+            sender=self.example_user("iago"),
+            stream_name="new stream",
+            topic_name="test",
+            content="Always here",
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id_later),
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].id, msg_id_later)
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
     def test_move_message_to_stream_change_all(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
@@ -2060,6 +2217,43 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(
             messages[3].content,
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_move_message_to_preexisting_topic_change_all(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        self.send_stream_message(
+            sender=self.example_user("iago"),
+            stream_name="new stream",
+            topic_name="test",
+            content="Always here",
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id_later),
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 5)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[4].content,
+            f"3 messages were moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
         )
 
     def test_move_message_between_streams_policy_setting(self) -> None:
@@ -2380,7 +2574,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(53), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(55), cache_tries_captured() as cache_tries:
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {

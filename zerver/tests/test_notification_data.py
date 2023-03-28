@@ -1,7 +1,7 @@
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_groups import create_user_group
 
 
 class TestNotificationData(ZulipTestCase):
@@ -275,9 +275,9 @@ class TestNotificationData(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         realm = hamlet.realm
 
-        hamlet_only = create_user_group("hamlet_only", [hamlet], realm, acting_user=None)
-        hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], realm, acting_user=None
+        hamlet_only = check_add_user_group(realm, "hamlet_only", [hamlet], acting_user=None)
+        hamlet_and_cordelia = check_add_user_group(
+            realm, "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
         )
 
         mention_backend = MentionBackend(realm.id)

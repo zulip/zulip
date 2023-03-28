@@ -2,16 +2,16 @@
     <form class="new-style edit_bot_form name-setting">
         <div class="input-group name_change_container">
             <label for="edit_bot_full_name">{{t "Full name" }}</label>
-            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" value="{{ full_name }}" />
+            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
             <label for="email">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
+            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
         </div>
         <div class="input-group user_id_container">
             <label for="user_id">{{t "User ID" }}</label>
-            <input type="text" autocomplete="off" name="user_id" value="{{ user_id }}" readonly/>
+            <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
         </div>
         <div class="input-group">
             <label class="input-label" for="bot-role-select">{{t 'Role' }}

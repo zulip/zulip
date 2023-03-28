@@ -1,6 +1,5 @@
-from typing import Dict, Iterable, List, Optional, Sequence, TypedDict
+from typing import Dict, Iterable, List, Sequence, TypedDict
 
-from django.db import transaction
 from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from django_cte import With
@@ -124,25 +123,6 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
 
 def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.direct_groups.all())
-
-
-def create_user_group(
-    name: str,
-    members: List[UserProfile],
-    realm: Realm,
-    *,
-    acting_user: Optional[UserProfile],
-    description: str = "",
-    is_system_group: bool = False,
-) -> UserGroup:
-    with transaction.atomic():
-        user_group = UserGroup.objects.create(
-            name=name, realm=realm, description=description, is_system_group=is_system_group
-        )
-        UserGroupMembership.objects.bulk_create(
-            UserGroupMembership(user_profile=member, user_group=user_group) for member in members
-        )
-        return user_group
 
 
 def get_user_group_direct_member_ids(

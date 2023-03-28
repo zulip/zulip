@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import internal_send_stream_message
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
@@ -18,6 +19,7 @@ from zerver.lib.streams import ensure_stream, get_signups_stream
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.models import (
     DefaultStream,
+    PreregistrationRealm,
     Realm,
     RealmAuditLog,
     RealmUserDefault,
@@ -146,6 +148,7 @@ def do_create_realm(
     is_demo_organization: bool = False,
     enable_read_receipts: Optional[bool] = None,
     enable_spectator_access: Optional[bool] = None,
+    prereg_realm: Optional[PreregistrationRealm] = None,
 ) -> Realm:
     if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
         raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
@@ -256,6 +259,11 @@ def do_create_realm(
     if plan_type is None and settings.BILLING_ENABLED:
         # We use acting_user=None for setting the initial plan type.
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+
+    if prereg_realm is not None:
+        prereg_realm.status = confirmation_settings.STATUS_USED
+        prereg_realm.created_realm = realm
+        prereg_realm.save(update_fields=["status", "created_realm"])
 
     # Send a notification to the admin realm when a new organization registers.
     if settings.CORPORATE_ENABLED:

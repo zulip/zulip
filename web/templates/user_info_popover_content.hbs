@@ -68,9 +68,9 @@
                     {{#if status_emoji_info.emoji_alt_code}}
                         <div class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</div>
                     {{else if status_emoji_info.url}}
-                        <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
+                        <img src="{{status_emoji_info.url}}" class="emoji status-emoji" />
                     {{else}}
-                        <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
+                        <div class="emoji status-emoji emoji-{{status_emoji_info.emoji_code}}"></div>
                     {{/if}}
                 {{/if}}
                 <span class="status_text">

@@ -347,3 +347,7 @@
         background-color: hsl(0deg 0% 90%);
     }
 }
+
+.modal_text_input {
+    width: 206px;
+}

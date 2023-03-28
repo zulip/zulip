@@ -1,14 +1,14 @@
-#set_user_status_modal {
+#set-user-status-modal {
     /* A narrower width is more attractive for this modal. */
     width: 384px;
 
-    .user_status_content_wrapper {
+    .user-status-content-wrapper {
         display: flex;
         border: 1px solid;
         border-color: hsl(0deg 0% 0% / 60%);
         border-radius: 5px;
 
-        & input.user_status {
+        & input.user-status {
             width: 95%;
             border: none;
             background-color: transparent;
@@ -19,7 +19,7 @@
             }
         }
 
-        .status_emoji_wrapper {
+        .status-emoji-wrapper {
             height: 20px;
             width: 22px;
             padding: 8px 8px 1px;
@@ -27,7 +27,7 @@
             border-color: inherit;
             cursor: pointer;
 
-            .selected_emoji {
+            .selected-emoji {
                 width: 20px;
                 height: 20px;
                 cursor: pointer;
@@ -39,12 +39,12 @@
             }
 
             /* For custom emojis and smiley icon to take full width. */
-            & img.selected_emoji,
-            .smiley_icon {
+            & img.selected-emoji,
+            .smiley-icon {
                 min-width: 20px;
             }
 
-            .smiley_icon {
+            .smiley-icon {
                 display: block;
                 font-size: 18px;
                 position: relative;
@@ -74,7 +74,7 @@
             margin-bottom: 10px;
             line-height: 1.1em;
 
-            .status_emoji {
+            .status-emoji {
                 height: 18px;
                 width: 18px;
                 margin-left: 3px;

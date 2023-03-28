@@ -359,8 +359,9 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     override(message_lists.current, "selected_id", () => 100);
 
-    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
-        assert.equal(syntax, "translated: [Quoting…]\n");
+    override(compose_ui, "insert_syntax_and_focus", (syntax, $textarea, mode) => {
+        assert.equal(syntax, "translated: [Quoting…]");
+        assert.equal(mode, "block");
     });
 
     const opts = {

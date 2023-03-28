@@ -200,7 +200,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -1321,8 +1320,8 @@ class NormalActionsTest(BaseAction):
 
         check_user_group_remove_members("events[0]", events[0])
 
-        api_design = create_user_group(
-            "api-design", [hamlet], hamlet.realm, description="API design team", acting_user=None
+        api_design = check_add_user_group(
+            hamlet.realm, "api-design", [hamlet], description="API design team", acting_user=None
         )
 
         # Test add subgroups

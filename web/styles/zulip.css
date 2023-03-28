@@ -597,10 +597,18 @@ li,
 }
 
 .copy_message {
+    float: right;
     position: relative;
-    top: 27px;
-    left: -10px;
-    margin-top: -24px;
+    cursor: pointer;
+    top: 30px;
+    /* To make sure the svg doesn't occupy any vertical space. */
+    margin-top: -30px;
+    right: 2px;
+    padding-top: 2px;
+
+    #clipboard_image {
+        margin: 0;
+    }
 }
 
 #copy_generated_invite_link {
@@ -1589,6 +1597,7 @@ div.focused_table {
 
 #inline_topic_edit {
     margin-bottom: 5px;
+    width: 206px;
 
     &.header-v {
         height: 18px;
@@ -2314,7 +2323,7 @@ select.invite-as {
     top: 3px;
 }
 
-.status_emoji {
+.status-emoji {
     height: 16px;
     width: 16px;
     /* We are setting minimum width here because when the user's name is very long,

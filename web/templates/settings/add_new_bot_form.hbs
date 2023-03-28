@@ -23,13 +23,13 @@
         </div>
         <div class="input-group">
             <label for="create_bot_name">{{t "Full name" }}</label>
-            <input type="text" name="bot_name" id="create_bot_name" class="required"
+            <input type="text" name="bot_name" id="create_bot_name" class="required modal_text_input"
               maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
         </div>
         <div class="input-group">
             <label for="bot_short_name">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
-            <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
+            <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part modal_text_input"
               placeholder="{{t 'cookie' }}" value="" />
             -bot@{{ realm_bot_domain }}
             <div>

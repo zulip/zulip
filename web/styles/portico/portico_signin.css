@@ -46,6 +46,12 @@ html {
     }
 }
 
+#new-realm-creation {
+    .get-started {
+        font-size: 2rem;
+    }
+}
+
 .bottom-text-large {
     text-align: center;
     margin-top: 20px;
@@ -877,7 +883,8 @@ button#register_auth_button_gitlab {
     }
 }
 
-#registration {
+#registration,
+#new-realm-creation {
     width: auto;
     padding: 0;
     margin: 30px;
@@ -1003,7 +1010,8 @@ button#register_auth_button_gitlab {
 
     #id_email,
     #support_from,
-    #support_realm {
+    #support_realm,
+    .not-editable-realm-field {
         font-weight: normal;
         margin: 2px;
         padding-top: 25px;
@@ -1039,6 +1047,11 @@ button#register_auth_button_gitlab {
 
         + .input-box {
             margin-top: 20px;
+        }
+
+        .edit-realm-details {
+            float: right;
+            cursor: pointer;
         }
     }
 

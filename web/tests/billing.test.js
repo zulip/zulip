@@ -20,6 +20,7 @@ const location = set_global("location", {});
 
 const helpers = mock_esm("../src/billing/helpers", {
     set_tab() {},
+    set_sponsorship_form() {},
 });
 
 zrequire("billing/billing");
@@ -30,8 +31,13 @@ run_test("initialize", ({override}) => {
         assert.equal(page_name, "billing");
         set_tab_called = true;
     });
+    let set_sponsorship_form_called = false;
+    override(helpers, "set_sponsorship_form", () => {
+        set_sponsorship_form_called = true;
+    });
     $.get_initialize_function()();
     assert.ok(set_tab_called);
+    assert.ok(set_sponsorship_form_called);
 });
 
 run_test("card_update", ({override}) => {

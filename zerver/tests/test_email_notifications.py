@@ -18,6 +18,7 @@ from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.actions.create_user import do_create_user
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.email_notifications import (
@@ -31,7 +32,6 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_groups import create_user_group
 from zerver.models import ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
 
 
@@ -868,11 +868,11 @@ class TestMissedMessages(ZulipTestCase):
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
 
-        hamlet_only = create_user_group(
-            "hamlet_only", [hamlet], get_realm("zulip"), acting_user=None
+        hamlet_only = check_add_user_group(
+            get_realm("zulip"), "hamlet_only", [hamlet], acting_user=None
         )
-        hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
+        hamlet_and_cordelia = check_add_user_group(
+            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
         )
 
         hamlet_only_message_id = self.send_stream_message(othello, "Denmark", "@*hamlet_only*")
@@ -909,8 +909,8 @@ class TestMissedMessages(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
-        hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
+        hamlet_and_cordelia = check_add_user_group(
+            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
         )
 
         user_group_mentioned_message_id = self.send_stream_message(
@@ -949,8 +949,8 @@ class TestMissedMessages(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
-        hamlet_and_cordelia = create_user_group(
-            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip"), acting_user=None
+        hamlet_and_cordelia = check_add_user_group(
+            get_realm("zulip"), "hamlet_and_cordelia", [hamlet, cordelia], acting_user=None
         )
 
         wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
@@ -1669,8 +1669,8 @@ class TestMissedMessages(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        large_user_group = create_user_group(
-            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip"), acting_user=None
+        large_user_group = check_add_user_group(
+            get_realm("zulip"), "large_user_group", [hamlet, othello, cordelia], acting_user=None
         )
 
         # Do note that the event dicts for the missed messages are constructed by hand

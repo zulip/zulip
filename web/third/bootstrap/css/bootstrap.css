@@ -491,9 +491,6 @@ input[type="color"] {
   border-radius: 4px;
   vertical-align: middle;
 }
-input {
-  width: 206px;
-}
 input[type="text"],
 input[type="password"],
 input[type="datetime"],

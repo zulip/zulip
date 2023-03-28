@@ -197,6 +197,11 @@
         width: 50px;
     }
 
+    #licenses_at_next_renewal_input,
+    #new_licenses_input {
+        width: 206px;
+    }
+
     #error-message-box {
         margin-top: 10px;
         font-weight: 600;
@@ -373,5 +378,13 @@ input[name="licenses"] {
         margin-bottom: 10px;
         cursor: pointer;
         background-color: hsl(0deg 0% 100%);
+    }
+
+    & input[name="website"] {
+        width: 100%;
+    }
+
+    & textarea[name="description"] {
+        width: 100%;
     }
 }

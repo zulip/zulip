@@ -72,6 +72,10 @@ tr.admin td:first-child {
             outline-offset: -2px;
         }
     }
+
+    & input {
+        width: 206px;
+    }
 }
 
 .support-realm-icon {

@@ -199,6 +199,14 @@ import {get_string_diff} from "../../src/util";
   }
 
   , show: function () {
+      var header_text = this.header();
+      if (header_text) {
+        this.$header.find('span#typeahead-header-text').html(header_text);
+        this.$header.show();
+      } else {
+        this.$header.hide();
+      }
+
       var pos;
 
       if (this.fixed) {
@@ -229,14 +237,6 @@ import {get_string_diff} from "../../src/util";
         top: top_pos
        , left: pos.left
       })
-
-      var header_text = this.header();
-      if (header_text) {
-        this.$header.find('span#typeahead-header-text').html(header_text);
-        this.$header.show();
-      } else {
-        this.$header.hide();
-      }
 
       this.$container.show()
       this.shown = true
@@ -439,7 +439,6 @@ import {get_string_diff} from "../../src/util";
   , keydown: function (e) {
     const pseudo_keycode = get_pseudo_keycode(e);
     if (this.trigger_selection(e)) {
-      if (!this.shown) return;
       e.preventDefault();
       this.select(e);
     }
@@ -473,6 +472,11 @@ import {get_string_diff} from "../../src/util";
             this.on_escape();
           }
           break
+
+        // to stop typeahead from showing up momentarily
+        // when shift + tabbing to a field with typeahead
+        case 16: // shift
+          return
 
         default:
           var hideOnEmpty = false

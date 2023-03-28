@@ -381,6 +381,10 @@ td .button {
     }
 }
 
+.settings_text_input {
+    width: 206px;
+}
+
 #admin-user-list,
 #admin-bot-list {
     .table tr:first-of-type td {
@@ -671,10 +675,6 @@ input[type="checkbox"] {
     #emoji_preview_text {
         margin-top: 6px;
     }
-
-    #emoji_preview_image {
-        object-fit: cover;
-    }
 }
 
 #emoji_file_input_error {
@@ -889,7 +889,6 @@ input[type="checkbox"] {
 .edit_bot_avatar_preview_image,
 #add_bot_preview_image {
     height: 100px;
-    object-fit: cover;
     width: 100px;
     margin: 2px 0 8px;
 }
@@ -915,7 +914,8 @@ input[type="checkbox"] {
     }
 }
 
-.admin-profile-field-form #custom_external_account_url_pattern input {
+.admin-profile-field-form #custom_external_account_url_pattern input,
+#edit-custom-profile-field-form-modal .custom_external_account_detail input {
     width: 70%;
 }
 
@@ -1831,6 +1831,11 @@ $option_title_width: 180px;
         margin: auto;
         float: none;
     }
+
+    #change_password_modal,
+    #change_email_modal {
+        width: 400px;
+    }
 }
 
 @media (width < $ml_min) {
@@ -1849,6 +1854,11 @@ $option_title_width: 180px;
 
     .topic_date_muted {
         display: none;
+    }
+
+    #change_password_modal,
+    #change_email_modal {
+        width: 300px;
     }
 }
 

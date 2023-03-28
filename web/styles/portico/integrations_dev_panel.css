@@ -81,6 +81,11 @@
     width: 100%;
 }
 
+#stream_name,
+#topic_name {
+    width: 206px;
+}
+
 .buttons {
     display: flex;
     justify-content: space-between;
