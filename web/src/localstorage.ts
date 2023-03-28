@@ -1,41 +1,52 @@
 import * as blueslip from "./blueslip";
 
+type FormData<T = unknown> = {
+    __valid: boolean;
+    data: T;
+    expires: number | null;
+};
+
 const ls = {
     // check if the datestamp is from before now and if so return true.
-    isExpired(stamp) {
+    isExpired(stamp: string | number | Date): boolean {
         return new Date(stamp) < new Date();
     },
 
     // return the localStorage key that is bound to a version of a key.
-    formGetter(version, name) {
-        return "ls__" + version + "__" + name;
+    formGetter(version: number, name: string): string {
+        return `ls__${version}__${name}`;
     },
 
     // create a formData object to put in the data, a signature that it was
     // created with this library, and when it expires (if ever).
-    formData(data, expires) {
+    formData<T = unknown>(data: T, expires: number): FormData<T> {
         return {
-            data,
             __valid: true,
+            data,
             expires: Date.now() + expires,
         };
     },
 
-    getData(version, name) {
+    getData<T = unknown>(version: number, name: string): FormData<T> | undefined {
         const key = this.formGetter(version, name);
-        let data;
+        let data: FormData<T> | null = null;
+
         try {
             const raw_data = localStorage.getItem(key);
-            data = JSON.parse(raw_data);
+
+            if (typeof raw_data === "string") {
+                data = JSON.parse(raw_data);
+            }
         } catch {
             // data stays undefined
         }
+
         if (
             data &&
             data.__valid &&
             // JSON forms of data with `Infinity` turns into `null`,
             // so if null then it hasn't expired since nothing was specified.
-            (!ls.isExpired(data.expires) || data.expires === null)
+            (data.expires === null || !ls.isExpired(data.expires))
         ) {
             return data;
         }
@@ -44,7 +55,7 @@ const ls = {
     },
 
     // set the wrapped version of the data into localStorage.
-    setData(version, name, data, expires) {
+    setData(version: number, name: string, data: any, expires: number): void {
         const key = this.formGetter(version, name);
         const val = this.formData(data, expires);
 
@@ -52,7 +63,7 @@ const ls = {
     },
 
     // remove the key from localStorage and from memory.
-    removeData(version, name) {
+    removeData(version: number, name: string): void {
         const key = this.formGetter(version, name);
 
         localStorage.removeItem(key);
@@ -61,9 +72,14 @@ const ls = {
     // Remove keys which (1) map to a value that satisfies a
     // property tested by `condition_checker` and (2) which match
     // the pattern given by `name`.
-    removeDataRegexWithCondition(version, regex, condition_checker) {
+    removeDataRegexWithCondition(
+        version: number,
+        regex: string,
+        condition_checker: (value: any) => boolean,
+    ): void {
         const key_regex = new RegExp(this.formGetter(version, regex));
-        let keys = [];
+        let keys: string[] = [];
+
         try {
             keys = Object.keys(localStorage);
         } catch {
@@ -73,14 +89,16 @@ const ls = {
         keys = keys.filter((key) => key_regex.test(key));
 
         for (const key of keys) {
-            let value;
+            let value: string | null = null;
             let value_set = false;
+
             try {
                 value = localStorage.getItem(key);
                 value_set = true;
             } catch {
                 // Do nothing if the fetch fails
             }
+
             if (value_set && condition_checker(value)) {
                 try {
                     localStorage.removeItem(key);
@@ -93,12 +111,17 @@ const ls = {
 
     // migrate from an older version of a data src to a newer one with a
     // specified callback function.
-    migrate(name, v1, v2, callback) {
-        const old = this.getData(v1, name);
+    migrate<T = unknown>(
+        name: string,
+        v1: number,
+        v2: number,
+        callback: (old_data: any) => T,
+    ): T | undefined {
+        const old_form_data = this.getData(v1, name);
         this.removeData(v1, name);
 
-        if (old && old.__valid) {
-            const data = callback(old.data);
+        if (old_form_data && old_form_data.__valid) {
+            const data = callback(old_form_data.data);
             this.setData(v2, name, data, Number.POSITIVE_INFINITY);
 
             return data;
@@ -120,24 +143,25 @@ export const localstorage = function () {
         // `expires` should be a Number that represents the number of ms from
         // now that this should expire in.
         // this allows for it to either be set only once or permanently.
-        setExpiry(expires, isGlobal) {
+        setExpiry(expires: number, isGlobal: boolean) {
             _data.expires = expires;
             _data.expiresIsGlobal = isGlobal || false;
 
             return this;
         },
 
-        get(name) {
-            const data = ls.getData(_data.VERSION, name);
+        // Here unknown type denotes
+        get<T = unknown>(name: string): T | undefined {
+            const form_data = ls.getData<T>(_data.VERSION, name);
 
-            if (data) {
-                return data.data;
+            if (form_data) {
+                return form_data.data;
             }
 
             return undefined;
         },
 
-        set(name, data) {
+        set(name: string, data: any): boolean {
             if (_data.VERSION !== undefined) {
                 ls.setData(_data.VERSION, name, data, _data.expires);
 
@@ -155,28 +179,36 @@ export const localstorage = function () {
         },
 
         // remove a key with a given version.
-        remove(name) {
+        remove(name: string): void {
             ls.removeData(_data.VERSION, name);
         },
 
         // Remove keys which (1) map to a value that satisfies a
         // property tested by `condition_checker` AND (2) which
         // match the pattern given by `name`.
-        removeDataRegexWithCondition(name, condition_checker) {
+        removeDataRegexWithCondition(
+            name: string,
+            condition_checker: (value: any) => boolean,
+        ): void {
             ls.removeDataRegexWithCondition(_data.VERSION, name, condition_checker);
         },
 
-        migrate(name, v1, v2, callback) {
-            return ls.migrate(name, v1, v2, callback);
+        migrate<T = unknown>(
+            name: string,
+            v1: number,
+            v2: number,
+            callback: (old_data: any) => T,
+        ): T | undefined {
+            return ls.migrate<T>(name, v1, v2, callback);
         },
     };
 
     // set a new master version for the LocalStorage instance.
     Object.defineProperty(prototype, "version", {
-        get() {
+        get(): number {
             return _data.VERSION;
         },
-        set(version) {
+        set(version: number): void {
             _data.VERSION = version;
         },
     });
@@ -186,7 +218,7 @@ export const localstorage = function () {
 
 let warned_of_localstorage = false;
 
-localstorage.supported = function supports_localstorage() {
+localstorage.supported = function supports_localstorage(): boolean {
     try {
         return window.localStorage !== undefined && window.localStorage !== null;
     } catch {
@@ -196,6 +228,7 @@ localstorage.supported = function supports_localstorage() {
             );
             warned_of_localstorage = true;
         }
+
         return false;
     }
 };
