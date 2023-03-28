@@ -40,7 +40,6 @@ import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
-let left_sidebar_stream_setting_popover_displayed = false;
 let compose_mobile_button_popover_displayed = false;
 export let compose_enter_sends_popover_displayed = false;
 let message_actions_popover_keyboard_toggle = false;
@@ -53,6 +52,7 @@ const popover_instances = {
     drafts: null,
     all_messages: null,
     message_actions: null,
+    stream_settings: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -119,7 +119,6 @@ const left_sidebar_tippy_options = {
 
 export function any_active() {
     return (
-        left_sidebar_stream_setting_popover_displayed ||
         compose_mobile_button_popover_displayed ||
         compose_control_buttons_popover_instance ||
         compose_enter_sends_popover_displayed ||
@@ -191,6 +190,7 @@ export function toggle_message_actions_menu(message) {
 export function initialize() {
     tippy_no_propagation("#streams_inline_icon", {
         onShow(instance) {
+            popover_instances.stream_settings = instance;
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
@@ -206,12 +206,11 @@ export function initialize() {
             }
 
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
-            left_sidebar_stream_setting_popover_displayed = true;
             return true;
         },
         onHidden(instance) {
             instance.destroy();
-            left_sidebar_stream_setting_popover_displayed = false;
+            popover_instances.stream_settings = undefined;
         },
     });
 
