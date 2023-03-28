@@ -96,7 +96,8 @@
         }
     }
 
-    .right_part {
+    .right_part,
+    #compose-stream-recipient {
         padding: 0;
         display: flex;
         align-items: center;
@@ -501,6 +502,8 @@ input.recipient_box {
 #compose_select_stream_widget,
 #compose_select_stream_widget .button {
     margin: 0;
+    min-width: 0;
+    flex: 1;
 }
 
 #stream_message_recipient_topic.recipient_box {
@@ -602,6 +605,10 @@ input.recipient_box {
         font-size: 12px;
         font-weight: 600;
     }
+}
+
+#compose-stream-recipient {
+    min-width: 0;
 }
 
 #compose-stream-recipient,
@@ -748,6 +755,8 @@ a.compose_control_button.hide {
 #compose_stream_selection_dropdown {
     display: flex;
     justify-content: flex-start;
+    flex: 0 1 200px;
+    min-width: 0;
 
     .stream_header_colorblock {
         margin: 0;
@@ -756,7 +765,7 @@ a.compose_control_button.hide {
     .dropdown-toggle {
         border-radius: 0 4px 4px 0 !important;
         display: flex;
-        max-width: 130px;
+        min-width: 0;
     }
 
     .dropup .dropdown-menu {
@@ -785,7 +794,6 @@ a.compose_control_button.hide {
     .fa-chevron-down {
         float: right;
         padding-left: 5px;
-        padding-bottom: 2px;
         color: hsl(0deg 0% 58%);
         font-weight: lighter;
     }
@@ -794,6 +802,14 @@ a.compose_control_button.hide {
     .text-warning {
         color: inherit;
     }
+}
+
+#stream_message_recipient_topic {
+    min-width: 0;
+}
+
+#id_compose_select_stream {
+    display: flex;
 }
 
 .dropdown-menu {
@@ -866,13 +882,6 @@ a.compose_control_button.hide {
 }
 
 @media (width < $mm_min) {
-    #stream_message_recipient_topic.recipient_box {
-        /* The max-width here is designed to allow this to share space with
-           the Stream input in small windows, without leaving empty space. */
-        max-width: calc(100% - 90px);
-        min-width: 110px;
-    }
-
     #compose-content {
         margin-right: 5px;
         margin-left: 5px;
