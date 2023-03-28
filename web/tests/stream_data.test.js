@@ -541,6 +541,7 @@ test("notifications", () => {
     const india = {
         stream_id: 102,
         name: "India",
+        color: "#000080",
         subscribed: true,
         invite_only: false,
         is_web_public: false,
@@ -610,6 +611,7 @@ test("notifications", () => {
     const canada = {
         stream_id: 103,
         name: "Canada",
+        color: "#d80621",
         subscribed: true,
         invite_only: true,
         is_web_public: false,
@@ -670,6 +672,7 @@ test("notifications", () => {
             is_web_public: false,
             stream_name: "Canada",
             stream_id: 103,
+            color: "#d80621",
         },
         {
             desktop_notifications: true,
@@ -681,6 +684,7 @@ test("notifications", () => {
             is_web_public: false,
             stream_name: "India",
             stream_id: 102,
+            color: "#000080",
         },
     ];
 
