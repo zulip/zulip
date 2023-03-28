@@ -43,7 +43,6 @@ import {user_settings} from "./user_settings";
 let left_sidebar_stream_setting_popover_displayed = false;
 let compose_mobile_button_popover_displayed = false;
 export let compose_enter_sends_popover_displayed = false;
-let message_actions_popover_displayed = false;
 let message_actions_popover_keyboard_toggle = false;
 
 let compose_control_buttons_popover_instance;
@@ -53,6 +52,7 @@ const popover_instances = {
     starred_messages: null,
     drafts: null,
     all_messages: null,
+    message_actions: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -62,10 +62,6 @@ export function sidebar_menu_instance_handle_keyboard(instance, key) {
 
 export function get_visible_instance() {
     return Object.values(popover_instances).find(Boolean);
-}
-
-export function actions_popped() {
-    return message_actions_popover_displayed;
 }
 
 export function get_compose_control_buttons_popover() {
@@ -127,7 +123,6 @@ export function any_active() {
         compose_mobile_button_popover_displayed ||
         compose_control_buttons_popover_instance ||
         compose_enter_sends_popover_displayed ||
-        message_actions_popover_displayed ||
         get_visible_instance()
     );
 }
@@ -349,13 +344,13 @@ export function initialize() {
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
             instance.setContent(parse_html(render_actions_popover_content(args)));
             $row.addClass("has_popover has_actions_popover");
-            message_actions_popover_displayed = true;
         },
         onMount(instance) {
             if (message_actions_popover_keyboard_toggle) {
                 popovers.focus_first_action_popover_item();
+                message_actions_popover_keyboard_toggle = false;
             }
-            message_actions_popover_keyboard_toggle = false;
+            popover_instances.message_actions = instance;
 
             // We want click events to propagate to `instance` so that
             // instance.hide gets called.
@@ -496,7 +491,7 @@ export function initialize() {
             const $row = $(instance.reference).closest(".message_row");
             $row.removeClass("has_popover has_actions_popover");
             instance.destroy();
-            message_actions_popover_displayed = false;
+            popover_instances.message_actions = undefined;
             message_actions_popover_keyboard_toggle = false;
         },
     });

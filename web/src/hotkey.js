@@ -367,11 +367,6 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (popover_menus.actions_popped()) {
-        popovers.actions_menu_handle_keyboard(event_name);
-        return true;
-    }
-
     if (popovers.user_info_manage_menu_popped()) {
         popovers.user_info_popover_manage_menu_handle_keyboard(event_name);
         return true;
