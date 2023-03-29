@@ -14,7 +14,6 @@ from zerver.lib.webhooks.common import (
     validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
-    CONTENT_MESSAGE_TEMPLATE,
     TOPIC_WITH_BRANCH_TEMPLATE,
     TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
     get_commits_comment_action_message,
@@ -251,32 +250,8 @@ def get_pr_opened_or_modified_body(
 ) -> str:
     pr = payload["pullRequest"]
     description = pr.get("description").tame(check_none_or(check_string))
-    assignees_string = get_assignees_string(pr)
-    if assignees_string:
-        # Then use the custom message template for this particular integration so that we can
-        # specify the reviewers at the end of the message (but before the description/message).
-        parameters = {
-            "user_name": get_user_name(payload),
-            "action": action,
-            "url": pr["links"]["self"][0]["href"].tame(check_string),
-            "number": pr["id"].tame(check_int),
-            "source": pr["fromRef"]["displayId"].tame(check_string),
-            "destination": pr["toRef"]["displayId"].tame(check_string),
-            "message": description,
-            "assignees": assignees_string,
-            "title": pr["title"].tame(check_string) if include_title else None,
-        }
-        if include_title:
-            body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS_WITH_TITLE.format(
-                **parameters,
-            )
-        else:
-            body = PULL_REQUEST_OPENED_OR_MODIFIED_TEMPLATE_WITH_REVIEWERS.format(**parameters)
-        punctuation = ":" if description else "."
-        body = f"{body}{punctuation}"
-        if description:
-            body += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=description)
-        return body
+    reviewers_string = get_assignees_string(pr)
+
     return get_pull_request_event_message(
         user_name=get_user_name(payload),
         action=action,
@@ -285,7 +260,7 @@ def get_pr_opened_or_modified_body(
         target_branch=pr["fromRef"]["displayId"].tame(check_string),
         base_branch=pr["toRef"]["displayId"].tame(check_string),
         message=description,
-        assignee=assignees_string if assignees_string else None,
+        reviewer=reviewers_string if reviewers_string else None,
         title=pr["title"].tame(check_string) if include_title else None,
     )
 

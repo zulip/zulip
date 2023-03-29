@@ -55,6 +55,7 @@ PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE = (
     "{user_name} {action} [{type}{id} {title}]({url})"
 )
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
+PULL_REQUEST_REVIEWER_INFO_TEMPLATE = "(assigned reviewers: {reviewer})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
 
 CONTENT_MESSAGE_TEMPLATE = "\n~~~ quote\n{message}\n~~~"
@@ -66,6 +67,19 @@ TAG_WITH_URL_TEMPLATE = "[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = "{tag_name}"
 
 RELEASE_MESSAGE_TEMPLATE = "{user_name} {action} release [{release_name}]({url}) for tag {tagname}."
+
+
+def get_assignee_string(assignees: List[Dict[str, Any]]) -> str:
+    assignees_string = ""
+    if len(assignees) == 1:
+        assignees_string = "{username}".format(**assignees[0])
+    else:
+        usernames = []
+        for a in assignees:
+            usernames.append(a["username"])
+
+        assignees_string = ", ".join(usernames[:-1]) + " and " + usernames[-1]
+    return assignees_string
 
 
 def get_push_commits_event_message(
@@ -173,6 +187,7 @@ def get_pull_request_event_message(
     message: Optional[str] = None,
     assignee: Optional[str] = None,
     assignees: Optional[List[Dict[str, Any]]] = None,
+    reviewer: Optional[str] = None,
     type: str = "PR",
     title: Optional[str] = None,
 ) -> str:
@@ -198,23 +213,18 @@ def get_pull_request_event_message(
         main_message = f"{main_message} {branch_info}"
 
     if assignees:
-        assignees_string = ""
-        if len(assignees) == 1:
-            assignees_string = "{username}".format(**assignees[0])
-        else:
-            usernames = []
-            for a in assignees:
-                usernames.append(a["username"])
-
-            assignees_string = ", ".join(usernames[:-1]) + " and " + usernames[-1]
-
+        assignee_string = get_assignee_string(assignees)
         assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(
-            assignee=assignees_string
+            assignee=assignee_string
         )
-        main_message = f"{main_message} {assignee_info}"
 
     elif assignee:
         assignee_info = PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
+
+    elif reviewer:
+        assignee_info = PULL_REQUEST_REVIEWER_INFO_TEMPLATE.format(reviewer=reviewer)
+
+    if assignees or assignee or reviewer:
         main_message = f"{main_message} {assignee_info}"
 
     punctuation = ":" if message else "."
