@@ -141,7 +141,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
             `#compose_banners .${compose_banner.CLASSNAMES.recipient_not_subscribed}`,
         );
 
-        const existing_invites = Array.from($existing_invites_area, (user_row) =>
+        const existing_invites = [...$existing_invites_area].map((user_row) =>
             Number.parseInt($(user_row).data("user-id"), 10),
         );
 
@@ -234,7 +234,7 @@ function show_wildcard_warnings(stream_id) {
 
     const $compose_banner_area = $("#compose_banners");
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
-    const $wildcard_template = render_wildcard_warning({
+    const wildcard_template = render_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
         stream_name: compose_state.stream_name(),
@@ -246,7 +246,7 @@ function show_wildcard_warnings(stream_id) {
 
     // only show one error for any number of @all or @everyone mentions
     if ($(`#compose_banners .${classname}`).length === 0) {
-        $compose_banner_area.append($wildcard_template);
+        $compose_banner_area.append(wildcard_template);
     }
 
     user_acknowledged_wildcard = false;

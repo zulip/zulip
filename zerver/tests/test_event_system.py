@@ -23,7 +23,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
     dummy_handler,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
 from zerver.lib.users import get_api_key, get_raw_user_data
@@ -702,7 +702,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
             and urlsplit(user_dict["avatar_url"]).hostname == "secure.gravatar.com"
         ]
 
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Test again with client_gravatar = True
         result = fetch_initial_state_data(

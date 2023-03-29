@@ -2,7 +2,6 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
 import * as people from "./people";
-import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
@@ -209,7 +208,7 @@ class UnreadPMCounter {
             return [];
         }
 
-        const ids = Array.from(bucket);
+        const ids = [...bucket];
         return util.sorted_ids(ids);
     }
 }
@@ -309,12 +308,12 @@ class UnreadTopicCounter {
             return [];
         }
 
-        let topic_names = Array.from(per_stream_bucketer.keys());
+        let topic_names = [...per_stream_bucketer.keys()];
 
         /* Include topics that have at least one unread. It would likely
          * be better design for buckets to be deleted when emptied. */
         topic_names = topic_names.filter((topic_name) => {
-            const messages = Array.from(per_stream_bucketer.get_bucket(topic_name));
+            const messages = [...per_stream_bucketer.get_bucket(topic_name)];
             return messages.length > 0;
         });
         /* And aren't already present in topic_dict. */
@@ -325,7 +324,7 @@ class UnreadTopicCounter {
 
             return {
                 pretty_name: topic_name,
-                message_id: Math.max(...Array.from(msgs)),
+                message_id: Math.max(...msgs),
             };
         });
 
@@ -396,7 +395,7 @@ class UnreadTopicCounter {
             return [];
         }
 
-        const ids = Array.from(topic_bucket);
+        const ids = [...topic_bucket];
         return util.sorted_ids(ids);
     }
 
@@ -637,10 +636,14 @@ export function process_unread_message(message) {
 }
 
 export function update_message_for_mention(message, content_edited = false) {
+    // Returns true if this is a stream message whose content was
+    // changed, and thus the caller might need to trigger a rerender
+    // of UI elements displaying whether the message's topic contains
+    // an unread mention of the user.
     if (!message.unread) {
         unread_mentions_counter.delete(message.id);
         remove_message_from_unread_mention_topics(message.id);
-        return;
+        return false;
     }
 
     const is_unmuted_mention =
@@ -657,11 +660,9 @@ export function update_message_for_mention(message, content_edited = false) {
     }
 
     if (content_edited && message.type === "stream") {
-        // We only need to update recent topics here if this was a content change in an unread
-        // mention, since in other cases recent topics gets rerendered by other functions.
-        const topic_key = recent_topics_util.get_topic_key(message.stream_id, message.topic);
-        recent_topics_ui.inplace_rerender(topic_key);
+        return true;
     }
+    return false;
 }
 
 export function mark_as_read(message_id) {
@@ -707,7 +708,7 @@ export function get_counts() {
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
-    res.streams_with_mentions = Array.from(streams_with_mentions);
+    res.streams_with_mentions = [...streams_with_mentions];
 
     const pm_res = unread_pm_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
@@ -797,13 +798,13 @@ export function get_msg_ids_for_private() {
 }
 
 export function get_msg_ids_for_mentions() {
-    const ids = Array.from(unread_mentions_counter);
+    const ids = [...unread_mentions_counter];
 
     return util.sorted_ids(ids);
 }
 
 export function get_all_msg_ids() {
-    const ids = Array.from(unread_messages);
+    const ids = [...unread_messages];
 
     return util.sorted_ids(ids);
 }

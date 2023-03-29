@@ -111,7 +111,7 @@ export function handle_member_edit_event(group_id) {
     const group = user_groups.get_user_group_from_id(group_id);
 
     // update members list.
-    const members = Array.from(group.members);
+    const members = [...group.members];
     user_group_edit_members.update_member_list_widget(group_id, members);
 
     // update_settings buttons.
@@ -274,13 +274,9 @@ export function initialize() {
         }
         if (new_name !== group.name) {
             data.name = new_name;
-        } else {
-            data.name = group.name;
         }
         if (new_description !== group.description) {
             data.description = new_description;
-        } else {
-            data.description = group.description;
         }
 
         const $status_element = $(".group_change_property_info");

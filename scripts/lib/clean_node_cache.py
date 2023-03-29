@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# TODO: After switching from yarn to pnpm, we no longer create
+# /srv/zulip-npm-cache or symlink node_modules, so this script can be
+# replaced with shutil.rmtree("/srv/zulip-npm-cache").
+
 import argparse
 import os
 import sys

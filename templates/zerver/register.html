@@ -17,14 +17,14 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
     <div class="center-block new-style" style="padding: 20px 0px">
 
         <div class="pitch">
-            {% if creating_new_team %}
+            {% if creating_new_realm %}
             <h1>{{ _('Create your organization') }}</h1>
             {% else %}
             <h1>{{ _('Create your account') }}</h1>
             {% endif %}
 
             {% trans %}
-            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>
+            <p>Enter your account details to complete registration.</p>
             {% endtrans %}
         </div>
 
@@ -32,82 +32,40 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             {{ csrf_input }}
 
             <fieldset class="org-registration">
-                {% if creating_new_team %}
-                <legend>{{ _('Your organization') }}</legend>
-                <div class="input-box">
-                    <div class="inline-block relative">
-                        <input id="id_team_name" class="required" type="text"
-                          placeholder="Acme or Ακμή"
-                          value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
-                          name="realm_name" maxlength="{{ MAX_REALM_NAME_LENGTH }}" required />
-                    </div>
-                    <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
-                    {% if form.realm_name.errors %}
-                        {% for error in form.realm_name.errors %}
-                        <p class="help-inline text-error">{{ error }}</p>
-                        {% endfor %}
+                {% if creating_new_realm %}
+                <legend>{{ _('Your organization') }}
+                    {% if not form.realm_subdomain.errors %}
+                    <span class="edit-realm-details" role="button" tabindex="0"><i class="fa fa-pencil"></i></span>
                     {% endif %}
-
-                    <div class="help-text">
-                        {{ _('Shorter is better than longer.') }}
+                </legend>
+                {% with %}
+                    {% set user_registration_form = "true" %}
+                    {% include 'zerver/realm_creation_form.html' %}
+                {% endwith %}
+                {% if not form.realm_subdomain.errors %}
+                <div class="not-editable-realm-details">
+                    <div class="input-box">
+                        <label for="id_realm_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+                        <div id="id_realm_name" class="not-editable-realm-field">{{ form.realm_name.value() }}</div>
+                    </div>
+                    <div class="input-box">
+                        <label for="id_realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
+                        <div id="id_realm_type" class="not-editable-realm-field">{{ selected_realm_type_name }}</div>
+                    </div>
+                    <div class="input-box">
+                        <label for="id_realm_subdomain" class="inline-block label-title">{{ _('Organization URL') }}</label>
+                        <div id="id_realm_subdomain" class="not-editable-realm-field">{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}.{% endif %}{{external_host}}</div>
                     </div>
                 </div>
-
-                <div class="input-box">
-                    <div class="inline-block relative">
-                        <select name="realm_type" id="realm_type">
-                            {% for realm_type in sorted_realm_types %}
-                                {% if not realm_type.hidden %}
-                                <option value="{{ realm_type.id }}">{{ _(realm_type.name) }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <label for="realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
-                </div>
-
-                <div class="input-box">
-                    <label class="static org-url">
-                        {{ _('Organization URL') }}
-                    </label>
-                    {% if root_domain_available %}
-                    <label class="checkbox static" for="realm_in_root_domain">
-                        <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
-                          {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
-                        <span></span>
-                        {% trans %}Use {{ external_host }}{% endtrans %}
-                    </label>
-                    {% endif %}
-
-                    <div id="subdomain_section" {% if root_domain_available and
-                      not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
-                        <div class="or"><span>{{ _('OR') }}</span></div>
-                        <div class="inline-block relative">
-                            <input id="id_team_subdomain"
-                              class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
-                              placeholder="acme"
-                              value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                              name="realm_subdomain" maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
-                              {% if root_domain_landing_page %}required{% endif %} />
-                            <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
-                            <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
-                        </div>
-                        {% if form.realm_subdomain.errors %}
-                            {% for error in form.realm_subdomain.errors %}
-                            <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                </div>
+                {% endif %}
                 {% endif %}
             </fieldset>
 
             <fieldset class="user-registration">
-                {% if creating_new_team %}
+                {% if creating_new_realm %}
                 <legend>{{ _('Your account') }}</legend>
                 {% endif %}
-                {% if realm_name and not creating_new_team %}
+                {% if realm_name and not creating_new_realm %}
                 <img class="avatar inline-block" src="{{ realm_icon }}" alt="" />
                 <div class="info-box inline-block">
                     <div class="organization-name">{{ realm_name }}</div>
@@ -121,7 +79,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     <input type="hidden" name="email_address_visibility" id="email_address_visibility"/>
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
                     <div id="id_email">{{ email }}</div>
-                    {% if not creating_new_team %}
+                    {% if not creating_new_realm %}
                     <p id="new-user-email-address-visibility">
                         <span class="current-selected-option">
                             {% if default_email_address_visibility == email_address_visibility_admins_only %}
@@ -266,7 +224,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                         <input id="id_terms" class="required" type="checkbox" name="terms"
                           {% if form.terms.value() %}checked="checked"{% endif %} />
                         <span></span>
-                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.{% endtrans %}
+                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/policies/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.{% endtrans %}
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}
@@ -298,7 +256,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
     </div>
 </div>
 
-{% if not creating_new_team %}
+{% if not creating_new_realm %}
 <div class="micromodal" id="change-email-address-visibility-modal" aria-hidden="true">
     <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="dialog_title">

@@ -18,7 +18,7 @@ export function clear_for_testing(): void {
 }
 
 export function user_ids(): number[] {
-    return Array.from(user_set);
+    return [...user_set];
 }
 
 export function add_user_id(user_id: number): void {

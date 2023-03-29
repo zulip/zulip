@@ -50,7 +50,7 @@ class RemoteZulipServer(models.Model):
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     def __str__(self) -> str:
-        return f"<RemoteZulipServer {self.hostname} {str(self.uuid)[0:12]}>"
+        return f"{self.hostname} {str(self.uuid)[0:12]}"
 
     def format_requestor_for_logs(self) -> str:
         return "zulip-server:" + str(self.uuid)
@@ -75,7 +75,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
         ]
 
     def __str__(self) -> str:
-        return f"<RemotePushDeviceToken {self.server} {self.user_id}>"
+        return f"{self.server!r} {self.user_id}"
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
@@ -91,7 +91,7 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f"<RemoteZulipServerAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
+        return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
 
 
 class RemoteRealmAuditLog(AbstractRealmAuditLog):
@@ -105,7 +105,7 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     remote_id = models.IntegerField(db_index=True)
 
     def __str__(self) -> str:
-        return f"<RemoteRealmAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
+        return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
 
 
 class RemoteInstallationCount(BaseCount):
@@ -120,7 +120,7 @@ class RemoteInstallationCount(BaseCount):
         ]
 
     def __str__(self) -> str:
-        return f"<InstallationCount: {self.property} {self.subgroup} {self.value}>"
+        return f"{self.property} {self.subgroup} {self.value}"
 
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
@@ -138,7 +138,7 @@ class RemoteRealmCount(BaseCount):
         ]
 
     def __str__(self) -> str:
-        return f"{self.server} {self.realm_id} {self.property} {self.subgroup} {self.value}"
+        return f"{self.server!r} {self.realm_id} {self.property} {self.subgroup} {self.value}"
 
 
 class RateLimitedRemoteZulipServer(RateLimitedObject):

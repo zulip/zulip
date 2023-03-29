@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import orjson
 from django.db import connection
-from django.db.models.query import Q, QuerySet
+from django.db.models import Q, QuerySet
 from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 

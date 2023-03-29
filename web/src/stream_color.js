@@ -35,9 +35,8 @@ function update_table_stream_color(table, stream_name, color) {
     }
 }
 
-function update_stream_sidebar_swatch_color(id, color) {
-    $(`#stream_sidebar_swatch_${CSS.escape(id)}`).css("background-color", color);
-    $(`#stream_sidebar_privacy_swatch_${CSS.escape(id)}`).css("color", color);
+function update_stream_privacy_color(id, color) {
+    $(`.stream-privacy-${CSS.escape(id)}`).css("color", color);
 }
 
 function update_historical_message_color(stream_name, color) {
@@ -95,7 +94,7 @@ export function update_stream_color(sub, color, {update_historical = false} = {}
     if (update_historical) {
         update_historical_message_color(sub.name, color);
     }
-    update_stream_sidebar_swatch_color(stream_id, color);
+    update_stream_privacy_color(stream_id, color);
     message_view_header.colorize_message_view_header();
 }
 

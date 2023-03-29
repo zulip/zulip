@@ -1,7 +1,6 @@
 import re
 import sys
 from datetime import datetime
-from html import escape
 from typing import Any, Collection, Dict, List, Optional, Sequence
 from urllib.parse import urlencode
 
@@ -63,46 +62,42 @@ def user_activity_link(email: str, user_profile_id: int) -> Markup:
     from analytics.views.user_activity import get_user_activity
 
     url = reverse(get_user_activity, kwargs=dict(user_profile_id=user_profile_id))
-    email_link = f'<a href="{escape(url)}">{escape(email)}</a>'
-    return Markup(email_link)
+    return Markup('<a href="{url}">{email}</a>').format(url=url, email=email)
 
 
 def realm_activity_link(realm_str: str) -> Markup:
     from analytics.views.realm_activity import get_realm_activity
 
     url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
-    realm_link = f'<a href="{escape(url)}">{escape(realm_str)}</a>'
-    return Markup(realm_link)
+    return Markup('<a href="{url}">{realm_str}</a>').format(url=url, realm_str=realm_str)
 
 
 def realm_stats_link(realm_str: str) -> Markup:
     from analytics.views.stats import stats_for_realm
 
     url = reverse(stats_for_realm, kwargs=dict(realm_str=realm_str))
-    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i></a>'
-    return Markup(stats_link)
+    return Markup('<a href="{url}"><i class="fa fa-pie-chart"></i></a>').format(url=url)
 
 
 def realm_support_link(realm_str: str) -> Markup:
     support_url = reverse("support")
     query = urlencode({"q": realm_str})
     url = append_url_query_string(support_url, query)
-    support_link = f'<a href="{escape(url)}">{escape(realm_str)}</a>'
-    return Markup(support_link)
+    return Markup('<a href="{url}">{realm_str}</a>').format(url=url, realm_str=realm_str)
 
 
 def realm_url_link(realm_str: str) -> Markup:
     url = get_realm(realm_str).uri
-    realm_link = f'<a href="{escape(url)}"><i class="fa fa-home"></i></a>'
-    return Markup(realm_link)
+    return Markup('<a href="{url}"><i class="fa fa-home"></i></a>').format(url=url)
 
 
 def remote_installation_stats_link(server_id: int, hostname: str) -> Markup:
     from analytics.views.stats import stats_for_remote_installation
 
     url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
-    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(hostname)}</a>'
-    return Markup(stats_link)
+    return Markup('<a href="{url}"><i class="fa fa-pie-chart"></i>{hostname}</a>').format(
+        url=url, hostname=hostname
+    )
 
 
 def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, Any]:

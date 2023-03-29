@@ -17,11 +17,11 @@
     }
 
     #forward_email_modal {
-        label.radio {
+        & label.radio {
             padding-left: 20px;
         }
 
-        input[type="radio"] {
+        & input[type="radio"] {
             float: left;
             width: auto;
             cursor: pointer;
@@ -29,10 +29,21 @@
             line-height: normal;
 
             &:focus {
-                outline: 1px dotted hsl(0, 0%, 20%);
+                outline: 1px dotted hsl(0deg 0% 20%);
                 outline: 5px auto -webkit-focus-ring-color;
                 outline-offset: -2px;
             }
+        }
+    }
+
+    & input[type="checkbox"] {
+        width: auto;
+        cursor: pointer;
+
+        &:focus {
+            outline: 1px dotted hsl(0deg 0% 20%);
+            outline: 5px auto -webkit-focus-ring-color;
+            outline-offset: -2px;
         }
     }
 }

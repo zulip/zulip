@@ -159,7 +159,7 @@ function get_group_suggestions(last, operators) {
 
     // We don't suggest a person if their email is already present in the
     // operand (not including the last part).
-    const parts = all_but_last_part.split(",").concat(people.my_current_email());
+    const parts = [...all_but_last_part.split(","), people.my_current_email()];
 
     const person_matcher = people.build_person_matcher(last_part);
     let persons = people.filter_all_persons((person) => {
@@ -421,7 +421,7 @@ function get_topic_suggestions(last, operators) {
 
     return topics.map((topic) => {
         const topic_term = {operator: "topic", operand: topic, negated};
-        const operators = suggest_operators.concat([topic_term]);
+        const operators = [...suggest_operators, topic_term];
         return format_as_suggestion(operators);
     });
 }
@@ -650,7 +650,7 @@ class Attacher {
         }
     }
 
-    concat(suggestions) {
+    push_many(suggestions) {
         for (const suggestion of suggestions) {
             this.push(suggestion);
         }
@@ -790,7 +790,7 @@ export function get_search_result(base_query, query) {
         attacher.result.length < max_items
     ) {
         const subset_suggestions = get_operator_subset_suggestions(search_operators);
-        attacher.concat(subset_suggestions);
+        attacher.push_many(subset_suggestions);
     }
 
     return attacher.result.slice(0, max_items);

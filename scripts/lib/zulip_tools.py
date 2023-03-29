@@ -9,9 +9,9 @@ import logging
 import os
 import pwd
 import random
-import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -236,12 +236,25 @@ def run(args: Sequence[str], **kwargs: Any) -> None:
 
     try:
         subprocess.check_call(args, **kwargs)
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as error:
         print()
-        print(
-            WHITEONRED + f"Error running a subcommand of {sys.argv[0]}: {shlex.join(args)}" + ENDC
-        )
-        print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
+        if error.returncode < 0:
+            try:
+                signal_name = signal.Signals(-error.returncode).name
+            except ValueError:
+                signal_name = f"unknown signal {-error.returncode}"
+            print(
+                WHITEONRED
+                + f"Subcommand of {sys.argv[0]} died with {signal_name}: {shlex.join(args)}"
+                + ENDC
+            )
+        else:
+            print(
+                WHITEONRED
+                + f"Subcommand of {sys.argv[0]} failed with exit status {error.returncode}: {shlex.join(args)}"
+                + ENDC
+            )
+            print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
         sys.exit(1)
 
@@ -333,6 +346,9 @@ def purge_unused_caches(
     cache_type: str,
     args: argparse.Namespace,
 ) -> None:
+    if not os.path.exists(caches_dir):
+        return
+
     all_caches = {os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)}
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
@@ -362,22 +378,8 @@ def generate_sha1sum_emoji(zulip_path: str) -> str:
 
     # Take into account the version of `emoji-datasource-google` package
     # while generating success stamp.
-    PACKAGE_FILE_PATH = os.path.join(zulip_path, "package.json")
-    with open(PACKAGE_FILE_PATH) as fp:
-        parsed_package_file = json.load(fp)
-    dependency_data = parsed_package_file["dependencies"]
-
-    if "emoji-datasource-google" in dependency_data:
-        with open(os.path.join(zulip_path, "yarn.lock")) as fp:
-            (emoji_datasource_version,) = re.findall(
-                r"^emoji-datasource-google@"
-                + re.escape(dependency_data["emoji-datasource-google"])
-                + r':\n  version "(.*)"',
-                fp.read(),
-                re.M,
-            )
-    else:
-        emoji_datasource_version = "0"
+    with open(os.path.join(zulip_path, "node_modules/emoji-datasource-google/package.json")) as fp:
+        emoji_datasource_version = json.load(fp)["version"]
     sha.update(emoji_datasource_version.encode())
 
     return sha.hexdigest()

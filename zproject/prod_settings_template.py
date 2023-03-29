@@ -71,7 +71,9 @@ EXTERNAL_HOST = "zulip.example.com"
 ## advice for troubleshooting, see the Zulip documentation:
 ##   https://zulip.readthedocs.io/en/latest/production/email.html
 
-## EMAIL_HOST and EMAIL_HOST_USER are generally required.
+## EMAIL_HOST and EMAIL_HOST_USER are generally required.  If your
+## SMTP server does not require authentication, leave EMAIL_HOST_USER
+## commented out.
 # EMAIL_HOST = "smtp.example.com"
 # EMAIL_HOST_USER = ""
 
@@ -582,6 +584,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # RABBITMQ_PORT = 5672
 ## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = "zulip"
+## To access the RabbitMQ server over TLS, set this to True; this is
+## generally only necessary if RabbitMQ is running on a separate,
+## cloud-managed, host.
+# RABBITMQ_USE_TLS = False
 
 ########
 ## Redis configuration.
@@ -650,7 +656,11 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # BROWSER_ERROR_REPORTING = False
 
 ## Controls the DSN used to report errors to Sentry.io
-# SENTRY_DSN = "https://bbb@bbb.ingest.sentry.io/1235"
+# SENTRY_DSN = "https://aaa@bbb.ingest.sentry.io/1234"
+# SENTRY_FRONTEND_DSN = "https://aaa@bbb.ingest.sentry.io/1234"
+## What portion of events are sampled (https://docs.sentry.io/platforms/javascript/configuration/sampling/):
+# SENTRY_FRONTEND_SAMPLE_RATE = 1.0
+# SENTRY_FRONTEND_TRACE_RATE = 0.1
 
 ## If True, each log message in the server logs will identify the
 ## Python module where it came from.  Useful for tracking down a

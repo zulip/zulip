@@ -86,14 +86,14 @@ test("get_mutes", () => {
     assert.deepEqual(all_muted_topics, [
         {
             date_muted: 1577836700000,
-            date_muted_str: "Dec\u00A031,\u00A02019",
+            date_muted_str: "Dec 31, 2019",
             stream: devel.name,
             stream_id: devel.stream_id,
             topic: "java",
         },
         {
             date_muted: 1577836800000,
-            date_muted_str: "Jan\u00A001,\u00A02020",
+            date_muted_str: "Jan 1, 2020",
             stream: office.name,
             stream_id: office.stream_id,
             topic: "gossip",
@@ -134,14 +134,14 @@ test("set_user_topics", () => {
     assert.deepEqual(user_topics.get_muted_topics().sort(), [
         {
             date_muted: 1577836800000,
-            date_muted_str: "Jan\u00A001,\u00A02020",
+            date_muted_str: "Jan 1, 2020",
             stream: social.name,
             stream_id: social.stream_id,
             topic: "breakfast",
         },
         {
             date_muted: 1577836800000,
-            date_muted_str: "Jan\u00A001,\u00A02020",
+            date_muted_str: "Jan 1, 2020",
             stream: design.name,
             stream_id: design.stream_id,
             topic: "typography",
@@ -152,7 +152,7 @@ test("set_user_topics", () => {
         stream_id: design.stream_id,
         topic_name: "typography",
         last_updated: "1577836800",
-        visibility_policy: visibility_policy.VISIBILITY_POLICY_INHERIT,
+        visibility_policy: visibility_policy.INHERIT,
     });
     assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
 });

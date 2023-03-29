@@ -1,6 +1,5 @@
-from typing import Dict, Iterable, List, Optional, Sequence, TypedDict
+from typing import Dict, Iterable, List, Sequence, TypedDict
 
-from django.db import transaction
 from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from django_cte import With
@@ -126,25 +125,6 @@ def get_direct_user_groups(user_profile: UserProfile) -> List[UserGroup]:
     return list(user_profile.direct_groups.all())
 
 
-def create_user_group(
-    name: str,
-    members: List[UserProfile],
-    realm: Realm,
-    *,
-    acting_user: Optional[UserProfile],
-    description: str = "",
-    is_system_group: bool = False,
-) -> UserGroup:
-    with transaction.atomic():
-        user_group = UserGroup.objects.create(
-            name=name, realm=realm, description=description, is_system_group=is_system_group
-        )
-        UserGroupMembership.objects.bulk_create(
-            UserGroupMembership(user_profile=member, user_group=user_group) for member in members
-        )
-        return user_group
-
-
 def get_user_group_direct_member_ids(
     user_group: UserGroup,
 ) -> ValuesQuerySet[UserGroupMembership, int]:
@@ -257,8 +237,15 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         realm=realm,
         is_system_group=True,
     )
+    nobody_system_group = UserGroup(
+        name=UserGroup.NOBODY_GROUP_NAME,
+        description="Nobody",
+        realm=realm,
+        is_system_group=True,
+    )
     # Order of this list here is important to create correct GroupGroupMembership objects
     system_user_groups_list = [
+        nobody_system_group,
         role_system_groups_dict[UserProfile.ROLE_REALM_OWNER],
         role_system_groups_dict[UserProfile.ROLE_REALM_ADMINISTRATOR],
         role_system_groups_dict[UserProfile.ROLE_MODERATOR],
@@ -271,7 +258,8 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     UserGroup.objects.bulk_create(system_user_groups_list)
 
     subgroup_objects = []
-    subgroup, remaining_groups = system_user_groups_list[0], system_user_groups_list[1:]
+    # "Nobody" system group is not a subgroup of any user group, since it is already empty.
+    subgroup, remaining_groups = system_user_groups_list[1], system_user_groups_list[2:]
     for supergroup in remaining_groups:
         subgroup_objects.append(GroupGroupMembership(subgroup=subgroup, supergroup=supergroup))
         subgroup = supergroup

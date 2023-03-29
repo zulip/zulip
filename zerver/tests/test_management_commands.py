@@ -300,13 +300,21 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         # Enter email
         with self.assertRaises(Realm.DoesNotExist):
             get_realm("test")
-        result = self.client_post(generated_link, {"email": email})
+        result = self.client_post(
+            generated_link,
+            {
+                "email": email,
+                "realm_name": "Zulip test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "zuliptest",
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(re.search(r"/accounts/do_confirm/\w+$", result["Location"]))
 
         # Bypass sending mail for confirmation, go straight to creation form
         result = self.client_get(result["Location"])
-        self.assert_in_response('action="/accounts/register/"', result)
+        self.assert_in_response('action="/realm/register/"', result)
 
         # Original link is now dead
         result = self.client_get(generated_link)
@@ -317,7 +325,15 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         email = "user1@test.com"
         generated_link = generate_realm_creation_url(by_admin=False)
 
-        result = self.client_post(generated_link, {"email": email})
+        result = self.client_post(
+            generated_link,
+            {
+                "email": email,
+                "realm_name": "Zulip test",
+                "realm_type": Realm.ORG_TYPES["business"]["id"],
+                "realm_subdomain": "zuliptest",
+            },
+        )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
             f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}", result["Location"]

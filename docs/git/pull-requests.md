@@ -103,34 +103,32 @@ complicated rebase.
 ### Step 3: Open the pull request
 
 If you've never created a pull request or need a refresher, take a look at
-GitHub's article [creating a pull request from a
+GitHub's article on [creating a pull request from a
 fork][github-help-create-pr-fork]. We'll briefly review the process here.
 
-The first step in creating a pull request is to use your web browser to
-navigate to your fork of Zulip. Sign in to GitHub if you haven't already.
+First, sign in to GitHub on your web browser and navigate to your fork of Zulip.
 
 Next, navigate to the branch you've been working on. Do this by clicking on the
 **Branch** button and selecting the relevant branch. Finally, click the **New
-pull request** button.
+pull request** button. Alternatively, if you've recently pushed the relevant
+branch to your fork, you will see a **Compare & pull request** button.
 
-Alternatively, if you've recently pushed to your fork, you will see a green
-**Compare & pull request** button.
+A pull request template will open with some information pre-filled in.
+Provide (or update) the title for your pull request and write a first comment.
 
-You'll see the _Open a pull request_ page:
+If your pull request makes UI changes, always include one or more still
+screenshots to demonstrate your changes. If it seems helpful, add a screen
+capture of the new functionality as well. You can find a list of tools you can
+use for this [here][screenshots-gifs].
 
-![images-create-pr]
+See the documentation for creating [reviewable pull requests][reviewable-prs]
+for more guidance and tips when writing pull request comments. If the repository
+has a self-review checklist in the pull request template, make sure that all the
+relevant points have been addressed before submitting it.
 
-Provide a **title** and first comment for your pull request. Remember to mark
-your pull request as a [draft][github-help-draft-pr] if it is a
+When ready, click the **Create pull request** button to submit the pull request.
+Remember to mark your pull request as a [draft][github-help-draft-pr] if it is a
 work-in-progress.
-
-If your pull request has an effect on the visuals of a component, you might want
-to include a screenshot of this change or a GIF of the interaction in your first
-comment. This will allow reviewers to comment on your changes without having to
-check out your branch; you can find a list of tools you can use for this over
-[here][screenshots-gifs].
-
-When ready, click the green **Create pull request** to submit the pull request.
 
 Note: **Pull request titles are different from commit messages.** Commit
 messages can be edited with `git commit --amend`, `git rebase -i`, etc., while
@@ -158,7 +156,7 @@ for another review.
 [github-help-about-pr]: https://help.github.com/en/articles/about-pull-requests
 [github-help-create-pr-fork]: https://help.github.com/en/articles/creating-a-pull-request-from-a-fork
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
-[images-create-pr]: ../images/zulip-open-pr.png
 [keep-up-to-date]: using.md#keep-your-fork-up-to-date
 [self-push-commits]: using.md#push-your-commits-to-github
 [screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
+[reviewable-prs]: ../contributing/reviewable-prs.md

@@ -1,3 +1,4 @@
+import generated_pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
 
 import {$t} from "./i18n";
@@ -29,7 +30,7 @@ export function get_playground_info_for_languages(lang) {
 
 export function sort_pygments_pretty_names_by_priority(generated_pygments_data) {
     const priority_sorted_pygments_data = Object.keys(generated_pygments_data.langs).sort(
-        typeahead_helper.compare_by_popularity,
+        typeahead_helper.compare_language,
     );
     for (const alias of priority_sorted_pygments_data) {
         const pretty_name = generated_pygments_data.langs[alias].pretty_name;
@@ -42,7 +43,23 @@ export function sort_pygments_pretty_names_by_priority(generated_pygments_data) 
     }
 }
 
-export function get_pygments_typeahead_list(query) {
+// This gets the candidate list for showing autocomplete for a code block in
+// the composebox. The candidate list will include pygments data as well as any
+// Code Playgrounds.
+//
+// May return duplicates, since it's common for playground languages
+// to also be pygments languages! retain_unique_language_aliases will
+// deduplicate them.
+export function get_pygments_typeahead_list_for_composebox() {
+    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
+    const generated_pygment_langs = Object.keys(generated_pygments_data.langs);
+
+    return [...playground_pygment_langs, ...generated_pygment_langs];
+}
+
+// This gets the candidate list for showing autocomplete in settings when
+// adding a new Code Playground.
+export function get_pygments_typeahead_list_for_settings(query) {
     const language_labels = new Map();
 
     // Adds a typeahead that allows selecting a custom language, by adding a
@@ -55,8 +72,13 @@ export function get_pygments_typeahead_list(query) {
         );
     }
 
+    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
+    for (const lang of playground_pygment_langs) {
+        language_labels.set(lang, $t({defaultMessage: "Custom language: {query}"}, {query: lang}));
+    }
+
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        language_labels.set(key, key + " (" + Array.from(values).join(", ") + ")");
+        language_labels.set(key, key + " (" + values.join(", ") + ")");
     }
 
     return language_labels;

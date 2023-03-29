@@ -1,28 +1,3 @@
-/*
-This is the header, aka the navbar.
-*/
-$header_height: 40px;
-$header_height_sm: 30px;
-
-/*
-We have a 10px gutter below the header,
-which often needs to be respected by both
-the elements above it and below it on
-the y-axis, due to absolute positioning.
-*/
-$header_padding_bottom: 10px;
-
-/*
-Our sidebars (and anything that top-align
-with them) go beneath the header.
-*/
-$sidebar_top: calc($header_height + $header_padding_bottom);
-$sidebar_top_sm: calc($header_height_sm + $header_padding_bottom);
-
-$left_sidebar_collapse_widget_gutter: 10px;
-$left_sidebar_width: 270px;
-$right_sidebar_width: 250px;
-
 body,
 html {
     width: 100%;
@@ -46,25 +21,55 @@ body {
 /* Common background color */
 body,
 #message_view_header_underpadding {
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     transition: background-color 200ms linear;
 }
 
 :root {
     color-scheme: light;
 
-    --color-default-text: hsl(0, 0%, 15%);
-    --color-date: hsl(0, 0%, 15%, 0.75);
+    --color-default-text: hsl(0deg 0% 15%);
+    --color-date: hsl(0deg 0% 15% / 75%);
+
+    /*
+    This is the header, aka the navbar.
+    */
+    --header-height: 40px;
+
+    @media (width < $sm_min) {
+        --header-height: 30px;
+    }
+
+    /*
+    We have a 10px gutter below the header,
+    which often needs to be respected by both
+    the elements above it and below it on
+    the y-axis, due to absolute positioning.
+    */
+    --header-padding-bottom: 10px;
+
+    /*
+    Our sidebars (and anything that top-align
+    with them) go beneath the header.
+    */
+    --sidebar-top: calc(var(--header-height) + var(--header-padding-bottom));
+    --left-sidebar-collapse-widget-gutter: 10px;
+    --left-sidebar-width: 270px;
+    --right-sidebar-width: 250px;
+}
+
+%dark-theme {
+    --color-default-text: hsl(0deg 0% 100%);
+    --color-date: hsl(0deg 0% 100% / 75%);
 }
 
 :root.dark-theme {
-    --color-default-text: hsl(0, 0%, 100%);
-    --color-date: hsl(0, 0%, 100%, 0.75);
+    @extend %dark-theme;
 }
 
 @media (prefers-color-scheme: dark) {
     :root.color-scheme-automatic {
-        @extend :root.dark-theme;
+        @extend %dark-theme;
     }
 }
 
@@ -88,7 +93,7 @@ a {
 
     &.message_label_clickable:hover {
         cursor: pointer;
-        color: hsl(200, 100%, 40%);
+        color: hsl(200deg 100% 40%);
     }
 }
 
@@ -134,14 +139,14 @@ p.n-margin {
 }
 
 .history-limited-box {
-    color: hsl(16, 60%, 45%);
-    border: 1px solid hsl(16, 60%, 45%);
-    box-shadow: 0 0 2px hsl(16, 60%, 45%);
+    color: hsl(16deg 60% 45%);
+    border: 1px solid hsl(16deg 60% 45%);
+    box-shadow: 0 0 2px hsl(16deg 60% 45%);
 }
 
 .all-messages-search-caution {
-    border: 1px solid hsla(192, 19%, 75%, 0.2);
-    box-shadow: 0 0 2px hsla(192, 19%, 75%, 0.2);
+    border: 1px solid hsl(192deg 19% 75% / 20%);
+    box-shadow: 0 0 2px hsl(192deg 19% 75% / 20%);
 }
 
 .history-limited-box,
@@ -156,11 +161,11 @@ p.n-margin {
     padding-left: 26px;
     text-indent: -10px;
 
-    i {
+    & i {
         margin: 0 3px 0 1px;
     }
 
-    p {
+    & p {
         margin: 0;
         padding: 4px;
     }
@@ -173,7 +178,7 @@ p.n-margin {
 .top-messages-logo {
     /* Since padding under message header is not transparent
        we need to position it below the padding. */
-    padding-top: $header_padding_bottom;
+    padding-top: var(--header-padding-bottom);
 }
 
 .alert-zulip-logo,
@@ -183,15 +188,15 @@ p.n-margin {
     height: 24px;
     margin: 0 auto 12px;
 
-    svg {
-        circle {
-            fill: hsl(0, 0%, 27%);
-            stroke: hsl(0, 0%, 27%);
+    & svg {
+        & circle {
+            fill: hsl(0deg 0% 27%);
+            stroke: hsl(0deg 0% 27%);
         }
 
-        path {
-            fill: hsl(0, 0%, 100%);
-            stroke: hsl(0, 0%, 100%);
+        & path {
+            fill: hsl(0deg 0% 100%);
+            stroke: hsl(0deg 0% 100%);
         }
     }
 }
@@ -204,9 +209,9 @@ p.n-margin {
     left: calc(50vw - 220px);
     padding: 15px;
 
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsl(0deg 0% 98%);
     border-radius: 5px;
-    box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.25);
+    box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
     z-index: 110;
 
     animation-name: pulse;
@@ -220,7 +225,7 @@ p.n-margin {
         top: 50px;
     }
 
-    h3 {
+    & h3 {
         font-size: 16pt;
         margin-top: 2px;
     }
@@ -235,15 +240,15 @@ p.n-margin {
 
 @keyframes pulse {
     0% {
-        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.35);
+        box-shadow: 0 0 30px hsl(0deg 0% 0% / 35%);
     }
 
     50% {
-        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.15);
+        box-shadow: 0 0 30px hsl(0deg 0% 0% / 15%);
     }
 
     100% {
-        box-shadow: 0 0 30px hsla(0, 0%, 0%, 0.35);
+        box-shadow: 0 0 30px hsl(0deg 0% 0% / 35%);
     }
 }
 
@@ -267,14 +272,14 @@ p.n-margin {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
-    height: $header_height;
-    padding-bottom: $header_padding_bottom;
+    height: var(--header-height);
+    padding-bottom: var(--header-padding-bottom);
     /* Since the headers are sticky, we need non-transparent background. */
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 #top_navbar {
-    border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+    border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
 }
 
 #navbar_alerts_wrapper {
@@ -294,13 +299,13 @@ p.n-margin {
 
         text-align: center;
         text-shadow: none;
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
 
         &.alert-info {
-            background-color: hsl(170, 46%, 54%);
+            background-color: hsl(170deg 46% 54%);
 
             &.red {
-                background-color: hsl(0, 46%, 54%);
+                background-color: hsl(0deg 46% 54%);
             }
         }
 
@@ -313,12 +318,12 @@ p.n-margin {
         }
 
         .alert-link {
-            color: hsl(169, 100%, 88%);
+            color: hsl(169deg 100% 88%);
             font-weight: 600;
         }
 
         &.red .alert-link {
-            color: hsl(0, 100%, 88%);
+            color: hsl(0deg 100% 88%);
         }
 
         .buttons .alert-link {
@@ -336,7 +341,7 @@ p.n-margin {
     .org-info {
         text-align: center;
 
-        a {
+        & a {
             white-space: normal;
         }
     }
@@ -348,7 +353,7 @@ p.n-margin {
 
     .org-url {
         line-height: 100%;
-        color: hsl(0, 0%, 52%);
+        color: hsl(0deg 0% 52%);
     }
 
     .org-version {
@@ -357,16 +362,16 @@ p.n-margin {
     }
 
     .org-upgrade {
-        color: hsl(226, 82%, 60%);
+        color: hsl(226deg 82% 60%);
 
-        a {
+        & a {
             padding: 0;
         }
     }
 
     .org-plan,
     .org-upgrade {
-        a {
+        & a {
             line-height: 16px;
         }
     }
@@ -399,12 +404,12 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 .column-right {
-    width: $right_sidebar_width;
-    max-width: $right_sidebar_width;
+    width: var(--right-sidebar-width);
+    max-width: var(--right-sidebar-width);
     position: absolute;
     right: 0;
     top: 0;
@@ -417,23 +422,23 @@ p.n-margin {
         /* width of right column - width of gear icon(250px - 45px) */
         width: 205px;
 
-        a {
+        & a {
             font-size: calc(16em / 14);
             font-weight: 600;
-            color: hsl(0, 0%, 20%);
+            color: hsl(0deg 0% 20%);
 
             &:hover {
                 text-decoration: none;
-                color: hsl(0, 0%, 0%);
+                color: hsl(0deg 0% 0%);
             }
 
-            i {
+            & i {
                 margin-right: 3px;
             }
         }
 
         .divider {
-            color: hsl(0, 0%, 88%);
+            color: hsl(0deg 0% 88%);
             font-size: 20px;
             line-height: 1;
         }
@@ -447,7 +452,7 @@ p.n-margin {
         height: 40px;
         /* Width of userlist-toggle button. */
         width: 45px;
-        border-left: 1px solid hsl(0, 0%, 88%);
+        border-left: 1px solid hsl(0deg 0% 88%);
 
         .login_button {
             display: flex;
@@ -461,8 +466,8 @@ p.n-margin {
                 text-decoration: none;
             }
 
-            i {
-                color: hsl(0, 0%, 20%);
+            & i {
+                color: hsl(0deg 0% 20%);
                 font-size: 1.6em;
             }
         }
@@ -470,8 +475,8 @@ p.n-margin {
 }
 
 .column-left {
-    width: $left_sidebar_width;
-    max-width: $left_sidebar_width;
+    width: var(--left-sidebar-width);
+    max-width: var(--left-sidebar-width);
     position: absolute;
     left: 0;
     top: 0;
@@ -484,13 +489,13 @@ p.n-margin {
     .column-left .left-sidebar,
     .column-right .right-sidebar {
         position: fixed;
-        margin-top: $sidebar_top;
+        margin-top: var(--sidebar-top);
         z-index: 100;
     }
 
     .column-left .left-sidebar {
-        width: $left_sidebar_width;
-        padding-left: $left_sidebar_collapse_widget_gutter;
+        width: var(--left-sidebar-width);
+        padding-left: var(--left-sidebar-collapse-widget-gutter);
     }
 
     .column-right .right-sidebar {
@@ -506,9 +511,9 @@ p.n-margin {
 
 .column-middle,
 #compose-content {
-    margin-right: $right_sidebar_width;
+    margin-right: var(--right-sidebar-width);
     margin-left: calc(
-        $left_sidebar_width + $left_sidebar_collapse_widget_gutter
+        var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter)
     );
     position: relative;
 }
@@ -533,7 +538,7 @@ i.fa:focus,
 i.zulip-icon:focus,
 .auto-select:focus,
 [role="button"]:focus {
-    outline: 2px solid hsl(215, 47%, 50%);
+    outline: 2px solid hsl(215deg 47% 50%);
     /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
 }
 
@@ -572,7 +577,7 @@ li,
 
 /* Classes which style copy buttons */
 .copy_button_base {
-    outline-color: hsl(0, 0%, 73%);
+    outline-color: hsl(0deg 0% 73%);
     height: 18px;
     width: 10px;
     padding: 6px;
@@ -587,15 +592,23 @@ li,
     z-index: 2;
 
     &:hover svg path {
-        fill: hsl(200, 100%, 40%);
+        fill: hsl(200deg 100% 40%);
     }
 }
 
 .copy_message {
+    float: right;
     position: relative;
-    top: 27px;
-    left: -10px;
-    margin-top: -24px;
+    cursor: pointer;
+    top: 30px;
+    /* To make sure the svg doesn't occupy any vertical space. */
+    margin-top: -30px;
+    right: 2px;
+    padding-top: 2px;
+
+    #clipboard_image {
+        margin: 0;
+    }
 }
 
 #copy_generated_invite_link {
@@ -651,7 +664,7 @@ strong {
 }
 
 .sidebar-title {
-    color: hsl(0, 0%, 43%);
+    color: hsl(0deg 0% 43%);
     font-size: inherit;
     font-weight: normal;
     display: inline;
@@ -671,7 +684,7 @@ strong {
     }
 
     .tooltip-inner {
-        background-color: hsla(0, 0%, 7%, 0.8);
+        background-color: hsl(0deg 0% 7% / 80%);
         padding: 3px 5px;
     }
 
@@ -700,7 +713,7 @@ strong {
 
 #message_edit_tooltip {
     float: right;
-    color: hsl(0, 0%, 0%);
+    color: hsl(0deg 0% 0%);
     margin-top: 2px;
     margin-left: 6px;
     opacity: 0.5;
@@ -729,14 +742,14 @@ strong {
    basic idea of this fix is to remove decorations from :hover and apply them only
    on :focus. */
 .typeahead-menu {
-    li {
-        a {
+    & li {
+        & a {
             display: block;
             padding: 3px 20px;
             clear: both;
             font-weight: normal;
             line-height: 20px;
-            color: hsl(0, 0%, 20%);
+            color: hsl(0deg 0% 20%);
             white-space: nowrap;
 
             &:hover {
@@ -744,23 +757,14 @@ strong {
             }
 
             &:focus {
-                color: hsl(0, 0%, 100%);
+                color: hsl(0deg 0% 100%);
                 text-decoration: none;
-                background-color: hsl(200, 100%, 38%);
+                background-color: hsl(200deg 100% 38%);
                 background-image: linear-gradient(
                     to bottom,
-                    hsl(200, 100%, 40%),
-                    hsl(200, 100%, 35%)
+                    hsl(200deg 100% 40%),
+                    hsl(200deg 100% 35%)
                 );
-            }
-
-            .search_list_item {
-                display: flex;
-                align-items: center;
-            }
-
-            .search_list_item .pill-container {
-                margin-left: 5px;
             }
 
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
@@ -780,18 +784,18 @@ strong {
     }
 
     .active > a {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
         text-decoration: none;
-        background-color: hsl(200, 100%, 38%);
+        background-color: hsl(200deg 100% 38%);
         background-image: linear-gradient(
             to bottom,
-            hsl(200, 100%, 40%),
-            hsl(200, 100%, 35%)
+            hsl(200deg 100% 40%),
+            hsl(200deg 100% 35%)
         );
         outline: 0;
 
         .user_circle_empty {
-            border-color: hsl(0, 0%, 25%);
+            border-color: hsl(0deg 0% 25%);
         }
     }
 
@@ -802,7 +806,7 @@ strong {
 
 /* Copied from bootstrap 2.1.1 CSS for dropdown-menu li > a:focus */
 li.actual-dropdown-menu > a:focus {
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
     text-decoration: none;
     background-color: transparent;
     background-image: none;
@@ -848,11 +852,11 @@ li.actual-dropdown-menu i {
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 }
 
 .new_messages {
-    background-color: hsl(194, 53%, 79%);
+    background-color: hsl(194deg 53% 79%);
 }
 
 .new_messages,
@@ -923,18 +927,14 @@ td.pointer {
         text-decoration: none;
         color: var(--color-default-text);
     }
-
-    a& {
-        z-index: 1;
-    }
 }
 
 /* The way this overrides the menus with a background-color and a high
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
 .alert-msg {
-    color: hsl(170, 48%, 54%);
-    background-color: hsl(0, 0%, 100%);
+    color: hsl(170deg 48% 54%);
+    background-color: hsl(0deg 0% 100%);
     z-index: 999;
     font-weight: 400;
     display: none;
@@ -961,7 +961,7 @@ td.pointer {
         text-align: center;
         display: inline-block;
         position: relative;
-        color: hsl(0, 0%, 73%);
+        color: hsl(0deg 0% 73%);
 
         > i {
             vertical-align: middle;
@@ -985,7 +985,7 @@ td.pointer {
 
     > .reaction_button {
         &:hover {
-            color: hsl(200, 100%, 40%);
+            color: hsl(200deg 100% 40%);
         }
     }
 
@@ -994,7 +994,7 @@ td.pointer {
         height: 16px;
 
         &:hover {
-            color: hsl(200, 100%, 40%);
+            color: hsl(200deg 100% 40%);
         }
     }
 
@@ -1003,7 +1003,7 @@ td.pointer {
 
         &:hover {
             cursor: pointer;
-            color: hsl(200, 100%, 40%);
+            color: hsl(200deg 100% 40%);
         }
     }
 
@@ -1032,7 +1032,7 @@ td.pointer {
 
         .failed_message_action {
             opacity: 1 !important;
-            color: hsl(0, 100%, 50%);
+            color: hsl(0deg 100% 50%);
             font-weight: bold;
             padding: 1px;
         }
@@ -1044,7 +1044,7 @@ td.pointer {
 
     .star_container {
         &:not(.empty-star) {
-            color: hsl(106, 77%, 29%);
+            color: hsl(106deg 77% 29%);
 
             /* Opacity/visibility as though the message is hovered. */
             opacity: 1 !important;
@@ -1056,7 +1056,7 @@ td.pointer {
 .star {
     &:hover {
         cursor: pointer;
-        color: hsl(153, 80%, 25%);
+        color: hsl(153deg 80% 25%);
     }
 }
 
@@ -1097,7 +1097,7 @@ td.pointer {
 
 .message_list {
     .recipient_row {
-        border-bottom: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0deg 0% 88%);
         /* This value should be in sync with `margin_between_recipient_rows`
            in `message_list_view`. */
         margin-bottom: 10px;
@@ -1105,19 +1105,9 @@ td.pointer {
 
     .message_header {
         position: sticky;
-        top: $sidebar_top;
+        top: var(--sidebar-top);
         z-index: 3;
-        box-shadow: 0 -1px 0 0 hsl(0, 0%, 100%);
-
-        @media (width < $sm_min) {
-            top: $sidebar_top_sm;
-        }
-
-        &.sticky_header {
-            .recipient_row_date {
-                display: block;
-            }
-        }
+        box-shadow: 0 -1px 0 0 hsl(0deg 0% 100%);
     }
 }
 
@@ -1127,9 +1117,9 @@ td.pointer {
     font-weight: normal;
     height: 17px;
     line-height: 17px;
-    border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
-        hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
+    border-color: hsl(0deg 0% 0% / 0%) hsl(0deg 0% 0% / 0%) hsl(0deg 0% 0% / 0%)
+        hsl(0deg 0% 88%);
+    background-color: hsl(0deg 0% 88%);
     border-width: 0;
     position: relative;
     text-decoration: none;
@@ -1193,7 +1183,16 @@ td.pointer {
     letter-spacing: 0.04em;
     text-transform: uppercase;
 
-    &.hide-date {
+    /* Display the date when unchanged only for sticky headers. */
+    &.recipient_row_date_unchanged {
+        display: none;
+
+        .sticky_header & {
+            display: block;
+        }
+    }
+
+    &.hide-date-separator-header {
         display: none;
     }
 }
@@ -1268,35 +1267,35 @@ td.pointer {
 }
 
 .message_header_private_message {
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 
     .message_label_clickable {
-        background-color: hsl(0, 0%, 27%);
+        background-color: hsl(0deg 0% 27%);
         display: inline-block;
         padding: 3px 6px 2px;
         font-weight: normal;
         height: 17px;
         line-height: 17px;
-        border-left-color: hsl(0, 0%, 27%);
+        border-left-color: hsl(0deg 0% 27%);
     }
 
     /* Base color backgrounds for message boxes,
        private messages, mentions, and unread messages */
 
     .message-header-contents {
-        background-color: hsla(192, 19%, 75%, 0.2);
-        box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
+        background-color: hsl(192deg 19% 75% / 20%);
+        box-shadow: inset 1px 1px 0 hsl(0deg 0% 88%);
     }
 }
 
 .private-message {
     .alert-msg {
-        background-color: hsl(192, 20%, 95%);
+        background-color: hsl(192deg 20% 95%);
     }
 
     .messagebox,
     .date_row {
-        background-color: hsla(192, 19%, 75%, 0.2);
+        background-color: hsl(192deg 19% 75% / 20%);
         /* The 5th parameter here is a spread-radius, which, when negative,
          * causes the shadow to shrink (be smaller than the target
          * element), resulting in a visual width of 3px-1px=2px. This
@@ -1310,8 +1309,8 @@ td.pointer {
          * Handlebars templates, since the color used there is the
          * stream's configured color.
          */
-        box-shadow: inset 3px 0 0 -1px hsl(0, 0%, 27%),
-            -1px 0 0 0 hsl(0, 0%, 27%);
+        box-shadow: inset 3px 0 0 -1px hsl(0deg 0% 27%),
+            -1px 0 0 0 hsl(0deg 0% 27%);
     }
 }
 
@@ -1319,13 +1318,13 @@ td.pointer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-right: 1px solid hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0deg 0% 88%);
+    background-color: hsl(0deg 0% 88%);
 }
 
 .group_mention .messagebox,
 .direct_mention .messagebox {
-    background-color: hsl(8, 94%, 94%);
+    background-color: hsl(8deg 94% 94%);
 }
 
 .recipient_row .message_row:first-child .unread_marker {
@@ -1353,7 +1352,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    background-color: hsl(107, 74%, 29%);
+    background-color: hsl(107deg 74% 29%);
     width: 3px;
     height: 100%;
 }
@@ -1367,24 +1366,20 @@ td.pointer {
     /* Sticky message header overlaps 1px with the box-shadow, so we add another
        2px wide box-shadow 1px below from top to compensate for that. */
     .messagebox-content {
-        box-shadow: inset 0 1px 0 2px hsl(215, 47%, 50%),
-            inset 0 0 0 2px hsl(215, 47%, 50%), 0 0 0 1px hsl(215, 47%, 50%);
+        box-shadow: inset 0 1px 0 2px hsl(215deg 47% 50%),
+            inset 0 0 0 2px hsl(215deg 47% 50%), 0 0 0 1px hsl(215deg 47% 50%);
     }
 }
 
 .selected_message {
-    .messagebox {
-        z-index: 1;
-    }
-
     .messagebox-content {
-        box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
-            0 0 0 1px hsl(215, 47%, 50%);
+        box-shadow: inset 0 0 0 2px hsl(215deg 47% 50%),
+            0 0 0 1px hsl(215deg 47% 50%);
     }
 }
 
 .message_sender {
-    i.zulip-icon.zulip-icon-bot {
+    & i.zulip-icon.zulip-icon-bot {
         font-size: 12px;
     }
 }
@@ -1402,12 +1397,12 @@ td.pointer {
 .sender_name_hovered {
     .sender_name,
     .sender_name-in-status {
-        color: hsl(200, 100%, 40%);
+        color: hsl(200deg 100% 40%);
     }
 }
 
 .actions_hover:hover {
-    color: hsl(200, 100%, 40%);
+    color: hsl(200deg 100% 40%);
 }
 
 .always_visible_topic_edit,
@@ -1440,7 +1435,7 @@ td.pointer {
     pointer-events: all !important;
     opacity: 1 !important;
 
-    i:focus {
+    & i:focus {
         /* Avoid displaying a focus outline outside the popover on the \vdots
            icon when opened via the mouse. */
         outline: 0 !important;
@@ -1457,11 +1452,11 @@ td.pointer {
 .dark_background a:hover,
 a.dark_background:hover,
 .dark_background {
-    color: hsl(0, 0%, 100%) !important;
+    color: hsl(0deg 0% 100%) !important;
 }
 
 .dark_background a.message_label_clickable:hover {
-    color: hsl(200, 99%, 60%);
+    color: hsl(200deg 99% 60%);
 }
 
 .small {
@@ -1475,7 +1470,7 @@ a.dark_background:hover,
 .settings-forgot-password {
     display: inline-block;
     position: relative;
-    color: hsl(0, 0%, 73%);
+    color: hsl(0deg 0% 73%);
     bottom: 4px;
 }
 
@@ -1488,18 +1483,14 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsla(0, 0%, 0%, 0.1);
-    border-right: 1px solid hsla(0, 0%, 0%, 0.1);
-
-    &.selected_message {
-        z-index: 2;
-    }
+    border-left: 1px solid hsl(0deg 0% 0% / 10%);
+    border-right: 1px solid hsl(0deg 0% 0% / 10%);
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0;
 
-        span {
+        & span {
             font-size: calc(12em / 14);
             font-style: normal;
             font-weight: 600;
@@ -1552,12 +1543,12 @@ div.focused_table {
 .message_edit_countdown_timer {
     text-align: right;
     display: inline;
-    color: hsl(0, 0%, 63%);
+    color: hsl(0deg 0% 63%);
 }
 
 .message_edit_tooltip {
     display: inline;
-    color: hsl(0, 0%, 63%);
+    color: hsl(0deg 0% 63%);
 }
 
 .message-edit-timer {
@@ -1606,6 +1597,7 @@ div.focused_table {
 
 #inline_topic_edit {
     margin-bottom: 5px;
+    width: 206px;
 
     &.header-v {
         height: 18px;
@@ -1645,11 +1637,11 @@ div.focused_table {
     width: 100%;
     white-space: nowrap;
 
-    label.checkbox {
+    & label.checkbox {
         /* Place the checkboxes on their own lines. */
         display: block;
 
-        input {
+        & input {
             margin: 0;
             vertical-align: baseline;
         }
@@ -1659,7 +1651,7 @@ div.focused_table {
         }
     }
 
-    label {
+    & label {
         display: inline-block;
         margin-right: 10px;
     }
@@ -1672,7 +1664,7 @@ div.focused_table {
 .message_length_controller {
     display: none;
     text-align: center;
-    color: hsl(200, 100%, 40%);
+    color: hsl(200deg 100% 40%);
 
     /* to make message-uncollapse easier */
     margin-top: 10px;
@@ -1697,7 +1689,7 @@ div.focused_table {
     overflow: hidden;
 
     &.guest-avatar::after {
-        outline: 2px solid hsl(0, 0%, 100%);
+        outline: 2px solid hsl(0deg 0% 100%);
     }
 }
 
@@ -1715,8 +1707,8 @@ div.focused_table {
 }
 
 .top-navbar-border {
-    border-right: 1px solid hsl(0, 0%, 88%);
-    border-left: 1px solid hsl(0, 0%, 88%);
+    border-right: 1px solid hsl(0deg 0% 88%);
+    border-left: 1px solid hsl(0deg 0% 88%);
 }
 
 .search_icon {
@@ -1733,9 +1725,9 @@ div.focused_table {
 #message_view_header {
     z-index: 2;
     float: left;
-    height: $header_height;
+    height: var(--header-height);
     width: 100%;
-    line-height: $header_height;
+    line-height: var(--header-height);
     font-size: 16px;
     display: flex;
     align-content: flex-start;
@@ -1770,11 +1762,12 @@ div.focused_table {
         padding: 12px 6px;
         overflow: hidden;
         text-overflow: ellipsis;
+
         @media (width < $sm_min) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
 
-        i {
+        & i {
             margin: 0 3px 0 5px;
         }
 
@@ -1806,7 +1799,7 @@ div.focused_table {
     }
 
     .divider {
-        color: hsl(0, 0%, 88%);
+        color: hsl(0deg 0% 88%);
         font-size: 20px;
         margin: 0 3px;
     }
@@ -1815,7 +1808,7 @@ div.focused_table {
     .narrow_description {
         background: none;
         font-size: 14px;
-        color: hsl(0, 0%, 40%);
+        color: hsl(0deg 0% 40%);
         font-weight: 400;
         line-height: 20px;
     }
@@ -1837,8 +1830,9 @@ div.focused_table {
             position: absolute;
             top: 25%;
             height: 50%;
-            color: hsl(0, 0%, 88%);
+            color: hsl(0deg 0% 88%);
             font-size: 20px;
+
             @media (width < $sm_min) {
                 top: 10%;
             }
@@ -1846,6 +1840,7 @@ div.focused_table {
 
         &::before {
             left: -3px;
+
             @media (width < $sm_min) {
                 /* this ensures the before "|" doesn't overlap
                    with the stream name text on small narrows */
@@ -1889,6 +1884,7 @@ div.focused_table {
         font-size: 20px;
 
         padding: 10px 15px 0 0;
+
         @media (width < $sm_min) {
             padding: 5px 15px 0 0;
         }
@@ -1910,158 +1906,6 @@ div.focused_table {
     }
 }
 
-#searchbox,
-#searchbox_legacy {
-    width: 100%;
-    height: $header_height;
-
-    .navbar-search:not(.expanded) {
-        display: none;
-    }
-
-    .navbar-search.expanded {
-        float: left;
-        overflow: hidden;
-        margin-top: 0;
-        margin-bottom: 0;
-        width: calc(100% - 2px);
-        position: absolute;
-
-        .search_button {
-            display: inline;
-            margin-right: 15px;
-        }
-    }
-
-    .input-append {
-        position: relative;
-        width: 100%;
-        width: max-content;
-        min-width: 100%;
-
-        .fa-search {
-            padding: 0;
-            font-size: 20px;
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            z-index: 5;
-        }
-
-        .fa-search:not(.deactivated) {
-            cursor: pointer;
-        }
-    }
-
-    #search_query {
-        width: 100%;
-        font-size: 16px;
-        height: $header_height;
-        padding: 0;
-        padding-left: 5px;
-        padding-right: 40px;
-        border: none;
-        border-radius: 0;
-        font-family: "Source Sans 3", sans-serif;
-        font-weight: 300;
-        line-height: $header_height;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    #search_arrows:focus {
-        box-shadow: inset 0 0 0 2px hsl(204, 20%, 74%);
-    }
-
-    .search_button,
-    .search_button:disabled:hover {
-        position: absolute;
-        right: 35px;
-        top: 6px;
-        background: none;
-        border-radius: 0;
-        border: none;
-        height: 30px;
-        text-align: center;
-        padding: 4px;
-        color: inherit;
-        opacity: 0.5;
-        font-size: 18px;
-        box-shadow: none;
-        text-shadow: none;
-        z-index: 5;
-    }
-
-    .search_button:hover {
-        opacity: 1;
-    }
-
-    .search_button:disabled {
-        visibility: hidden;
-    }
-
-    .search_icon {
-        position: absolute;
-        height: 100%;
-        text-decoration: none;
-        padding: 0 10px;
-        font-size: 20px;
-        z-index: 5;
-        left: 0;
-    }
-
-    #search_arrows {
-        padding-left: 35px;
-        font-size: 90%;
-        letter-spacing: normal;
-    }
-
-    .pill-container {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        border: none;
-        padding: 0;
-    }
-
-    @media (width >= $sm_min) {
-        .pill {
-            padding: 2px 0 !important;
-            font-size: 14px;
-        }
-    }
-    @media (width < $sm_min) {
-        #search_arrows .pill {
-            line-height: 20px;
-
-            .exit {
-                top: 0;
-            }
-        }
-    }
-}
-
-#searchbox_legacy {
-    #search_arrows {
-        padding-left: 0;
-    }
-
-    #search_query {
-        padding-left: 35px;
-    }
-
-    .search_button {
-        right: 0;
-    }
-
-    .navbar-search.expanded {
-        .search_button {
-            margin-right: 14px;
-        }
-    }
-}
-
 #navbar-buttons {
     white-space: nowrap;
     margin-left: 15px;
@@ -2069,7 +1913,7 @@ div.focused_table {
     display: inline-block;
     float: right;
 
-    ul.nav {
+    & ul.nav {
         margin: 0;
 
         .dropdown-toggle,
@@ -2092,13 +1936,13 @@ div.focused_table {
             opacity: 1;
         }
 
-        li.dropdown.open .dropdown-toggle {
+        & li.dropdown.open .dropdown-toggle {
             background: none;
             opacity: 1;
             text-shadow: none;
         }
 
-        li.dropdown li.divider {
+        & li.dropdown li.divider {
             margin-left: 15px;
             margin-right: 15px;
         }
@@ -2122,10 +1966,10 @@ div.focused_table {
 
 #streamlist-toggle-button {
     text-decoration: none;
-    color: hsl(0, 0%, 52%);
+    color: hsl(0deg 0% 52%);
     display: block;
     position: relative;
-    background-color: hsl(0, 0%, 89%);
+    background-color: hsl(0deg 0% 89%);
     width: 40px;
     height: 19px;
     padding-top: 12px;
@@ -2139,17 +1983,17 @@ div.focused_table {
     height: 12px;
     min-width: 12px;
     line-height: 12px;
-    background-color: hsl(0, 100%, 20%);
+    background-color: hsl(0deg 100% 20%);
     top: 4px;
     right: 4px;
-    border: 1px solid hsl(0, 0%, 93%);
-    box-shadow: 0 0 1px hsla(0, 0%, 0%, 0.2);
+    border: 1px solid hsl(0deg 0% 93%);
+    box-shadow: 0 0 1px hsl(0deg 0% 0% / 20%);
     border-radius: 12px;
     padding: 1px;
     font-size: 9px;
     z-index: 15;
     font-weight: normal;
-    color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 100%);
 }
 
 .nav .dropdown-menu {
@@ -2159,7 +2003,7 @@ div.focused_table {
     /* Match the width of the right sidebar so that we don't have
        the presence dots distracting you when looking at this. */
     min-width: 240px;
-    box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
+    box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
 
     &::after {
         position: absolute;
@@ -2169,7 +2013,7 @@ div.focused_table {
         right: 19px;
         display: inline-block;
         border-right: 7px solid transparent;
-        border-bottom: 7px solid hsl(0, 0%, 67%);
+        border-bottom: 7px solid hsl(0deg 0% 67%);
         border-left: 7px solid transparent;
         content: "";
         z-index: 10;
@@ -2189,7 +2033,7 @@ div.focused_table {
 
 .typeahead.dropdown-menu {
     .active {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
 
         .unsubscribed_icon {
             display: block;
@@ -2197,7 +2041,7 @@ div.focused_table {
             margin-top: 5px;
             margin-right: -12px;
             font-size: 0.8em;
-            color: hsl(96, 7%, 73%);
+            color: hsl(96deg 7% 73%);
         }
     }
 
@@ -2240,7 +2084,7 @@ nav {
         }
     }
 
-    a {
+    & a {
         &.no-style:hover {
             text-decoration: none;
             cursor: pointer;
@@ -2259,7 +2103,7 @@ nav {
 
 .operator_value {
     font-family: "Source Code Pro", monospace;
-    color: hsl(353, 70%, 65%);
+    color: hsl(353deg 70% 65%);
 }
 
 .operator {
@@ -2309,7 +2153,7 @@ nav {
     .checkbox {
         display: block;
 
-        input[type="checkbox"] {
+        & input[type="checkbox"] {
             margin: 5px 0;
             float: none;
         }
@@ -2334,11 +2178,11 @@ nav {
     }
 
     &.small_square_x {
-        background-color: hsl(0, 0%, 100%);
-        color: hsl(0, 0%, 47%);
+        background-color: hsl(0deg 0% 100%);
+        color: hsl(0deg 0% 47%);
 
         &:hover {
-            color: hsl(0, 0%, 18%);
+            color: hsl(0deg 0% 18%);
         }
     }
 }
@@ -2372,67 +2216,36 @@ textarea.invitee_emails {
     max-height: 300px;
     width: 96%;
     max-width: 96%;
+    resize: vertical !important;
 
-    color: hsl(0, 0%, 33%);
-    background-color: hsl(0, 0%, 100%);
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
     border-radius: 4px;
     vertical-align: middle;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid hsl(0deg 0% 80%);
     padding: 4px 6px;
 
-    box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition: border linear 0.2s, box-shadow linear 0.2s;
 
     &:focus {
-        border-color: hsla(206.5, 80%, 62%, 0.8);
+        border-color: hsl(206.5deg 80% 62% / 80%);
         outline: 0;
 
-        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
-            0 0 8px hsla(206.5, 80%, 62%, 0.6);
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.5deg 80% 62% / 60%);
     }
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0, 0%, 93%);
+        background-color: hsl(0deg 0% 93%);
     }
 }
 
-#invite-user {
-    .modal-header {
-        padding: 7px 15px;
-        border-color: hsl(0, 0%, 87%);
-
-        .exit {
-            font-size: 1.5rem;
-            font-weight: 600;
-            background-color: transparent;
-            border: none;
-            position: absolute;
-            top: 6px;
-            right: 5px;
-            color: hsl(0, 0%, 67%);
-        }
-    }
-
-    .overlay-content {
-        position: relative;
-        width: 500px;
-        border-radius: 4px;
-    }
-
-    .modal-body {
-        margin-bottom: 58px;
-        position: relative;
-    }
-
-    .modal-footer {
-        position: absolute;
-        bottom: 0;
-        width: calc(100% - 30px);
-    }
-
-    .invite-stream-controls {
-        margin-top: 5px;
+#invite-user-modal {
+    #custom-expiration-time-input,
+    #invite-user-form {
+        margin: 0;
     }
 }
 
@@ -2442,34 +2255,16 @@ select.invite-as {
     width: 220px;
     height: 30px;
     padding: 4px 6px;
-    color: hsl(0, 0%, 33%);
+    color: hsl(0deg 0% 33%);
     border-radius: 4px;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid hsl(0deg 0% 80%);
     cursor: pointer;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     vertical-align: middle;
 }
 
-#invite_status {
-    display: none;
-}
-
-#invite-user-label {
-    font-size: 1em;
-    font-weight: 700;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-#multiuse_invite_status {
-    display: none;
-    margin-top: 7px;
-    margin-bottom: -5px;
-    text-align: left;
-}
-
 #multiuse_invite_link {
-    width: 350px;
+    width: 370px;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
@@ -2478,9 +2273,7 @@ select.invite-as {
 }
 
 #invite-stream-checkboxes {
-    padding-bottom: 26px;
-
-    i.zulip-icon-globe {
+    & i.zulip-icon-globe {
         font-size: 80%;
     }
 }
@@ -2530,7 +2323,7 @@ select.invite-as {
     top: 3px;
 }
 
-.status_emoji {
+.status-emoji {
     height: 16px;
     width: 16px;
     /* We are setting minimum width here because when the user's name is very long,
@@ -2597,7 +2390,7 @@ select.invite-as {
     vertical-align: middle;
     height: 0;
     opacity: 0.35;
-    border-bottom: 1px solid hsl(0, 0%, 0%);
+    border-bottom: 1px solid hsl(0deg 0% 0%);
 }
 
 .sub-unsub-message span::before,
@@ -2650,36 +2443,36 @@ select.invite-as {
         margin-bottom: 10px;
     }
 
-    textarea {
+    & textarea {
         width: 100%;
         min-width: 206px;
         box-sizing: border-box;
         /* Setting resize as none hides the bottom right diagonal box
            (which even has a background color of its own!). */
         resize: none !important;
-        color: hsl(0, 0%, 33%);
-        background-color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 33%);
+        background-color: hsl(0deg 0% 100%);
         border-radius: 4px;
         vertical-align: middle;
-        border: 1px solid hsl(0, 0%, 80%);
+        border: 1px solid hsl(0deg 0% 80%);
         padding: 4px 6px;
         margin-bottom: 10px;
 
-        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075);
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
         transition: border linear 0.2s, box-shadow linear 0.2s;
 
         &:focus {
-            border-color: hsla(206.5, 80%, 62%, 0.8);
+            border-color: hsl(206.5deg 80% 62% / 80%);
             outline: 0;
 
-            box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
-                0 0 8px hsla(206.5, 80%, 62%, 0.6);
+            box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.5deg 80% 62% / 60%);
         }
 
         &:read-only,
         &:disabled {
             cursor: not-allowed;
-            background-color: hsl(0, 0%, 93%);
+            background-color: hsl(0deg 0% 93%);
         }
     }
 }
@@ -2695,14 +2488,14 @@ select.invite-as {
 }
 
 #message_feed_container {
-    padding-top: $sidebar_top;
+    padding-top: var(--sidebar-top);
 }
 
 .screen {
     position: absolute;
     left: 0;
     top: 0;
-    background-color: hsl(0, 0%, 0%);
+    background-color: hsl(0deg 0% 0%);
     z-index: 20000;
 }
 
@@ -2723,7 +2516,7 @@ select.invite-as {
     overflow: hidden;
     transition: all 0.4s ease;
 
-    i {
+    & i {
         cursor: pointer;
 
         &.hide_copy_icon {
@@ -2734,7 +2527,7 @@ select.invite-as {
 
 .email_copied,
 .user_popover_email i:hover {
-    color: hsl(170, 48%, 54%);
+    color: hsl(170deg 48% 54%);
 }
 
 .email_copied i {
@@ -2758,8 +2551,8 @@ select.invite-as {
     }
 
     .flatpickr-confirm {
-        color: hsl(0, 0%, 100%);
-        background-color: hsl(213, 90%, 65%);
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(213deg 90% 65%);
         font-size: 18px;
         font-weight: 600;
     }
@@ -2788,7 +2581,7 @@ select.invite-as {
         position: absolute;
         right: 8px;
         z-index: 1;
-        color: hsl(0, 0%, 67%);
+        color: hsl(0deg 0% 67%);
     }
 
     .overlay-content {
@@ -2805,7 +2598,7 @@ select.invite-as {
         height: 40px;
     }
 
-    i.fa-copy {
+    & i.fa-copy {
         cursor: pointer;
     }
 }
@@ -2827,15 +2620,15 @@ select.invite-as {
             top: 0;
 
             .right-sidebar {
-                background-color: hsla(0, 0%, 100%, 1);
-                box-shadow: 0 -2px 3px 0 hsla(0, 0%, 0%, 0.1);
-                border-left: 1px solid hsl(0, 0%, 87%);
+                background-color: hsl(0deg 0% 100%);
+                box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-left: 1px solid hsl(0deg 0% 87%);
 
                 /* We use both margin and padding to
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
-                margin-top: $header_height;
-                padding: $header_padding_bottom 15px 0 15px;
+                margin-top: var(--header-height);
+                padding: var(--header-padding-bottom) 15px 0 15px;
                 height: 100%;
                 right: 0;
             }
@@ -2853,7 +2646,7 @@ select.invite-as {
 
     .nav .dropdown-menu {
         min-width: 180px;
-        box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
 
         &::after {
             right: 21px;
@@ -2864,13 +2657,11 @@ select.invite-as {
         margin-right: 7px;
     }
 
-    .top-navbar-container,
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
+    .top-navbar-container {
         width: calc(100% - 84px);
     }
 
-    .search_closed .fa-search {
+    .search_closed .zulip-icon-search {
         right: 115px;
     }
 }
@@ -2891,19 +2682,19 @@ select.invite-as {
             top: 0;
 
             .left-sidebar {
-                background-color: hsla(0, 0%, 100%, 1);
-                box-shadow: 0 2px 3px 0 hsla(0, 0%, 0%, 0.1);
-                border-right: 1px solid hsl(0, 0%, 87%);
+                background-color: hsl(0deg 0% 100%);
+                box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-right: 1px solid hsl(0deg 0% 87%);
 
                 /* We use both margin and padding to
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
-                margin-top: $header_height;
-                padding-top: $header_padding_bottom;
+                margin-top: var(--header-height);
+                padding-top: var(--header-padding-bottom);
 
                 height: 100%;
                 padding-left: 10px;
-                width: $left_sidebar_width;
+                width: var(--left-sidebar-width);
             }
         }
     }
@@ -2942,14 +2733,8 @@ select.invite-as {
         margin-left: 40px;
         width: calc(100% - 108px);
     }
-    /* todo: Figure out why this has to be different
-       from above at this width and resolve it */
-    #searchbox_legacy .navbar-search.expanded,
-    #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
-    }
 
-    .search_closed .fa-search {
+    .search_closed .zulip-icon-search {
         right: 115px;
     }
 }
@@ -2974,8 +2759,10 @@ select.invite-as {
         }
     }
 
-    .search_closed .fa-search {
-        top: 5px;
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 4px;
     }
 
     #streamlist-toggle,
@@ -2985,21 +2772,16 @@ select.invite-as {
     #searchbox,
     #searchbox_legacy,
     .header {
-        line-height: $header_height_sm;
-        height: $header_height_sm;
+        line-height: var(--header-height);
+        height: var(--header-height);
     }
 
     .spectator_narrow_login_button {
-        height: $header_height_sm !important;
-    }
-
-    #search_query {
-        height: $header_height_sm !important;
-        vertical-align: text-bottom;
+        height: var(--header-height) !important;
     }
 
     #streamlist-toggle-button {
-        height: $header_height_sm;
+        height: var(--header-height);
         padding-top: 0;
         padding-bottom: 0;
     }
@@ -3007,18 +2789,6 @@ select.invite-as {
     #navbar-buttons ul.nav .dropdown-toggle,
     #navbar-buttons ul.nav li.active .dropdown-toggle {
         top: -8px;
-    }
-
-    #searchbox,
-    #searchbox_legacy {
-        .input-append .fa-search {
-            top: 5px;
-        }
-
-        .search_button,
-        .search_button:disabled:hover {
-            top: 0;
-        }
     }
 
     .messagebox-content {
@@ -3032,7 +2802,7 @@ select.invite-as {
     }
 
     #floating_recipient_bar {
-        top: $sidebar_top_sm;
+        top: var(--sidebar-top);
     }
 
     .message_content {
@@ -3084,18 +2854,18 @@ select.invite-as {
         cursor: pointer;
 
         &:hover #scroll-to-bottom-button {
-            background: hsl(240, 96%, 68%);
+            background: hsl(240deg 96% 68%);
         }
 
         #scroll-to-bottom-button {
             text-align: center;
             width: 40px;
             height: 40px;
-            background: hsl(240, 96%, 68%, 0.5);
+            background: hsl(240deg 96% 68% / 50%);
             border-radius: 50%;
 
-            i {
-                color: hsl(0, 0%, 100%);
+            & i {
+                color: hsl(0deg 0% 100%);
                 margin: 0 auto;
                 font-size: 21px;
                 position: relative;
@@ -3136,13 +2906,13 @@ select.invite-as {
         .date_row {
             position: relative;
             z-index: 3;
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
         }
     }
 
     .private-message.unread {
         .date_row {
-            background-color: hsl(192, 20%, 95%);
+            background-color: hsl(192deg 20% 95%);
         }
     }
 
@@ -3158,7 +2928,7 @@ select.invite-as {
 
     .private-message.unread ~ .private-message.unread {
         .date_row {
-            background-color: hsl(192, 20%, 95%);
+            background-color: hsl(192deg 20% 95%);
         }
     }
 }

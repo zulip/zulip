@@ -185,7 +185,7 @@ to a URL. This is done in `zerver/lib/integrations.py`.
 Look for the lines beginning with:
 
 ```python
-WEBHOOK_INTEGRATIONS = [
+WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
 ```
 
 And you'll find the entry for Hello World:
@@ -288,7 +288,7 @@ the [management commands][management-commands] documentation.
 ### Integrations Dev Panel
 This is the GUI tool.
 
-1. Run `./tools/run-dev.py` then go to http://localhost:9991/devtools/integrations/.
+1. Run `./tools/run-dev` then go to http://localhost:9991/devtools/integrations/.
 
 2. Set the following mandatory fields:
 **Bot** - Any incoming webhook bot.

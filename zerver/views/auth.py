@@ -19,12 +19,10 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpRes
 from django.shortcuts import redirect, render
 from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.urls import reverse
-from django.utils.html import escape
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
-from markupsafe import Markup
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
@@ -72,6 +70,7 @@ from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import check_bool, validate_login_email
 from zerver.models import (
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     UserProfile,
@@ -119,23 +118,32 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
 def create_preregistration_user(
     email: str,
     realm: Optional[Realm],
-    realm_creation: bool = False,
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
     multiuse_invite: Optional[MultiuseInvite] = None,
 ) -> PreregistrationUser:
-    assert not (realm_creation and realm is not None)
-    assert not (realm is None and not realm_creation)
-
     return PreregistrationUser.objects.create(
         email=email,
-        realm_creation=realm_creation,
         password_required=password_required,
         realm=realm,
         full_name=full_name,
         full_name_validated=full_name_validated,
         multiuse_invite=multiuse_invite,
+    )
+
+
+def create_preregistration_realm(
+    email: str,
+    name: str,
+    string_id: str,
+    org_type: int,
+) -> PreregistrationRealm:
+    return PreregistrationRealm.objects.create(
+        email=email,
+        name=name,
+        string_id=string_id,
+        org_type=org_type,
     )
 
 
@@ -719,8 +727,8 @@ def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> 
         return
     try:
         validate_email(deactivated_email)
-        context["deactivated_account_error"] = Markup(
-            DEACTIVATED_ACCOUNT_ERROR.format(username=escape(deactivated_email))
+        context["deactivated_account_error"] = DEACTIVATED_ACCOUNT_ERROR.format(
+            username=deactivated_email
         )
     except ValidationError:
         logging.info("Invalid email in is_deactivated param to login page: %s", deactivated_email)
@@ -1128,10 +1136,10 @@ def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
 
 def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse:
     contexts: Dict[str, Dict[str, object]] = {
-        "apple": {"social_backend_name": "apple", "has_markdown_file": True},
-        "google": {"social_backend_name": "google", "has_markdown_file": True},
-        "github": {"social_backend_name": "github", "has_markdown_file": True},
-        "gitlab": {"social_backend_name": "gitlab", "has_markdown_file": True},
+        "apple": {"social_backend_name": "apple", "has_error_template": True},
+        "google": {"social_backend_name": "google", "has_error_template": True},
+        "github": {"social_backend_name": "github", "has_error_template": True},
+        "gitlab": {"social_backend_name": "gitlab", "has_error_template": True},
         "ldap": {"error_name": "ldap_error_realm_is_none"},
         "dev": {"error_name": "dev_not_supported_error"},
         "saml": {"social_backend_name": "saml"},

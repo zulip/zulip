@@ -31,7 +31,7 @@ export class IdTracker {
 
     max_id() {
         if (this._cached_max_id === undefined) {
-            this._cached_max_id = _.max(Array.from(this.ids));
+            this._cached_max_id = _.max([...this.ids]);
         }
         return this._cached_max_id || -1;
     }
@@ -208,7 +208,7 @@ export function get_topic_recent_senders(stream_id, topic) {
         return list2.max_id() - list1.max_id();
     }
 
-    const sorted_senders = Array.from(sender_dict.entries()).sort(by_max_message_id);
+    const sorted_senders = [...sender_dict.entries()].sort(by_max_message_id);
     const recent_senders = [];
     for (const item of sorted_senders) {
         recent_senders.push(item[0]);
@@ -225,7 +225,7 @@ export function process_private_message({to_user_ids, sender_id, id}) {
 }
 
 export function get_pm_recent_senders(user_ids_string) {
-    const user_ids = user_ids_string.split(",").map((id) => Number.parseInt(id, 10));
+    const user_ids = [...people.get_participants_from_user_ids_string(user_ids_string)];
     const sender_dict = pm_senders.get(user_ids_string);
     const pm_senders_info = {participants: [], non_participants: []};
     if (!sender_dict) {
@@ -238,8 +238,6 @@ export function get_pm_recent_senders(user_ids_string) {
         return max_id2 - max_id1;
     }
 
-    // Add current user to user_ids.
-    user_ids.push(people.my_current_user_id());
     pm_senders_info.non_participants = user_ids.filter((user_id) => {
         if (sender_dict.get(user_id)) {
             pm_senders_info.participants.push(user_id);

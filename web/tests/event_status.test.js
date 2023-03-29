@@ -139,7 +139,7 @@ run_test("check_status", async ({override}) => {
     set_global("window", {
         location: {
             replace(new_location) {
-                assert.equal(new_location, "/billing");
+                assert.equal(new_location, "/billing/");
             },
         },
     });

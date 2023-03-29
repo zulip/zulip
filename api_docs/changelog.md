@@ -8,9 +8,9 @@ changelog][server-changelog].
 The API feature levels system used in this changelog is designed to
 make it possible to write API clients, such as the Zulip mobile and
 terminal apps, that work with a wide range of Zulip server
-versions. Every change to the Zulip API is recorded both here and in
-**Changes** entries in the API documentation for the modified
-endpoint(s).
+versions. Every change to the Zulip API is recorded briefly here and
+with full details in **Changes** entries in the API documentation for
+the modified endpoint(s).
 
 When using an API endpoint whose behavior has changed, Zulip API
 clients should check the `zulip_feature_level` field, present in the
@@ -19,6 +19,43 @@ clients should check the `zulip_feature_level` field, present in the
 format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
+
+**Feature level 169**
+
+* [`PATCH /users/me/subscriptions/muted_topics`](/api/mute-topic):
+  Trying to mute a topic that is already muted or unmute a topic
+  that was not previously muted now results in a success response
+  rather than an error.
+
+**Feature level 168**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue),
+  [`PATCH /settings`](/api/update-settings): Replaced the `realm_name_in_notifications`
+  boolean field with an integer field `realm_name_in_email_notifications_policy`.
+
+**Feature level 167**
+
+* [All REST API endpoints](/api/rest-error-handling#ignored-parameters):
+  Implemented `ignored_parameters_unsupported` as a possible return value
+  in the JSON success response for all endpoints. This value is a array
+  of any parameters that were sent in the request by the client that are
+  not supported by the endpoint. Previously, unsupported parameters were
+  silently ignored, except in the subset of endpoints which already
+  supported this return value; see feature levels 111, 96 and 78.
+
+**Feature level 166**
+
+* [`POST /messages`](/api/send-message): Eliminated the undocumented
+  `realm_str` parameter. This parameter was already redundant due to
+  it needing to match the realm of the user making the request, otherwise
+  returning an authorization error. With this, the parameter is removed,
+  meaning that if provided in the API request, it will be ignored.
+
+**Feature level 165**
+
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): The
+  `name` and `description` parameters are now optional.
 
 **Feature level 164**
 
@@ -132,7 +169,9 @@ No changes; feature level used for Zulip 6.0 release.
 * [`PATCH /messages/{message_id}`](/api/update-message): The
   `send_notification_to_old_thread` and
   `send_notification_to_new_thread` parameters are now respected when
-  moving a topic within a stream.
+  moving a topic within a stream. The default value for
+  `send_notification_to_old_thread` was changed from `true` to
+  `false`.
 
 **Feature level 151**
 

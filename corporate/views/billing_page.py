@@ -33,7 +33,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_int, check_int_in
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 
 billing_logger = logging.getLogger("corporate.stripe")
 
@@ -56,6 +56,23 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
     return _("Unknown payment method. Please contact {email}.").format(
         email=settings.ZULIP_ADMINISTRATOR,
     )  # nocoverage
+
+
+def add_sponsorship_info_to_context(context: Dict[str, Any], user_profile: UserProfile) -> None:
+    def key_helper(d: Any) -> int:
+        return d[1]["display_order"]
+
+    context.update(
+        realm_org_type=user_profile.realm.org_type,
+        sorted_org_types=sorted(
+            (
+                [org_type_name, org_type]
+                for (org_type_name, org_type) in Realm.ORG_TYPES.items()
+                if not org_type.get("hidden")
+            ),
+            key=key_helper,
+        ),
+    )
 
 
 @zulip_login_required
@@ -145,6 +162,7 @@ def billing_home(
                 CustomerPlan=CustomerPlan,
                 onboarding=onboarding,
             )
+            add_sponsorship_info_to_context(context, user)
 
     return render(request, "corporate/billing.html", context=context)
 

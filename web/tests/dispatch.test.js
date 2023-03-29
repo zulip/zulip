@@ -661,14 +661,11 @@ run_test("realm_domains", ({override}) => {
 run_test("realm_user", ({override}) => {
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     let event = event_fixtures.realm_user__add;
-    const add_admin_stub = make_stub();
-    override(settings_users, "redraw_bots_list", add_admin_stub.f);
     dispatch({...event});
     const added_person = people.get_by_user_id(event.person.user_id);
     // sanity check a few individual fields
     assert.equal(added_person.full_name, "Test User");
     assert.equal(added_person.timezone, "America/New_York");
-    assert.equal(add_admin_stub.num_calls, 1);
 
     // ...but really the whole struct gets copied without any
     // manipulation
@@ -676,30 +673,43 @@ run_test("realm_user", ({override}) => {
 
     assert.ok(people.is_active_user_for_popover(event.person.user_id));
 
-    const remove_admin_stub = make_stub();
     event = event_fixtures.realm_user__remove;
     override(stream_events, "remove_deactivated_user_from_all_streams", noop);
     override(settings_users, "update_view_on_deactivate", noop);
-    override(settings_users, "update_bot_data", remove_admin_stub.f);
     dispatch(event);
 
     // We don't actually remove the person, we just deactivate them.
     const removed_person = people.get_by_user_id(event.person.user_id);
     assert.equal(removed_person.full_name, "Test User");
     assert.ok(!people.is_active_user_for_popover(event.person.user_id));
-    assert.equal(remove_admin_stub.num_calls, 1);
 
     event = event_fixtures.realm_user__update;
     const stub = make_stub();
-    const update_admin_stub = make_stub();
     override(user_events, "update_person", stub.f);
-    override(settings_users, "update_bot_data", update_admin_stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
-    assert.equal(update_admin_stub.num_calls, 1);
     let args = stub.get_args("person");
     assert_same(args.person, event.person);
-    args = update_admin_stub.get_args("update_user_id", "update_bot_data");
+
+    // Test bot related functions are being called.
+    const add_bot_stub = make_stub();
+    event = event_fixtures.realm_user__add_bot;
+    override(settings_users, "redraw_bots_list", add_bot_stub.f);
+    dispatch({...event});
+    assert.equal(add_bot_stub.num_calls, 1);
+
+    const remove_bot_stub = make_stub();
+    event = event_fixtures.realm_user__remove;
+    override(settings_users, "update_bot_data", remove_bot_stub.f);
+    dispatch(event);
+    assert.equal(remove_bot_stub.num_calls, 1);
+
+    const update_bot_stub = make_stub();
+    event = event_fixtures.realm_user__update;
+    override(settings_users, "update_bot_data", update_bot_stub.f);
+    dispatch(event);
+    assert.equal(update_bot_stub.num_calls, 1);
+    args = update_bot_stub.get_args("update_user_id", "update_bot_data");
     assert_same(args.update_user_id, event.person.user_id);
 });
 
@@ -945,6 +955,11 @@ run_test("user_settings", ({override}) => {
         assert_same(args.name, event.property);
         assert_same(args.setting, event.value);
     }
+
+    event = event_fixtures.user_settings__email_address_visibility;
+    user_settings.email_address_visibility = 3;
+    dispatch(event);
+    assert_same(user_settings.email_address_visibility, 5);
 });
 
 run_test("update_message (read)", ({override}) => {

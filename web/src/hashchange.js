@@ -8,7 +8,6 @@ import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as info_overlay from "./info_overlay";
-import * as invite from "./invite";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
@@ -52,6 +51,10 @@ function get_full_url(hash) {
 }
 
 function set_hash(hash) {
+    if (hash === window.location.hash) {
+        // Avoid adding duplicate entries in browser history.
+        return;
+    }
     if (history.pushState) {
         const url = get_full_url(hash);
         history.pushState(null, null, url);
@@ -335,11 +338,6 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "organization") {
         admin.launch(section);
-        return;
-    }
-
-    if (base === "invite") {
-        invite.launch();
         return;
     }
 

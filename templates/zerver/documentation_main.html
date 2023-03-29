@@ -16,11 +16,11 @@
             {% endif %}
 
             {% if page_is_policy_center %}
-            {{ render_markdown_path(sidebar_index, pure_markdown=True) }}
+            {{ render_markdown_path(sidebar_index) }}
             {% elif page_is_help_center %}
-            {{ render_markdown_path(sidebar_index, pure_markdown=True) }}
+            {{ render_markdown_path(sidebar_index) }}
             {% else %}
-            {{ render_markdown_path(sidebar_index, context=api_uri_context, pure_markdown=True) }}
+            {{ render_markdown_path(sidebar_index, context=api_uri_context) }}
             {% endif %}
 
             {% if not page_is_policy_center %}
@@ -36,14 +36,14 @@
     <div class="markdown">
         <div class="content">
             {% if page_is_policy_center %}
-            {{ render_markdown_path(article, pure_markdown=True) }}
+            {{ render_markdown_path(article) }}
             {% elif page_is_help_center %}
-            {{ render_markdown_path(article, context=api_uri_context, help_center=True, pure_markdown=True) }}
+            {{ render_markdown_path(article, context=api_uri_context, help_center=True) }}
             {% else %}
-            {{ render_markdown_path(article, context=api_uri_context, pure_markdown=True) }}
+            {{ render_markdown_path(article, context=api_uri_context) }}
             {% endif %}
 
-            <div id="footer" class="documentation-footer">
+            <div class="documentation-footer">
                 <hr />
                 {% if corporate_enabled %}
                     {% if page_is_policy_center %}

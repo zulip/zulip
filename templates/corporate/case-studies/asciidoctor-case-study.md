@@ -186,7 +186,7 @@ open source by hosting our Zulip instances.”
 
 “Zulip is the heart of our community, and nearly everyone who participates
 absolutely loves it,” Dan says. “It really does provide [everything we
-need](/features) to manage the discourse, including topic-based threads,
+need](/features/) to manage the discourse, including topic-based threads,
 mentions, faceted search, moderation controls, polls, and emoji.” Speaking on
 behalf of the Asciidoctor and Antora projects, Dan wholeheartedly recommends
 that other communities give it a try. “Many communities have been strained to
@@ -195,5 +195,5 @@ communities.”
 
 ---
 
-Check out our guide on using Zulip for [open source](/for/open-source), and
-learn how Zulip [helps communities scale](/for/communities)!
+Check out our guide on using Zulip for [open source](/for/open-source/), and
+learn how Zulip [helps communities scale](/for/communities/)!

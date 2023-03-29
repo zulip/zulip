@@ -1,5 +1,5 @@
 import {isValid} from "date-fns";
-import katex from "katex"; // eslint-disable-line import/no-unresolved
+import katex from "katex";
 import _ from "lodash";
 
 import * as fenced_code from "../shared/src/fenced_code";
@@ -486,7 +486,7 @@ function handleTex(tex, fullmatch) {
 
 export function parse({raw_content, helper_config}) {
     function get_linkifier_regexes() {
-        return Array.from(helper_config.get_linkifier_map().keys());
+        return [...helper_config.get_linkifier_map().keys()];
     }
 
     function disable_markdown_regex(rules, name) {

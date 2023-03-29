@@ -42,9 +42,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
-from django.db.models import CASCADE, Exists, F, OuterRef, Q, Sum
+from django.db.models import CASCADE, Exists, F, OuterRef, Q, QuerySet, Sum
 from django.db.models.functions import Lower, Upper
-from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
 from django.utils.timezone import now as timezone_now
@@ -651,33 +650,42 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    # Please access this via get_giphy_rating_options.
     GIPHY_RATING_OPTIONS = {
         "disabled": {
-            "name": "GIPHY integration disabled",
+            "name": gettext_lazy("GIPHY integration disabled"),
             "id": 0,
         },
         # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
         "y": {
-            "name": "Allow GIFs rated Y (Very young audience)",
+            "name": gettext_lazy("Allow GIFs rated Y (Very young audience)"),
             "id": 1,
         },
         "g": {
-            "name": "Allow GIFs rated G (General audience)",
+            "name": gettext_lazy("Allow GIFs rated G (General audience)"),
             "id": 2,
         },
         "pg": {
-            "name": "Allow GIFs rated PG (Parental guidance)",
+            "name": gettext_lazy("Allow GIFs rated PG (Parental guidance)"),
             "id": 3,
         },
         "pg-13": {
-            "name": "Allow GIFs rated PG13 (Parental guidance - under 13)",
+            "name": gettext_lazy("Allow GIFs rated PG-13 (Parental guidance - under 13)"),
             "id": 4,
         },
         "r": {
-            "name": "Allow GIFs rated R (Restricted)",
+            "name": gettext_lazy("Allow GIFs rated R (Restricted)"),
             "id": 5,
         },
     }
+
+    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
+        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
+        of the lazily evaluated `name` field without modifying the original."""
+        return {
+            rating_type: {"name": str(rating["name"]), "id": rating["id"]}
+            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
+        }
 
     # maximum rating of the GIFs that will be retrieved from GIPHY
     giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
@@ -793,7 +801,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         return ret
 
     def __str__(self) -> str:
-        return f"<Realm: {self.string_id} {self.id}>"
+        return f"{self.string_id} {self.id}"
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
@@ -1105,7 +1113,7 @@ class RealmEmoji(models.Model):
     STILL_PATH_ID_TEMPLATE = "{realm_id}/emoji/images/still/{emoji_filename_without_extension}.png"
 
     def __str__(self) -> str:
-        return f"<RealmEmoji({self.realm.string_id}): {self.id} {self.name} {self.deactivated} {self.file_name}>"
+        return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
     class Meta:
         constraints = [
@@ -1308,7 +1316,7 @@ class RealmFilter(models.Model):
             )
 
     def __str__(self) -> str:
-        return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"
+        return f"{self.realm.string_id}: {self.pattern} {self.url_format_string}"
 
 
 def get_linkifiers_cache_key(realm_id: int) -> str:
@@ -1405,7 +1413,7 @@ class RealmPlayground(models.Model):
         unique_together = (("realm", "pygments_language", "name"),)
 
     def __str__(self) -> str:
-        return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
+        return f"{self.realm.string_id}: {self.pygments_language} {self.name}"
 
 
 def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
@@ -1471,7 +1479,7 @@ class Recipient(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self)
-        return f"<Recipient: {display_recipient} ({self.type_id}, {self.type})>"
+        return f"{display_recipient} ({self.type_id}, {self.type})"
 
 
 class UserBaseSettings(models.Model):
@@ -1589,8 +1597,19 @@ class UserBaseSettings(models.Model):
     enable_digest_emails = models.BooleanField(default=True)
     enable_login_emails = models.BooleanField(default=True)
     enable_marketing_emails = models.BooleanField(default=True)
-    realm_name_in_notifications = models.BooleanField(default=False)
     presence_enabled = models.BooleanField(default=True)
+
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC = 1
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS = 2
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER = 3
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES = [
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER,
+    ]
+    realm_name_in_email_notifications_policy = models.PositiveSmallIntegerField(
+        default=REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
+    )
 
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
@@ -1663,7 +1682,7 @@ class UserBaseSettings(models.Model):
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
         presence_enabled=bool,
-        realm_name_in_notifications=bool,
+        realm_name_in_email_notifications_policy=int,
         wildcard_mentions_notify=bool,
     )
 
@@ -1969,7 +1988,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
             return False
 
     def __str__(self) -> str:
-        return f"<UserProfile: {self.email} {self.realm}>"
+        return f"{self.email} {self.realm!r}"
 
     @property
     def is_provisional_member(self) -> bool:
@@ -2205,6 +2224,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     MODERATORS_GROUP_NAME = "@role:moderators"
     MEMBERS_GROUP_NAME = "@role:members"
     EVERYONE_GROUP_NAME = "@role:everyone"
+    NOBODY_GROUP_NAME = "@role:nobody"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -2265,6 +2285,42 @@ def remote_user_to_email(remote_user: str) -> str:
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
 post_save.connect(flush_user_profile, sender=UserProfile)
+
+
+class PreregistrationRealm(models.Model):
+    """Data on a partially created realm entered by a user who has
+    completed the "new organization" form. Used to transfer the user's
+    selections from the pre-confirmation "new organization" form to
+    the post-confirmation user registration form.
+
+    Note that the values stored here may not match those of the
+    created realm (in the event the user creates a realm at all),
+    because we allow the user to edit these values in the registration
+    form (and in fact the user will be required to do so if the
+    `string_id` is claimed by another realm before registraiton is
+    completed).
+    """
+
+    name = models.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    org_type = models.PositiveSmallIntegerField(
+        default=Realm.ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
+    string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+    email = models.EmailField()
+
+    confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_realm")
+    status = models.IntegerField(default=0)
+
+    # The Realm created upon completion of the registration
+    # for this PregistrationRealm
+    created_realm = models.ForeignKey(Realm, null=True, related_name="+", on_delete=models.SET_NULL)
+
+    # The UserProfile created upon completion of the registration
+    # for this PregistrationRealm
+    created_user = models.ForeignKey(
+        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
+    )
 
 
 class PreregistrationUser(models.Model):
@@ -2554,7 +2610,7 @@ class Stream(models.Model):
     }
 
     def __str__(self) -> str:
-        return f"<Stream: {self.name}>"
+        return self.name
 
     def is_public(self) -> bool:
         # All streams are private in Zephyr mirroring realms.
@@ -2632,32 +2688,28 @@ class UserTopic(models.Model):
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
 
-    # Implicitly, if a UserTopic does not exist, the (user, topic)
-    # pair should have normal behavior for that (user, stream) pair.
+    class VisibilityPolicy(models.IntegerChoices):
+        # A normal muted topic. No notifications and unreads hidden.
+        MUTED = 1, "Muted topic"
 
-    # We use this in our code to represent the condition in the comment above.
-    VISIBILITY_POLICY_INHERIT = 0
+        # This topic will behave like an unmuted topic in an unmuted stream even if it
+        # belongs to a muted stream.
+        UNMUTED = 2, "Unmuted topic in muted stream"
 
-    # A normal muted topic. No notifications and unreads hidden.
-    MUTED = 1
+        # This topic will behave like `UNMUTED`, plus some additional
+        # display and/or notifications priority that is TBD and likely to
+        # be configurable; see #6027. Not yet implemented.
+        FOLLOWED = 3, "Followed topic"
 
-    # This topic will behave like an unmuted topic in an unmuted stream even if it
-    # belongs to a muted stream.
-    UNMUTED = 2
+        # Implicitly, if a UserTopic does not exist, the (user, topic)
+        # pair should have normal behavior for that (user, stream) pair.
 
-    # This topic will behave like `UNMUTED`, plus some additional
-    # display and/or notifications priority that is TBD and likely to
-    # be configurable; see #6027. Not yet implemented.
-    FOLLOWED = 3
+        # We use this in our code to represent the condition in the comment above.
+        INHERIT = 0, "User's default policy for the stream."
 
-    visibility_policy_choices = (
-        (MUTED, "Muted topic"),
-        (UNMUTED, "Unmuted topic in muted stream"),
-        (FOLLOWED, "Followed topic"),
-        (VISIBILITY_POLICY_INHERIT, "User's default policy for the stream."),
+    visibility_policy = models.SmallIntegerField(
+        choices=VisibilityPolicy.choices, default=VisibilityPolicy.MUTED
     )
-
-    visibility_policy = models.SmallIntegerField(choices=visibility_policy_choices, default=MUTED)
 
     class Meta:
         constraints = [
@@ -2687,7 +2739,7 @@ class UserTopic(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"<UserTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.last_updated})>"
+        return f"({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.last_updated})"
 
 
 class MutedUser(models.Model):
@@ -2699,7 +2751,7 @@ class MutedUser(models.Model):
         unique_together = ("user_profile", "muted_user")
 
     def __str__(self) -> str:
-        return f"<MutedUser: {self.user_profile.email} -> {self.muted_user.email}>"
+        return f"{self.user_profile.email} -> {self.muted_user.email}"
 
 
 post_save.connect(flush_muting_users_cache, sender=MutedUser)
@@ -2711,7 +2763,7 @@ class Client(models.Model):
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True, unique=True)
 
     def __str__(self) -> str:
-        return f"<Client: {self.name}>"
+        return self.name
 
 
 get_client_cache: Dict[str, Client] = {}
@@ -2897,7 +2949,7 @@ class AbstractMessage(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
-        return f"<{type(self).__name__}: {display_recipient} / {self.subject} / {self.sender}>"
+        return f"{display_recipient} / {self.subject} / {self.sender!r}"
 
 
 class ArchiveTransaction(models.Model):
@@ -2915,7 +2967,7 @@ class ArchiveTransaction(models.Model):
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
     def __str__(self) -> str:
-        return "ArchiveTransaction id: {id}, type: {type}, realm: {realm}, timestamp: {timestamp}".format(
+        return "id: {id}, type: {type}, realm: {realm}, timestamp: {timestamp}".format(
             id=self.id,
             type="MANUAL" if self.type == self.MANUAL else "RETENTION_POLICY_BASED",
             realm=self.realm.string_id if self.realm else None,
@@ -3086,7 +3138,7 @@ class Draft(models.Model):
     last_edit_time = models.DateTimeField(db_index=True)
 
     def __str__(self) -> str:
-        return f"<{type(self).__name__}: {self.user_profile.email} / {self.id} / {self.last_edit_time}>"
+        return f"{self.user_profile.email} / {self.id} / {self.last_edit_time}"
 
     def to_dict(self) -> Dict[str, Any]:
         if self.recipient is None:
@@ -3169,10 +3221,7 @@ class AbstractEmoji(models.Model):
 class AbstractReaction(AbstractEmoji):
     class Meta:
         abstract = True
-        unique_together = (
-            ("user_profile", "message", "emoji_name"),
-            ("user_profile", "message", "reaction_type", "emoji_code"),
-        )
+        unique_together = ("user_profile", "message", "reaction_type", "emoji_code")
 
 
 class Reaction(AbstractReaction):
@@ -3386,7 +3435,7 @@ class UserMessage(AbstractUserMessage):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.message.recipient)
-        return f"<{type(self).__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
+        return f"{display_recipient} / {self.user_profile.email} ({self.flags_list()})"
 
     @staticmethod
     def select_for_update_query() -> QuerySet["UserMessage"]:
@@ -3424,7 +3473,7 @@ class ArchivedUserMessage(AbstractUserMessage):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.message.recipient)
-        return f"<{type(self).__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
+        return f"{display_recipient} / {self.user_profile.email} ({self.flags_list()})"
 
 
 class AbstractAttachment(models.Model):
@@ -3466,7 +3515,7 @@ class AbstractAttachment(models.Model):
         abstract = True
 
     def __str__(self) -> str:
-        return f"<{type(self).__name__}: {self.file_name}>"
+        return self.file_name
 
 
 class ArchivedAttachment(AbstractAttachment):
@@ -3708,7 +3757,7 @@ class Subscription(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"<Subscription: {self.user_profile} -> {self.recipient}>"
+        return f"{self.user_profile!r} -> {self.recipient!r}"
 
     # Subscription fields included whenever a Subscription object is provided to
     # Zulip clients via the API.  A few details worth noting:
@@ -4203,7 +4252,7 @@ class ScheduledEmail(AbstractScheduledJob):
     type = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
-        return f"<ScheduledEmail: {self.type} {self.address or list(self.users.all())} {self.scheduled_timestamp}>"
+        return f"{self.type} {self.address or list(self.users.all())} {self.scheduled_timestamp}"
 
 
 class MissedMessageEmailAddress(models.Model):
@@ -4290,7 +4339,7 @@ class ScheduledMessage(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
-        return f"<ScheduledMessage: {display_recipient} {self.subject} {self.sender} {self.scheduled_timestamp}>"
+        return f"{display_recipient} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
 
 
 EMAIL_TYPES = {
@@ -4466,10 +4515,10 @@ class RealmAuditLog(AbstractRealmAuditLog):
 
     def __str__(self) -> str:
         if self.modified_user is not None:
-            return f"<RealmAuditLog: {self.modified_user} {self.event_type} {self.event_time} {self.id}>"
+            return f"{self.modified_user!r} {self.event_type} {self.event_time} {self.id}"
         if self.modified_stream is not None:
-            return f"<RealmAuditLog: {self.modified_stream} {self.event_type} {self.event_time} {self.id}>"
-        return f"<RealmAuditLog: {self.realm} {self.event_type} {self.event_time} {self.id}>"
+            return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
+        return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
 
 
 class UserHotspot(models.Model):
@@ -4618,7 +4667,7 @@ class CustomProfileField(models.Model):
         return False
 
     def __str__(self) -> str:
-        return f"<CustomProfileField: {self.realm} {self.name} {self.field_type} {self.order}>"
+        return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
 
 
 def custom_profile_fields_for_realm(realm_id: int) -> QuerySet[CustomProfileField]:
@@ -4635,7 +4684,7 @@ class CustomProfileFieldValue(models.Model):
         unique_together = ("user_profile", "field")
 
     def __str__(self) -> str:
-        return f"<CustomProfileFieldValue: {self.user_profile} {self.field} {self.value}>"
+        return f"{self.user_profile!r} {self.field!r} {self.value}"
 
 
 # Interfaces for services

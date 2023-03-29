@@ -23,7 +23,6 @@ from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
-from zerver.lib.streams import get_signups_stream
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
@@ -35,6 +34,7 @@ from zerver.lib.users import (
 from zerver.models import (
     DefaultStreamGroup,
     Message,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -46,7 +46,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     bot_owner_user_ids,
-    get_realm,
     get_system_bot,
 )
 from zerver.tornado.django_api import send_event
@@ -114,26 +113,6 @@ def notify_new_user(user_profile: UserProfile) -> None:
                 message += licenses_low_warning_message
 
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
-
-    # We also send a notification to the Zulip administrative realm
-    admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    admin_realm_sender = get_system_bot(sender_email, admin_realm.id)
-    try:
-        # Check whether the stream exists
-        signups_stream = get_signups_stream(admin_realm)
-        # We intentionally use the same strings as above to avoid translation burden.
-        with override_language(admin_realm.default_language):
-            message = _("{user} just signed up for Zulip. (total: {user_count})").format(
-                user=f"{user_profile.full_name} <`{user_profile.email}`>", user_count=user_count
-            )
-        internal_send_stream_message(
-            admin_realm_sender, signups_stream, user_profile.realm.display_subdomain, message
-        )
-
-    except Stream.DoesNotExist:
-        # If the signups stream hasn't been created in the admin
-        # realm, don't auto-create it to send to it; just do nothing.
-        pass
 
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
@@ -249,24 +228,20 @@ def process_new_human_user(
         prereg_user.created_user = user_profile
         prereg_user.save(update_fields=["status", "created_user"])
 
-    # In the special case of realm creation, there can be no additional PreregistrationUser
-    # for us to want to modify - because other realm_creation PreregistrationUsers should be
-    # left usable for creating different realms.
-    if not realm_creation:
-        # Mark any other PreregistrationUsers in the realm that are STATUS_USED as
-        # inactive so we can keep track of the PreregistrationUser we
-        # actually used for analytics.
-        if prereg_user is not None:
-            PreregistrationUser.objects.filter(
-                email__iexact=user_profile.delivery_email, realm=user_profile.realm
-            ).exclude(id=prereg_user.id).update(status=confirmation_settings.STATUS_REVOKED)
-        else:
-            PreregistrationUser.objects.filter(
-                email__iexact=user_profile.delivery_email, realm=user_profile.realm
-            ).update(status=confirmation_settings.STATUS_REVOKED)
+    # Mark any other PreregistrationUsers in the realm that are STATUS_USED as
+    # inactive so we can keep track of the PreregistrationUser we
+    # actually used for analytics.
+    if prereg_user is not None:
+        PreregistrationUser.objects.filter(
+            email__iexact=user_profile.delivery_email, realm=user_profile.realm
+        ).exclude(id=prereg_user.id).update(status=confirmation_settings.STATUS_REVOKED)
+    else:
+        PreregistrationUser.objects.filter(
+            email__iexact=user_profile.delivery_email, realm=user_profile.realm
+        ).update(status=confirmation_settings.STATUS_REVOKED)
 
-        if prereg_user is not None and prereg_user.referred_by is not None:
-            notify_invites_changed(user_profile.realm)
+    if prereg_user is not None and prereg_user.referred_by is not None:
+        notify_invites_changed(user_profile.realm)
 
     notify_new_user(user_profile)
     # Clear any scheduled invitation emails to prevent them
@@ -284,35 +259,55 @@ def process_new_human_user(
 
 def notify_created_user(user_profile: UserProfile) -> None:
     user_row = user_profile_to_user_row(user_profile)
-    person = format_user_row(
-        user_profile.realm,
-        user_profile,
-        user_row,
+
+    format_user_row_kwargs: Dict[str, Any] = {
+        "realm": user_profile.realm,
+        "row": user_row,
         # Since we don't know what the client
         # supports at this point in the code, we
         # just assume client_gravatar and
         # user_avatar_url_field_optional = False :(
-        client_gravatar=False,
-        user_avatar_url_field_optional=False,
+        "client_gravatar": False,
+        "user_avatar_url_field_optional": False,
         # We assume there's no custom profile
         # field data for a new user; initial
         # values are expected to be added in a
         # later event.
-        custom_profile_field_data={},
-    )
+        "custom_profile_field_data": {},
+    }
 
     active_users = user_profile.realm.get_active_users()
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
-    for user in active_users:
-        if can_access_delivery_email(user, user_profile.id, user_row["email_address_visibility"]):
-            user_ids_with_real_email_access.append(user.id)
+
+    person_for_real_email_access_users = None
+    person_for_without_real_email_access_users = None
+    for recipient_user in active_users:
+        if can_access_delivery_email(
+            recipient_user, user_profile.id, user_row["email_address_visibility"]
+        ):
+            user_ids_with_real_email_access.append(recipient_user.id)
+            if person_for_real_email_access_users is None:
+                # This caller assumes that "format_user_row" only depends on
+                # specific value of "acting_user" among users in a realm in
+                # email_address_visibility.
+                person_for_real_email_access_users = format_user_row(
+                    **format_user_row_kwargs,
+                    acting_user=recipient_user,
+                )
         else:
-            user_ids_without_real_email_access.append(user.id)
+            user_ids_without_real_email_access.append(recipient_user.id)
+            if person_for_without_real_email_access_users is None:
+                person_for_without_real_email_access_users = format_user_row(
+                    **format_user_row_kwargs,
+                    acting_user=recipient_user,
+                )
 
     if user_ids_with_real_email_access:
-        person["delivery_email"] = user_profile.delivery_email
-        event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
+        assert person_for_real_email_access_users is not None
+        event: Dict[str, Any] = dict(
+            type="realm_user", op="add", person=person_for_real_email_access_users
+        )
         transaction.on_commit(
             lambda event=event: send_event(
                 user_profile.realm, event, user_ids_with_real_email_access
@@ -320,8 +315,8 @@ def notify_created_user(user_profile: UserProfile) -> None:
         )
 
     if user_ids_without_real_email_access:
-        person["delivery_email"] = None
-        event = dict(type="realm_user", op="add", person=person)
+        assert person_for_without_real_email_access_users is not None
+        event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
         transaction.on_commit(
             lambda event=event: send_event(
                 user_profile.realm, event, user_ids_without_real_email_access
@@ -384,6 +379,7 @@ def do_create_user(
     default_events_register_stream: Optional[Stream] = None,
     default_all_public_streams: Optional[bool] = None,
     prereg_user: Optional[PreregistrationUser] = None,
+    prereg_realm: Optional[PreregistrationRealm] = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     source_profile: Optional[UserProfile] = None,
     realm_creation: bool = False,
@@ -472,6 +468,10 @@ def do_create_user(
         do_send_user_group_members_update_event(
             "add_members", full_members_system_group, [user_profile.id]
         )
+
+    if prereg_realm is not None:
+        prereg_realm.created_user = user_profile
+        prereg_realm.save(update_fields=["created_user"])
 
     if bot_type is None:
         process_new_human_user(

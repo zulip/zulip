@@ -27,6 +27,7 @@
                     <li class="active"><a data-toggle="tab" href="#overview">Overview</a></li>
                     <li><a data-toggle="tab" href="#payment-method">Payment method</a></li>
                     <li><a data-toggle="tab" href="#settings">Settings</a></li>
+                    <li><a data-toggle="tab" href="#sponsorship">💚 Request sponsorship</a></li>
                 </ul>
 
                 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
@@ -170,6 +171,8 @@
                         <div class="tab-pane" id="loading">
                         </div>
                     </div>
+
+                    {% include "corporate/sponsorship.html" %}
                 </div>
 
                 <div id="goto-zulip-organization-link">
@@ -183,7 +186,7 @@
                 <hr />
                 <div class="support-link">
                     <p>
-                        Contact <a href="mailto:support@zulip.com">support@zulip.com</a>
+                        <a href="mailto:support@zulip.com">Contact Zulip support</a>
                         for billing history or to make changes to your subscription or billing email.
                     </p>
                 </div>
@@ -191,6 +194,8 @@
                 <div class="tab-content">
                     {% if sponsorship_pending %}
                     <h3>Your organization has requested sponsored or discounted hosting.</h3>
+                    <br />
+                    Please <a href="mailto:support@zulip.com">contact Zulip support</a> if you have any questions or concerns.
                     {% elif is_sponsored %}
                     <center>
                         <p>
@@ -201,21 +206,24 @@
                     <center>
                         <p>
                             <h2>Your organization is on the <b>Zulip Free</b> plan.</h2>
-                            <a href="/upgrade">
+                            <a href="/upgrade/">
                                 <button type="submit" class="button green">Upgrade to Standard</button>
                             </a>
-                            <a href="/plans">
+                            <a href="/plans/">
                                 <button type="submit">View all plans</button>
                             </a>
                         </p>
                     </center>
                     {% endif %}
                 </div>
+                {% if not sponsorship_pending %}
+                {# In the other case, we're displaying a different message about contacting support. #}
                 <div class="support-link">
                     <p>
-                        Contact <a href="mailto:support@zulip.com">support@zulip.com</a> for billing history.
+                        <a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.
                     </p>
                 </div>
+                {% endif %}
                 {% else %}
                 <p>
                     You must be an organization owner or a billing administrator to view this page.

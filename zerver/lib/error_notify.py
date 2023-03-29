@@ -64,7 +64,8 @@ IP address: {ip_address}
 User agent: {user_agent}
 href: {href}
 Server path: {server_path}
-Deployed version: {version}
+Deployed server version: {server_version}
+Web version: {web_version}
 """.format(
         **report
     )
@@ -81,9 +82,8 @@ Deployed version: {version}
 
 
 def zulip_browser_error(report: Dict[str, Any], error_bot_email: str) -> None:
-    email_subject = "JS error: {user_email}".format(**report)
-
     user_info = user_info_str(report)
+    email_subject = f"JS error: {user_info}"
 
     body = f"User: {user_info}\n"
     body += "Message: {message}\n".format(**report)

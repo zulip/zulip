@@ -23,14 +23,10 @@ def missing_any_realm_internal_bots() -> bool:
         bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
         for bot in settings.REALM_INTERNAL_BOTS
     ]
-    bot_counts = {
-        email: count
-        for email, count in UserProfile.objects.filter(email__in=bot_emails)
-        .values_list("email")
-        .annotate(Count("id"))
-    }
     realm_count = Realm.objects.count()
-    return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
+    return UserProfile.objects.filter(email__in=bot_emails).values("email").annotate(
+        count=Count("id")
+    ).filter(count=realm_count).count() != len(bot_emails)
 
 
 def create_if_missing_realm_internal_bots() -> None:
@@ -59,13 +55,14 @@ def send_initial_pms(user: UserProfile) -> None:
         welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
         demo_org_warning = ""
         if user.realm.demo_organization_scheduled_deletion_date is not None:
+            demo_org_help_url = user.realm.uri + "/help/demo-organizations"
             demo_org_warning = (
                 _(
                     "Note that this is a [demo organization]({demo_org_help_url}) and will be "
                     "**automatically deleted** in 30 days."
                 )
                 + "\n\n"
-            )
+            ).format(demo_org_help_url=demo_org_help_url)
 
         content = "".join(
             [
@@ -88,7 +85,6 @@ def send_initial_pms(user: UserProfile) -> None:
     content = content.format(
         organization_setup_text=organization_setup_text,
         demo_org_warning=demo_org_warning,
-        demo_org_help_url="/help/demo-organizations",
         getting_started_url="/help/getting-started-with-zulip",
     )
 
@@ -122,7 +118,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
     # message from the user to Welcome Bot, select the appropriate reply.
     if human_response_lower in ["app", "apps"]:
         return _(
-            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
             "Zulip also works great in a browser."
         )
     elif human_response_lower == "profile":

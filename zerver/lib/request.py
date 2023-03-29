@@ -30,6 +30,7 @@ from typing_extensions import Concatenate, ParamSpec
 from zerver.lib import rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.notes import BaseNotes
+from zerver.lib.response import MutableJsonResponse
 from zerver.lib.types import Validator
 from zerver.lib.validator import check_anything
 from zerver.models import Client, Realm
@@ -70,8 +71,8 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     saved_response: Optional[HttpResponse] = None
     tornado_handler_id: Optional[int] = None
     processed_parameters: Set[str] = field(default_factory=set)
-    ignored_parameters: Set[str] = field(default_factory=set)
     remote_server: Optional["RemoteZulipServer"] = None
+    is_webhook_view: bool = False
 
     @classmethod
     def init_notes(cls) -> "RequestNotes":
@@ -455,7 +456,38 @@ def has_request_variables(
 
             kwargs[func_var_name] = val
 
-        return req_func(request, *args, **kwargs)
+        return_value = req_func(request, *args, **kwargs)
+
+        if (
+            isinstance(return_value, MutableJsonResponse)
+            and not request_notes.is_webhook_view
+            # Implemented only for 200 responses.
+            # TODO: Implement returning unsupported ignored parameters for 400
+            # JSON error responses. This is complex because has_request_variables
+            # can be called multiple times, so when an error response is raised,
+            # there may be supported parameters that have not yet been processed,
+            # which could lead to inaccurate output.
+            and 200 <= return_value.status_code < 300
+        ):
+            ignored_parameters = set(
+                list(request.POST.keys()) + list(request.GET.keys())
+            ).difference(request_notes.processed_parameters)
+
+            # This will be called each time a function decorated with
+            # has_request_variables returns a MutableJsonResponse with a
+            # success status_code. Because a shared processed_parameters
+            # value is checked each time, the value for the
+            # ignored_parameters_unsupported key is either added/updated
+            # to the response data or it is removed in the case that all
+            # of the request parameters have been processed.
+            if ignored_parameters:
+                return_value.get_data()["ignored_parameters_unsupported"] = sorted(
+                    ignored_parameters
+                )
+            else:
+                return_value.get_data().pop("ignored_parameters_unsupported", None)
+
+        return return_value
 
     return _wrapped_req_func
 

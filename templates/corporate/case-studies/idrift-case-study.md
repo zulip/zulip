@@ -112,5 +112,6 @@ easy to review past interactions,” Gaute Lund says.
 
 ---
 
-Check out our guide on [using Zulip for business](/for/business) to
-learn more!
+Check out our guide on [using Zulip for business](/for/business/), and learn how
+Zulip is being used at the [End Point Dev](/case-studies/end-point/) software
+consultancy.

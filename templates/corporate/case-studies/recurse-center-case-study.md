@@ -49,7 +49,7 @@ in 2015, Recurse Center alumni [flew out to San
 Francisco](https://www.recurse.com/blog/90-zulip-supporting-oss-at-the-recurse-center)
 for a week to help make it happen. Since then, Zulip has built the most active
 open-source development community of any team chat software, with [75
-people](https://zulip.com/team) who’ve contributed 100+ commits.
+people](https://zulip.com/team/) who’ve contributed 100+ commits.
 
 > “It’s not an exaggeration to say Zulip has made RC a stronger community.”
 >
@@ -238,6 +238,6 @@ path 6 years ago!”
 
 ---
 
-Check out our guides on using Zulip for [education](/for/education) and
-[events](/for/events), and learn how Zulip [helps communities
-grow](/for/communities)!
+Check out our guides on using Zulip for [education](/for/education/) and
+[events](/for/events/), and learn how Zulip [helps communities
+grow](/for/communities/)!

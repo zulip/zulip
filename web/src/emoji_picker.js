@@ -122,7 +122,7 @@ export function rebuild_catalog() {
     const catalog = new Map();
     catalog.set(
         "Custom",
-        Array.from(realm_emojis.keys(), (realm_emoji_name) =>
+        [...realm_emojis.keys()].map((realm_emoji_name) =>
             emoji.emojis_by_name.get(realm_emoji_name),
         ),
     );
@@ -198,7 +198,7 @@ export function hide_emoji_popover() {
         // Re-enable clicking events for other elements after closing
         // the popover.  This is the inverse of the hack of in the
         // handler that opens the "user status modal" emoji picker.
-        $(".app, .header, .modal__overlay, #set_user_status_modal").css("pointer-events", "all");
+        $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "all");
     }
     if (reactions_popped()) {
         $current_message_emoji_popover_elem.popover("destroy");
@@ -303,7 +303,7 @@ function is_composition(emoji) {
 }
 
 function is_status_emoji(emoji) {
-    return $(emoji).hasClass("status_emoji");
+    return $(emoji).hasClass("status-emoji");
 }
 
 function process_enter_while_filtering(e) {
@@ -784,7 +784,7 @@ export function register_click_handlers() {
         );
     });
 
-    $("body").on("click", "#set_user_status_modal #selected_emoji", (e) => {
+    $("body").on("click", "#set-user-status-modal #selected_emoji", (e) => {
         e.preventDefault();
         e.stopPropagation();
         toggle_emoji_popover(e.target);
@@ -792,10 +792,10 @@ export function register_click_handlers() {
         // status modal, we need this hack to make clicking outside
         // the emoji picker only close the emoji picker, and not the
         // whole user status modal.
-        $(".app, .header, .modal__overlay, #set_user_status_modal").css("pointer-events", "none");
+        $(".app, .header, .modal__overlay, #set-user-status-modal").css("pointer-events", "none");
     });
 
-    $(document).on("click", ".emoji-popover-emoji.status_emoji", function (e) {
+    $(document).on("click", ".emoji-popover-emoji.status-emoji", function (e) {
         e.preventDefault();
         e.stopPropagation();
         hide_emoji_popover();

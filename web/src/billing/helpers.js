@@ -136,6 +136,18 @@ export function set_tab(page) {
     window.addEventListener("hashchange", handle_hashchange);
 }
 
+export function set_sponsorship_form() {
+    $("#sponsorship-button").on("click", (e) => {
+        if (!is_valid_input($("#sponsorship-form"))) {
+            return;
+        }
+        e.preventDefault();
+        create_ajax_request("/json/billing/sponsorship", "sponsorship", [], "POST", () =>
+            window.location.replace("/"),
+        );
+    });
+}
+
 export function is_valid_input(elem) {
     return elem[0].checkValidity();
 }

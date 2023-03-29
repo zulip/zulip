@@ -107,7 +107,7 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.user_status import do_update_user_status
-from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
@@ -195,12 +195,11 @@ from zerver.lib.test_helpers import (
     create_dummy_file,
     get_subscription,
     get_test_image_file,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -219,6 +218,7 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     UserStatus,
+    UserTopic,
     get_client,
     get_stream,
     get_user_by_delivery_email,
@@ -881,7 +881,7 @@ class NormalActionsTest(BaseAction):
         check_invites_changed("events[0]", events[0])
 
     def test_invitation_accept_invite_event(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         self.user_profile = self.example_user("iago")
         streams = []
@@ -1320,8 +1320,8 @@ class NormalActionsTest(BaseAction):
 
         check_user_group_remove_members("events[0]", events[0])
 
-        api_design = create_user_group(
-            "api-design", [hamlet], hamlet.realm, description="API design team", acting_user=None
+        api_design = check_add_user_group(
+            hamlet.realm, "api-design", [hamlet], description="API design team", acting_user=None
         )
 
         # Test add subgroups
@@ -1427,22 +1427,53 @@ class NormalActionsTest(BaseAction):
     def test_muted_topics_events(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         events = self.verify_action(
-            lambda: do_mute_topic(self.user_profile, stream, "topic"), num_events=2
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            ),
+            num_events=2,
         )
         check_muted_topics("events[0]", events[0])
         check_user_topic("events[1]", events[1])
 
         events = self.verify_action(
-            lambda: do_unmute_topic(self.user_profile, stream, "topic"), num_events=2
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+            ),
+            num_events=2,
         )
         check_muted_topics("events[0]", events[0])
         check_user_topic("events[1]", events[1])
 
         events = self.verify_action(
-            lambda: do_mute_topic(self.user_profile, stream, "topic"),
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            ),
             event_types=["muted_topics", "user_topic"],
         )
         check_user_topic("events[0]", events[0])
+
+    def test_unmuted_topics_events(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        events = self.verify_action(
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile,
+                stream,
+                "topic",
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+            ),
+            num_events=2,
+        )
+        check_muted_topics("events[0]", events[0])
+        check_user_topic("events[1]", events[1])
 
     def test_muted_users_events(self) -> None:
         muted_user = self.example_user("othello")
@@ -1694,7 +1725,7 @@ class NormalActionsTest(BaseAction):
             check_realm_update("events[0]", events[0], "signup_notifications_stream_id")
 
     def test_change_is_admin(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1719,7 +1750,7 @@ class NormalActionsTest(BaseAction):
                 check_user_group_add_members("events[3]", events[3])
 
     def test_change_is_billing_admin(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1731,7 +1762,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["person"]["is_billing_admin"], True)
 
     def test_change_is_owner(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1756,7 +1787,7 @@ class NormalActionsTest(BaseAction):
                 check_user_group_add_members("events[3]", events[3])
 
     def test_change_is_moderator(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1784,7 +1815,7 @@ class NormalActionsTest(BaseAction):
         stream = Stream.objects.get(name="Denmark")
         do_add_default_stream(stream)
 
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1814,6 +1845,7 @@ class NormalActionsTest(BaseAction):
                 "notification_sound",
                 "desktop_icon_count_display",
                 "presence_enabled",
+                "realm_name_in_email_notifications_policy",
             ]:
                 # These settings are tested in their own tests.
                 continue
@@ -1902,6 +1934,27 @@ class NormalActionsTest(BaseAction):
         )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 1)
+
+    def test_change_realm_name_in_email_notifications_policy(self) -> None:
+        notification_setting = "realm_name_in_email_notifications_policy"
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                self.user_profile, notification_setting, 3, acting_user=self.user_profile
+            ),
+            num_events=2,
+        )
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], 3)
+
+        events = self.verify_action(
+            lambda: do_change_user_setting(
+                self.user_profile, notification_setting, 2, acting_user=self.user_profile
+            ),
+            num_events=2,
+        )
+        check_user_settings_update("events[0]", events[0])
+        check_update_global_notifications("events[1]", events[1], 2)
 
     def test_realm_update_org_type(self) -> None:
         realm = self.user_profile.realm
@@ -2667,6 +2720,7 @@ class RealmPropertyActionTest(BaseAction):
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
+            realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
         )
 
         vals = test_values.get(name)

@@ -54,7 +54,7 @@ run_test("initialize", ({override_rewire}) => {
                     assert.deepEqual(ignored_inputs, []);
                     assert.equal(type, "POST");
                     location.replace = (new_location) => {
-                        assert.equal(new_location, "/billing");
+                        assert.equal(new_location, "/billing/");
                     };
                     success_callback();
                     break;

@@ -62,6 +62,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
+import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
@@ -189,7 +190,7 @@ function initialize_right_sidebar() {
     }
 
     $("#user_presences").on("mouseenter", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
         if ($status_emoji.length) {
             const animated_url = $status_emoji.data("animated-url");
             if (animated_url) {
@@ -199,7 +200,7 @@ function initialize_right_sidebar() {
     });
 
     $("#user_presences").on("mouseleave", ".user_sidebar_entry", (e) => {
-        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status-emoji");
         if ($status_emoji.length) {
             const still_url = $status_emoji.data("still-url");
             if (still_url) {
@@ -578,6 +579,7 @@ export function initialize_everything() {
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
+    popovers.initialize();
     popover_menus.initialize();
 
     initialize_user_settings(user_settings_params);

@@ -133,7 +133,7 @@ export function dispatch_normal_event(event) {
         case "hotspots":
             hotspots.load_new(event.hotspots);
             page_params.hotspots = page_params.hotspots
-                ? page_params.hotspots.concat(event.hotspots)
+                ? [...page_params.hotspots, ...event.hotspots]
                 : event.hotspots;
             break;
 
@@ -435,7 +435,9 @@ export function dispatch_normal_event(event) {
                 case "add":
                     people.add_active_user(event.person);
                     settings_account.maybe_update_deactivate_account_button();
-                    settings_users.redraw_bots_list();
+                    if (event.person.is_bot) {
+                        settings_users.redraw_bots_list();
+                    }
                     break;
                 case "remove":
                     people.deactivate(event.person);
@@ -443,12 +445,16 @@ export function dispatch_normal_event(event) {
                     settings_users.update_view_on_deactivate(event.person.user_id);
                     buddy_list.maybe_remove_key({key: event.person.user_id});
                     settings_account.maybe_update_deactivate_account_button();
-                    settings_users.update_bot_data(event.person.user_id);
+                    if (people.user_is_bot(event.person.user_id)) {
+                        settings_users.update_bot_data(event.person.user_id);
+                    }
                     break;
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
-                    settings_users.update_bot_data(event.person.user_id);
+                    if (people.user_is_bot(event.person.user_id)) {
+                        settings_users.update_bot_data(event.person.user_id);
+                    }
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);
@@ -725,6 +731,11 @@ export function dispatch_normal_event(event) {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
                 activity.redraw_user(page_params.user_id);
+                break;
+            }
+            if (event.property === "email_address_visibility") {
+                user_settings.email_address_visibility = event.value;
+                $("#user_email_address_visibility").val(event.value);
                 break;
             }
             settings_display.update_page(event.property);

@@ -59,32 +59,36 @@ function hide_tooltip_if_reference_removed(
     observer.observe(target_node, config);
 }
 
+// We use two delay settings for tooltips. The default "instant"
+// version has just a tiny bit of delay to create a natural feeling
+// transition, while the "long" version is intended for elements where
+// we want to avoid distracting the user with the tooltip
+// unnecessarily.
+const INSTANT_HOVER_DELAY = [100, 20];
+const LONG_HOVER_DELAY = [750, 20];
+
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
 // documentation for default properties.
 tippy.setDefaultProps({
-    // We don't want tooltips
-    // to take more space than
-    // mobile widths ever.
+    // Tooltips shouldn't take more space than mobile widths.
     maxWidth: 300,
-
-    // Some delay to showing / hiding the tooltip makes
-    // it look less forced and more natural.
-    delay: [100, 20],
+    delay: INSTANT_HOVER_DELAY,
     placement: "top",
-
-    // disable animations to make the
-    // tooltips feel snappy
+    // Disable animations to make the tooltips feel snappy.
     animation: false,
-
-    // Show tooltips on long press on touch based
-    // devices.
+    // Show tooltips on long press on touch based devices.
     touch: ["hold", 750],
-
-    // This has the side effect of some properties of parent applying to
-    // tooltips.
+    // Create the tooltip inside the parent element. This has the
+    // undesirable side effect of CSS properties of the parent elements
+    // applying to tooltips, which causes ugly clipping if the parent
+    // element has overflow rules. Even with that, we prefer to have
+    // tooltips appended to the parent so that the tooltip gets removed
+    // if the parent is hidden / removed from DOM; which is not the case
+    // with appending it to `body` which has side effect of tooltips
+    // sticking around due to browser not communicating to tippy that
+    // the element has been removed without having a Mutation Observer.
     appendTo: "parent",
-
     // To add a text tooltip, override this by setting data-tippy-content.
     // To add an HTML tooltip, set data-tooltip-template-id to the id of a <template>.
     // Or, override this with a function returning string (text) or DocumentFragment (HTML).
@@ -149,7 +153,7 @@ export function initialize() {
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
-        delay: [300, 20],
+        delay: LONG_HOVER_DELAY,
         // This ensures that the upload files tooltip
         // doesn't hide behind the left sidebar.
         appendTo: () => document.body,
@@ -163,12 +167,14 @@ export function initialize() {
         // Add some additional delay when they open
         // so that regular users don't have to see
         // them unless they want to.
-        delay: [300, 20],
+        delay: LONG_HOVER_DELAY,
         onShow(instance) {
             // Handle dynamic "starred messages" and "edit" widgets.
             const $elem = $(instance.reference);
+            const tippy_content = $elem.attr("data-tippy-content");
             const $template = $("#" + $elem.attr("data-tooltip-template-id"));
-            instance.setContent(parse_html($template.html()));
+
+            instance.setContent(tippy_content ?? parse_html($template.html()));
         },
     });
 
@@ -283,7 +289,7 @@ export function initialize() {
         content: $t({defaultMessage: "Change send shortcut"}),
         onShow() {
             // Don't show tooltip if the popover is displayed.
-            if (popover_menus.compose_enter_sends_popover_displayed) {
+            if (popover_menus.is_compose_enter_sends_popover_displayed()) {
                 return false;
             }
             return true;
@@ -443,7 +449,7 @@ export function initialize() {
             }
             return true;
         },
-        delay: [500, 20],
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
 
@@ -461,7 +467,7 @@ export function initialize() {
         content: $t({
             defaultMessage: "View user card (u)",
         }),
-        delay: [500, 20],
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
 

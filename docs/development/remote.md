@@ -62,7 +62,7 @@ The main difference from the standard instructions is that for a
 remote development environment, and you're not using our Digital Ocean
 Droplet infrastructure (which handles `EXTERNAL_HOST` for you), you'll
 need to run `export EXTERNAL_HOST=<REMOTE_IP>:9991` in a shell before
-running `run-dev.py` (and see also the `--interface=''` option
+running `run-dev` (and see also the `--interface=''` option
 documented below).
 
 If your server has a static IP address, we recommend putting this
@@ -77,7 +77,7 @@ development server with the following command in the directory where
 you cloned Zulip:
 
 ```bash
-./tools/run-dev.py --interface=''
+./tools/run-dev --interface=''
 ```
 
 This will start up the Zulip server on port 9991. You can then
@@ -284,8 +284,8 @@ Next, read the following to learn more about developing for Zulip:
 
 For some applications (e.g. developing an OAuth2 integration for
 Facebook), you may need your Zulip development to have a valid SSL
-certificate. While `run-dev.py` doesn't support that, you can do this
-with an `nginx` reverse proxy sitting in front of `run-dev.py`.
+certificate. While `run-dev` doesn't support that, you can do this
+with an `nginx` reverse proxy sitting in front of `run-dev`.
 
 The following instructions assume you have a Zulip Droplet working and
 that the user is `zulipdev`; edit accordingly if the situation is
@@ -320,5 +320,5 @@ different.
 
 1. Start the Zulip development environment with the following command:
    ```bash
-   env EXTERNAL_HOST="hostname.example.com" ./tools/run-dev.py --interface=''
+   env EXTERNAL_HOST="hostname.example.com" ./tools/run-dev --interface=''
    ```

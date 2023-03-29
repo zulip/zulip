@@ -23,7 +23,7 @@ const services = new Map();
 const services_fields = ["base_url", "interface", "config_data", "service_name", "token"];
 
 export function all_user_ids() {
-    return Array.from(bots.keys());
+    return [...bots.keys()];
 }
 
 export function add(bot) {

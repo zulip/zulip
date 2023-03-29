@@ -141,7 +141,7 @@ class UploadSerializeMixin(SerializeMixin):
 
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff: Optional[int] = None  # noqa: N815
+    maxDiff: Optional[int] = None
 
     def setUp(self) -> None:
         super().setUp()
@@ -159,6 +159,11 @@ class ZulipTestCase(TestCase):
         flush_per_request_caches()
         translation.activate(settings.LANGUAGE_CODE)
 
+        # Clean up local uploads directory after tests:
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        if os.path.exists(settings.LOCAL_UPLOADS_DIR):
+            shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
+
         # Clean up after using fakeldap in LDAP tests:
         if hasattr(self, "mock_ldap") and hasattr(self, "mock_initialize"):
             if self.mock_ldap is not None:
@@ -173,7 +178,9 @@ class ZulipTestCase(TestCase):
             extra_output_finder
         ), tee_stdout_and_find_extra_console_output(extra_output_finder):
             test_result = super().run(result)
-        if extra_output_finder.full_extra_output:
+        if extra_output_finder.full_extra_output and (
+            test_result is None or test_result.wasSuccessful()
+        ):
             exception_message = f"""
 ---- UNEXPECTED CONSOLE OUTPUT DETECTED ----
 
@@ -187,7 +194,7 @@ use `git grep assertLogs` to see dozens of correct examples.
 
 You should be able to quickly reproduce this failure with:
 
-test-backend --ban-console-output {self.id()}
+./tools/test-backend --ban-console-output {self.id()}
 
 Output:
 {extra_output_finder.full_extra_output.decode(errors="replace")}
@@ -800,6 +807,28 @@ Output:
             **extra,
         )
 
+    def submit_realm_creation_form(
+        self,
+        email: str,
+        *,
+        realm_subdomain: str,
+        realm_name: str,
+        realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_in_root_domain: Optional[str] = None,
+    ) -> "TestHttpResponse":
+        payload = {
+            "email": email,
+            "realm_name": realm_name,
+            "realm_type": realm_type,
+            "realm_subdomain": realm_subdomain,
+        }
+        if realm_in_root_domain is not None:
+            payload["realm_in_root_domain"] = realm_in_root_domain
+        return self.client_post(
+            "/new/",
+            payload,
+        )
+
     def get_confirmation_url_from_outbox(
         self,
         email_address: str,
@@ -1088,7 +1117,10 @@ Output:
         self.assertEqual(result, data)
 
     def assert_json_success(
-        self, result: Union["TestHttpResponse", HttpResponse]
+        self,
+        result: Union["TestHttpResponse", HttpResponse],
+        *,
+        ignored_parameters: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Successful POSTs return a 200 and JSON of the form {"result": "success",
@@ -1104,6 +1136,14 @@ Output:
         # empty value.
         self.assertIn("msg", json)
         self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
+        # Check ignored parameters.
+        if ignored_parameters is None:
+            self.assertNotIn("ignored_parameters_unsupported", json)
+        else:
+            self.assertIn("ignored_parameters_unsupported", json)
+            self.assert_length(json["ignored_parameters_unsupported"], len(ignored_parameters))
+            for param in ignored_parameters:
+                self.assertTrue(param in json["ignored_parameters_unsupported"])
         return json
 
     def get_json_error(self, result: "TestHttpResponse", status_code: int = 400) -> str:

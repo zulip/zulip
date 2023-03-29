@@ -211,8 +211,8 @@ class TestRealmAuditLog(ZulipTestCase):
             event_type=RealmAuditLog.USER_EMAIL_CHANGED, event_time__gte=now
         )
         self.assertTrue(
-            str(audit_entry).startswith(
-                f"<RealmAuditLog: <UserProfile: {user.email} {user.realm}> {RealmAuditLog.USER_EMAIL_CHANGED} "
+            repr(audit_entry).startswith(
+                f"<RealmAuditLog: <UserProfile: {user.email} {user.realm!r}> {RealmAuditLog.USER_EMAIL_CHANGED} "
             )
         )
 
@@ -670,13 +670,20 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assertEqual(stream.name, "updated name")
 
-    def test_change_notification_settings(self) -> None:
+    def test_change_user_settings(self) -> None:
         user = self.example_user("hamlet")
         value: Union[bool, int, str]
-        for setting, v in user.notification_setting_types.items():
-            if setting == "notification_sound":
-                value = "ding"
-            elif setting == "desktop_icon_count_display":
+        test_values = dict(
+            default_language="de",
+            default_view="all_messages",
+            emojiset="twitter",
+            notification_sound="ding",
+        )
+
+        for setting, setting_type in user.property_types.items():
+            if setting in test_values:
+                value = test_values[setting]
+            elif setting_type is int:
                 value = 3
             else:
                 value = False

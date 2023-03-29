@@ -232,7 +232,7 @@ installation method described here.
    # Enter the Zulip Python environment
    source /srv/zulip-py3-venv/bin/activate
    # Start the development server
-   ./tools/run-dev.py
+   ./tools/run-dev
    ```
 
    :::{note}
@@ -240,7 +240,7 @@ installation method described here.
    the services using `./tools/wsl/start_services`.
    :::
 
-1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
+1. If you are facing problems or you see error messages after running `./tools/run-dev`,
    you can try running `./tools/provision` again.
 
 1. The [Visual Studio Code Remote -
@@ -373,7 +373,7 @@ Next, start the Zulip server:
 
 ```console
 (zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev.py
+$ ./tools/run-dev
 ```
 
 You will see several lines of output starting with something like:
@@ -448,13 +448,13 @@ run `tools/lint` often to make sure you're following our coding style
 (or use `tools/setup-git-repo` to run it on just the changed files
 automatically whenever you commit).
 
-#### Understanding run-dev.py debugging output
+#### Understanding run-dev debugging output
 
-It's good to have the terminal running `./tools/run-dev.py` up as you work since error
+It's good to have the terminal running `./tools/run-dev` up as you work since error
 messages including tracebacks along with every backend request will be printed
 there.
 
-See [Logging](../subsystems/logging.md) for further details on the run-dev.py console
+See [Logging](../subsystems/logging.md) for further details on the run-dev console
 output.
 
 #### Committing and pushing changes with Git
@@ -511,10 +511,10 @@ To shut down but preserve the development environment so you can use
 it again later use `vagrant halt` or `vagrant suspend`.
 
 You can do this from the same Terminal/Git BASH window that is running
-run-dev.py by pressing ^C to halt the server and then typing `exit`. Or you
+run-dev by pressing ^C to halt the server and then typing `exit`. Or you
 can halt vagrant from another Terminal/Git BASH window.
 
-From the window where run-dev.py is running:
+From the window where run-dev is running:
 
 ```console
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
@@ -559,7 +559,7 @@ $ vagrant up
 $ vagrant ssh
 
 (zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev.py
+$ ./tools/run-dev
 ```
 
 ### Next steps
@@ -868,23 +868,6 @@ Likely causes are:
    [requires](#requirements). If
    not, go to your VM settings and increase the RAM, then restart
    the VM.
-
-##### yarn install warnings
-
-```console
-$ yarn install
-yarn install v0.24.5
-[1/4] Resolving packages...
-[2/4] Fetching packages...
-warning fsevents@1.1.1: The platform "linux" is incompatible with this module.
-info "fsevents@1.1.1" is an optional dependency and failed compatibility check. Excluding it from installation.
-[3/4] Linking dependencies...
-[4/4] Building fresh packages...
-Done in 23.50s.
-```
-
-These are warnings produced by spammy third party JavaScript packages.
-It is okay to proceed and start the Zulip server.
 
 #### VBoxManage errors related to VT-x or WHvSetupPartition
 

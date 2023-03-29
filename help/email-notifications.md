@@ -2,15 +2,15 @@
 
 ## Message notification emails
 
-Zulip can be configured to send message notification emails for [PMs
-and mentions](/help/pm-mention-alert-notifications), as well as
+Zulip can be configured to send message notification emails for [DMs
+and mentions](/help/dm-mention-alert-notifications), as well as
 [stream messages](/help/stream-notifications).
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Toggle the checkboxes for **Streams** and **PMs, mentions, and alerts**
+1. Toggle the checkboxes for **Streams** and **DMs, mentions, and alerts**
    in the **Email** column of the **Notification triggers** table.
 
 {end_tabs}
@@ -20,7 +20,7 @@ replying to message notification emails, unless you are connecting to
 a self-hosted Zulip server whose system administrator has not
 configured the [incoming email gateway][incoming-email-gateway].
 
-[incoming-email-gateway]: https://zulip.readthedocs.io/en/latest/production/email-gateway.html
+[incoming-email-gateway]: https://zulip.readthedocs.io/en/stable/production/email-gateway.html
 
 ### Delay before sending emails
 
@@ -54,18 +54,21 @@ To configure the delay for message notification emails:
 
 ### Include organization name in subject line
 
-If you belong to multiple Zulip organizations, it can be helpful to have the
-name of the organization in the subject line of your message notification emails.
+You can configure whether the name of your Zulip organization is included in the
+subject of message notification emails.
+
+Zulip offers a convenient **Automatic** configuration option, which includes the
+name of the organization in the subject only if you have accounts in multiple
+Zulip Cloud organizations, or in multiple organizations on the same Zulip server.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Under **Email message notifications**, toggle
+1. Under **Email message notifications**, configure
    **Include organization name in subject of message notification emails**.
 
 {end_tabs}
-
 
 ### Hide message content
 

@@ -3,13 +3,19 @@
 [//]: # (All screenshots here require line-height: 22px and font-size: 16px in .message-content.)
 [//]: # (Requires some additional fiddling for the LaTeX picture, inline code span, and maybe a few others.)
 
-Zulip uses a variant of Markdown to allow you to easily format your
-messages. There is a convenient [**message formatting
-reference**](#message-formatting-reference) in the Zulip app that you
-can use whenever you need a reminder of the formatting syntax below.
+Zulip uses Markdown to allow you to easily format your messages. Even if you've
+never heard of Markdown, you are probably familiar with basic Markdown
+formatting, such as using `*` at the start of a line in a bulleted list, or
+around text to indicate emphasis.
 
-* [Emphasis](#emphasis)
-* [Lists](#lists)
+This page provides an overview of all the formatting available in Zulip. There
+is a convenient [**message formatting
+reference**](#message-formatting-reference) in the Zulip app that you can use
+whenever you need a reminder of the formatting syntax below.
+
+* [Text emphasis](#text-emphasis)
+* [Bulleted lists](#bulleted-lists)
+* [Numbered lists](#numbered-lists)
 * [Links and images](#links)
 * [Code blocks](#code)
 * [LaTeX](#latex)
@@ -23,43 +29,16 @@ can use whenever you need a reminder of the formatting syntax below.
 * [To-do lists](#to-do-lists)
 * [Paragraphs and lines](#paragraphs-and-lines)
 
-## Emphasis
+## Text emphasis
 
-```
-**bold**, *italic*, and ~~strikethrough~~ text
-***~~All three at once~~***
-```
+{!emphasis.md!}
 
-![Markdown emphasis](/static/images/help/markdown-emphasis.png)
+!!! tip ""
+    You can also use buttons or keyboard shortcuts (<kbd>Ctrl</kbd> +
+    <kbd>B</kbd> or <kbd>Ctrl</kbd> + <kbd>I</kbd>) to make text bold or italic.
+    [Learn more](/help/text-emphasis).
 
-
-## Lists
-
-Bulleted lists
-```
-* bulleted lists
-  * with sub-bullets too
-  * sub-bullets start with 2 spaces
-    * start sub-sub-bullets with 4 spaces
-* multi
-line
-bullet
-- dashes and
-+ pluses are ok too
-```
-
-![Markdown bullets](/static/images/help/markdown-bullets.png)
-
-Numbered lists
-
-```
-1. numbered lists
-1. increment automatically
-1. one more
-```
-
-![Markdown numbered lists](/static/images/help/markdown-numbered-lists.png)
-
+{!format-lists.md!}
 
 ## Links
 
@@ -176,7 +155,7 @@ Clicking the arrow will expand the spoiler content:
 ## Emoji and emoticons
 
 To translate emoticons into emoji, you'll need to
-[enable emoticon translations](/help/enable-emoticon-translations).
+[enable emoticon translations](/help/configure-emoticon-translations).
 You can also [add custom emoji](/help/custom-emoji).
 
 ```

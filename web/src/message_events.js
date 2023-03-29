@@ -23,6 +23,7 @@ import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -217,7 +218,7 @@ export function update_messages(events) {
                 if (msg.edit_history === undefined) {
                     msg.edit_history = [];
                 }
-                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+                msg.edit_history = [edit_history_entry, ...msg.edit_history];
             }
             any_message_content_edited = true;
 
@@ -225,7 +226,10 @@ export function update_messages(events) {
             msg.raw_content = event.content;
         }
 
-        unread.update_message_for_mention(msg, any_message_content_edited);
+        if (unread.update_message_for_mention(msg, any_message_content_edited)) {
+            const topic_key = recent_topics_util.get_topic_key(msg.stream_id, msg.topic);
+            recent_topics_ui.inplace_rerender(topic_key);
+        }
 
         // new_topic will be undefined if the topic is unchanged.
         const new_topic = util.get_edit_event_topic(event);
@@ -312,7 +316,7 @@ export function update_messages(events) {
                     if (msg.edit_history === undefined) {
                         msg.edit_history = [];
                     }
-                    msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+                    msg.edit_history = [edit_history_entry, ...msg.edit_history];
                 }
                 msg.last_edit_timestamp = event.edit_timestamp;
 

@@ -1,7 +1,7 @@
 import logging
 import urllib
 from contextlib import suppress
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -34,7 +34,11 @@ from zerver.actions.user_settings import (
     do_change_password,
     do_change_user_setting,
 )
-from zerver.context_processors import get_realm_from_request, login_context
+from zerver.context_processors import (
+    get_realm_create_form_context,
+    get_realm_from_request,
+    login_context,
+)
 from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
     FindMyTeamForm,
@@ -51,7 +55,7 @@ from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
-from zerver.lib.subdomains import get_subdomain, is_root_domain_available
+from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.validator import to_converted_or_fallback, to_non_negative_int, to_timezone_or_empty
@@ -61,18 +65,21 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmUserDefault,
     Stream,
     UserProfile,
     get_default_stream_groups,
+    get_org_type_display_name,
     get_realm,
     get_source_profile,
     get_user_by_delivery_email,
     name_changes_disabled,
 )
 from zerver.views.auth import (
+    create_preregistration_realm,
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
@@ -116,21 +123,32 @@ def get_prereg_key_and_redirect(
     accidentally adding an extra character after pasting).
     """
     try:
-        check_prereg_key(request, confirmation_key)
+        prereg_object, realm_creation = check_prereg_key(request, confirmation_key)
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
+
+    registration_url = reverse("accounts_register")
+    if realm_creation:
+        registration_url = reverse("realm_register")
 
     return render(
         request,
         "confirmation/confirm_preregistrationuser.html",
-        context={"key": confirmation_key, "full_name": full_name},
+        context={
+            "key": confirmation_key,
+            "full_name": full_name,
+            "registration_url": registration_url,
+        },
     )
 
 
-def check_prereg_key(request: HttpRequest, confirmation_key: str) -> PreregistrationUser:
+def check_prereg_key(
+    request: HttpRequest, confirmation_key: str
+) -> Tuple[Union[PreregistrationUser, PreregistrationRealm], bool]:
     """
-    Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
-    and raising an appropriate ConfirmationKeyError otherwise.
+    Checks if the Confirmation key is valid, returning the PreregistrationUser or
+    PreregistrationRealm object in case of success and raising an appropriate
+    ConfirmationKeyError otherwise.
     """
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
@@ -138,20 +156,49 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
         Confirmation.REALM_CREATION,
     ]
 
-    prereg_user = get_object_from_key(confirmation_key, confirmation_types, mark_object_used=False)
-    assert isinstance(prereg_user, PreregistrationUser)
+    prereg_object = get_object_from_key(
+        confirmation_key, confirmation_types, mark_object_used=False
+    )
+    assert isinstance(prereg_object, (PreregistrationRealm, PreregistrationUser))
 
-    # Defensive assert to make sure no mix-up in how .status is set leading to re-use
-    # of a PreregistrationUser object.
-    assert prereg_user.created_user is None
+    confirmation_obj = prereg_object.confirmation.get()
+    realm_creation = confirmation_obj.type == Confirmation.REALM_CREATION
 
-    return prereg_user
+    if realm_creation:
+        assert isinstance(prereg_object, PreregistrationRealm)
+        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # of a PreregistrationRealm object.
+        assert prereg_object.created_realm is None
+    else:
+        assert isinstance(prereg_object, PreregistrationUser)
+        # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+        # of a PreregistrationUser object.
+        assert prereg_object.created_user is None
+
+    return prereg_object, realm_creation
+
+
+def get_selected_realm_type_name(prereg_realm: Optional[PreregistrationRealm]) -> Optional[str]:
+    if prereg_realm is None:
+        # We show the selected realm type only when creating new realm.
+        return None
+
+    return get_org_type_display_name(prereg_realm.org_type)
 
 
 @add_google_analytics
 @require_post
+def realm_register(*args: Any, **kwargs: Any) -> HttpResponse:
+    return registration_helper(*args, **kwargs)
+
+
+@require_post
+def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
+    return registration_helper(*args, **kwargs)
+
+
 @has_request_variables
-def accounts_register(
+def registration_helper(
     request: HttpRequest,
     key: str = REQ(default=""),
     timezone: str = REQ(default="", converter=to_timezone_or_empty),
@@ -162,17 +209,23 @@ def accounts_register(
     ),
 ) -> HttpResponse:
     try:
-        prereg_user = check_prereg_key(request, key)
+        prereg_object, realm_creation = check_prereg_key(request, key)
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
-    email = prereg_user.email
-    realm_creation = prereg_user.realm_creation
-    password_required = prereg_user.password_required
-
-    role = prereg_user.invited_as
+    email = prereg_object.email
+    prereg_realm = None
+    prereg_user = None
     if realm_creation:
+        assert isinstance(prereg_object, PreregistrationRealm)
+        prereg_realm = prereg_object
+        password_required = True
         role = UserProfile.ROLE_REALM_OWNER
+    else:
+        assert isinstance(prereg_object, PreregistrationUser)
+        prereg_user = prereg_object
+        password_required = prereg_object.password_required
+        role = prereg_object.invited_as
 
     try:
         validators.validate_email(email)
@@ -185,6 +238,7 @@ def accounts_register(
         # For creating a new realm, there is no existing realm or domain
         realm = None
     else:
+        assert prereg_user is not None
         assert prereg_user.realm is not None
         if get_subdomain(request) != prereg_user.realm.string_id:
             return render_confirmation_key_error(
@@ -274,13 +328,24 @@ def accounts_register(
                     require_ldap_password = isinstance(backend, ZulipLDAPAuthBackend)
                     break
 
+        initial_data = {}
+        if realm_creation:
+            assert prereg_realm is not None
+            initial_data = {
+                "realm_name": prereg_realm.name,
+                "realm_type": prereg_realm.org_type,
+                "realm_subdomain": prereg_realm.string_id,
+            }
+
         if ldap_full_name:
-            # We don't use initial= here, because if the form is
-            # complete (that is, no additional fields need to be
-            # filled out by the user) we want the form to validate,
-            # so they can be directly registered without having to
-            # go through this interstitial.
-            form = RegistrationForm({"full_name": ldap_full_name}, realm_creation=realm_creation)
+            # We don't add "full_name" to initial here, because if the realm
+            # already exists and form is complete (that is, no additional fields
+            # need to be filled out by the user) we want the form to validate,
+            # so they can be directly registered without having to go through
+            # this interstitial.
+            form = RegistrationForm(
+                {"full_name": ldap_full_name}, initial=initial_data, realm_creation=realm_creation
+            )
             request.session["authenticated_full_name"] = ldap_full_name
             name_validated = True
         elif realm is not None and realm.is_zephyr_mirror_realm:
@@ -294,24 +359,29 @@ def accounts_register(
                 realm_creation=realm_creation,
             )
             name_validated = True
-        elif prereg_user.full_name:
+        elif prereg_user is not None and prereg_user.full_name:
             if prereg_user.full_name_validated:
                 request.session["authenticated_full_name"] = prereg_user.full_name
                 name_validated = True
                 form = RegistrationForm(
-                    {"full_name": prereg_user.full_name}, realm_creation=realm_creation
+                    {"full_name": prereg_user.full_name},
+                    initial=initial_data,
+                    realm_creation=realm_creation,
                 )
             else:
+                initial_data["full_name"] = prereg_user.full_name
                 form = RegistrationForm(
-                    initial={"full_name": prereg_user.full_name}, realm_creation=realm_creation
+                    initial=initial_data,
+                    realm_creation=realm_creation,
                 )
         elif form_full_name is not None:
+            initial_data["full_name"] = form_full_name
             form = RegistrationForm(
-                initial={"full_name": form_full_name},
+                initial=initial_data,
                 realm_creation=realm_creation,
             )
         else:
-            form = RegistrationForm(realm_creation=realm_creation)
+            form = RegistrationForm(initial=initial_data, realm_creation=realm_creation)
     else:
         postdata = request.POST.copy()
         if name_changes_disabled(realm):
@@ -345,7 +415,11 @@ def accounts_register(
             realm_type = form.cleaned_data["realm_type"]
             is_demo_org = form.cleaned_data["is_demo_organization"]
             realm = do_create_realm(
-                string_id, realm_name, org_type=realm_type, is_demo_organization=is_demo_org
+                string_id,
+                realm_name,
+                org_type=realm_type,
+                is_demo_organization=is_demo_org,
+                prereg_realm=prereg_realm,
             )
         assert realm is not None
 
@@ -396,6 +470,7 @@ def accounts_register(
                 password=password,
                 realm=realm,
                 prereg_user=prereg_user,
+                prereg_realm=prereg_realm,
                 return_data=return_data,
             )
             if user is None:
@@ -457,6 +532,7 @@ def accounts_register(
                 realm,
                 full_name,
                 prereg_user=prereg_user,
+                prereg_realm=prereg_realm,
                 role=role,
                 tos_version=settings.TERMS_OF_SERVICE_VERSION,
                 timezone=timezone,
@@ -502,40 +578,35 @@ def accounts_register(
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         default_email_address_visibility = realm_user_default.email_address_visibility
 
-    return TemplateResponse(
-        request,
-        "zerver/register.html",
-        context={
-            "form": form,
-            "email": email,
-            "key": key,
-            "full_name": request.session.get("authenticated_full_name", None),
-            "lock_name": name_validated and name_changes_disabled(realm),
-            # password_auth_enabled is normally set via our context processor,
-            # but for the registration form, there is no logged in user yet, so
-            # we have to set it here.
-            "creating_new_team": realm_creation,
-            "password_required": password_auth_enabled(realm) and password_required,
-            "require_ldap_password": require_ldap_password,
-            "password_auth_enabled": password_auth_enabled(realm),
-            "root_domain_available": is_root_domain_available(),
-            "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
-            "accounts": get_accounts_for_email(email),
-            "MAX_REALM_NAME_LENGTH": str(Realm.MAX_REALM_NAME_LENGTH),
-            "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
-            "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
-            "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
-            "corporate_enabled": settings.CORPORATE_ENABLED,
-            "sorted_realm_types": sorted(
-                Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]
-            ),
-            "default_email_address_visibility": default_email_address_visibility,
-            "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-            "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
-            "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
-        },
-    )
+    context = {
+        "form": form,
+        "email": email,
+        "key": key,
+        "full_name": request.session.get("authenticated_full_name", None),
+        "lock_name": name_validated and name_changes_disabled(realm),
+        # password_auth_enabled is normally set via our context processor,
+        # but for the registration form, there is no logged in user yet, so
+        # we have to set it here.
+        "creating_new_realm": realm_creation,
+        "password_required": password_auth_enabled(realm) and password_required,
+        "require_ldap_password": require_ldap_password,
+        "password_auth_enabled": password_auth_enabled(realm),
+        "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
+        "accounts": get_accounts_for_email(email),
+        "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
+        "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
+        "corporate_enabled": settings.CORPORATE_ENABLED,
+        "default_email_address_visibility": default_email_address_visibility,
+        "selected_realm_type_name": get_selected_realm_type_name(prereg_realm),
+        "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
+    }
+    # Add context for realm creation part of the form.
+    context.update(get_realm_create_form_context())
+
+    return TemplateResponse(request, "zerver/register.html", context=context)
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -561,7 +632,6 @@ def prepare_activation_url(
     session: SessionBase,
     *,
     realm: Optional[Realm],
-    realm_creation: bool = False,
     streams: Optional[Iterable[Stream]] = None,
     invited_as: Optional[int] = None,
     multiuse_invite: Optional[MultiuseInvite] = None,
@@ -570,9 +640,7 @@ def prepare_activation_url(
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    prereg_user = create_preregistration_user(
-        email, realm, realm_creation, multiuse_invite=multiuse_invite
-    )
+    prereg_user = create_preregistration_user(email, realm, multiuse_invite=multiuse_invite)
 
     if streams is not None:
         prereg_user.streams.set(streams)
@@ -582,11 +650,24 @@ def prepare_activation_url(
         prereg_user.save()
 
     confirmation_type = Confirmation.USER_REGISTRATION
-    if realm_creation:
-        confirmation_type = Confirmation.REALM_CREATION
 
     activation_url = create_confirmation_link(prereg_user, confirmation_type)
-    if settings.DEVELOPMENT and realm_creation:
+    return activation_url
+
+
+def prepare_realm_activation_url(
+    email: str,
+    session: SessionBase,
+    realm_name: str,
+    string_id: str,
+    org_type: int,
+) -> str:
+    prereg_realm = create_preregistration_realm(email, realm_name, string_id, org_type)
+    activation_url = create_confirmation_link(
+        prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
+    )
+
+    if settings.DEVELOPMENT:
         session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-1]}
     return activation_url
 
@@ -652,8 +733,11 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
                 )
 
             email = form.cleaned_data["email"]
-            activation_url = prepare_activation_url(
-                email, request.session, realm=None, realm_creation=True
+            realm_name = form.cleaned_data["realm_name"]
+            realm_type = form.cleaned_data["realm_type"]
+            realm_subdomain = form.cleaned_data["realm_subdomain"]
+            activation_url = prepare_realm_activation_url(
+                email, request.session, realm_name, realm_subdomain, realm_type
             )
             if key_record is not None and key_record.presume_email_valid:
                 # The user has a token created from the server command line;
@@ -677,10 +761,18 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             return HttpResponseRedirect(url)
     else:
         form = RealmCreationForm()
+
+    context = get_realm_create_form_context()
+    context.update(
+        {
+            "form": form,
+            "current_url": request.get_full_path,
+        }
+    )
     return TemplateResponse(
         request,
         "zerver/create_realm.html",
-        context={"form": form, "current_url": request.get_full_path},
+        context=context,
     )
 
 

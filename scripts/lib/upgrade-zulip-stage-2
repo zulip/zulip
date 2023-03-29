@@ -268,7 +268,7 @@ subprocess.check_call(
 # downgrade.
 if not args.skip_downgrade_check:
     subprocess.check_call(
-        [os.path.join(deploy_path, "scripts", "lib", "check-database-compatibility.py")],
+        [os.path.join(deploy_path, "scripts", "lib", "check-database-compatibility")],
         preexec_fn=su_to_zulip,
     )
 

@@ -1,5 +1,5 @@
 import $ from "jquery";
-import Cookies from "js-cookie"; // eslint-disable-line import/no-unresolved
+import Cookies from "js-cookie";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
 
@@ -98,7 +98,7 @@ function user_default_language_modal_post_render() {
 
             change_display_setting(
                 data,
-                $("#settings_content").find(".lang-time-settings-status"),
+                $("#settings_content").find(".general-settings-status"),
                 $t_html(
                     {
                         defaultMessage:
@@ -198,7 +198,7 @@ export function set_up(settings_panel) {
         if (current_emojiset === data.emojiset) {
             return;
         }
-        const $spinner = $container.find(".theme-settings-status").expectOne();
+        const $spinner = $container.find(".emoji-display-settings-status").expectOne();
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -209,7 +209,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $container.find(".theme-settings-status").expectOne(),
+                    $container.find(".emoji-display-settings-status").expectOne(),
                 );
             },
         });
@@ -221,7 +221,7 @@ export function set_up(settings_panel) {
         if (current_user_list_style === data.user_list_style) {
             return;
         }
-        const $spinner = $container.find(".theme-settings-status").expectOne();
+        const $spinner = $container.find(".advanced-settings-status").expectOne();
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -232,7 +232,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $container.find(".theme-settings-status").expectOne(),
+                    $container.find(".advanced-settings-status").expectOne(),
                 );
             },
         });
@@ -248,12 +248,13 @@ export async function report_emojiset_change(settings_panel) {
     // update in all active browser windows.
     await emojisets.select(settings_panel.settings_object.emojiset);
 
-    const $spinner = $(settings_panel.container).find(".theme-settings-status");
+    const $spinner = $(settings_panel.container).find(".emoji-display-settings-status");
     if ($spinner.length) {
         loading.destroy_indicator($spinner);
         ui_report.success(
             $t_html({defaultMessage: "Emoji set changed successfully!"}),
             $spinner.expectOne(),
+            1000,
         );
         $spinner.expectOne();
         settings_ui.display_checkmark($spinner);
@@ -267,12 +268,13 @@ export async function report_user_list_style_change(settings_panel) {
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-    const $spinner = $(settings_panel.container).find(".theme-settings-status");
+    const $spinner = $(settings_panel.container).find(".advanced-settings-status");
     if ($spinner.length) {
         loading.destroy_indicator($spinner);
         ui_report.success(
             $t_html({defaultMessage: "User list style changed successfully!"}),
             $spinner.expectOne(),
+            1000,
         );
         $spinner.expectOne();
         settings_ui.display_checkmark($spinner);

@@ -13,7 +13,7 @@ over 100 native integrations. The entire Zulip codebase is 100% open source.
 
 Zulip has been gaining in popularity since it was [released as open source
 software][oss-release] in late 2015, with code contributions from [over 1000
-people](https://zulip.com/team) from all around the world. Thousands of people
+people](https://zulip.com/team/) from all around the world. Thousands of people
 use Zulip every day, and your work on Zulip will have meaningful impact
 on their experience.
 

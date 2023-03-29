@@ -132,6 +132,9 @@ LOGGING_SHOW_PID = False
 
 # Sentry.io error defaults to off
 SENTRY_DSN: Optional[str] = None
+SENTRY_FRONTEND_DSN: Optional[str] = None
+SENTRY_FRONTEND_SAMPLE_RATE: float = 1.0
+SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 
 # File uploads and avatars
 # TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
@@ -170,6 +173,7 @@ MEMCACHED_USERNAME = None if get_secret("memcached_password") is None else "zuli
 RABBITMQ_HOST = "127.0.0.1"
 RABBITMQ_PORT = 5672
 RABBITMQ_USERNAME = "zulip"
+RABBITMQ_USE_TLS = False
 REDIS_HOST = "127.0.0.1"
 REDIS_PORT = 6379
 REMOTE_POSTGRES_HOST = ""

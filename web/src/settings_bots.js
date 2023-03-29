@@ -4,6 +4,7 @@ import $ from "jquery";
 import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
+import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
@@ -156,20 +157,26 @@ export function can_create_new_bots() {
     return page_params.realm_bot_creation_policy !== bot_creation_policy_values.admins_only.code;
 }
 
-export function update_bot_settings_tip() {
-    const permission_type = bot_creation_policy_values;
-    const current_permission = page_params.realm_bot_creation_policy;
-    let tip_text;
-    if (current_permission === permission_type.admins_only.code) {
-        tip_text = $t({
-            defaultMessage: "Only organization administrators can add bots to this organization.",
-        });
-    } else if (current_permission === permission_type.restricted.code) {
-        tip_text = $t({defaultMessage: "Only organization administrators can add generic bots."});
-    } else {
-        tip_text = $t({defaultMessage: "Anyone in this organization can add bots."});
+export function update_bot_settings_tip($tip_container, for_org_settings) {
+    if (
+        !page_params.is_admin &&
+        page_params.realm_bot_creation_policy === bot_creation_policy_values.everyone.code
+    ) {
+        $tip_container.hide();
+        return;
     }
-    $(".bot-settings-tip").text(tip_text);
+
+    if (page_params.is_admin && !for_org_settings) {
+        $tip_container.hide();
+        return;
+    }
+
+    const rendered_tip = render_bot_settings_tip({
+        realm_bot_creation_policy: page_params.realm_bot_creation_policy,
+        permission_type: bot_creation_policy_values,
+    });
+    $tip_container.show();
+    $tip_container.html(rendered_tip);
 }
 
 function update_add_bot_button() {
@@ -183,7 +190,8 @@ function update_add_bot_button() {
 }
 
 export function update_bot_permissions_ui() {
-    update_bot_settings_tip();
+    update_bot_settings_tip($("#admin-bot-settings-tip"), true);
+    update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     update_add_bot_button();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 }
@@ -407,6 +415,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
     }
 
     function edit_bot_post_render() {
+        $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
         const owner_id = bot_data.get(user_id).owner_id;
 
         const user_ids = people.get_active_human_ids();
@@ -420,6 +429,9 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             data: users_list,
             default_text: $t({defaultMessage: "No owner"}),
             value: owner_id,
+            on_update(value) {
+                $("#edit_bot_modal .dialog_submit_button").prop("disabled", value === null);
+            },
         };
         // Note: Rendering this is quite expensive in
         // organizations with 10Ks of users.
@@ -472,6 +484,16 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             const open_deactivate_modal_callback = () =>
                 confirm_bot_deactivation(bot_id, handle_confirm, true);
             dialog_widget.close_modal(open_deactivate_modal_callback);
+        });
+
+        $("#bot-edit-form").on("input", "input, select", (e) => {
+            if ($(e.target).hasClass("no-input-change-detection")) {
+                // Don't enable the save button if the target element is a
+                // dropdown_list_widget, since it is handled by the dropdown_list_widget's
+                // `on_update` function.
+                return;
+            }
+            $("#edit_bot_modal .dialog_submit_button").prop("disabled", false);
         });
     }
 

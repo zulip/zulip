@@ -44,6 +44,12 @@ There are several parameters you can set while creating a stream. All but
 
 * **Who can post to the stream?**: See [Stream permissions](/help/stream-permissions).
 
+* **Who can unsubscribe others from this stream?**: See
+  [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream#configure-who-can-remove-users).
+
+* **Message retention period**: See
+  [Message retention policy](/help/message-retention-policy#configure-message-retention-policy-for-individual-streams).
+
 * **Choose subscribers**: You can copy the membership from an existing stream or
   [user group](/help/user-groups), add all users, or enter users one by one.
 

@@ -1,0 +1,82 @@
+<form id="invite-user-form">{{ csrf_input }}
+    {{#if development_environment}}
+    <div class="alert" id="dev_env_msg"></div>
+    {{/if}}
+    <div class="input-group">
+        <label for="invitee_emails">{{t "Emails (one on each line or comma-separated)" }}</label>
+        <textarea rows="2" id="invitee_emails" name="invitee_emails" class="invitee_emails" placeholder="{{t 'One or more email addresses...' }}"></textarea>
+        {{#if is_admin}}
+        <div id="invite-method-choice">
+            {{t "or" }} <a role="button" tabindex="0" id="generate_multiuse_invite_button">{{t "Generate invite link" }}</a>
+        </div>
+        <div id="multiuse_radio_section" class="new-style">
+            <label class="checkbox display-block" for="generate_multiuse_invite_radio">
+                <input type="checkbox" name="generate_multiuse_invite_radio" id="generate_multiuse_invite_radio"/>
+                <span></span>
+                {{t "Generate invite link" }}
+            </label>
+        </div>
+        {{/if}}
+    </div>
+    <div class="input-group">
+        <label for="expires_in">{{t "Invitation expires after" }}</label>
+        <select id="expires_in" class="invite-expires-in bootstrap-focus-style">
+            {{#each expires_in_options}}
+                <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
+            {{/each}}
+        </select>
+        <p id="expires_on"></p>
+        <div id="custom-invite-expiration-time" class="dependent-settings-block">
+            <label for="expires_in">{{t "Custom time" }}</label>
+            <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="{{time_input}}" maxlength="3"/>
+            <select class="custom-expiration-time bootstrap-focus-style" id="custom-expiration-time-unit">
+                {{#each time_choices}}
+                    <option name="custom_time_choice" class="custom_time_choice" value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+            <p id="custom_expires_on"></p>
+        </div>
+    </div>
+    <div class="input-group">
+        <label for="invite_as">{{t "User(s) join as" }}
+            {{> help_link_widget link="/help/roles-and-permissions" }}
+        </label>
+        <select id="invite_as" class="invite-as bootstrap-focus-style">
+            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+            {{#if is_admin}}
+            <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
+            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Organization administrators" }}</option>
+            {{/if}}
+            {{#if is_owner}}
+            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Organization owners" }}</option>
+            {{/if}}
+        </select>
+    </div>
+    <div>
+        <label>{{t "Streams they should join" }}</label>
+        <div id="streams_to_add">
+            <div class="invite-stream-controls">
+                <button class="btn btn-link" type="button" id="invite_check_all_button">{{t "Check all" }}</button> |
+                <button class="btn btn-link" type="button" id="invite_uncheck_all_button">{{t "Uncheck all" }}</button>
+            </div>
+            <div id="invite-stream-checkboxes" class="new-style">
+                {{#each streams}}
+
+                    <label class="checkbox display-block">
+                        <input type="checkbox" name="stream" value="{{stream_id}}"
+                          {{#if default_stream}}checked="checked"{{/if}} />
+                        <span></span>
+                        {{#if (or invite_only is_web_public)}} {{>stream_privacy}} {{name}}
+                        {{else}}
+                        #{{name}}
+                        {{/if}}
+                        {{#if (eq name ../notifications_stream)}}
+                        <i>({{t 'Receives new stream announcements' }})</i>
+                        {{/if}}
+                    </label>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</form>

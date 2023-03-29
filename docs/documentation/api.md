@@ -65,73 +65,94 @@ want to also read the [Step by step guide](#step-by-step-guide).
 
 ## How it works
 
-To understand how this documentation system works, start by reading an
-existing doc file (`api_docs/render-message.md` is a good
-example; accessible live
-[here](https://zulip.com/api/render-message) or in the development
-environment at `http://localhost:9991/api/render-message`).
+Let's use the existing documentation for one of our REST API endpoints
+to show how the documentation system works:
+[POST /messages/render](https://zulip.com/api/render-message).
+We highly recommend looking at these resources while reading the above
+documentation page:
 
-We highly recommend looking at those resources while reading this page.
+- `api_docs/api-doc-template.md`
+- `zerver/openapi/zulip.yaml`, specifically the section with
+  `operationId: render-message`
+- `zerver/openapi/python_examples.py`
 
 If you look at the documentation for existing endpoints, you'll notice
 that a typical endpoint's documentation is divided into four sections:
 
-- The top-level **Title and description**
+- **Title and description**
 - **Usage examples**
-- **Arguments**
-- **Responses**
+- **Parameters**
+- **Response with examples**
 
 The rest of this guide describes how each of these sections works.
 
 ### Title and description
 
-Displayed at the top of any REST endpoint documentation page, the
-title comes from the `summary` parameter in OpenAPI data. The
-description should explain what the endpoint does in clear
-English. Include details on how to use it correctly or what it's good
-or bad for, with links to any alternative endpoints the user might
-want to consider.
+The first line of `api-doc-template.md` generates a lot of key
+information for our API endpoint documentation:
 
-These sections should often contain a link to the documentation of the
-relevant feature in `/help/`.
+```
+{generate_api_header(API_ENDPOINT_NAME)}
+```
+
+At the top of the endpoint documentation page is the title, and it
+comes from the `summary` parameter in the OpenAPI data,
+`zerver/openapi/zulip.yaml`.
+
+The endpoint `description` in the OpenAPI data explains what the
+endpoint does in clear English. It should include details on how to
+use the endpoint correctly or what it's good or bad for, with links
+to any alternative endpoints the user might want to consider.
+
+The description should often contain a link to the documentation of
+the relevant feature in the [help center](helpcenter.md), and should
+include **Changes** notes for all feature level updates documented
+in the [API changelog](https://zulip.com/api/changelog), see
+`api_docs/changelog.md`, that reference the endpoint.
+
+Endpoints that only administrators can use should be tagged with the
+custom `x-requires-administrator` field in the OpenAPI definition.
+
+All of this information is rendered via a Markdown preprocessor,
+specifically the `APIHeaderPreprocessor` class defined in
+`zerver/openapi/markdown_extension.py`.
 
 ### Usage examples
 
 We display usage examples in three languages: Python, JavaScript and
-`curl`; we may add more in the future. Every endpoint should have
-Python and `curl` documentation; `JavaScript` is optional as we don't
-consider that API library to be fully supported. The examples are
-defined using a special Markdown extension
-(`zerver/openapi/markdown_extension.py`). To use this extension, one
-writes a Markdown file block that looks something like this:
+curl; we may add more in the future. Every endpoint should have
+Python and curl documentation; JavaScript is optional as we don't
+consider that API library to be fully supported.
+
+The examples are defined using a special Markdown extension, see
+`zerver/openapi/markdown_extension.py`. Here's the Markdown file
+block that uses this in `api-doc-template.md`:
 
 ```md
 {start_tabs}
-{tab|python}
 
-{generate_code_example(python)|/messages/render:post|example}
+{generate_code_example(python)|API_ENDPOINT_NAME|example}
 
-{tab|js}
-...
+{generate_code_example(javascript)|API_ENDPOINT_NAME|example}
 
 {tab|curl}
 
-{generate_code_example(curl)|/messages/render:post|example}
+{generate_code_example(curl)|API_ENDPOINT_NAME|example}
 
 {end_tabs}
 ```
 
 In some cases, one wants to configure specific parameters to be
-included or excluded from the example `curl` requests for readability
+included or excluded from the example curl requests for readability
 reasons. One can do that using the `x-curl-examples-parameters`
-parameter.
+parameter in the OpenAPI data.
 
 #### Writing Python examples
 
 For the Python examples, you'll write the example in
 `zerver/openapi/python_examples.py`, and it'll be run and verified
-automatically in Zulip's automated test suite. The code there will
-look something like this:
+automatically in Zulip's automated test suite. The code for our
+example API endpoint looks like this:
 
 ```python
 @openapi_test_function('/messages/render:post')
@@ -164,47 +185,53 @@ API client by copy-pasting from the website; it's easy to make typos
 and other mistakes where variables are defined outside the tested
 block, and the tests are not foolproof.
 
-The code that renders `/api` pages will extract the block between the
-`# {code_example|start}` and `# {code_example|end}` comments, and
-substitute it in place of
-`{generate_code_example(python)|/messages/render:post|example}`
-wherever that string appears in the API documentation.
+The code that renders API documentation pages will extract the block
+between the `# {code_example|start}` and `# {code_example|end}` comments,
+and substitute it in place of
+`{generate_code_example(python)|/messages/render:post|example}`. Note
+that here the `API_ENDPOINT_NAME` has been filled in with our example
+endpoint's information.
 
-- Additional Python imports can be added using the custom
-  `x-python-examples-extra-imports` field in the OpenAPI definition.
-- Endpoints that only administrators can use should be tagged with the
-  custom `x-requires-administrator` field in the OpenAPI definition.
+Additional Python imports can be added using the custom
+`x-python-examples-extra-imports` field in the OpenAPI definition.
 
 ### Parameters
 
 We have a separate Markdown extension to document the parameters that
-an API endpoint supports. You'll see this in files like
-`api_docs/render-message.md` via the following Markdown
-directive (implemented in
-`zerver/lib/markdown/api_arguments_table_generator.py`):
+an API endpoint supports. Implemented in
+`zerver/lib/markdown/api_arguments_table_generator.py`, you can see
+this in `api-doc-template.md` after the **Parameters** header:
 
-```md
-{generate_api_arguments_table|zulip.yaml|/messages/render:post}
+```
+{generate_api_arguments_table|zulip.yaml|API_ENDPOINT_NAME}
 ```
 
-Just as in the usage examples, the `/messages/render` key must match a
-URL definition in `zerver/openapi/zulip.yaml`, and that URL definition
-must have a `post` HTTP method defined.
+This generates the information from the endpoint's parameter
+definition in the OpenAPI data.
 
 Additional content that you'd like to appear in the parameter
 description area can be declared using the custom
 `x-parameter-description` field in the OpenAPI definition.
 
-### Displaying example payloads/responses
+### Response with examples
 
-If you've already followed the steps in the [Usage examples](#usage-examples)
-section, this part should be fairly trivial.
+Similar to the parameters section above, there is a separate Markdown
+extension to document the endpoint's return values and generate the
+example response(s) from the OpenAPI data. Implemented in
+`zerver/lib/markdown/api_return_values_table_generator.py`, you can
+see this in after the **Response** header in `api-doc-template.md`:
 
-You can use the following Markdown directive to render all the fixtures
-defined in the OpenAPI `zulip.yaml` for a given endpoint
+```
+{generate_return_values_table|zulip.yaml|API_ENDPOINT_NAME}
+```
 
-```md
-{generate_code_example|/messages/render:post|fixture}
+To generate the example responses from the OpenAPI data, we again
+use the special Markdown extension from the **Usage examples**
+discussed above, except with the `fixture` argument instead of the
+`example` argument:
+
+```
+{generate_code_example|API_ENDPOINT_NAME|fixture}
 ```
 
 Additional content that you'd like to appear in the responses part of

@@ -453,7 +453,10 @@ def update_realm_user_settings_defaults(
     desktop_icon_count_display: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
     ),
-    realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    realm_name_in_email_notifications_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
+        default=None,
+    ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_drafts_synchronization: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -484,16 +487,4 @@ def update_realm_user_settings_defaults(
         if v is not None and getattr(realm_user_default, k) != v:
             do_set_realm_user_default_setting(realm_user_default, k, v, acting_user=user_profile)
 
-    # TODO: Extract `ignored_parameters_unsupported` to be a common feature of the REQ framework.
-    from zerver.lib.request import RequestNotes
-
-    request_notes = RequestNotes.get_notes(request)
-    for req_var in request.POST:
-        if req_var not in request_notes.processed_parameters:
-            request_notes.ignored_parameters.add(req_var)
-
-    result: Dict[str, Any] = {}
-    if len(request_notes.ignored_parameters) > 0:
-        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
-
-    return json_success(request, data=result)
+    return json_success(request)

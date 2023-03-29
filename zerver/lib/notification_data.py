@@ -4,7 +4,7 @@ from typing import Any, Collection, Dict, List, Optional, Set
 
 from zerver.lib.mention import MentionData
 from zerver.lib.user_groups import get_user_group_direct_member_ids
-from zerver.models import NotificationTriggers, UserGroup, UserProfile
+from zerver.models import NotificationTriggers, UserGroup, UserProfile, UserTopic
 
 
 @dataclass
@@ -176,15 +176,18 @@ class UserMessageNotificationsData:
 
 def user_allows_notifications_in_StreamTopic(
     stream_is_muted: bool,
-    topic_is_muted: bool,
+    visibility_policy: int,
     stream_specific_setting: Optional[bool],
     global_setting: bool,
 ) -> bool:
     """
-    Captures the hierarchy of notification settings, where muting is considered first, followed
-    by stream-specific settings, and the global-setting in the UserProfile is the fallback.
+    Captures the hierarchy of notification settings, where visibility policy is considered first,
+    followed by stream-specific settings, and the global-setting in the UserProfile is the fallback.
     """
-    if stream_is_muted or topic_is_muted:
+    if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
+        return False
+
+    if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
         return False
 
     if stream_specific_setting is not None:

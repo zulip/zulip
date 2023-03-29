@@ -9,7 +9,7 @@
                             <label for="full_name" class="title inline-block">{{t "Full name" }}</label>
                             <div class="alert-notification full-name-status"></div>
                             <div id="full_name_input_container" {{#unless user_can_change_name}}class="disabled_setting_tooltip"{{/unless}}>
-                                <input id="full_name" name="full_name" type="text" value="{{ page_params.full_name }}" {{#unless user_can_change_name}}disabled="disabled"{{/unless}} maxlength="60" />
+                                <input id="full_name" name="full_name" class="settings_text_input" type="text" value="{{ page_params.full_name }}" {{#unless user_can_change_name}}disabled="disabled"{{/unless}} maxlength="60" />
                             </div>
                         </div>
                     </div>

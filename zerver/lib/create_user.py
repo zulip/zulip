@@ -161,6 +161,7 @@ def create_user(
     source_profile: Optional[UserProfile] = None,
     force_id: Optional[int] = None,
     force_date_joined: Optional[datetime] = None,
+    create_personal_recipient: bool = True,
     enable_marketing_emails: Optional[bool] = None,
     email_address_visibility: Optional[int] = None,
 ) -> UserProfile:
@@ -226,6 +227,9 @@ def create_user(
         # a User ID, which isn't generated until the .save() above.
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
+
+    if not create_personal_recipient:
+        return user_profile
 
     recipient = Recipient.objects.create(type_id=user_profile.id, type=Recipient.PERSONAL)
     user_profile.recipient = recipient

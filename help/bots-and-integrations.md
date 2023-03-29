@@ -14,7 +14,7 @@ A bot that sends content to or from another product is often called an
 Zulip natively supports integrations with over one hundred products, and with
 almost a thousand more through Zapier and IFTTT. If you're looking to add an
 integration with an existing product, see our
-[list of integrations](/integrations), along with those of
+[list of integrations](/integrations/), along with those of
 [Zapier](https://zapier.com/apps) and [IFTTT](https://ifttt.com/search).
 
 ## Anatomy of a bot
@@ -60,9 +60,9 @@ A few more details:
   impersonate yourself (e.g. write messages that come from your Zulip
   account), you'll need to use your **personal API key**.
 
-* **Outgoing webhook**: The bot can read private messages where the bot is a
+* **Outgoing webhook**: The bot can read direct messages where the bot is a
   participant, and stream messages where the bot is [mentioned](/help/mention-a-user-or-group). When the
-  bot is PM'd or mentioned, it POSTs the message content to a URL of your
+  bot is DM'd or mentioned, it POSTs the message content to a URL of your
   choice. The POST request format can be in a Zulip format or a
   Slack-compatible format.
 

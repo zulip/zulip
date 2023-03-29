@@ -223,7 +223,9 @@ class RateLimitTests(ZulipTestCase):
     def test_create_realm_rate_limiting(self) -> None:
         with self.settings(OPEN_REALM_CREATION=True):
             self.do_test_hit_ratelimits(
-                lambda: self.client_post("/new/", {"email": "new@zulip.com"}),
+                lambda: self.submit_realm_creation_form(
+                    email="new@zulip.com", realm_subdomain="zuliptest", realm_name="Zulip test"
+                ),
                 is_json=False,
             )
 
@@ -288,7 +290,9 @@ class RateLimitTests(ZulipTestCase):
             nonlocal request_count
             request_count += 1
             if request_count % 2 == 1:
-                return self.client_post("/new/", {"email": "new@zulip.com"})
+                return self.submit_realm_creation_form(
+                    email="new@zulip.com", realm_subdomain="zuliptest", realm_name="Zulip test"
+                )
             else:
                 return self.client_post("/accounts/find/", {"emails": "new@zulip.com"})
 
@@ -435,7 +439,7 @@ class RateLimitTests(ZulipTestCase):
             self.assertEqual(
                 m.output,
                 [
-                    f"WARNING:zilencer.auth:Remote server <RemoteZulipServer demo.example.com {server_uuid[:12]}> exceeded rate limits on domain api_by_remote_server"
+                    f"WARNING:zilencer.auth:Remote server demo.example.com {server_uuid[:12]} exceeded rate limits on domain api_by_remote_server"
                 ],
             )
         finally:

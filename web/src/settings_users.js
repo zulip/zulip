@@ -16,6 +16,7 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as presence from "./presence";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
@@ -40,7 +41,7 @@ function compare_a_b(a, b) {
     return -1;
 }
 
-function sort_email(a, b) {
+export function sort_email(a, b) {
     const email_a = a.delivery_email;
     const email_b = b.delivery_email;
 
@@ -87,7 +88,7 @@ function sort_last_active(a, b) {
     );
 }
 
-function sort_user_id(a, b) {
+export function sort_user_id(a, b) {
     return compare_a_b(a.user_id, b.user_id);
 }
 
@@ -229,6 +230,8 @@ function bot_info(bot_user_id) {
 
     info.is_current_user = false;
     info.can_modify = page_params.is_admin;
+    info.cannot_deactivate = bot_user.is_system_bot;
+    info.cannot_edit = bot_user.is_system_bot;
 
     // It's always safe to show the real email addresses for bot users
     info.display_email = bot_user.email;
@@ -273,7 +276,9 @@ function human_info(person) {
 let bot_list_widget;
 
 section.bots.create_table = () => {
-    loading.make_indicator($("#admin_page_bots_loading_indicator"), {text: "Loading..."});
+    loading.make_indicator($("#admin_page_bots_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
     const $bots_table = $("#admin_bots_table");
     $bots_table.hide();
     const bot_user_ids = people.get_bot_ids();
@@ -406,9 +411,11 @@ export function redraw_bots_list() {
 }
 
 function start_data_load() {
-    loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
+    loading.make_indicator($("#admin_page_users_loading_indicator"), {
+        text: $t({defaultMessage: "Loading…"}),
+    });
     loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {
-        text: "Loading...",
+        text: $t({defaultMessage: "Loading…"}),
     });
     $("#admin_deactivated_users_table").hide();
     $("#admin_users_table").hide();
@@ -482,6 +489,20 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
+            function set_email_field_visibility() {
+                const $send_email_checkbox = $("#dialog_widget_modal").find(".send_email");
+                const $email_field = $("#dialog_widget_modal").find(".email_field");
+
+                $email_field.hide();
+                $send_email_checkbox.on("change", () => {
+                    if ($send_email_checkbox.is(":checked")) {
+                        $email_field.show();
+                    } else {
+                        $email_field.hide();
+                    }
+                });
+            }
+
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
@@ -492,6 +513,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
+                post_render: set_email_field_visibility,
                 loading_spinner,
             });
         },
@@ -504,6 +526,7 @@ function handle_deactivation($tbody) {
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         const $row = $(e.target).closest(".user_row");
         const user_id = $row.data("user-id");
@@ -528,6 +551,7 @@ function handle_bot_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
 
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
@@ -569,6 +593,8 @@ function handle_reactivation($tbody) {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popovers.hide_all();
+
         // Go up the tree until we find the user row, then grab the email element
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
@@ -675,6 +701,8 @@ function handle_human_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
+        popovers.hide_all();
+
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         show_edit_user_info_modal(user_id, false);
     });
@@ -684,6 +712,8 @@ function handle_bot_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
+        popovers.hide_all();
+
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         settings_bots.show_edit_bot_info_modal(user_id, false);
     });

@@ -9,11 +9,11 @@
             {{#if deactivated}}
                 {{t "This stream has been deactivated" }}
             {{else if subscribed }}
-                {{#tr}}You subscribed to stream {stream_name}{{/tr}}
+                {{t "You subscribed to stream {stream_name}" }}
             {{else if just_unsubscribed }}
-                {{#tr}}You unsubscribed from stream {stream_name}{{/tr}}
+                {{t "You unsubscribed from stream {stream_name}" }}
             {{else}}
-                {{#tr}}You are not subscribed to stream {stream_name}{{/tr}}
+                {{t "You are not subscribed to stream {stream_name}" }}
             {{/if}}
         </span>
     {{/if}}

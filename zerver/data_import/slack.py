@@ -4,7 +4,6 @@ import posixpath
 import random
 import secrets
 import shutil
-import subprocess
 import zipfile
 from collections import defaultdict
 from email.headerregistry import Address
@@ -1101,7 +1100,7 @@ def process_message_files(
 
 def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str, str]:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
-    # 'upload_message_file'
+    # 'upload_message_attachment'
     s3_path = "/".join(
         [
             str(realm_id),
@@ -1418,7 +1417,6 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
     # Clean up the directory if we unpacked it ourselves.
     if original_path != slack_data_dir:
         rm_tree(slack_data_dir)
-    subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
     logging.info("Zulip data dump created at %s", output_dir)

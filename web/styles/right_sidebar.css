@@ -2,7 +2,7 @@
 $user_status_emoji_width: 24px;
 
 .right-sidebar {
-    a:hover {
+    & a:hover {
         text-decoration: none;
     }
 }
@@ -18,7 +18,7 @@ $user_status_emoji_width: 24px;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
 
-    li {
+    & li {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -37,7 +37,7 @@ $user_status_emoji_width: 24px;
             text-align: center;
             padding: 0 6px;
 
-            i {
+            & i {
                 padding-right: 0.25em;
                 display: inline-block;
                 width: 13px;
@@ -47,7 +47,7 @@ $user_status_emoji_width: 24px;
             &:hover {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0, 0%, 0%) !important;
+                color: hsl(0deg 0% 0%) !important;
             }
 
             /*
@@ -66,13 +66,13 @@ $user_status_emoji_width: 24px;
             .user-list-sidebar-menu-icon {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0, 0%, 53%);
+                color: hsl(0deg 0% 53%);
             }
         }
 
         &:hover,
         &.highlighted_user {
-            background-color: hsla(120, 12.3%, 71.4%, 0.38);
+            background-color: hsl(120deg 12.3% 71.4% / 38%);
         }
     }
 
@@ -83,16 +83,10 @@ $user_status_emoji_width: 24px;
         display: block;
     }
 
-    a {
+    & a {
         color: inherit;
         margin-left: 0;
     }
-}
-
-#invite-user-link i {
-    text-decoration: none;
-    margin-right: 3px;
-    margin-left: 5px;
 }
 
 .user-presence-link,
@@ -120,7 +114,7 @@ $user_status_emoji_width: 24px;
 .user-presence-link {
     width: calc(100% - $user_status_emoji_width);
 
-    .status_emoji {
+    .status-emoji {
         top: 9px;
     }
 }
@@ -146,7 +140,7 @@ $user_status_emoji_width: 24px;
             text-overflow: ellipsis;
         }
 
-        .status_emoji {
+        .status-emoji {
             line-height: 20px;
             top: -2px;
         }
@@ -177,7 +171,7 @@ $user_status_emoji_width: 24px;
         font-size: 90%;
     }
 
-    span.status-text:not(:empty) {
+    & span.status-text:not(:empty) {
         margin-top: -3px;
     }
 
@@ -199,12 +193,12 @@ $user_status_emoji_width: 24px;
     right: 0;
     text-align: center;
     vertical-align: middle;
-    border-left: 1px solid hsl(0, 0%, 88%);
+    border-left: 1px solid hsl(0deg 0% 88%);
 }
 
 #userlist-toggle-button {
     text-decoration: none;
-    color: hsl(0, 0%, 60%);
+    color: hsl(0deg 0% 60%);
     display: block;
     width: 45px;
     height: 19px;
@@ -273,15 +267,8 @@ $user_status_emoji_width: 24px;
     }
 }
 
-@media (width < $md_min) {
-    #user_search_section .user-list-filter {
-        /* input should be 100% - 6px padding x2 - 1px border x2. */
-        width: calc(100% - 12px - 2px);
-    }
-}
-
 #user_search_section {
-    input {
+    & input {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -315,7 +302,7 @@ $user_status_emoji_width: 24px;
         margin-bottom: 10px;
     }
 
-    hr {
+    & hr {
         width: 90%;
     }
 }

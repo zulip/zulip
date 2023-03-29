@@ -43,9 +43,7 @@ export function process_message(msg) {
 
 function get_sorted_topics() {
     // Sort all recent topics by last message time.
-    return new Map(
-        Array.from(topics.entries()).sort((a, b) => b[1].last_msg_id - a[1].last_msg_id),
-    );
+    return new Map([...topics.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id));
 }
 
 export function get() {

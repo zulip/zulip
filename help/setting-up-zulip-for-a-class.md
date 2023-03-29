@@ -44,7 +44,7 @@ ensure you can always move from our hosting to yours (and back).
 
 [install-self-hosted]: https://zulip.readthedocs.io/en/stable/production/install.html
 [export-cloud]: /help/export-your-organization
-[export-self-hosted]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html
+[export-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html
 
 ### Advantages of Zulip Cloud
 
@@ -69,7 +69,7 @@ ensure you can always move from our hosting to yours (and back).
   European Union), self-hosting is the option for you.
 * Customize Zulip for all your needs.
 
-[install-zulip]: https://zulip.readthedocs.io/en/latest/production/install.html
+[install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
 [back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
 [maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html
 
@@ -300,7 +300,7 @@ to [Getting started with Zulip][getting-started] and the guide to
 
 User groups allow you to [mention](/help/mention-a-user-or-group)
 multiple users at once,
-[notifying](/help/pm-mention-alert-notifications) them about a
+[notifying](/help/dm-mention-alert-notifications) them about a
 message. For example, you may find it useful to set up the following
 user groups:
 
@@ -321,7 +321,7 @@ more through [Zapier](/integrations/doc/zapier) and
 [IFTTT](/integrations/doc/ifttt).  Popular Zulip integrations include
 [GitHub](/integrations/doc/github) and
 [Twitter](/integrations/doc/twitter). The [integrations
-page](/integrations) has instructions for integrating with each
+page](/integrations/) has instructions for integrating with each
 product.
 
 ## Cleaning up at the end of a class

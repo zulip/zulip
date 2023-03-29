@@ -256,6 +256,27 @@ class NarrowBuilder:
         self.msg_id_column = msg_id_column
         self.realm = realm
         self.is_web_public_query = is_web_public_query
+        self.by_method_map = {
+            "has": self.by_has,
+            "in": self.by_in,
+            "is": self.by_is,
+            "stream": self.by_stream,
+            "streams": self.by_streams,
+            "topic": self.by_topic,
+            "sender": self.by_sender,
+            "near": self.by_near,
+            "id": self.by_id,
+            "search": self.by_search,
+            "pm-with": self.by_pm_with,
+            "group-pm-with": self.by_group_pm_with,
+            # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
+            # for documented search operators with dashes, also implicitly supported
+            # clients sending those same operators with underscores. We can remove
+            # support for the below operators when support for the associated dashed
+            # operator is removed.
+            "pm_with": self.by_pm_with,
+            "group_pm_with": self.by_group_pm_with,
+        }
 
     def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
         """
@@ -278,9 +299,9 @@ class NarrowBuilder:
 
         negated = term.get("negated", False)
 
-        method_name = "by_" + operator.replace("-", "_")
-        method = getattr(self, method_name, None)
-        if method is None:
+        if operator in self.by_method_map:
+            method = self.by_method_map[operator]
+        else:
             raise BadNarrowOperatorError("unknown operator " + operator)
 
         if negated:

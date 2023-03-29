@@ -42,7 +42,7 @@ the development environment][authentication-dev-server].
   - The main Django/Tornado server processes are run on top of
     Django's [manage.py runserver][django-runserver], which will
     automatically restart them when you save changes to Python code
-    they use. You can watch this happen in the `run-dev.py` console
+    they use. You can watch this happen in the `run-dev` console
     to make sure the backend has reloaded.
   - The Python queue workers will also automatically restart when you
     save changes, as long as they haven't crashed (which can happen if
@@ -51,7 +51,7 @@ the development environment][authentication-dev-server].
   to use the [Django migrations
   process](../subsystems/schema-migrations.md); see also the [new
   feature tutorial][new-feature-tutorial] for an example.
-- While testing server changes, it's helpful to watch the `run-dev.py`
+- While testing server changes, it's helpful to watch the `run-dev`
   console output, which will show tracebacks for any 500 errors your
   Zulip development server encounters (which are probably caused by
   bugs in your code).
@@ -63,7 +63,7 @@ the development environment][authentication-dev-server].
 
 ## Web
 
-- Once the development server (`run-dev.py`) is running, you can visit
+- Once the development server (`run-dev`) is running, you can visit
   <http://localhost:9991/> in your browser.
 - By default, the development server homepage just shows a list of the
   users that exist on the server and you can log in as any of them by

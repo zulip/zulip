@@ -52,7 +52,7 @@ export function close() {
 export function zoom_out() {
     zoomed = false;
 
-    const stream_ids = Array.from(active_widgets.keys());
+    const stream_ids = [...active_widgets.keys()];
 
     if (stream_ids.length !== 1) {
         blueslip.error("Unexpected number of topic lists to zoom out.");
@@ -198,7 +198,7 @@ export function clear_topic_search(e) {
 
         // Since this changes the contents of the search input, we
         // need to rerender the topic list.
-        const stream_ids = Array.from(active_widgets.keys());
+        const stream_ids = [...active_widgets.keys()];
 
         const stream_id = stream_ids[0];
         const widget = active_widgets.get(stream_id);
@@ -209,7 +209,7 @@ export function clear_topic_search(e) {
 }
 
 export function active_stream_id() {
-    const stream_ids = Array.from(active_widgets.keys());
+    const stream_ids = [...active_widgets.keys()];
 
     if (stream_ids.length !== 1) {
         return undefined;
@@ -219,7 +219,7 @@ export function active_stream_id() {
 }
 
 export function get_stream_li() {
-    const widgets = Array.from(active_widgets.values());
+    const widgets = [...active_widgets.values()];
 
     if (widgets.length !== 1) {
         return undefined;

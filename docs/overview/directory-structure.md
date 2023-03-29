@@ -66,7 +66,7 @@ templating systems.
 
 - `web/third/` Third-party JavaScript and CSS that has been vendored.
 
-- `node_modules/` Third-party JavaScript installed via `yarn`.
+- `node_modules/` Third-party JavaScript installed via pnpm.
 
 - `web/shared/icons/` Icons placed in this directory are compiled
   into an icon font.

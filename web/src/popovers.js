@@ -39,6 +39,7 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as user_profile from "./user_profile";
@@ -247,14 +248,15 @@ function render_user_info_popover(
 
     let date_joined;
     if (spectator_view) {
-        const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
-        date_joined = dateFormat.format(parseISO(user.date_joined));
+        date_joined = timerender.get_localized_date_or_time_for_format(
+            parseISO(user.date_joined),
+            "dayofyear_year",
+        );
     }
     // Filtering out only those profile fields that can be display in the popover and are not empty.
-    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
     const field_types = page_params.custom_profile_field_types;
     const display_profile_fields = page_params.custom_profile_fields
-        .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types, dateFormat))
+        .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types))
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
     const args = {
@@ -488,7 +490,7 @@ function show_user_group_info_popover(element, group, message) {
         const args = {
             group_name: group.name,
             group_description: group.description,
-            members: sort_group_members(fetch_group_members(Array.from(group.members))),
+            members: sort_group_members(fetch_group_members([...group.members])),
         };
         $elt.popover({
             placement: calculate_info_popover_placement(popover_size, $elt),
@@ -554,11 +556,6 @@ export function focus_first_action_popover_item() {
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_action_menu_menu_items();
     focus_first_popover_item($items);
-}
-
-export function actions_menu_handle_keyboard(key) {
-    const $items = get_action_menu_menu_items();
-    popover_items_handle_keyboard(key, $items);
 }
 
 export function message_info_popped() {
@@ -915,7 +912,7 @@ export function register_click_handlers() {
     // Clicking on one's own status emoji should open the user status modal.
     $("#user_presences").on(
         "click",
-        ".user_sidebar_entry_me .status_emoji",
+        ".user_sidebar_entry_me .status-emoji",
         open_user_status_modal,
     );
 
@@ -1139,9 +1136,6 @@ export function hide_all_except_sidebars(opts) {
     giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
-    stream_popover.hide_all_messages_popover();
-    stream_popover.hide_starred_messages_popover();
-    stream_popover.hide_drafts_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
 
@@ -1213,4 +1207,9 @@ export function compute_placement(
     }
 
     return placement;
+}
+
+export function initialize() {
+    overlays.register_pre_open_hook(hide_all);
+    overlays.register_pre_close_hook(hide_all);
 }

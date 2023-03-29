@@ -31,7 +31,7 @@ to a stream][configure-invites].
       To add users in bulk, you can copy members from an
       existing stream or [user group](/help/user-groups).
 
-{!automated-pm-stream-subscription.md!}
+{!automated-dm-stream-subscription.md!}
 
 ### Mentioning a user in the compose box (alternate method)
 
@@ -87,6 +87,29 @@ This method is useful if you need to remove one user from multiple streams.
    to remove the user from.
 
 1. Click the **Unsubscribe** button in that row.
+
+{end_tabs}
+
+## Configure who can remove users
+
+{!admin-only.md!}
+
+Organization administrators can configure who can remove other users from a
+public stream. For private streams, administrators must be subscribed to the
+stream to configure this setting.
+
+{start_tabs}
+
+{relative|stream|all}
+
+1. Select a stream.
+
+{!select-stream-view-general.md!}
+
+1. Under **Stream permissions**, configure
+   **Who can unsubscribe others from this stream?**
+
+{!save-changes.md!}
 
 {end_tabs}
 

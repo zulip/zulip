@@ -2,7 +2,7 @@
 
 Welcome! Zulip's documentation is split into four parts:
 
-- [Help center documentation](https://zulip.com/help), for users and
+- [Help center documentation](https://zulip.com/help/), for users and
   administrators of Zulip organizations.
 - [Installation documentation](production/install.md), for
   installing and maintaining a production self-hosted Zulip installation.
@@ -33,7 +33,8 @@ Contents:
 - {ref}`Code testing <code-testing>`
 - {ref}`Subsystem documentation <subsystem-documentation>`
 - {ref}`Writing documentation <writing-documentation>`
-- {ref}`Translating <translating>`
+- {ref}`Translating Zulip <translating>`
+- {ref}`Outreach programs <outreach>`
 
 (overview)=
 
@@ -42,6 +43,7 @@ Contents:
 maxdepth: 3
 ---
 
+Zulip homepage <https://zulip.com/>
 overview/index
 ```
 

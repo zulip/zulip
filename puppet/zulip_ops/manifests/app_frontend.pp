@@ -4,6 +4,7 @@ class zulip_ops::app_frontend {
   include zulip::profile::rabbitmq
   include zulip::postfix_localmail
   include zulip::static_asset_compiler
+  include zulip::hooks::sentry
   include zulip_ops::app_frontend_monitoring
   $app_packages = [# Needed for the ssh tunnel to the redis server
     'autossh',

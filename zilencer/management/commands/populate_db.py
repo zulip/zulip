@@ -2,7 +2,7 @@ import itertools
 import os
 import random
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 import bmemcached
@@ -16,7 +16,6 @@ from django.db import connection
 from django.db.models import F
 from django.db.models.signals import post_delete
 from django.utils.timezone import now as timezone_now
-from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.actions.create_realm import do_create_realm
@@ -28,6 +27,7 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
@@ -37,7 +37,6 @@ from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.types import ProfileFieldData
-from zerver.lib.user_groups import create_user_group
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -73,7 +72,7 @@ from zerver.models import (
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
-# from `run-dev.py`.
+# from `run-dev`.
 default_cache = settings.CACHES["default"]
 settings.CACHES["default"] = {
     "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -1139,7 +1138,7 @@ def generate_and_send_messages(
 def send_messages(messages: List[Message]) -> None:
     # We disable USING_RABBITMQ here, so that deferred work is
     # executed in do_send_message_messages, rather than being
-    # queued.  This is important, because otherwise, if run-dev.py
+    # queued.  This is important, because otherwise, if run-dev
     # wasn't running when populate_db was run, a developer can end
     # up with queued events that reference objects from a previous
     # life of the database, which naturally throws exceptions.
@@ -1223,7 +1222,7 @@ def choose_date_sent(
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
 
     if num_messages < amount_in_first_chunk:
-        spoofed_date = timezone_now() - timezone_timedelta(days=oldest_message_days)
+        spoofed_date = timezone_now() - timedelta(days=oldest_message_days)
         num_days_for_first_chunk = min(oldest_message_days - 2, 1)
         interval_size = num_days_for_first_chunk * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
@@ -1231,13 +1230,13 @@ def choose_date_sent(
 
     else:
         # We're in the last 20% of messages, so distribute them over the last 24 hours:
-        spoofed_date = timezone_now() - timezone_timedelta(days=1)
+        spoofed_date = timezone_now() - timedelta(days=1)
         interval_size = 24 * 60 * 60 / amount_in_second_chunk
         lower_bound = interval_size * (num_messages - amount_in_first_chunk)
         upper_bound = interval_size * (num_messages - amount_in_first_chunk + 1)
 
     offset_seconds = random.uniform(lower_bound, upper_bound)
-    spoofed_date += timezone_timedelta(seconds=offset_seconds)
+    spoofed_date += timedelta(seconds=offset_seconds)
 
     return spoofed_date
 
@@ -1248,6 +1247,6 @@ def create_user_groups() -> None:
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
-    create_user_group(
+    create_user_group_in_database(
         "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
     )

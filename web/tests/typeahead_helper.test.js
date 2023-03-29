@@ -18,6 +18,7 @@ const stream_data = zrequire("stream_data");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
+const util = zrequire("util");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
@@ -419,7 +420,7 @@ test("sort_recipients all mention", () => {
     assert.equal(all_obj.idx, 0);
 
     // Test person email is "all" or "everyone"
-    const test_objs = matches.concat([all_obj]);
+    const test_objs = [...matches, all_obj];
 
     const results = th.sort_recipients({
         users: test_objs,
@@ -481,7 +482,7 @@ test("sort_recipients pm counts", () => {
 });
 
 test("sort_recipients dup bots", () => {
-    const dup_objects = matches.concat([a_bot]);
+    const dup_objects = [...matches, a_bot];
 
     const recipients = th.sort_recipients({
         users: dup_objects,
@@ -582,7 +583,7 @@ test("sort broadcast mentions for stream message type", () => {
     // Reverse the list to test actual sorting
     // and ensure test coverage for the defensive
     // code.  Also, add in some people users.
-    const test_objs = Array.from(ct.broadcast_mentions()).reverse();
+    const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
 
@@ -603,7 +604,7 @@ test("sort broadcast mentions for private message type", () => {
         ["all", "everyone"],
     );
 
-    const test_objs = Array.from(ct.broadcast_mentions()).reverse();
+    const test_objs = [...ct.broadcast_mentions()].reverse();
     test_objs.unshift(zman);
     test_objs.push(a_user);
 
@@ -815,4 +816,23 @@ test("sort_slash_commands", () => {
         {name: "poll"},
         {name: "test"},
     ]);
+});
+
+test("compare_language", () => {
+    assert.ok(th.compare_language("javascript", "haskell") < 0);
+    assert.ok(th.compare_language("haskell", "javascript") > 0);
+
+    // "abap" and "amdgpu" both have priority = 0 at this time, so there is a tie.
+    // Alphabetical order should be used to break that tie.
+    assert.equal(th.compare_language("abap", "amdgpu"), util.strcmp("abap", "amdgpu"));
+
+    // Test with languages that aren't in the generated pygments data.
+    assert.equal(actual_pygments_data.langs.custom_a, undefined);
+    assert.equal(actual_pygments_data.langs.custom_b, undefined);
+    // Since custom_a has no popularity score, it gets sorted behind python.
+    assert.equal(th.compare_language("custom_a", "python"), 1);
+    assert.equal(th.compare_language("python", "custom_a"), -1);
+    // Whenever there is a tie, even in the case neither have a popularity
+    // score, then alphabetical order is used to break the tie.
+    assert.equal(th.compare_language("custom_a", "custom_b"), util.strcmp("custom_a", "custom_b"));
 });

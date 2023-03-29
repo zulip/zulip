@@ -3,7 +3,7 @@ publicly accessible [Zulip Cloud][zulip-cloud] organizations an opportunity to
 be listed on the [Zulip website](https://zulip.com). It's a way for [open-source
 projects](https://zulip.com/for/open-source/), [research
 communities](https://zulip.com/for/research/), and
-[others](https://zulip.com/for/communities) to advertise their Zulip community
+[others](https://zulip.com/for/communities/) to advertise their Zulip community
 and support the Zulip project.
 
 The directory will display your community's name, logo, and a link to you Zulip

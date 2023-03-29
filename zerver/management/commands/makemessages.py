@@ -53,11 +53,11 @@ strip_whitespace_left = re.compile(
 
 regexes = [
     r"{{#tr}}([\s\S]*?)(?:{{/tr}}|{{#\*inline )",  # '.' doesn't match '\n' by default
-    r'{{\s*t "(.*?)"\W*}}',
-    r"{{\s*t '(.*?)'\W*}}",
-    r'\(t "(.*?)"\)',
-    r'=\(t "(.*?)"\)(?=[^{]*}})',
-    r"=\(t '(.*?)'\)(?=[^{]*}})",
+    r'{{\s*t "([\s\S]*?)"\W*}}',
+    r"{{\s*t '([\s\S]*?)'\W*}}",
+    r'\(t "([\s\S]*?)"\)',
+    r'=\(t "([\s\S]*?)"\)(?=[^{]*}})',
+    r"=\(t '([\s\S]*?)'\)(?=[^{]*}})",
 ]
 tags = [
     ("err_", "error"),
@@ -277,9 +277,6 @@ class Command(makemessages.Command):
             except (OSError, ValueError):
                 old_strings = {}
 
-            new_strings = {
-                k: v
-                for k, v in self.get_new_strings(old_strings, translation_strings, locale).items()
-            }
+            new_strings = self.get_new_strings(old_strings, translation_strings, locale)
             with open(output_path, "w") as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)

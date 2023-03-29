@@ -292,7 +292,7 @@ function filter_user_ids(user_filter_text, user_ids) {
 
     const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
 
-    return Array.from(user_id_dict.keys());
+    return [...user_id_dict.keys()];
 }
 
 function get_filtered_user_id_list(user_filter_text) {

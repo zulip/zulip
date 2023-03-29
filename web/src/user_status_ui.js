@@ -18,11 +18,11 @@ export function set_selected_emoji_info(emoji_info) {
     rebuild_status_emoji_selector_ui(selected_emoji_info);
 }
 export function input_field() {
-    return $("#set_user_status_modal input.user_status");
+    return $("#set-user-status-modal input.user-status");
 }
 
 export function submit_button() {
-    return $("#set_user_status_modal .dialog_submit_button");
+    return $("#set-user-status-modal .dialog_submit_button");
 }
 
 export function open_user_status_modal() {
@@ -37,7 +37,7 @@ export function open_user_status_modal() {
         html_heading: $t_html({defaultMessage: "Set status"}),
         html_body: rendered_set_status_overlay,
         html_submit_button: $t_html({defaultMessage: "Save"}),
-        id: "set_user_status_modal",
+        id: "set-user-status-modal",
         on_click: submit_new_status,
         post_render: user_status_post_render,
         on_shown() {
@@ -109,7 +109,7 @@ export function clear_message() {
 }
 
 export function user_status_picker_open() {
-    return $("#set_user_status_modal").length !== 0;
+    return $("#set-user-status-modal").length !== 0;
 }
 
 function rebuild_status_emoji_selector_ui(selected_emoji_info) {
@@ -118,7 +118,7 @@ function rebuild_status_emoji_selector_ui(selected_emoji_info) {
         selected_emoji = selected_emoji_info;
     }
     const rendered_status_emoji_selector = render_status_emoji_selector({selected_emoji});
-    $("#set_user_status_modal .status_emoji_wrapper").html(rendered_status_emoji_selector);
+    $("#set-user-status-modal .status-emoji-wrapper").html(rendered_status_emoji_selector);
 }
 
 function user_status_post_render() {
@@ -133,10 +133,10 @@ function user_status_post_render() {
     const $button = submit_button();
     $button.prop("disabled", true);
 
-    $("#set_user_status_modal .user-status-value").on("click", (event) => {
+    $("#set-user-status-modal .user-status-value").on("click", (event) => {
         event.stopPropagation();
         const user_status_value = $(event.currentTarget).text().trim();
-        $("input.user_status").val(user_status_value);
+        $("input.user-status").val(user_status_value);
 
         const emoji_info = default_status_messages_and_emoji_info.find(
             (status) => status.status_text === user_status_value,

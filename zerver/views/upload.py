@@ -29,7 +29,7 @@ from zerver.lib.response import json_success
 from zerver.lib.upload import (
     check_upload_within_quota,
     get_public_upload_root_url,
-    upload_message_image_from_request,
+    upload_message_attachment_from_request,
 )
 from zerver.lib.upload.base import INLINE_MIME_TYPES
 from zerver.lib.upload.local import assert_is_local_storage_path
@@ -300,5 +300,5 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         )
     check_upload_within_quota(user_profile.realm, file_size)
 
-    uri = upload_message_image_from_request(user_file, user_profile, file_size)
+    uri = upload_message_attachment_from_request(user_file, user_profile, file_size)
     return json_success(request, data={"uri": uri})

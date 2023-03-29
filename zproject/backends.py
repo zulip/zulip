@@ -97,6 +97,7 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     PasswordTooWeakError,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     UserProfile,
@@ -882,11 +883,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         username: str,
         password: str,
         realm: Realm,
+        prereg_realm: Optional[PreregistrationRealm] = None,
         prereg_user: Optional[PreregistrationUser] = None,
         return_data: Optional[Dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         self._realm = realm
         self._prereg_user = prereg_user
+        self._prereg_realm = prereg_realm
         if not ldap_auth_enabled(realm):
             return None
 
@@ -992,17 +995,19 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         opts: Dict[str, Any] = {}
         if self._prereg_user:
             invited_as = self._prereg_user.invited_as
-            realm_creation = self._prereg_user.realm_creation
             opts["prereg_user"] = self._prereg_user
 
             opts["role"] = invited_as
-            if realm_creation:
-                opts["role"] = UserProfile.ROLE_REALM_OWNER
-
-            opts["realm_creation"] = realm_creation
+            opts["realm_creation"] = False
             # TODO: Ideally, we should add a mechanism for the user
             # entering which default stream groups they've selected in
             # the LDAP flow.
+            opts["default_stream_groups"] = []
+
+        if self._prereg_realm:
+            opts["prereg_realm"] = self._prereg_realm
+            opts["realm_creation"] = True
+            opts["role"] = UserProfile.ROLE_REALM_OWNER
             opts["default_stream_groups"] = []
 
         user_profile = do_create_user(

@@ -51,7 +51,7 @@ if settings.BILLING_ENABLED:
 
 # We don't mark this error for translation, because it's displayed
 # only to MIT users.
-MIT_VALIDATION_ERROR = (
+MIT_VALIDATION_ERROR = Markup(
     "That user does not exist at MIT or is a"
     ' <a href="https://ist.mit.edu/email-lists">mailing list</a>.'
     " If you want to sign up an alias for Zulip,"
@@ -76,7 +76,7 @@ def email_is_not_mit_mailing_list(email: str) -> None:
             if e.rcode == DNS.Status.NXDOMAIN:
                 # This error is Markup only because 1. it needs to render HTML
                 # 2. It's not formatted with any user input.
-                raise ValidationError(Markup(MIT_VALIDATION_ERROR))
+                raise ValidationError(MIT_VALIDATION_ERROR)
             else:
                 raise AssertionError("Unexpected DNS error")
 
@@ -105,14 +105,59 @@ def check_subdomain_available(subdomain: str, allow_reserved_subdomain: bool = F
         raise ValidationError(error_strings["unavailable"])
 
 
-class RegistrationForm(forms.Form):
+def email_not_system_bot(email: str) -> None:
+    if is_cross_realm_bot_email(email):
+        msg = email_reserved_for_system_bots_error(email)
+        code = msg
+        raise ValidationError(
+            msg,
+            code=code,
+            params=dict(deactivated=False),
+        )
+
+
+def email_is_not_disposable(email: str) -> None:
+    try:
+        domain = Address(addr_spec=email).domain
+    except (HeaderParseError, ValueError):
+        raise ValidationError(_("Please use your real email address."))
+
+    if is_disposable_domain(domain):
+        raise ValidationError(_("Please use your real email address."))
+
+
+class RealmDetailsForm(forms.Form):
+    realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
+    realm_type = forms.TypedChoiceField(
+        coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
+    )
+    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.realm_creation = kwargs["realm_creation"]
+        del kwargs["realm_creation"]
+
+        super().__init__(*args, **kwargs)
+
+    def clean_realm_subdomain(self) -> str:
+        if not self.realm_creation:
+            # This field is only used if realm_creation
+            return ""
+
+        subdomain = self.cleaned_data["realm_subdomain"]
+        if "realm_in_root_domain" in self.data:
+            subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+
+        check_subdomain_available(subdomain)
+        return subdomain
+
+
+class RegistrationForm(RealmDetailsForm):
     MAX_PASSWORD_LENGTH = 100
     full_name = forms.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
-    realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
-    realm_type = forms.IntegerField(required=False)
     is_demo_organization = forms.BooleanField(required=False)
     enable_marketing_emails = forms.BooleanField(required=False)
     email_address_visibility = forms.TypedChoiceField(
@@ -129,13 +174,17 @@ class RegistrationForm(forms.Form):
         # Since the superclass doesn't except random extra kwargs, we
         # remove it from the kwargs dict before initializing.
         self.realm_creation = kwargs["realm_creation"]
-        del kwargs["realm_creation"]
 
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE_VERSION is not None:
             self.fields["terms"] = forms.BooleanField(required=True)
         self.fields["realm_name"] = forms.CharField(
             max_length=Realm.MAX_REALM_NAME_LENGTH, required=self.realm_creation
+        )
+        self.fields["realm_type"] = forms.TypedChoiceField(
+            coerce=int,
+            choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+            required=self.realm_creation,
         )
 
     def clean_full_name(self) -> str:
@@ -152,18 +201,6 @@ class RegistrationForm(forms.Form):
             raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
 
         return password
-
-    def clean_realm_subdomain(self) -> str:
-        if not self.realm_creation:
-            # This field is only used if realm_creation
-            return ""
-
-        subdomain = self.cleaned_data["realm_subdomain"]
-        if "realm_in_root_domain" in self.data:
-            subdomain = Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
-
-        check_subdomain_available(subdomain)
-        return subdomain
 
 
 class ToSForm(forms.Form):
@@ -238,30 +275,13 @@ class HomepageForm(forms.Form):
         return email
 
 
-def email_not_system_bot(email: str) -> None:
-    if is_cross_realm_bot_email(email):
-        msg = email_reserved_for_system_bots_error(email)
-        code = msg
-        raise ValidationError(
-            msg,
-            code=code,
-            params=dict(deactivated=False),
-        )
-
-
-def email_is_not_disposable(email: str) -> None:
-    try:
-        domain = Address(addr_spec=email).domain
-    except (HeaderParseError, ValueError):
-        raise ValidationError(_("Please use your real email address."))
-
-    if is_disposable_domain(domain):
-        raise ValidationError(_("Please use your real email address."))
-
-
-class RealmCreationForm(forms.Form):
+class RealmCreationForm(RealmDetailsForm):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[email_not_system_bot, email_is_not_disposable])
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        kwargs["realm_creation"] = True
+        super().__init__(*args, **kwargs)
 
 
 class LoggingSetPasswordForm(SetPasswordForm):

@@ -146,7 +146,7 @@ export function render_emoji(item) {
 
 export function sorter(query, objs, get_item) {
     const results = typeahead.triage(query, objs, get_item);
-    return results.matches.concat(results.rest);
+    return [...results.matches, ...results.rest];
 }
 
 export function compare_by_pms(user_a, user_b) {
@@ -259,12 +259,65 @@ export function sort_people_for_relevance(objs, current_stream_name, current_top
     return objs;
 }
 
-export function compare_by_popularity(lang_a, lang_b) {
-    const diff = pygments_data.langs[lang_b].priority - pygments_data.langs[lang_a].priority;
-    if (diff !== 0) {
-        return diff;
+function compare_language_by_popularity(lang_a, lang_b) {
+    const lang_a_data = pygments_data.langs[lang_a];
+    const lang_b_data = pygments_data.langs[lang_b];
+
+    // If a "language" doesn't have a popularity score, that "language" is
+    // probably a custom language created in the Code Playground feature. That
+    // custom language might not even be an actual programming language. Some
+    // users simply use the Code Playground feature as a shortcut mechanism.
+    // Like the report in issue #23935 is suggesting. Also, because Code
+    // Playground doesn't actually allow custom syntax highlighting, any custom
+    // languages are probably more likely to be attempts to create a shortcut
+    // mechanism. In that case, they're more like custom keywords rather than
+    // languages.
+    //
+    // We need to make a choice for the ordering of those custom languages when
+    // compared with languages available in pygment. It might come down to
+    // individual usage which one is more valuable.
+    //
+    // If most of the time a user uses code block for syntax highlighting, then
+    // sorting custom language later on makes sense. If most of the time a user
+    // uses a code block as a shortcut mechanism, then they might want custom
+    // language earlier on.
+    //
+    // At this time, we chose to sort custom languages after pygment languages
+    // due to the following reasons:
+    // - Code blocks are originally used to display code with syntax
+    //   highlighting. Users can add Code Playground custom language, without
+    //   having the autocomplete ordering they're used to being affected.
+    // - Users can design their custom language name to be more unique or using
+    //   characters such that they appear faster in autocomplete. Therefore,
+    //   they have a way to purposely affect the system to suit their
+    //   autocomplete ordering preference.
+    //
+    // If in the future we find that many users have a need for a configurable
+    // setting, then we could create one. But for now, sorting after pygment
+    // languages seem sensible.
+    if (!lang_a_data && !lang_b_data) {
+        return 0; // Neither have popularity, so they tie.
+    } else if (!lang_a_data) {
+        return 1; // lang_a doesn't have popularity, so sort a after b.
+    } else if (!lang_b_data) {
+        return -1; // lang_b doesn't have popularity, so sort a before b.
     }
-    return util.strcmp(lang_a, lang_b);
+
+    return lang_b_data.priority - lang_a_data.priority;
+}
+
+// This function compares two languages first by their popularity, then if
+// there is a tie on popularity, then compare alphabetically to break the tie.
+export function compare_language(lang_a, lang_b) {
+    let diff = compare_language_by_popularity(lang_a, lang_b);
+
+    // Check to see if there is a tie. If there is, then use alphabetical order
+    // to break the tie.
+    if (diff === 0) {
+        diff = util.strcmp(lang_a, lang_b);
+    }
+
+    return diff;
 }
 
 function retain_unique_language_aliases(matches) {
@@ -289,7 +342,7 @@ export function sort_languages(matches, query) {
     const results = typeahead.triage(query, matches, (x) => x);
 
     // Languages that start with the query
-    results.matches = results.matches.sort(compare_by_popularity);
+    results.matches = results.matches.sort(compare_language);
 
     // Push exact matches to top.
     const match_index = results.matches.indexOf(query);
@@ -299,8 +352,8 @@ export function sort_languages(matches, query) {
     }
 
     // Languages that have the query somewhere in their name
-    results.rest = results.rest.sort(compare_by_popularity);
-    return retain_unique_language_aliases(results.matches.concat(results.rest));
+    results.rest = results.rest.sort(compare_language);
+    return retain_unique_language_aliases([...results.matches, ...results.rest]);
 }
 
 export function sort_recipients({
@@ -341,7 +394,7 @@ export function sort_recipients({
 
     for (const getter of getters) {
         if (items.length < max_num_items) {
-            items = items.concat(getter());
+            items = [...items, ...getter()];
         }
     }
 
@@ -365,7 +418,7 @@ export function sort_slash_commands(matches, query) {
 
     results.matches = results.matches.sort(slash_command_comparator);
     results.rest = results.rest.sort(slash_command_comparator);
-    return results.matches.concat(results.rest);
+    return [...results.matches, ...results.rest];
 }
 
 // Gives stream a score from 0 to 3 based on its activity
@@ -412,5 +465,5 @@ export function sort_streams(matches, query) {
     // Streams with names and descriptions that don't start with the query.
     desc_results.rest = desc_results.rest.sort(compare_by_activity);
 
-    return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
+    return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
 }

@@ -23,6 +23,11 @@ developers during daylight hours in North America (roughly between
 15:00 UTC and 1:00 UTC), but the sun never sets on the Zulip
 community. Most questions get a reply within minutes to a few hours.
 
+You can also [read conversations](https://chat.zulip.org/) in the community
+without creating an account. If you are evaluating using Zulip for your
+organization, check out these [tips](/try-zulip/) for exploring the product in
+action in the development community.
+
 <br/>
 # Community norms
 
@@ -226,12 +231,30 @@ This will search the full history of all public streams for `<your
 keyword(s)>`, including messages sent before you joined and messages
 on public streams you’re not subscribed to.
 
+## Linking to GitHub issues and pull requests
+
+We've set up [custom linkifiers](/help/add-a-custom-linkifier)
+so that it's easy to link to issues and pull requests in Zulip
+project repositories when composing a message or [starting a new
+topic](/help/starting-a-new-topic). Here are examples for linking
+to issue 1234 in the main Zulip project repositories:
+
+- [Server and web app][server-web-repository]: `#1234`
+- [Mobile client][mobile-repository]: `#M1234`
+- [Terminal client][terminal-repository]: `#T1234`
+- [Desktop client][desktop-repository]: `#D1234`
+
 ## New features are tested here
 
 We [continuously test out new features or ideas][release-lifecycle] on
 chat.zulip.org before rolling them out to Zulip Cloud or including
 them in a Zulip Server release (or deciding not to!). Please report in
-[#issues](https://chat.zulip.org/#narrow/stream/9-issues) anything you notice that seems broken! It’s likely you’ve
-found a bug in an upcoming feature.
+[#issues](https://chat.zulip.org/#narrow/stream/9-issues) anything you
+notice that seems broken! It’s likely you’ve found a bug in an upcoming
+feature.
 
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
+[server-web-repository]: https://github.com/zulip/zulip
+[mobile-repository]: https://github.com/zulip/zulip-mobile
+[terminal-repository]: https://github.com/zulip/zulip-terminal
+[desktop-repository]: https://github.com/zulip/zulip-desktop

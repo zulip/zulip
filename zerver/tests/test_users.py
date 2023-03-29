@@ -18,12 +18,14 @@ from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_settings import bulk_regenerate_api_keys, do_change_user_setting
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
     do_change_user_role,
     do_deactivate_user,
     do_delete_user,
+    do_delete_user_preserving_messages,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bulk_create import create_users
@@ -41,12 +43,11 @@ from zerver.lib.test_helpers import (
     cache_tries_captured,
     get_subscription,
     get_test_image_file,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
     simulated_empty_cache,
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.user_topics import add_topic_mute
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -63,6 +64,7 @@ from zerver.models import (
     UserGroupMembership,
     UserHotspot,
     UserProfile,
+    UserTopic,
     check_valid_user_ids,
     filter_to_valid_prereg_users,
     get_client,
@@ -300,7 +302,7 @@ class PermissionTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_api_hide_emails(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         user = self.example_user("hamlet")
         admin = self.example_user("iago")
@@ -789,7 +791,7 @@ class QueryCountTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
 
-        with self.assert_database_query_count(90):
+        with self.assert_database_query_count(88):
             with cache_tries_captured() as cache_tries:
                 with self.tornado_redirected_to_list(events, expected_num_events=11):
                     fred = do_create_user(
@@ -801,7 +803,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(cache_tries, 28)
+        self.assert_length(cache_tries, 26)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
         notifications = set()
@@ -921,7 +923,7 @@ class AdminCreateUserTest(ZulipTestCase):
                 short_name="DEPRECATED",
             ),
         )
-        self.assert_json_success(result)
+        self.assert_json_success(result, ignored_parameters=["short_name"])
 
         result = self.client_post(
             "/json/users",
@@ -1095,7 +1097,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(result[webhook_bot.email].email, webhook_bot.email)
 
     def test_get_accounts_for_email(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         def check_account_present_in_accounts(user: UserProfile, accounts: List[Accounts]) -> None:
             for account in accounts:
@@ -1139,7 +1141,7 @@ class UserProfileTest(ZulipTestCase):
             check_account_present_in_accounts(user, accounts)
 
     def test_get_source_profile(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         zulip_realm_id = get_realm("zulip").id
         iago = get_source_profile("iago@zulip.com", zulip_realm_id)
         assert iago is not None
@@ -1840,12 +1842,39 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.stream_push_user_ids, {hamlet.id})
 
+        # Now have Hamlet mute the stream and unmute the topic,
+        # which shouldn't omit him from stream_push_user_ids.
+        sub.is_muted = True
+        sub.save()
+
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info.stream_push_user_ids, {hamlet.id})
+
+        # Now unmute the stream and remove topic visibility_policy.
+        sub.is_muted = False
+        sub.save()
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, topic_name, visibility_policy=UserTopic.VisibilityPolicy.INHERIT
+        )
+
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
-        add_topic_mute(
-            user_profile=hamlet,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name=topic_name,
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
         info = get_recipient_info(
@@ -1979,7 +2008,7 @@ class RecipientInfoTest(ZulipTestCase):
 
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         self.login("cordelia")
 
         hamlet = self.example_user("hamlet")
@@ -2287,6 +2316,87 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(), 3)
 
         self.assertEqual(Message.objects.filter(sender_id=hamlet_user_id).count(), 0)
+
+        # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
+        # in a correct state.
+        for recipient_id in huddle_with_hamlet_recipient_ids:
+            self.assertTrue(
+                Subscription.objects.filter(
+                    user_profile=replacement_dummy_user, recipient_id=recipient_id
+                ).exists()
+            )
+
+    def test_do_delete_user_preserving_messages(self) -> None:
+        """
+        This test is extremely similar to the one for do_delete_user, with the only difference being
+        that Messages are supposed to be preserved. All other effects should be identical.
+        """
+
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        hamlet_personal_recipient = hamlet.recipient
+        hamlet_user_id = hamlet.id
+        hamlet_date_joined = hamlet.date_joined
+
+        self.send_personal_message(cordelia, hamlet)
+        self.send_personal_message(hamlet, cordelia)
+
+        personal_message_ids_to_hamlet = Message.objects.filter(
+            recipient=hamlet_personal_recipient
+        ).values_list("id", flat=True)
+        self.assertGreater(len(personal_message_ids_to_hamlet), 0)
+        self.assertTrue(Message.objects.filter(sender=hamlet).exists())
+
+        huddle_message_ids_from_cordelia = [
+            self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
+        ]
+        huddle_message_ids_from_hamlet = [
+            self.send_huddle_message(hamlet, [cordelia, othello]) for i in range(3)
+        ]
+
+        huddle_with_hamlet_recipient_ids = list(
+            Subscription.objects.filter(
+                user_profile=hamlet, recipient__type=Recipient.HUDDLE
+            ).values_list("recipient_id", flat=True)
+        )
+        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
+
+        original_messages_from_hamlet_count = Message.objects.filter(
+            sender_id=hamlet_user_id
+        ).count()
+        self.assertGreater(original_messages_from_hamlet_count, 0)
+
+        do_delete_user_preserving_messages(hamlet)
+
+        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+
+        self.assertEqual(
+            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
+        )
+        self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+        self.assertEqual(replacement_dummy_user.is_active, False)
+        self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
+
+        # All messages should have been preserved:
+        self.assertEqual(
+            Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(),
+            len(personal_message_ids_to_hamlet),
+        )
+        self.assertEqual(
+            Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(),
+            len(huddle_message_ids_from_hamlet),
+        )
+        self.assertEqual(
+            Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(),
+            len(huddle_message_ids_from_cordelia),
+        )
+
+        self.assertEqual(
+            Message.objects.filter(sender_id=hamlet_user_id).count(),
+            original_messages_from_hamlet_count,
+        )
 
         # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
         # in a correct state.

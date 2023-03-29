@@ -28,7 +28,7 @@ tools ([cloud][export-cloud], [self-hosted][export-self-hosted])
 ensure you can always move from our hosting to yours (and back).
 
 [export-cloud]: /help/export-your-organization
-[export-self-hosted]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html
+[export-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html
 
 ### Advantages of Zulip Cloud
 
@@ -106,7 +106,7 @@ to [Getting started with Zulip](/help/getting-started-with-zulip).
 ## Create user groups
 
 User groups allow you to [mention](/help/mention-a-user-or-group) multiple
-users at once, [notifying](/help/pm-mention-alert-notifications) them about a message. For example, you may choose to create user groups for teams in your organization.
+users at once, [notifying](/help/dm-mention-alert-notifications) them about a message. For example, you may choose to create user groups for teams in your organization.
 
 ### How to create a user group
 

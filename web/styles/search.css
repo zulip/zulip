@@ -1,0 +1,197 @@
+#searchbox,
+#searchbox_legacy {
+    width: 100%;
+    height: var(--header-height);
+
+    .navbar-search:not(.expanded) {
+        display: none;
+    }
+
+    .navbar-search.expanded {
+        float: left;
+        overflow: hidden;
+        margin-top: 0;
+        margin-bottom: 0;
+        width: calc(100% - 2px);
+        position: absolute;
+
+        @media (width < $xl_min) {
+            width: calc(100% - 84px);
+        }
+
+        @media (width < $md_min) {
+            /* todo: Figure out why this has to be different
+               from top-navbar-border at this width and resolve it */
+            width: calc(100% - 123px);
+        }
+
+        .search_close_button {
+            display: inline;
+            margin-right: 5px;
+        }
+
+        .zulip-icon-close {
+            font-size: 15px;
+        }
+    }
+
+    .input-append {
+        position: relative;
+        width: 100%;
+        width: max-content;
+        min-width: 100%;
+
+        .zulip-icon-search {
+            padding: 0;
+            font-size: 20px;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 5;
+
+            @media (width < $sm_min) {
+                top: 5px;
+            }
+        }
+
+        .zulip-icon-search:not(.deactivated) {
+            cursor: pointer;
+        }
+    }
+
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: var(--header-height);
+        padding: 0;
+        padding-left: 5px;
+        padding-right: 40px;
+        border: none;
+        border-radius: 0;
+        font-family: "Source Sans 3", sans-serif;
+        font-weight: 300;
+        line-height: var(--header-height);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+
+        @media (width < $sm_min) {
+            vertical-align: text-bottom;
+        }
+    }
+
+    #search_arrows:focus {
+        box-shadow: inset 0 0 0 2px hsl(204deg 20% 74%);
+    }
+
+    .search_close_button,
+    .search_close_button:disabled:hover {
+        position: absolute;
+        right: 35px;
+        top: 6px;
+        background: none;
+        border-radius: 0;
+        border: none;
+        height: 30px;
+        text-align: center;
+        padding: 4px;
+        color: inherit;
+        opacity: 0.5;
+        font-size: 18px;
+        box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+    }
+
+    .search_close_button {
+        &:hover {
+            opacity: 1;
+        }
+
+        &:disabled {
+            visibility: hidden;
+        }
+
+        @media (width < $sm_min) {
+            top: 0;
+        }
+    }
+
+    .search_icon {
+        position: absolute;
+        height: 100%;
+        text-decoration: none;
+        padding: 0 10px;
+        font-size: 20px;
+        z-index: 5;
+        left: 0;
+    }
+
+    #search_arrows {
+        font-size: 90%;
+        letter-spacing: normal;
+    }
+}
+
+/* in progress: searchbox with pills */
+#searchbox {
+    #search_arrows {
+        padding-left: 35px;
+    }
+
+    .pill-container {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        border: none;
+        padding: 0;
+    }
+
+    @media (width >= $sm_min) {
+        .pill {
+            padding: 2px 0 !important;
+            font-size: 14px;
+        }
+    }
+
+    @media (width < $sm_min) {
+        #search_arrows .pill {
+            line-height: 20px;
+
+            .exit {
+                top: 0;
+            }
+        }
+    }
+}
+
+#searchbox_legacy {
+    #search_arrows {
+        padding-left: 0;
+    }
+
+    #search_query {
+        padding-left: 35px;
+    }
+
+    .search_close_button {
+        right: 0;
+    }
+
+    .navbar-search.expanded {
+        .search_close_button {
+            margin-right: 5px;
+        }
+    }
+}
+
+.typeahead-menu li a {
+    .search_list_item {
+        display: flex;
+        align-items: center;
+    }
+
+    .search_list_item .pill-container {
+        margin-left: 5px;
+    }
+}

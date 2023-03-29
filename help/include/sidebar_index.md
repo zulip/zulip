@@ -12,7 +12,7 @@
 * [Streams and topics](/help/streams-and-topics)
 * [Finding a topic to read](/help/finding-a-topic-to-read)
 * [Reading topics](/help/reading-topics)
-* [Reading private messages (PMs)](/help/reading-pms)
+* [Reading direct messages (DMs)](/help/reading-dms)
 * [Starting a new topic](/help/starting-a-new-topic)
 * [Starting a new private thread](/help/starting-a-new-private-thread)
 * [Replying to messages](/help/replying-to-messages)
@@ -49,30 +49,34 @@
 * [Dark theme](/help/dark-theme)
 * [Change your language](/help/change-your-language)
 * [Change your time zone](/help/change-your-timezone)
-* [Use 24-hour time](/help/change-the-time-format)
-* [Enable emoticon translations](/help/enable-emoticon-translations)
+* [Change the time format](/help/change-the-time-format)
+* [Configure emoticon translations](/help/configure-emoticon-translations)
 * [Configure default view](/help/configure-default-view)
 * [Enable full width display](/help/enable-full-width-display)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
+
+## Writing messages
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Mention a user or group](/help/mention-a-user-or-group)
+* [Quote and reply](/help/quote-and-reply)
+* [Emoji and emoticons](/help/emoji-and-emoticons)
+* [Share and upload files](/help/share-and-upload-files)
+* [Add GIFs in your message](/help/animated-gifs-from-giphy)
+* [Text emphasis](/help/text-emphasis)
+* [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
+* [Code blocks](/help/code-blocks)
+* [Create a poll](/help/create-a-poll)
+* [Start a video call](/help/start-a-call)
 
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)
 * [Mastering the compose box](/help/mastering-the-compose-box)
 * [Resize the compose box](/help/resize-the-compose-box)
-* [Message formatting](/help/format-your-message-using-markdown)
-* [Mention a user or group](/help/mention-a-user-or-group)
 * [Typing notifications](/help/typing-notifications)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
-* [Emoji and emoticons](/help/emoji-and-emoticons)
-* [Start a video call](/help/start-a-call)
-* [Share and upload files](/help/share-and-upload-files)
-* [Quote and reply](/help/quote-and-reply)
-* [Code blocks](/help/code-blocks)
-* [Add GIFs in your message](/help/animated-gifs-from-giphy)
-* [Create a poll](/help/create-a-poll)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Reading messages
@@ -99,7 +103,7 @@
 * [Status and availability](/help/status-and-availability)
 * [User cards](/help/user-cards)
 * [View someone's profile](/help/view-someones-profile)
-* [Private messages](/help/private-messages)
+* [Direct messages](/help/direct-messages)
 
 ## Streams & topics
 * [Streams and topics](/help/streams-and-topics)
@@ -119,7 +123,7 @@
 
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
-* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
+* [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
 * [Mute a user](/help/mute-a-user)
@@ -129,8 +133,10 @@
 * [Do not disturb](/help/do-not-disturb)
 
 ## Apps
+* [Download apps for every platform](https://zulip.com/apps/)
 * [Desktop installation guides](/help/desktop-app-install-guide)
-* [Zulip in a Terminal](/help/zulip-in-a-terminal)
+* [Supported browsers](/help/supported-browsers)
+* [Configure how links open](/help/configure-how-links-open)
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
 
@@ -187,7 +193,7 @@
 * [Custom emoji](/help/custom-emoji)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Require topics in stream messages](/help/require-topics)
-* [Restrict private messages](/help/restrict-private-messages)
+* [Restrict direct messages](/help/restrict-direct-messages)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Restrict moving messages](/help/restrict-moving-messages)
 * [Restrict message editing](/help/restrict-message-editing-and-deletion)

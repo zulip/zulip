@@ -1,9 +1,11 @@
 import $ from "jquery";
 
+import render_confirm_disable_all_notifications from "../templates/confirm_dialog/confirm_disable_all_notifications.hbs";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";
-import {$t} from "./i18n";
+import * as confirm_dialog from "./confirm_dialog";
+import {$t, $t_html} from "./i18n";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
@@ -14,6 +16,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import * as ui_util from "./ui_util";
 import * as unread_ui from "./unread_ui";
 import {user_settings} from "./user_settings";
 
@@ -123,7 +126,7 @@ export function set_up(settings_panel) {
 
     $container.find(".play_notification_sound").on("click", () => {
         if (settings_object.notification_sound !== "none") {
-            $notification_sound_elem[0].play();
+            ui_util.play_audio($notification_sound_elem[0]);
         }
     });
 
@@ -148,6 +151,13 @@ export function set_up(settings_panel) {
     set_notification_batching_ui(
         $container,
         settings_object.email_notifications_batching_period_seconds,
+    );
+
+    const $realm_name_in_email_notifications_policy_dropdown = $container.find(
+        ".setting_realm_name_in_email_notifications_policy",
+    );
+    $realm_name_in_email_notifications_policy_dropdown.val(
+        settings_object.realm_name_in_email_notifications_policy,
     );
 
     set_enable_digest_emails_visibility(settings_panel);
@@ -186,6 +196,40 @@ export function set_up(settings_panel) {
             setting_value = setting_value * 60;
             set_notification_batching_ui($container, setting_value);
             setting_name = "email_notifications_batching_period_seconds";
+        }
+
+        if (
+            settings_config.pm_mention_notification_settings.includes(setting_name) &&
+            !setting_value
+        ) {
+            let enabled_pm_mention_notifications_count = 0;
+            const pm_mention_notification_settings =
+                settings_config.get_notifications_table_row_data(
+                    settings_config.pm_mention_notification_settings,
+                    user_settings,
+                );
+
+            for (const setting of pm_mention_notification_settings) {
+                if (setting.is_checked && !setting.is_disabled) {
+                    enabled_pm_mention_notifications_count += 1;
+                }
+            }
+            if (enabled_pm_mention_notifications_count === 1) {
+                const html_body = render_confirm_disable_all_notifications();
+                $input_elem.prop("checked", user_settings[setting_name]);
+
+                confirm_dialog.launch({
+                    html_heading: $t_html({defaultMessage: "Disable notifications?"}),
+                    html_body,
+                    on_click: () =>
+                        change_notification_setting(
+                            setting_name,
+                            setting_value,
+                            $input_elem.closest(".subsection-parent").find(".alert-notification"),
+                        ),
+                });
+                return;
+            }
         }
 
         change_notification_setting(
@@ -232,7 +276,8 @@ export function update_page(settings_panel) {
                 set_notification_batching_ui($container, settings_object[setting]);
                 break;
             }
-            case "notification_sound": {
+            case "notification_sound":
+            case "realm_name_in_email_notifications_policy": {
                 $container.find(`.setting_${CSS.escape(setting)}`).val(settings_object[setting]);
                 break;
             }

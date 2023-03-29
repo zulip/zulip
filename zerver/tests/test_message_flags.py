@@ -6,6 +6,7 @@ from django.db import connection, transaction
 
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,
@@ -23,7 +24,6 @@ from zerver.lib.message import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
 from zerver.lib.timeout import TimeoutExpiredError
-from zerver.lib.user_topics import add_topic_mute
 from zerver.models import (
     Message,
     Recipient,
@@ -31,6 +31,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_realm,
     get_stream,
 )
@@ -470,14 +471,12 @@ class FixUnreadTests(ZulipTestCase):
 
         def mute_topic(stream_name: str, topic_name: str) -> None:
             stream = get_stream(stream_name, realm)
-            recipient = stream.recipient
-            assert recipient is not None
 
-            add_topic_mute(
-                user_profile=user,
-                stream_id=stream.id,
-                recipient_id=recipient.id,
-                topic_name=topic_name,
+            do_set_user_topic_visibility_policy(
+                user,
+                stream,
+                topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             )
 
         def force_unsubscribe(stream_name: str) -> None:
@@ -711,14 +710,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
     def mute_topic(self, user_profile: UserProfile, stream_name: str, topic_name: str) -> None:
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
-        recipient = stream.recipient
-        assert recipient is not None
 
-        add_topic_mute(
-            user_profile=user_profile,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name=topic_name,
+        do_set_user_topic_visibility_policy(
+            user_profile,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
     def test_raw_unread_stream(self) -> None:

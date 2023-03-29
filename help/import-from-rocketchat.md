@@ -69,7 +69,7 @@ be your **exported data** file in the instructions below.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
    commands.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current
@@ -133,14 +133,14 @@ keep in mind about the import process:
   Rocket.Chat Discussion.
 
 - Messages from Rocket.Chat Discussions having direct channels
-  (i.e. private messages) as their parent are imported as normal
-  private messages in Zulip.
+  (i.e. direct messages) as their parent are imported as normal
+  direct messages in Zulip.
 
 - While Rocket.Chat Threads are in general imported as separate
   topics, Rocket.Chat Threads within Rocket.Chat Discussions are
   imported as normal messages within the topic containing that
   Discussion, and Threads in Direct Messages are imported as normal
-  Zulip private messages.
+  Zulip direct messages.
 
 Additionally, because Rocket.Chat does not provide a documented or
 stable data export API, the import tool may require small changes from

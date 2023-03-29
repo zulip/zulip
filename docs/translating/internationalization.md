@@ -13,7 +13,7 @@ principles are important in how we think about internationalization:
   tagged for translation in both [HTML templates](#html-templates) and
   code, and our linters attempt to enforce this. There are some
   exceptions: we don't tag strings in Zulip's landing pages
-  (e.g. /features) and other documentation (e.g. /help) for
+  (e.g. /features/) and other documentation (e.g. /help/) for
   translation at this time (though we do aim for those pages to be
   usable with tools like Google Translate).
 - Translating all the strings in Zulip for a language and maintaining
@@ -239,7 +239,7 @@ $("#foo").html(
 
 The only HTML tags allowed directly in translated strings are the
 simple HTML tags enumerated in `default_html_elements`
-(`web/src/i18n.js`) with no attributes. This helps to avoid
+(`web/src/i18n.ts`) with no attributes. This helps to avoid
 exposing HTML details to translators. If you need to include more
 complex markup such as a link, you can define a custom HTML tag
 locally to the translation:
@@ -258,6 +258,8 @@ Handlebars [helpers][] that Zulip registers. The syntax for simple strings is:
 
 ```html+handlebars
 {{t 'English text' }}
+
+{{t 'Block of English text with a {variable}.' }}
 ```
 
 If you are passing a translated string to a Handlebars partial, you can use:
@@ -268,17 +270,17 @@ If you are passing a translated string to a Handlebars partial, you can use:
     }}
 ```
 
-The syntax for block strings or strings containing variables is:
+The syntax for HTML strings is:
 
 <!-- The html+handlebars lexer fails to lex the single braces. -->
 
 ```text
 {{#tr}}
-    Block of English text.
+    <p>Block of English text.</p>
 {{/tr}}
 
 {{#tr}}
-    Block of English text with a {variable}.
+    <p>Block of English text with a {variable}.</p>
 {{/tr}}
 ```
 

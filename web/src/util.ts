@@ -220,11 +220,9 @@ export function is_mobile(): boolean {
     return new RegExp(regex, "i").test(window.navigator.userAgent);
 }
 
-export function sorted_ids(ids: string[]): number[] {
-    // This mapping makes sure we are using ints, and
-    // it also makes sure we don't mutate the list.
-    let id_list = ids.map((s) => Number.parseInt(s, 10));
-    id_list = Array.from(new Set(id_list));
+export function sorted_ids(ids: number[]): number[] {
+    // This makes sure we don't mutate the list.
+    const id_list = [...new Set(ids)];
     id_list.sort((a, b) => a - b);
 
     return id_list;
@@ -349,7 +347,7 @@ export function filter_by_word_prefix_match<T>(
     items: T[],
     search_term: string,
     item_to_text: (item: T) => string,
-    word_separator_regex: RegExp = /\s/,
+    word_separator_regex = /\s/,
 ): T[] {
     if (search_term === "") {
         return items;
@@ -440,4 +438,23 @@ export function get_string_diff(string1: string, string2: string): [number, numb
     }
 
     return [diff_start_index, diff_end_1_index, diff_end_2_index];
+}
+
+export function try_parse_as_truthy<T>(val: (T | undefined)[]): T[] | undefined {
+    // This is a typesafe helper to narrow an array from containing
+    // possibly falsy values into an array containing non-undefined
+    // items or undefined when any of the items is falsy.
+
+    // While this eliminates the possibility of returning an array
+    // with falsy values, the type annotation does not provide that
+    // guarantee. Ruling out undefined values is sufficient for the
+    // helper's usecases.
+    const result: T[] = [];
+    for (const x of val) {
+        if (!x) {
+            return undefined;
+        }
+        result.push(x);
+    }
+    return result;
 }

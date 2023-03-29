@@ -26,8 +26,15 @@ message.
    with your mouse.
 
 !!! tip ""
+
     To add multiple reactions without closing the emoji picker, hold the
     <kbd>Shift</kbd> key while selecting emoji.
+
+!!! keyboard_tip ""
+
+    You can react to the selected message with <img alt=":thumbs_up:"
+    class="emoji" src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
+    title="thumbs up"/> by using the <kbd>+</kbd> shortcut.
 
 {tab|mobile}
 
@@ -50,6 +57,11 @@ message.
 !!! tip ""
     To make it easy to see which reactions you have added, they are
     highlighted in a different color.
+
+!!! keyboard_tip ""
+
+    You can also toggle the first emoji reaction on the selected message by
+    using the <kbd>=</kbd> shortcut.
 
 {tab|mobile}
 
@@ -87,7 +99,7 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 
 {settings_tab|display-settings}
 
-1. Under **Theme**, toggle **Display names of reacting users when few users have
+1. Under **Emoji**, toggle **Display names of reacting users when few users have
    reacted to a message**.
 
 {end_tabs}

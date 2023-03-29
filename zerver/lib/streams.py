@@ -1,8 +1,7 @@
 from typing import Collection, List, Optional, Set, Tuple, TypedDict, Union
 
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
-from django.db.models.query import QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
@@ -241,7 +240,6 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
         and sender.is_provisional_member
     ):
         raise JsonableError(_("New members cannot send to this stream."))
-    return
 
 
 def access_stream_for_send_message(

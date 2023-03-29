@@ -198,7 +198,14 @@ def stdout_suppressed() -> Iterator[IO[str]]:
             sys.stdout = stdout
 
 
-def reset_emails_in_zulip_realm() -> None:
+def reset_email_visibility_to_everyone_in_zulip_realm() -> None:
+    """
+    This function is used to reset email visibility for all users and
+    RealmUserDefault object in the zulip realm in development environment
+    to "EMAIL_ADDRESS_VISIBILITY_EVERYONE" since the default value is
+    "EMAIL_ADDRESS_VISIBILITY_ADMINS". This function is needed in
+    tests that want "email" field of users to be set to their real email.
+    """
     realm = get_realm("zulip")
     realm_user_default = RealmUserDefault.objects.get(realm=realm)
     do_set_realm_user_default_setting(
@@ -533,7 +540,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
         if full_suite:
             print(f"INFO: URL coverage report is in {fn}")
-            print("INFO: Try running: ./tools/create-test-api-docs")
 
         if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")

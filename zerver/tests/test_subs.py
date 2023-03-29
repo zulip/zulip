@@ -33,7 +33,7 @@ from zerver.actions.streams import (
     do_change_stream_post_policy,
     do_deactivate_stream,
 )
-from zerver.actions.user_groups import add_subgroups_to_user_group
+from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -74,7 +74,7 @@ from zerver.lib.test_helpers import (
     get_subscription,
     most_recent_message,
     most_recent_usermessage,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.types import (
     APIStreamDict,
@@ -82,7 +82,6 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -392,7 +391,7 @@ class TestCreateStreams(ZulipTestCase):
     def test_auto_mark_stream_created_message_as_read_for_stream_creator(self) -> None:
         # This test relies on email == delivery_email for
         # convenience.
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         realm = Realm.objects.get(name="Zulip Dev")
         iago = self.example_user("iago")
@@ -552,7 +551,7 @@ class RecipientTest(ZulipTestCase):
             type_id=stream.id,
             type=Recipient.STREAM,
         )
-        self.assertEqual(str(recipient), f"<Recipient: Verona ({stream.id}, {Recipient.STREAM})>")
+        self.assertEqual(repr(recipient), f"<Recipient: Verona ({stream.id}, {Recipient.STREAM})>")
 
 
 class StreamAdminTest(ZulipTestCase):
@@ -1729,13 +1728,13 @@ class StreamAdminTest(ZulipTestCase):
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"description": "See https://zulip.com/team"},
+                {"description": "See https://zulip.com/team/"},
             )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
         self.assertEqual(
             stream.rendered_description,
-            '<p>See <a href="https://zulip.com/team">https://zulip.com/team</a></p>',
+            '<p>See <a href="https://zulip.com/team/">https://zulip.com/team/</a></p>',
         )
 
     def test_change_stream_description_requires_admin(self) -> None:
@@ -2566,14 +2565,14 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_can_remove_subscribers_group(self) -> None:
         realm = get_realm("zulip")
-        leadership_group = create_user_group(
+        leadership_group = check_add_user_group(
+            realm,
             "leadership",
             [self.example_user("iago"), self.example_user("shiva")],
-            realm,
             acting_user=None,
         )
-        managers_group = create_user_group(
-            "managers", [self.example_user("hamlet")], realm=realm, acting_user=None
+        managers_group = check_add_user_group(
+            realm, "managers", [self.example_user("hamlet")], acting_user=None
         )
         add_subgroups_to_user_group(managers_group, [leadership_group], acting_user=None)
         cordelia = self.example_user("cordelia")
@@ -3494,7 +3493,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         subs = gather_subscriptions(test_user)[0]
         sub = subs[0]
-        json_result = self.api_post(
+        result = self.api_post(
             test_user,
             "/api/v1/users/me/subscriptions/properties",
             {
@@ -3513,10 +3512,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
             },
         )
 
-        self.assert_json_success(json_result)
-        result = orjson.loads(json_result.content)
-        self.assertIn("ignored_parameters_unsupported", result)
-        self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_parameter"])
+        self.assert_json_success(result, ignored_parameters=["invalid_parameter"])
 
 
 class SubscriptionRestApiTest(ZulipTestCase):
@@ -5114,11 +5110,11 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         subscription = self.get_subscription(user_profile, invite_streams[0])
 
-        with mock.patch("zerver.models.Recipient.__str__", return_value="recip"):
+        with mock.patch("zerver.models.Recipient.__repr__", return_value="recip"):
             self.assertEqual(
-                str(subscription),
+                repr(subscription),
                 "<Subscription: "
-                f"<UserProfile: {user_profile.email} {user_profile.realm}> -> recip>",
+                f"<UserProfile: {user_profile.email} {user_profile.realm!r}> -> recip>",
             )
 
         self.assertIsNone(subscription.desktop_notifications)

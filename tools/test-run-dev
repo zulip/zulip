@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     with tempfile.NamedTemporaryFile(buffering=0) as logfile:
         run_dev = subprocess.Popen(
-            [os.path.join(TOOLS_DIR, "run-dev.py")], stdout=logfile, stderr=subprocess.STDOUT
+            [os.path.join(TOOLS_DIR, "run-dev")], stdout=logfile, stderr=subprocess.STDOUT
         )
         failure, log = start_server(logfile.name)
 

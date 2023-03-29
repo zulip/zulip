@@ -2,10 +2,10 @@ import io
 import os
 import re
 import unicodedata
-from typing import IO, Any, Callable, Optional, Tuple
+from datetime import datetime
+from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
 
 from django.utils.translation import gettext as _
-from markupsafe import Markup
 from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
 from PIL.Image import DecompressionBombError
 
@@ -51,7 +51,7 @@ def sanitize_name(value: str) -> str:
     value = re.sub(r"[^\w\s.-]", "", value).strip()
     value = re.sub(r"[-\s]+", "-", value)
     assert value not in {"", ".", ".."}
-    return Markup(value)
+    return value
 
 
 class BadImageError(JsonableError):
@@ -111,12 +111,7 @@ def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
                 im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
             )
         elif isinstance(im, PngImagePlugin.PngImageFile):
-            disposals.append(
-                im.info.get(
-                    "disposal",
-                    PngImagePlugin.Disposal.OP_NONE,  # type: ignore[attr-defined] # https://github.com/python/typeshed/pull/9698
-                )
-            )
+            disposals.append(im.info.get("disposal", PngImagePlugin.Disposal.OP_NONE))
         else:  # nocoverage
             raise BadImageError(_("Unknown animated image format."))
     out = io.BytesIO()
@@ -185,13 +180,14 @@ def resize_emoji(
 
 
 class ZulipUploadBackend:
+    # Message attachment uploads
     def get_public_upload_root_url(self) -> str:
         raise NotImplementedError
 
     def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
         raise NotImplementedError
 
-    def upload_message_file(
+    def upload_message_attachment(
         self,
         uploaded_file_name: str,
         uploaded_file_size: int,
@@ -200,6 +196,20 @@ class ZulipUploadBackend:
         user_profile: UserProfile,
         target_realm: Optional[Realm] = None,
     ) -> str:
+        raise NotImplementedError
+
+    def delete_message_attachment(self, path_id: str) -> bool:
+        raise NotImplementedError
+
+    def delete_message_attachments(self, path_ids: List[str]) -> None:
+        for path_id in path_ids:
+            self.delete_message_attachment(path_id)
+
+    def all_message_attachments(self) -> Iterator[Tuple[str, datetime]]:
+        raise NotImplementedError
+
+    # Avatar image uploads
+    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         raise NotImplementedError
 
     def upload_avatar_image(
@@ -211,25 +221,26 @@ class ZulipUploadBackend:
     ) -> None:
         raise NotImplementedError
 
-    def delete_avatar_image(self, user: UserProfile) -> None:
-        raise NotImplementedError
-
-    def delete_message_image(self, path_id: str) -> bool:
-        raise NotImplementedError
-
-    def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
-        raise NotImplementedError
-
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         raise NotImplementedError
 
     def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
         raise NotImplementedError
 
+    def delete_avatar_image(self, user: UserProfile) -> None:
+        raise NotImplementedError
+
+    # Realm icon and logo uploads
+    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
+        return os.path.join(str(realm.id), "realm")
+
+    def get_realm_icon_url(self, realm_id: int, version: int) -> str:
+        raise NotImplementedError
+
     def upload_realm_icon_image(self, icon_file: IO[bytes], user_profile: UserProfile) -> None:
         raise NotImplementedError
 
-    def get_realm_icon_url(self, realm_id: int, version: int) -> str:
+    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         raise NotImplementedError
 
     def upload_realm_logo_image(
@@ -237,7 +248,8 @@ class ZulipUploadBackend:
     ) -> None:
         raise NotImplementedError
 
-    def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
+    # Realm emoji uploads
+    def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         raise NotImplementedError
 
     def upload_emoji_image(
@@ -245,7 +257,8 @@ class ZulipUploadBackend:
     ) -> bool:
         raise NotImplementedError
 
-    def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
+    # Export tarballs
+    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         raise NotImplementedError
 
     def upload_export_tarball(
@@ -258,12 +271,6 @@ class ZulipUploadBackend:
 
     def delete_export_tarball(self, export_path: str) -> Optional[str]:
         raise NotImplementedError
-
-    def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
-        raise NotImplementedError
-
-    def realm_avatar_and_logo_path(self, realm: Realm) -> str:
-        return os.path.join(str(realm.id), "realm")
 
 
 def create_attachment(

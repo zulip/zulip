@@ -18,27 +18,27 @@
             {{else}}
                 <li class="org-info org-plan hidden-for-spectators small-font-size">
                     {{#if is_plan_limited }}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
+                        <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Free</a>
                     {{else if is_plan_standard}}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
+                        <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard</a>
                     {{else if is_plan_standard_sponsored_for_free}}
-                        <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
+                        <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">Zulip Cloud Standard (sponsored)</a>
                     {{/if}}
                 </li>
             {{/if}}
             {{#if (and is_plan_limited is_owner) }}
             <li class="org-info org-upgrade small-font-size">
-                <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{#tr}}Upgrade to {standard_plan_name}{{/tr}}</a>
+                <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t "Upgrade to {standard_plan_name}" }}</a>
             </li>
             {{/if}}
             {{#if is_plan_limited }}
                 {{#if is_education_org }}
                 <li class="org-info org-upgrade small-font-size">
-                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
+                    <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request education pricing' }}</a>
                 </li>
                 {{else if (not is_business_org) }}
                 <li class="org-info org-upgrade small-font-size">
-                    <a href="/upgrade" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
+                    <a href="/upgrade/" target="_blank" rel="noopener noreferrer" role="menuitem">{{t 'Request sponsorship' }}</a>
                 </li>
                 {{/if}}
             {{/if}}
@@ -84,7 +84,7 @@
             </li>
             <li class="divider" role="presentation"></li>
             <li role="presentation">
-                <a href="/help" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <a href="/help/" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-question-circle" aria-hidden="true"></i> {{t 'Help center' }}
                 </a>
             </li>
@@ -124,7 +124,7 @@
                 </a>
             </li>
             <li role="presentation" class="hidden-for-spectators">
-                <a href="/integrations" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <a href="/integrations/" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-github" aria-hidden="true"></i> {{t 'Integrations' }}
                 </a>
             </li>
@@ -135,21 +135,21 @@
             </li>
             {{#if show_billing}}
             <li role="presentation" class="hidden-for-spectators">
-                <a href="/billing" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <a href="/billing/" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
                 </a>
             </li>
             {{/if}}
             {{#if promote_sponsoring_zulip}}
             <li role="presentation" class="hidden-for-spectators">
-                <a href="https://github.com/sponsors/zulip" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
                 </a>
             </li>
             {{/if}}
             {{#if show_plans}}
             <li role="presentation" class="hidden-for-spectators">
-                <a href="/plans" target="_blank" rel="noopener noreferrer" role="menuitem">
+                <a href="/plans/" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-rocket" aria-hidden="true"></i> {{t 'Plans and pricing' }}
                 </a>
             </li>
@@ -157,7 +157,7 @@
             <li class="divider hidden-for-spectators" role="presentation"></li>
             {{#if can_invite_others_to_realm}}
             <li role="presentation">
-                <a href="#invite" role="menuitem">
+                <a class="invite-user-link" role="menuitem">
                     <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
                 </a>
             </li>

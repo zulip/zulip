@@ -27,7 +27,6 @@ from zerver.actions.message_send import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
-from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
@@ -43,7 +42,7 @@ from zerver.lib.test_helpers import (
     message_stream_count,
     most_recent_message,
     most_recent_usermessage,
-    reset_emails_in_zulip_realm,
+    reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.models import (
@@ -1061,81 +1060,6 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "User not authorized for this query")
 
-    def test_send_message_as_not_superuser_to_different_domain(self) -> None:
-        self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "Test topic",
-                "realm_str": "mit",
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
-    def test_send_message_with_can_forge_sender_to_different_domain(self) -> None:
-        user = self.example_user("default_bot")
-        do_change_can_forge_sender(user, True)
-        # To a non-existing realm:
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "Test topic",
-                "realm_str": "non-existing",
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
-        # To an existing realm:
-        zephyr_realm = get_realm("zephyr")
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "content": "Test message",
-                "topic": "Test topic",
-                "realm_str": zephyr_realm.string_id,
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
-    def test_send_message_forging_message_to_another_realm(self) -> None:
-        """
-        Test for a specific vulnerability that allowed a .can_forge_sender
-        user to forge a message as a cross-realm bot to a stream in another realm,
-        by setting up an appropriate RealmDomain and specifying JabberMirror as client
-        to cause the vulnerable codepath to be executed.
-        """
-        user = self.example_user("default_bot")
-        do_change_can_forge_sender(user, True)
-
-        zephyr_realm = get_realm("zephyr")
-        self.make_stream("Verona", zephyr_realm)
-        do_add_realm_domain(zephyr_realm, "zulip.com", False, acting_user=None)
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "stream",
-                "to": "Verona",
-                "client": "JabberMirror",
-                "content": "Test message",
-                "topic": "Test topic",
-                "forged": "true",
-                "sender": "notification-bot@zulip.com",
-                "realm_str": zephyr_realm.string_id,
-            },
-        )
-        self.assert_json_error(result, "User not authorized for this query")
-
     def test_send_message_when_sender_is_not_set(self) -> None:
         result = self.api_post(
             self.mit_user("starnine"),
@@ -1228,7 +1152,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Mirroring not allowed with recipient user IDs")
 
     def test_send_message_irc_mirror(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         self.login("hamlet")
         bot_info = {
             "full_name": "IRC bot",
@@ -1291,7 +1215,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
 
     def test_unsubscribed_can_forge_sender(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         cordelia = self.example_user("cordelia")
         stream_name = "private_stream"
@@ -1427,7 +1351,6 @@ class ScheduledMessageTest(ZulipTestCase):
         defer_until: str = "",
         tz_guess: str = "",
         delivery_type: str = "send_later",
-        realm_str: str = "zulip",
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
@@ -1440,7 +1363,6 @@ class ScheduledMessageTest(ZulipTestCase):
             "to": orjson.dumps(to).decode(),
             "content": msg,
             "topic": topic_name,
-            "realm_str": realm_str,
             "delivery_type": delivery_type,
             "tz_guess": tz_guess,
         }
@@ -1723,9 +1645,9 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_stream_message(sender, "Denmark", content="whatever", topic_name="my topic")
         message = most_recent_message(receiving_user_profile)
         self.assertEqual(
-            str(message),
+            repr(message),
             "<Message: Denmark / my topic / "
-            "<UserProfile: {} {}>>".format(sender.email, sender.realm),
+            "<UserProfile: {} {!r}>>".format(sender.email, sender.realm),
         )
 
     def test_message_mentions(self) -> None:

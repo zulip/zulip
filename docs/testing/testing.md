@@ -84,7 +84,7 @@ Additionally, Zulip also has about a dozen smaller tests suites:
 - `tools/check-frontend-i18n`: Checks for a common bug in Handlebars
   templates, of using the wrong syntax for translating blocks
   containing variables.
-- `./tools/test-run-dev`: Checks that `run-dev.py` starts properly;
+- `./tools/test-run-dev`: Checks that `run-dev` starts properly;
   this helps prevent bugs that break the development environment.
 - `./tools/test-queue-worker-reload`: Verifies that Zulip's queue
   processors properly reload themselves after code changes.

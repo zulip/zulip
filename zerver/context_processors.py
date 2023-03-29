@@ -19,7 +19,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
-from zerver.lib.subdomains import get_subdomain
+from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.models import Realm, UserProfile, get_realm
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -28,6 +28,7 @@ from zproject.backends import (
     password_auth_enabled,
     require_email_format_usernames,
 )
+from zproject.config import get_config
 
 DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "development_environment": settings.DEVELOPMENT,
@@ -139,10 +140,19 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>'
     )
 
-    default_page_params = {
+    default_page_params: Dict[str, Any] = {
         **DEFAULT_PAGE_PARAMS,
+        "server_sentry_dsn": settings.SENTRY_FRONTEND_DSN,
         "request_language": get_language(),
     }
+    if settings.SENTRY_FRONTEND_DSN is not None:
+        if realm is not None:
+            default_page_params["realm_sentry_key"] = realm.string_id
+        default_page_params["server_sentry_environment"] = get_config(
+            "machine", "deploy_type", "development"
+        )
+        default_page_params["server_sentry_sample_rate"] = settings.SENTRY_FRONTEND_SAMPLE_RATE
+        default_page_params["server_sentry_trace_rate"] = settings.SENTRY_FRONTEND_TRACE_RATE
 
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
@@ -244,5 +254,15 @@ def latest_info_context() -> Dict[str, str]:
         "latest_release_version": LATEST_RELEASE_VERSION,
         "latest_major_version": LATEST_MAJOR_VERSION,
         "latest_release_announcement": LATEST_RELEASE_ANNOUNCEMENT,
+    }
+    return context
+
+
+def get_realm_create_form_context() -> Dict[str, Any]:
+    context = {
+        "MAX_REALM_NAME_LENGTH": str(Realm.MAX_REALM_NAME_LENGTH),
+        "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+        "root_domain_available": is_root_domain_available(),
+        "sorted_realm_types": sorted(Realm.ORG_TYPES.values(), key=lambda d: d["display_order"]),
     }
     return context

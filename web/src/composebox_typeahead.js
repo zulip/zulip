@@ -1,8 +1,8 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
+import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -17,6 +17,7 @@ import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
@@ -233,7 +234,6 @@ function handle_keydown(e) {
                         compose_validate.warn_for_text_overflow_when_tries_to_send() &&
                         !$("#compose-send-button").prop("disabled")
                     ) {
-                        $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }
                     return;
@@ -466,7 +466,7 @@ export function get_person_suggestions(query, opts) {
         persons = muted_users.filter_muted_users(persons);
 
         if (opts.want_broadcast) {
-            persons = persons.concat(broadcast_mentions());
+            persons = [...persons, ...broadcast_mentions()];
         }
 
         return persons.filter((item) => query_matches_person(query, item));
@@ -631,7 +631,7 @@ export function get_candidates(query) {
         }
         this.completing = "syntax";
         this.token = current_token;
-        return Object.keys(pygments_data.langs);
+        return realm_playground.get_pygments_typeahead_list_for_composebox();
     }
 
     // Only start the emoji autocompleter if : is directly after one
@@ -1130,6 +1130,7 @@ export function initialize() {
             }
             return sorted;
         },
+        header: render_topic_typeahead_hint,
     });
 
     $("#private_message_recipient").typeahead({

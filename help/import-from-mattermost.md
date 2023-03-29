@@ -184,7 +184,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current
@@ -216,7 +216,7 @@ Replace `<username>` and `<server_ip>` with the appropriate values below.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
    replacing `<team-name>` with the name of the Mattermost team you want to import.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     unzip latest_export.zip -d /tmp/my_mattermost_export
@@ -269,9 +269,9 @@ keep in mind about the import process:
 - Mattermost's export tool does not support exporting user avatars or message
   edit history.
 
-- Private messages will only be imported from Mattermost workspaces containing
+- Direct messages will only be imported from Mattermost workspaces containing
   a single team. This is because Mattermost's data exports do not associate
-  private messages with a specific Mattermost team.
+  direct messages with a specific Mattermost team.
 
 - Messages in threads are imported, but they are not explicitly marked as
   being in a thread.

@@ -1,6 +1,6 @@
 body {
     font-family: "Source Sans 3", sans-serif !important;
-    background-color: hsl(0, 0%, 98%);
+    background-color: hsl(0deg 0% 98%);
 }
 
 p {
@@ -30,11 +30,11 @@ p {
     vertical-align: top;
     margin: 0 auto;
     padding: 20px;
-    border: 2px solid hsl(0, 0%, 93%);
-    background-color: hsl(0, 0%, 100%);
+    border: 2px solid hsl(0deg 0% 93%);
+    background-color: hsl(0deg 0% 100%);
     width: 395px;
 
-    h1 {
+    & h1 {
         margin-top: 0;
         font-size: 1.5em;
     }
@@ -50,15 +50,15 @@ p {
     vertical-align: top;
     margin: 10px 0;
     padding: 20px;
-    border: 2px solid hsl(0, 0%, 93%);
-    background-color: hsl(0, 0%, 100%);
+    border: 2px solid hsl(0deg 0% 93%);
+    background-color: hsl(0deg 0% 100%);
 
-    button {
+    & button {
         position: relative;
         z-index: 1;
     }
 
-    h1 {
+    & h1 {
         margin-top: 0;
         font-size: 1.5em;
     }
@@ -101,10 +101,10 @@ p {
 }
 
 .buttons button {
-    background-color: hsl(0, 0%, 94%);
+    background-color: hsl(0deg 0% 94%);
 
     &.selected {
-        background-color: hsl(0, 0%, 85%);
+        background-color: hsl(0deg 0% 85%);
     }
 }
 
@@ -116,7 +116,7 @@ p {
     padding: 2px 6px;
 
     &:hover {
-        background-color: hsl(0, 0%, 84%) !important;
+        background-color: hsl(0deg 0% 84%) !important;
     }
 }
 
@@ -142,7 +142,7 @@ p {
     font-size: 0.8em;
     font-weight: 400;
     text-align: center;
-    color: hsl(0, 0%, 67%);
+    color: hsl(0deg 0% 67%);
 }
 
 #users_hover_humans,
@@ -211,8 +211,8 @@ p {
     margin-top: -15px;
     margin-left: -15px;
     border-radius: 50%;
-    border: 1px solid hsl(0, 0%, 80%);
-    border-top-color: hsl(155, 93%, 42%);
+    border: 1px solid hsl(0deg 0% 80%);
+    border-top-color: hsl(155deg 93% 42%);
     animation: spinner 1s linear infinite;
 }
 

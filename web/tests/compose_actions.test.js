@@ -16,6 +16,10 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
+const autosize = () => {};
+autosize.update = () => {};
+mock_esm("autosize", {default: autosize});
+
 const channel = mock_esm("../src/channel");
 const compose_fade = mock_esm("../src/compose_fade", {
     clear_compose: noop,
@@ -355,8 +359,9 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     override(message_lists.current, "selected_id", () => 100);
 
-    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
-        assert.equal(syntax, "translated: [Quoting…]\n");
+    override(compose_ui, "insert_syntax_and_focus", (syntax, $textarea, mode) => {
+        assert.equal(syntax, "translated: [Quoting…]");
+        assert.equal(mode, "block");
     });
 
     const opts = {

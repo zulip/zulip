@@ -13,6 +13,7 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_users from "./settings_users";
 import * as ui from "./ui";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
@@ -65,6 +66,11 @@ function make_list_widget({$parent_container, name, user_ids}) {
 
     return ListWidget.create($list_container, users, {
         name,
+        $parent_container,
+        sort_fields: {
+            email: settings_users.sort_email,
+            id: settings_users.sort_user_id,
+        },
         modifier(item) {
             return format_member_list_elem(item);
         },
@@ -97,7 +103,7 @@ export function enable_member_management({group, $parent_container}) {
     member_list_widget = make_list_widget({
         $parent_container,
         name: "user_group_members",
-        user_ids: Array.from(group.members),
+        user_ids: [...group.members],
     });
 }
 
@@ -179,13 +185,13 @@ function add_new_members({pill_user_ids}) {
     let ignored_deactivated_users;
     let ignored_already_added_users;
     if (deactivated_users.size > 0) {
-        ignored_deactivated_users = Array.from(deactivated_users);
+        ignored_deactivated_users = [...deactivated_users];
         ignored_deactivated_users = ignored_deactivated_users.map((user_id) =>
             people.get_by_user_id(user_id),
         );
     }
     if (already_added_users.size > 0) {
-        ignored_already_added_users = Array.from(already_added_users);
+        ignored_already_added_users = [...already_added_users];
         ignored_already_added_users = ignored_already_added_users.map((user_id) =>
             people.get_by_user_id(user_id),
         );
@@ -201,7 +207,7 @@ function add_new_members({pill_user_ids}) {
         });
         return;
     }
-    const user_ids = Array.from(user_id_set);
+    const user_ids = [...user_id_set];
 
     function invite_success() {
         pill_widget.clear();

@@ -1,8 +1,9 @@
 import io
 import logging
 import urllib
+from datetime import datetime
 from mimetypes import guess_type
-from typing import IO, Any, Callable, Optional, Tuple
+from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -57,53 +58,14 @@ if settings.LOCAL_UPLOADS_DIR is not None:
 else:
     upload_backend = S3UploadBackend()  # nocoverage
 
+# Message attachment uploads
+
 
 def get_public_upload_root_url() -> str:
     return upload_backend.get_public_upload_root_url()
 
 
-def delete_message_image(path_id: str) -> bool:
-    return upload_backend.delete_message_image(path_id)
-
-
-def get_avatar_url(hash_key: str, medium: bool = False) -> str:
-    return upload_backend.get_avatar_url(hash_key, medium)
-
-
-def upload_avatar_image(
-    user_file: IO[bytes],
-    acting_user_profile: UserProfile,
-    target_user_profile: UserProfile,
-    content_type: Optional[str] = None,
-) -> None:
-    upload_backend.upload_avatar_image(
-        user_file, acting_user_profile, target_user_profile, content_type=content_type
-    )
-
-
-def delete_avatar_image(user_profile: UserProfile) -> None:
-    upload_backend.delete_avatar_image(user_profile)
-
-
-def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
-    upload_backend.copy_avatar(source_profile, target_profile)
-
-
-def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile) -> None:
-    upload_backend.upload_realm_icon_image(user_file, user_profile)
-
-
-def upload_logo_image(user_file: IO[bytes], user_profile: UserProfile, night: bool) -> None:
-    upload_backend.upload_realm_logo_image(user_file, user_profile, night)
-
-
-def upload_emoji_image(
-    emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
-) -> bool:
-    return upload_backend.upload_emoji_image(emoji_file, emoji_file_name, user_profile)
-
-
-def upload_message_file(
+def upload_message_attachment(
     uploaded_file_name: str,
     uploaded_file_size: int,
     content_type: Optional[str],
@@ -111,7 +73,7 @@ def upload_message_file(
     user_profile: UserProfile,
     target_realm: Optional[Realm] = None,
 ) -> str:
-    return upload_backend.upload_message_file(
+    return upload_backend.upload_message_attachment(
         uploaded_file_name,
         uploaded_file_size,
         content_type,
@@ -136,25 +98,71 @@ def claim_attachment(
     return attachment
 
 
-def upload_message_image_from_request(
+def upload_message_attachment_from_request(
     user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
 ) -> str:
     uploaded_file_name, content_type = get_file_info(user_file)
-    return upload_message_file(
+    return upload_message_attachment(
         uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
     )
 
 
-def upload_export_tarball(
-    realm: Realm, tarball_path: str, percent_callback: Optional[Callable[[Any], None]] = None
-) -> str:
-    return upload_backend.upload_export_tarball(
-        realm, tarball_path, percent_callback=percent_callback
+def delete_message_attachment(path_id: str) -> bool:
+    return upload_backend.delete_message_attachment(path_id)
+
+
+def delete_message_attachments(path_ids: List[str]) -> None:
+    return upload_backend.delete_message_attachments(path_ids)
+
+
+def all_message_attachments() -> Iterator[Tuple[str, datetime]]:
+    return upload_backend.all_message_attachments()
+
+
+# Avatar image uploads
+
+
+def get_avatar_url(hash_key: str, medium: bool = False) -> str:
+    return upload_backend.get_avatar_url(hash_key, medium)
+
+
+def upload_avatar_image(
+    user_file: IO[bytes],
+    acting_user_profile: UserProfile,
+    target_user_profile: UserProfile,
+    content_type: Optional[str] = None,
+) -> None:
+    upload_backend.upload_avatar_image(
+        user_file, acting_user_profile, target_user_profile, content_type=content_type
     )
 
 
-def delete_export_tarball(export_path: str) -> Optional[str]:
-    return upload_backend.delete_export_tarball(export_path)
+def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
+    upload_backend.copy_avatar(source_profile, target_profile)
+
+
+def delete_avatar_image(user_profile: UserProfile) -> None:
+    upload_backend.delete_avatar_image(user_profile)
+
+
+# Realm icon and logo uploads
+
+
+def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile) -> None:
+    upload_backend.upload_realm_icon_image(user_file, user_profile)
+
+
+def upload_logo_image(user_file: IO[bytes], user_profile: UserProfile, night: bool) -> None:
+    upload_backend.upload_realm_logo_image(user_file, user_profile, night)
+
+
+# Realm emoji uploads
+
+
+def upload_emoji_image(
+    emoji_file: IO[bytes], emoji_file_name: str, user_profile: UserProfile
+) -> bool:
+    return upload_backend.upload_emoji_image(emoji_file, emoji_file_name, user_profile)
 
 
 def get_emoji_file_content(
@@ -205,3 +213,18 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         logger.info("Reuploading emoji %s", realm_emoji.id)
         realm_emoji.is_animated = upload_emoji_image(emoji_bytes_io, emoji_filename, user_profile)
         realm_emoji.save(update_fields=["is_animated"])
+
+
+# Export tarballs
+
+
+def upload_export_tarball(
+    realm: Realm, tarball_path: str, percent_callback: Optional[Callable[[Any], None]] = None
+) -> str:
+    return upload_backend.upload_export_tarball(
+        realm, tarball_path, percent_callback=percent_callback
+    )
+
+
+def delete_export_tarball(export_path: str) -> Optional[str]:
+    return upload_backend.delete_export_tarball(export_path)

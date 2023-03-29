@@ -2,24 +2,37 @@
     <div class="admin-table-wrapper">
         <p>
             {{#tr}}
-                Configure external code playgrounds for your Zulip organization. Code playgrounds are interactive in-browser development
-                environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug
-                code. Zulip code blocks that are <z-link-markdown-help>tagged with a programming language</z-link-markdown-help> will have
-                a button visible on hover that allows you to open the code block in the code playground site.
+                Code playgrounds are interactive in-browser development environments,
+                such as <z-link-repl>replit</z-link-repl>, that are designed to make
+                it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks>
+                that are tagged with a programming language will have a button visible on
+                hover that allows users to open the code block on the code playground site.
                 {{#*inline "z-link-repl"}}<a href="https://replit.com/" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                {{#*inline "z-link-markdown-help"}}<a href="/help/code-blocks" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-link-code-blocks"}}<a href="/help/code-blocks" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
         <p>
-            {{#tr}}
-            For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i>
-            and <i>URL prefix</i> fields as:
-            {{/tr}}
+            {{t "For example, to configure a code playground for code blocks tagged as Python,
+              you can set:" }}
         </p>
         <ul>
-            <li><code>Python</code> {{t "and" }} <code>https://replit.com/languages/python3/?code=</code></li>
-            <li><code>JavaScript</code> {{t "and" }} <code>https://replit.com/languages/javascript/?code=</code></li>
+            <li>
+                {{t "Language" }}: <span class="rendered_markdown"><code>Python</code></span>
+            </li>
+            <li>
+                {{t "Name" }}: <span class="rendered_markdown"><code>Python3 playground</code></span>
+            </li>
+            <li>
+                {{t "URL prefix" }}: <span class="rendered_markdown"><code>https://replit.com/languages/python3/?code=</code></span>
+            </li>
         </ul>
+        <p>
+            {{#tr}}
+                For more examples and technical details, see the <z-link>help center documentation</z-link>
+                on adding code playgrounds.
+                {{#*inline "z-link"}}<a href="/help/code-blocks#code-playgrounds" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
 
         {{#if is_admin}}
         <form class="admin-playground-form">

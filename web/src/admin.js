@@ -4,7 +4,6 @@ import render_admin_tab from "../templates/settings/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
 import {$t, get_language_name, language_list} from "./i18n";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as settings from "./settings";
@@ -181,6 +180,8 @@ export function build_page() {
             realm_user_settings_defaults.enable_stream_audible_notifications,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
+        realm_name_in_email_notifications_policy_values:
+            settings_config.realm_name_in_email_notifications_policy_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         create_web_public_stream_policy_values:
             settings_config.create_web_public_stream_policy_values,
@@ -218,7 +219,7 @@ export function build_page() {
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 
-    settings_bots.update_bot_settings_tip();
+    settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"), true);
     settings_invites.update_invite_users_setting_tip();
     insert_tip_box();
 
@@ -232,7 +233,7 @@ export function launch(section) {
     build_page();
     settings_sections.reset_sections();
 
-    overlays.open_settings();
+    settings.open_settings_overlay();
     settings_panel_menu.org_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("organization");
 }

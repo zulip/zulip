@@ -22,7 +22,7 @@ run_test("settings", ({override}) => {
     override(list_widget, "create", ($container, list) => {
         assert.deepEqual(list, [
             {
-                date_muted_str: "Jan\u00A001,\u00A02020",
+                date_muted_str: "Jan 1, 2020",
                 user_id: 5,
                 user_name: "Feivel Fiverson",
             },

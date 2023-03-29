@@ -487,7 +487,7 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
         }
         data.set(key, sum);
     }
-    const labels = labels_.slice();
+    const labels = [...labels_];
     const values = [];
     for (const label of labels) {
         if (data.has(label)) {

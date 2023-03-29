@@ -1,4 +1,5 @@
 import datetime
+import os
 import re
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Union
@@ -15,6 +16,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_change_realm_plan_type,
     do_deactivate_realm,
+    do_delete_all_realm_attachments,
     do_reactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
@@ -26,6 +28,7 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.upload import delete_message_attachments, upload_message_attachment
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -974,7 +977,7 @@ class RealmTest(ZulipTestCase):
         realm = do_create_realm("realm_string_id", "realm name")
         system_user_groups = UserGroup.objects.filter(realm=realm, is_system_group=True)
 
-        self.assert_length(system_user_groups, 7)
+        self.assert_length(system_user_groups, 8)
         user_group_names = [group.name for group in system_user_groups]
         expected_system_group_names = [
             UserGroup.OWNERS_GROUP_NAME,
@@ -984,6 +987,7 @@ class RealmTest(ZulipTestCase):
             UserGroup.MEMBERS_GROUP_NAME,
             UserGroup.EVERYONE_GROUP_NAME,
             UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
+            UserGroup.NOBODY_GROUP_NAME,
         ]
         self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
 
@@ -1241,6 +1245,7 @@ class RealmAPITest(ZulipTestCase):
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
+            realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
         )
 
         vals = test_values.get(name)
@@ -1305,16 +1310,12 @@ class RealmAPITest(ZulipTestCase):
 
     def test_ignored_parameters_in_realm_default_endpoint(self) -> None:
         params = {"starred_message_counts": orjson.dumps(False).decode(), "emoji_set": "twitter"}
-        json_result = self.client_patch("/json/realm/user_settings_defaults", params)
-        self.assert_json_success(json_result)
+        result = self.client_patch("/json/realm/user_settings_defaults", params)
+        self.assert_json_success(result, ignored_parameters=["emoji_set"])
 
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         self.assertEqual(realm_user_default.starred_message_counts, False)
-
-        result = orjson.loads(json_result.content)
-        self.assertIn("ignored_parameters_unsupported", result)
-        self.assertEqual(result["ignored_parameters_unsupported"], ["emoji_set"])
 
     def test_update_realm_move_messages_within_stream_limit_seconds_unlimited_value(self) -> None:
         realm = get_realm("zulip")
@@ -1415,10 +1416,47 @@ class RealmAPITest(ZulipTestCase):
 
 
 class ScrubRealmTest(ZulipTestCase):
+    def test_do_delete_all_realm_attachments(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        Attachment.objects.filter(realm=realm).delete()
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+
+        path_ids = []
+        for n in range(1, 4):
+            content = f"content{n}".encode()
+            url = upload_message_attachment(
+                f"dummy{n}.txt", len(content), "text/plain", content, hamlet
+            )
+            base = "/user_uploads/"
+            self.assertEqual(base, url[: len(base)])
+            path_id = re.sub("/user_uploads/", "", url)
+            self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
+            path_ids.append(path_id)
+
+        with mock.patch(
+            "zerver.actions.realm_settings.delete_message_attachments",
+            side_effect=delete_message_attachments,
+        ) as p:
+            do_delete_all_realm_attachments(realm, batch_size=2)
+
+            self.assertEqual(p.call_count, 2)
+            p.assert_has_calls(
+                [
+                    mock.call([path_ids[0], path_ids[1]]),
+                    mock.call([path_ids[2]]),
+                ]
+            )
+        self.assertEqual(Attachment.objects.filter(realm=realm).count(), 0)
+        for file_path in path_ids:
+            self.assertFalse(os.path.isfile(os.path.join(settings.LOCAL_FILES_DIR, path_id)))
+
     def test_scrub_realm(self) -> None:
         zulip = get_realm("zulip")
         lear = get_realm("lear")
 
+        hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         othello = self.example_user("othello")
 
@@ -1440,12 +1478,20 @@ class ScrubRealmTest(ZulipTestCase):
             self.send_stream_message(king, "Shakespeare")
 
         Attachment.objects.filter(realm=zulip).delete()
-        Attachment.objects.create(realm=zulip, owner=iago, path_id="a/b/temp1.txt", size=512)
-        Attachment.objects.create(realm=zulip, owner=othello, path_id="a/b/temp2.txt", size=512)
-
         Attachment.objects.filter(realm=lear).delete()
-        Attachment.objects.create(realm=lear, owner=cordelia, path_id="c/d/temp1.txt", size=512)
-        Attachment.objects.create(realm=lear, owner=king, path_id="c/d/temp2.txt", size=512)
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+        file_paths = []
+        for n, owner in enumerate([iago, othello, hamlet, cordelia, king]):
+            content = f"content{n}".encode()
+            url = upload_message_attachment(
+                f"dummy{n}.txt", len(content), "text/plain", content, owner
+            )
+            base = "/user_uploads/"
+            self.assertEqual(base, url[: len(base)])
+            file_path = os.path.join(settings.LOCAL_FILES_DIR, re.sub("/user_uploads/", "", url))
+            self.assertTrue(os.path.isfile(file_path))
+            file_paths.append(file_path)
 
         CustomProfileField.objects.create(realm=lear)
 
@@ -1466,6 +1512,13 @@ class ScrubRealmTest(ZulipTestCase):
 
         self.assertEqual(Attachment.objects.filter(realm=zulip).count(), 0)
         self.assertEqual(Attachment.objects.filter(realm=lear).count(), 2)
+
+        # Zulip realm files don't exist on disk, Lear ones do
+        self.assertFalse(os.path.isfile(file_paths[0]))
+        self.assertFalse(os.path.isfile(file_paths[1]))
+        self.assertFalse(os.path.isfile(file_paths[2]))
+        self.assertTrue(os.path.isfile(file_paths[3]))
+        self.assertTrue(os.path.isfile(file_paths[4]))
 
         self.assertEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
         self.assertNotEqual(CustomProfileField.objects.filter(realm=lear).count(), 0)

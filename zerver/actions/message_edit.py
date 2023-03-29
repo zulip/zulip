@@ -1,4 +1,5 @@
 import datetime
+from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Optional, Set
 
 from django.conf import settings
@@ -19,7 +20,7 @@ from zerver.actions.message_send import (
     render_incoming_message,
 )
 from zerver.actions.uploads import check_attachment_reference_change
-from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -50,7 +51,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.types import EditHistoryEvent
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
-from zerver.lib.user_topics import get_users_muting_topic
+from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -60,6 +61,7 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_stream_by_id_in_realm,
     get_system_bot,
 )
@@ -126,8 +128,8 @@ def maybe_send_resolve_topic_notifications(
     old_topic: str,
     new_topic: str,
     changed_messages: List[Message],
-) -> bool:
-    """Returns True if resolve topic notifications were in fact sent."""
+) -> Optional[int]:
+    """Returns resolved_topic_message_id if resolve topic notifications were in fact sent."""
     # Note that topics will have already been stripped in check_update_message.
     #
     # This logic is designed to treat removing a weird "✔ ✔✔ "
@@ -153,7 +155,7 @@ def maybe_send_resolve_topic_notifications(
         # administrator can the messages in between. We consider this
         # to be a fundamental risk of irresponsible message deletion,
         # not a bug with the "resolve topics" feature.
-        return False
+        return None
 
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
@@ -171,7 +173,7 @@ def maybe_send_resolve_topic_notifications(
         elif topic_unresolved:
             notification_string = _("{user} has marked this topic as unresolved.")
 
-        internal_send_stream_message(
+        resolved_topic_message_id = internal_send_stream_message(
             sender,
             stream,
             new_topic,
@@ -181,7 +183,7 @@ def maybe_send_resolve_topic_notifications(
             limit_unread_user_ids=affected_participant_ids,
         )
 
-    return True
+    return resolved_topic_message_id
 
 
 def send_message_moved_breadcrumbs(
@@ -748,7 +750,8 @@ def do_update_message(
             )
             moved_all_visible_messages = len(visible_unmoved_messages) == 0
 
-    # Migrate muted topic configuration in the following circumstances:
+    # Migrate 'topic with visibility_policy' configuration in the following
+    # circumstances:
     #
     # * If propagate_mode is change_all, do so unconditionally.
     #
@@ -764,48 +767,66 @@ def do_update_message(
         assert stream_being_edited is not None
         assert topic_name is not None or new_stream is not None
 
-        for muting_user in get_users_muting_topic(stream_being_edited.id, orig_topic_name):
-            # TODO: Ideally, this would be a bulk update operation,
-            # because we are doing database operations in a loop here.
-            #
-            # This loop is only acceptable in production because it is
-            # rare for more than a few users to have muted an
-            # individual topic that is being moved; as of this
-            # writing, no individual topic in Zulip Cloud had been
-            # muted by more than 100 users.
-
-            if new_stream is not None and muting_user.id in delete_event_notify_user_ids:
-                # If the messages are being moved to a stream the user
-                # cannot access, then we treat this as the
-                # messages/topic being deleted for this user. This is
-                # important for security reasons; we don't want to
-                # give users a UserTopic row in a stream they cannot
-                # access.  Unmute the topic for such users.
-                do_unmute_topic(muting_user, stream_being_edited, orig_topic_name)
+        user_profiles_for_visibility_policy: Dict[int, List[UserProfile]] = defaultdict(list)
+        stream_inaccessible_to_user_profiles: List[UserProfile] = []
+        for user_topic in get_users_with_user_topic_visibility_policy(
+            stream_being_edited.id, orig_topic_name
+        ):
+            if (
+                new_stream is not None
+                and user_topic.user_profile_id in delete_event_notify_user_ids
+            ):
+                stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
-                # Otherwise, we move the muted topic record for the
-                # user, but removing the old topic mute and then
-                # creating a new one.
-                do_unmute_topic(
-                    muting_user,
+                user_profiles_for_visibility_policy[user_topic.visibility_policy].append(
+                    user_topic.user_profile
+                )
+
+        # If the messages are being moved to a stream the user
+        # cannot access, then we treat this as the
+        # messages/topic being deleted for this user. This is
+        # important for security reasons; we don't want to
+        # give users a UserTopic row in a stream they cannot
+        # access. Remove the user topic rows for such users.
+        bulk_do_set_user_topic_visibility_policy(
+            stream_inaccessible_to_user_profiles,
+            stream_being_edited,
+            orig_topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+        )
+
+        # If the messages are being moved to a stream the user
+        # can access. We move the user topic records for such
+        # users, but removing the old topic visibility_policy
+        # and then creating a new one.
+        for visibility_policy in UserTopic.VisibilityPolicy.values:
+            # Using the dict, we get the user_profiles lists for the original_topic
+            # that corresponds to each visibility_policy.
+            # Perform the remove and create operation for each of
+            # these user_profiles lists.
+            if visibility_policy in user_profiles_for_visibility_policy:
+                bulk_do_set_user_topic_visibility_policy(
+                    user_profiles_for_visibility_policy[visibility_policy],
                     stream_being_edited,
                     orig_topic_name,
-                    # do_mute_topic will send an updated muted topic
+                    visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+                    # do_set_user_topic_visibility_policy with visibility_policy
+                    # set to 'new_visibility_policy' will send an updated muted topic
                     # event, which contains the full set of muted
                     # topics, just after this.
                     skip_muted_topics_event=True,
                 )
 
-                do_mute_topic(
-                    muting_user,
+                bulk_do_set_user_topic_visibility_policy(
+                    user_profiles_for_visibility_policy[visibility_policy],
                     new_stream if new_stream is not None else stream_being_edited,
                     topic_name if topic_name is not None else orig_topic_name,
-                    ignore_duplicate=True,
+                    visibility_policy=visibility_policy,
                 )
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
-    sent_resolve_topic_notification = False
+    resolved_topic_message_id = None
     if topic_name is not None and content is None and len(changed_messages) > 0:
         # When stream is changed and topic is marked as resolved or unresolved
         # in the same API request, resolved or unresolved notification should
@@ -816,7 +837,7 @@ def do_update_message(
             stream_to_send_resolve_topic_notification = new_stream
 
         assert stream_to_send_resolve_topic_notification is not None
-        sent_resolve_topic_notification = maybe_send_resolve_topic_notifications(
+        resolved_topic_message_id = maybe_send_resolve_topic_notifications(
             user_profile=user_profile,
             stream=stream_to_send_resolve_topic_notification,
             old_topic=orig_topic_name,
@@ -859,25 +880,57 @@ def do_update_message(
         new_thread_notification_string = None
         if send_notification_to_new_thread and (
             new_stream is not None
-            or not sent_resolve_topic_notification
+            or not resolved_topic_message_id
             or (
                 pre_truncation_topic_name is not None
                 and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
                 != pre_truncation_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
             )
         ):
-            if moved_all_visible_messages:
+            stream_for_new_topic = new_stream if new_stream is not None else stream_being_edited
+            assert stream_for_new_topic.recipient_id is not None
+
+            new_topic = topic_name if topic_name is not None else orig_topic_name
+
+            changed_message_ids = [changed_message.id for changed_message in changed_messages]
+
+            # We calculate whether the user moved the entire topic
+            # using that user's own permissions, which is important to
+            # avoid leaking information about whether there are
+            # messages in the destination topic's deeper history that
+            # the acting user does not have permission to access.
+            #
+            # TODO: These queries are quite inefficient, in that we're
+            # fetching full copies of all the messages in the
+            # destination topic to answer the question of whether the
+            # current user has access to at least one such message.
+            #
+            # The main strength of the current implementation is that
+            # it reuses existing logic, which is good for keeping it
+            # correct as we maintain the codebase.
+            preexisting_topic_messages = messages_for_topic(
+                stream_for_new_topic.recipient_id, new_topic
+            ).exclude(id__in=[*changed_message_ids, resolved_topic_message_id])
+
+            visible_preexisting_messages = bulk_access_messages(
+                user_profile, preexisting_topic_messages, stream=stream_for_new_topic
+            )
+
+            no_visible_preexisting_messages = len(visible_preexisting_messages) == 0
+
+            if no_visible_preexisting_messages and moved_all_visible_messages:
                 new_thread_notification_string = gettext_lazy(
                     "This topic was moved here from {old_location} by {user}."
                 )
-            elif changed_messages_count == 1:
-                new_thread_notification_string = gettext_lazy(
-                    "A message was moved here from {old_location} by {user}."
-                )
             else:
-                new_thread_notification_string = gettext_lazy(
-                    "{changed_messages_count} messages were moved here from {old_location} by {user}."
-                )
+                if changed_messages_count == 1:
+                    new_thread_notification_string = gettext_lazy(
+                        "A message was moved here from {old_location} by {user}."
+                    )
+                else:
+                    new_thread_notification_string = gettext_lazy(
+                        "{changed_messages_count} messages were moved here from {old_location} by {user}."
+                    )
 
         send_message_moved_breadcrumbs(
             user_profile,

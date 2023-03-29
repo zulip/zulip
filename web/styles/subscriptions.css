@@ -24,21 +24,21 @@
     font-family: "Source Code Pro", monospace;
     padding: 10px;
     font-size: 0.85rem;
-    background-color: hsl(0, 0%, 98%);
-    border: 1px solid hsl(0, 0%, 87%);
+    background-color: hsl(0deg 0% 98%);
+    border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
 }
 
 .sp-preview {
     width: 20px;
     border: none;
-    box-shadow: 0 0 1px hsla(0, 0%, 0%, 1);
+    box-shadow: 0 0 1px hsl(0deg 0% 0%);
 }
 
 .sp-replacer {
     margin-right: 12px;
     border: none;
-    box-shadow: 0 0 2px hsla(0, 0%, 0%, 0.8);
+    box-shadow: 0 0 2px hsl(0deg 0% 0% / 80%);
 }
 
 .stream-email .email-address {
@@ -51,7 +51,7 @@
 
 .muted-sub,
 .control-label-disabled {
-    color: hsl(0, 0%, 64%);
+    color: hsl(0deg 0% 64%);
 }
 
 .sub_setting_checkbox .muted-sub label,
@@ -79,18 +79,18 @@
     font-weight: 500;
     position: relative;
     top: 2px;
-    border: 1px solid hsl(0, 0%, 80%);
+    border: 1px solid hsl(0deg 0% 80%);
     border-radius: 5px;
-    background-color: hsl(0, 0%, 100%);
-    color: hsl(0, 0%, 0%);
+    background-color: hsl(0deg 0% 100%);
+    color: hsl(0deg 0% 0%);
     margin: 0 0 0 5px;
     height: 27px;
 
     &:hover {
-        border: 1px solid hsl(0, 0%, 47%);
+        border: 1px solid hsl(0deg 0% 47%);
     }
 
-    span {
+    & span {
         position: relative;
         top: -5px;
     }
@@ -111,7 +111,7 @@
 .stream_creation_error {
     display: none;
     margin-left: 2px;
-    color: hsl(0, 100%, 50%);
+    color: hsl(0deg 100% 50%);
 }
 
 /* TODO: Unify with settings.css definition */
@@ -134,8 +134,8 @@ h4.user_group_setting_subsection_title {
 .member-list-box,
 .subscriber-list-box {
     text-align: center;
-    border-left: 1px solid hsl(0, 0%, 87%);
-    border-right: 1px solid hsl(0, 0%, 87%);
+    border-left: 1px solid hsl(0deg 0% 87%);
+    border-right: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
 
     .member_list_container,
@@ -153,18 +153,18 @@ h4.user_group_setting_subsection_title {
             margin: auto;
             border-radius: 6px;
 
-            tbody {
+            & tbody {
                 border-bottom: none;
 
-                tr:last-of-type {
+                & tr:last-of-type {
                     border-bottom: none;
                 }
             }
 
-            tr {
-                border-bottom: 1px solid hsl(0, 0%, 93%);
+            & tr {
+                border-bottom: 1px solid hsl(0deg 0% 93%);
 
-                td,
+                & td,
                 th {
                     padding: 4px 0 4px 5px;
                     vertical-align: middle;
@@ -179,16 +179,16 @@ h4.user_group_setting_subsection_title {
                 display: inline-block;
             }
 
-            tbody:empty::after,
+            & tbody:empty::after,
             &:empty::after {
                 content: "No subscribers to this stream.";
                 display: block;
 
-                color: hsl(0, 0%, 67%);
+                color: hsl(0deg 0% 67%);
                 padding: 5px 5px 5px 10px;
             }
 
-            thead th {
+            & thead th {
                 &:first-of-type {
                     border-top-left-radius: 4px;
                 }
@@ -226,7 +226,7 @@ h4.user_group_setting_subsection_title {
 
     .user_group_subscription_request_result,
     .stream_subscription_request_result {
-        a {
+        & a {
             color: inherit;
         }
     }
@@ -272,7 +272,7 @@ h4.user_group_setting_subsection_title {
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
-    color: hsl(0, 0%, 67%);
+    color: hsl(0deg 0% 67%);
 
     float: left;
     padding: 2px 10px;
@@ -312,7 +312,7 @@ h4.user_group_setting_subsection_title {
         text-align: center;
         text-transform: uppercase;
         font-weight: 700;
-        border-bottom: 1px solid hsl(0, 0%, 87%);
+        border-bottom: 1px solid hsl(0deg 0% 87%);
 
         .fa-chevron-left {
             display: none;
@@ -330,7 +330,7 @@ h4.user_group_setting_subsection_title {
             position: absolute;
             top: 10px;
             right: 10px;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
     }
@@ -356,11 +356,11 @@ h4.user_group_setting_subsection_title {
     }
 
     .left {
-        border-right: 1px solid hsl(0, 0%, 87%);
+        border-right: 1px solid hsl(0deg 0% 87%);
 
         .search-container {
             padding: 6px 8px;
-            border-bottom: 1px solid hsl(0, 0%, 87%);
+            border-bottom: 1px solid hsl(0deg 0% 87%);
             display: flex;
             justify-content: space-between;
         }
@@ -377,11 +377,11 @@ h4.user_group_setting_subsection_title {
             margin-left: 2em;
             margin-right: 2em;
 
-            span {
-                color: hsl(0, 0%, 67%);
+            & span {
+                color: hsl(0deg 0% 67%);
             }
 
-            button {
+            & button {
                 padding: 6px 10px 8px;
                 display: block;
                 margin: 0 auto 10px;
@@ -392,7 +392,7 @@ h4.user_group_setting_subsection_title {
             padding: 2px;
             text-align: center;
             font-weight: 600;
-            border-bottom: 1px solid hsl(0, 0%, 87%);
+            border-bottom: 1px solid hsl(0deg 0% 87%);
 
             &.preview::after {
                 content: "Preview";
@@ -425,12 +425,12 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    input[type="text"].small {
-        border: 1px solid hsl(0, 0%, 80%);
+    & input[type="text"].small {
+        border: 1px solid hsl(0deg 0% 80%);
         border-radius: 4px;
         padding: 3px;
         outline: none;
-        color: hsl(0, 0%, 27%);
+        color: hsl(0deg 0% 27%);
         text-align: center;
 
         &:focus {
@@ -467,7 +467,7 @@ h4.user_group_setting_subsection_title {
     justify-content: center;
     margin-bottom: 0;
     height: auto;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
+    border-bottom: 1px solid hsl(0deg 0% 87%);
 }
 
 .user-groups-list,
@@ -500,14 +500,14 @@ h4.user_group_setting_subsection_title {
 
 .user-group-creation-body,
 .stream-creation-body {
-    section.block {
+    & section.block {
         margin-bottom: 20px;
     }
 
     #announce-new-stream {
         margin: 25px auto;
 
-        div[class^="fa"] {
+        & div[class^="fa"] {
             margin-left: 3px;
             margin-right: 8px;
         }
@@ -517,7 +517,7 @@ h4.user_group_setting_subsection_title {
 .stream-row,
 .group-row {
     padding: 15px 10px 11px;
-    border-bottom: 1px solid hsl(0, 0%, 93%);
+    border-bottom: 1px solid hsl(0deg 0% 93%);
     cursor: pointer;
 
     .check {
@@ -530,7 +530,7 @@ h4.user_group_setting_subsection_title {
         background-repeat: no-repeat;
         background-position: center center;
 
-        svg {
+        & svg {
             fill: transparent;
             width: 70%;
             margin: 0% 15%;
@@ -557,13 +557,13 @@ h4.user_group_setting_subsection_title {
             }
 
             .loading_indicator_spinner svg path {
-                fill: hsl(178, 100%, 40%);
+                fill: hsl(178deg 100% 40%);
             }
         }
     }
 
     .checked svg {
-        fill: hsl(170, 48%, 54%);
+        fill: hsl(170deg 48% 54%);
     }
 
     .icon {
@@ -571,9 +571,9 @@ h4.user_group_setting_subsection_title {
         height: 35px;
         margin-right: 8px;
         margin-top: 4px;
-        background-color: hsl(300, 100%, 25%);
+        background-color: hsl(300deg 100% 25%);
         border-radius: 4px;
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
 
         .symbol {
             font-weight: 600;
@@ -613,7 +613,7 @@ h4.user_group_setting_subsection_title {
         .top-bar .subscriber-count,
         .bottom-bar .stream-message-count {
             white-space: nowrap;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
         }
 
         .top-bar .subscriber-count-text,
@@ -644,7 +644,7 @@ h4.user_group_setting_subsection_title {
     }
 
     &.active {
-        background-color: hsl(0, 0%, 93%);
+        background-color: hsl(0deg 0% 93%);
     }
 
     > div {
@@ -654,12 +654,12 @@ h4.user_group_setting_subsection_title {
 
     &:hover .check:not(.checked) svg,
     &.active:hover .check:not(.checked) svg {
-        fill: hsl(0, 0%, 87%);
+        fill: hsl(0deg 0% 87%);
     }
 
     .check:not(.checked):hover svg,
     &.active .check:not(.checked):hover svg {
-        fill: hsl(0, 0%, 72%);
+        fill: hsl(0deg 0% 72%);
     }
 
     &::selection,
@@ -672,7 +672,7 @@ h4.user_group_setting_subsection_title {
 .group-row .group-info-box .description:empty::after {
     content: attr(data-no-description);
     font-style: italic;
-    color: hsl(0, 0%, 67%);
+    color: hsl(0deg 0% 67%);
 }
 
 #groups_overlay,
@@ -709,7 +709,7 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
             margin-bottom: 3px;
 
-            h5 {
+            & h5 {
                 display: inline-block;
             }
         }
@@ -736,7 +736,7 @@ h4.user_group_setting_subsection_title {
                     display: flex !important;
                     justify-content: center;
                     align-items: center;
-                    background-color: hsla(0, 0%, 100%, 0.9);
+                    background-color: hsl(0deg 0% 100% / 90%);
                     z-index: 1;
                 }
 
@@ -782,6 +782,8 @@ h4.user_group_setting_subsection_title {
     .stream-header {
         white-space: nowrap;
         padding-top: 10px;
+        display: flex;
+        align-items: center;
 
         .group-name-wrapper,
         .stream-name {
@@ -792,20 +794,18 @@ h4.user_group_setting_subsection_title {
             margin-left: -3px;
             margin-top: -5px;
             white-space: nowrap;
-            max-width: 260px;
 
             .group-name,
             .sub-stream-name {
                 display: block;
-                max-width: 20ch;
+                max-width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                float: left;
             }
         }
 
         .button-group {
-            float: right;
+            margin-left: 1rem;
 
             .deactivate {
                 margin-right: 3px;
@@ -814,11 +814,11 @@ h4.user_group_setting_subsection_title {
         }
 
         .subscribe-button.unsubscribed {
-            color: hsl(156, 39%, 54%);
-            border-color: hsl(156, 39%, 77%);
+            color: hsl(156deg 39% 54%);
+            border-color: hsl(156deg 39% 77%);
 
             &:active {
-                background-color: hsla(156, 39%, 54%, 0.2);
+                background-color: hsl(156deg 39% 54% / 20%);
             }
         }
 
@@ -849,18 +849,19 @@ h4.user_group_setting_subsection_title {
 
     .group-description-wrapper,
     .stream-description {
+        word-break: break-all;
         margin-bottom: 5px;
 
         .no-description {
             font-style: italic;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
         }
     }
 
     .checkmark {
         display: none;
         margin-left: 5px;
-        color: hsl(0, 0%, 67%);
+        color: hsl(0deg 0% 67%);
 
         cursor: pointer;
 
@@ -914,7 +915,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .subsection-parent .input-group {
-        input[type="checkbox"] {
+        & input[type="checkbox"] {
             margin-top: 0;
         }
 
@@ -926,7 +927,7 @@ h4.user_group_setting_subsection_title {
             box-shadow: none;
         }
 
-        input[type="radio"] {
+        & input[type="radio"] {
             margin-right: 5px;
         }
 
@@ -936,12 +937,8 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-#archive-stream-modal i {
-    vertical-align: middle;
-}
-
 div.settings-radio-input-parent {
-    border-bottom: 1px solid hsl(0, 0%, 87%);
+    border-bottom: 1px solid hsl(0deg 0% 87%);
     margin: 2px 0 2px 5px;
     padding: 2px 0;
 
@@ -949,19 +946,19 @@ div.settings-radio-input-parent {
         border-bottom: none;
     }
 
-    label.radio {
+    & label.radio {
         display: inline;
         margin: 5px;
     }
 
-    input {
+    & input {
         float: left;
         width: auto;
         cursor: pointer;
         margin: 3.5px 0 1px;
 
         &:focus {
-            outline: 1px dotted hsl(0, 0%, 20%);
+            outline: 1px dotted hsl(0deg 0% 20%);
             outline: 5px auto -webkit-focus-ring-color;
             outline-offset: -2px;
         }
@@ -978,7 +975,7 @@ div.settings-radio-input-parent {
         margin-bottom: 10px;
 
         &.message-retention-setting-group {
-            input {
+            & input {
                 width: 5ch;
                 text-align: right;
             }
@@ -986,28 +983,21 @@ div.settings-radio-input-parent {
     }
 
     .settings_select {
-        /* Match .setting_desktop_icon_count_display */
-        width: 325px;
+        /* Match with select elements in settings page */
+        min-width: 325px;
+        max-width: 100%;
         height: fit-content;
     }
 
-    select.stream_post_policy_setting {
+    & select.stream_post_policy_setting {
         margin-bottom: 10px;
     }
 
     .dropdown-list-widget {
         .dropdown-toggle {
             margin-bottom: 10px;
-            width: 325px;
-        }
-
-        ul.dropdown-menu {
-            width: 325px;
-
-            input {
-                /* 325 - 2* (9px (margin) + 1px (border) + 6px (padding)) */
-                width: 293px;
-            }
+            min-width: 325px;
+            max-width: 100%;
         }
     }
 }
@@ -1102,7 +1092,7 @@ div.settings-radio-input-parent {
         left: 101%;
 
         top: 45px;
-        background-color: hsl(0, 0%, 98%);
+        background-color: hsl(0deg 0% 98%);
         border-top: none;
 
         transition: all 0.3s ease;
@@ -1128,7 +1118,6 @@ div.settings-radio-input-parent {
 
         .settings {
             overflow: auto;
-            height: calc(100% - 20px);
             -webkit-overflow-scrolling: touch;
         }
     }
@@ -1169,6 +1158,10 @@ div.settings-radio-input-parent {
         .save-button-controls {
             display: block;
             margin: 0 0 10px;
+
+            &.hide {
+                display: none;
+            }
         }
     }
 }

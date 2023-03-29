@@ -85,9 +85,9 @@ The main Zulip server log contains a line for each backend request.
 It also contains warnings, errors, and the full tracebacks for any
 Python exceptions. In production, it goes to
 `/var/log/zulip/server.log`; in development, it goes to the terminal
-where you run `run-dev.py`.
+where you run `run-dev`.
 
-In development, it's good to keep an eye on the `run-dev.py` console
+In development, it's good to keep an eye on the `run-dev` console
 as you work on backend changes, since it's a great way to notice bugs
 you just introduced.
 
@@ -191,7 +191,7 @@ might use). In development, this means displaying a highly visible
 overlay over the message view area, to make exceptions in testing a
 new feature hard to miss.
 
-- Blueslip is implemented in `web/src/blueslip.js`.
+- Blueslip is implemented in `web/src/blueslip.ts`.
 - In order to capture essentially any error occurring in the browser,
   Blueslip listens for the `error` event on `window`, and has methods
   for being manually triggered by Zulip JavaScript code for warnings

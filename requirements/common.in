@@ -77,7 +77,7 @@ django-bmemcached
 python-dateutil
 
 # Needed for time zone work
-backports.zoneinfo ; python_version < "3.9"
+https://github.com/andersk/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65af933.zip#egg=backports.zoneinfo==0.2.1+git ; python_version < "3.9"  # https://github.com/pganssle/zoneinfo/pull/126
 
 # Needed for Redis
 redis
@@ -110,7 +110,7 @@ python-magic
 # The Zulip API bindings, from its own repository.  We integrate with
 # these tightly, including fetching content not included in the official
 # PyPI release tarballs, such as logos, assets and documentation files
-# that we render on our /integrations page. Therefore, we need to pin
+# that we render on our /integrations/ page. Therefore, we need to pin
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
@@ -132,7 +132,7 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth[call,phonenumberslite,sms]
+django-two-factor-auth[call,phonenumberslite,sms]<1.15.1  # https://github.com/jazzband/django-two-factor-auth/issues/587
 
 # Needed for processing payments (in corporate)
 stripe

@@ -2,12 +2,12 @@
 
 from django.conf import settings
 from django.db import migrations, transaction
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.utils.timezone import now as timezone_now
 
 # This migration is a copy of
-# zerver/migrations/0402_alter_usertopic_visibility_policy.py" run
+# zerver/migrations/0382_create_role_based_system_groups.py" run
 # for the internal realm only.
 
 

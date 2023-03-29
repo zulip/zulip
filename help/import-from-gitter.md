@@ -72,7 +72,7 @@ to export all public channel messages.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
    commands.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current
@@ -131,7 +131,7 @@ keep in mind about the import process:
 
 - Message edit history is not imported.
 
-[grant-admin-access]: https://zulip.readthedocs.io/en/latest/production/management-commands.html#grant-administrator-access)
+[grant-admin-access]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#other-useful-manage-py-commands
 [gitter-api-user-data]: https://developer.gitter.im/docs/user-resource
 
 ## Get your organization started with Zulip
@@ -163,7 +163,7 @@ Once the import process is completed, you will need to:
 4. Share the URL for your new Zulip organization, and (recommended) the [Getting
    started with Zulip guide](/help/getting-started-with-zulip).
 
-5. Migrate any [integrations](/integrations).
+5. Migrate any [integrations](/integrations/).
 
 {end_tabs}
 

@@ -355,14 +355,14 @@ export function delete_sub(stream_id) {
 }
 
 export function get_non_default_stream_names() {
-    let subs = Array.from(stream_info.values());
+    let subs = [...stream_info.values()];
     subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
     const names = subs.map((sub) => sub.name);
     return names;
 }
 
 export function get_unsorted_subs() {
-    return Array.from(stream_info.values());
+    return [...stream_info.values()];
 }
 
 export function num_subscribed_subs() {
@@ -370,11 +370,11 @@ export function num_subscribed_subs() {
 }
 
 export function subscribed_subs() {
-    return Array.from(stream_info.true_values());
+    return [...stream_info.true_values()];
 }
 
 export function unsubscribed_subs() {
-    return Array.from(stream_info.false_values());
+    return [...stream_info.false_values()];
 }
 
 export function subscribed_streams() {
@@ -687,7 +687,7 @@ export function set_realm_default_streams(realm_default_streams) {
 }
 
 export function get_default_stream_ids() {
-    return Array.from(default_stream_ids);
+    return [...default_stream_ids];
 }
 
 export function is_default_stream_id(stream_id) {
@@ -746,6 +746,7 @@ export function create_streams(streams) {
         // We handle subscriber stuff in other events.
 
         const attrs = {
+            stream_weekly_traffic: null,
             subscribers: [],
             subscribed: false,
             ...stream,
@@ -821,7 +822,7 @@ export function get_streams_for_admin() {
         return util.strcmp(a.name, b.name);
     }
 
-    const subs = Array.from(stream_info.values());
+    const subs = [...stream_info.values()];
 
     subs.sort(by_name);
 

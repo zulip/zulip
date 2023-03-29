@@ -11,7 +11,7 @@ from zerver.actions.invites import do_create_multiuse_invite_link
 from zerver.actions.realm_settings import do_change_realm_org_type, do_send_realm_reactivation_email
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.models import (
     MultiuseInvite,
     PreregistrationUser,
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
-        reset_emails_in_zulip_realm()
+        reset_email_visibility_to_everyone_in_zulip_realm()
         lear_user = self.lear_user("king")
         lear_user.is_staff = True
         lear_user.save(update_fields=["is_staff"])
@@ -302,7 +302,9 @@ class TestSupportEndpoint(ZulipTestCase):
             check_zulip_realm_query_result(result)
 
             email = self.nonreg_email("alice")
-            self.client_post("/new/", {"email": email})
+            self.submit_realm_creation_form(
+                email, realm_subdomain="zuliptest", realm_name="Zulip test"
+            )
             result = get_check_query_result(email, 1)
             check_realm_creation_query_result(result, email)
 
@@ -342,7 +344,7 @@ class TestSupportEndpoint(ZulipTestCase):
         """
         Unspecified org type is special in that it is marked to not be shown
         on the registration page (because organitions are not meant to be able to choose it),
-        but should be correctly shown at the /support endpoint.
+        but should be correctly shown at the /support/ endpoint.
         """
         realm = get_realm("zulip")
 

@@ -26,10 +26,8 @@ function make_stream_message({stream_id, topic, sender_id}) {
 mock_esm("../src/message_store", {
     get: (message_id) => messages.get(message_id),
 });
-mock_esm("../src/people", {
-    my_current_user_id: () => 1,
-});
-
+const people = zrequire("people");
+people.initialize_current_user(1);
 const rs = zrequire("recent_senders");
 zrequire("message_util.js");
 
@@ -345,6 +343,16 @@ test("process_pms", () => {
     // PM doesn't exist.
     assert.deepEqual(rs.get_pm_recent_senders("1000,2000"), {
         participants: [],
+        non_participants: [],
+    });
+
+    rs.process_private_message({
+        to_user_ids: "1",
+        sender_id: sender1,
+        id: 4,
+    });
+    assert.deepEqual(rs.get_pm_recent_senders("1"), {
+        participants: [1],
         non_participants: [],
     });
 });

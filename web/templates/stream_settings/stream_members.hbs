@@ -19,11 +19,11 @@
     <div class="subscriber-list-box">
         <div class="subscriber_list_container" data-simplebar>
             <div class="subscriber_list_loading_indicator"></div>
-            <table class="subscriber-list table table-striped">
+            <table id="stream_members_list" class="subscriber-list table table-striped">
                 <thead class="table-sticky-headers">
-                    <th>{{t "Name" }}</th>
-                    <th>{{t "Email" }}</th>
-                    <th>{{t "User ID" }}</th>
+                    <th data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
+                    <th data-sort="email">{{t "Email" }}</th>
+                    <th data-sort="id">{{t "User ID" }}</th>
                     {{#if can_remove_subscribers}}
                     <th class="actions">{{t "Actions" }}</th>
                     {{/if}}

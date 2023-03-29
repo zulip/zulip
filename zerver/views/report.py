@@ -1,6 +1,5 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import logging
-import subprocess
 from typing import Any, Mapping, Optional, Union
 from urllib.parse import SplitResult
 
@@ -10,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from version import ZULIP_VERSION
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import human_users_only
 from zerver.lib.markdown import privacy_clean_markdown
@@ -127,6 +127,7 @@ def report_error(
     user_agent: str = REQ(),
     href: str = REQ(),
     log: str = REQ(),
+    web_version: Optional[str] = REQ(default=None),
     more_info: Mapping[str, Any] = REQ(json_validator=check_dict([]), default={}),
 ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
@@ -139,13 +140,7 @@ def report_error(
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
-    try:
-        version: Optional[str] = subprocess.check_output(
-            ["git", "show", "-s", "--oneline"],
-            text=True,
-        )
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        version = None
+    server_version = str(ZULIP_VERSION)
 
     # Get the IP address of the request
     remote_ip = request.META["REMOTE_ADDR"]
@@ -157,11 +152,13 @@ def report_error(
         more_info["draft_content"] = privacy_clean_markdown(more_info["draft_content"])
 
     if maybe_user_profile.is_authenticated:
-        email = maybe_user_profile.delivery_email
-        full_name = maybe_user_profile.full_name
+        user = {
+            "user_email": maybe_user_profile.delivery_email,
+            "user_full_name": maybe_user_profile.full_name,
+            "user_role": maybe_user_profile.get_role_name(),
+        }
     else:
-        email = "unauthenticated@example.com"
-        full_name = "Anonymous User"
+        user = None
 
     queue_json_publish(
         "error_reports",
@@ -170,11 +167,11 @@ def report_error(
             report=dict(
                 host=SplitResult("", request.get_host(), "", "", "").hostname,
                 ip_address=remote_ip,
-                user_email=email,
-                user_full_name=full_name,
+                user=user,
                 user_visible=ui_message,
                 server_path=settings.DEPLOY_ROOT,
-                version=version,
+                server_version=server_version,
+                web_version=web_version,
                 user_agent=user_agent,
                 href=href,
                 message=message,

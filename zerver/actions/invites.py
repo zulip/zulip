@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import Any, Collection, Dict, List, Optional, Sequence, Set, Tuple, Union
 
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from zxcvbn import zxcvbn
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from analytics.models import RealmCount
@@ -23,6 +25,7 @@ from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import (
+    Message,
     MultiuseInvite,
     PreregistrationUser,
     Realm,
@@ -80,6 +83,77 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
     return recent_invites
 
 
+def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
+    # Basic check that we're blow the realm-set limit
+    recent_invites = estimate_recent_invites([realm], days=1)
+    if num_invitees + recent_invites > realm.max_invites:
+        return True
+
+    if realm.plan_type != Realm.PLAN_TYPE_LIMITED:
+        return False
+    if realm.max_invites != settings.INVITES_DEFAULT_REALM_DAILY_MAX:
+        return False
+
+    # If they're a non-paid plan with default invitation limits,
+    # we further limit how many invitations can be sent in a day
+    # as a function of how many current users they have. The
+    # allowed ratio has some heuristics to lock down likely-spammy
+    # realms.  This ratio likely only matters for the first
+    # handful of invites; if those users accept, then the realm is
+    # unlikely to hit these limits.  If a real realm hits them,
+    # the resulting message suggests that they contact support if
+    # they have a real use case.
+    warning_flags = []
+    if zxcvbn(realm.string_id)["score"] == 4:
+        # Very high entropy realm names are suspicious
+        warning_flags.append("random-realm-name")
+
+    if not realm.description:
+        warning_flags.append("no-realm-description")
+
+    if realm.icon_source == Realm.ICON_FROM_GRAVATAR:
+        warning_flags.append("no-realm-icon")
+
+    if realm.date_created >= timezone_now() - datetime.timedelta(hours=1):
+        warning_flags.append("realm-created-in-last-hour")
+
+    current_user_count = len(UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True))
+    if current_user_count == 1:
+        warning_flags.append("only-one-user")
+
+    estimated_sent = RealmCount.objects.filter(
+        realm=realm, property="messages_sent:message_type:day"
+    ).aggregate(messages=Sum("value"))
+    if (
+        not estimated_sent["messages"]
+        # Only after we've done the rough-estimate check, take the
+        # time to do the exact check:
+        and Message.objects.filter(realm=realm, sender__is_bot=False).count() == 0
+    ):
+        warning_flags.append("no-messages-sent")
+
+    if len(warning_flags) == 6:
+        permitted_ratio = 2
+    elif len(warning_flags) >= 3:
+        permitted_ratio = 3
+    else:
+        permitted_ratio = 5
+
+    ratio = (num_invitees + recent_invites) / current_user_count
+    logging.log(
+        logging.WARNING if ratio > permitted_ratio else logging.INFO,
+        "%s (!: %s) inviting %d more, have %d recent, but only %d current users.  Ratio %.1f, %d allowed",
+        realm.string_id,
+        ",".join(warning_flags),
+        num_invitees,
+        recent_invites,
+        current_user_count,
+        ratio,
+        permitted_ratio,
+    )
+    return ratio > permitted_ratio
+
+
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     """Discourage using invitation emails as a vector for carrying spam."""
     msg = _(
@@ -88,8 +162,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     if not settings.OPEN_REALM_CREATION:
         return
 
-    recent_invites = estimate_recent_invites([realm], days=1)
-    if num_invitees + recent_invites > realm.max_invites:
+    if too_many_recent_realm_invites(realm, num_invitees):
         raise InvitationError(
             msg,
             [],

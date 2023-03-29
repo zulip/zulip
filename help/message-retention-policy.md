@@ -12,7 +12,7 @@ before being automatically deleted (the default being forever).
 Zulip's system supports:
 
 * Setting an organization-level retention policy, which applies to
-  all private messages and all streams without a specific policy.
+  all direct messages and all streams without a specific policy.
 * Setting a retention policy for individual streams, which overrides
   the organization-level policy for that stream.  This can be used to
   just delete messages on specific streams, to only retain messages
@@ -20,7 +20,7 @@ Zulip's system supports:
   period.
 
 In Zulip Cloud, message retention policies are available on the Zulip
-Cloud Standard and Zulip Cloud Plus [plans](https://zulip.com/plans),
+Cloud Standard and Zulip Cloud Plus [plans](https://zulip.com/plans/),
 as well as for the hundreds of communities with sponsored Cloud
 Standard hosting.
 

@@ -12,7 +12,7 @@ self-hosted Zulip organizations only. SAML authentication is supported
 by Zulip Cloud but requires contacting support@zulip.com to configure it.
 
 **Note:** If you are running your own server,
-[read this](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html)
+[read this](https://zulip.readthedocs.io/en/stable/production/authentication-methods.html)
 first. Server configuration is needed for several of the authentication
 methods listed above.
 
@@ -30,5 +30,5 @@ methods listed above.
 
 ## Related articles
 
-* [Configuring authentication methods](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html)
+* [Configuring authentication methods](https://zulip.readthedocs.io/en/stable/production/authentication-methods.html)
   for server administrators (self-hosted only)

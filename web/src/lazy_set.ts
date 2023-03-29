@@ -71,7 +71,7 @@ export class LazySet {
     }
 
     map<T>(f: (v: number, k: number) => T): T[] {
-        return Array.from(this.keys(), f);
+        return [...this.keys()].map((v, k) => f(v, k));
     }
 
     has(v: number): boolean {

@@ -64,16 +64,15 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          dirs=(/srv/zulip-{venv,emoji}-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
-      - name: Restore node_modules cache
+      - name: Restore pnpm store
         uses: actions/cache@v3
         with:
-          path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('package.json', 'yarn.lock') }}
-          restore-keys: v1-yarn-deps-${{ matrix.os }}
+          path: ~/.local/share/pnpm/store
+          key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore python cache
         uses: actions/cache@v3
@@ -152,11 +151,11 @@ jobs:
           ./tools/setup/generate_integration_bots_avatars.py --check-missing
           ./tools/ci/check-executables
 
-          # Ban check-database-compatibility.py from transitively
+          # Ban check-database-compatibility from transitively
           # relying on static/generated, because it might not be
           # up-to-date at that point in upgrade-zulip-stage-2.
           chmod 000 static/generated web/generated
-          ./scripts/lib/check-database-compatibility.py
+          ./scripts/lib/check-database-compatibility
           chmod 755 static/generated web/generated
 
       - name: Run documentation and api tests

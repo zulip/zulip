@@ -1626,7 +1626,7 @@ details.
 - Added 'e' keyboard shortcut for editing currently selected message.
 - Added support for unstarring all starred messages.
 - Added support for using `|` as an OR operator in sidebar search features.
-- Added direct download links for Android APKs to our /apps page.
+- Added direct download links for Android APKs to our /apps/ page.
 - Added a responsive design for our /integrations/ pages.
 - Added typeahead for slash commands.
 - Added more expansive moderation settings for who can create streams,
@@ -2979,7 +2979,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed missing step in postfix_localmail installation instructions.
 - Fixed several bugs/inconveniences in the production upgrade process.
 - Fixed realm restrictions for servers with a unique, open realm.
-- Substantially cleaned up console logging from run-dev.py.
+- Substantially cleaned up console logging from run-dev.
 
 ### 1.3.9 - 2015-11-16
 

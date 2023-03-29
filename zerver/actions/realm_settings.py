@@ -5,7 +5,7 @@ from typing import Any, Dict, Literal, Optional, Tuple, Union
 import orjson
 from django.conf import settings
 from django.db import transaction
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
@@ -16,8 +16,10 @@ from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.upload import delete_message_attachments
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
+    ArchivedAttachment,
     Attachment,
     Realm,
     RealmAuditLog,
@@ -332,6 +334,25 @@ def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
     realm.save(update_fields=["deactivated_redirect"])
 
 
+def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> None:
+    # Delete attachment files from the storage backend, so that we
+    # don't leave them dangling.
+    for obj_class in Attachment, ArchivedAttachment:
+        last_id = 0
+        while True:
+            to_delete = (
+                obj_class.objects.filter(realm_id=realm.id, id__gt=last_id)  # type: ignore[misc]  # Does not recognize shared 'id' PK column
+                .order_by("id")
+                .values_list("id", "path_id")[:batch_size]
+            )
+            if len(to_delete) > 0:
+                delete_message_attachments([row[1] for row in to_delete])
+                last_id = to_delete[len(to_delete) - 1][0]
+            if len(to_delete) < batch_size:
+                break
+        obj_class.objects.filter(realm=realm).delete()
+
+
 def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     if settings.BILLING_ENABLED:
         downgrade_now_without_creating_additional_invoices(realm)
@@ -349,7 +370,7 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
         user.save(update_fields=["full_name", "email", "delivery_email"])
 
     do_remove_realm_custom_profile_fields(realm)
-    Attachment.objects.filter(realm=realm).delete()
+    do_delete_all_realm_attachments(realm)
 
     RealmAuditLog.objects.create(
         realm=realm,

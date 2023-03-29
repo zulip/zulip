@@ -315,7 +315,7 @@ def fetch_initial_state_data(
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
-        state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
+        state["giphy_rating_options"] = realm.get_giphy_rating_options()
 
         state["server_emoji_data_url"] = emoji.data_url()
 
@@ -1372,7 +1372,7 @@ def apply_event(
 
         state["user_status"] = user_status
     elif event["type"] == "user_topic":
-        if event["visibility_policy"] == UserTopic.VISIBILITY_POLICY_INHERIT:
+        if event["visibility_policy"] == UserTopic.VisibilityPolicy.INHERIT:
             user_topics_state = state["user_topics"]
             for i in range(len(user_topics_state)):
                 if (

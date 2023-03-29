@@ -188,7 +188,7 @@ class DocPageTest(ZulipTestCase):
         # Test the i18n version of one of these pages.
         self._test("/en/history/", "Zulip released as open source!")
         self._test("/values/", "designed our company")
-        self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
+        self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["xyz"])
         self._test("/communities/", "Open communities directory")
         self._test("/development-community/", "Zulip development community")
         self._test("/features/", "Beautiful messaging")
@@ -197,6 +197,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/security/", "TLS encryption")
         self._test("/use-cases/", "Use cases and customer stories")
         self._test("/why-zulip/", "Why Zulip?")
+        self._test("/try-zulip/", "check out the Zulip app")
         # /for/... pages
         self._test("/for/open-source/", "for open source projects")
         self._test("/for/events/", "for conferences and events")
@@ -211,6 +212,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/recurse-center/", "Recurse Center")
         self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/idrift/", "Case study: iDrift AS")
+        self._test("/case-studies/end-point/", "Case study: End Point")
         self._test("/case-studies/asciidoctor/", "Case study: Asciidoctor")
         # <meta name="robots" content="noindex,nofollow" /> always true on these pages
         self._test("/attribution/", "Website attributions", search_disabled=True)
@@ -408,8 +410,8 @@ class PlansPageTest(ZulipTestCase):
         root_domain = ""
         result = self.client_get("/plans/", subdomain=root_domain)
         self.assert_in_success_response(["Self-host Zulip"], result)
-        self.assert_not_in_success_response(["/upgrade#sponsorship"], result)
-        self.assert_in_success_response(["/accounts/go/?next=%2Fupgrade%23sponsorship"], result)
+        self.assert_not_in_success_response(["/upgrade/#sponsorship"], result)
+        self.assert_in_success_response(["/accounts/go/?next=%2Fupgrade%2F%23sponsorship"], result)
 
         non_existent_domain = "moo"
         result = self.client_get("/plans/", subdomain=non_existent_domain)
@@ -421,7 +423,7 @@ class PlansPageTest(ZulipTestCase):
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/login/?next=/plans")
+        self.assertEqual(result["Location"], "/accounts/login/?next=/plans/")
 
         guest_user = "polonius"
         self.login(guest_user)
@@ -432,8 +434,10 @@ class PlansPageTest(ZulipTestCase):
         self.login(organization_member)
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
-        self.assert_in_success_response(["/upgrade#sponsorship"], result)
-        self.assert_not_in_success_response(["/accounts/go/?next=%2Fupgrade%23sponsorship"], result)
+        self.assert_in_success_response(["/upgrade/#sponsorship"], result)
+        self.assert_not_in_success_response(
+            ["/accounts/go/?next=%2Fupgrade%2F%23sponsorship"], result
+        )
 
         # Test root domain, with login on different domain
         result = self.client_get("/plans/", subdomain="")
@@ -459,14 +463,14 @@ class PlansPageTest(ZulipTestCase):
         with self.settings(PRODUCTION=True):
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulip.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans/")
 
             self.login("iago")
 
             # SELF_HOSTED should hide the local plans page, even if logged in
             result = self.client_get("/plans/", subdomain="zulip")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result["Location"], "https://zulip.com/plans")
+            self.assertEqual(result["Location"], "https://zulip.com/plans/")
 
         # But in the development environment, it renders a page
         result = self.client_get("/plans/", subdomain="zulip")
@@ -632,7 +636,7 @@ class PrivacyTermsTest(ZulipTestCase):
         self.assert_in_success_response(["Kandra Labs"], result)
 
     def test_no_nav(self) -> None:
-        # Test that our ?nav=0 feature of /privacy and /terms,
+        # Test that our ?nav=0 feature of /policies/privacy and /policies/terms,
         # designed to comply with the Apple App Store draconian
         # policies that ToS/Privacy pages linked from an iOS app have
         # no links to the rest of the site if there's pricing

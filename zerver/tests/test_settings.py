@@ -362,6 +362,7 @@ class ChangeSettingsTest(ZulipTestCase):
             notification_sound="ding",
             desktop_icon_count_display=2,
             email_address_visibility=3,
+            realm_name_in_email_notifications_policy=2,
         )
 
         self.login("hamlet")
@@ -455,12 +456,8 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login("hamlet")
 
         # Now try an invalid setting name
-        json_result = self.client_patch("/json/settings", dict(invalid_setting="value"))
-        self.assert_json_success(json_result)
-
-        result = orjson.loads(json_result.content)
-        self.assertIn("ignored_parameters_unsupported", result)
-        self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_setting"])
+        result = self.client_patch("/json/settings", dict(invalid_setting="value"))
+        self.assert_json_success(result, ignored_parameters=["invalid_setting"])
 
     def test_changing_setting_using_display_setting_endpoint(self) -> None:
         """

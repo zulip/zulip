@@ -15,6 +15,7 @@ IGNORED_PHRASES = [
     r"Botserver",
     r"Cookie Bot",
     r"DevAuthBackend",
+    r"DSN",
     r"GCM",
     r"GitHub",
     r"Gravatar",
@@ -106,6 +107,12 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Used in GIPHY integration setting. GIFs Rating.
+    r"rated Y",
+    r"rated G",
+    r"rated PG",
+    r"rated PG13",
+    r"rated R",
     # Used in GIPHY popover.
     r"GIFs",
     r"GIPHY",

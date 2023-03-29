@@ -48,7 +48,7 @@
                         <i class="fa fa-angle-down" aria-hidden="true"></i>
                     </div>
                     <div class="dropdown-list">
-                        <a href="/integrations">
+                        <a href="/integrations/">
                             <h4 class="integration-category selected" data-category="all">All</h4>
                         </a>
                         {% for category in categories_dict.keys() %}
@@ -74,7 +74,7 @@
                 <div class="catalog">
                     <div class="integration-categories-sidebar">
                         <h3>{% trans %}Categories{% endtrans %}</h3>
-                        <a href="/integrations">
+                        <a href="/integrations/">
                             <h4 data-category="all" class="integration-category selected">{% trans %}All{% endtrans %}</h4>
                         </a>
                         {% for category in categories_dict.keys() %}
@@ -143,7 +143,7 @@
                 <div id="integration-instructions-group">
                     <div id="integration-instruction-block" class="integration-instruction-block">
                         <div class="categories"></div>
-                        <a href="/integrations" id="integration-list-link" class="no-underline"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i><span>Back to list</span></a>
+                        <a href="/integrations/" id="integration-list-link" class="no-underline"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i><span>Back to list</span></a>
                     </div>
 
                     {% for integration in integrations_dict.values() %}

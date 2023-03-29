@@ -44,7 +44,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 # From a clone of zulip.git
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
-./tools/run-dev.py  # starts the development server
+./tools/run-dev  # starts the development server
 ```
 
 Once you've done the above setup, you can pick up the [documentation
@@ -223,7 +223,7 @@ expected.
 1. You should now be able to start the Zulip development server.
 
    ```console
-   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev.py
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev
    ```
 
    The output will look like:
@@ -255,7 +255,7 @@ expected.
    programs after the provisioning is completed. If it still isn't
    enough, try restarting your system and running the command again.
 
-2. Be patient the first time you run `./tools/run-dev.py`.
+2. Be patient the first time you run `./tools/run-dev`.
 
 As with other installation methods, please visit [#provision
 help][provision-help] in the [Zulip development community

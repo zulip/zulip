@@ -308,7 +308,7 @@ test("sending", ({override, override_rewire}) => {
 
         // similarly, we only exercise the failure codepath
         // Since this path calls blueslip.warn, we need to handle it.
-        blueslip.expect("warn", "XHR error message.");
+        blueslip.expect("error", "XHR error message.");
         channel.xhr_error_message = () => "XHR error message.";
         args.error();
     }
@@ -367,6 +367,24 @@ test("sending", ({override, override_rewire}) => {
         name: "Error",
         message: "Bad emoji name: unknown-emoji",
     });
+});
+
+test("prevent_simultaneous_requests_updating_reaction", ({override, override_rewire}) => {
+    const message = {...sample_message};
+    override(message_store, "get", (message_id) => {
+        assert.equal(message_id, message.id);
+        return message;
+    });
+    override_rewire(reactions, "add_reaction", () => {});
+    const stub = make_stub();
+    channel.post = stub.f;
+
+    // Verify that two requests to add the same reaction in a row only
+    // result in a single request to the server.
+    reactions.toggle_emoji_reaction(message.id, "cow");
+    reactions.toggle_emoji_reaction(message.id, "cow");
+
+    assert.equal(stub.num_calls, 1);
 });
 
 function stub_reactions(message_id) {
@@ -808,6 +826,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
             label: "translated: You (click to remove) reacted with :8ball:",
             reaction_type: clean_reaction_object.reaction_type,
             is_realm_emoji: false,
+            vote_text: "",
         });
         return "<new-reaction-stub>";
     });
@@ -873,6 +892,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             label: "translated: Bob van Roberts reacted with :zulip:",
             still_url: undefined,
             reaction_type: clean_reaction_object.reaction_type,
+            vote_text: "",
         });
         return "<new-reaction-stub>";
     });

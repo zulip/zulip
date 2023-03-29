@@ -7,8 +7,7 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Q
-from django.db.models.query import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
@@ -30,7 +29,7 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_status import do_update_user_status
-from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
@@ -48,8 +47,7 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
     use_s3_backend,
 )
-from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_file
-from zerver.lib.user_topics import add_topic_mute
+from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     AlertWord,
@@ -154,7 +152,7 @@ class ExportFile(ZulipTestCase):
         self, user_profile: UserProfile, *, emoji_name: str = "whatever"
     ) -> None:
         message = most_recent_message(user_profile)
-        url = upload_message_file(
+        url = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
         attachment_path_id = url.replace("/user_uploads/", "")
@@ -355,7 +353,7 @@ class RealmImportExportTest(ExportFile):
         # We create an attachment tied to a personal message. That means it shouldn't be
         # included in a public export, as it's private data.
         personal_message_id = self.send_personal_message(user_profile, self.example_user("othello"))
-        url = upload_message_file(
+        url = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
         attachment_path_id = url.replace("/user_uploads/", "")
@@ -437,10 +435,10 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         exported_usergroups = data["zerver_usergroup"]
-        self.assert_length(exported_usergroups, 8)
-        self.assertEqual(exported_usergroups[1]["name"], "@role:administrators")
-        self.assertFalse("direct_members" in exported_usergroups[1])
-        self.assertFalse("direct_subgroups" in exported_usergroups[1])
+        self.assert_length(exported_usergroups, 9)
+        self.assertEqual(exported_usergroups[2]["name"], "@role:administrators")
+        self.assertFalse("direct_members" in exported_usergroups[2])
+        self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
@@ -774,13 +772,11 @@ class RealmImportExportTest(ExportFile):
 
         # data to test import of muted topic
         stream = get_stream("Verona", original_realm)
-        recipient = stream.recipient
-        assert recipient is not None
-        add_topic_mute(
-            user_profile=sample_user,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name="Verona2",
+        do_set_user_topic_visibility_policy(
+            sample_user,
+            stream,
+            "Verona2",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
         # data to test import of muted users
@@ -880,7 +876,7 @@ class RealmImportExportTest(ExportFile):
             imported_realm_result = f(imported_realm)
             # orig_realm_result should be truthy and have some values, otherwise
             # the test is kind of meaningless
-            assert orig_realm_result  # type: ignore[truthy-bool] # see above
+            assert orig_realm_result
 
             # It may be helpful to do print(f.__name__) if you are having
             # trouble debugging this.
@@ -1125,7 +1121,7 @@ class RealmImportExportTest(ExportFile):
         def get_muted_topics(r: Realm) -> Set[str]:
             user_profile_id = get_user_id(r, "King Hamlet")
             muted_topics = UserTopic.objects.filter(
-                user_profile_id=user_profile_id, visibility_policy=UserTopic.MUTED
+                user_profile_id=user_profile_id, visibility_policy=UserTopic.VisibilityPolicy.MUTED
             )
             topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
             return topic_names
@@ -1768,14 +1764,21 @@ class SingleUserExportTest(ExportFile):
             rec = records[-1]
             self.assertEqual(rec["status_text"], "on vacation")
 
-        do_mute_topic(cordelia, scotland, "bagpipe music")
-        do_mute_topic(othello, scotland, "nessie")
+        do_set_user_topic_visibility_policy(
+            cordelia,
+            scotland,
+            "bagpipe music",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+        do_set_user_topic_visibility_policy(
+            othello, scotland, "nessie", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
 
         @checker
         def zerver_usertopic(records: List[Record]) -> None:
             rec = records[-1]
             self.assertEqual(rec["topic_name"], "bagpipe music")
-            self.assertEqual(rec["visibility_policy"], UserTopic.MUTED)
+            self.assertEqual(rec["visibility_policy"], UserTopic.VisibilityPolicy.MUTED)
 
         """
         For some tables we don't bother with super realistic test data

@@ -41,9 +41,9 @@ class UnusedImagesLinterSpider(BaseDocumentationSpider):
 
 class HelpDocumentationSpider(UnusedImagesLinterSpider):
     name = "help_documentation_crawler"
-    start_urls = ["http://localhost:9981/help"]
+    start_urls = ["http://localhost:9981/help/"]
     deny_domains: List[str] = []
-    deny = ["/privacy"]
+    deny = ["/policies/privacy"]
     images_path = "static/images/help"
 
 
@@ -58,26 +58,26 @@ class PorticoDocumentationSpider(BaseDocumentationSpider):
     def _is_external_url(self, url: str) -> bool:
         return (
             not url.startswith("http://localhost:9981")
-            or url.startswith(("http://localhost:9981/help", "http://localhost:9981/api"))
+            or url.startswith(("http://localhost:9981/help/", "http://localhost:9981/api"))
             or self._has_extension(url)
         )
 
     name = "portico_documentation_crawler"
     start_urls = [
-        "http://localhost:9981/hello",
-        "http://localhost:9981/history",
-        "http://localhost:9981/plans",
-        "http://localhost:9981/team",
-        "http://localhost:9981/apps",
-        "http://localhost:9981/integrations",
-        "http://localhost:9981/terms",
-        "http://localhost:9981/privacy",
-        "http://localhost:9981/features",
-        "http://localhost:9981/why-zulip",
-        "http://localhost:9981/for/open-source",
-        "http://localhost:9981/for/business",
-        "http://localhost:9981/for/communities",
-        "http://localhost:9981/for/research",
-        "http://localhost:9981/security",
+        "http://localhost:9981/hello/",
+        "http://localhost:9981/history/",
+        "http://localhost:9981/plans/",
+        "http://localhost:9981/team/",
+        "http://localhost:9981/apps/",
+        "http://localhost:9981/integrations/",
+        "http://localhost:9981/policies/terms",
+        "http://localhost:9981/policies/privacy",
+        "http://localhost:9981/features/",
+        "http://localhost:9981/why-zulip/",
+        "http://localhost:9981/for/open-source/",
+        "http://localhost:9981/for/business/",
+        "http://localhost:9981/for/communities/",
+        "http://localhost:9981/for/research/",
+        "http://localhost:9981/security/",
     ]
     deny_domains: List[str] = []

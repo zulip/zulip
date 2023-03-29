@@ -1,0 +1,7 @@
+{{#if (eq realm_bot_creation_policy permission_type.admins_only.code)}}
+    <div class='tip'>{{t "Only organization administrators can add bots to this organization." }}</div>
+{{else if (eq realm_bot_creation_policy permission_type.restricted.code) }}
+    <div class='tip'>{{t "Only organization administrators can add generic bots." }}</div>
+{{else}}
+    <div class='tip'>{{t "Anyone in this organization can add bots." }}</div>
+{{/if}}

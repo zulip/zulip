@@ -127,6 +127,7 @@ from zerver.views.registration import (
     get_prereg_key_and_redirect,
     new_realm_send_confirm,
     realm_redirect,
+    realm_register,
     signup_send_confirm,
 )
 from zerver.views.report import (
@@ -136,6 +137,7 @@ from zerver.views.report import (
     report_send_times,
     report_unnarrow_times,
 )
+from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
     add_default_stream,
@@ -235,7 +237,7 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 #
 #   - The nginx config knows which URLs to route to Django or Tornado.
 #
-#   - Likewise for the local dev server in tools/run-dev.py.
+#   - Likewise for the local dev server in tools/run-dev.
 
 # These endpoints constitute the currently designed API (V1), which uses:
 # * REST verbs
@@ -579,6 +581,7 @@ i18n_urls = [
         name="new_realm_send_confirm",
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),
+    path("realm/register/", realm_register, name="realm_register"),
     path(
         "accounts/do_confirm/<confirmation_key>",
         get_prereg_key_and_redirect,
@@ -787,6 +790,10 @@ urls += [
     # This registers the remaining SCIM endpoints.
     path("scim/v2/", include("django_scim.urls", namespace="scim")),
 ]
+
+# Front-end Sentry requests tunnel through the server, if enabled
+if settings.SENTRY_FRONTEND_DSN:
+    urls += [path("error_tracing", sentry_tunnel)]
 
 # User documentation site
 help_documentation_view = MarkdownDirectoryView.as_view(

@@ -1,8 +1,8 @@
-<div class="new-style user_status_content_wrapper">
-    <div class="status_emoji_wrapper tippy-zulip-tooltip"  data-tippy-content="{{t 'Select emoji' }}" data-tippy-placement="top" aria-label="{{t 'Select emoji' }}"  tabindex="0" id="selected_emoji">
+<div class="new-style user-status-content-wrapper">
+    <div class="status-emoji-wrapper tippy-zulip-tooltip"  data-tippy-content="{{t 'Select emoji' }}" data-tippy-placement="top" aria-label="{{t 'Select emoji' }}"  tabindex="0" id="selected_emoji">
         {{> status_emoji_selector}}
     </div>
-    <input type="text" class="user_status" placeholder="{{t 'Your status' }}" maxlength="60"/>
+    <input type="text" class="user-status" placeholder="{{t 'Your status' }}" maxlength="60"/>
     <button type="button" class="btn clear_search_button" id="clear_status_message_button" disabled="disabled">
         <i class="fa fa-remove" aria-hidden="true"></i>
     </button>
@@ -11,11 +11,11 @@
     {{#each default_status_messages_and_emoji_info}}
         <button type="button" class="button no-style user-status-value">
             {{#if emoji.emoji_alt_code}}
-                <div class="emoji_alt_code">&nbsp:{{emoji.emoji_name}}:</div>
+                <div class="emoji_alt_code">&nbsp;:{{emoji.emoji_name}}:</div>
             {{else if emoji.url}}
-                <img src="{{emoji.url}}" class="emoji status_emoji" />
+                <img src="{{emoji.url}}" class="emoji status-emoji" />
             {{else}}
-                <div class="emoji status_emoji emoji-{{emoji.emoji_code}}"></div>
+                <div class="emoji status-emoji emoji-{{emoji.emoji_code}}"></div>
             {{/if}}
             {{status_text}}
         </button>

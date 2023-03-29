@@ -4,7 +4,7 @@ Get Wekan notifications in Zulip!
 
 1. {!create-bot-construct-url.md!}
 
-   {!git-webhook-url-with-branches.md!}
+    {!git-webhook-url-with-branches.md!}
 
 1. Go to Wekan and click on the **Settings** icon.
    Select **Outgoing Webhooks**.

@@ -7,6 +7,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -18,6 +19,7 @@ import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
+import * as timerender from "./timerender";
 import {user_settings} from "./user_settings";
 
 export let settings_label;
@@ -65,8 +67,10 @@ function setup_settings_label() {
 
 function get_parsed_date_of_joining() {
     const user_date_joined = people.get_by_user_id(page_params.user_id, false).date_joined;
-    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
-    return dateFormat.format(parseISO(user_date_joined));
+    return timerender.get_localized_date_or_time_for_format(
+        parseISO(user_date_joined),
+        "dayofyear_year",
+    );
 }
 
 export function build_page() {
@@ -92,6 +96,8 @@ export function build_page() {
         notification_settings: settings_config.all_notifications(user_settings).settings,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
+        realm_name_in_email_notifications_policy_values:
+            settings_config.realm_name_in_email_notifications_policy_values,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
             settings_config.all_notifications(user_settings).show_push_notifications_tooltip,
@@ -111,7 +117,18 @@ export function build_page() {
         owner_is_only_user_in_organization: people.get_active_human_count() === 1,
     });
 
+    settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     $(".settings-box").html(rendered_settings_tab);
+}
+
+export function open_settings_overlay() {
+    overlays.open_overlay({
+        name: "settings",
+        $overlay: $("#settings_overlay_container"),
+        on_close() {
+            browser_history.exit_overlay();
+        },
+    });
 }
 
 export function launch(section) {
@@ -119,7 +136,7 @@ export function launch(section) {
     admin.build_page();
     settings_sections.reset_sections();
 
-    overlays.open_settings();
+    open_settings_overlay();
     settings_panel_menu.normal_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("settings");
 }

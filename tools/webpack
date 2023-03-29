@@ -3,19 +3,28 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 from typing import NoReturn
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 os.chdir(os.path.join(os.path.dirname(__file__), "../web"))
+
+
+from version import ZULIP_VERSION
 
 
 def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
-    webpack_args = ["node"]
     with open("/proc/meminfo") as meminfo:
         if int(next(meminfo).split()[1]) < 3 * 1024 * 1024:
-            webpack_args += ["--max-old-space-size=1536"]
-    webpack_args += ["../node_modules/.bin/webpack-cli", "--mode=production"]
+            os.environ["NODE_OPTIONS"] = "--max-old-space-size=1536"
+    webpack_args = [
+        "../node_modules/.bin/webpack-cli",
+        "--mode=production",
+        f"--env=ZULIP_VERSION={ZULIP_VERSION}",
+    ]
     if quiet:
         webpack_args += ["--stats=errors-only"]
     os.execvp(webpack_args[0], webpack_args)
@@ -27,7 +36,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # This is our most dynamic configuration, which we use for our
     # dev server.  The key piece here is that we identify changes to
     # files as devs make edits and serve new assets on the fly.
-    webpack_args = ["node", "../node_modules/.bin/webpack-cli", "serve"]
+    webpack_args = ["../node_modules/.bin/webpack-cli", "serve"]
     webpack_args += [
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex-cli part anyway.

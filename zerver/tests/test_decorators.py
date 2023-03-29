@@ -53,7 +53,7 @@ from zerver.lib.request import (
     RequestVariableMissingError,
     has_request_variables,
 )
-from zerver.lib.response import json_response, json_success
+from zerver.lib.response import MutableJsonResponse, json_response, json_success
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, queries_captured
 from zerver.lib.types import Validator
@@ -2251,3 +2251,94 @@ class ClientTestCase(ZulipTestCase):
         # client_name has the full name still, though
         self.assertEqual(client_name, "very-long-name-goes-here-and-still-works")
         self.assert_length(queries, 0)
+
+
+class TestIgnoredParametersUnsupported(ZulipTestCase):
+    def test_ignored_parameters_json_success(self) -> None:
+        @has_request_variables
+        def test_view(
+            request: HttpRequest,
+            name: Optional[str] = REQ(default=None),
+            age: Optional[int] = 0,
+        ) -> HttpResponse:
+            return json_success(request)
+
+        # ignored parameter (not processed through REQ)
+        request = HostRequestMock()
+        request.POST["age"] = "30"
+        result = test_view(request)
+        self.assert_json_success(result, ignored_parameters=["age"])
+
+        # valid parameter, returns no ignored parameters
+        request = HostRequestMock()
+        request.POST["name"] = "Hamlet"
+        result = test_view(request)
+        self.assert_json_success(result)
+
+        # both valid and ignored parameters
+        request = HostRequestMock()
+        request.POST["name"] = "Hamlet"
+        request.POST["age"] = "30"
+        request.POST["location"] = "Denmark"
+        request.POST["dies"] = "True"
+        result = test_view(request)
+        ignored_parameters = ["age", "dies", "location"]
+        json_result = self.assert_json_success(result, ignored_parameters=ignored_parameters)
+        # check that results are sorted
+        self.assertEqual(json_result["ignored_parameters_unsupported"], ignored_parameters)
+
+    # Because `has_request_variables` can be called multiple times on a request,
+    # here we test that parameters processed in separate, nested function calls
+    # are not returned in the `ignored parameters_unsupported` array.
+    def test_nested_has_request_variables(self) -> None:
+        @has_request_variables
+        def not_view_function_A(
+            request: HttpRequest, dies: bool = REQ(json_validator=check_bool)
+        ) -> None:
+            return
+
+        @has_request_variables
+        def not_view_function_B(
+            request: HttpRequest, married: bool = REQ(json_validator=check_bool)
+        ) -> None:
+            return
+
+        @has_request_variables
+        def view_B(request: HttpRequest, name: str = REQ()) -> MutableJsonResponse:
+            return json_success(request)
+
+        @has_request_variables
+        def view_A(
+            request: HttpRequest, age: int = REQ(json_validator=check_int)
+        ) -> MutableJsonResponse:
+            not_view_function_A(request)
+            response = view_B(request)
+            not_view_function_B(request)
+            return response
+
+        # valid parameters, returns no ignored parameters
+        post_data = {"name": "Hamlet", "age": "30", "dies": "true", "married": "false"}
+        request = HostRequestMock(post_data)
+
+        result = view_A(request)
+        result_iter = list(iter(result))
+        self.assertEqual(result_iter, [b'{"result":"success","msg":""}\n'])
+        self.assert_json_success(result)
+
+        # ignored parameter
+        post_data = {
+            "name": "Hamlet",
+            "age": "30",
+            "dies": "true",
+            "married": "false",
+            "author": "William Shakespeare",
+        }
+        request = HostRequestMock(post_data)
+
+        result = view_A(request)
+        result_iter = list(iter(result))
+        self.assertEqual(
+            result_iter,
+            [b'{"result":"success","msg":"","ignored_parameters_unsupported":["author"]}\n'],
+        )
+        self.assert_json_success(result, ignored_parameters=["author"])
