@@ -46,8 +46,23 @@ def generate_topics(num_topics: int) -> List[str]:
     else:
         resolved_topic_probability = 0.05
 
+    #  Most commonly accessed websites for embedding links
+    embedded_link_probability = 0.05
+    embedded_links = [
+        ('https://www.google.com', 'Google'),
+        ('https://www.youtube.com', 'Youtube'),
+        ('https://www.facebook.com', 'Facebook'),
+        ('https://www.twitter.com', 'Twitter'),
+        ('https://www.wikipedia.org', 'Wikipedia'),
+    ]
+
     final_topics = []
     for topic in topics:
+        # append topic with embedded link
+        if random.random() < embedded_link_probability:
+            href, text = random.choice(embedded_links)
+            topic += ' <a href = "' + href + '">' + text + '</a>'
+
         if random.random() < resolved_topic_probability:
             final_topics.append(RESOLVED_TOPIC_PREFIX + topic)
         else:
