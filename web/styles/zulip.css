@@ -1810,12 +1810,6 @@ div.focused_table {
         display: none;
     }
 
-    .zulip-icon {
-        font-size: 14px;
-        position: relative;
-        top: 1px;
-    }
-
     .sub_count,
     .stream,
     & > span {
@@ -1865,6 +1859,12 @@ div.focused_table {
         text-decoration: none;
         /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
         padding-right: calc(3px + 10px);
+
+        .zulip-icon {
+            font-size: 14px;
+            position: relative;
+            top: 1px;
+        }
     }
 
     .divider {
