@@ -372,6 +372,8 @@ function handle_inline_topic_edit_keydown(e) {
     } else if (e.key === "Escape") {
         // Handle Esc
         end_if_focused_on_inline_topic_edit();
+        $(".zulip-icon-mute").show();
+        $(".mark-as-resolved").show();
         e.stopPropagation();
         e.preventDefault();
     }
