@@ -63,12 +63,6 @@ export function update_favicon(new_message_count: number, pm_count: number): voi
 
         load_and_set_favicon(rendered_favicon);
     } catch (error) {
-        // Error must be a type of Error in order to access error.stack
-        // The undetermined error was mentioned in this issue:
-        // https://github.com/zulip/zulip/issues/18374
-        if (!(error instanceof Error)) {
-            throw error;
-        }
-        blueslip.error("Failed to update favicon", undefined, error.stack);
+        blueslip.error("Failed to update favicon", undefined, error);
     }
 }

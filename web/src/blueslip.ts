@@ -6,6 +6,7 @@
 // in order to be able to report exceptions that occur during their
 // execution.
 
+import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 
 import * as blueslip_stacktrace from "./blueslip_stacktrace";
@@ -54,105 +55,6 @@ export function get_log(): string[] {
     return logger.get_log();
 }
 
-const reported_errors = new Set<string>();
-const last_report_attempt = new Map<string, number>();
-
-function report_error(
-    msg: string,
-    stack = "No stacktrace available",
-    more_info?: unknown,
-): void {
-    if (page_params.development_environment) {
-        // In development, we display blueslip errors in the web UI,
-        // to make them hard to miss.
-        void blueslip_stacktrace.display_stacktrace(msg, stack);
-    }
-
-    const key = ":" + msg + stack;
-    const last_report_time = last_report_attempt.get(key);
-    if (
-        reported_errors.has(key) ||
-        (last_report_time !== undefined &&
-            // Only try to report a given error once every 5 minutes
-            Date.now() - last_report_time <= 60 * 5 * 1000)
-    ) {
-        return;
-    }
-
-    last_report_attempt.set(key, Date.now());
-
-    // TODO: If an exception gets thrown before we set up ajax calls
-    // to include the CSRF token, our ajax call will fail.  The
-    // elegant thing to do in that case is to either wait until that
-    // setup is done or do it ourselves and then retry.
-    //
-    // Important: We don't use channel.js here so that exceptions
-    // always make it to the server even if reload_state.is_in_progress.
-    void $.ajax({
-        type: "POST",
-        url: "/json/report/error",
-        dataType: "json",
-        data: {
-            web_version: ZULIP_VERSION,
-            message: msg,
-            stacktrace: stack,
-            more_info: JSON.stringify(more_info),
-            href: window.location.href,
-            user_agent: window.navigator.userAgent,
-            log: logger.get_log().join("\n"),
-        },
-        timeout: 3 * 1000,
-        success() {
-            reported_errors.add(key);
-        },
-        error() {
-        },
-    });
-}
-
-class BlueslipError extends Error {
-    override name = "BlueslipError";
-    more_info?: unknown;
-    constructor(msg: string, more_info?: unknown) {
-        super(msg);
-        if (more_info !== undefined) {
-            this.more_info = more_info;
-        }
-    }
-}
-
-export function exception_msg(
-    ex: Error & {
-        // Unsupported properties available on some browsers
-        fileName?: string;
-        lineNumber?: number;
-    },
-): string {
-    let message = ex.message;
-    if (ex.fileName !== undefined) {
-        message += " at " + ex.fileName;
-        if (ex.lineNumber !== undefined) {
-            message += `:${ex.lineNumber}`;
-        }
-    }
-    return message;
-}
-
-$(window).on("error", (event) => {
-    const {originalEvent} = event;
-    if (!(originalEvent instanceof ErrorEvent)) {
-        return;
-    }
-
-    const ex = originalEvent.error;
-    if (!ex || ex instanceof BlueslipError) {
-        return;
-    }
-
-    const message = exception_msg(ex);
-    report_error(message, ex.stack);
-});
-
 function build_arg_list(msg: string, more_info?: unknown): [string, string?, unknown?] {
     const args: [string, string?, unknown?] = [msg];
     if (more_info !== undefined) {
@@ -184,15 +86,78 @@ export function warn(msg: string, more_info?: unknown): void {
     }
 }
 
-export function error(msg: string, more_info?: unknown, stack = new Error("dummy").stack): void {
+class BlueslipError extends Error {
+    override name = "BlueslipError";
+    more_info?: unknown;
+    constructor(msg: string, more_info?: object | undefined) {
+        super(msg);
+        if (more_info !== undefined) {
+            this.more_info = more_info;
+        }
+    }
+}
+
+export function error(
+    msg: string,
+    more_info?: object | undefined,
+    original_error?: unknown | undefined,
+): void {
+    // original_error could be of any type, because you can "raise"
+    // any type -- something we do see in practice with the error
+    // object being "dead": https://github.com/zulip/zulip/issues/18374
+    let exception: string | Error = msg;
+    if (original_error !== undefined && original_error instanceof Error) {
+        original_error.message = msg;
+        exception = original_error;
+    }
+
+    // Log the Sentry error before the console warning, so we don't
+    // end up with a doubled message in the Sentry logs.
+    Sentry.setContext("more_info", more_info === undefined ? null : more_info);
+    Sentry.getCurrentHub().captureException(exception);
+
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
-    report_error(msg, stack, more_info);
 
+    // Throw an error in development; this will show a dialog (see below).
     if (page_params.development_environment) {
         throw new BlueslipError(msg, more_info);
     }
-
     // This function returns to its caller in production!  To raise a
     // fatal error even in production, use throw new Error(…) instead.
+}
+
+export function exception_msg(
+    ex: Error & {
+        // Unsupported properties available on some browsers
+        fileName?: string;
+        lineNumber?: number;
+    },
+): string {
+    let message = ex.message;
+    if (ex.fileName !== undefined) {
+        message += " at " + ex.fileName;
+        if (ex.lineNumber !== undefined) {
+            message += `:${ex.lineNumber}`;
+        }
+    }
+    return message;
+}
+
+// Install a window-wide onerror handler in development to display the stacktraces, to make them
+// hard to miss
+if (page_params.development_environment) {
+    $(window).on("error", (event: JQuery.TriggeredEvent) => {
+        const {originalEvent} = event;
+        if (!(originalEvent instanceof ErrorEvent)) {
+            return;
+        }
+
+        const ex = originalEvent.error;
+        if (!ex) {
+            return;
+        }
+
+        void blueslip_stacktrace.display_stacktrace(exception_msg(ex), ex.stack);
+    });
 }

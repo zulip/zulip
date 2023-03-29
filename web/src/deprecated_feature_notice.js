@@ -24,7 +24,7 @@ export function maybe_show_deprecation_notice(key) {
     } else if (key === "*") {
         message = get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
     } else {
-        blueslip.error("Unexpected deprecation notice for hotkey:", key);
+        blueslip.error("Unexpected deprecation notice for hotkey:", {key});
         return;
     }
 

@@ -411,7 +411,7 @@ test_people("check_active_non_active_users", () => {
     active_users = people.get_realm_users();
     assert.equal(active_users.length, 5);
     // Invalid ID
-    blueslip.expect("error", "No user found.");
+    blueslip.expect("error", "No user 1000001 found.");
     people.is_person_active(1000001);
     assert.equal(people.is_person_active(maria.user_id), true);
     assert.equal(people.is_person_active(linus.user_id), true);
