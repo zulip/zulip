@@ -11,6 +11,7 @@ This page describes how to configure SAML authentication with several common pro
 * OneLogin
 * AzureAD
 * Keycloak
+* Auth0
 
 Other SAML providers are supported as well.
 
@@ -176,6 +177,35 @@ providers.
 !!! tip ""
 
     Your Keycloak realm URL will look something like this: `https://keycloak.example.com/auth/realms/yourrealm`.
+
+{tab|auth0}
+
+{!upgrade-to-plus-if-needed.md!}
+
+1. Set up SAML authentication by following [Auth0's documentation](https://auth0.com/docs/authenticate/protocols/saml/saml-sso-integrations/configure-auth0-saml-identity-provider#configure-saml-sso-in-auth0)
+   to create a new application. You don't need to save the certificates or other information detailed.
+   All you will need is the **SAML Metadata URL**.
+1. In the **Addon: SAML2 Web App** **Settings** tab, set the **Application Callback URL** to
+   `https://auth.zulipchat.com/complete/saml/`.
+1. Edit the **Settings** section to match:
+
+    ```
+    {
+      "audience": "https://zulipchat.com",
+      "mappings": {
+        "email": "email",
+        "given_name": "first_name",
+        "family_name": "last_name"
+      },
+      "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+    }
+    ```
+
+1. {!send-us-info.md!}
+
+     1. Your organization's URL
+     2. The **SAML Metadata URL** value mentioned above. It contains required **Identity Provider** metadata.
+     {!saml-login-button.md!}
 
 {end_tabs}
 

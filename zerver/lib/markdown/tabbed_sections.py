@@ -88,6 +88,7 @@ TAB_SECTION_LABELS = {
     "onelogin": "OneLogin",
     "azuread": "AzureAD",
     "keycloak": "Keycloak",
+    "auth0": "Auth0",
     "logged-in": "If you are logged in",
     "logged-out": "If you are logged out",
     "user": "User",
