@@ -272,6 +272,7 @@ def check_change_bot_full_name(
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=new_full_name,
+        is_activation=False,
     )
     do_change_full_name(user_profile, new_full_name, acting_user)
 
