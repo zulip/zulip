@@ -10,20 +10,26 @@
     evaluates to foo() and prints the elapsed time
     to the console along with the name "foo". */
 
-export function print_elapsed_time(name, fun) {
+type Collision = {
+    id: string;
+    count: number;
+    node: string;
+};
+
+export function print_elapsed_time<T>(name: string, fun: () => T): T {
     const t0 = Date.now();
     const out = fun();
     const t1 = Date.now();
-    console.log(name + ": " + (t1 - t0) + " ms");
+    console.log(`${name} : ${t1 - t0} ms`);
     return out;
 }
 
-export function check_duplicate_ids() {
-    const ids = new Set();
-    const collisions = [];
+export function check_duplicate_ids(): {collisions: Collision[]; total_collisions: number} {
+    const ids = new Set<string>();
+    const collisions: Collision[] = [];
     let total_collisions = 0;
 
-    for (const o of Array.prototype.slice.call(document.querySelectorAll("*"))) {
+    for (const o of document.querySelectorAll("*")) {
         if (o.id && ids.has(o.id)) {
             const el = collisions.find((c) => c.id === o.id);
 
@@ -35,17 +41,7 @@ export function check_duplicate_ids() {
                 collisions.push({
                     id: o.id,
                     count: 1,
-                    node:
-                        "<" +
-                        tag +
-                        " className='" +
-                        o.className +
-                        "' id='" +
-                        o.id +
-                        "'>" +
-                        "</" +
-                        tag +
-                        ">",
+                    node: `<${tag} class="${o.className}" id="${o.id}"></${tag}>`,
                 });
             } else {
                 el.count += 1;
@@ -92,14 +88,14 @@ export function check_duplicate_ids() {
  * after section b.
  */
 export class IterationProfiler {
-    sections = new Map();
+    sections = new Map<string, number>();
     last_time = window.performance.now();
 
-    iteration_start() {
+    iteration_start(): void {
         this.section("_iteration_overhead");
     }
 
-    iteration_stop() {
+    iteration_stop(): void {
         const now = window.performance.now();
         const diff = now - this.last_time;
         if (diff > 1) {
@@ -111,13 +107,13 @@ export class IterationProfiler {
         this.last_time = now;
     }
 
-    section(label) {
+    section(label: string): void {
         const now = window.performance.now();
         this.sections.set(label, (this.sections.get(label) || 0) + (now - this.last_time));
         this.last_time = now;
     }
 
-    done() {
+    done(): void {
         this.section("_iteration_overhead");
 
         for (const [prop, cost] of this.sections) {
