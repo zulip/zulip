@@ -16,6 +16,8 @@ export const page_params: {
     is_moderator: boolean;
     is_owner: boolean;
     is_spectator: boolean;
+    needs_tutorial: boolean;
+    page_load_time: number;
     promote_sponsoring_zulip: boolean;
     realm_add_custom_emoji_policy: number;
     realm_avatar_changes_disabled: boolean;
