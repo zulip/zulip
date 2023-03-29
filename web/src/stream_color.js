@@ -63,8 +63,9 @@ function update_table_stream_color(table, stream_name, color) {
 }
 
 function update_stream_privacy_color(id, color) {
+    $(`.stream-privacy-${CSS.escape(id)}.original-color`).css("color", color);
     color = get_stream_privacy_icon_color(color);
-    $(`.stream-privacy-${CSS.escape(id)}`).css("color", color);
+    $(`.stream-privacy-${CSS.escape(id)}.modified-color`).css("color", color);
 }
 
 function update_historical_message_color(stream_name, color) {
