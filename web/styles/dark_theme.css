@@ -892,11 +892,6 @@
         text-shadow: none;
     }
 
-    .group_mention .messagebox,
-    .direct_mention .messagebox {
-        background-color: hsl(8deg 78% 43% / 15%);
-    }
-
     .selected_message .messagebox-content {
         border-color: hsl(217deg 64% 59% / 70%);
     }

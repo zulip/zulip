@@ -66,6 +66,7 @@ body,
     --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 100%);
+    --color-background-mention: hsl(8deg 94% 94%);
 }
 
 %dark-theme {
@@ -79,6 +80,7 @@ body,
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
     --color-message-list-border: hsl(0deg 0% 7%);
     --color-background: hsl(212deg 28% 18%);
+    --color-background-mention: hsl(8deg 78% 43% / 15%);
 }
 
 :root.dark-theme {
@@ -1398,19 +1400,15 @@ td.pointer {
 }
 
 .private-message {
+    background-color: var(--color-background-private-message-content);
+
     .alert-msg {
         background-color: hsl(192deg 20% 95%);
     }
 
-    .messagebox,
     .date_row {
         background-color: var(--color-background-private-message-content);
     }
-}
-
-.group_mention .messagebox,
-.direct_mention .messagebox {
-    background-color: hsl(8deg 94% 94%);
 }
 
 .recipient_row .message_row:first-child .unread_marker {
@@ -1549,6 +1547,11 @@ div.message_table {
     position: relative;
     border-left: 1px solid var(--color-message-list-border);
     border-right: 1px solid var(--color-message-list-border);
+
+    &.group_mention,
+    &.direct_mention {
+        background-color: var(--color-background-mention);
+    }
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
