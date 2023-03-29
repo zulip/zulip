@@ -165,7 +165,7 @@ function failed_listing_users() {
     loading.destroy_indicator($("#subs_page_loading_indicator"));
     const status = get_status_field();
     const user_id = people.my_current_user_id();
-    blueslip.error("Error while listing users for user_id " + user_id, status);
+    blueslip.error(`Error while listing users for user_id ${user_id}`, {status});
 }
 
 function populate_users() {

@@ -1258,7 +1258,7 @@ export function add_active_user(person) {
 
 export const is_person_active = (user_id) => {
     if (!people_by_user_id_dict.has(user_id)) {
-        blueslip.error("No user found.", user_id);
+        blueslip.error(`No user ${user_id} found.`);
     }
 
     if (cross_realm_dict.has(user_id)) {

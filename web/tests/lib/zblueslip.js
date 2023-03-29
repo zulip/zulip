@@ -112,10 +112,6 @@ function make_zblueslip() {
         };
     }
 
-    lib.exception_msg = function (ex) {
-        return ex.message;
-    };
-
     return lib;
 }
 

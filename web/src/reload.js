@@ -228,7 +228,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
         try {
             preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
         } catch (error) {
-            blueslip.error("Failed to preserve state", undefined, error.stack);
+            blueslip.error("Failed to preserve state", undefined, error);
         }
     }
 
@@ -257,7 +257,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     try {
         server_events.cleanup_event_queue();
     } catch (error) {
-        blueslip.error("Failed to clean up before reloading", undefined, error.stack);
+        blueslip.error("Failed to clean up before reloading", undefined, error);
     }
 
     window.location.reload(true);
