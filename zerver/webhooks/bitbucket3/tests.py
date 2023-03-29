@@ -158,12 +158,12 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     def test_pr_modified(self) -> None:
         expected_topic = "sandbox / PR #1 Branch1"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master` (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
         self.check_webhook("pull_request_modified", expected_topic, expected_message)
 
     def test_pr_modified_with_include_title(self) -> None:
         expected_topic = "custom_topic"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master` (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
         self.url = self.build_webhook_url(topic="custom_topic")
         self.check_webhook("pull_request_modified", expected_topic, expected_message)
 
@@ -185,7 +185,7 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     def test_pr_merged(self) -> None:
         expected_topic = "sandbox / PR #6 sample_file: Add sample_file.txt."
-        expected_message = """[zura](http://139.59.64.214:7990/users/zura) merged [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6)."""
+        expected_message = """[zura](http://139.59.64.214:7990/users/zura) merged [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) from `master` to `master`."""
         self.check_webhook("pull_request_merged", expected_topic, expected_message)
 
     # PR reviewer events:

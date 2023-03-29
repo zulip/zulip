@@ -250,6 +250,11 @@ def get_pr_opened_or_modified_body(
 ) -> str:
     pr = payload["pullRequest"]
     description = pr.get("description").tame(check_none_or(check_string))
+    target_branch = None
+    base_branch = None
+    if action == "opened":
+        target_branch = pr["fromRef"]["displayId"].tame(check_string)
+        base_branch = pr["toRef"]["displayId"].tame(check_string)
     reviewers_string = get_assignees_string(pr)
 
     return get_pull_request_event_message(
@@ -257,10 +262,23 @@ def get_pr_opened_or_modified_body(
         action=action,
         url=pr["links"]["self"][0]["href"].tame(check_string),
         number=pr["id"].tame(check_int),
-        target_branch=pr["fromRef"]["displayId"].tame(check_string),
-        base_branch=pr["toRef"]["displayId"].tame(check_string),
+        target_branch=target_branch,
+        base_branch=base_branch,
         message=description,
         reviewer=reviewers_string if reviewers_string else None,
+        title=pr["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_pr_merged_body(payload: WildValue, action: str, include_title: Optional[str]) -> str:
+    pr = payload["pullRequest"]
+    return get_pull_request_event_message(
+        user_name=get_user_name(payload),
+        action=action,
+        url=pr["links"]["self"][0]["href"].tame(check_string),
+        number=pr["id"].tame(check_int),
+        target_branch=pr["fromRef"]["displayId"].tame(check_string),
+        base_branch=pr["toRef"]["displayId"].tame(check_string),
         title=pr["title"].tame(check_string) if include_title else None,
     )
 
@@ -331,6 +349,8 @@ def pr_handler(
     )
     if action in ["opened", "modified"]:
         body = get_pr_opened_or_modified_body(payload, action, include_title)
+    elif action == "merged":
+        body = get_pr_merged_body(payload, action, include_title)
     elif action == "needs_work":
         body = get_pr_needs_work_body(payload, include_title)
     elif action == "reviewers_updated":
