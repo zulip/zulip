@@ -598,13 +598,16 @@ class Command(BaseCommand):
                 "Scotland",
                 "Venice",
                 "Rome",
+                "😀😂🥲",
                 signups_stream,
             ]
+            
             stream_dict: Dict[str, Dict[str, Any]] = {
                 "Denmark": {"description": "A Scandinavian country"},
                 "Scotland": {"description": "Located in the United Kingdom"},
                 "Venice": {"description": "A northeastern Italian city"},
                 "Rome": {"description": "Yet another Italian city", "is_web_public": True},
+                "😀😂🥲": {"description": "😊🤕", "is_web_public": True}
             }
 
             bulk_create_streams(zulip_realm, stream_dict)
