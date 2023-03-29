@@ -14,8 +14,8 @@ import * as util from "./util";
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
-    const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
-    const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
+    const top_navbar_height = $("#top_navbar").outerHeight(true) ?? 0;
+    const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").outerHeight(true) ?? 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
@@ -26,8 +26,8 @@ function get_new_heights() {
         Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true) -
-        $("#private_messages_sticky_header").safeOuterHeight(true);
+        ($("#global_filters").outerHeight(true) ?? 0) -
+        ($("#private_messages_sticky_header").outerHeight(true) ?? 0);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -37,8 +37,8 @@ function get_new_heights() {
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
-        $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true) -
+        ($("#userlist-header").outerHeight(true) ?? 0) -
+        ($("#user_search_section").outerHeight(true) ?? 0) -
         right_sidebar_shortcuts_height;
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);

@@ -25,7 +25,7 @@ export function down(with_centering) {
             // lots of nice whitespace for new messages coming in.
             const $current_msg_table = rows.get_table(message_lists.current.table_name);
             message_viewport.scrollTop(
-                $current_msg_table.safeOuterHeight(true) - message_viewport.height() * 0.1,
+                ($current_msg_table.outerHeight(true) ?? 0) - message_viewport.height() * 0.1,
             );
             unread_ops.process_scrolled_to_bottom();
         }
