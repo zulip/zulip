@@ -94,7 +94,8 @@
        our dark theme colors in Zulip's dark theme.
      */
     .tippy-box[data-theme~="light-border"] {
-        .tippy-content a {
+        .tippy-content a,
+        p {
             color: hsl(236deg 33% 90%);
 
             &.compose_control_button:hover {
