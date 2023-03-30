@@ -300,7 +300,6 @@ SEARCH_PILLS_ENABLED = False
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
 
-
 # These settings are not documented in prod_settings_template.py.
 # They should either be documented here, or documented there.
 #
@@ -563,3 +562,8 @@ MAX_MESSAGE_LENGTH = 10000
 # More drafts, should they exist for some crazy reason, could be
 # fetched in a separate request.
 MAX_DRAFTS_IN_REGISTER_RESPONSE = 1000
+
+# The max connect minutes of smtp to reopen connect
+# when the value more than 0 , smtp connect will reopen after
+# minutes of value
+SMTP_MAX_CONNECTION_MINUTES = 0
