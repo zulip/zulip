@@ -50,8 +50,7 @@ export function get_recipient_bar_color(color) {
         .toHex();
 }
 
-function update_table_stream_color(table, stream_name, color) {
-    const recipient_bar_color = get_recipient_bar_color(color);
+function update_table_message_recipient_stream_color(table, stream_name, recipient_bar_color) {
     const $stream_labels = table.find(".stream_label");
     for (const label of $stream_labels) {
         const $label = $(label);
@@ -64,14 +63,17 @@ function update_table_stream_color(table, stream_name, color) {
 }
 
 function update_stream_privacy_color(id, color) {
-    $(`.stream-privacy-${CSS.escape(id)}.original-color`).css("color", color);
+    $(`.stream-privacy-original-color-${CSS.escape(id)}`).css("color", color);
     color = get_stream_privacy_icon_color(color);
-    $(`.stream-privacy-${CSS.escape(id)}.modified-color`).css("color", color);
+    $(`.stream-privacy-modified-color-${CSS.escape(id)}`).css("color", color);
 }
 
-function update_historical_message_color(stream_name, color) {
-    update_table_stream_color($(".focused_table"), stream_name, color);
+function update_message_recipient_color(stream_name, color) {
+    const recipient_color = get_recipient_bar_color(color);
+    update_table_message_recipient_stream_color($(".focused_table"), stream_name, recipient_color);
     if ($(".focused_table").attr("id") !== "#zhome") {
+        update_table_message_recipient_stream_color($("#zhome"), stream_name, recipient_color);
+    }
     // Update color for drafts if open.
     if (overlays.drafts_open()) {
         update_table_message_recipient_stream_color(
@@ -127,9 +129,7 @@ export function update_stream_color(sub, color) {
         )}'] .large-icon`,
     ).css("color", color);
 
-    if (update_historical) {
-        update_historical_message_color(sub.name, color);
-    }
+    update_message_recipient_color(sub.name, color);
     update_stream_privacy_color(stream_id, color);
     message_view_header.colorize_message_view_header();
 }
