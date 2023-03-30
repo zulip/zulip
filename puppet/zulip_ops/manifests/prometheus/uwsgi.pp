@@ -1,6 +1,9 @@
 # @summary Prometheus monitoring of uwsgi servers
 #
 class zulip_ops::prometheus::uwsgi {
+  include zulip_ops::prometheus::base
+  include zulip::supervisor
+
   $version = $zulip::common::versions['uwsgi_exporter']['version']
   $dir = "/srv/zulip-uwsgi_exporter-${version}"
   $bin = "${dir}/uwsgi_exporter"

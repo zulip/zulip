@@ -3,6 +3,8 @@
 # https://www.rabbitmq.com/prometheus.html
 #
 class zulip_ops::prometheus::rabbitmq {
+  include zulip_ops::prometheus::base
+
   exec { 'enable rabbitmq-prometheus':
     command => 'rabbitmq-plugins enable rabbitmq_prometheus',
     unless  => 'grep -q rabbitmq_prometheus /etc/rabbitmq/enabled_plugins',

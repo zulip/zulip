@@ -1,6 +1,9 @@
 # @summary Prometheus monitoring of redis servers
 #
 class zulip_ops::prometheus::redis {
+  include zulip_ops::prometheus::base
+  include zulip::supervisor
+
   $version = $zulip::common::versions['redis_exporter']['version']
   $dir = "/srv/zulip-redis_exporter-${version}"
   $bin = "${dir}/redis_exporter"
