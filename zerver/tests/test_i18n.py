@@ -64,6 +64,7 @@ class EmailTranslationTestCase(ZulipTestCase):
                 "invitee_emails": "new-email@zulip.com",
                 "stream_ids": orjson.dumps([stream.id]).decode(),
                 "invite_expires_in_minutes": invite_expires_in_minutes,
+                "send_notification": "true",
             },
         )
 

@@ -121,6 +121,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
             "invitee_emails": unregistered_email_2,
             "invite_expires_in_minutes": invite_expires_in_minutes,
             "stream_ids": orjson.dumps([stream.id]).decode(),
+            "send_notification": "true",
         },
         HTTP_HOST=realm.host,
     )

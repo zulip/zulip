@@ -85,6 +85,7 @@ class InviteUserBase(ZulipTestCase):
         self,
         invitee_emails: str,
         stream_names: Sequence[str],
+        send_notification: bool = True,
         invite_expires_in_minutes: Optional[int] = INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
@@ -110,6 +111,7 @@ class InviteUserBase(ZulipTestCase):
             "/json/invites",
             {
                 "invitee_emails": invitee_emails,
+                "send_notification": "true" if send_notification else "false",
                 "invite_expires_in_minutes": invite_expires_in,
                 "stream_ids": orjson.dumps(stream_ids).decode(),
                 "invite_as": invite_as,
@@ -1350,6 +1352,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.user_profile,
             ["foo@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
@@ -1357,12 +1360,14 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.user_profile,
             ["foo@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             self.user_profile,
             ["foo@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
@@ -1370,7 +1375,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         lear = get_realm("lear")
         lear_user = self.lear_user("cordelia")
         do_invite_users(
-            lear_user, ["foo@zulip.com"], [], invite_expires_in_minutes=invite_expires_in_minutes
+            lear_user,
+            ["foo@zulip.com"],
+            [],
+            send_notification=True,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
@@ -1580,30 +1589,35 @@ class InvitationsTestCase(InviteUserBase):
             user_profile,
             ["TestOne@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             user_profile,
             ["TestTwo@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             hamlet,
             ["TestThree@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             othello,
             ["TestFour@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             self.mit_user("sipbtest"),
             ["TestOne@mit.edu"],
             [],
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_create_multiuse_invite_link(
@@ -1636,6 +1650,7 @@ class InvitationsTestCase(InviteUserBase):
             user_profile,
             ["TestOne@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
@@ -1647,6 +1662,7 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestTwo@zulip.com"],
                 streams,
+                send_notification=True,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_create_multiuse_invite_link(
@@ -1695,12 +1711,14 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestOne@zulip.com"],
                 streams,
+                send_notification=True,
                 invite_expires_in_minutes=None,
             )
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
                 streams,
+                send_notification=True,
                 invite_expires_in_minutes=100 * 24 * 60,
             )
             do_create_multiuse_invite_link(
@@ -2022,7 +2040,7 @@ class InvitationsTestCase(InviteUserBase):
         self.login("iago")
         invitee = "resend@zulip.com"
 
-        self.assert_json_success(self.invite(invitee, ["Denmark"], None))
+        self.assert_json_success(self.invite(invitee, ["Denmark"], True, None))
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
         # Verify and then clear from the outbox the original invite email

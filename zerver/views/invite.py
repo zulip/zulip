@@ -19,7 +19,7 @@ from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_int, check_int_in, check_list, check_none_or
+from zerver.lib.validator import check_bool, check_int, check_int_in, check_list, check_none_or
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
@@ -43,6 +43,7 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
+    send_notification: bool = REQ("send_notification", json_validator=check_bool),
     invite_expires_in_minutes: Optional[int] = REQ(
         json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
     ),
@@ -89,6 +90,7 @@ def invite_users_backend(
         user_profile,
         invitee_emails,
         streams,
+        send_notification,
         invite_expires_in_minutes=invite_expires_in_minutes,
         invite_as=invite_as,
     )

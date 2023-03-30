@@ -203,6 +203,7 @@ def do_invite_users(
     user_profile: UserProfile,
     invitee_emails: Collection[str],
     streams: Collection[Stream],
+    send_notification: bool,
     *,
     invite_expires_in_minutes: Optional[int],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
@@ -296,7 +297,11 @@ def do_invite_users(
     for email in validated_emails:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(
-            email=email, referred_by=user_profile, invited_as=invite_as, realm=user_profile.realm
+            email=email,
+            referred_by=user_profile,
+            invited_as=invite_as,
+            realm=user_profile.realm,
+            send_notification=send_notification,
         )
         prereg_user.save()
         stream_ids = [stream.id for stream in streams]
