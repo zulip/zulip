@@ -449,6 +449,7 @@ def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
         subprocess.check_call(
             [os.path.join(path, script_name), old_version, NEW_ZULIP_VERSION],
             cwd=deploy_path,
+            preexec_fn=su_to_zulip,
         )
 
 
