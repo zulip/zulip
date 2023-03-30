@@ -78,7 +78,7 @@ EXEMPT_FILES = make_set(
         "web/src/debug.js",
         "web/src/deprecated_feature_notice.js",
         "web/src/desktop_integration.js",
-        "web/src/dialog_widget.js",
+        "web/src/dialog_widget.ts",
         "web/src/drafts.js",
         "web/src/dropdown_list_widget.js",
         "web/src/echo.js",
