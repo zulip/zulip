@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
+import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
@@ -159,10 +160,6 @@ class WorkerTest(ZulipTestCase):
 
         events = [hamlet_event1, hamlet_event2, othello_event]
 
-        fake_client = FakeClient()
-        for event in events:
-            fake_client.enqueue("missedmessage_emails", event)
-
         mmw = MissedMessageWorker()
         batch_duration = datetime.timedelta(
             seconds=hamlet.email_notifications_batching_period_seconds
@@ -170,21 +167,6 @@ class WorkerTest(ZulipTestCase):
         assert (
             hamlet.email_notifications_batching_period_seconds
             == othello.email_notifications_batching_period_seconds
-        )
-
-        class MockTimer:
-            is_running = False
-
-            def is_alive(self) -> bool:
-                return self.is_running
-
-            def start(self) -> None:
-                self.is_running = True
-
-        timer = MockTimer()
-        timer_mock = patch(
-            "zerver.worker.queue_processors.Timer",
-            return_value=timer,
         )
 
         send_mock = patch(
@@ -206,106 +188,110 @@ class WorkerTest(ZulipTestCase):
             self.assertEqual(row.scheduled_timestamp, scheduled_timestamp)
             self.assertEqual(row.mentioned_user_group_id, mentioned_user_group_id)
 
-        with send_mock as sm, timer_mock as tm:
-            with simulated_queue_client(fake_client):
-                self.assertFalse(timer.is_alive())
+        def advance() -> Optional[float]:
+            mmw.stopping = False
 
-                time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
-                expected_scheduled_timestamp = time_zero + batch_duration
-                with patch("zerver.worker.queue_processors.timezone_now", return_value=time_zero):
-                    mmw.setup()
-                    mmw.start()
+            def inner(check: Callable[[], bool], timeout: Optional[float]) -> bool:
+                # The check should never pass, since we've just (with
+                # the lock) ascertained above the cv.wait that its
+                # conditions are not met.
+                self.assertFalse(check())
 
-                    # The events should be saved in the database
-                    hamlet_row1 = ScheduledMessageNotificationEmail.objects.get(
-                        user_profile_id=hamlet.id, message_id=hamlet1_msg_id
-                    )
-                    check_row(hamlet_row1, expected_scheduled_timestamp, None)
+                # Set ourself to stop at the top of the next loop, but
+                # pretend we didn't get an event
+                mmw.stopping = True
+                return False
 
-                    hamlet_row2 = ScheduledMessageNotificationEmail.objects.get(
-                        user_profile_id=hamlet.id, message_id=hamlet2_msg_id
-                    )
-                    check_row(hamlet_row2, expected_scheduled_timestamp, 4)
+            with patch.object(mmw.cv, "wait_for", side_effect=inner):
+                mmw.work()
+            return mmw.has_timeout
 
-                    othello_row1 = ScheduledMessageNotificationEmail.objects.get(
-                        user_profile_id=othello.id, message_id=othello_msg_id
-                    )
-                    check_row(othello_row1, expected_scheduled_timestamp, None)
+        # With nothing enqueued, the condition variable is pending
+        # forever.  We double-check that the condition is false in
+        # steady-state.
+        has_timeout = advance()
+        self.assertFalse(has_timeout)
 
-                    # Additionally, the timer should have be started
-                    self.assertTrue(timer.is_alive())
+        # Enqueues the events to the internal queue, as if from RabbitMQ
+        time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+        with time_machine.travel(time_zero, tick=False), patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            for event in events:
+                mmw.consume_single_event(event)
+        # All of these notify, because has_timeout is still false in
+        # each case.  This represents multiple consume() calls getting
+        # the lock before the worker escapes the wait_for, and is
+        # unlikely in real life but does not lead to incorrect
+        # behaviour.
+        self.assertEqual(notify_mock.call_count, 3)
 
-                # If another event is received, test that it gets saved with the same
-                # `expected_scheduled_timestamp` as the earlier events.
-                fake_client.enqueue("missedmessage_emails", bonus_event_hamlet)
-                self.assertTrue(timer.is_alive())
-                few_moments_later = time_zero + datetime.timedelta(seconds=3)
-                with patch(
-                    "zerver.worker.queue_processors.timezone_now", return_value=few_moments_later
-                ):
-                    # Double-calling start is our way to get it to run again
-                    mmw.start()
-                    hamlet_row3 = ScheduledMessageNotificationEmail.objects.get(
-                        user_profile_id=hamlet.id, message_id=hamlet3_msg_id
-                    )
-                    check_row(hamlet_row3, expected_scheduled_timestamp, None)
+        # This leaves a timeout set, since there are objects pending
+        with time_machine.travel(time_zero, tick=False):
+            has_timeout = advance()
+        self.assertTrue(has_timeout)
 
-                # Now let us test `maybe_send_batched_emails`
-                # If called too early, it shouldn't process the emails.
-                one_minute_premature = expected_scheduled_timestamp - datetime.timedelta(seconds=60)
-                with patch(
-                    "zerver.worker.queue_processors.timezone_now", return_value=one_minute_premature
-                ):
-                    mmw.maybe_send_batched_emails()
-                    self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 4)
+        expected_scheduled_timestamp = time_zero + batch_duration
 
-                # If called after `expected_scheduled_timestamp`, it should process all emails.
-                one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
-                with self.assertLogs(level="INFO") as info_logs, patch(
-                    "zerver.worker.queue_processors.timezone_now", return_value=one_minute_overdue
-                ):
-                    mmw.maybe_send_batched_emails()
-                    self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+        # The events should be saved in the database
+        hamlet_row1 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=hamlet.id, message_id=hamlet1_msg_id
+        )
+        check_row(hamlet_row1, expected_scheduled_timestamp, None)
 
-                    self.assert_length(info_logs.output, 2)
-                    self.assertIn(
-                        f"INFO:root:Batch-processing 3 missedmessage_emails events for user {hamlet.id}",
-                        info_logs.output,
-                    )
-                    self.assertIn(
-                        f"INFO:root:Batch-processing 1 missedmessage_emails events for user {othello.id}",
-                        info_logs.output,
-                    )
+        hamlet_row2 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=hamlet.id, message_id=hamlet2_msg_id
+        )
+        check_row(hamlet_row2, expected_scheduled_timestamp, 4)
 
-                    # All batches got processed. Verify that the timer isn't running.
-                    self.assertEqual(mmw.timer_event, None)
+        othello_row1 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=othello.id, message_id=othello_msg_id
+        )
+        check_row(othello_row1, expected_scheduled_timestamp, None)
 
-                # Hacky test coming up! We want to test the try-except block in the consumer which handles
-                # IntegrityErrors raised when the message was deleted before it processed the notification
-                # event.
-                # However, Postgres defers checking ForeignKey constraints to when the current transaction
-                # commits. This poses some difficulties in testing because of Django running tests inside a
-                # transaction which never commits. See https://code.djangoproject.com/ticket/22431 for more
-                # details, but the summary is that IntegrityErrors due to database constraints are raised at
-                # the end of the test, not inside the `try` block. So, we have the code inside the `try` block
-                # raise `IntegrityError` by mocking.
-                def raise_error(**kwargs: Any) -> None:
-                    raise IntegrityError
+        # If another event is received, test that it gets saved with the same
+        # `expected_scheduled_timestamp` as the earlier events.
 
-                fake_client.enqueue("missedmessage_emails", hamlet_event1)
+        few_moments_later = time_zero + datetime.timedelta(seconds=3)
+        with time_machine.travel(few_moments_later, tick=False), patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            mmw.consume_single_event(bonus_event_hamlet)
+        self.assertEqual(notify_mock.call_count, 0)
 
-                with patch(
-                    "zerver.models.ScheduledMessageNotificationEmail.objects.create",
-                    side_effect=raise_error,
-                ), self.assertLogs(level="DEBUG") as debug_logs:
-                    mmw.start()
-                    self.assertIn(
-                        "DEBUG:root:ScheduledMessageNotificationEmail row could not be created. The message may have been deleted. Skipping event.",
-                        debug_logs.output,
-                    )
+        with time_machine.travel(few_moments_later, tick=False):
+            has_timeout = advance()
+        self.assertTrue(has_timeout)
+        hamlet_row3 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=hamlet.id, message_id=hamlet3_msg_id
+        )
+        check_row(hamlet_row3, expected_scheduled_timestamp, None)
 
-        # Check that the frequency of calling maybe_send_batched_emails is correct (5 seconds)
-        self.assertEqual(tm.call_args[0][0], 5)
+        # Now let us test `maybe_send_batched_emails`
+        # If called too early, it shouldn't process the emails.
+        one_minute_premature = expected_scheduled_timestamp - datetime.timedelta(seconds=60)
+        with time_machine.travel(one_minute_premature, tick=False):
+            has_timeout = advance()
+        self.assertTrue(has_timeout)
+        self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 4)
+
+        # If called after `expected_scheduled_timestamp`, it should process all emails.
+        one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+        with time_machine.travel(one_minute_overdue, tick=True):
+            with send_mock as sm, self.assertLogs(level="INFO") as info_logs:
+                has_timeout = advance()
+                self.assertTrue(has_timeout)
+                self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+                has_timeout = advance()
+                self.assertFalse(has_timeout)
+
+        self.assertEqual(
+            [
+                f"INFO:root:Batch-processing 3 missedmessage_emails events for user {hamlet.id}",
+                f"INFO:root:Batch-processing 1 missedmessage_emails events for user {othello.id}",
+            ],
+            info_logs.output,
+        )
 
         # Verify the payloads now
         args = [c[0] for c in sm.call_args_list]
@@ -331,32 +317,62 @@ class WorkerTest(ZulipTestCase):
             {"where art thou, othello?"},
         )
 
-        with send_mock as sm, timer_mock as tm:
-            with simulated_queue_client(fake_client):
-                time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
-                # Verify that we make forward progress if one of the messages throws an exception
-                fake_client.enqueue("missedmessage_emails", hamlet_event1)
-                fake_client.enqueue("missedmessage_emails", hamlet_event2)
-                fake_client.enqueue("missedmessage_emails", othello_event)
-                with patch("zerver.worker.queue_processors.timezone_now", return_value=time_zero):
-                    mmw.setup()
-                    mmw.start()
+        # Hacky test coming up! We want to test the try-except block in the consumer which handles
+        # IntegrityErrors raised when the message was deleted before it processed the notification
+        # event.
+        # However, Postgres defers checking ForeignKey constraints to when the current transaction
+        # commits. This poses some difficulties in testing because of Django running tests inside a
+        # transaction which never commits. See https://code.djangoproject.com/ticket/22431 for more
+        # details, but the summary is that IntegrityErrors due to database constraints are raised at
+        # the end of the test, not inside the `try` block. So, we have the code inside the `try` block
+        # raise `IntegrityError` by mocking.
+        with patch(
+            "zerver.models.ScheduledMessageNotificationEmail.objects.create",
+            side_effect=IntegrityError,
+        ), self.assertLogs(level="DEBUG") as debug_logs, patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            mmw.consume_single_event(hamlet_event1)
+            self.assertEqual(notify_mock.call_count, 0)
+            self.assertIn(
+                "DEBUG:root:ScheduledMessageNotificationEmail row could not be created. The message may have been deleted. Skipping event.",
+                debug_logs.output,
+            )
 
-                def fail_some(user: UserProfile, *args: Any) -> None:
-                    if user.id == hamlet.id:
-                        raise RuntimeError
+        # Verify that we make forward progress if one of the messages
+        # throws an exception.  First, enqueue the messages, and get
+        # them to create database rows:
+        time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+        with time_machine.travel(time_zero, tick=False), patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            mmw.consume_single_event(hamlet_event1)
+            mmw.consume_single_event(hamlet_event2)
+            mmw.consume_single_event(othello_event)
+            # See above note about multiple notifies
+            self.assertEqual(notify_mock.call_count, 3)
+            has_timeout = advance()
+            self.assertTrue(has_timeout)
 
-                sm.side_effect = fail_some
-                one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
-                with patch(
-                    "zerver.worker.queue_processors.timezone_now", return_value=one_minute_overdue
-                ), self.assertLogs(level="ERROR") as error_logs:
-                    mmw.maybe_send_batched_emails()
-                    self.assertIn(
-                        "ERROR:root:Failed to process 2 missedmessage_emails for user 10",
-                        error_logs.output[0],
-                    )
-                    self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+        # Next, set up a fail-y consumer:
+        def fail_some(user: UserProfile, *args: Any) -> None:
+            if user.id == hamlet.id:
+                raise RuntimeError
+
+        one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+        with time_machine.travel(one_minute_overdue, tick=False), self.assertLogs(
+            level="ERROR"
+        ) as error_logs, send_mock as sm:
+            sm.side_effect = fail_some
+            has_timeout = advance()
+            self.assertTrue(has_timeout)
+            self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+            has_timeout = advance()
+            self.assertFalse(has_timeout)
+        self.assertIn(
+            "ERROR:root:Failed to process 2 missedmessage_emails for user 10",
+            error_logs.output[0],
+        )
 
     def test_push_notifications_worker(self) -> None:
         """
