@@ -1937,6 +1937,10 @@ $option_title_width: 180px;
         margin-top: 12px;
     }
 
+    .admin_user_list_heading {
+        margin-bottom: unset;
+    }
+
     .admin_user_list_filter {
         display: flex;
         float: right;
@@ -1947,6 +1951,7 @@ $option_title_width: 180px;
 
         & input.search {
             margin-top: unset;
+            margin-bottom: 10px;
         }
 
         & select.settings_select {
