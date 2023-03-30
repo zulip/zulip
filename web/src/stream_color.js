@@ -104,7 +104,7 @@ export function set_colorpicker_color(colorpicker, color) {
     });
 }
 
-export function update_stream_color(sub, color, {update_historical = false} = {}) {
+export function update_stream_color(sub, color) {
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.
