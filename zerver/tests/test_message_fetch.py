@@ -46,7 +46,7 @@ from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.upload.base import create_attachment
 from zerver.lib.url_encoding import near_message_url
-from zerver.lib.user_topics import set_topic_mutes
+from zerver.lib.user_topics import set_topic_visibility_policy
 from zerver.models import (
     Attachment,
     Message,
@@ -54,6 +54,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_display_recipient,
     get_realm,
     get_stream,
@@ -520,6 +521,18 @@ class NarrowBuilderTest(ZulipTestCase):
             return builder.add_term(self.raw_query, term)
 
         self.assertRaises(BadNarrowOperatorError, _build_query, term)
+
+    # Test that the underscore version of "pm-with" works.
+    def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
+        term = dict(operator="pm_with", operand=self.hamlet_email)
+        self._do_add_term_test(
+            term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
+        )
+
+    # Test that the underscore version of "group-pm-with" works.
+    def test_add_term_using_underscore_version_of_group_pm_with_operator(self) -> None:
+        term = dict(operator="group_pm_with", operand=self.othello_email)
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
 
     def _do_add_term_test(
         self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None
@@ -3120,7 +3133,7 @@ class GetOldMessagesTest(ZulipTestCase):
         muted_topics = [
             ["England", "muted"],
         ]
-        set_topic_mutes(hamlet, muted_topics)
+        set_topic_visibility_policy(hamlet, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # send a muted message
         muted_message_id = self.send_stream_message(cordelia, "England", topic_name="muted")
@@ -3387,7 +3400,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ["web stuff", "css"],
             ["bogus", "bogus"],
         ]
-        set_topic_mutes(user_profile, muted_topics)
+        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         query_params = dict(
             anchor="first_unread",
@@ -3428,7 +3441,7 @@ class GetOldMessagesTest(ZulipTestCase):
         muted_topics = [
             ["irrelevant_stream", "irrelevant_topic"],
         ]
-        set_topic_mutes(user_profile, muted_topics)
+        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # If nothing relevant is muted, then exclude_muting_conditions()
         # should return an empty list.
@@ -3450,7 +3463,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ["Scotland", "golf"],
             ["web stuff", "css"],
         ]
-        set_topic_mutes(user_profile, muted_topics)
+        set_topic_visibility_policy(user_profile, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
         # And verify that our query will exclude them.
         narrow = [

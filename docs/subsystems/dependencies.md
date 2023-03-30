@@ -219,18 +219,13 @@ We use the same set of strategies described for Python dependencies
 for most of our JavaScript dependencies, so we won't repeat the
 reasoning here.
 
-- In a fashion very analogous to the Python codebase,
-  `scripts/lib/node_cache.py` manages cached `node_modules`
-  directories in `/srv/zulip-npm-cache`. Each is named by its hash,
-  computed by the `generate_sha1sum_node_modules` function.
-  `scripts/lib/clean_node_cache.py` handles garbage-collection.
-- We use [yarn][], a `pip`-like tool for JavaScript, to download most
-  JavaScript dependencies. Yarn talks to standard the [npm][]
+- We use [pnpm][], a `pip`-like tool for JavaScript, to download most
+  JavaScript dependencies. pnpm talks to the standard [npm][]
   repository. We use the standard `package.json` file to declare our
   direct dependencies, with sections for development and
-  production. Yarn takes care of pinning the versions of indirect
-  dependencies in the `yarn.lock` file; `yarn install` updates the
-  `yarn.lock` files.
+  production. pnpm takes care of pinning the versions of indirect
+  dependencies in the `pnpm-lock.yaml` file; `pnpm install` updates the
+  `pnpm-lock.yaml` file.
 - `tools/update-prod-static`. This process is discussed in detail in
   the [static asset pipeline](html-css.md#static-asset-pipeline)
   article, but we don't use the `node_modules` directories directly in
@@ -247,11 +242,11 @@ reasoning here.
   these checked-in versions of dependencies and instead use versions
   managed by the npm repositories.
 
-## Node.js and Yarn
+## Node.js and pnpm
 
 Node.js is installed by `scripts/lib/install-node` to
-`/srv/zulip-node` and symlinked to `/usr/local/bin/node`. A Yarn
-symlink at `/usr/local/bin/yarn` is managed by
+`/srv/zulip-node` and symlinked to `/usr/local/bin/node`. A pnpm
+symlink at `/usr/local/bin/pnpm` is managed by
 [Corepack](https://nodejs.org/api/corepack.html).
 
 We don't do anything special to try to manage multiple versions of
@@ -338,7 +333,7 @@ usually one needs to think about making changes in 3 places:
 
 [virtualenv]: https://virtualenv.pypa.io/en/stable/
 [virtualenv-clone]: https://github.com/edwardgeorge/virtualenv-clone/
-[yarn]: https://yarnpkg.com/
+[pnpm]: https://pnpm.io/
 [npm]: https://npmjs.com/
 [iamcal]: https://github.com/iamcal/emoji-data
 [pygments]: https://pygments.org/

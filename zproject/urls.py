@@ -137,6 +137,7 @@ from zerver.views.report import (
     report_send_times,
     report_unnarrow_times,
 )
+from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
     add_default_stream,
@@ -789,6 +790,10 @@ urls += [
     # This registers the remaining SCIM endpoints.
     path("scim/v2/", include("django_scim.urls", namespace="scim")),
 ]
+
+# Front-end Sentry requests tunnel through the server, if enabled
+if settings.SENTRY_FRONTEND_DSN:
+    urls += [path("error_tracing", sentry_tunnel)]
 
 # User documentation site
 help_documentation_view = MarkdownDirectoryView.as_view(

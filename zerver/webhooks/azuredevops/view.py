@@ -19,10 +19,10 @@ from zerver.models import UserProfile
 
 def get_code_pull_request_updated_body(payload: WildValue) -> str:
     return get_pull_request_event_message(
-        get_code_pull_request_user_name(payload),
-        "updated",
-        get_code_pull_request_url(payload),
-        get_code_pull_request_id(payload),
+        user_name=get_code_pull_request_user_name(payload),
+        action="updated",
+        url=get_code_pull_request_url(payload),
+        number=get_code_pull_request_id(payload),
         message=payload["detailedMessage"]["markdown"].tame(check_string),
         title=get_code_pull_request_title(payload),
     )
@@ -30,10 +30,16 @@ def get_code_pull_request_updated_body(payload: WildValue) -> str:
 
 def get_code_pull_request_merged_body(payload: WildValue) -> str:
     return get_pull_request_event_message(
-        get_code_pull_request_user_name(payload),
-        "merged",
-        get_code_pull_request_url(payload),
-        get_code_pull_request_id(payload),
+        user_name=get_code_pull_request_user_name(payload),
+        action="merged",
+        url=get_code_pull_request_url(payload),
+        number=get_code_pull_request_id(payload),
+        target_branch=payload["resource"]["sourceRefName"]
+        .tame(check_string)
+        .replace("refs/heads/", ""),
+        base_branch=payload["resource"]["targetRefName"]
+        .tame(check_string)
+        .replace("refs/heads/", ""),
         title=get_code_pull_request_title(payload),
     )
 
@@ -44,13 +50,17 @@ def get_code_pull_request_opened_body(payload: WildValue) -> str:
     else:
         description = None
     return get_pull_request_event_message(
-        get_code_pull_request_user_name(payload),
-        "created",
-        get_code_pull_request_url(payload),
-        get_code_pull_request_id(payload),
-        payload["resource"]["sourceRefName"].tame(check_string).replace("refs/heads/", ""),
-        payload["resource"]["targetRefName"].tame(check_string).replace("refs/heads/", ""),
-        description,
+        user_name=get_code_pull_request_user_name(payload),
+        action="created",
+        url=get_code_pull_request_url(payload),
+        number=get_code_pull_request_id(payload),
+        target_branch=payload["resource"]["sourceRefName"]
+        .tame(check_string)
+        .replace("refs/heads/", ""),
+        base_branch=payload["resource"]["targetRefName"]
+        .tame(check_string)
+        .replace("refs/heads/", ""),
+        message=description,
         title=get_code_pull_request_title(payload),
     )
 

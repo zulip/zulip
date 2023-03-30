@@ -4,8 +4,7 @@ messages sent while you were away.
 
 {start_tabs}
 
-1. Open **Recent conversations** from the left sidebar or by pressing the
-   <kbd>Esc</kbd> key.
+{!open-recent-conversations.md!}
 
 1. The filters at the top help you quickly find relevant conversations.
    For example, select **Participated** to narrow to the topics you

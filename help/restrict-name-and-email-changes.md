@@ -51,4 +51,4 @@ to manage user emails.
 {end_tabs}
 
 [change-email]: /help/change-your-email-address
-[ldap-sync-data]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#synchronizing-data
+[ldap-sync-data]: https://zulip.readthedocs.io/en/stable/production/authentication-methods.html#synchronizing-data

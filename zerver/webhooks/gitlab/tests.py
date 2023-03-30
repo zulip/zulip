@@ -304,7 +304,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_merge_request_created_with_assignee_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
+        expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) from `tomek` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription of merge request\n~~~"
         self.check_webhook(
             "merge_request_hook__merge_request_created_with_assignee",
             expected_topic,
@@ -314,7 +314,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_merge_request_created_with_multiple_assignees_event_message(self) -> None:
         expected_topic = "Demo Project / MR #1 Make a trivial change to the README."
         expected_message = """
-Hemanth V. Alluri created [MR #1](https://gitlab.com/Hypro999/demo-project/-/merge_requests/1) (assigned to Hemanth V. Alluri and Hemanth V. Alluri) from `devel` to `master`:
+Hemanth V. Alluri created [MR #1](https://gitlab.com/Hypro999/demo-project/-/merge_requests/1) from `devel` to `master` (assigned to Hemanth V. Alluri and Hemanth V. Alluri):
 
 ~~~ quote
 A trivial change that should probably be ignored.
@@ -369,7 +369,7 @@ A trivial change that should probably be ignored.
 
     def test_merge_request_updated_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\nupdated desc\n~~~"
+        expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek):\n\n~~~ quote\nupdated desc\n~~~"
         self.check_webhook(
             "merge_request_hook__merge_request_updated", expected_topic, expected_message
         )
@@ -383,7 +383,7 @@ A trivial change that should probably be ignored.
 
     def test_merge_request_merged_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
+        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) from `tomek` to `master`."
 
         self.check_webhook(
             "merge_request_hook__merge_request_merged", expected_topic, expected_message
@@ -576,7 +576,7 @@ A trivial change that should probably be ignored.
 
     def test_system_merge_request_created_with_assignee_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
+        expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) from `tomek` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription of merge request\n~~~"
         self.check_webhook(
             "system_hook__merge_request_created_with_assignee", expected_topic, expected_message
         )
@@ -589,7 +589,7 @@ A trivial change that should probably be ignored.
 
     def test_system_merge_request_merged_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
-        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
+        expected_message = "Tomasz Kolek merged [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) from `tomek` to `master`."
 
         self.check_webhook("system_hook__merge_request_merged", expected_topic, expected_message)
 

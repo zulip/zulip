@@ -1,10 +1,10 @@
 "use strict";
 
 module.exports = {
-    extends: ["stylelint-config-standard", "stylelint-config-prettier"],
+    extends: ["stylelint-config-standard"],
     rules: {
         // Add some exceptions for recommended rules
-        "at-rule-no-unknown": [true, {ignoreAtRules: ["extend", "define-mixin", "mixin"]}],
+        "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
         "font-family-no-missing-generic-family-keyword": [
             true,
             {ignoreFontFamilies: ["FontAwesome"]},
@@ -20,11 +20,6 @@ module.exports = {
         "selector-class-pattern": null,
         "selector-id-pattern": null,
 
-        // Compatibility with older browsers
-        "alpha-value-notation": "number",
-        "color-function-notation": "legacy",
-        "hue-degree-notation": "number",
-
         // Limit language features
         "color-no-hex": true,
         "color-named": "never",
@@ -35,9 +30,8 @@ module.exports = {
             ],
         },
         "function-disallowed-list": [
-            // We use hsl(a) instead of rgb(a)
+            // We use hsl instead of rgb
             "rgb",
-            "rgba",
         ],
 
         // Zulip CSS should have no dependencies on external resources

@@ -1,14 +1,13 @@
 import datetime
-from typing import Callable, Dict, List, Optional, Tuple, TypedDict
+import logging
+from typing import Callable, List, Optional, Tuple, TypedDict
 
 from django.db import transaction
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 from sqlalchemy.types import Integer
 
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import topic_match_sa
 from zerver.lib.types import UserTopicDict
@@ -68,7 +67,7 @@ def get_topic_mutes(
         user_profile=user_profile,
         include_deactivated=include_deactivated,
         include_stream_name=True,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     )
 
     return [
@@ -77,10 +76,11 @@ def get_topic_mutes(
     ]
 
 
-def set_topic_mutes(
+def set_topic_visibility_policy(
     user_profile: UserProfile,
-    muted_topics: List[List[str]],
-    date_muted: Optional[datetime.datetime] = None,
+    topics: List[List[str]],
+    visibility_policy: int,
+    last_updated: Optional[datetime.datetime] = None,
 ) -> None:
     """
     This is only used in tests.
@@ -88,95 +88,105 @@ def set_topic_mutes(
 
     UserTopic.objects.filter(
         user_profile=user_profile,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=visibility_policy,
     ).delete()
 
-    if date_muted is None:
-        date_muted = timezone_now()
-    for stream_name, topic_name in muted_topics:
+    if last_updated is None:
+        last_updated = timezone_now()
+    for stream_name, topic_name in topics:
         stream = get_stream(stream_name, user_profile.realm)
         recipient_id = stream.recipient_id
         assert recipient_id is not None
 
-        set_user_topic_visibility_policy_in_database(
-            user_profile=user_profile,
+        bulk_set_user_topic_visibility_policy_in_database(
+            user_profiles=[user_profile],
             stream_id=stream.id,
             recipient_id=recipient_id,
             topic_name=topic_name,
-            visibility_policy=UserTopic.MUTED,
-            last_updated=date_muted,
+            visibility_policy=visibility_policy,
+            last_updated=last_updated,
         )
 
 
 @transaction.atomic(savepoint=False)
-def set_user_topic_visibility_policy_in_database(
-    user_profile: UserProfile,
+def bulk_set_user_topic_visibility_policy_in_database(
+    user_profiles: List[UserProfile],
     stream_id: int,
     topic_name: str,
     *,
     visibility_policy: int,
     recipient_id: Optional[int] = None,
     last_updated: Optional[datetime.datetime] = None,
-    ignore_duplicate: bool = False,
-) -> None:
-    if visibility_policy == UserTopic.VISIBILITY_POLICY_INHERIT:
-        try:
-            # Will throw UserTopic.DoesNotExist if the user doesn't
-            # already have a visibility policy for this topic.
-            UserTopic.objects.get(
-                user_profile=user_profile,
-                stream_id=stream_id,
-                topic_name__iexact=topic_name,
-            ).delete()
-            return
-        except UserTopic.DoesNotExist:
-            raise JsonableError(_("Nothing to be done"))
+) -> List[UserProfile]:
+    # returns the list of user_profiles whose user_topic row
+    # is either deleted, updated, or created.
+    rows = UserTopic.objects.filter(
+        user_profile__in=user_profiles,
+        stream_id=stream_id,
+        topic_name__iexact=topic_name,
+    ).select_related("user_profile", "user_profile__realm")
+
+    user_profiles_with_visibility_policy = [row.user_profile for row in rows]
+    user_profiles_without_visibility_policy = list(
+        set(user_profiles) - set(user_profiles_with_visibility_policy)
+    )
+
+    if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
+        for user_profile in user_profiles_without_visibility_policy:
+            # The user doesn't already have a visibility_policy for this topic.
+            logging.info(
+                "User %s tried to remove visibility_policy, which actually doesn't exist",
+                user_profile.id,
+            )
+        rows.delete()
+        return user_profiles_with_visibility_policy
 
     assert last_updated is not None
     assert recipient_id is not None
-    (row, created) = UserTopic.objects.get_or_create(
-        user_profile=user_profile,
-        stream_id=stream_id,
-        topic_name__iexact=topic_name,
-        recipient_id=recipient_id,
-        defaults={
-            "topic_name": topic_name,
-            "last_updated": last_updated,
-            "visibility_policy": visibility_policy,
-        },
-    )
 
-    if created:
-        return
+    user_profiles_seeking_visibility_policy_update: List[UserProfile] = []
+    for row in rows:
+        duplicate_request: bool = row.visibility_policy == visibility_policy
+        if duplicate_request:
+            logging.info(
+                "User %s tried to set visibility_policy to its current value of %s",
+                row.user_profile_id,
+                visibility_policy,
+            )
+            continue
+        # The request is to just 'update' the visibility policy of a topic
+        user_profiles_seeking_visibility_policy_update.append(row.user_profile)
 
-    duplicate_request: bool = row.visibility_policy == visibility_policy
-
-    if duplicate_request and ignore_duplicate:
-        return
-
-    if duplicate_request and not ignore_duplicate:
-        visibility_policy_string: Dict[int, str] = {
-            1: "muted",
-            2: "unmuted",
-            3: "followed",
-        }
-        raise JsonableError(
-            _("Topic already {}").format(visibility_policy_string[visibility_policy])
+    if user_profiles_seeking_visibility_policy_update:
+        rows.filter(user_profile__in=user_profiles_seeking_visibility_policy_update).update(
+            visibility_policy=visibility_policy, last_updated=last_updated
         )
-    # The request is to just 'update' the visibility policy of a topic
-    row.visibility_policy = visibility_policy
-    row.last_updated = last_updated
-    row.save(update_fields=["visibility_policy", "last_updated"])
+
+    if user_profiles_without_visibility_policy:
+        UserTopic.objects.bulk_create(
+            UserTopic(
+                user_profile=user_profile,
+                stream_id=stream_id,
+                recipient_id=recipient_id,
+                topic_name=topic_name,
+                last_updated=last_updated,
+                visibility_policy=visibility_policy,
+            )
+            for user_profile in user_profiles_without_visibility_policy
+        )
+    return user_profiles_seeking_visibility_policy_update + user_profiles_without_visibility_policy
 
 
-def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -> bool:
-    is_muted = UserTopic.objects.filter(
+def topic_has_visibility_policy(
+    user_profile: UserProfile, stream_id: int, topic_name: str, visibility_policy: int
+) -> bool:
+    has_visibility_policy = UserTopic.objects.filter(
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=visibility_policy,
     ).exists()
-    return is_muted
+    return has_visibility_policy
 
 
 def exclude_topic_mutes(
@@ -187,7 +197,7 @@ def exclude_topic_mutes(
     # never filtered from the query in this method.
     query = UserTopic.objects.filter(
         user_profile=user_profile,
-        visibility_policy=UserTopic.MUTED,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     )
 
     if stream_id is not None:
@@ -220,7 +230,7 @@ def exclude_topic_mutes(
 
 def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
     rows = UserTopic.objects.filter(
-        user_profile=user_profile, visibility_policy=UserTopic.MUTED
+        user_profile=user_profile, visibility_policy=UserTopic.VisibilityPolicy.MUTED
     ).values(
         "recipient_id",
         "topic_name",
@@ -238,11 +248,9 @@ def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], 
     return is_muted
 
 
-def get_users_muting_topic(stream_id: int, topic_name: str) -> QuerySet[UserProfile]:
-    return UserProfile.objects.select_related("realm").filter(
-        id__in=UserTopic.objects.filter(
-            stream_id=stream_id,
-            visibility_policy=UserTopic.MUTED,
-            topic_name__iexact=topic_name,
-        ).values("user_profile_id")
-    )
+def get_users_with_user_topic_visibility_policy(
+    stream_id: int, topic_name: str
+) -> QuerySet[UserTopic]:
+    return UserTopic.objects.filter(
+        stream_id=stream_id, topic_name__iexact=topic_name
+    ).select_related("user_profile", "user_profile__realm")

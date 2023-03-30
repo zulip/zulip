@@ -3,9 +3,7 @@
     {{#each playground_info}}
         <li>
             <a href="{{this/playground_url}}" target="_blank" rel="noopener noreferrer" class="popover_playground_link">
-                {{#tr}}
-                View in {name}
-                {{/tr}}
+                {{t "View in {name}" }}
             </a>
         </li>
     {{/each}}

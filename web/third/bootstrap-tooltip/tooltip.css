@@ -6,12 +6,10 @@
     padding: 5px;
     font-size: 11px;
     opacity: 0;
-    filter: alpha(opacity=0);
     visibility: visible;
 }
 .tooltip.in {
   opacity: 0.8;
-  filter: alpha(opacity=80);
 }
 .tooltip.top {
   margin-top: -3px;

@@ -1,15 +1,6 @@
 import * as blueslip from "./blueslip";
 
 const ls = {
-    // parse JSON without throwing an error.
-    parseJSON(str) {
-        try {
-            return JSON.parse(str);
-        } catch {
-            return undefined;
-        }
-    },
-
     // check if the datestamp is from before now and if so return true.
     isExpired(stamp) {
         return new Date(stamp) < new Date();
@@ -32,9 +23,13 @@ const ls = {
 
     getData(version, name) {
         const key = this.formGetter(version, name);
-        let data = localStorage.getItem(key);
-        data = ls.parseJSON(data);
-
+        let data;
+        try {
+            const raw_data = localStorage.getItem(key);
+            data = JSON.parse(raw_data);
+        } catch {
+            // data stays undefined
+        }
         if (
             data &&
             data.__valid &&
@@ -68,12 +63,31 @@ const ls = {
     // the pattern given by `name`.
     removeDataRegexWithCondition(version, regex, condition_checker) {
         const key_regex = new RegExp(this.formGetter(version, regex));
-        const keys = Object.keys(localStorage).filter(
-            (key) => key_regex.test(key) && condition_checker(localStorage.getItem(key)),
-        );
+        let keys = [];
+        try {
+            keys = Object.keys(localStorage);
+        } catch {
+            // Do nothing if we fail to fetch the local storage
+        }
+
+        keys = keys.filter((key) => key_regex.test(key));
 
         for (const key of keys) {
-            localStorage.removeItem(key);
+            let value;
+            let value_set = false;
+            try {
+                value = localStorage.getItem(key);
+                value_set = true;
+            } catch {
+                // Do nothing if the fetch fails
+            }
+            if (value_set && condition_checker(value)) {
+                try {
+                    localStorage.removeItem(key);
+                } catch {
+                    // Do nothing if deletion fails
+                }
+            }
         }
     },
 

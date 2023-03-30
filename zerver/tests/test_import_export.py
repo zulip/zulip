@@ -435,10 +435,10 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         exported_usergroups = data["zerver_usergroup"]
-        self.assert_length(exported_usergroups, 8)
-        self.assertEqual(exported_usergroups[1]["name"], "@role:administrators")
-        self.assertFalse("direct_members" in exported_usergroups[1])
-        self.assertFalse("direct_subgroups" in exported_usergroups[1])
+        self.assert_length(exported_usergroups, 9)
+        self.assertEqual(exported_usergroups[2]["name"], "@role:administrators")
+        self.assertFalse("direct_members" in exported_usergroups[2])
+        self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
@@ -776,7 +776,7 @@ class RealmImportExportTest(ExportFile):
             sample_user,
             stream,
             "Verona2",
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
         # data to test import of muted users
@@ -1121,7 +1121,7 @@ class RealmImportExportTest(ExportFile):
         def get_muted_topics(r: Realm) -> Set[str]:
             user_profile_id = get_user_id(r, "King Hamlet")
             muted_topics = UserTopic.objects.filter(
-                user_profile_id=user_profile_id, visibility_policy=UserTopic.MUTED
+                user_profile_id=user_profile_id, visibility_policy=UserTopic.VisibilityPolicy.MUTED
             )
             topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
             return topic_names
@@ -1765,17 +1765,20 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(rec["status_text"], "on vacation")
 
         do_set_user_topic_visibility_policy(
-            cordelia, scotland, "bagpipe music", visibility_policy=UserTopic.MUTED
+            cordelia,
+            scotland,
+            "bagpipe music",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
         do_set_user_topic_visibility_policy(
-            othello, scotland, "nessie", visibility_policy=UserTopic.MUTED
+            othello, scotland, "nessie", visibility_policy=UserTopic.VisibilityPolicy.MUTED
         )
 
         @checker
         def zerver_usertopic(records: List[Record]) -> None:
             rec = records[-1]
             self.assertEqual(rec["topic_name"], "bagpipe music")
-            self.assertEqual(rec["visibility_policy"], UserTopic.MUTED)
+            self.assertEqual(rec["visibility_policy"], UserTopic.VisibilityPolicy.MUTED)
 
         """
         For some tables we don't bother with super realistic test data

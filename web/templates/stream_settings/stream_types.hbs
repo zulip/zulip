@@ -62,7 +62,7 @@
           class="stream_message_retention_setting prop-element settings_select bootstrap-focus-style"
           id="id_message_retention_days"
           data-setting-widget-type="message-retention-setting">
-            <option value="realm_default">{{#tr}}Use organization level settings {org_level_message_retention_setting}{{/tr}}</option>
+            <option value="realm_default">{{t "Use organization level settings {org_level_message_retention_setting}" }}</option>
             <option value="unlimited">{{t 'Retain forever' }}</option>
             <option value="custom_period">{{t 'Custom' }}</option>
         </select>
@@ -74,8 +74,7 @@
             <input type="text" autocomplete="off"
               name="stream-message-retention-days"
               class="stream-message-retention-days message-retention-setting-custom-input time-limit-custom-input"
-              id="stream_message_retention_custom_input"
-              value="{{ stream_message_retention_days }}"/>
+              id="stream_message_retention_custom_input" />
         </div>
     </div>
 </div>

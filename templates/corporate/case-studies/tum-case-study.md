@@ -31,8 +31,8 @@ when Tobias came across Zulip.
 
 ## “Better user experience than Slack”
 
-Tobias evaluated Zulip by visiting the [Zulip developer
-community][chat-zulip-org] to see it in action. “It takes a bit of
+Tobias evaluated Zulip by [visiting the Zulip development
+community](/try-zulip/) to see it in action. “It takes a bit of
 time to get used to, but Zulip has the best user experience of all the
 chat apps I’ve tried,” Tobias says. “With the discussion organized by
 topic within each stream, Zulip is the only app that makes hundreds of
@@ -77,13 +77,12 @@ contribute a few patches of my own,” Robert says.
 
 ---
 
-Learn more about [Zulip for Education](/for/education), and how
-Zulip is being used at the [University of California San Diego](/case-studies/ucsd).
-You can also check out our guides on using Zulip for [conferences](/for/events)
-and [research](/for/research)!
+Learn more about [Zulip for Education](/for/education/), and how
+Zulip is being used at the [University of California San Diego](/case-studies/ucsd/).
+You can also check out our guides on using Zulip for [conferences](/for/events/)
+and [research](/for/research/)!
 
 
 [tum-ranking]: https://www.in.tum.de/en/the-department/profile-of-the-department/facts-figures/facts-and-figures-2020/
-[chat-zulip-org]: /development-community/
 [czo-patch-thread]: https://chat.zulip.org/#narrow/stream/3-backend/topic/Tornado.20performance/near/1111686
 [zulip-4-blog]: https://blog.zulip.com/2021/05/13/zulip-4-0-released/

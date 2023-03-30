@@ -33,34 +33,34 @@ async function test_user_status(page: Page): Promise<void> {
     // Check by clicking on common statues.
     await page.click(".user-status-value:nth-child(2)");
     await page.waitForFunction(
-        () => (document.querySelector(".user_status") as HTMLInputElement).value === "In a meeting",
+        () => (document.querySelector(".user-status") as HTMLInputElement).value === "In a meeting",
     );
     // It should select calendar emoji.
-    await page.waitForSelector(".selected_emoji.emoji-1f4c5");
+    await page.waitForSelector(".selected-emoji.emoji-1f4c5");
 
     // Clear everything.
     await page.click("#clear_status_message_button");
     await page.waitForFunction(
-        () => (document.querySelector(".user_status") as HTMLInputElement).value === "",
+        () => (document.querySelector(".user-status") as HTMLInputElement).value === "",
     );
-    await page.waitForSelector(".status_emoji_wrapper .smiley_icon", {visible: true});
+    await page.waitForSelector(".status-emoji-wrapper .smiley-icon", {visible: true});
 
     // Manually adding everything.
-    await page.type(".user_status", "Busy");
+    await page.type(".user-status", "Busy");
     const tada_emoji_selector = ".emoji-1f389";
-    await page.click(".status_emoji_wrapper .smiley_icon");
+    await page.click(".status-emoji-wrapper .smiley-icon");
     // Wait until emoji popover is opened.
     await page.waitForSelector(`.emoji-popover  ${tada_emoji_selector}`, {visible: true});
     await page.click(`.emoji-popover  ${tada_emoji_selector}`);
     await page.waitForSelector(".emoji-info-popover", {hidden: true});
-    await page.waitForSelector(`.selected_emoji${tada_emoji_selector}`);
+    await page.waitForSelector(`.selected-emoji${tada_emoji_selector}`);
 
-    await page.click("#set_user_status_modal .dialog_submit_button");
+    await page.click("#set-user-status-modal .dialog_submit_button");
     // It should close the modal after saving.
-    await page.waitForSelector("#set_user_status_modal", {hidden: true});
+    await page.waitForSelector("#set-user-status-modal", {hidden: true});
 
     // Check if the emoji is added in user presence list.
-    await page.waitForSelector(`.user-presence-link .status_emoji${tada_emoji_selector}`);
+    await page.waitForSelector(`.user-presence-link .status-emoji${tada_emoji_selector}`);
 }
 
 async function user_status_test(page: Page): Promise<void> {

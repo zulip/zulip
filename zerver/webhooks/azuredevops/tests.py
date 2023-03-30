@@ -75,7 +75,7 @@ class AzuredevopsHookTests(WebhookTestCase):
 
     def test_pull_request_merged(self) -> None:
         expected_topic = "test-zulip / PR #1 Add PR request"
-        expected_message = "Yuro Itaki merged [PR #1 Add PR request](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/1)."
+        expected_message = "Yuro Itaki merged [PR #1 Add PR request](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/1) from `dev` to `main`."
         self.check_webhook("code_pull_request__merged", expected_topic, expected_message)
 
     @patch("zerver.lib.webhooks.common.check_send_webhook_message")

@@ -55,24 +55,28 @@
 * [Enable full width display](/help/enable-full-width-display)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
 
+## Writing messages
+* [Message formatting](/help/format-your-message-using-markdown)
+* [Mention a user or group](/help/mention-a-user-or-group)
+* [Quote and reply](/help/quote-and-reply)
+* [Emoji and emoticons](/help/emoji-and-emoticons)
+* [Share and upload files](/help/share-and-upload-files)
+* [Add GIFs in your message](/help/animated-gifs-from-giphy)
+* [Text emphasis](/help/text-emphasis)
+* [Bulleted and numbered lists](/help/bulleted-and-numbered-lists)
+* [Code blocks](/help/code-blocks)
+* [Create a poll](/help/create-a-poll)
+* [Start a video call](/help/start-a-call)
+
 ## Sending messages
 * [Open the compose box](/help/open-the-compose-box)
 * [Mastering the compose box](/help/mastering-the-compose-box)
 * [Resize the compose box](/help/resize-the-compose-box)
-* [Message formatting](/help/format-your-message-using-markdown)
-* [Mention a user or group](/help/mention-a-user-or-group)
 * [Typing notifications](/help/typing-notifications)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
-* [Emoji and emoticons](/help/emoji-and-emoticons)
-* [Start a video call](/help/start-a-call)
-* [Share and upload files](/help/share-and-upload-files)
-* [Quote and reply](/help/quote-and-reply)
-* [Code blocks](/help/code-blocks)
-* [Add GIFs in your message](/help/animated-gifs-from-giphy)
-* [Create a poll](/help/create-a-poll)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Reading messages

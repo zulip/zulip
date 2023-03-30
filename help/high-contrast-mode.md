@@ -11,4 +11,4 @@ W3C's Web Content Accessibility Guidelines.
 
 ## Related articles
 
-* [Accessibility in Zulip](https://zulip.readthedocs.io/en/latest/subsystems/accessibility.html)
+* [Accessibility in Zulip](https://zulip.readthedocs.io/en/stable/subsystems/accessibility.html)

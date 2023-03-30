@@ -1,19 +1,19 @@
 .rendered_markdown {
     /* The default top/bottom margins for paragraphs are small, to make sure
        they look nice next to blockquotes, lists, etc. */
-    p {
+    & p {
         margin: 3px 0;
     }
 
     /* The spacing between two paragraphs is significantly larger.  We
        arrange things so that this spacing matches the spacing between
        paragraphs in two consecutive 1-line messages. */
-    p + p {
+    & p + p {
         margin-top: 10px;
     }
 
     /* Ensure bulleted lists are nicely centered in 1-line messages */
-    ul {
+    & ul {
         margin: 2px 0 5px 20px;
     }
 
@@ -24,7 +24,7 @@
     }
 
     /* Ensure ordered lists are nicely centered in 1-line messages */
-    ol {
+    & ol {
         margin: 2px 0 5px 20px;
     }
 
@@ -35,18 +35,18 @@
     }
 
     /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
-    p + ul,
+    & p + ul,
     p + ol {
         margin-top: 0;
     }
 
-    hr {
-        border-bottom: 1px solid hsl(0, 0%, 87%);
-        border-top: 1px solid hsl(0, 0%, 87%);
+    & hr {
+        border-bottom: 1px solid hsl(0deg 0% 87%);
+        border-top: 1px solid hsl(0deg 0% 87%);
     }
 
     /* Headings */
-    h1,
+    & h1,
     h2,
     h3,
     h4,
@@ -60,7 +60,7 @@
 
     /* Headings: Ensure that messages that start with a heading don't have
        a weirdly blank area at the very start of the message. */
-    h1:first-child,
+    & h1:first-child,
     h2:first-child,
     h3:first-child,
     h4:first-child,
@@ -71,39 +71,39 @@
 
     /* We use a modest progression of heading sizes to make them stand out
        from normal next but avoid taking up too much space. */
-    h1 {
+    & h1 {
         font-size: 1.4em;
     }
 
-    h2 {
+    & h2 {
         font-size: 1.3em;
     }
 
-    h3 {
+    & h3 {
         font-size: 1.2em;
     }
 
-    h4 {
+    & h4 {
         font-size: 1.1em;
     }
 
-    h5 {
+    & h5 {
         font-size: 1.05em;
     }
 
-    h6 {
+    & h6 {
         font-size: 1em;
     }
 
     /* Formatting for blockquotes */
-    blockquote {
+    & blockquote {
         padding-left: 5px;
         margin-left: 10px;
         margin-top: 5px;
         margin-bottom: 6px;
-        border-left-color: hsl(0, 0%, 87%);
+        border-left-color: hsl(0deg 0% 87%);
 
-        p {
+        & p {
             line-height: inherit;
             font-size: inherit;
         }
@@ -115,11 +115,11 @@
         margin-left: unset;
         margin-right: 10px;
         border-left: unset;
-        border-right: 5px solid hsl(0, 0%, 87%);
+        border-right: 5px solid hsl(0deg 0% 87%);
     }
 
     /* Formatting for Markdown tables */
-    table {
+    & table {
         padding-right: 10px;
         margin: 5px;
         width: 99%;
@@ -129,64 +129,64 @@
         white-space: nowrap;
     }
 
-    thead {
-        background-color: hsl(0, 0%, 93%);
+    & thead {
+        background-color: hsl(0deg 0% 93%);
     }
 
-    tr {
+    & tr {
         display: table-row;
         vertical-align: inherit;
     }
 
-    tr th {
-        border: 1px solid hsl(0, 0%, 80%);
+    & tr th {
+        border: 1px solid hsl(0deg 0% 80%);
         padding: 4px;
         text-align: left;
     }
 
-    tr td {
-        border: 1px solid hsl(0, 0%, 80%);
+    & tr td {
+        border: 1px solid hsl(0deg 0% 80%);
         padding: 4px;
     }
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        height: 20px;
-        width: 20px;
+        height: calc(20em / 14);
+        width: calc(20em / 14);
     }
 
     /* Mentions and alert words */
     .user-mention-me :not(.silent) {
-        background-color: hsl(112, 88%, 87%);
+        background-color: hsl(112deg 88% 87%);
     }
 
     .user-group-mention,
     .user-mention {
         border-radius: 3px;
         padding: 0 0.2em;
-        box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
         margin-right: 2px;
         margin-left: 2px;
         white-space: nowrap;
         background: linear-gradient(
             to bottom,
-            hsla(0, 0%, 0%, 0.1) 0%,
-            hsla(0, 0%, 0%, 0) 100%
+            hsl(0deg 0% 0% / 10%) 0%,
+            hsl(0deg 0% 0% / 0%) 100%
         );
         display: inline-block;
         margin-bottom: 1px;
     }
 
     .alert-word {
-        background-color: hsla(102, 85%, 57%, 0.5);
+        background-color: hsl(102deg 85% 57% / 50%);
     }
 
     /* Timestamps */
-    time {
-        background: hsl(0, 0%, 93%);
+    & time {
+        background: hsl(0deg 0% 93%);
         border-radius: 3px;
         padding: 0 0.2em;
-        box-shadow: 0 0 0 1px hsl(0, 0%, 80%);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
         white-space: nowrap;
         margin-left: 2px;
         margin-right: 2px;
@@ -205,12 +205,12 @@
     }
 
     .tex-error {
-        color: hsl(0, 0%, 50%);
+        color: hsl(0deg 0% 50%);
     }
 
     /* Spoiler styling */
     .spoiler-block {
-        border: hsl(0, 0%, 50%) 1px solid;
+        border: hsl(0deg 0% 50%) 1px solid;
         padding: 2px 8px 2px 10px;
         border-radius: 10px;
         position: relative;
@@ -225,14 +225,14 @@
 
         .spoiler-content {
             overflow: hidden;
-            border-top: hsl(0, 0%, 50%) 0 solid;
+            border-top: hsl(0deg 0% 50%) 0 solid;
             transition: height 0.4s ease-in-out, border-top 0.4s step-end,
                 padding 0.4s step-end;
             padding: 0;
             height: 0;
 
             &.spoiler-content-open {
-                border-top: hsl(0, 0%, 50%) 1px solid;
+                border-top: hsl(0deg 0% 50%) 1px solid;
                 transition: height 0.4s ease-in-out, border-top 0.4s step-start,
                     padding 0.4s step-start;
                 padding: 5px;
@@ -248,7 +248,7 @@
             &:hover .spoiler-arrow {
                 &::before,
                 &::after {
-                    background-color: hsl(0, 0%, 50%);
+                    background-color: hsl(0deg 0% 50%);
                 }
             }
         }
@@ -273,7 +273,7 @@
                 display: inline-block;
                 width: 12px;
                 height: 3px;
-                background-color: hsl(0, 0%, 83%);
+                background-color: hsl(0deg 0% 83%);
                 transition: 0.4s ease;
             }
 
@@ -339,13 +339,13 @@
            container. */
         border: solid 1px transparent;
         transition: background 0.3s ease;
-        background: hsla(0, 0%, 0%, 0.03);
+        background: hsl(0deg 0% 0% / 3%);
 
         &:hover {
-            background: hsla(0, 0%, 0%, 0.15);
+            background: hsl(0deg 0% 0% / 15%);
         }
 
-        a {
+        & a {
             display: block;
             height: 100%;
             width: 100%;
@@ -359,7 +359,7 @@
     }
 
     .twitter-tweet {
-        border: 1px solid hsl(0, 0%, 87%);
+        border: 1px solid hsl(0deg 0% 87%);
         padding: 0.5em 0.75em;
         margin-bottom: 0.25em;
         word-break: break-word;
@@ -424,7 +424,7 @@
         margin-left: 10px;
     }
 
-    li .message_inline_image img {
+    & li .message_inline_image img {
         float: none;
     }
 
@@ -435,8 +435,8 @@
         padding: 5px 8px 5px 10px;
         font-size: 12px;
         border-radius: 4px;
-        background-color: hsl(0, 0%, 0%);
-        color: hsl(0, 0%, 100%);
+        background-color: hsl(0deg 0% 0%);
+        color: hsl(0deg 0% 100%);
         opacity: 0.7;
         top: 0;
         left: 0;
@@ -447,11 +447,11 @@
         position: relative;
         margin: 5px 0;
         border: none;
-        border-left: 3px solid hsl(0, 0%, 93%);
+        border-left: 3px solid hsl(0deg 0% 93%);
         height: 80px;
         padding: 5px;
         z-index: 1;
-        text-shadow: hsla(0, 0%, 0%, 0.01) 0 0 1px;
+        text-shadow: hsl(0deg 0% 0% / 1%) 0 0 1px;
 
         .message_embed_title {
             padding-top: 0;
@@ -503,7 +503,7 @@
 
             background: linear-gradient(
                 0deg,
-                hsl(0, 0%, 100%),
+                hsl(0deg 0% 100%),
                 transparent 100%
             );
         }
@@ -511,7 +511,7 @@
 
     &.rtl .message_embed {
         border-left: unset;
-        border-right: 3px solid hsl(0, 0%, 93%);
+        border-right: 3px solid hsl(0deg 0% 93%);
     }
 
     .message_embed > * {
@@ -520,20 +520,69 @@
         border: none;
     }
 
-    pre {
+    & a {
+        color: hsl(200deg 100% 40%);
+        text-decoration: none;
+
+        & code {
+            color: hsl(200deg 100% 40%);
+        }
+
+        &:hover,
+        &:focus {
+            color: hsl(200deg 100% 25%);
+            text-decoration: underline;
+
+            & code {
+                color: hsl(200deg 100% 25%);
+            }
+        }
+    }
+
+    & pre {
+        direction: ltr;
+        /* code block text is a bit smaller than normal text */
+        font-size: 0.825em;
+        line-height: 1.4;
+        white-space: pre;
+        overflow-x: auto;
+        word-break: break-all;
+        word-wrap: normal;
+        margin: 5px 0;
+        padding: 5px 7px 3px;
+        color: hsl(0deg 0% 20%);
+        display: block;
+        border: 1px solid hsl(0deg 0% 0% / 15%);
+        border-radius: 4px;
+
         &:hover .copy_codeblock,
         &:hover .code_external_link {
             visibility: visible;
         }
     }
 
-    pre code {
+    & pre code {
         font-size: inherit;
         padding: 0;
         white-space: inherit;
         overflow-x: scroll;
         color: inherit;
         border: 0;
+    }
+
+    & code {
+        /* 11.55px when body is the default 14px; this is chosen to be
+        slightly above the 11.5px threshold where the height jumps by a
+        pixel on most platforms. */
+        font-size: 0.825em;
+        unicode-bidi: embed;
+        direction: ltr;
+        color: hsl(0deg 0% 0%);
+        white-space: pre-wrap;
+        padding: 0 4px;
+        background-color: hsl(0deg 0% 100%);
+        border: 1px solid hsl(240deg 13% 90%);
+        border-radius: 3px;
     }
 
     /* Style copy-to-clipboard button inside code blocks */
@@ -554,10 +603,10 @@
         font-size: 17px;
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
-        color: hsl(0, 0%, 47%);
+        color: hsl(0deg 0% 47%);
 
         &:hover {
-            color: hsl(200, 100%, 40%);
+            color: hsl(200deg 100% 40%);
         }
     }
 }
@@ -607,87 +656,35 @@
     }
 }
 
-/* Inline and block code.
-
-TODO: It is likely that this CSS can and should be moved into the
-rendered_markdown block; we just need to do further analysis to
-confirm doing so won't break anything. */
-
-code {
-    /* 11.55px when body is the default 14px; this is chosen to be
-       slightly above the 11.5px threshold where the height jumps by a
-       pixel on most platforms. */
-    font-size: 0.825em;
-    unicode-bidi: embed;
-    direction: ltr;
-    color: hsl(0, 0%, 0%);
-    white-space: pre;
-    padding: 2px 4px;
-    background-color: hsl(240, 14%, 97%);
-    border: 1px solid hsl(240, 13%, 90%);
-    border-radius: 3px;
-}
-
-.rendered_markdown code {
-    white-space: pre-wrap;
-    padding: 0 4px;
-    background-color: hsl(0, 0%, 100%);
-}
-
 .codehilite {
     display: block !important;
     border: none !important;
     background: none !important;
 }
 
-pre {
-    direction: ltr;
-    /* code block text is a bit smaller than normal text */
-    font-size: 0.825em;
-    line-height: 1.4;
-    white-space: pre;
-    overflow-x: auto;
-    word-wrap: normal;
-    /* Bootstrap's default here is top: 0px, bottom: 10px */
-    margin-top: 5px;
-    margin-bottom: 5px;
-    /* Bootstrap's default here is 9.5 on all sides */
-    padding: 5px 7px 3px;
-}
-
 /* Both the horizontal scrollbar in <pre/> as well as
    vertical scrollbar in the <textarea/> is styled similarly. */
 .message_edit_form textarea,
-pre {
+.rendered_markdown pre {
     /* Ensure the horizontal scrollbar is visible on Mac */
     &::-webkit-scrollbar {
         height: 8px;
         width: 10px;
-        background-color: hsla(0, 0%, 0%, 0.05);
+        background-color: hsl(0deg 0% 0% / 5%);
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: hsla(0, 0%, 0%, 0.3);
+        background-color: hsl(0deg 0% 0% / 30%);
         border-radius: 20px;
         transition: all 0.2s ease;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        background-color: hsla(0, 0%, 0%, 0.6);
+        background-color: hsl(0deg 0% 0% / 60%);
     }
-}
-
-/* Style inline code inside a link
-   to look more like a normal link */
-a code {
-    color: hsl(200, 100%, 40%);
-}
-
-a:hover code {
-    color: hsl(200, 100%, 25%);
 }
 
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
-    background-color: hsl(51, 94%, 74%);
+    background-color: hsl(51deg 94% 74%);
 }

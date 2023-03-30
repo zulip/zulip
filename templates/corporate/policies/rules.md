@@ -18,7 +18,7 @@ additionally encouraged to write a Code of Conduct and link to it from their
 further guidance on expected behavior in their communities.
 
 If you encounter a Zulip message or behavior by a Zulip user that appears to
-violate these rules, please [report it to us](/support). We aim to be thoughtful
+violate these rules, please [report it to us](/support/). We aim to be thoughtful
 and judicious in handling reported content. Depending on the severity and scope
 of the problem, our response may include issuing a warning, removing the
 content, deactivating user accounts or organizations, and/or reporting the

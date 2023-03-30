@@ -2,7 +2,6 @@ import datetime
 import io
 import os
 import re
-import shutil
 import time
 import urllib
 from io import StringIO
@@ -65,12 +64,6 @@ from zerver.models import (
     get_user_by_delivery_email,
     validate_attachment_request,
 )
-
-
-def destroy_uploads() -> None:
-    assert settings.LOCAL_UPLOADS_DIR is not None
-    if os.path.exists(settings.LOCAL_UPLOADS_DIR):
-        shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
@@ -347,7 +340,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
 
-        destroy_uploads()
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
         response = self.client_get(response_dict["uri"])
         self.assertEqual(response.status_code, 404)
@@ -960,10 +954,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         check_xsend_links("áéБД.pdf", "%C3%A1%C3%A9%D0%91%D0%94.pdf")
         check_xsend_links("zulip", "zulip", 'filename="zulip"')
 
-    def tearDown(self) -> None:
-        destroy_uploads()
-        super().tearDown()
-
 
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_avatar_field(self) -> None:
@@ -1406,10 +1396,6 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 result = self.client_post("/json/users/me/avatar", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
-    def tearDown(self) -> None:
-        destroy_uploads()
-        super().tearDown()
-
 
 class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     # While testing GIF resizing, we can't test if the final GIF has the same
@@ -1474,10 +1460,6 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual((50, 50), im.size)
         self.assertFalse(is_animated)
         assert no_still_data is None
-
-    def tearDown(self) -> None:
-        destroy_uploads()
-        super().tearDown()
 
 
 class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
@@ -1616,10 +1598,6 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             with self.settings(MAX_ICON_FILE_SIZE_MIB=0):
                 result = self.client_post("/json/realm/icon", {"file": fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
-
-    def tearDown(self) -> None:
-        destroy_uploads()
-        super().tearDown()
 
 
 class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
@@ -1819,10 +1797,6 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
                     "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
                 )
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
-
-    def tearDown(self) -> None:
-        destroy_uploads()
-        super().tearDown()
 
 
 class RealmNightLogoTest(RealmLogoTest):

@@ -12,7 +12,6 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
 from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
-from jinja2.exceptions import TemplateNotFound
 
 import zerver.lib.markdown.api_arguments_table_generator
 import zerver.lib.markdown.api_return_values_table_generator
@@ -87,7 +86,6 @@ docs_without_macros = [
 def render_markdown_path(
     markdown_file_path: str,
     context: Optional[Dict[str, Any]] = None,
-    pure_markdown: bool = False,
     integration_doc: bool = False,
     help_center: bool = False,
 ) -> str:
@@ -96,16 +94,14 @@ def render_markdown_path(
     Note that this assumes that any HTML in the Markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
-    if context is None:
-        context = {}
 
     # We set this global hackishly
     from zerver.lib.markdown.help_settings_links import set_relative_settings_links
 
-    set_relative_settings_links(bool(context.get("html_settings_links")))
+    set_relative_settings_links(bool(context is not None and context.get("html_settings_links")))
     from zerver.lib.markdown.help_relative_links import set_relative_help_links
 
-    set_relative_help_links(bool(context.get("html_settings_links")))
+    set_relative_help_links(bool(context is not None and context.get("html_settings_links")))
 
     global md_extensions
     global md_macro_extension
@@ -119,7 +115,9 @@ def render_markdown_path(
                 guess_lang=False,
             ),
             zerver.lib.markdown.fenced_code.makeExtension(
-                run_content_validators=context.get("run_content_validators", False),
+                run_content_validators=bool(
+                    context is not None and context.get("run_content_validators", False)
+                ),
             ),
             zerver.lib.markdown.api_arguments_table_generator.makeExtension(),
             zerver.lib.markdown.api_return_values_table_generator.makeExtension(),
@@ -130,7 +128,7 @@ def render_markdown_path(
             zerver.lib.markdown.help_emoticon_translations_table.makeExtension(),
             zerver.lib.markdown.static.makeExtension(),
         ]
-    if "api_url" in context:
+    if context is not None and "api_url" in context:
         # We need to generate the API code examples extension each
         # time so the `api_url` config parameter can be set dynamically.
         #
@@ -162,31 +160,21 @@ def render_markdown_path(
     md_engine.reset()
 
     jinja = engines["Jinja2"]
-    try:
-        # By default, we do both Jinja2 templating and Markdown
-        # processing on the file, to make it easy to use both Jinja2
-        # context variables and markdown includes in the file.
-        assert isinstance(jinja, Jinja2)
+    assert isinstance(jinja, Jinja2)
+    if markdown_file_path.startswith("/"):
+        with open(markdown_file_path) as fp:
+            markdown_string = fp.read()
+    else:
         markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
-    except TemplateNotFound as e:
-        if pure_markdown:
-            # For files such as /etc/zulip/terms.md where we don't intend
-            # to use Jinja2 template variables, we still try to load the
-            # template using Jinja2 (in case the file path isn't absolute
-            # and does happen to be in Jinja's recognized template
-            # directories), and if that fails, we try to load it directly
-            # from disk.
-            with open(markdown_file_path) as fp:
-                markdown_string = fp.read()
-        else:
-            raise e
 
-    API_ENDPOINT_NAME = context.get("API_ENDPOINT_NAME", "")
+    API_ENDPOINT_NAME = context.get("API_ENDPOINT_NAME", "") if context is not None else ""
     markdown_string = markdown_string.replace("API_ENDPOINT_NAME", API_ENDPOINT_NAME)
-    html = md_engine.convert(markdown_string)
-    rendered_html = jinja.from_string(html).render(context)
 
-    return mark_safe(rendered_html)
+    html = md_engine.convert(markdown_string)
+    if context is None:
+        return mark_safe(html)
+
+    return mark_safe(jinja.from_string(html).render(context))
 
 
 def webpack_entry(entrypoint: str) -> List[str]:

@@ -2,11 +2,11 @@
 <form class="name-setting profile-field-form new-style" id="edit-custom-profile-field-form-{{id}}">
     <div class="input-group">
         <label for="name">{{t "Label" }}</label>
-        <input type="text" name="name" value="{{ name }}" maxlength="40" />
+        <input type="text" name="name" class="modal_text_input" value="{{ name }}" maxlength="40" />
     </div>
     <div class="input-group hint_change_container">
         <label for="hint">{{t "Hint" }}</label>
-        <input type="text" name="hint" value="{{ hint }}" maxlength="80" />
+        <input type="text" name="hint" class="modal_text_input" value="{{ hint }}" maxlength="80" />
     </div>
     {{#if is_select_field }}
     <div class="input-group">

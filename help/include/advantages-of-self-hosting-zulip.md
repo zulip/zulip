@@ -20,7 +20,7 @@
 Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
 
 [zulip-github]: https://github.com/zulip/zulip#readme
-[install-zulip]: https://zulip.readthedocs.io/en/latest/production/install.html
+[install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
 [back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
 [maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html
-[modify-zulip]: https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html#modifying-zulip
+[modify-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html#modifying-zulip

@@ -1,5 +1,5 @@
 import {isValid} from "date-fns";
-import katex from "katex"; // eslint-disable-line import/no-unresolved
+import katex from "katex";
 import _ from "lodash";
 
 import * as fenced_code from "../shared/src/fenced_code";

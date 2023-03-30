@@ -5,6 +5,7 @@ import microsoft_image from "../../images/app-screenshots/microsoft.png";
 import ubuntu_image from "../../images/app-screenshots/ubuntu.png";
 import android_image from "../../images/app-screenshots/zulip-android.png";
 import iphone_image from "../../images/app-screenshots/zulip-iphone-rough.png";
+import {page_params} from "../page_params";
 
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";
@@ -194,7 +195,9 @@ $(() => {
     events();
 
     if (window.location.pathname === "/team/") {
-        render_tabs();
+        const contributors = page_params.contributors;
+        delete page_params.contributors;
+        render_tabs(contributors);
     }
 
     // Source: https://stackoverflow.com/questions/819416/adjust-width-and-height-of-iframe-to-fit-with-content-in-it

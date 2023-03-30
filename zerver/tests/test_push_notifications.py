@@ -25,6 +25,7 @@ from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
+from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
@@ -60,7 +61,6 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Message,
     NotificationTriggers,
@@ -1502,10 +1502,10 @@ class HandlePushNotificationTest(PushNotificationTest):
     ) -> None:
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        large_user_group = create_user_group(
+        large_user_group = check_add_user_group(
+            get_realm("zulip"),
             "large_user_group",
             [self.user_profile, othello, cordelia],
-            get_realm("zulip"),
             acting_user=None,
         )
 
@@ -1874,8 +1874,8 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     def test_get_message_payload_apns_user_group_mention(self) -> None:
         user_profile = self.example_user("othello")
-        user_group = create_user_group(
-            "test_user_group", [user_profile], get_realm("zulip"), acting_user=None
+        user_group = check_add_user_group(
+            get_realm("zulip"), "test_user_group", [user_profile], acting_user=None
         )
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)

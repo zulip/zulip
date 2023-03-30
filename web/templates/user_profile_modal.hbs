@@ -26,6 +26,18 @@
                     </p>
                     {{/unless}}
                 </div>
+                <h1 class="modal__title user_profile_name_heading" id="name">
+                    <span class="user_profile_name">{{full_name}}</span>
+                    {{#if is_bot}}
+                    <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                    {{/if}}
+                    {{#if is_me}}
+                    <a href="/#settings/profile" class="user_profile_edit_button">
+                        <i class="fa fa-edit" id="user_profile_edit_button_icon" aria-hidden="true"></i>
+                    </a>
+                    {{/if}}
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </div>
             <div id="tab-toggle" class="center"></div>
             <main class="modal__body" id="body" data-simplebar data-simplebar-auto-hide="false">
@@ -36,33 +48,33 @@
                                 <div id="default-section">
                                     {{#if email}}
                                     <div id="email" class="default-field">
-                                        <div class="name">{{#tr}}Email{{/tr}}</div>
+                                        <div class="name">{{t "Email" }}</div>
                                         <div class="value">{{email}}</div>
                                     </div>
                                     {{/if}}
                                     <div id="user-id" class="default-field">
-                                        <div class="name">{{#tr}}User ID{{/tr}}</div>
+                                        <div class="name">{{t "User ID" }}</div>
                                         <div class="value">{{user_id}}</div>
                                     </div>
                                     <div id="user-type" class="default-field">
-                                        <div class="name">{{#tr}}Role{{/tr}}</div>
+                                        <div class="name">{{t "Role" }}</div>
                                         {{#if is_bot}}
                                             {{#if is_system_bot}}
-                                            <div class="value">{{#tr}}System bot{{/tr}}</div>
+                                            <div class="value">{{t "System bot" }}</div>
                                             {{else}}
-                                            <div class="value">{{#tr}}Bot{{/tr}}</div>
+                                            <div class="value">{{t "Bot" }}</div>
                                             {{/if}}
                                         {{else}}
                                             <div class="value">{{user_type}}</div>
                                         {{/if}}
                                     </div>
                                     <div id="date-joined" class="default-field">
-                                        <div class="name">{{#tr}}Joined{{/tr}}</div>
+                                        <div class="name">{{t "Joined" }}</div>
                                         <div class="value">{{date_joined}}</div>
                                     </div>
                                     {{#if user_time}}
                                     <div class="default-field">
-                                        <div class="name">{{#tr}}Local time{{/tr}}</div>
+                                        <div class="name">{{t "Local time" }}</div>
                                         <div class="value">{{user_time}}</div>
                                     </div>
                                     {{/if}}
@@ -78,12 +90,12 @@
                             <div id="content">
                                 {{#if is_bot}}
                                     <div class="field-section">
-                                        <div class="name">{{#tr}}Bot type{{/tr}}</div>
+                                        <div class="name">{{t "Bot type" }}</div>
                                         <div class="bot_info_value">{{bot_type}}</div>
                                     </div>
                                     {{#if bot_owner}}
                                     <div class="field-section bot_owner_user_field" data-field-id="{{bot_owner.user_id}}">
-                                        <div class="name">{{#tr}}Owner{{/tr}}</div>
+                                        <div class="name">{{t "Owner" }}</div>
                                         <div class="pill-container not-editable">
                                             <div class="input" contenteditable="false" style="display: none;"></div>
                                         </div>
@@ -101,7 +113,7 @@
                             <div class="header-section">
                                 <h3 class="stream-list-header">{{t 'Subscribed streams' }}</h3>
                             </div>
-                            <input type="text" class="stream-search" placeholder="{{t 'Filter streams' }}" />
+                            <input type="text" class="stream-search modal_text_input" placeholder="{{t 'Filter streams' }}" />
                             <button type="button" class="clear_search_button" id="clear_stream_search">
                                 <i class="fa fa-remove" aria-hidden="true"></i>
                             </button>

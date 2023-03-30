@@ -9,6 +9,7 @@ on:
       - .github/workflows/production-suite.yml
       - "**/migrations/**"
       - manage.py
+      - pnpm-lock.yaml
       - puppet/**
       - requirements/**
       - scripts/**
@@ -17,7 +18,6 @@ on:
       - web/postcss.config.js
       - web/third/**
       - web/webpack.config.ts
-      - yarn.lock
       - zerver/worker/queue_processors.py
       - zerver/lib/push_notifications.py
       - zerver/decorator.py
@@ -68,16 +68,15 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          dirs=(/srv/zulip-{venv,emoji}-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
-      - name: Restore node_modules cache
+      - name: Restore pnpm store
         uses: actions/cache@v3
         with:
-          path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-focal-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
-          restore-keys: v1-yarn-deps-focal
+          path: ~/.local/share/pnpm/store
+          key: v1-pnpm-store-focal-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore python cache
         uses: actions/cache@v3
@@ -175,16 +174,15 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          dirs=(/srv/zulip-{venv,emoji}-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
-      - name: Restore node_modules cache
+      - name: Restore pnpm store
         uses: actions/cache@v3
         with:
-          path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('/tmp/package.json') }}-${{ hashFiles('/tmp/yarn.lock') }}
-          restore-keys: v1-yarn-deps-${{ matrix.os }}
+          path: ~/.local/share/pnpm/store
+          key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('/tmp/pnpm-lock.yaml') }}
 
       - name: Install production
         run: sudo /tmp/production-install ${{ matrix.extra-args }}
@@ -280,7 +278,7 @@ jobs:
 
       - name: Create cache directories
         run: |
-          dirs=(/srv/zulip-{npm,venv,emoji}-cache)
+          dirs=(/srv/zulip-{venv,emoji}-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 

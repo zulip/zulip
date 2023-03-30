@@ -13,6 +13,8 @@ const test_url = () => "https://www.example.com";
 // We assign this in our test() wrapper.
 let messages;
 
+const private_messages = [];
+
 // sender1 == current user
 // sender2 == any other user
 const sender1 = 1;
@@ -88,7 +90,12 @@ mock_esm("../src/message_list_data", {
     MessageListData: class {},
 });
 mock_esm("../src/message_store", {
-    get: (msg_id) => messages[msg_id - 1],
+    get(msg_id) {
+        if (msg_id < 12) {
+            return messages[msg_id - 1];
+        }
+        return private_messages[msg_id - 12];
+    },
 });
 mock_esm("../src/message_view_header", {
     render_title_area: noop,
@@ -113,6 +120,11 @@ mock_esm("../src/pm_list", {
 });
 mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
+    get_pm_recent_senders(user_ids_string) {
+        return {
+            participants: user_ids_string.split(",").map((user_id) => Number.parseInt(user_id, 10)),
+        };
+    },
 });
 mock_esm("../src/stream_data", {
     is_muted: () =>
@@ -152,6 +164,9 @@ mock_esm("../src/unread", {
         }
         return 1;
     },
+    num_unread_for_user_ids_string() {
+        return 0;
+    },
     topic_has_any_unread_mentions: () => false,
 });
 
@@ -160,9 +175,32 @@ const people = zrequire("people");
 const rt = zrequire("recent_topics_ui");
 const recent_topics_util = zrequire("recent_topics_util");
 const rt_data = zrequire("recent_topics_data");
+const muted_users = zrequire("muted_users");
 
-people.is_my_user_id = (id) => id === 1;
-people.sender_info_for_recent_topics_row = (ids) => ids;
+people.add_active_user({
+    email: "alice@zulip.com",
+    user_id: 1,
+    full_name: "Alice Smith",
+});
+people.add_active_user({
+    email: "fred@zulip.com",
+    user_id: 2,
+    full_name: "Fred Flintstone",
+});
+people.add_active_user({
+    email: "spike@zulip.com",
+    user_id: 3,
+    full_name: "Spike Spiegel",
+});
+people.add_active_user({
+    email: "eren@zulip.com",
+    user_id: 4,
+    full_name: "Eren Yeager",
+});
+
+people.initialize_current_user(1);
+muted_users.add_muted_user(2, 17947949);
+muted_users.add_muted_user(4, 17947949);
 
 let id = 0;
 
@@ -267,6 +305,31 @@ sample_messages[10] = {
     type: "stream",
 };
 
+private_messages[0] = {
+    id: (id += 1),
+    sender_id: sender1,
+    to_user_ids: "2,3",
+    type: "private",
+    display_recipient: [{id: 1}, {id: 2}, {id: 3}],
+    pm_with_url: test_url(),
+};
+private_messages[1] = {
+    id: (id += 1),
+    sender_id: sender1,
+    to_user_ids: "2,4",
+    type: "private",
+    display_recipient: [{id: 1}, {id: 2}, {id: 4}],
+    pm_with_url: test_url(),
+};
+private_messages[2] = {
+    id: (id += 1),
+    sender_id: sender1,
+    to_user_ids: "3",
+    type: "private",
+    display_recipient: [{id: 1}, {id: 3}],
+    pm_with_url: test_url(),
+};
+
 function get_topic_key(stream_id, topic) {
     return stream_id + ":" + topic.toLowerCase();
 }
@@ -277,7 +340,7 @@ function generate_topic_data(topic_info_array) {
     $.clear_all_elements();
     const data = [];
 
-    for (const [stream_id, topic, unread_count, muted, participated] of topic_info_array) {
+    for (const [stream_id, topic, unread_count, muted] of topic_info_array) {
         data.push({
             other_senders_count: 0,
             other_sender_names_html: "",
@@ -287,7 +350,7 @@ function generate_topic_data(topic_info_array) {
             last_msg_time: "Just now",
             last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",
-            senders: [1, 2],
+            senders: people.sender_info_for_recent_topics_row([1, 2]),
             stream: "stream" + stream_id,
             stream_color: "",
             stream_id,
@@ -297,9 +360,7 @@ function generate_topic_data(topic_info_array) {
             topic_url: "https://www.example.com",
             unread_count,
             mention_in_unread: false,
-            muted,
             topic_muted: muted,
-            participated,
         });
     }
     return data;
@@ -320,7 +381,7 @@ function stub_out_filter_buttons() {
     //
     //       See show_selected_filters() and set_filter() in the
     //       implementation.
-    for (const filter of ["all", "unread", "muted", "participated"]) {
+    for (const filter of ["all", "unread", "muted", "participated", "include_private"]) {
         const $stub = $.create(`filter-${filter}-stub`);
         const selector = `[data-filter="${filter}"]`;
         $("#recent_topics_filter_buttons").set_find_results(selector, $stub);
@@ -398,7 +459,7 @@ test("test_filter_all", ({mock_template}) => {
     });
 
     // topic is not muted
-    row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
+    row_data = generate_topic_data([[1, "topic-1", 0, false]]);
     i = row_data.length;
     rt.clear_for_tests();
     stub_out_filter_buttons();
@@ -411,7 +472,7 @@ test("test_filter_all", ({mock_template}) => {
         {last_msg_id: 1, participated: true, type: "stream"},
     ];
 
-    row_data = [...row_data, ...generate_topic_data([[1, "topic-7", 1, true, true]])];
+    row_data = [...row_data, ...generate_topic_data([[1, "topic-7", 1, true]])];
     i = row_data.length;
     // topic is muted (=== hidden)
     stub_out_filter_buttons();
@@ -419,7 +480,7 @@ test("test_filter_all", ({mock_template}) => {
 
     // Test search
     expected.search_val = "topic-1";
-    row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
+    row_data = generate_topic_data([[1, "topic-1", 0, false]]);
     i = row_data.length;
     rt.set_default_focus();
     $(".home-page-input").trigger("focus");
@@ -427,6 +488,52 @@ test("test_filter_all", ({mock_template}) => {
         rt.filters_should_hide_topic({last_msg_id: 1, participated: true, type: "stream"}),
         false,
     );
+});
+
+test("test_filter_pm", ({mock_template}) => {
+    page_params.is_spectator = false;
+    const expected = {
+        filter_participated: false,
+        filter_unread: false,
+        filter_muted: false,
+        filter_pm: true,
+        search_val: "",
+        is_spectator: false,
+    };
+
+    const expected_user_with_icon = [
+        {name: "translated: Muted user", status_emoji_info: undefined},
+        {name: "Spike Spiegel", status_emoji_info: undefined},
+    ];
+    let i = 0;
+
+    mock_template("recent_topics_table.hbs", false, (data) => {
+        assert.deepEqual(data, expected);
+    });
+
+    mock_template("user_with_status_icon", false, (data) => {
+        assert.deepEqual(data, expected_user_with_icon[i]);
+        i += 1;
+    });
+
+    mock_template("recent_topic_row.hbs", true, (data, html) => {
+        assert.ok(html.startsWith('<tr id="recent_conversation'));
+    });
+
+    rt.clear_for_tests();
+    stub_out_filter_buttons();
+    recent_topics_util.set_visible(true);
+    rt.set_filter("include_private");
+
+    expected_data_to_replace_in_list_widget = [
+        {last_msg_id: 12, participated: true, type: "private"},
+    ];
+
+    rt.process_messages([private_messages[0]]);
+
+    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 12}), false);
+    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 13}), true);
+    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 14}), false);
 });
 
 test("test_filter_unread", ({mock_template}) => {
@@ -453,15 +560,15 @@ test("test_filter_unread", ({mock_template}) => {
     let i = 0;
 
     const row_data = generate_topic_data([
-        // stream_id, topic, unread_count,  muted, participated
-        [4, "topic-10", 1, false, true],
-        [1, "topic-7", 1, true, true],
-        [1, "topic-6", 1, false, true],
-        [1, "topic-5", 1, false, true],
-        [1, "topic-4", 1, false, false],
-        [1, "topic-3", 1, false, false],
-        [1, "topic-2", 1, false, true],
-        [1, "topic-1", 0, false, true],
+        // stream_id, topic, unread_count,  muted
+        [4, "topic-10", 1, false],
+        [1, "topic-7", 1, true],
+        [1, "topic-6", 1, false],
+        [1, "topic-5", 1, false],
+        [1, "topic-4", 1, false],
+        [1, "topic-3", 1, false],
+        [1, "topic-2", 1, false],
+        [1, "topic-1", 0, false],
     ]);
 
     mock_template("recent_topic_row.hbs", false, (data) => {
@@ -573,15 +680,15 @@ test("test_filter_participated", ({mock_template}) => {
     });
 
     const row_data = generate_topic_data([
-        // stream_id, topic, unread_count,  muted, participated
-        [4, "topic-10", 1, false, true],
-        [1, "topic-7", 1, true, true],
-        [1, "topic-6", 1, false, true],
-        [1, "topic-5", 1, false, true],
-        [1, "topic-4", 1, false, false],
-        [1, "topic-3", 1, false, false],
-        [1, "topic-2", 1, false, true],
-        [1, "topic-1", 0, false, true],
+        // stream_id, topic, unread_count,  muted
+        [4, "topic-10", 1, false],
+        [1, "topic-7", 1, true],
+        [1, "topic-6", 1, false],
+        [1, "topic-5", 1, false],
+        [1, "topic-4", 1, false],
+        [1, "topic-3", 1, false],
+        [1, "topic-2", 1, false],
+        [1, "topic-1", 0, false],
     ]);
     let i = 0;
 
@@ -683,7 +790,7 @@ test("test_update_unread_count", () => {
     rt.process_messages(messages);
 
     // update a message
-    generate_topic_data([[1, "topic-7", 1, false, true]]);
+    generate_topic_data([[1, "topic-7", 1, false]]);
     rt.update_topic_unread_count(messages[9]);
 });
 
@@ -704,7 +811,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     let all_topics = rt_data.get();
 
     // update a message
-    generate_topic_data([[1, "topic-7", 1, false, true]]);
+    generate_topic_data([[1, "topic-7", 1, false]]);
     stub_out_filter_buttons();
     expected_data_to_replace_in_list_widget = [
         {
@@ -813,7 +920,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 
     // update_topic_is_muted now relies on external libraries completely
     // so we don't need to check anythere here.
-    generate_topic_data([[1, topic1, 0, false, true]]);
+    generate_topic_data([[1, topic1, 0, false]]);
     $(".home-page-input").trigger("focus");
     assert.equal(rt.update_topic_is_muted(stream1, topic1), true);
     // a topic gets muted which we are not tracking

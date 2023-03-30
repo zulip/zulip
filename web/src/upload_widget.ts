@@ -35,6 +35,7 @@ export function build_widget(
         if ($preview_text !== undefined && $preview_image !== undefined) {
             const image_blob = URL.createObjectURL(file);
             $preview_image.attr("src", image_blob);
+            $preview_image.addClass("upload_widget_image_preview");
             $preview_text.show();
         }
     }

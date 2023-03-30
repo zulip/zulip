@@ -1,7 +1,7 @@
 .recent_topics_container {
     padding: 0;
     border-radius: 4px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -14,7 +14,7 @@
         display: flex;
         flex-direction: column;
         border-style: solid;
-        border-color: hsl(0, 0%, 88%);
+        border-color: hsl(0deg 0% 88%);
         border-width: 0 1px;
         border-radius: 0;
         margin-top: 40px;
@@ -25,7 +25,7 @@
          */
         min-height: 100vw;
 
-        td {
+        & td {
             vertical-align: middle;
             padding: 3px 8px;
         }
@@ -39,16 +39,16 @@
 
             &:focus-within {
                 /* Use the same color as the message feed pointer */
-                box-shadow: 0 3px 0 hsl(215, 47%, 50%);
+                box-shadow: 0 3px 0 hsl(215deg 47% 50%);
             }
         }
 
-        a {
-            color: hsl(205, 47%, 42%);
+        & a {
+            color: hsl(205deg 47% 42%);
             text-decoration: none;
 
             &:hover {
-                color: hsl(214, 40%, 58%);
+                color: hsl(214deg 40% 58%);
             }
         }
 
@@ -56,7 +56,7 @@
             content: attr(data-empty);
             display: block;
             font-style: italic;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
             position: absolute;
         }
 
@@ -129,7 +129,7 @@
             margin: 0 5px 10px 0;
 
             &:focus {
-                background-color: hsl(0, 0%, 80%);
+                background-color: hsl(0deg 0% 80%);
                 outline: 0;
             }
 
@@ -138,14 +138,14 @@
                 opacity: 0.5;
 
                 &:hover {
-                    background-color: hsl(0, 0%, 100%);
-                    border-color: hsl(0, 0%, 80%);
+                    background-color: hsl(0deg 0% 100%);
+                    border-color: hsl(0deg 0% 80%);
                 }
             }
         }
 
         .btn-recent-selected {
-            background-color: hsl(0, 11%, 93%);
+            background-color: hsl(0deg 11% 93%);
         }
 
         .unread_count {
@@ -153,7 +153,7 @@
             margin-right: 1px;
             margin-left: 1px;
             align-self: center;
-            background-color: hsl(105, 2%, 50%);
+            background-color: hsl(105deg 2% 50%);
         }
 
         .unread_mention_info:not(:empty) {
@@ -253,28 +253,28 @@
         .recent_topics_participant_overflow {
             border: 0;
             border-radius: 6px;
-            color: hsl(0, 0%, 100%);
+            color: hsl(0deg 0% 100%);
             display: block;
             height: 24px;
             text-align: center;
-            background-color: hsl(0, 0%, 88%);
+            background-color: hsl(0deg 0% 88%);
         }
 
         .recent_topics_participant_overflow {
-            color: hsl(0, 0%, 0%);
+            color: hsl(0deg 0% 0%);
             line-height: 24px;
         }
 
-        tr {
-            background-color: hsl(100, 11%, 96%);
+        & tr {
+            background-color: hsl(100deg 11% 96%);
 
             &:hover {
-                background-color: hsl(210, 100%, 97%);
+                background-color: hsl(210deg 100% 97%);
             }
         }
 
         .unread_topic {
-            background-color: hsl(0, 0%, 100%);
+            background-color: hsl(0deg 0% 100%);
         }
 
         .last_msg_time {
@@ -282,11 +282,11 @@
             margin-right: 5px;
         }
 
-        thead th {
-            background-color: hsl(0, 0%, 100%);
+        & thead th {
+            background-color: hsl(0deg 0% 100%);
             color: inherit;
-            border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
-            border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+            border-top: 1px solid hsl(0deg 0% 0% / 20%) !important;
+            border-bottom: 1px solid hsl(0deg 0% 0% / 20%) !important;
             position: sticky;
             top: 0;
             z-index: 1;
@@ -313,7 +313,7 @@
 
             &[data-sort]:hover {
                 cursor: pointer;
-                background-color: hsla(0, 0%, 95%);
+                background-color: hsl(0deg 0% 95%);
                 transition: background-color 100ms ease-in-out;
 
                 &:not(.active)::after {
@@ -328,7 +328,7 @@
             width: 25%;
             padding: 8px 0 8px 8px;
 
-            a {
+            & a {
                 word-break: break-word;
                 hyphens: auto;
             }
@@ -337,7 +337,7 @@
         .recent_topic_name {
             width: 40%;
 
-            a {
+            & a {
                 word-break: break-word;
                 /* No hyphes for word break since it caused hyphens to appear before
                    the ellipsis `longText-...` which is not desirable. Ellipsis appears due
@@ -365,7 +365,7 @@
             width: 15%;
         }
 
-        thead .last_msg_time_header {
+        & thead .last_msg_time_header {
             /* The responsive table of bootstrap
                somehow ignores the width of ::after
                element. This ensures it is always visible.

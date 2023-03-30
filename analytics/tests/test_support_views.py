@@ -302,7 +302,9 @@ class TestSupportEndpoint(ZulipTestCase):
             check_zulip_realm_query_result(result)
 
             email = self.nonreg_email("alice")
-            self.client_post("/new/", {"email": email})
+            self.submit_realm_creation_form(
+                email, realm_subdomain="zuliptest", realm_name="Zulip test"
+            )
             result = get_check_query_result(email, 1)
             check_realm_creation_query_result(result, email)
 
@@ -342,7 +344,7 @@ class TestSupportEndpoint(ZulipTestCase):
         """
         Unspecified org type is special in that it is marked to not be shown
         on the registration page (because organitions are not meant to be able to choose it),
-        but should be correctly shown at the /support endpoint.
+        but should be correctly shown at the /support/ endpoint.
         """
         realm = get_realm("zulip")
 

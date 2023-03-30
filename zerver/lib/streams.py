@@ -240,7 +240,6 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
         and sender.is_provisional_member
     ):
         raise JsonableError(_("New members cannot send to this stream."))
-    return
 
 
 def access_stream_for_send_message(

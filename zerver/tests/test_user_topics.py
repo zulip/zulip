@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 from unittest import mock
 
-from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -10,7 +9,7 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import (
     get_topic_mutes,
-    topic_is_muted,
+    topic_has_visibility_policy,
 )
 from zerver.models import UserProfile, UserTopic, get_stream
 
@@ -28,7 +27,7 @@ class MutedTopicsTests(ZulipTestCase):
             user,
             stream,
             "Verona3",
-            visibility_policy=UserTopic.MUTED,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
         )
 
@@ -51,7 +50,9 @@ class MutedTopicsTests(ZulipTestCase):
             topic_name=topic_name,
         )
 
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.MUTED
+        )
         self.assertEqual(user_ids, set())
 
         def mute_topic_for_user(user: UserProfile) -> None:
@@ -59,23 +60,27 @@ class MutedTopicsTests(ZulipTestCase):
                 user,
                 stream,
                 "test TOPIC",
-                visibility_policy=UserTopic.MUTED,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
                 last_updated=date_muted,
             )
 
         mute_topic_for_user(hamlet)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.MUTED
+        )
         self.assertEqual(user_ids, {hamlet.id})
         hamlet_date_muted = UserTopic.objects.filter(
-            user_profile=hamlet, visibility_policy=UserTopic.MUTED
+            user_profile=hamlet, visibility_policy=UserTopic.VisibilityPolicy.MUTED
         )[0].last_updated
         self.assertEqual(hamlet_date_muted, date_muted)
 
         mute_topic_for_user(cordelia)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.MUTED
+        )
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
         cordelia_date_muted = UserTopic.objects.filter(
-            user_profile=cordelia, visibility_policy=UserTopic.MUTED
+            user_profile=cordelia, visibility_policy=UserTopic.VisibilityPolicy.MUTED
         )[0].last_updated
         self.assertEqual(cordelia_date_muted, date_muted)
 
@@ -102,23 +107,36 @@ class MutedTopicsTests(ZulipTestCase):
                 self.assert_json_success(result)
 
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-            self.assertTrue(topic_is_muted(user, stream.id, "verona3"))
+            self.assertTrue(
+                topic_has_visibility_policy(
+                    user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
+                )
+            )
 
             do_set_user_topic_visibility_policy(
                 user,
                 stream,
                 "Verona3",
-                visibility_policy=UserTopic.VISIBILITY_POLICY_INHERIT,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
             )
 
         assert stream.recipient is not None
         result = self.api_patch(user, url, data)
 
-        # Now check that error is raised when attempted to mute an already
-        # muted topic. This should be case-insensitive.
+        # Now check that no error is raised when attempted to mute
+        # an already muted topic. This should be case-insensitive.
+        user_topic_count = UserTopic.objects.count()
         data["topic"] = "VERONA3"
-        result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Topic already muted")
+        with self.assertLogs(level="INFO") as info_logs:
+            result = self.api_patch(user, url, data)
+            self.assert_json_success(result)
+        self.assertEqual(
+            info_logs.output[0],
+            f"INFO:root:User {user.id} tried to set visibility_policy to its current value of {UserTopic.VisibilityPolicy.MUTED}",
+        )
+        # Verify that we didn't end up with duplicate UserTopic rows
+        # with the two different cases after the previous API call.
+        self.assertEqual(UserTopic.objects.count() - user_topic_count, 0)
 
     def test_remove_muted_topic(self) -> None:
         user = self.example_user("hamlet")
@@ -139,7 +157,7 @@ class MutedTopicsTests(ZulipTestCase):
                 user,
                 stream,
                 "Verona3",
-                visibility_policy=UserTopic.MUTED,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
                 last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
@@ -148,7 +166,11 @@ class MutedTopicsTests(ZulipTestCase):
 
             self.assert_json_success(result)
             self.assertNotIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
-            self.assertFalse(topic_is_muted(user, stream.id, "verona3"))
+            self.assertFalse(
+                topic_has_visibility_policy(
+                    user, stream.id, "verona3", UserTopic.VisibilityPolicy.MUTED
+                )
+            )
 
     def test_muted_topic_add_invalid(self) -> None:
         user = self.example_user("hamlet")
@@ -157,7 +179,11 @@ class MutedTopicsTests(ZulipTestCase):
 
         stream = get_stream("Verona", realm)
         do_set_user_topic_visibility_policy(
-            user, stream, "Verona3", visibility_policy=UserTopic.MUTED, last_updated=timezone_now()
+            user,
+            stream,
+            "Verona3",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+            last_updated=timezone_now(),
         )
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
@@ -185,15 +211,16 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 
-        with transaction.atomic():
-            # This API call needs a new nested transaction with 'savepoint=True',
-            # because it calls 'set_user_topic_visibility_policy_in_database',
-            # which on failure rollbacks the test-transaction.
-            # If it is not used, the test-transaction will be rolled back during this API call,
-            # and the next API call will result in a "TransactionManagementError."
-            data = {"stream": stream.name, "topic": "BOGUS", "op": "remove"}
+        # Check that removing mute from a topic for which the user
+        # doesn't already have a visibility_policy doesn't cause an error.
+        data = {"stream": stream.name, "topic": "BOGUS", "op": "remove"}
+        with self.assertLogs(level="INFO") as info_logs:
             result = self.api_patch(user, url, data)
-            self.assert_json_error(result, "Nothing to be done")
+            self.assert_json_success(result)
+        self.assertEqual(
+            info_logs.output[0],
+            f"INFO:root:User {user.id} tried to remove visibility_policy, which actually doesn't exist",
+        )
 
         data = {"stream_id": 999999999, "topic": "BOGUS", "op": "remove"}
         result = self.api_patch(user, url, data)
@@ -222,7 +249,9 @@ class UnmutedTopicsTests(ZulipTestCase):
             topic_name=topic_name,
         )
 
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
         self.assertEqual(user_ids, set())
 
         def set_topic_visibility_for_user(user: UserProfile, visibility_policy: int) -> None:
@@ -234,19 +263,23 @@ class UnmutedTopicsTests(ZulipTestCase):
                 last_updated=date_unmuted,
             )
 
-        set_topic_visibility_for_user(hamlet, UserTopic.UNMUTED)
-        set_topic_visibility_for_user(cordelia, UserTopic.MUTED)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        set_topic_visibility_for_user(hamlet, UserTopic.VisibilityPolicy.UNMUTED)
+        set_topic_visibility_for_user(cordelia, UserTopic.VisibilityPolicy.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
         self.assertEqual(user_ids, {hamlet.id})
         hamlet_date_unmuted = UserTopic.objects.filter(
-            user_profile=hamlet, visibility_policy=UserTopic.UNMUTED
+            user_profile=hamlet, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
         )[0].last_updated
         self.assertEqual(hamlet_date_unmuted, date_unmuted)
 
-        set_topic_visibility_for_user(cordelia, UserTopic.UNMUTED)
-        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        set_topic_visibility_for_user(cordelia, UserTopic.VisibilityPolicy.UNMUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.UNMUTED
+        )
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
         cordelia_date_unmuted = UserTopic.objects.filter(
-            user_profile=cordelia, visibility_policy=UserTopic.UNMUTED
+            user_profile=cordelia, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
         )[0].last_updated
         self.assertEqual(cordelia_date_unmuted, date_unmuted)

@@ -157,12 +157,12 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("member", TOPIC_REPO, expected_message)
 
     def test_pull_request_opened_msg(self) -> None:
-        expected_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.check_webhook("pull_request__opened", TOPIC_PR, expected_message)
 
     def test_pull_request_opened_with_preassigned_assignee_msg(self) -> None:
         expected_topic = "Scheduler / PR #4 Improve README"
-        expected_message = "eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4) (assigned to eeshangarg) from `improve-readme-2` to `master`."
+        expected_message = "eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4) from `eeshangarg:improve-readme-2` to `eeshangarg:master` (assigned to eeshangarg)."
         self.check_webhook(
             "pull_request__opened_with_preassigned_assignee", expected_topic, expected_message
         )
@@ -170,11 +170,11 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_pull_request_opened_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = "baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.check_webhook("pull_request__opened", expected_topic, expected_message)
 
     def test_pull_request_synchronized_msg(self) -> None:
-        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
+        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__synchronized", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg(self) -> None:
@@ -282,15 +282,17 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("push__tag", TOPIC_REPO, expected_message)
 
     def test_pull_request_edited_msg(self) -> None:
-        expected_message = "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
+        expected_message = (
+            "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        )
         self.check_webhook("pull_request__edited", TOPIC_PR, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
-        expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1) from `issue-#1` to `main`:\n\n~~~ quote\nPR EDITED\n~~~"
+        expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n~~~ quote\nPR EDITED\n~~~"
         self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
 
     def test_pull_request_synchronized_with_body(self) -> None:
-        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
+        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__synchronized_with_body", TOPIC_PR, expected_message)
 
     def test_pull_request_assigned_msg(self) -> None:

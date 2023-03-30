@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import * as typeahead from "../shared/src/typeahead";
+import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -233,7 +234,6 @@ function handle_keydown(e) {
                         compose_validate.warn_for_text_overflow_when_tries_to_send() &&
                         !$("#compose-send-button").prop("disabled")
                     ) {
-                        $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }
                     return;
@@ -1130,6 +1130,7 @@ export function initialize() {
             }
             return sorted;
         },
+        header: render_topic_typeahead_hint,
     });
 
     $("#private_message_recipient").typeahead({

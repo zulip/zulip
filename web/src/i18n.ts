@@ -50,7 +50,7 @@ export function $t_html(
     });
 }
 
-export let language_list: typeof page_params["language_list"];
+export let language_list: (typeof page_params)["language_list"];
 
 export function get_language_name(language_code: string): string {
     const language_list_map: Record<string, string> = {};

@@ -4,6 +4,8 @@ Get GitHub notifications in Zulip!
 
 1. {!create-bot-construct-url.md!}
 
+    You can refer to GitHub's documentation for [webhook events](https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads).
+
     {!git-webhook-url-with-branches.md!}
 
 1. Go to your repository on GitHub and click on the **Settings** tab.

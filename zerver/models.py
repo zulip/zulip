@@ -1597,8 +1597,19 @@ class UserBaseSettings(models.Model):
     enable_digest_emails = models.BooleanField(default=True)
     enable_login_emails = models.BooleanField(default=True)
     enable_marketing_emails = models.BooleanField(default=True)
-    realm_name_in_notifications = models.BooleanField(default=False)
     presence_enabled = models.BooleanField(default=True)
+
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC = 1
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS = 2
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER = 3
+    REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES = [
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS,
+        REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_NEVER,
+    ]
+    realm_name_in_email_notifications_policy = models.PositiveSmallIntegerField(
+        default=REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
+    )
 
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
@@ -1671,7 +1682,7 @@ class UserBaseSettings(models.Model):
         notification_sound=str,
         pm_content_in_desktop_notifications=bool,
         presence_enabled=bool,
-        realm_name_in_notifications=bool,
+        realm_name_in_email_notifications_policy=int,
         wildcard_mentions_notify=bool,
     )
 
@@ -2213,6 +2224,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     MODERATORS_GROUP_NAME = "@role:moderators"
     MEMBERS_GROUP_NAME = "@role:members"
     EVERYONE_GROUP_NAME = "@role:everyone"
+    NOBODY_GROUP_NAME = "@role:nobody"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -2273,6 +2285,42 @@ def remote_user_to_email(remote_user: str) -> str:
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
 post_save.connect(flush_user_profile, sender=UserProfile)
+
+
+class PreregistrationRealm(models.Model):
+    """Data on a partially created realm entered by a user who has
+    completed the "new organization" form. Used to transfer the user's
+    selections from the pre-confirmation "new organization" form to
+    the post-confirmation user registration form.
+
+    Note that the values stored here may not match those of the
+    created realm (in the event the user creates a realm at all),
+    because we allow the user to edit these values in the registration
+    form (and in fact the user will be required to do so if the
+    `string_id` is claimed by another realm before registraiton is
+    completed).
+    """
+
+    name = models.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH)
+    org_type = models.PositiveSmallIntegerField(
+        default=Realm.ORG_TYPES["unspecified"]["id"],
+        choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
+    )
+    string_id = models.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH)
+    email = models.EmailField()
+
+    confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_realm")
+    status = models.IntegerField(default=0)
+
+    # The Realm created upon completion of the registration
+    # for this PregistrationRealm
+    created_realm = models.ForeignKey(Realm, null=True, related_name="+", on_delete=models.SET_NULL)
+
+    # The UserProfile created upon completion of the registration
+    # for this PregistrationRealm
+    created_user = models.ForeignKey(
+        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
+    )
 
 
 class PreregistrationUser(models.Model):
@@ -2640,32 +2688,28 @@ class UserTopic(models.Model):
         default=datetime.datetime(2020, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     )
 
-    # Implicitly, if a UserTopic does not exist, the (user, topic)
-    # pair should have normal behavior for that (user, stream) pair.
+    class VisibilityPolicy(models.IntegerChoices):
+        # A normal muted topic. No notifications and unreads hidden.
+        MUTED = 1, "Muted topic"
 
-    # We use this in our code to represent the condition in the comment above.
-    VISIBILITY_POLICY_INHERIT = 0
+        # This topic will behave like an unmuted topic in an unmuted stream even if it
+        # belongs to a muted stream.
+        UNMUTED = 2, "Unmuted topic in muted stream"
 
-    # A normal muted topic. No notifications and unreads hidden.
-    MUTED = 1
+        # This topic will behave like `UNMUTED`, plus some additional
+        # display and/or notifications priority that is TBD and likely to
+        # be configurable; see #6027. Not yet implemented.
+        FOLLOWED = 3, "Followed topic"
 
-    # This topic will behave like an unmuted topic in an unmuted stream even if it
-    # belongs to a muted stream.
-    UNMUTED = 2
+        # Implicitly, if a UserTopic does not exist, the (user, topic)
+        # pair should have normal behavior for that (user, stream) pair.
 
-    # This topic will behave like `UNMUTED`, plus some additional
-    # display and/or notifications priority that is TBD and likely to
-    # be configurable; see #6027. Not yet implemented.
-    FOLLOWED = 3
+        # We use this in our code to represent the condition in the comment above.
+        INHERIT = 0, "User's default policy for the stream."
 
-    visibility_policy_choices = (
-        (MUTED, "Muted topic"),
-        (UNMUTED, "Unmuted topic in muted stream"),
-        (FOLLOWED, "Followed topic"),
-        (VISIBILITY_POLICY_INHERIT, "User's default policy for the stream."),
+    visibility_policy = models.SmallIntegerField(
+        choices=VisibilityPolicy.choices, default=VisibilityPolicy.MUTED
     )
-
-    visibility_policy = models.SmallIntegerField(choices=visibility_policy_choices, default=MUTED)
 
     class Meta:
         constraints = [

@@ -977,7 +977,7 @@ class RealmTest(ZulipTestCase):
         realm = do_create_realm("realm_string_id", "realm name")
         system_user_groups = UserGroup.objects.filter(realm=realm, is_system_group=True)
 
-        self.assert_length(system_user_groups, 7)
+        self.assert_length(system_user_groups, 8)
         user_group_names = [group.name for group in system_user_groups]
         expected_system_group_names = [
             UserGroup.OWNERS_GROUP_NAME,
@@ -987,6 +987,7 @@ class RealmTest(ZulipTestCase):
             UserGroup.MEMBERS_GROUP_NAME,
             UserGroup.EVERYONE_GROUP_NAME,
             UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
+            UserGroup.NOBODY_GROUP_NAME,
         ]
         self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
 
@@ -1244,6 +1245,7 @@ class RealmAPITest(ZulipTestCase):
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
+            realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
         )
 
         vals = test_values.get(name)

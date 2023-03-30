@@ -1,3 +1,4 @@
+import secrets
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any, Dict, List, Optional
@@ -23,6 +24,7 @@ from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_active_bots_owned_by_user
 from zerver.models import (
+    Message,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -93,6 +95,131 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
             modified_user=replacement_user,
             acting_user=acting_user,
             event_type=RealmAuditLog.USER_DELETED,
+            event_time=timezone_now(),
+        )
+
+
+def do_delete_user_preserving_messages(user_profile: UserProfile) -> None:
+    """This is a version of do_delete_user which does not delete messages
+    that the user was a participant in, and thus is less potentially
+    disruptive to other users.
+
+    The code is a bit tricky, because we want to, at some point, call
+    user_profile.delete() to trigger cascading deletions of related
+    models - but we need to avoid the cascades deleting all messages
+    sent by the user to avoid messing up history of public stream
+    conversations that they may have participated in.
+
+    Not recommended for general use due to the following quirks:
+    * Does not live-update other clients via `send_event` about the
+      user's new name, email, or other attributes.
+    * Not guaranteed to clear caches containing the deleted users. The
+      temporary user may be visible briefly in caches due to the
+      UserProfile model's post_save hook.
+    * Deletes `acting_user`/`modified_user` entries in RealmAuditLog,
+      potentially leading to corruption in audit tables if the user had,
+      for example, changed organization-level settings previously.
+    * May violate invariants like deleting the only subscriber to a
+      stream/group or the last owner in a realm.
+    * Will remove MutedUser records for other users who might have
+      muted this user.
+    * Will destroy Attachment/ArchivedAttachment records for files
+      uploaded by the user, making them inaccessible.
+    * Will destroy ArchivedMessage records associated with the user,
+      making them impossible to restore from backups.
+    * Will destroy Reaction/Submessage objects for reactions/poll
+      votes done by the user.
+
+    Most of these issues are not relevant for the common case that the
+    user being deleted hasn't used Zulip extensively.
+
+    It is possible a different algorithm that worked via overwriting
+    the UserProfile's values with RealmUserDefault values, as well as
+    a targeted set of deletions of cascading models (`Subscription`,
+    `UserMessage`, `CustomProfileFieldValue`, etc.) would be a cleaner
+    path to a high quality system.
+
+    Other lesser quirks to be aware of:
+    * The deleted user will disappear from all "Read receipts"
+      displays, as all UserMessage rows will have been deleted.
+    * Raw Markdown syntax mentioning the user still contain their
+      original name (though modern clients will look up the user via
+      `data-user-id` and display the current name). This is hard to
+      change, and not important, since nothing prevents other users from
+      just typing the user's name in their own messages.
+    * Consumes a user ID sequence number, resulting in gaps in the
+      space of user IDs that contain actual users.
+
+    """
+    if user_profile.realm.is_zephyr_mirror_realm:
+        raise AssertionError("Deleting zephyr mirror users is not supported")
+
+    do_deactivate_user(user_profile, acting_user=None)
+
+    user_id = user_profile.id
+    personal_recipient = user_profile.recipient
+    realm = user_profile.realm
+    date_joined = user_profile.date_joined
+
+    with transaction.atomic():
+        # The strategy is that before calling user_profile.delete(), we need to
+        # reassign Messages  sent by the user to a dummy user, so that they don't
+        # get affected by CASCADE. We cannot yet create a dummy user with .id
+        # matching that of the user_profile, so the general scheme is:
+        # 1. We create a *temporary* dummy for the initial re-assignment of messages.
+        # 2. We delete the UserProfile.
+        # 3. We create a replacement dummy user with its id matching what the UserProfile had.
+        # 4. This is the intended, final replacement UserProfile, so we re-assign
+        #    the messages from step (1) to it and delete the temporary dummy.
+        #
+        # We also do the same for Subscriptions - while they could be handled like
+        # in do_delete_user by re-creating the objects after CASCADE deletion, the code
+        # is cleaner by using the same re-assignment approach for them together with Messages.
+        random_token = secrets.token_hex(16)
+        temp_replacement_user = create_user(
+            email=f"temp_deleteduser{random_token}@{get_fake_email_domain(realm)}",
+            password=None,
+            realm=realm,
+            full_name=f"Deleted User {user_id} (temp)",
+            active=False,
+            is_mirror_dummy=True,
+            force_date_joined=date_joined,
+            create_personal_recipient=False,
+        )
+        Message.objects.filter(sender=user_profile).update(sender=temp_replacement_user)
+        Subscription.objects.filter(
+            user_profile=user_profile, recipient__type=Recipient.HUDDLE
+        ).update(user_profile=temp_replacement_user)
+        user_profile.delete()
+
+        replacement_user = create_user(
+            force_id=user_id,
+            email=f"deleteduser{user_id}@{get_fake_email_domain(realm)}",
+            password=None,
+            realm=realm,
+            full_name=f"Deleted User {user_id}",
+            active=False,
+            is_mirror_dummy=True,
+            force_date_joined=date_joined,
+            create_personal_recipient=False,
+        )
+        # We don't delete the personal recipient to preserve  personal messages!
+        # Now, the personal recipient belong to replacement_user, because
+        # personal_recipient.type_id is equal to replacement_user.id.
+        replacement_user.recipient = personal_recipient
+        replacement_user.save(update_fields=["recipient"])
+
+        Message.objects.filter(sender=temp_replacement_user).update(sender=replacement_user)
+        Subscription.objects.filter(
+            user_profile=temp_replacement_user, recipient__type=Recipient.HUDDLE
+        ).update(user_profile=replacement_user, is_user_active=replacement_user.is_active)
+        temp_replacement_user.delete()
+
+        RealmAuditLog.objects.create(
+            realm=replacement_user.realm,
+            modified_user=replacement_user,
+            acting_user=None,
+            event_type=RealmAuditLog.USER_DELETED_PRESERVING_MESSAGES,
             event_time=timezone_now(),
         )
 

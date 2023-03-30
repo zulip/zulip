@@ -110,7 +110,7 @@ python-magic
 # The Zulip API bindings, from its own repository.  We integrate with
 # these tightly, including fetching content not included in the official
 # PyPI release tarballs, such as logos, assets and documentation files
-# that we render on our /integrations page. Therefore, we need to pin
+# that we render on our /integrations/ page. Therefore, we need to pin
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.

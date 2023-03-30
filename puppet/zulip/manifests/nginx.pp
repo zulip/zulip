@@ -44,6 +44,7 @@ class zulip::nginx {
   } else {
       $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
   }
+  $worker_connections = zulipconf('application_server', 'nginx_worker_connections', 10000)
   file { '/etc/nginx/nginx.conf':
     ensure  => file,
     require => Package[$zulip::common::nginx, 'ca-certificates'],

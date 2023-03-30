@@ -251,7 +251,7 @@ run_test("timestamp without time", () => {
 
 run_test("timestamp", ({mock_template}) => {
     mock_template("markdown_timestamp.hbs", true, (data, html) => {
-        assert.deepEqual(data, {text: "Thu, Jan 1, 1970, 12:00 AM"});
+        assert.deepEqual(data, {text: "Thu, Jan 1, 1970, 12:00 AM"});
         return html;
     });
 
@@ -271,7 +271,7 @@ run_test("timestamp", ({mock_template}) => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1, 1970, 12:00 AM\n');
+    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1, 1970, 12:00 AM\n');
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
@@ -294,7 +294,7 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
 
     override(user_settings, "twenty_four_hour_time", false);
     rm.update_elements($content);
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15, 2020, 8:40 PM\n');
+    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15, 2020, 8:40 PM\n');
 });
 
 run_test("timestamp-error", () => {

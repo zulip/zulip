@@ -35,6 +35,7 @@ from zerver.lib.subdomains import get_subdomain_from_hostname
 from zerver.lib.validator import check_bool, check_string_in, to_decimal, to_non_negative_int
 from zerver.models import (
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmReactivationStatus,
@@ -303,8 +304,17 @@ def support(
             user.id for user in PreregistrationUser.objects.filter(email__in=key_words)
         ]
         confirmations += get_confirmations(
-            [Confirmation.USER_REGISTRATION, Confirmation.INVITATION, Confirmation.REALM_CREATION],
+            [Confirmation.USER_REGISTRATION, Confirmation.INVITATION],
             preregistration_user_ids,
+            hostname=request.get_host(),
+        )
+
+        preregistration_realm_ids = [
+            user.id for user in PreregistrationRealm.objects.filter(email__in=key_words)
+        ]
+        confirmations += get_confirmations(
+            [Confirmation.REALM_CREATION],
+            preregistration_realm_ids,
             hostname=request.get_host(),
         )
 

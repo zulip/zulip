@@ -21,10 +21,10 @@ gear_info = {
     "manage-streams": ["Manage streams", "/#streams/subscribed"],
     "settings": ["Personal Settings", "/#settings/profile"],
     "organization-settings": ["Organization settings", "/#organization/organization-profile"],
-    "integrations": ["Integrations", "/integrations"],
+    "integrations": ["Integrations", "/integrations/"],
     "stats": ["Usage statistics", "/stats"],
-    "plans": ["Plans and pricing", "/plans"],
-    "billing": ["Billing", "/billing"],
+    "plans": ["Plans and pricing", "/plans/"],
+    "billing": ["Billing", "/billing/"],
     "invite": ["Invite users", "/#invite"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }

@@ -3,7 +3,7 @@
     flex-wrap: wrap;
 
     padding: 2px;
-    border: 1px solid hsla(0, 0%, 0%, 0.15);
+    border: 1px solid hsl(0deg 0% 0% / 15%);
     border-radius: 4px;
     align-items: center;
 
@@ -17,16 +17,16 @@
         margin: 1px 2px;
 
         color: inherit;
-        border: 1px solid hsla(0, 0%, 0%, 0.15);
+        border: 1px solid hsl(0deg 0% 0% / 15%);
 
         border-radius: 4px;
-        background-color: hsla(0, 0%, 0%, 0.07);
+        background-color: hsl(0deg 0% 0% / 7%);
         cursor: pointer;
 
         &:focus {
-            color: hsl(0, 0%, 100%);
-            border: 1px solid hsl(176, 78%, 28%);
-            background-color: hsl(176, 49%, 42%);
+            color: hsl(0deg 0% 100%);
+            border: 1px solid hsl(176deg 78% 28%);
+            background-color: hsl(176deg 49% 42%);
             outline: none;
         }
 
@@ -63,8 +63,8 @@
 
             &:focus {
                 color: inherit;
-                border: 1px solid hsla(0, 0%, 0%, 0.15);
-                background-color: hsla(0, 0%, 0%, 0.07);
+                border: 1px solid hsl(0deg 0% 0% / 15%);
+                background-color: hsl(0deg 0% 0% / 7%);
             }
 
             .exit {
@@ -109,7 +109,7 @@
     padding: 0 2px;
     flex-grow: 1;
     align-content: center;
-    border: 1px solid hsla(0, 0%, 0%, 0.2);
+    border: 1px solid hsl(0deg 0% 0% / 20%);
 
     .input {
         height: 20px;
@@ -127,12 +127,12 @@
 }
 
 .deactivated-pill {
-    background-color: hsl(0, 86%, 86%) !important;
+    background-color: hsl(0deg 86% 86%) !important;
 }
 
 .add_subscribers_container .pill-container {
     width: 100%;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
 
     .input:first-child:empty::before {
         opacity: 0.5;

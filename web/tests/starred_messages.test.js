@@ -12,7 +12,6 @@ const top_left_corner = mock_esm("../src/top_left_corner", {
 });
 const stream_popover = mock_esm("../src/stream_popover", {
     hide_topic_popover() {},
-    hide_starred_messages_popover() {},
 });
 
 const message_store = zrequire("message_store");

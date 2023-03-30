@@ -50,7 +50,7 @@ export function init() {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
-function split_to_ints(lst) {
+export function split_to_ints(lst) {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
 
@@ -209,12 +209,14 @@ export function huddle_string(message) {
 export function user_ids_string_to_emails_string(user_ids_string) {
     const user_ids = split_to_ints(user_ids_string);
 
-    let emails = user_ids.map((user_id) => {
-        const person = people_by_user_id_dict.get(user_id);
-        return person && person.email;
-    });
+    let emails = util.try_parse_as_truthy(
+        user_ids.map((user_id) => {
+            const person = people_by_user_id_dict.get(user_id);
+            return person && person.email;
+        }),
+    );
 
-    if (!emails.every(Boolean)) {
+    if (emails === undefined) {
         blueslip.warn("Unknown user ids: " + user_ids_string);
         return undefined;
     }
@@ -261,12 +263,14 @@ export function reply_to_to_user_ids_string(emails_string) {
     // invalid data.
     const emails = emails_string.split(",");
 
-    let user_ids = emails.map((email) => {
-        const person = get_by_email(email);
-        return person && person.user_id;
-    });
+    let user_ids = util.try_parse_as_truthy(
+        emails.map((email) => {
+            const person = get_by_email(email);
+            return person && person.user_id;
+        }),
+    );
 
-    if (!user_ids.every(Boolean)) {
+    if (user_ids === undefined) {
         return undefined;
     }
 
@@ -322,12 +326,14 @@ export function emails_strings_to_user_ids_string(emails_string) {
 }
 
 export function email_list_to_user_ids_string(emails) {
-    let user_ids = emails.map((email) => {
-        const person = get_by_email(email);
-        return person && person.user_id;
-    });
+    let user_ids = util.try_parse_as_truthy(
+        emails.map((email) => {
+            const person = get_by_email(email);
+            return person && person.user_id;
+        }),
+    );
 
-    if (!user_ids.every(Boolean)) {
+    if (user_ids === undefined) {
         blueslip.warn("Unknown emails: " + emails);
         return undefined;
     }
@@ -341,7 +347,7 @@ export function get_full_names_for_poll_option(user_ids) {
     return get_display_full_names(user_ids).join(", ");
 }
 
-function get_display_full_name(user_id) {
+export function get_display_full_name(user_id) {
     const person = get_by_user_id(user_id);
     if (!person) {
         blueslip.error("Unknown user id " + user_id);
@@ -509,7 +515,7 @@ export function group_pm_with_user_ids(message) {
             return user_ids;
         }
     }
-    return false;
+    return undefined;
 }
 
 export function pm_perma_link(message) {
@@ -564,9 +570,9 @@ export function update_email_in_reply_to(reply_to, user_id, new_email) {
     // and we don't warn on any errors.
     let emails = reply_to.split(",");
 
-    const persons = emails.map((email) => people_dict.get(email.trim()));
+    const persons = util.try_parse_as_truthy(emails.map((email) => people_dict.get(email.trim())));
 
-    if (!persons.every(Boolean)) {
+    if (persons === undefined) {
         return reply_to;
     }
 
@@ -589,16 +595,16 @@ export function update_email_in_reply_to(reply_to, user_id, new_email) {
 export function pm_with_operand_ids(operand) {
     let emails = operand.split(",");
     emails = emails.map((email) => email.trim());
-    let persons = emails.map((email) => people_dict.get(email));
+    let persons = util.try_parse_as_truthy(emails.map((email) => people_dict.get(email)));
+
+    if (persons === undefined) {
+        return undefined;
+    }
 
     // If your email is included in a PM group with other people, just ignore it
     if (persons.length > 1) {
         const my_user = people_by_user_id_dict.get(my_user_id);
         persons = persons.filter((person) => person !== my_user);
-    }
-
-    if (!persons.every(Boolean)) {
-        return undefined;
     }
 
     let user_ids = persons.map((person) => person.user_id);
@@ -943,7 +949,7 @@ export function get_non_active_realm_users() {
 export function is_cross_realm_email(email) {
     const person = get_by_email(email);
     if (!person) {
-        return undefined;
+        return false;
     }
     return cross_realm_dict.has(person.user_id);
 }
@@ -1002,10 +1008,12 @@ export function get_message_people() {
         at the message_store code to see the precise
         semantics
     */
-    const message_people = message_user_ids
-        .user_ids()
-        .map((user_id) => people_by_user_id_dict.get(user_id))
-        .filter(Boolean);
+    const message_people = util.try_parse_as_truthy(
+        message_user_ids
+            .user_ids()
+            .map((user_id) => people_by_user_id_dict.get(user_id))
+            .filter(Boolean),
+    );
 
     return message_people;
 }

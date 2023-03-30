@@ -171,8 +171,10 @@ export function initialize() {
         onShow(instance) {
             // Handle dynamic "starred messages" and "edit" widgets.
             const $elem = $(instance.reference);
+            const tippy_content = $elem.attr("data-tippy-content");
             const $template = $("#" + $elem.attr("data-tooltip-template-id"));
-            instance.setContent(parse_html($template.html()));
+
+            instance.setContent(tippy_content ?? parse_html($template.html()));
         },
     });
 
@@ -287,7 +289,7 @@ export function initialize() {
         content: $t({defaultMessage: "Change send shortcut"}),
         onShow() {
             // Don't show tooltip if the popover is displayed.
-            if (popover_menus.compose_enter_sends_popover_displayed) {
+            if (popover_menus.is_compose_enter_sends_popover_displayed()) {
                 return false;
             }
             return true;

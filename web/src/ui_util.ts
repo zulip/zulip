@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as keydown_util from "./keydown_util";
 
 // Add functions to this that have no non-trivial
@@ -49,7 +50,7 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
 
 export function update_unread_mention_info_in_dom(
     $unread_mention_info_elem: JQuery,
-    stream_has_any_unread_mention_messages: Boolean,
+    stream_has_any_unread_mention_messages: boolean,
 ): void {
     const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
     if (!stream_has_any_unread_mention_messages) {
@@ -74,4 +75,22 @@ export function parse_html(html: string): DocumentFragment {
     const template = document.createElement("template");
     template.innerHTML = html;
     return template.content;
+}
+
+/*
+ * Handle permission denied to play audio by the browser.
+ * This can happen due to two reasons: user denied permission to play audio
+ * unconditionally and browser denying permission to play audio without
+ * any interactive trigger like a button. See
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play for more details.
+ */
+export async function play_audio(elem: HTMLVideoElement): Promise<void> {
+    try {
+        await elem.play();
+    } catch (error) {
+        if (!(error instanceof DOMException)) {
+            throw error;
+        }
+        blueslip.debug(`Unable to play audio. ${error.name}: ${error.message}`);
+    }
 }

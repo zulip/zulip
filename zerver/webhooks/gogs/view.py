@@ -100,11 +100,11 @@ def format_issues_event(payload: WildValue, include_title: bool = False) -> str:
     issue_nr = payload["issue"]["number"].tame(check_int)
     assignee = payload["issue"]["assignee"]
     return get_issue_event_message(
-        payload["sender"]["login"].tame(check_string),
-        payload["action"].tame(check_string),
-        get_issue_url(payload["repository"]["html_url"].tame(check_string), issue_nr),
-        issue_nr,
-        payload["issue"]["body"].tame(check_string),
+        user_name=payload["sender"]["login"].tame(check_string),
+        action=payload["action"].tame(check_string),
+        url=get_issue_url(payload["repository"]["html_url"].tame(check_string), issue_nr),
+        number=issue_nr,
+        message=payload["issue"]["body"].tame(check_string),
         assignee=assignee["login"].tame(check_string) if assignee else None,
         title=payload["issue"]["title"].tame(check_string) if include_title else None,
     )
@@ -122,13 +122,13 @@ def format_issue_comment_event(payload: WildValue, include_title: bool = False) 
     action += "({}) on".format(comment["html_url"].tame(check_string))
 
     return get_issue_event_message(
-        payload["sender"]["login"].tame(check_string),
-        action,
-        get_issue_url(
+        user_name=payload["sender"]["login"].tame(check_string),
+        action=action,
+        url=get_issue_url(
             payload["repository"]["html_url"].tame(check_string), issue["number"].tame(check_int)
         ),
-        issue["number"].tame(check_int),
-        comment["body"].tame(check_string),
+        number=issue["number"].tame(check_int),
+        message=comment["body"].tame(check_string),
         title=issue["title"].tame(check_string) if include_title else None,
     )
 

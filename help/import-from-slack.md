@@ -56,7 +56,7 @@ in order to export direct message data.
    scratch" creation option.
 
 4. [Create a
-   bot user](https://slack.com/help/articles/115005265703-Create-a-bot-for-your-workspace),
+   bot user](https://api.slack.com/authentication/basics#scopes),
    following the instructions to add the following OAuth scopes to your bot:
     - `emoji:read`
     - `users:read`
@@ -100,7 +100,7 @@ in order to export direct message data.
    (`EXTERNAL_HOST`) of the Zulip installation, run the following
    commands, replacing `<token>` with your Slack **Bot User OAuth Token**.
 
-{!import-self-hosted-server-tips.md!}
+    {!import-self-hosted-server-tips.md!}
 
     ```
     cd /home/zulip/deployments/current

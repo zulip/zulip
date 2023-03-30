@@ -167,6 +167,7 @@ class FilterType(Enum):
     HOSTNAME = auto()
     CLIENT_IP = auto()
     USER_ID = auto()
+    METHOD = auto()
     PATH = auto()
     STATUS = auto()
 
@@ -185,6 +186,7 @@ def main() -> None:
         print("! nginx logs not suggested for timeline, due to imprecision", file=sys.stderr)
 
     use_color = sys.stdout.isatty()
+    lowered_terms = [term.lower() for term in args.filter_terms]
     try:
         for logfile_name in reversed(logfile_names):
             with maybe_gzip(logfile_name) as logfile:
@@ -192,7 +194,7 @@ def main() -> None:
                     # As a performance optimization, just do a substring
                     # check before we parse the line fully
                     lowered = logline.lower()
-                    if not all(f in lowered for f in args.filter_terms):
+                    if not all(f in lowered for f in lowered_terms):
                         continue
 
                     if args.nginx:
@@ -280,6 +282,9 @@ def parse_filters(
         elif re.match(r"([a-f0-9:]+:+){1,7}[a-f0-9]+$", filter_term):
             filter_func = lambda m, t=filter_term: m["ip"] == t
             filter_type = FilterType.CLIENT_IP
+        elif re.match(r"DELETE|GET|HEAD|OPTIONS|PATCH|POST|PUT", filter_term):
+            filter_func = lambda m, t=filter_term: m["method"].upper() == t
+            filter_type = FilterType.METHOD
         elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter_term.lower()):
             filter_term = filter_term.lower()
             if args.nginx:

@@ -186,7 +186,7 @@ function get_value_for_new_option(container) {
 }
 
 function create_choice_row(container) {
-    const context = {value: get_value_for_new_option(container)};
+    const context = {text: "", value: get_value_for_new_option(container)};
     const row = render_settings_profile_field_choice(context);
     $(container).append(row);
 }

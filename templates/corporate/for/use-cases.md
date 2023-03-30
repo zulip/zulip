@@ -10,6 +10,7 @@
 ## Customer stories
 
 * [iDrift AS company](/case-studies/idrift/)
+* [End Point Dev software consultancy](/case-studies/end-point/)
 * [Technical University of Munich](/case-studies/tum/)
 * [University of California San Diego](/case-studies/ucsd/)
 * [Lean theorem prover community](/case-studies/lean/)

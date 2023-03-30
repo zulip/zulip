@@ -323,6 +323,10 @@ Don't use the tag name in a selector unless you have to. In other words,
 use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
 type changes in the future.
 
+Additionally, multi-word class and ID values should be hyphenated,
+also known as _kebab case_. In HTML, opt for `class="my-multiword-class"`,
+with its corresponding CSS selector as `.my-multiword-class`.
+
 ### Python
 
 - Our Python code is formatted with

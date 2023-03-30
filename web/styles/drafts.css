@@ -1,7 +1,7 @@
 .drafts-container {
     position: relative;
     height: 95%;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0deg 0% 100%);
     border-radius: 4px;
     padding: 0;
     width: 58%;
@@ -21,9 +21,9 @@
         padding-top: 4px;
         padding-bottom: 8px;
         text-align: center;
-        border-bottom: 1px solid hsl(0, 0%, 87%);
+        border-bottom: 1px solid hsl(0deg 0% 87%);
 
-        h1 {
+        & h1 {
             margin: 0;
             font-size: 1.1em;
             text-transform: uppercase;
@@ -34,7 +34,7 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
             cursor: pointer;
 
             .exit-sign {
@@ -58,7 +58,7 @@
             margin-top: calc(45vh - 30px - 1.5em);
             text-align: center;
             font-size: 1.5em;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
             pointer-events: none;
         }
 
@@ -66,11 +66,11 @@
             display: block;
             text-align: center;
             font-size: 1em;
-            color: hsl(0, 0%, 67%);
+            color: hsl(0deg 0% 67%);
             pointer-events: none;
         }
 
-        h2 {
+        & h2 {
             font-size: 1.1em;
             line-height: normal;
             margin-bottom: 5px;
@@ -88,11 +88,11 @@
 
     .draft-info-box {
         width: 100%;
-        border: 1px solid hsl(0, 0%, 88%);
+        border: 1px solid hsl(0deg 0% 88%);
         margin-bottom: 10px;
 
         &.active {
-            outline: 2px solid hsl(215, 47%, 50%);
+            outline: 2px solid hsl(215deg 47% 50%);
             /* this offset ensures no gap between the blue box and the draft in active state */
             outline-offset: -1px;
         }
@@ -134,7 +134,7 @@
             .restore-draft {
                 cursor: pointer;
                 margin-right: 5px;
-                color: hsl(170, 48%, 54%);
+                color: hsl(170deg 48% 54%);
                 opacity: 0.7;
 
                 &:hover {
@@ -145,7 +145,7 @@
             .delete-draft {
                 cursor: pointer;
                 margin-left: 5px;
-                color: hsl(357, 52%, 57%);
+                color: hsl(357deg 52% 57%);
                 opacity: 0.7;
 
                 &:hover {

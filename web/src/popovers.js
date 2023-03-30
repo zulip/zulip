@@ -56,11 +56,6 @@ let userlist_placement = "right";
 
 let list_of_popovers = [];
 
-export function initialize() {
-    overlays.register_pre_open_hook(hide_all);
-    overlays.register_pre_close_hook(hide_all);
-}
-
 export function clear_for_testing() {
     $current_message_info_popover_elem = undefined;
     $current_user_info_popover_elem = undefined;
@@ -563,11 +558,6 @@ export function focus_first_action_popover_item() {
     focus_first_popover_item($items);
 }
 
-export function actions_menu_handle_keyboard(key) {
-    const $items = get_action_menu_menu_items();
-    popover_items_handle_keyboard(key, $items);
-}
-
 export function message_info_popped() {
     return $current_message_info_popover_elem !== undefined;
 }
@@ -922,7 +912,7 @@ export function register_click_handlers() {
     // Clicking on one's own status emoji should open the user status modal.
     $("#user_presences").on(
         "click",
-        ".user_sidebar_entry_me .status_emoji",
+        ".user_sidebar_entry_me .status-emoji",
         open_user_status_modal,
     );
 
@@ -1146,9 +1136,6 @@ export function hide_all_except_sidebars(opts) {
     giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
-    stream_popover.hide_all_messages_popover();
-    stream_popover.hide_starred_messages_popover();
-    stream_popover.hide_drafts_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
 
@@ -1220,4 +1207,9 @@ export function compute_placement(
     }
 
     return placement;
+}
+
+export function initialize() {
+    overlays.register_pre_open_hook(hide_all);
+    overlays.register_pre_close_hook(hide_all);
 }

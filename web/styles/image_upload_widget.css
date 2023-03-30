@@ -2,7 +2,7 @@
 .image_upload_widget {
     position: relative;
     border-radius: 5px;
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
     overflow: hidden;
 
     transition: all 0.3s ease;
@@ -14,7 +14,7 @@
 
     .image-hover-background {
         content: "";
-        background-color: hsla(0, 0%, 0%, 0.6);
+        background-color: hsl(0deg 0% 0% / 60%);
         height: 100%;
         width: 100%;
         z-index: 99;
@@ -31,7 +31,7 @@
         align-items: center;
         text-align: center;
         justify-content: center;
-        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
         z-index: 99;
     }
 
@@ -39,7 +39,7 @@
         background: none;
         border: none;
         cursor: pointer;
-        color: hsl(0, 0%, 75%);
+        color: hsl(0deg 0% 75%);
         opacity: 0;
         padding: 0;
         position: absolute;
@@ -51,7 +51,7 @@
     }
 
     .image-disabled-text {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
         cursor: not-allowed;
         position: absolute;
         text-align: center;
@@ -69,7 +69,7 @@
 
     .image-delete-button:focus,
     .image-delete-button:hover {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
     }
 
     .image-delete-button:hover ~ .image-upload-text {
@@ -81,7 +81,7 @@
     }
 
     .image-delete-text {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
         font-size: 0.85rem;
         position: absolute;
         visibility: hidden;
@@ -91,21 +91,21 @@
     .image-upload-text {
         cursor: pointer;
         font-size: 0.85rem;
-        color: hsl(0, 0%, 85%);
+        color: hsl(0deg 0% 85%);
         position: absolute;
         z-index: 99;
         visibility: hidden;
     }
 
     .image-upload-text:hover {
-        color: hsl(0, 0%, 100%);
+        color: hsl(0deg 0% 100%);
     }
 
     .upload-spinner-background {
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: hsl(0, 0%, 10%);
+        background-color: hsl(0deg 0% 10%);
         font-size: 0.8rem;
         width: 100%;
         opacity: 0.8;
@@ -164,7 +164,7 @@
 #realm-icon-upload-widget {
     width: 100px;
     height: 100px;
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
 
     .image-delete-button {
         top: 5px;
@@ -186,11 +186,11 @@
 }
 
 #realm-day-logo-upload-widget {
-    background-color: hsl(0, 100%, 100%);
+    background-color: hsl(0deg 100% 100%);
 }
 
 #realm-night-logo-upload-widget {
-    background-color: hsl(212, 28%, 18%);
+    background-color: hsl(212deg 28% 18%);
 }
 
 .realm-logo-block {
@@ -205,4 +205,9 @@
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
+}
+
+/* CSS  related to upload widget's preview image */
+.upload_widget_image_preview {
+    object-fit: cover;
 }

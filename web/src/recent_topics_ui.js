@@ -6,6 +6,7 @@ import render_recent_topics_filters from "../templates/recent_topics_filters.hbs
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
+import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
@@ -17,6 +18,7 @@ import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
+import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -387,8 +389,6 @@ function format_conversation(conversation_data) {
         // display / hide them according to filters instead of
         // doing complete re-render.
         context.topic_muted = Boolean(user_topics.is_topic_muted(context.stream_id, context.topic));
-        const stream_muted = stream_data.is_muted(context.stream_id);
-        context.muted = context.topic_muted || stream_muted;
         context.mention_in_unread = unread.topic_has_any_unread_mentions(
             context.stream_id,
             context.topic,
@@ -415,10 +415,11 @@ function format_conversation(conversation_data) {
             )
             .map((user) =>
                 render_user_with_status_icon({
-                    name: user.full_name,
+                    name: people.get_display_full_name(user.id),
                     status_emoji_info: user_status.get_status_emoji(user.id),
                 }),
             )
+            .sort()
             .join(", ");
         context.recipient_id = last_msg.recipient_id;
         context.pm_url = last_msg.pm_with_url;
@@ -476,7 +477,6 @@ function format_conversation(conversation_data) {
     context.other_sender_names_html = displayed_other_names
         .map((name) => _.escape(name))
         .join("<br />");
-    context.participated = conversation_data.participated;
     context.last_msg_url = hash_util.by_conversation_and_time_url(last_msg);
 
     return context;
@@ -550,6 +550,14 @@ export function filters_should_hide_topic(topic_data) {
 
     if (!filters.has("include_private") && topic_data.type === "private") {
         return true;
+    }
+
+    if (filters.has("include_private") && topic_data.type === "private") {
+        const recipients = people.split_to_ints(msg.to_user_ids);
+
+        if (recipients.every((id) => muted_users.is_user_muted(id))) {
+            return true;
+        }
     }
 
     const search_keyword = $("#recent_topics_search").val();
@@ -719,6 +727,15 @@ function topic_sort(a, b) {
 }
 
 function topic_offset_to_visible_area(topic_row) {
+    const $topic_row = $(topic_row);
+    if ($topic_row.length === 0) {
+        // TODO: There is a possibility of topic_row being undefined here
+        // which logically doesn't makes sense. Find out the case and
+        // document it here.
+        // We return undefined here since we don't know anything about the
+        // topic and the callers will take care of undefined being returned.
+        return undefined;
+    }
     const $scroll_container = $("#recent_topics_table .table_fix_head");
     const thead_height = 30;
     const under_closed_compose_region_height = 50;
@@ -727,8 +744,8 @@ function topic_offset_to_visible_area(topic_row) {
     const scroll_container_bottom =
         scroll_container_top + $scroll_container.height() - under_closed_compose_region_height;
 
-    const topic_row_top = $(topic_row).offset().top;
-    const topic_row_bottom = topic_row_top + $(topic_row).height();
+    const topic_row_top = $topic_row.offset().top;
+    const topic_row_bottom = topic_row_top + $topic_row.height();
 
     // Topic is above the visible scroll region.
     if (topic_row_top < scroll_container_top) {
@@ -753,6 +770,11 @@ function set_focus_to_element_in_center() {
     }
     let $topic_row = $topic_rows.eq(row_focus);
     const topic_offset = topic_offset_to_visible_area($topic_row);
+    if (topic_offset === undefined) {
+        // We don't need to return here since technically topic_offset is not visible.
+        blueslip.error(`Unable to get topic from row number ${row_focus}.`);
+    }
+
     if (topic_offset !== "visible") {
         // Get the element at the center of the table.
         const position = table_wrapper_element.getBoundingClientRect();
@@ -1263,7 +1285,11 @@ export function initialize() {
             const topic = $elt.attr("data-topic-name");
             unread_ops.mark_topic_as_read(stream_id, topic);
         }
-        change_focused_element($elt, "down_arrow");
+        // If `unread` filter is selected, the focused topic row gets removed
+        // and we automatically move one row down.
+        if (!filters.has("unread")) {
+            change_focused_element($elt, "down_arrow");
+        }
     });
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);

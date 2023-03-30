@@ -2,7 +2,7 @@
 
 This page covers how Zulip interacts with the EU's landmark GDPR
 legislation; you can read the
-[Zulip Cloud privacy policy](https://zulip.com/privacy) for our
+[Zulip Cloud privacy policy](https://zulip.com/policies/privacy) for our
 general privacy policies.
 
 ## What is GDPR?
@@ -54,7 +54,7 @@ The [on-premises section](#gdpr-compliance-on-premises) of this page
 discusses how the Zulip on-premises software works in relation to GDPR
 compliance.
 
-[mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+[mobile-push]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
 
 ## Zulip Cloud's subprocessors
 
@@ -143,5 +143,5 @@ access, logging, and backups, etc.  If you need detailed guidance, we
 recommend contacting support@zulip.com; our paid support contracts
 include assistance with understanding GDPR compliance with Zulip.
 
-[management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
-[export-and-import-tool]: https://zulip.readthedocs.io/en/latest/production/export-and-import.html
+[management-commands]: https://zulip.readthedocs.io/en/stable/production/management-commands.html
+[export-and-import-tool]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html

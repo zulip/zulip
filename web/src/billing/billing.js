@@ -8,12 +8,13 @@ export function create_update_license_request() {
         "licensechange",
         ["licenses_at_next_renewal"],
         "PATCH",
-        () => window.location.replace("/billing"),
+        () => window.location.replace("/billing/"),
     );
 }
 
 export function initialize() {
     helpers.set_tab("billing");
+    helpers.set_sponsorship_form();
 
     $("#update-card-button").on("click", (e) => {
         const success_callback = (response) => {
@@ -56,13 +57,13 @@ export function initialize() {
             "licensechange",
             ["licenses"],
             "PATCH",
-            () => window.location.replace("/billing"),
+            () => window.location.replace("/billing/"),
         );
     });
 
     $("#change-plan-status").on("click", (e) => {
         helpers.create_ajax_request("/json/billing/plan", "planchange", [], "PATCH", () =>
-            window.location.replace("/billing"),
+            window.location.replace("/billing/"),
         );
         e.preventDefault();
     });

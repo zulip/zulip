@@ -1,7 +1,11 @@
 import $ from "jquery";
 
+import render_confirm_mark_all_as_read from "../templates/confirm_dialog/confirm_mark_all_as_read.hbs";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
@@ -26,6 +30,17 @@ let loading_indicator_displayed = false;
 // the progress indicator experience of 1000, 3000, etc. feels weird.
 const INITIAL_BATCH_SIZE = 1000;
 const FOLLOWUP_BATCH_SIZE = 1000;
+
+export function confirm_mark_all_as_read() {
+    const html_body = render_confirm_mark_all_as_read();
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Mark all messages as read?"}),
+        html_body,
+        on_click: mark_all_as_read,
+        loading_spinner: true,
+    });
+}
 
 export function mark_all_as_read(args = {}) {
     args = {
@@ -116,6 +131,7 @@ export function mark_all_as_read(args = {}) {
                     blueslip.log("Cleared old_unreads_missing after bankruptcy.");
                 }
             }
+            dialog_widget.close_modal();
         },
         error(xhr) {
             // If we hit the rate limit, just continue without showing any error.
@@ -127,6 +143,7 @@ export function mark_all_as_read(args = {}) {
                 // the user needs to know that our operation failed.
                 blueslip.error("Failed to mark messages as read: " + xhr.responseText);
             }
+            dialog_widget.hide_dialog_spinner();
         },
     });
 }

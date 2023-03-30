@@ -177,8 +177,8 @@ To add a static file to the app (JavaScript, TypeScript, CSS, images, etc),
 first add it to the appropriate place under `static/`.
 
 - Third-party packages from the NPM repository should be added to
-  `package.json` for management by yarn, this allows them to be upgraded easily
-  and not bloat our codebase. Run `./tools/provision` for yarn to install the
+  `package.json` for management by pnpm, this allows them to be upgraded easily
+  and not bloat our codebase. Run `./tools/provision` for pnpm to install the
   new packages and update its lock file. You should also update
   `PROVISION_VERSION` in `version.py` in the same commit.
 - Third-party files that we have patched should all go in
@@ -200,10 +200,10 @@ needs to be accessible from one of the entry points defined either in
 
 - If you plan to only use the file within the app proper, and not on the login
   page or other standalone pages, put it in the `app` bundle by importing it
-  in `web/src/bundles/app.js`.
+  in `web/src/bundles/app.ts`.
 - If it needs to be available both in the app and all
   logged-out/portico pages, import it to
-  `web/src/bundles/common.js` which itself is imported to the
+  `web/src/bundles/common.ts` which itself is imported to the
   `app` and `common` bundles.
 - If it's just used on a single standalone page which is only used in
   a development environment (e.g. `/devlogin`) create a new entry

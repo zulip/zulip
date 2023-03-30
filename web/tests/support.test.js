@@ -24,8 +24,8 @@ run_test("scrub_realm", () => {
     const click_handler = $("body").get_on_handler("click", ".scrub-realm-button");
 
     const $fake_this = $.create("fake-.scrub-realm-button");
-    $fake_this.data = (name) => {
-        assert.equal(name, "string-id");
+    $fake_this.attr = (name) => {
+        assert.equal(name, "data-string-id");
         return "zulip";
     };
 
