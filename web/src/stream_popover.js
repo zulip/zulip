@@ -75,7 +75,7 @@ export function topic_sidebar_menu_handle_keyboard(key) {
     popovers.popover_items_handle_keyboard(key, items);
 }
 
-function elem_to_stream_id($elem) {
+export function elem_to_stream_id($elem) {
     const stream_id = Number.parseInt($elem.attr("data-stream-id"), 10);
 
     if (stream_id === undefined) {
