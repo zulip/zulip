@@ -327,6 +327,8 @@ section.active.create_table = (active_users) => {
         filter: {
             $element: $users_table.closest(".settings-section").find(".search"),
             filterer: people.filter_for_user_settings_search,
+            role_element: $("#user_roles"),
+            role_filterer: people.filter_for_user_settings_role,
             onupdate: reset_scrollbar($users_table),
         },
         $parent_container: $("#admin-user-list").expectOne(),

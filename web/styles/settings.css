@@ -1936,6 +1936,24 @@ $option_title_width: 180px;
         max-width: 160px;
         margin-top: 12px;
     }
+
+    .admin_user_list_filter {
+        display: flex;
+        float: right;
+        font-size: 1em;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+
+        & input.search {
+            margin-top: unset;
+        }
+
+        & select.settings_select {
+            width: fit-content;
+            min-width: 120px;
+        }
+    }
 }
 
 #add-new-custom-profile-field-form,

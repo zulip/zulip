@@ -5,7 +5,16 @@
     <div class="settings_panel_list_header">
         <h3>{{t "Users"}}</h3>
         <div class="alert-notification" id="user-field-status"></div>
-        <input type="text" class="search" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+        <div class="admin_user_list_filter">
+            <select name="roles" id="user_roles" class="bootstrap-focus-style settings_select">
+                {{#each roles}}
+                    <option value="{{ this.code }}">{{ this.role }}</option>
+                {{/each}}
+            </select>
+            <input type="text" class="search" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}" />
+        </div>
+
+
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>

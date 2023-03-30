@@ -1190,6 +1190,16 @@ test_people("matches_user_settings_search", () => {
     assert.equal(match({full_name: "Joe Frederick"}, "re"), true);
 });
 
+test_people("filter_for_user_settings_role", () => {
+    page_params.is_admin = false;
+
+    const persons = [realm_admin, guest, realm_owner, moderator];
+
+    assert.deepEqual(people.filter_for_user_settings_role(persons, 100), [realm_owner]);
+
+    assert.deepEqual(people.filter_for_user_settings_role(persons, 300), [moderator]);
+});
+
 test_people("is_valid_full_name_and_user_id", () => {
     assert.ok(!people.is_valid_full_name_and_user_id("bogus", 99));
     assert.ok(!people.is_valid_full_name_and_user_id(me.full_name, 99));
