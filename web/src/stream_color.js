@@ -5,6 +5,7 @@ import $ from "jquery";
 
 import {$t} from "./i18n";
 import * as message_view_header from "./message_view_header";
+import * as overlays from "./overlays";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -71,7 +72,13 @@ function update_stream_privacy_color(id, color) {
 function update_historical_message_color(stream_name, color) {
     update_table_stream_color($(".focused_table"), stream_name, color);
     if ($(".focused_table").attr("id") !== "#zhome") {
-        update_table_stream_color($("#zhome"), stream_name, color);
+    // Update color for drafts if open.
+    if (overlays.drafts_open()) {
+        update_table_message_recipient_stream_color(
+            $(".drafts-container"),
+            stream_name,
+            recipient_color,
+        );
     }
 }
 
