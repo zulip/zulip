@@ -220,8 +220,13 @@ export function initialize() {
             const $time_elem = $(instance.reference);
             const $row = $time_elem.closest(".message_row");
             const message = message_lists.current.get(rows.id($row));
+            // Don't show time tooltip for locally echoed message.
+            if (message.locally_echoed) {
+                return false;
+            }
             const time = new Date(message.timestamp * 1000);
             instance.setContent(timerender.get_full_datetime(time));
+            return true;
         },
         onHidden(instance) {
             instance.destroy();
