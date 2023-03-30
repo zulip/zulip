@@ -83,7 +83,6 @@ from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
     handle_send_email_format_changes,
-    initialize_connection,
     send_email,
     send_future_email,
 )
@@ -727,7 +726,7 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
     def __init__(self) -> None:
         super().__init__()
         self.connection: BaseEmailBackend = get_connection()
-        self.connection_open_timestamp = None
+        self.connection_open_timestamp: int = 0
 
     @retry_send_email_failures
     def send_email(self, event: Dict[str, Any]) -> None:
@@ -738,19 +737,16 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         if "failed_tries" in copied_event:
             del copied_event["failed_tries"]
         handle_send_email_format_changes(copied_event)
-        if 0 == settings.SMTP_MAX_CONNECTION_MINUTES or self.connection_open_timestamp is None:
+        if 0 == settings.SMTP_MAX_CONNECTION_MINUTES or self.connection_open_timestamp == 0:
             self.connection.open()
             self.connection_open_timestamp = int(time.time())
             send_email(**copied_event, connection=self.connection)
             self.connection.close()
         else:
-            try:
-                assert self.connection.connection is not None
-                status = self.connection.connection.noop()[0]
-            except Exception:
-                status = -1
-            if status != 250 or int(
-                time.time()) - self.connection_open_timestamp > settings.SMTP_MAX_CONNECTION_MINUTES * 60:
+            if (
+                int(time.time()) - self.connection_open_timestamp
+                > settings.SMTP_MAX_CONNECTION_MINUTES * 60
+            ):
                 self.connection.close()
                 self.connection.open()
                 self.connection_open_timestamp = int(time.time())

@@ -10,6 +10,7 @@ from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
+import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
@@ -773,3 +774,22 @@ class WorkerTest(ZulipTestCase):
         # Verify that the set of active worker queues equals the set
         # of subclasses without is_test_queue set.
         self.assertEqual(set(get_active_worker_queues()), worker_queue_names - test_queue_names)
+
+    @override_settings(SMTP_MAX_CONNECTION_MINUTES=60)
+    def test_email_sending_email_worker(self) -> None:
+        data = {
+            "template_prefix": "zerver/emails/confirm_new_email",
+            "to_emails": [self.example_email("hamlet")],
+            "from_name": "Zulip Account Security",
+            "from_address": FromAddress.NOREPLY,
+            "context": {},
+        }
+        worker = queue_processors.EmailSendingWorker()
+        worker.send_email(data)
+        self.assertNotEqual(worker.connection_open_timestamp, None)
+        old_connection_open_timestamp = worker.connection_open_timestamp
+        traveller = time_machine.travel(time.time() + settings.SMTP_MAX_CONNECTION_MINUTES * 60 + 1)
+        traveller.start()
+        worker.send_email(data)
+        traveller.stop()
+        self.assertTrue(worker.connection_open_timestamp - old_connection_open_timestamp > 0)
