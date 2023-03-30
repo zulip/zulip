@@ -98,7 +98,7 @@ specifiers:
   postcss-extend-rule: ^4.0.0
   postcss-import: ^15.0.0
   postcss-loader: ^7.0.0
-  postcss-media-minmax: https://codeload.github.com/andersk/postcss-media-minmax/tar.gz/92c4dd33b9add115ec436ef25243484cca0f7355
+  postcss-media-minmax: https://github.com/andersk/postcss-media-minmax/archive/92c4dd33b9add115ec436ef25243484cca0f7355.tar.gz
   postcss-prefixwrap: ^1.24.0
   postcss-preset-env: ^8.0.1
   postcss-simple-vars: ^7.0.0
@@ -197,7 +197,7 @@ dependencies:
   postcss-extend-rule: 4.0.0_postcss@8.4.21
   postcss-import: 15.1.0_postcss@8.4.21
   postcss-loader: 7.1.0_6puvukfnwbwq425eep7g4z27be
-  postcss-media-minmax: '@codeload.github.com/andersk/postcss-media-minmax/tar.gz/92c4dd33b9add115ec436ef25243484cca0f7355_postcss@8.4.21'
+  postcss-media-minmax: '@github.com/andersk/postcss-media-minmax/archive/92c4dd33b9add115ec436ef25243484cca0f7355.tar.gz_postcss@8.4.21'
   postcss-prefixwrap: 1.39.0_postcss@8.4.21
   postcss-preset-env: 8.0.1_postcss@8.4.21
   postcss-simple-vars: 7.0.1_postcss@8.4.21
@@ -12251,9 +12251,9 @@ packages:
       - encoding
     dev: true
 
-  '@codeload.github.com/andersk/postcss-media-minmax/tar.gz/92c4dd33b9add115ec436ef25243484cca0f7355_postcss@8.4.21':
-    resolution: {tarball: https://codeload.github.com/andersk/postcss-media-minmax/tar.gz/92c4dd33b9add115ec436ef25243484cca0f7355}
-    id: '@codeload.github.com/andersk/postcss-media-minmax/tar.gz/92c4dd33b9add115ec436ef25243484cca0f7355'
+  '@github.com/andersk/postcss-media-minmax/archive/92c4dd33b9add115ec436ef25243484cca0f7355.tar.gz_postcss@8.4.21':
+    resolution: {tarball: https://github.com/andersk/postcss-media-minmax/archive/92c4dd33b9add115ec436ef25243484cca0f7355.tar.gz}
+    id: '@github.com/andersk/postcss-media-minmax/archive/92c4dd33b9add115ec436ef25243484cca0f7355.tar.gz'
     name: postcss-media-minmax
     version: 5.0.0
     engines: {node: '>=10.0.0'}
