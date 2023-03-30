@@ -287,6 +287,7 @@ function open_invite_user_modal(e) {
             );
             $("#multiuse_radio_section").hide();
             $("#invite-method-choice").show();
+            $("#notification").show()
             toggle_invite_submit_button();
             reset_error_messages();
         });
@@ -304,6 +305,7 @@ function open_invite_user_modal(e) {
                 $t({defaultMessage: "Generating link..."}),
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            $("#notification").hide()
             reset_error_messages();
         });
 
