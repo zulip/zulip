@@ -339,6 +339,8 @@ export function format_draft(draft) {
     const id = draft.id;
     let formatted;
     const time = new Date(draft.updatedAt);
+    let invite_only = false;
+    let is_web_public = false;
     let time_stamp = timerender.render_now(time).time_str;
     if (time_stamp === $t({defaultMessage: "Today"})) {
         time_stamp = timerender.stringify_time(time);
@@ -350,10 +352,15 @@ export function format_draft(draft) {
         let stream_name = draft.stream.length > 0 ? draft.stream : space_string;
         if (draft.stream_id) {
             const sub = sub_store.get(draft.stream_id);
-            if (sub && sub.name !== stream_name) {
-                stream_name = sub.name;
-                draft.stream = stream_name;
-                draft_model.editDraft(id, draft);
+            if (sub) {
+                invite_only = sub.invite_only;
+                is_web_public = sub.is_web_public;
+
+                if (sub.name !== stream_name) {
+                    stream_name = sub.name;
+                    draft.stream = stream_name;
+                    draft_model.editDraft(id, draft);
+                }
             }
         }
         const draft_topic = draft.topic || compose.empty_topic_placeholder();
@@ -370,6 +377,8 @@ export function format_draft(draft) {
             raw_content: draft.content,
             stream_id: draft.stream_id,
             time_stamp,
+            invite_only,
+            is_web_public,
         };
     } else {
         const emails = util.extract_pm_recipients(draft.private_message_recipient);
