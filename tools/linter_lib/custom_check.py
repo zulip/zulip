@@ -139,7 +139,7 @@ js_rules = RuleList(
                 "web/src/portico",
                 "web/src/lightbox.js",
                 "web/src/ui_report.ts",
-                "web/src/dialog_widget.js",
+                "web/src/dialog_widget.ts",
                 "web/tests/",
             },
             "description": "Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from Handlebars and thus is already sanitized.",

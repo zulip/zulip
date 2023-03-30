@@ -2,7 +2,6 @@ import $ from "jquery";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
-import * as blueslip from "./blueslip";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -42,7 +41,47 @@ import * as ui_report from "./ui_report";
  *          to DOM, it can do so by passing a post_render hook.
  */
 
-export function hide_dialog_spinner() {
+type WidgetConfig = {
+    html_heading: string;
+    html_body: string;
+    on_click: (e: unknown) => void;
+    html_submit_button?: string;
+    close_on_submit?: boolean;
+    focus_submit_on_open?: boolean;
+    help_link?: string;
+    id?: string;
+    single_footer_button?: boolean;
+    form_id?: string;
+    validate_input?: (e: unknown) => boolean;
+    on_show?: () => void;
+    on_shown?: () => void;
+    on_hide?: () => void;
+    on_hidden?: () => void;
+    post_render?: () => void;
+    loading_spinner?: boolean;
+};
+
+// TODO: This type should probably be exported from channel.ts once
+// that's converted to TypeScript.
+type AjaxRequest = ({
+    url,
+    data = {},
+    success,
+    error,
+}: {
+    url: string;
+    data?: Record<string, never>;
+    success(response_data?: string): void;
+    error(xhr?: JQuery.jqXHR): void;
+}) => void;
+
+type RequestOpts = {
+    failure_msg_html?: string;
+    success_continuation?: (response_data?: string) => void;
+    error_continuation?: (xhr?: JQuery.jqXHR) => void;
+};
+
+export function hide_dialog_spinner(): void {
     $(".dialog_submit_button span").show();
     $("#dialog_widget_modal .modal__btn").prop("disabled", false);
 
@@ -50,7 +89,7 @@ export function hide_dialog_spinner() {
     loading.destroy_indicator($spinner);
 }
 
-export function show_dialog_spinner() {
+export function show_dialog_spinner(): void {
     $(".dialog_submit_button span").hide();
     // Disable both the buttons.
     $("#dialog_widget_modal .modal__btn").prop("disabled", true);
@@ -65,19 +104,18 @@ export function show_dialog_spinner() {
 }
 
 // Supports a callback to be called once the modal finishes closing.
-export function close_modal(on_hidden_callback) {
+export function close_modal(on_hidden_callback?: () => void): void {
     overlays.close_modal("dialog_widget_modal", {on_hidden: on_hidden_callback});
 }
 
-export function launch(conf) {
-    const mandatory_fields = [
-        // The html_ fields should be safe HTML. If callers
-        // interpolate user data into strings, they should use
-        // templates.
-        "html_heading",
-        "html_body",
-        "on_click",
-    ];
+export function launch(conf: WidgetConfig): void {
+    // Mandatory fields:
+    // * html_heading
+    // * html_body
+    // * on_click
+    // The html_ fields should be safe HTML. If callers
+    // interpolate user data into strings, they should use
+    // templates.
 
     // Optional parameters:
     // * html_submit_button: Submit button text.
@@ -93,12 +131,8 @@ export function launch(conf) {
     // * on_hide: Callback to run when the modal is triggered to hide.
     // * on_hidden: Callback to run when the modal is hidden.
     // * post_render: Callback to run after the modal body is added to DOM.
-
-    for (const f of mandatory_fields) {
-        if (conf[f] === undefined) {
-            blueslip.error("programmer omitted " + f);
-        }
-    }
+    // * loading_spinner: Whether to show a loading spinner inside the
+    //   submit button when clicked.
 
     const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
     const html = render_dialog_widget({
@@ -156,26 +190,26 @@ export function launch(conf) {
 }
 
 export function submit_api_request(
-    request_method,
-    url,
+    request_method: AjaxRequest,
+    url: string,
     data = {},
     {
         failure_msg_html = $t_html({defaultMessage: "Failed"}),
         success_continuation,
         error_continuation,
-    } = {},
-) {
+    }: RequestOpts = {},
+): void {
     show_dialog_spinner();
     request_method({
         url,
         data,
-        success(response_data) {
+        success(response_data?: string) {
             close_modal();
             if (success_continuation !== undefined) {
                 success_continuation(response_data);
             }
         },
-        error(xhr) {
+        error(xhr?: JQuery.jqXHR) {
             ui_report.error(failure_msg_html, xhr, $("#dialog_error"));
             hide_dialog_spinner();
             if (error_continuation !== undefined) {
