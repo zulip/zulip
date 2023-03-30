@@ -1,6 +1,9 @@
 # @summary Prometheus monitoring of tornado processes
 #
 class zulip_ops::prometheus::tornado {
+  include zulip_ops::prometheus::base
+  include zulip::supervisor
+
   $version = $zulip::common::versions['process_exporter']['version']
   $dir = "/srv/zulip-process_exporter-${version}"
   $bin = "${dir}/process-exporter"
