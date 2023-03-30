@@ -79,7 +79,7 @@ The click handler uses "[data-overlay-trigger]" as
 the selector and then calls browser_history.go_to_location.
 */
 
-export function version_display_string() {
+export function version_display_string(): string {
     const version = page_params.zulip_version;
     const is_fork = page_params.zulip_merge_base && page_params.zulip_merge_base !== version;
 
@@ -110,7 +110,7 @@ export function version_display_string() {
     return $t({defaultMessage: "Zulip Server {display_version}"}, {display_version});
 }
 
-export function initialize() {
+export function initialize(): void {
     const rendered_gear_menu = render_gear_menu({
         realm_name: page_params.realm_name,
         realm_uri: new URL(page_params.realm_uri).hostname,
@@ -138,17 +138,17 @@ export function initialize() {
     $("#navbar-buttons").html(rendered_gear_menu);
 }
 
-export function open() {
+export function open(): void {
     $("#settings-dropdown").trigger("click");
     // there are invisible li tabs, which should not be clicked.
     $("#gear-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
 }
 
-export function is_open() {
+export function is_open(): boolean {
     return $(".dropdown").hasClass("open");
 }
 
-export function close() {
+export function close(): void {
     if (is_open()) {
         $(".dropdown").removeClass("open");
     }

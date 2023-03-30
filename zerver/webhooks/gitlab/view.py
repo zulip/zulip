@@ -95,11 +95,11 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
         stringified_description = None
 
     return get_issue_event_message(
-        get_issue_user_name(payload),
-        "created",
-        get_object_url(payload),
-        payload["object_attributes"]["iid"].tame(check_int),
-        stringified_description,
+        user_name=get_issue_user_name(payload),
+        action="created",
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
+        message=stringified_description,
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
@@ -107,10 +107,10 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str
 
 def get_issue_event_body(payload: WildValue, action: str, include_title: bool) -> str:
     return get_issue_event_message(
-        get_issue_user_name(payload),
-        action,
-        get_object_url(payload),
-        payload["object_attributes"]["iid"].tame(check_int),
+        user_name=get_issue_user_name(payload),
+        action=action,
+        url=get_object_url(payload),
+        number=payload["object_attributes"]["iid"].tame(check_int),
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
     )
 
@@ -139,10 +139,10 @@ def get_merge_request_event_body(payload: WildValue, action: str, include_title:
         base_branch = pull_request["target_branch"].tame(check_string)
 
     return get_pull_request_event_message(
-        get_issue_user_name(payload),
-        action,
-        pull_request["url"].tame(check_string),
-        pull_request["iid"].tame(check_int),
+        user_name=get_issue_user_name(payload),
+        action=action,
+        url=pull_request["url"].tame(check_string),
+        number=pull_request["iid"].tame(check_int),
         target_branch=target_branch,
         base_branch=base_branch,
         type="MR",
@@ -155,13 +155,17 @@ def get_merge_request_open_or_updated_body(
 ) -> str:
     pull_request = payload["object_attributes"]
     return get_pull_request_event_message(
-        get_issue_user_name(payload),
-        action,
-        pull_request["url"].tame(check_string),
-        pull_request["iid"].tame(check_int),
-        pull_request["source_branch"].tame(check_string) if action == "created" else None,
-        pull_request["target_branch"].tame(check_string) if action == "created" else None,
-        pull_request["description"].tame(check_string),
+        user_name=get_issue_user_name(payload),
+        action=action,
+        url=pull_request["url"].tame(check_string),
+        number=pull_request["iid"].tame(check_int),
+        target_branch=pull_request["source_branch"].tame(check_string)
+        if action == "created"
+        else None,
+        base_branch=pull_request["target_branch"].tame(check_string)
+        if action == "created"
+        else None,
+        message=pull_request["description"].tame(check_string),
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type="MR",
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
@@ -218,10 +222,10 @@ def get_commented_merge_request_event_body(payload: WildValue, include_title: bo
     )
 
     return get_pull_request_event_message(
-        get_issue_user_name(payload),
-        action,
-        url,
-        payload["merge_request"]["iid"].tame(check_int),
+        user_name=get_issue_user_name(payload),
+        action=action,
+        url=url,
+        number=payload["merge_request"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="MR",
         title=payload["merge_request"]["title"].tame(check_string) if include_title else None,
@@ -237,10 +241,10 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
     )
 
     return get_pull_request_event_message(
-        get_issue_user_name(payload),
-        action,
-        url,
-        payload["issue"]["iid"].tame(check_int),
+        user_name=get_issue_user_name(payload),
+        action=action,
+        url=url,
+        number=payload["issue"]["iid"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="issue",
         title=payload["issue"]["title"].tame(check_string) if include_title else None,
@@ -256,10 +260,10 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool) ->
     )
 
     return get_pull_request_event_message(
-        get_issue_user_name(payload),
-        action,
-        url,
-        payload["snippet"]["id"].tame(check_int),
+        user_name=get_issue_user_name(payload),
+        action=action,
+        url=url,
+        number=payload["snippet"]["id"].tame(check_int),
         message=comment["note"].tame(check_string),
         type="snippet",
         title=payload["snippet"]["title"].tame(check_string) if include_title else None,

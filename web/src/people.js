@@ -50,7 +50,7 @@ export function init() {
 // WE INITIALIZE DATA STRUCTURES HERE!
 init();
 
-function split_to_ints(lst) {
+export function split_to_ints(lst) {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
 
@@ -347,7 +347,7 @@ export function get_full_names_for_poll_option(user_ids) {
     return get_display_full_names(user_ids).join(", ");
 }
 
-function get_display_full_name(user_id) {
+export function get_display_full_name(user_id) {
     const person = get_by_user_id(user_id);
     if (!person) {
         blueslip.error("Unknown user id " + user_id);

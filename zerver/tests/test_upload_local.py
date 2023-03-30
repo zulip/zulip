@@ -1,6 +1,5 @@
 import os
 import re
-import shutil
 import urllib
 from io import StringIO
 from urllib.parse import urlparse
@@ -37,12 +36,6 @@ from zerver.models import (
     get_realm,
     get_system_bot,
 )
-
-
-def destroy_uploads() -> None:
-    assert settings.LOCAL_UPLOADS_DIR is not None
-    if os.path.exists(settings.LOCAL_UPLOADS_DIR):
-        shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
 
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
@@ -269,7 +262,3 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         )
         path_id = urllib.parse.urlparse(uri).path
         self.assertEqual(delete_export_tarball(path_id), path_id)
-
-    def tearDown(self) -> None:
-        destroy_uploads()
-        super().tearDown()

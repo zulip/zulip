@@ -558,11 +558,6 @@ export function focus_first_action_popover_item() {
     focus_first_popover_item($items);
 }
 
-export function actions_menu_handle_keyboard(key) {
-    const $items = get_action_menu_menu_items();
-    popover_items_handle_keyboard(key, $items);
-}
-
 export function message_info_popped() {
     return $current_message_info_popover_elem !== undefined;
 }
@@ -1141,8 +1136,6 @@ export function hide_all_except_sidebars(opts) {
     giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
-    stream_popover.hide_all_messages_popover();
-    stream_popover.hide_drafts_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
 

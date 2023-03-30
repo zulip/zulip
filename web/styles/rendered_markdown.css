@@ -151,8 +151,8 @@
 
     /* Emoji; sized to be easily understood while not overwhelming text. */
     .emoji {
-        height: 20px;
-        width: 20px;
+        height: calc(20em / 14);
+        width: calc(20em / 14);
     }
 
     /* Mentions and alert words */

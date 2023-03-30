@@ -159,6 +159,11 @@ class ZulipTestCase(TestCase):
         flush_per_request_caches()
         translation.activate(settings.LANGUAGE_CODE)
 
+        # Clean up local uploads directory after tests:
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        if os.path.exists(settings.LOCAL_UPLOADS_DIR):
+            shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
+
         # Clean up after using fakeldap in LDAP tests:
         if hasattr(self, "mock_ldap") and hasattr(self, "mock_initialize"):
             if self.mock_ldap is not None:

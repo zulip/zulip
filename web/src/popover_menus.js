@@ -7,8 +7,10 @@ import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
+import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
@@ -18,6 +20,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_actions from "./compose_actions";
 import * as condense from "./condense";
+import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import {$t} from "./i18n";
@@ -37,29 +40,38 @@ import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
-let left_sidebar_stream_setting_popover_displayed = false;
-let compose_mobile_button_popover_displayed = false;
-export let compose_enter_sends_popover_displayed = false;
-let message_actions_popover_displayed = false;
 let message_actions_popover_keyboard_toggle = false;
 
-let compose_control_buttons_popover_instance;
-let starred_messages_popover_instance;
+const popover_instances = {
+    compose_control_buttons: null,
+    starred_messages: null,
+    drafts: null,
+    all_messages: null,
+    message_actions: null,
+    stream_settings: null,
+    compose_mobile_button: null,
+    compose_enter_sends: null,
+};
 
-export function actions_popped() {
-    return message_actions_popover_displayed;
+export function sidebar_menu_instance_handle_keyboard(instance, key) {
+    const items = get_popover_items_for_instance(instance);
+    popovers.popover_items_handle_keyboard(key, items);
 }
 
-export function is_starred_messages_visible() {
-    return starred_messages_popover_instance?.state.isVisible;
+export function get_visible_instance() {
+    return Object.values(popover_instances).find(Boolean);
 }
 
 export function get_compose_control_buttons_popover() {
-    return compose_control_buttons_popover_instance;
+    return popover_instances.compose_control_buttons;
 }
 
 export function get_starred_messages_popover() {
-    return starred_messages_popover_instance;
+    return popover_instances.starred_messages;
+}
+
+export function is_compose_enter_sends_popover_displayed() {
+    return popover_instances.compose_enter_sends?.state.isVisible;
 }
 
 function get_popover_items_for_instance(instance) {
@@ -76,11 +88,6 @@ function get_popover_items_for_instance(instance) {
     return $current_elem.find("li:not(.divider):visible a");
 }
 
-export function starred_messages_sidebar_menu_handle_keyboard(key) {
-    const items = get_popover_items_for_instance(starred_messages_popover_instance);
-    popovers.popover_items_handle_keyboard(key, items);
-}
-
 const default_popover_props = {
     delay: 0,
     appendTo: () => document.body,
@@ -91,20 +98,29 @@ const default_popover_props = {
        is a popover styling similar to Bootstrap.  We've also customized
        its CSS to support Zulip's dark theme. */
     theme: "light-border",
+    // The maxWidth has been set to "none" to avoid the default value of 300px.
+    maxWidth: "none",
     touch: true,
     /* Don't use allow-HTML here since it is unsafe. Instead, use `parse_html`
        to generate the required html */
 };
 
+const left_sidebar_tippy_options = {
+    placement: "right",
+    popperOptions: {
+        modifiers: [
+            {
+                name: "flip",
+                options: {
+                    fallbackPlacements: "bottom",
+                },
+            },
+        ],
+    },
+};
+
 export function any_active() {
-    return (
-        left_sidebar_stream_setting_popover_displayed ||
-        compose_mobile_button_popover_displayed ||
-        compose_control_buttons_popover_instance ||
-        compose_enter_sends_popover_displayed ||
-        message_actions_popover_displayed ||
-        is_starred_messages_visible()
-    );
+    return Boolean(get_visible_instance());
 }
 
 function on_show_prep(instance) {
@@ -171,6 +187,7 @@ export function toggle_message_actions_menu(message) {
 export function initialize() {
     tippy_no_propagation("#streams_inline_icon", {
         onShow(instance) {
+            popover_instances.stream_settings = instance;
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
@@ -186,12 +203,11 @@ export function initialize() {
             }
 
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
-            left_sidebar_stream_setting_popover_displayed = true;
             return true;
         },
         onHidden(instance) {
             instance.destroy();
-            left_sidebar_stream_setting_popover_displayed = false;
+            popover_instances.stream_settings = undefined;
         },
     });
 
@@ -203,6 +219,7 @@ export function initialize() {
         target: ".compose_mobile_button",
         placement: "top",
         onShow(instance) {
+            popover_instances.compose_mobile_button = instance;
             on_show_prep(instance);
             instance.setContent(
                 parse_html(
@@ -211,7 +228,6 @@ export function initialize() {
                     }),
                 ),
             );
-            compose_mobile_button_popover_displayed = true;
         },
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -230,7 +246,7 @@ export function initialize() {
             // Destroy instance so that event handlers
             // are destroyed too.
             instance.destroy();
-            compose_mobile_button_popover_displayed = false;
+            popover_instances.compose_control_button = undefined;
         },
     });
 
@@ -247,12 +263,12 @@ export function initialize() {
                     }),
                 ),
             );
-            compose_control_buttons_popover_instance = instance;
+            popover_instances.compose_control_buttons = instance;
             popovers.hide_all_except_sidebars();
         },
         onHidden(instance) {
             instance.destroy();
-            compose_control_buttons_popover_instance = undefined;
+            popover_instances.compose_control_buttons = undefined;
         },
     });
 
@@ -267,9 +283,9 @@ export function initialize() {
                     }),
                 ),
             );
-            compose_enter_sends_popover_displayed = true;
         },
         onMount(instance) {
+            popover_instances.compose_enter_sends = instance;
             common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
 
             $(instance.popper).one("click", ".enter_sends_choice", (e) => {
@@ -295,7 +311,7 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            compose_enter_sends_popover_displayed = false;
+            popover_instances.compose_enter_sends = undefined;
         },
     });
 
@@ -324,13 +340,13 @@ export function initialize() {
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
             instance.setContent(parse_html(render_actions_popover_content(args)));
             $row.addClass("has_popover has_actions_popover");
-            message_actions_popover_displayed = true;
         },
         onMount(instance) {
             if (message_actions_popover_keyboard_toggle) {
                 popovers.focus_first_action_popover_item();
+                message_actions_popover_keyboard_toggle = false;
             }
-            message_actions_popover_keyboard_toggle = false;
+            popover_instances.message_actions = instance;
 
             // We want click events to propagate to `instance` so that
             // instance.hide gets called.
@@ -471,34 +487,17 @@ export function initialize() {
             const $row = $(instance.reference).closest(".message_row");
             $row.removeClass("has_popover has_actions_popover");
             instance.destroy();
-            message_actions_popover_displayed = false;
+            popover_instances.message_actions = undefined;
             message_actions_popover_keyboard_toggle = false;
         },
     });
 
     // Starred messages popover
     tippy_no_propagation(".starred-messages-sidebar-menu-icon", {
-        placement: "right",
-        maxWidth: "none",
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "flip",
-                    options: {
-                        fallbackPlacements: "bottom",
-                    },
-                },
-                {
-                    name: "preventOverflow",
-                    options: {
-                        padding: 40,
-                    },
-                },
-            ],
-        },
+        ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
-            starred_messages_popover_instance = instance;
+            popover_instances.starred_messages = instance;
 
             $popper.one("click", "#unstar_all_messages", () => {
                 starred_messages_ui.confirm_unstar_all_messages();
@@ -531,7 +530,54 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
-            starred_messages_popover_instance = undefined;
+            popover_instances.starred_messages = undefined;
+        },
+    });
+
+    // Drafts popover
+    tippy_no_propagation(".drafts-sidebar-menu-icon", {
+        ...left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("drafts-popover");
+            popover_instances.drafts = instance;
+
+            $popper.one("click", "#delete_all_drafts_sidebar", () => {
+                drafts.confirm_delete_all_drafts();
+                instance.hide();
+            });
+        },
+        onShow(instance) {
+            popovers.hide_all_except_sidebars();
+
+            instance.setContent(parse_html(render_drafts_sidebar_actions({})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.drafts = undefined;
+        },
+    });
+
+    // All messages popover
+    tippy_no_propagation(".all-messages-sidebar-menu-icon", {
+        ...left_sidebar_tippy_options,
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("all-messages-popover");
+            popover_instances.all_messages = instance;
+
+            $popper.one("click", "#mark_all_messages_as_read", () => {
+                unread_ops.confirm_mark_all_as_read();
+                instance.hide();
+            });
+        },
+        onShow(instance) {
+            popovers.hide_all_except_sidebars();
+            instance.setContent(parse_html(render_all_messages_sidebar_actions()));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.all_messages = undefined;
         },
     });
 }

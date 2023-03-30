@@ -65,8 +65,7 @@ const popovers = mock_esm("../src/popovers", {
     user_info_popped: () => false,
 });
 const popover_menus = mock_esm("../src/popover_menus", {
-    actions_popped: () => false,
-    is_starred_messages_visible: () => false,
+    get_visible_instance: () => undefined,
 });
 const reactions = mock_esm("../src/reactions");
 const search = mock_esm("../src/search");
@@ -86,7 +85,6 @@ mock_esm("../src/recent_topics_util", {
 const stream_popover = mock_esm("../src/stream_popover", {
     stream_popped: () => false,
     topic_popped: () => false,
-    all_messages_popped: () => false,
 });
 
 message_lists.current = {

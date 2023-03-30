@@ -264,6 +264,13 @@ export function send_message(request = create_message_object()) {
                 compose_banner.CLASSNAMES.generic_compose_error,
                 $("#compose-textarea"),
             );
+            // For messages that were not locally echoed, we're
+            // responsible for hiding the compose spinner to restore
+            // the compose box so one can send a next message.
+            //
+            // (Restoring this state is handled by clear_compose_box
+            // for locally echoed messages.)
+            compose_ui.hide_compose_spinner();
             return;
         }
 
@@ -494,7 +501,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
 
-            const stream_name = $("#stream_message_recipient_stream").val();
+            const stream_name = compose_state.stream_name();
             if (stream_name === undefined) {
                 return;
             }

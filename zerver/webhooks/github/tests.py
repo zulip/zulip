@@ -162,7 +162,7 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_pull_request_opened_with_preassigned_assignee_msg(self) -> None:
         expected_topic = "Scheduler / PR #4 Improve README"
-        expected_message = "eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4) (assigned to eeshangarg) from `eeshangarg:improve-readme-2` to `eeshangarg:master`."
+        expected_message = "eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4) from `eeshangarg:improve-readme-2` to `eeshangarg:master` (assigned to eeshangarg)."
         self.check_webhook(
             "pull_request__opened_with_preassigned_assignee", expected_topic, expected_message
         )

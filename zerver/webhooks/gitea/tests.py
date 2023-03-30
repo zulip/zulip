@@ -51,7 +51,7 @@ class GiteaHookTests(WebhookTestCase):
 
     def test_pull_request_assigned(self) -> None:
         expected_topic = "test / PR #1906 test 2"
-        expected_message = """kostekIV assigned [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) (assigned to kostekIV) from `d` to `master`."""
+        expected_message = """kostekIV assigned [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master` (assigned to kostekIV)."""
         self.check_webhook("pull_request__assigned", expected_topic, expected_message)
 
     def test_issues_opened(self) -> None:

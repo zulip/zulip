@@ -322,12 +322,12 @@ def get_issue_action_body(payload: WildValue, action: str, include_title: bool) 
         message = issue["content"]["raw"].tame(check_string)
 
     return get_issue_event_message(
-        get_actor_info(payload),
-        action,
-        issue["links"]["html"]["href"].tame(check_string),
-        issue["id"].tame(check_int),
-        message,
-        assignee,
+        user_name=get_actor_info(payload),
+        action=action,
+        url=issue["links"]["html"]["href"].tame(check_string),
+        number=issue["id"].tame(check_int),
+        message=message,
+        assignee=assignee,
         title=issue["title"].tame(check_string) if include_title else None,
     )
 
@@ -341,10 +341,10 @@ def get_pull_request_action_body(payload: WildValue, action: str, include_title:
         base_branch = pull_request["destination"]["branch"]["name"].tame(check_string)
 
     return get_pull_request_event_message(
-        get_actor_info(payload),
-        action,
-        get_pull_request_url(pull_request),
-        pull_request["id"].tame(check_int),
+        user_name=get_actor_info(payload),
+        action=action,
+        url=get_pull_request_url(pull_request),
+        number=pull_request["id"].tame(check_int),
         target_branch=target_branch,
         base_branch=base_branch,
         title=pull_request["title"].tame(check_string) if include_title else None,
@@ -360,10 +360,10 @@ def get_pull_request_created_or_updated_body(
         assignee = get_user_info(pull_request["reviewers"][0])
 
     return get_pull_request_event_message(
-        get_actor_info(payload),
-        action,
-        get_pull_request_url(pull_request),
-        pull_request["id"].tame(check_int),
+        user_name=get_actor_info(payload),
+        action=action,
+        url=get_pull_request_url(pull_request),
+        number=pull_request["id"].tame(check_int),
         target_branch=pull_request["source"]["branch"]["name"].tame(check_string)
         if action == "created"
         else None,
@@ -404,10 +404,10 @@ def get_pull_request_comment_action_body(
 ) -> str:
     action += " on"
     return get_pull_request_event_message(
-        get_actor_info(payload),
-        action,
-        payload["pullrequest"]["links"]["html"]["href"].tame(check_string),
-        payload["pullrequest"]["id"].tame(check_int),
+        user_name=get_actor_info(payload),
+        action=action,
+        url=payload["pullrequest"]["links"]["html"]["href"].tame(check_string),
+        number=payload["pullrequest"]["id"].tame(check_int),
         message=payload["comment"]["content"]["raw"].tame(check_string),
         title=payload["pullrequest"]["title"].tame(check_string) if include_title else None,
     )

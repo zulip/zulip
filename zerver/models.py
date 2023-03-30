@@ -2224,6 +2224,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     MODERATORS_GROUP_NAME = "@role:moderators"
     MEMBERS_GROUP_NAME = "@role:members"
     EVERYONE_GROUP_NAME = "@role:everyone"
+    NOBODY_GROUP_NAME = "@role:nobody"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
