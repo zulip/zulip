@@ -560,7 +560,9 @@ class MultiEmailField(forms.Field):
 
 
 class FindMyTeamForm(forms.Form):
-    emails = MultiEmailField(help_text=_("Add up to 10 comma-separated email addresses."))
+    emails = MultiEmailField(
+        help_text=_("Tip: You can enter multiple email addresses with commas between them.")
+    )
 
     def clean_emails(self) -> List[str]:
         emails = self.cleaned_data["emails"]
