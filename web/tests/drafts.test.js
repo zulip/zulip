@@ -516,6 +516,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id1",
             is_stream: true,
             stream_name: "stream",
+            stream_id: 30,
             recipient_bar_color: "#e2e2e2",
             stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
@@ -552,6 +553,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             topic: "topic",
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
+            stream_id: undefined,
         },
     ];
 
@@ -681,6 +683,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id1",
             is_stream: true,
             stream_name: "stream",
+            stream_id: 30,
             recipient_bar_color: "#e2e2e2",
             stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
@@ -691,6 +694,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id3",
             is_stream: true,
             stream_name: "stream 2",
+            stream_id: undefined,
             recipient_bar_color: "#e2e2e2",
             stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",

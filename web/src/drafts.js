@@ -368,6 +368,7 @@ export function format_draft(draft) {
                 stream_color.get_stream_privacy_icon_color(draft_stream_color),
             topic: draft_topic,
             raw_content: draft.content,
+            stream_id: draft.stream_id,
             time_stamp,
         };
     } else {
