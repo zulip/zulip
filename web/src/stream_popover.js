@@ -59,11 +59,6 @@ export function stream_sidebar_menu_handle_keyboard(key) {
     popovers.popover_items_handle_keyboard(key, items);
 }
 
-export function topic_sidebar_menu_handle_keyboard(key) {
-    const items = get_popover_menu_items(current_topic_sidebar_elem);
-    popovers.popover_items_handle_keyboard(key, items);
-}
-
 export function elem_to_stream_id($elem) {
     const stream_id = Number.parseInt($elem.attr("data-stream-id"), 10);
 
