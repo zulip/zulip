@@ -11,17 +11,21 @@ Zulip's
 
 ### Should I follow this installation guide?
 
-- If you are just looking to play around with Zulip and see what it looks like,
-  you can create a test Zulip Cloud organization at <https://zulip.com/new>.
+- If you would like to try out Zulip, you can start by [checking it out in the
+  Zulip development community](https://zulip.com/try-zulip), or [create a test
+  Zulip Cloud organization](https://zulip.com/new).
 
-- If you are deciding between self-hosting Zulip and signing up for [Zulip Cloud](https://zulip.com/plans/),
-  our [self-hosting overview](https://zulip.com/self-hosting/) and [guide to
-  choosing between Zulip Cloud and
+- If you are deciding between self-hosting Zulip and signing up for [Zulip
+  Cloud](https://zulip.com/plans/), our [self-hosting
+  overview](https://zulip.com/self-hosting/) and [guide to choosing between
+  Zulip Cloud and
   self-hosting](https://zulip.com/help/getting-your-organization-started-with-zulip#choosing-between-zulip-cloud-and-self-hosting)
   are great places to start.
 
 - If you're developing for Zulip, you should follow the instructions
   to install Zulip's [development environment](../development/overview.md).
+
+If you'd like to install a self-hosted Zulip server, this guide is for you!
 
 ## Step 1: Download the latest release
 
