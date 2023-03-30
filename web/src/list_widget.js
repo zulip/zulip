@@ -167,6 +167,7 @@ export function create($container, list, opts) {
         generic_sorting_functions: {
             alphabetic: alphabetic_sort,
             numeric: numeric_sort,
+            role: settings_users.sort_role,
         },
         offset: 0,
         list,

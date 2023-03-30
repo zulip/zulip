@@ -69,8 +69,10 @@ function sort_bot_email(a, b) {
     return compare_a_b(email(a), email(b));
 }
 
-function sort_role(a, b) {
-    return compare_a_b(a.role, b.role);
+export function sort_role() {
+    return function (a, b) {
+        return compare_a_b(a.role, b.role);
+    };
 }
 
 function sort_bot_owner(a, b) {
@@ -332,7 +334,7 @@ section.active.create_table = (active_users) => {
             onupdate: reset_scrollbar($users_table),
         },
         $parent_container: $("#admin-user-list").expectOne(),
-        init_sort: ["alphabetic", "full_name"],
+        init_sort: ["role", "role"],
         sort_fields: {
             email: sort_email,
             last_active: sort_last_active,
