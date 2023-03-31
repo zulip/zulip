@@ -55,7 +55,7 @@ tr.admin td:first-child {
     & select {
         height: 30px;
         width: 220px;
-        padding: 4px 6px;
+        padding: 0 6px;
         font-size: 14px;
         color: hsl(0deg 0% 33%);
         border-radius: 4px;

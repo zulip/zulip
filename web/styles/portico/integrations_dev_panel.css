@@ -46,7 +46,7 @@
 
     & select {
         height: 30px;
-        padding: 4px 6px;
+        padding: 0 6px;
         width: 220px;
         font-size: 14px;
         color: hsl(0deg 0% 33%);
