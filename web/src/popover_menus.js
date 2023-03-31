@@ -203,11 +203,37 @@ export function initialize() {
             }
 
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
+            //  When showing the popover menu, we want the
+            // "Add streams" and the "Filter streams" tooltip
+            //  to appear below the "Add streams" icon.
+            const add_streams_tooltip = $("#add_streams_tooltip").get(0);
+            add_streams_tooltip._tippy?.setProps({
+                placement: "bottom",
+            });
+            const filter_streams_tooltip = $("#filter_streams_tooltip").get(0);
+            // If `filter_streams_tooltip` is not triggered yet, this will set its initial placement.
+            filter_streams_tooltip.dataset.tippyPlacement = "bottom";
+            filter_streams_tooltip._tippy?.setProps({
+                placement: "bottom",
+            });
             return true;
         },
         onHidden(instance) {
             instance.destroy();
             popover_instances.stream_settings = undefined;
+            //  After the popover menu is closed, we want the
+            //  "Add streams" and the "Filter streams" tooltip
+            //  to appear at it's original position that is
+            //  above the "Add streams" icon.
+            const add_streams_tooltip = $("#add_streams_tooltip").get(0);
+            add_streams_tooltip._tippy?.setProps({
+                placement: "top",
+            });
+            const filter_streams_tooltip = $("#filter_streams_tooltip").get(0);
+            filter_streams_tooltip.dataset.tippyPlacement = "top";
+            filter_streams_tooltip._tippy?.setProps({
+                placement: "top",
+            });
         },
     });
 
