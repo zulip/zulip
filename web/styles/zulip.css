@@ -1448,9 +1448,6 @@ td.pointer {
 }
 
 /* Brighten text because of the dark background */
-.dark_background a,
-.dark_background a:hover,
-a.dark_background:hover,
 .dark_background {
     color: hsl(0deg 0% 100%) !important;
 }
@@ -1458,6 +1455,25 @@ a.dark_background:hover,
 .dark_background a.message_label_clickable:hover {
     color: hsl(200deg 99% 60%);
 }
+
+
+/* UI redesign: blue links style: https://github.com/zulip/zulip/issues/24877 */
+.dark_background a,
+.dark_background a:link,
+.dark_background a:visited {
+    color:hsla(200, 100%, 50%, 1);
+  text-decoration-color: hsla(200, 100%, 50%, 0.3);
+}
+.dark_background a:hover {
+    color:hsla(200, 100%, 66%, 1);
+  text-decoration-color: hsla(200, 100%, 66%, 0.7);
+}
+.dark_background a:active{
+  color:hsla(200, 100%, 55%, 1);
+  text-decoration-color: hsla(200, 100%, 50%, 0.7);
+}
+
+
 
 .small {
     font-size: 80%;
@@ -1529,6 +1545,28 @@ div.focused_table {
         overflow: hidden;
     }
 }
+
+/* UI redesign: blue links style: https://github.com/zulip/zulip/issues/24877 */
+
+.message_content a,
+.message_content a:link,
+.message_content a:visited {
+  color: hsla(200, 100%, 36%, 1);
+  text-decoration-color: hsla(200, 100%, 36%, 0.3); 
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.message_content a:hover {
+  color: hsla(200, 100%, 33%, 1);
+  text-decoration-color: hsla(200, 100%, 33%, 0.7);
+}
+
+.message_content a:active {
+  color: hsla(200, 100%, 30%, 1);
+  text-decoration-color: hsla(200, 100%, 30%, 1);
+}
+
 
 .rtl {
     direction: rtl;
