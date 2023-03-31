@@ -52,6 +52,7 @@ const upload = mock_esm("../src/upload");
 const compose_ui = zrequire("compose_ui");
 const compose_banner = zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
+const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
@@ -307,10 +308,10 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     $("#compose-textarea").toggleClass = noop;
     override_rewire(stream_bar, "decorate", noop);
     mock_stream_header_colorblock();
-    compose_actions.open_compose_stream_dropup = noop;
-    compose.update_on_recipient_change = noop;
+    compose_recipient.open_compose_stream_dropup = noop;
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
     let stream_value = "";
-    compose_ui.compose_stream_widget = {
+    compose_recipient.compose_stream_widget = {
         value() {
             return stream_value;
         },
@@ -370,6 +371,7 @@ test_ui("finish", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
     override_rewire(stream_bar, "decorate", noop);
 
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -531,12 +533,9 @@ test_ui("initialize", ({override}) => {
     })();
 });
 
-test_ui("update_fade", ({override}) => {
+test_ui("update_fade", ({override, override_rewire}) => {
     mock_banners();
     initialize_handlers({override});
-
-    const selector = "#stream_message_recipient_topic,#private_message_recipient";
-    const keyup_handler_func = $(selector).get_on_handler("change");
 
     let set_focused_recipient_checked = false;
     let update_all_called = false;
@@ -551,12 +550,12 @@ test_ui("update_fade", ({override}) => {
         update_all_called = true;
     });
 
-    override(compose_actions, "update_narrow_to_recipient_visibility", () => {
+    override_rewire(compose_recipient, "update_narrow_to_recipient_visibility", () => {
         update_narrow_to_recipient_visibility_called = true;
     });
 
     compose_state.set_message_type(false);
-    keyup_handler_func();
+    compose_recipient.update_on_recipient_change();
     assert.ok(!set_focused_recipient_checked);
     assert.ok(!update_all_called);
     assert.ok(update_narrow_to_recipient_visibility_called);
@@ -564,7 +563,7 @@ test_ui("update_fade", ({override}) => {
     update_narrow_to_recipient_visibility_called = false;
 
     compose_state.set_message_type("private");
-    keyup_handler_func();
+    compose_recipient.update_on_recipient_change();
     assert.ok(set_focused_recipient_checked);
     assert.ok(update_all_called);
     assert.ok(update_narrow_to_recipient_visibility_called);
@@ -767,6 +766,7 @@ test_ui("on_events", ({override}) => {
 test_ui("create_message_object", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
     override_rewire(stream_bar, "decorate", noop);
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
 
     compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");

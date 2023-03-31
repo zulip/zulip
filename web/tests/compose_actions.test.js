@@ -24,20 +24,12 @@ mock_esm("autosize", {default: autosize});
 const channel = mock_esm("../src/channel");
 const compose_fade = mock_esm("../src/compose_fade", {
     clear_compose: noop,
+    set_focused_recipient: noop,
+    update_all: noop,
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
-let stream_value = "";
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,
-    on_compose_select_stream_update: noop,
-    compose_stream_widget: {
-        value() {
-            return stream_value;
-        },
-        render(val) {
-            stream_value = val;
-        },
-    },
     is_full_size: () => false,
 });
 const hash_util = mock_esm("../src/hash_util");
@@ -74,6 +66,17 @@ const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const stream_bar = zrequire("stream_bar");
+const compose_recipient = zrequire("compose_recipient");
+
+let stream_value = "";
+compose_recipient.compose_stream_widget = {
+    value() {
+        return stream_value;
+    },
+    render(val) {
+        stream_value = val;
+    },
+};
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
@@ -81,6 +84,8 @@ const get_focus_area = compose_actions._get_focus_area;
 const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
+
+compose_recipient.update_narrow_to_recipient_visibility = noop;
 
 function assert_visible(sel) {
     assert.ok($(sel).visible());
@@ -125,6 +130,7 @@ test("start", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
+    override_rewire(compose_recipient, "update_on_recipient_change", () => {});
     stream_bar.decorate = () => {};
     mock_stream_header_colorblock();
 
@@ -247,6 +253,7 @@ test("respond_to_message", ({override, override_rewire}) => {
     override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
+    override_rewire(compose_recipient, "update_on_recipient_change", () => {});
     override_private_message_recipient({override});
     mock_stream_header_colorblock();
 

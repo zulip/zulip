@@ -43,6 +43,7 @@ const stream_data = zrequire("stream_data");
 const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -55,7 +56,7 @@ const ct = composebox_typeahead;
 ct.__Rewire__("max_num_items", 15);
 
 let stream_value = "";
-compose_ui.compose_stream_widget = {
+compose_recipient.compose_stream_widget = {
     value() {
         return stream_value;
     },
@@ -675,7 +676,7 @@ function sorted_names_from(subs) {
 
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
-    compose.update_on_recipient_change = noop;
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
     override_rewire(stream_bar, "decorate", noop);
 
     let pill_items = [];
@@ -1724,6 +1725,7 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
     );
     mock_stream_header_colorblock();
     override_rewire(stream_bar, "decorate", noop);
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_name("");

@@ -3,17 +3,11 @@ import $ from "jquery";
 import {insert, replace, set, wrapSelection} from "text-field-edit";
 
 import * as common from "./common";
-import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
-import * as compose_state from "./compose_state";
-import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
-import * as stream_bar from "./stream_bar";
-import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 
 export let compose_spinner_visible = false;
@@ -511,78 +505,4 @@ export function get_submit_button() {
         return $("#compose-schedule-confirm-button");
     }
     return $("#compose-send-button");
-}
-
-export function on_compose_select_stream_update(new_value) {
-    const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
-        ".stream_header_colorblock",
-    );
-    stream_bar.decorate(new_value, $stream_header_colorblock);
-    compose.update_on_recipient_change();
-    $("#stream_message_recipient_topic").trigger("focus").trigger("select");
-}
-
-export let compose_stream_widget;
-export function initialize_compose_stream_dropdown() {
-    const streams_list = stream_data
-        .subscribed_subs()
-        .filter((stream) => stream_data.can_post_messages_in_stream(stream))
-        .map((stream) => ({
-            name: stream.name,
-            value: stream.name,
-            stream,
-        }))
-        .sort((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
-    const opts = {
-        widget_name: "compose_select_stream",
-        data: streams_list,
-        default_text: $t({defaultMessage: "Select a stream"}),
-        value: null,
-        on_update: on_compose_select_stream_update,
-    };
-    compose_stream_widget = new DropdownListWidget(opts);
-    compose_stream_widget.setup();
-
-    $("#compose_select_stream_widget").on("select", (e) => {
-        // We often focus on input fields to bring the user to fill it out.
-        // In this situation, a focus on the dropdown div opens the dropdown
-        // menu so that the user can select an option.
-        compose_actions.open_compose_stream_dropup();
-        e.stopPropagation();
-    });
-}
-
-export function update_stream_dropdown_options() {
-    const streams_list = stream_data
-        .subscribed_subs()
-        .filter((stream) => stream_data.can_post_messages_in_stream(stream))
-        .map((stream) => ({
-            name: stream.name,
-            value: stream.name,
-        }))
-        .sort((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
-    compose_stream_widget.replace_data(streams_list);
-}
-
-export function possibly_update_dropdown_selection(old_stream_name, new_stream_name) {
-    const selected_stream = compose_state.stream_name();
-    if (selected_stream === old_stream_name) {
-        compose_state.set_stream_name(new_stream_name);
-    }
 }

@@ -17,7 +17,7 @@ const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
 const settings_config = zrequire("settings_config");
-const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
@@ -28,7 +28,7 @@ const recent_topics_util = mock_esm("../src/recent_topics_util", {
 });
 
 let stream_value = "";
-compose_ui.compose_stream_widget = {
+compose_recipient.compose_stream_widget = {
     value() {
         return stream_value;
     },
@@ -650,7 +650,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 });
 
 run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
-    compose_ui.on_compose_select_stream_update = () => {};
+    compose_recipient.on_compose_select_stream_update = () => {};
     disallow_rewire(narrow, "activate");
 
     // No-op when not composing.

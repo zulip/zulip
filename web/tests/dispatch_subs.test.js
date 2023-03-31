@@ -23,7 +23,7 @@ const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 message_lists.current = {};
 
-const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
@@ -199,7 +199,7 @@ test("stream create", ({override}) => {
 });
 
 test("stream delete (normal)", ({override, override_rewire}) => {
-    override_rewire(compose_ui, "update_stream_dropdown_options", noop);
+    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
 
     const event = event_fixtures.stream__delete;
 
@@ -242,7 +242,7 @@ test("stream delete (normal)", ({override, override_rewire}) => {
 });
 
 test("stream delete (special streams)", ({override, override_rewire}) => {
-    override_rewire(compose_ui, "update_stream_dropdown_options", noop);
+    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
 
     const event = event_fixtures.stream__delete;
 
