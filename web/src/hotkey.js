@@ -397,8 +397,8 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(".dropdown.open").length && $(e.target).attr("role") === "menuitem") {
-        // on #gear-menu li a[tabindex] elements, force a click and prevent default.
+    if ($(".dropdown.open, .dropup.open").length > 0 && $(e.target).attr("role") === "menuitem") {
+        // on dropdown menu elements, force a click and prevent default.
         // this is because these links do not have an href and so don't force a
         // default action.
         e.target.click();
