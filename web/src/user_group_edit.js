@@ -155,7 +155,7 @@ export function setup_group_settings(node) {
         ],
         callback(name, key) {
             $(".group_setting_section").hide();
-            $("." + key).show();
+            $(`.${CSS.escape(key)}`).show();
             select_tab = key;
         },
     });

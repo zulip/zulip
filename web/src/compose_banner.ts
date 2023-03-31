@@ -44,7 +44,7 @@ export const CLASSNAMES = {
 
 export function clear_message_sent_banners(): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
-        $(`#compose_banners .${classname}`).remove();
+        $(`#compose_banners .${CSS.escape(classname)}`).remove();
     }
     scroll_to_message_banner_message_id = null;
 }
@@ -57,15 +57,15 @@ function hide_compose_spinner(): void {
 }
 
 export function clear_errors(): void {
-    $(`#compose_banners .${ERROR}`).remove();
+    $(`#compose_banners .${CSS.escape(ERROR)}`).remove();
 }
 
 export function clear_warnings(): void {
-    $(`#compose_banners .${WARNING}`).remove();
+    $(`#compose_banners .${CSS.escape(WARNING)}`).remove();
 }
 
 export function show_error_message(message: string, classname: string, $bad_input?: JQuery): void {
-    $(`#compose_banners .${classname}`).remove();
+    $(`#compose_banners .${CSS.escape(classname)}`).remove();
 
     const new_row = render_compose_banner({
         banner_type: ERROR,
@@ -87,7 +87,7 @@ export function show_error_message(message: string, classname: string, $bad_inpu
 
 export function show_stream_does_not_exist_error(stream_name: string): void {
     // Remove any existing banners with this warning.
-    $(`#compose_banners .${CLASSNAMES.stream_does_not_exist}`).remove();
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.stream_does_not_exist)}`).remove();
 
     const new_row = render_stream_does_not_exist_error({
         banner_type: ERROR,
