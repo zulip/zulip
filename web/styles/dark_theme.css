@@ -933,6 +933,10 @@
     }
 
     .rendered_markdown {
+        .alert-word {
+            background-color: hsl(22deg 70% 35%);
+        }
+
         .user-mention,
         .user-group-mention {
             background: linear-gradient(
@@ -1344,7 +1348,7 @@
 
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
-        background-color: hsl(51deg 100% 64% / 42%);
+        background-color: hsl(51deg 100% 23%);
     }
 
     .sub-unsub-message span::before,
