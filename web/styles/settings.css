@@ -382,7 +382,9 @@ td .button {
 }
 
 .settings_text_input {
-    width: 206px;
+    /* 311px + 2 * 6px (padding) + 2 * 1px (border) = 325px (min width of select
+    elements in settings) */
+    width: 311px;
 }
 
 #admin-user-list,
