@@ -220,6 +220,7 @@ export function initialize() {
             "#scroll-to-bottom-button-clickable-area",
             ".code_external_link",
             ".spectator_narrow_login_button",
+            "#stream-specific-notify-table .unmute_stream",
         ],
         appendTo: () => document.body,
     });
@@ -231,11 +232,6 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
         },
-    });
-
-    delegate("body", {
-        target: "#stream-specific-notify-table .unmute_stream",
-        appendTo: () => document.body,
     });
 
     delegate("body", {
