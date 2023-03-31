@@ -178,7 +178,7 @@
     }
 
     .alert-word {
-        background-color: hsl(102deg 85% 57% / 50%);
+        background-color: hsl(18deg 100% 84%);
     }
 
     /* Timestamps */
@@ -686,5 +686,5 @@
 
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
-    background-color: hsl(51deg 94% 74%);
+    background-color: hsl(51deg 100% 79%);
 }
