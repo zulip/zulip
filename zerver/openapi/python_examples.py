@@ -728,6 +728,44 @@ def toggle_mute_topic(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
 
 
+@openapi_test_function("/user_topics:post")
+def update_user_topic(client: Client) -> None:
+    stream_id = client.get_stream_id("Denmark")["stream_id"]
+
+    # {code_example|start}
+    # Mute the topic "dinner" in the stream having id 'stream_id'.
+    request = {
+        "stream_id": stream_id,
+        "topic": "dinner",
+        "visibility_policy": 1,
+    }
+    result = client.call_endpoint(
+        url="user_topics",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/user_topics", "post", "200")
+
+    # {code_example|start}
+    # Remove mute from the topic "dinner" in the stream having id 'stream_id'.
+    request = {
+        "stream_id": stream_id,
+        "topic": "dinner",
+        "visibility_policy": 0,
+    }
+
+    result = client.call_endpoint(
+        url="user_topics",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/user_topics", "post", "200")
+
+
 @openapi_test_function("/users/me/muted_users/{muted_user_id}:post")
 def add_user_mute(client: Client) -> None:
     ensure_users([10], ["hamlet"])
@@ -1537,6 +1575,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     get_subscribers(client)
     remove_subscriptions(client)
     toggle_mute_topic(client)
+    update_user_topic(client)
     update_subscription_settings(client)
     get_stream_topics(client, 1)
     delete_topic(client, 1, "test")

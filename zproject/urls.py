@@ -192,7 +192,7 @@ from zerver.views.user_settings import (
     regenerate_api_key,
     set_avatar_backend,
 )
-from zerver.views.user_topics import update_muted_topic
+from zerver.views.user_topics import update_muted_topic, update_user_topic
 from zerver.views.users import (
     add_bot_backend,
     avatar,
@@ -476,7 +476,10 @@ v1_api_and_json_patterns = [
         DELETE=remove_subscriptions_backend,
     ),
     # topic-muting -> zerver.views.user_topics
+    # (deprecated and will be removed once clients are migrated to use '/user_topics')
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
+    # used to update the personal preferences for a topic -> zerver.views.user_topics
+    rest_path("user_topics", POST=update_user_topic),
     # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado

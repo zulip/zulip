@@ -8203,7 +8203,12 @@ paths:
         user is subscribed to. Muted topics are displayed faded in the Zulip
         UI, and are not included in the user's unread count totals.
 
-        **Changes**: Before Zulip 7.0 (feature level 169), this endpoint
+        **Changes**: Deprecated in Zulip 7.0 (feature level 170). Clients connecting
+        to the newer server should use the `/user_topics` endpoint instead.
+        It will be removed once clients have migrated to use the
+        `/user_topics` endpoint.
+
+        Before Zulip 7.0 (feature level 169), this endpoint
         returned an error if asked to mute a topic that was already muted
         or asked to unmute a topic that had not previously been muted.
       x-curl-examples-parameters:
@@ -8257,6 +8262,73 @@ paths:
               - add
               - remove
           example: add
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+  /user_topics:
+    post:
+      operationId: update-user-topic
+      summary: Update personal preferences for a topic
+      tags: ["streams"]
+      description: |
+        This endpoint is used to update the personal preferences for a topic,
+        such as the topic's visibility policy, which is used to implement
+        [mute a topic](/help/mute-a-topic) and related features.
+
+        This endpoint can be used to update the visibility policy for the single
+        stream and topic pair indicated by the parameters for a user.
+
+        **Changes**: New in Zulip 7.0 (feature level 170).
+        Previously, toggling the muting state for a topic was managed by the
+        `/users/me/subscriptions/muted_topics` endpoint, which this endpoint
+        is intended to replace.
+      parameters:
+        - name: stream_id
+          in: query
+          description: |
+            The ID of the stream to access.
+          schema:
+            type: integer
+          example: 1
+          required: true
+        - name: topic
+          in: query
+          description: |
+            The topic for which the personal preferences needs to be updated.
+            Note that the request will succeed regardless of whether
+            any messages have been sent to the specified topic.
+          schema:
+            type: string
+          example: dinner
+          required: true
+        - name: visibility_policy
+          in: query
+          description: |
+            Controls which visibility policy to set.
+
+            - 0 - INHERIT
+            - 1 - MUTED
+            - 2 - UNMUTED
+
+            The visibility policy, when set to MUTED, mutes a topic;
+            when set to UNMUTED, it unmutes a topic in a muted stream;
+            and INHERIT is used to remove the visibility policy already set.
+
+            MUTED topics are displayed faded in the Zulip UI, are not included
+            in the user's unread count totals, and the user doesn't receive any
+            notifications.
+
+            An UNMUTED topic will remain visible even if the stream is muted.
+            In a stream that is not muted, a policy of UNMUTED has the same effect
+            as INHERIT.
+          schema:
+            type: integer
+            enum:
+              - 0
+              - 1
+              - 2
+          example: 1
           required: true
       responses:
         "200":
