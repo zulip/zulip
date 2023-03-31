@@ -495,6 +495,11 @@ import {get_string_diff} from "../../src/util";
       setTimeout(function () {
         if (!that.$container.is(':hover')) {
           that.hide();
+        } else if (that.shown) {
+          // refocus the input if the user clicked on the typeahead
+          // so that clicking elsewhere registers as a blur and hides
+          // the typeahead.
+          that.$element.focus();
         }
       }, 150)
     }
