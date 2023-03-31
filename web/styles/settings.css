@@ -614,6 +614,10 @@ input[type="checkbox"] {
         margin-left: 5px;
         border: none;
     }
+
+    .person_picker {
+        min-width: 311px;
+    }
 }
 
 .control-label-disabled {
@@ -1446,10 +1450,6 @@ $option_title_width: 180px;
         .datepicker {
             cursor: default;
         }
-
-        .person_picker {
-            min-width: 206px;
-        }
     }
 
     #show_my_user_profile_modal {
@@ -1468,6 +1468,10 @@ $option_title_width: 180px;
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
     }
+}
+
+#edit-user-form .person_picker {
+    min-width: 206px;
 }
 
 .dropdown-list-widget {
