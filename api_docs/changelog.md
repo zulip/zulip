@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 170**
+
+* [`POST /user_topics`](/api/update-user-topic):
+  Added a new endpoint to update the personal preferences for a topic.
+
 **Feature level 169**
 
 * [`PATCH /users/me/subscriptions/muted_topics`](/api/mute-topic):
