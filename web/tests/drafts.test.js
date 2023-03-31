@@ -15,13 +15,13 @@ const user_pill = zrequire("user_pill");
 const people = zrequire("people");
 const compose_fade = zrequire("compose_fade");
 const compose_state = zrequire("compose_state");
-const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
 const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 
 let stream_value = "";
-compose_ui.compose_stream_widget = {
+compose_recipient.compose_stream_widget = {
     value() {
         return stream_value;
     },

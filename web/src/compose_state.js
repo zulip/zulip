@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill";
-import * as compose_ui from "./compose_ui";
+import * as compose_recipient from "./compose_recipient";
 
 let message_type = false; // 'stream', 'private', or false-y
 let recipient_edited_manually = false;
@@ -68,13 +68,13 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
 }
 
 export function stream_name() {
-    return compose_ui.compose_stream_widget.value();
+    return compose_recipient.compose_stream_widget.value();
 }
 
 export function set_stream_name(newval) {
-    if (newval !== undefined && newval !== "" && compose_ui.compose_stream_widget) {
-        compose_ui.compose_stream_widget.render(newval);
-        compose_ui.on_compose_select_stream_update(newval);
+    if (newval !== undefined && newval !== "" && compose_recipient.compose_stream_widget) {
+        compose_recipient.compose_stream_widget.render(newval);
+        compose_recipient.on_compose_select_stream_update(newval);
     }
 }
 

@@ -7,7 +7,6 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import {get_recipient_label} from "./compose_closed_ui";
-import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -93,27 +92,6 @@ export function clear_preview_area() {
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
     autosize.update($("#compose-textarea"));
-}
-
-function update_fade() {
-    if (!compose_state.composing()) {
-        return;
-    }
-
-    const msg_type = compose_state.get_message_type();
-
-    // It's possible that the new topic is not a resolved topic
-    // so we clear the older warning.
-    compose_validate.clear_topic_resolved_warning();
-
-    compose_validate.warn_if_topic_resolved();
-    compose_fade.set_focused_recipient(msg_type);
-    compose_fade.update_all();
-}
-
-export function update_on_recipient_change() {
-    update_fade();
-    compose_actions.update_narrow_to_recipient_visibility();
 }
 
 export function abort_xhr() {
@@ -445,17 +423,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
 
 export function initialize() {
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
-    // `keyup` isn't relevant for streams since it registers as a change only
-    // when an item in the dropdown is selected.
-    $("#stream_message_recipient_topic,#private_message_recipient").on(
-        "keyup",
-        update_on_recipient_change,
-    );
-    // changes for the stream dropdown are handled in on_compose_select_stream_update
-    $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
-        update_on_recipient_change();
-        compose_state.set_recipient_edited_manually(true);
-    });
+
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });

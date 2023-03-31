@@ -23,10 +23,10 @@ const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const compose_fade = zrequire("compose_fade");
-const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 const compose_fade_helper = zrequire("compose_fade_helper");
 
-compose_ui.compose_stream_widget = {
+compose_recipient.compose_stream_widget = {
     value() {
         return "social";
     },

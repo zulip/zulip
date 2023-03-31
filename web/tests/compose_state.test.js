@@ -11,13 +11,13 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
 const compose_fade = zrequire("compose_fade");
-const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 const stream_bar = zrequire("stream_bar");
 
 const noop = () => {};
 
 let stream_value = "";
-compose_ui.compose_stream_widget = {
+compose_recipient.compose_stream_widget = {
     value() {
         return stream_value;
     },

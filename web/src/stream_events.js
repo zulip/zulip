@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
-import * as compose_ui from "./compose_ui";
+import * as compose_recipient from "./compose_recipient";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
@@ -63,8 +63,8 @@ export function update_property(stream_id, property, value, other_values) {
             break;
         case "name":
             stream_settings_ui.update_stream_name(sub, value);
-            compose_ui.update_stream_dropdown_options();
-            compose_ui.possibly_update_dropdown_selection(sub.name, value);
+            compose_recipient.update_stream_dropdown_options();
+            compose_recipient.possibly_update_dropdown_selection(sub.name, value);
             break;
         case "description":
             stream_settings_ui.update_stream_description(
@@ -87,7 +87,7 @@ export function update_property(stream_id, property, value, other_values) {
                 is_web_public: other_values.is_web_public,
             });
             // Force a re-render to get the right privacy icon
-            compose_ui.possibly_update_dropdown_selection(sub.name, sub.name);
+            compose_recipient.possibly_update_dropdown_selection(sub.name, sub.name);
             break;
         case "stream_post_policy":
             stream_settings_ui.update_stream_post_policy(sub, value);
@@ -132,7 +132,7 @@ export function mark_subscribed(sub, subscribers, color) {
         stream_settings_ui.set_color(sub.stream_id, color);
     }
     stream_data.subscribe_myself(sub);
-    compose_ui.update_stream_dropdown_options();
+    compose_recipient.update_stream_dropdown_options();
     if (subscribers) {
         peer_data.set_subscribers(sub.stream_id, subscribers);
     }
@@ -162,7 +162,7 @@ export function mark_unsubscribed(sub) {
         return;
     } else if (sub.subscribed) {
         stream_data.unsubscribe_myself(sub);
-        compose_ui.update_stream_dropdown_options();
+        compose_recipient.update_stream_dropdown_options();
         if (overlays.streams_open()) {
             stream_settings_ui.update_settings_for_unsubscribed(sub);
         }

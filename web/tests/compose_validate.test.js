@@ -23,10 +23,10 @@ const resolved_topic = zrequire("../shared/src/resolved_topic");
 const settings_config = zrequire("settings_config");
 const settings_data = mock_esm("../src/settings_data");
 const stream_data = zrequire("stream_data");
-const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 
 let stream_value = "";
-compose_ui.compose_stream_widget = {
+compose_recipient.compose_stream_widget = {
     value() {
         return stream_value;
     },
@@ -149,7 +149,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 
 test_ui("validate", ({mock_template}) => {
     compose_actions.update_placeholder_text = () => {};
-    compose_ui.on_compose_select_stream_update = () => {};
+    compose_recipient.on_compose_select_stream_update = () => {};
 
     function initialize_pm_pill() {
         $.clear_all_elements();
