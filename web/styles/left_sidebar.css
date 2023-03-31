@@ -278,7 +278,8 @@ li.show-more-topics {
 .active_private_messages_section {
     #private_messages_section,
     #private_messages_list,
-    #hide_more_private_messages {
+    #hide_more_private_messages,
+    .pm_search_section {
         background-color: hsl(202deg 56% 91%);
     }
 
@@ -620,6 +621,20 @@ li.topic-list-item {
         position: relative;
         top: 0;
     }
+}
+
+.input-append.pm_search_section {
+    padding: 4px 6px;
+    margin: 0;
+    position: sticky;
+}
+
+.pm-list-filter {
+    /* Input width = 100% - 16px right-margin */
+    /* To keep the right edge of input along with its borders inline with other
+       items we consider to subtract the space given for right margin of
+       other items.  */
+    width: calc(100% - 16px);
 }
 
 .zero-pm-unreads .pm-box,

@@ -13,6 +13,10 @@ mock_esm("../src/user_status", {
     }),
 });
 
+const pm_list = mock_esm("../src/pm_list", {
+    get_pm_search_term() {},
+});
+
 const {Filter} = zrequire("filter");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
@@ -268,6 +272,8 @@ test("get_list_info_unread_messages", ({override}) => {
         "Alice",
     ]);
 
+    // Need to set filter to empty to get the list of all
+    override(pm_list, "get_pm_search_term", () => "");
     // Zooming will show all conversations and there will
     // be no unreads in more_conversations_unread_count.
     list_info = pm_list_data.get_list_info(true);
@@ -337,6 +343,8 @@ test("get_list_info_no_unread_messages", ({override}) => {
         "Alice",
     ]);
 
+    // Need to set filter to empty to get the list of all
+    override(pm_list, "get_pm_search_term", () => "");
     // Zooming will show all conversations.
     list_info = pm_list_data.get_list_info(true);
     check_list_info(list_info, 10, 0, [
@@ -351,4 +359,18 @@ test("get_list_info_no_unread_messages", ({override}) => {
         "Me Myself",
         "Alice",
     ]);
+
+    // If we zoom in, our results based on DM filter.
+    // If DM search input is empty, we show all 7 DMs.
+    const zoomed = true;
+    override(pm_list, "get_pm_search_term", () => "");
+    list_info = pm_list_data.get_list_info(zoomed);
+    assert.equal(list_info.conversations_to_be_shown.length, 7);
+    assert.equal(list_info.more_conversations_unread_count, 0);
+
+    // when DM search is open then we list DMs based on search term.
+    override(pm_list, "get_pm_search_term", () => "z,c");
+    list_info = pm_list_data.get_list_info(zoomed);
+    assert.equal(list_info.conversations_to_be_shown.length, 3);
+    assert.equal(list_info.more_conversations_unread_count, 0);
 });

@@ -1,6 +1,8 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_filter_pms from "../templates/filter_pms.hbs";
+
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
@@ -50,13 +52,26 @@ export function _build_private_messages_list() {
     );
 
     const all_conversations_shown = conversations_to_be_shown.length === conversations.length;
-    if (!all_conversations_shown) {
+    if (!all_conversations_shown && !zoomed) {
         pm_list_nodes.push(
             pm_list_dom.more_private_conversations_li(more_conversations_unread_count),
         );
     }
     const dom_ast = pm_list_dom.pm_ul(pm_list_nodes);
     return dom_ast;
+}
+
+export function clear_pm_search(e) {
+    e.stopPropagation();
+    const $input = $("#filter-pm-input");
+    if ($input.length) {
+        $input.val("");
+        $input.trigger("focus");
+
+        // Since this changes the contents of the search input, we
+        // need to rerender the DM list.
+        update_private_messages();
+    }
 }
 
 function set_dom_to(new_dom) {
@@ -97,6 +112,12 @@ export function update_private_messages() {
     }
     // Make sure to update the left sidebar heights after updating PMs.
     setTimeout(resize.resize_stream_filters_container, 0);
+
+    if ($("#filter-pm-input").val() !== "") {
+        $("#clear_search_pm_button").show();
+    } else {
+        $("#clear_search_pm_button").hide();
+    }
 }
 
 export function expand() {
@@ -198,6 +219,9 @@ function zoom_in() {
     $(".private_messages_container").removeClass("zoom-out").addClass("zoom-in");
     $("#streams_list").hide();
     $(".left-sidebar .right-sidebar-items").hide();
+
+    // Add filter section for direct messages.
+    $(".pm_filter_row").append(render_filter_pms());
 }
 
 function zoom_out() {
@@ -206,6 +230,17 @@ function zoom_out() {
     $(".private_messages_container").removeClass("zoom-in").addClass("zoom-out");
     $("#streams_list").show();
     $(".left-sidebar .right-sidebar-items").show();
+
+    // Remove filter section for direct messages.
+    $(".pm_filter_row").empty();
+}
+
+export function get_pm_search_term() {
+    const $filter = $("#filter-pm-input");
+    if ($filter.val() === undefined) {
+        return "";
+    }
+    return $filter.val().trim();
 }
 
 export function initialize() {
@@ -221,5 +256,12 @@ export function initialize() {
         e.preventDefault();
 
         zoom_out();
+    });
+
+    $("body").on("input", "#filter-pm-input", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        update_private_messages();
     });
 }

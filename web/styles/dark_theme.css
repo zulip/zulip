@@ -380,7 +380,8 @@
     .active_private_messages_section {
         #private_messages_section,
         #private_messages_list,
-        #hide_more_private_messages {
+        #hide_more_private_messages,
+        .pm_search_section {
             background-color: hsl(199deg 33% 46% / 20%);
         }
     }

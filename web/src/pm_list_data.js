@@ -3,8 +3,10 @@ import * as hash_util from "./hash_util";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as pm_list from "./pm_list";
 import * as unread from "./unread";
 import * as user_status from "./user_status";
+import * as util from "./util";
 
 // Maximum number of conversation threads to show in default view.
 const max_conversations_to_show = 8;
@@ -81,9 +83,17 @@ export function get_conversations() {
 
 // Designed to closely match topic_list_data.get_list_info().
 export function get_list_info(zoomed) {
-    const conversations = get_conversations();
+    let conversations = get_conversations();
 
     if (zoomed || conversations.length <= max_conversations_to_show) {
+        if (zoomed) {
+            const search_term = pm_list.get_pm_search_term();
+            conversations = util.filter_by_word_prefix_match(
+                conversations,
+                search_term,
+                (item) => item.recipients,
+            );
+        }
         return {
             conversations_to_be_shown: conversations,
             more_conversations_unread_count: 0,

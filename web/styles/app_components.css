@@ -466,9 +466,15 @@ div.overlay {
         margin-left: 11px;
         margin-bottom: 5px;
     }
+
+    .input-append .pm-list-filter {
+        /* Input width = 100% - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 14px);
+    }
 }
 
-.topic-list-filter {
+.topic-list-filter,
+.pm-list-filter {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
