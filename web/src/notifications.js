@@ -10,6 +10,7 @@ import * as favicon from "./favicon";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -241,7 +242,16 @@ export function process_notification(notification) {
     const $content = $("<div>").html(message.content);
     ui.replace_emoji_with_text($content);
     spoilers.hide_spoilers_in_notification($content);
-    content = $content.text();
+
+    if (
+        $content.text().trim() === "" &&
+        (message_parser.message_has_image(message) ||
+            message_parser.message_has_attachment(message))
+    ) {
+        content = $t({defaultMessage: "(attached file)"});
+    } else {
+        content = $content.text();
+    }
 
     const topic = message.topic;
 
