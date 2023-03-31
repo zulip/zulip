@@ -122,19 +122,19 @@ def add_members_to_group_backend(
         return json_success(request)
 
     user_group = access_user_group_by_id(user_group_id, user_profile)
-    user_profiles = user_ids_to_users(members, user_profile.realm)
-    existing_member_ids = set(get_direct_memberships_of_users(user_group, user_profiles))
+    member_users = user_ids_to_users(members, user_profile.realm)
+    existing_member_ids = set(get_direct_memberships_of_users(user_group, member_users))
 
-    for user_profile in user_profiles:
-        if user_profile.id in existing_member_ids:
+    for member_user in member_users:
+        if member_user.id in existing_member_ids:
             raise JsonableError(
                 _("User {user_id} is already a member of this group").format(
-                    user_id=user_profile.id,
+                    user_id=member_user.id,
                 )
             )
 
-    user_profile_ids = [user.id for user in user_profiles]
-    bulk_add_members_to_user_group(user_group, user_profile_ids, acting_user=user_profile)
+    member_user_ids = [member_user.id for member_user in member_users]
+    bulk_add_members_to_user_group(user_group, member_user_ids, acting_user=user_profile)
     return json_success(request)
 
 
