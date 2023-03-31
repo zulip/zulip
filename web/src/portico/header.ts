@@ -1,7 +1,9 @@
 import $ from "jquery";
 
 $(() => {
-    function on_tab_menu_selection_change(event) {
+    function on_tab_menu_selection_change(
+        event?: JQuery.ChangeEvent<HTMLElement> | JQuery.ClickEvent<HTMLElement>,
+    ): void {
         // Pass event to open menu and if it is undefined, we close the menu.
         if (!event) {
             $("#top-menu-submenu-backdrop").css("height", "0px");
@@ -15,7 +17,7 @@ $(() => {
         }
     }
 
-    function on_top_menu_tab_unselect_click() {
+    function on_top_menu_tab_unselect_click(): void {
         // Close the menu.
         $("#top-menu-tab-close").prop("checked", true);
         on_tab_menu_selection_change();
@@ -64,6 +66,9 @@ $(() => {
             e.preventDefault();
             e.stopPropagation();
             const labelID = $(e.currentTarget).attr("for");
+            if (labelID === undefined) {
+                throw new Error("Current target of this event must have for attribute defined.");
+            }
             $(`#${CSS.escape(labelID)}`).trigger("click");
         }
     });
