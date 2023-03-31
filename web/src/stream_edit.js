@@ -267,7 +267,7 @@ export function setup_stream_settings(node) {
         ],
         callback(name, key) {
             $(".stream_section").hide();
-            $("." + key).show();
+            $(`.${CSS.escape(key)}`).show();
             select_tab = key;
         },
     });

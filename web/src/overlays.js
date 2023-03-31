@@ -125,16 +125,16 @@ export function open_overlay(opts) {
 // on_shown: Callback to run when the modal is shown.
 // on_hide: Callback to run when the modal is triggered to hide.
 // on_hidden: Callback to run when the modal is hidden.
-export function open_modal(selector, conf = {}) {
-    if (selector === undefined) {
-        blueslip.error("Undefined selector was passed into open_modal");
+export function open_modal(modal_id, conf = {}) {
+    if (modal_id === undefined) {
+        blueslip.error("Undefined id was passed into open_modal");
         return;
     }
 
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
-    if (selector[0] === "#") {
-        blueslip.error("hash-based selector passed in to open_modal: " + selector);
+    if (modal_id[0] === "#") {
+        blueslip.error("hash-based selector passed in to open_modal: " + modal_id);
         return;
     }
 
@@ -156,22 +156,22 @@ export function open_modal(selector, conf = {}) {
             conf.recursive_call_count += 1;
         }
         if (conf.recursive_call_count > 50) {
-            blueslip.error("Modal incorrectly is still open: " + selector);
+            blueslip.error("Modal incorrectly is still open: " + modal_id);
             return;
         }
 
         close_active_modal();
         setTimeout(() => {
-            open_modal(selector, conf);
+            open_modal(modal_id, conf);
         }, 10);
         return;
     }
 
-    blueslip.debug("open modal: " + selector);
+    blueslip.debug("open modal: " + modal_id);
 
     // Micromodal gets elements using the getElementById DOM function
     // which doesn't require the hash. We add it manually here.
-    const id_selector = `#${selector}`;
+    const id_selector = `#${CSS.escape(modal_id)}`;
     const $micromodal = $(id_selector);
 
     $micromodal.find(".modal__container").on("animationend", (event) => {
@@ -213,10 +213,10 @@ export function open_modal(selector, conf = {}) {
         if (document.getSelection().type === "Range") {
             return;
         }
-        close_modal(selector);
+        close_modal(modal_id);
     });
 
-    Micromodal.show(selector, {
+    Micromodal.show(modal_id, {
         disableFocus: true,
         openClass: "modal--opening",
         onShow: conf?.on_show,
@@ -264,9 +264,9 @@ export function close_active() {
 
 // `conf` is an object with the following optional properties:
 // * on_hidden: Callback to run when the modal finishes hiding.
-export function close_modal(selector, conf = {}) {
-    if (selector === undefined) {
-        blueslip.error("Undefined selector was passed into close_modal");
+export function close_modal(modal_id, conf = {}) {
+    if (modal_id === undefined) {
+        blueslip.error("Undefined id was passed into close_modal");
         return;
     }
 
@@ -275,16 +275,16 @@ export function close_modal(selector, conf = {}) {
         return;
     }
 
-    if (active_modal() !== `#${selector}`) {
+    if (active_modal() !== `#${CSS.escape(modal_id)}`) {
         blueslip.error(
-            "Trying to close " + selector + " modal when " + active_modal() + " is open.",
+            "Trying to close " + modal_id + " modal when " + active_modal() + " is open.",
         );
         return;
     }
 
-    blueslip.debug("close modal: " + selector);
+    blueslip.debug("close modal: " + modal_id);
 
-    const id_selector = `#${selector}`;
+    const id_selector = `#${CSS.escape(modal_id)}`;
     const $micromodal = $(id_selector);
 
     // On-hidden hooks should typically be registered in
@@ -298,7 +298,7 @@ export function close_modal(selector, conf = {}) {
         }
     });
 
-    Micromodal.close(selector);
+    Micromodal.close(modal_id);
 }
 
 export function close_active_modal() {

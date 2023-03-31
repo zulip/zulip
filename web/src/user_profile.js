@@ -241,7 +241,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         ],
         callback(name, key) {
             $(".tabcontent").hide();
-            $("#" + key).show();
+            $(`#${CSS.escape(key)}`).show();
             switch (key) {
                 case "profile-tab":
                     initialize_user_type_fields(user);
