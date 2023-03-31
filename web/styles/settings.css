@@ -618,6 +618,10 @@ input[type="checkbox"] {
     .person_picker {
         min-width: 311px;
     }
+
+    & textarea {
+        width: 311px;
+    }
 }
 
 .control-label-disabled {
@@ -1425,8 +1429,6 @@ $option_title_width: 180px;
         }
 
         & textarea {
-            width: max(206px, 25vw);
-            max-width: 320px;
             height: 80px;
         }
 
@@ -1470,8 +1472,15 @@ $option_title_width: 180px;
     }
 }
 
-#edit-user-form .person_picker {
-    min-width: 206px;
+#edit-user-form {
+    .person_picker {
+        min-width: 206px;
+    }
+
+    & textarea {
+        width: max(206px, 25vw);
+        max-width: 320px;
+    }
 }
 
 .dropdown-list-widget {
@@ -1851,7 +1860,6 @@ $option_title_width: 180px;
         margin-top: 5px;
     }
 
-    #settings_page,
     #edit-user-form {
         .custom_user_field textarea {
             width: calc(100% - 25px);
