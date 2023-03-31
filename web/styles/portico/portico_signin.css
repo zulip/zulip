@@ -666,7 +666,7 @@ html {
 
     & select {
         margin-bottom: 10px;
-        width: auto;
+        width: fit-content;
         font-size: 16px;
         font-family: inherit;
     }
