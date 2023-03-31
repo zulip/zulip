@@ -254,6 +254,8 @@ export function initialize() {
             ".code_external_link",
             ".spectator_narrow_login_button",
             "#stream-specific-notify-table .unmute_stream",
+            "#add_streams_tooltip",
+            "#filter_streams_tooltip",
         ],
         appendTo: () => document.body,
     });
