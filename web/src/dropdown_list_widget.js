@@ -30,6 +30,7 @@ export class DropdownListWidget {
         this.include_current_item = include_current_item;
         this.initial_value = value;
         this.on_update = on_update;
+        this.list_widget = null;
 
         this.container_id = `${widget_name}_widget`;
         this.value_id = `id_${widget_name}`;
@@ -113,7 +114,7 @@ export class DropdownListWidget {
             `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
         );
 
-        ListWidget.create($dropdown_list_body, this.get_data(data), {
+        this.list_widget = ListWidget.create($dropdown_list_body, this.get_data(data), {
             name: `${CSS.escape(this.widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});
@@ -126,6 +127,11 @@ export class DropdownListWidget {
             },
             $simplebar_container: $(`#${CSS.escape(this.container_id)} .dropdown-list-wrapper`),
         });
+    }
+
+    replace_data(data) {
+        this.data = data;
+        this.list_widget.replace_list_data(this.get_data(data));
     }
 
     // Sets the focus to the ListWidget input once the dropdown button is clicked.
@@ -406,7 +412,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
             `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
         );
 
-        ListWidget.create($dropdown_list_body, data, {
+        this.list_widget = ListWidget.create($dropdown_list_body, data, {
             name: `${CSS.escape(this.widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});
