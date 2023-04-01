@@ -8,14 +8,36 @@ import iphone_image from "../../images/app-screenshots/zulip-iphone-rough.png";
 import {page_params} from "../page_params";
 
 import {detect_user_os} from "./tabbed-instructions";
+import type {UserOS} from "./tabbed-instructions";
 import render_tabs from "./team";
 
-export function path_parts() {
+export function path_parts(): string[] {
     return window.location.pathname.split("/").filter((chunk) => chunk !== "");
 }
 
-const apps_events = function () {
-    const info = {
+type ZulipOsSpecificInfo = Record<
+    UserOS,
+    {
+        alt: "Android" | "iOS" | "Linux" | "macOS" | "Windows";
+        // only for "iOS" operating system
+        app_store_link?: string;
+        app_type: "mobile" | "desktop";
+        description: string;
+        // for all operating systems except "iOS"
+        download_link?: string;
+        image: string;
+        // only for "desktop" type operating systems
+        install_guide?: string;
+        // only for "macOS" operating system
+        mac_arm64_link?: string;
+        // only for "Android" operating system
+        play_store_link?: string;
+        show_instructions: boolean;
+    }
+>;
+
+const apps_events = function (): void {
+    const info: ZulipOsSpecificInfo = {
         windows: {
             image: microsoft_image,
             alt: "Windows",
@@ -66,23 +88,22 @@ const apps_events = function () {
         },
     };
 
-    let version;
+    let version: UserOS;
 
-    function get_version_from_path() {
-        let result;
+    function get_version_from_path(): UserOS {
+        let result: UserOS | undefined;
         const parts = path_parts();
 
-        for (const version of Object.keys(info)) {
+        for (const version of Object.keys(info) as UserOS[]) {
             if (parts.includes(version)) {
                 result = version;
             }
         }
 
-        result = result || detect_user_os();
-        return result;
+        return result ?? detect_user_os();
     }
 
-    const update_page = function () {
+    const update_page = function (): void {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
         const $download_android_apk = $("#download-android-apk");
@@ -94,15 +115,24 @@ const apps_events = function () {
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
-        $desktop_download_link.attr("href", version_info.download_link);
-        $download_from_google_play_store.attr("href", version_info.play_store_link);
-        $download_from_apple_app_store.attr("href", version_info.app_store_link);
-        $download_android_apk.attr("href", version_info.download_link);
-        $download_mac_arm64.attr("href", version_info.mac_arm64_link);
+        if (version_info.download_link !== undefined) {
+            $desktop_download_link.attr("href", version_info.download_link);
+            $download_android_apk.attr("href", version_info.download_link);
+        }
+        if (version_info.play_store_link !== undefined) {
+            $download_from_google_play_store.attr("href", version_info.play_store_link);
+        }
+        if (version_info.app_store_link !== undefined) {
+            $download_from_apple_app_store.attr("href", version_info.app_store_link);
+        }
+        if (version_info.mac_arm64_link !== undefined) {
+            $download_mac_arm64.attr("href", version_info.mac_arm64_link);
+        }
         $(".image img").addClass(`app-screenshot-${version_info.app_type}`);
         $(".image img").attr("src", version_info.image);
-        $download_instructions.find("a").attr("href", version_info.install_guide);
-
+        if (version_info.install_guide !== undefined) {
+            $download_instructions.find("a").attr("href", version_info.install_guide);
+        }
         $download_instructions.toggle(version_info.show_instructions);
 
         $third_party_apps.toggle(version_info.app_type === "desktop");
@@ -118,11 +148,11 @@ const apps_events = function () {
     update_page();
 };
 
-const events = function () {
+const events = function (): void {
     // get the location url like `zulip.com/features/`, cut off the trailing
     // `/` and then split by `/` to get ["zulip.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
-    const location = window.location.pathname.replace(/\/$/, "").split(/\//).pop();
+    const location = window.location.pathname.replace(/\/$/, "").split(/\//).pop()!;
 
     $(`[data-on-page='${CSS.escape(location)}']`).addClass("active");
 
@@ -204,7 +234,7 @@ $(() => {
     // Resize tweet to avoid overlapping with image. Since tweet uses an iframe which doesn't adjust with
     // screen resize, we need to manually adjust its width.
 
-    function resizeIFrameToFitContent(iFrame) {
+    function resizeIFrameToFitContent(iFrame: Element): void {
         $(iFrame).width("38vw");
     }
 
@@ -220,5 +250,9 @@ $(() => {
 // function; this file and help.js are never included on the same
 // page.
 $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
-    window.location.hash = $(this).attr("id");
+    const hash = $(this).attr("id");
+    if (hash === undefined) {
+        throw new Error("hash must be defined");
+    }
+    window.location.hash = hash;
 });

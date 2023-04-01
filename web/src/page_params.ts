@@ -1,8 +1,11 @@
 import $ from "jquery";
 
+import type {Contributor} from "./portico/team";
+
 const t1 = performance.now();
 export const page_params: {
     apps_page_url: string;
+    contributors: Contributor[];
     corporate_enabled: boolean;
     language_list: {
         code: string;
