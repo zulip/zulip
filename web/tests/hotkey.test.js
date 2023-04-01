@@ -84,7 +84,6 @@ mock_esm("../src/recent_topics_util", {
 
 const stream_popover = mock_esm("../src/stream_popover", {
     stream_popped: () => false,
-    topic_popped: () => false,
 });
 
 message_lists.current = {

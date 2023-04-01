@@ -1,7 +1,6 @@
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
-import * as stream_popover from "./stream_popover";
 import * as top_left_corner from "./top_left_corner";
 import {user_settings} from "./user_settings";
 
@@ -81,7 +80,7 @@ export function rerender_ui() {
         count = 0;
     }
 
-    stream_popover.hide_topic_popover();
+    popover_menus.get_topic_menu_popover()?.hide();
     popover_menus.get_starred_messages_popover()?.hide();
     top_left_corner.update_starred_count(count);
 }

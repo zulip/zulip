@@ -1115,7 +1115,6 @@ export function any_active() {
         popover_menus.any_active() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
-        stream_popover.topic_popped() ||
         message_info_popped() ||
         user_info_popped() ||
         emoji_picker.reactions_popped() ||
@@ -1135,7 +1134,6 @@ export function hide_all_except_sidebars(opts) {
     emoji_picker.hide_emoji_popover();
     giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
-    stream_popover.hide_topic_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
 

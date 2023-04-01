@@ -7,11 +7,11 @@ import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as overlays from "./overlays";
+import * as popover_menus from "./popover_menus";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as settings_muted_topics from "./settings_muted_topics";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
-import * as stream_popover from "./stream_popover";
 import * as unread_ui from "./unread_ui";
 import * as user_topics from "./user_topics";
 
@@ -39,7 +39,7 @@ export function rerender_for_muted_topic(old_muted_topics) {
 export function handle_topic_updates(user_topic) {
     const old_muted_topics = user_topics.get_muted_topics();
     user_topics.set_user_topic(user_topic);
-    stream_popover.hide_topic_popover();
+    popover_menus.get_topic_menu_popover()?.hide();
     unread_ui.update_unread_counts();
     rerender_for_muted_topic(old_muted_topics);
 }

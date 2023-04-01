@@ -66,6 +66,9 @@ export function sidebar_menu_instance_handle_keyboard(instance, key) {
 export function get_visible_instance() {
     return Object.values(popover_instances).find(Boolean);
 }
+export function get_topic_menu_popover() {
+    return popover_instances.topics_menu;
+}
 
 export function get_compose_control_buttons_popover() {
     return popover_instances.compose_control_buttons;

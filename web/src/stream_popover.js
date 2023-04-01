@@ -26,7 +26,6 @@ import * as unread_ops from "./unread_ops";
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
 let current_stream_sidebar_elem;
-let current_topic_sidebar_elem;
 let stream_widget;
 let $stream_header_colorblock;
 
@@ -73,23 +72,11 @@ export function stream_popped() {
     return current_stream_sidebar_elem !== undefined;
 }
 
-export function topic_popped() {
-    return current_topic_sidebar_elem !== undefined;
-}
-
 export function hide_stream_popover() {
     if (stream_popped()) {
         $(current_stream_sidebar_elem).popover("destroy");
         hide_left_sidebar_menu_icon();
         current_stream_sidebar_elem = undefined;
-    }
-}
-
-export function hide_topic_popover() {
-    if (topic_popped()) {
-        $(current_topic_sidebar_elem).popover("destroy");
-        hide_left_sidebar_menu_icon();
-        current_topic_sidebar_elem = undefined;
     }
 }
 
@@ -423,7 +410,7 @@ export function register_stream_handlers() {
         unread_ops.mark_stream_as_read(sub.stream_id);
         e.stopPropagation();
     });
-    
+
     // Mute/unmute
     $("body").on("click", ".toggle_stream_muted", (e) => {
         const sub = stream_popover_sub(e);

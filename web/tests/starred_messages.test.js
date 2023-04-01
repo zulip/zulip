@@ -10,10 +10,6 @@ const {page_params, user_settings} = require("./lib/zpage_params");
 const top_left_corner = mock_esm("../src/top_left_corner", {
     update_starred_count() {},
 });
-const stream_popover = mock_esm("../src/stream_popover", {
-    hide_topic_popover() {},
-});
-
 const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");
 
@@ -100,7 +96,6 @@ run_test("rerender_ui", () => {
     user_settings.starred_message_counts = true;
     with_overrides(({override}) => {
         const stub = make_stub();
-        override(stream_popover, "hide_topic_popover", () => {});
         override(top_left_corner, "update_starred_count", stub.f);
         starred_messages.rerender_ui();
         assert.equal(stub.num_calls, 1);
@@ -111,7 +106,6 @@ run_test("rerender_ui", () => {
     user_settings.starred_message_counts = false;
     with_overrides(({override}) => {
         const stub = make_stub();
-        override(stream_popover, "hide_topic_popover", () => {});
         override(top_left_corner, "update_starred_count", stub.f);
         starred_messages.rerender_ui();
         assert.equal(stub.num_calls, 1);
