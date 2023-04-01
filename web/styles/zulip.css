@@ -1462,19 +1462,19 @@ td.pointer {
 .dark_background a:visited {
     color: hsl(200deg 100% 50% / 100%);
     text-decoration: underline hsl(200deg 100% 50% / 30%) solid;
-    text-underline-offset: 2px
+    text-underline-offset: 2px;
 }
 
 .dark_background a:hover {
     color: hsl(200deg 100% 66% / 100%);
     text-decoration: underline hsl(200deg 100% 36% / 30%) solid;
-    text-underline-offset: 2px
+    text-underline-offset: 2px;
 }
 
 .dark_background a:active {
     color: hsl(200deg 100% 55% / 100%);
     text-decoration: underline hsl(200deg 100% 50% / 70%) solid;
-    text-underline-offset: 2px
+    text-underline-offset: 2px;
 }
 
 .small {
