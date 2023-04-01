@@ -221,8 +221,12 @@ function _visible_divs(
     // We do this explicitly without merges and without recalculating
     // the feed bounds to keep this computation as cheap as possible.
     const visible = [];
-    const $above_pointer = $selected_row.prevAll("div." + div_class).slice(0, num_neighbors);
-    const $below_pointer = $selected_row.nextAll("div." + div_class).slice(0, num_neighbors);
+    const $above_pointer = $selected_row
+        .prevAll(`div.${CSS.escape(div_class)}`)
+        .slice(0, num_neighbors);
+    const $below_pointer = $selected_row
+        .nextAll(`div.${CSS.escape(div_class)}`)
+        .slice(0, num_neighbors);
     add_to_visible(
         $selected_row,
         visible,

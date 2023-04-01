@@ -231,7 +231,7 @@ function handle_keydown(e) {
                 if (should_enter_send(e)) {
                     e.preventDefault();
                     if (
-                        compose_validate.warn_for_text_overflow_when_tries_to_send() &&
+                        compose_validate.validate_message_length() &&
                         !$("#compose-send-button").prop("disabled")
                     ) {
                         compose.finish();

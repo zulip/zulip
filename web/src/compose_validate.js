@@ -138,7 +138,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 
     if (needs_subscribe_warning(user_id, sub.stream_id)) {
         const $existing_invites_area = $(
-            `#compose_banners .${compose_banner.CLASSNAMES.recipient_not_subscribed}`,
+            `#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
         );
 
         const existing_invites = [...$existing_invites_area].map((user_row) =>
@@ -172,7 +172,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 // current narrow.
 export function clear_topic_resolved_warning() {
     compose_state.set_recipient_viewed_topic_resolved_banner(false);
-    $(`#compose_banners .${compose_banner.CLASSNAMES.topic_resolved}`).remove();
+    $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)}`).remove();
 }
 
 export function warn_if_topic_resolved(topic_changed) {
@@ -245,7 +245,7 @@ function show_wildcard_warnings(stream_id) {
     });
 
     // only show one error for any number of @all or @everyone mentions
-    if ($(`#compose_banners .${classname}`).length === 0) {
+    if ($(`#compose_banners .${CSS.escape(classname)}`).length === 0) {
         $compose_banner_area.append(wildcard_template);
     }
 
@@ -254,7 +254,7 @@ function show_wildcard_warnings(stream_id) {
 
 export function clear_wildcard_warnings() {
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
-    $(`#compose_banners .${classname}`).remove();
+    $(`#compose_banners .${CSS.escape(classname)}`).remove();
 }
 
 export function set_user_acknowledged_wildcard_flag(value) {
@@ -400,7 +400,10 @@ export function validation_error(error_type, stream_name) {
             );
             return false;
         case "not-subscribed": {
-            if ($(`#compose_banners .${compose_banner.CLASSNAMES.user_not_subscribed}`).length) {
+            if (
+                $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.user_not_subscribed)}`)
+                    .length
+            ) {
                 return false;
             }
             const sub = stream_data.get_sub(stream_name);
@@ -586,19 +589,19 @@ export function check_overflow_text() {
         $indicator.text(text.length + "/" + max_length);
 
         $("#compose-send-button").prop("disabled", false);
-        $(`#compose_banners .${compose_banner.CLASSNAMES.message_too_long}`).remove();
+        $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     } else {
         $indicator.text("");
         $("#compose-textarea").removeClass("over_limit");
 
         $("#compose-send-button").prop("disabled", false);
-        $(`#compose_banners .${compose_banner.CLASSNAMES.message_too_long}`).remove();
+        $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     }
 
     return text.length;
 }
 
-export function warn_for_text_overflow_when_tries_to_send() {
+export function validate_message_length() {
     if (compose_state.message_content().length > page_params.max_message_length) {
         $("#compose-textarea").addClass("flash");
         setTimeout(() => $("#compose-textarea").removeClass("flash"), 1500);
@@ -624,7 +627,7 @@ export function validate() {
         );
         return false;
     }
-    if (!warn_for_text_overflow_when_tries_to_send()) {
+    if (!validate_message_length()) {
         return false;
     }
 

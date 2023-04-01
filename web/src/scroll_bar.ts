@@ -9,11 +9,10 @@ import {user_settings} from "./user_settings";
 // number of element widths based on the value detected here.
 //
 // From https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
-function getScrollbarWidth() {
+function getScrollbarWidth(): number {
     const outer = document.createElement("div");
     outer.style.visibility = "hidden";
     outer.style.width = "100px";
-    outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
 
     document.body.append(outer);
 
@@ -34,9 +33,17 @@ function getScrollbarWidth() {
     return widthNoScroll - widthWithScroll;
 }
 
-let sbWidth;
+export function set_layout_width(): void {
+    if (user_settings.fluid_layout_width) {
+        $(".header-main, .app .app-main, #compose-container").css("max-width", "inherit");
+    } else {
+        $(".header-main, .app .app-main, #compose-container").css("max-width", "1400px");
+    }
+}
 
-export function initialize() {
+let sbWidth: number;
+
+export function initialize(): void {
     // Workaround for browsers with fixed scrollbars
     sbWidth = getScrollbarWidth();
     if (sbWidth > 0) {
@@ -44,12 +51,4 @@ export function initialize() {
         $("#navbar-container .header, #compose").css("width", `calc(100% - ${sbWidth}px)`);
     }
     set_layout_width();
-}
-
-export function set_layout_width() {
-    if (user_settings.fluid_layout_width) {
-        $(".header-main, .app .app-main, #compose-container").css("max-width", "inherit");
-    } else {
-        $(".header-main, .app .app-main, #compose-container").css("max-width", "1400px");
-    }
 }

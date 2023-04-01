@@ -34,7 +34,7 @@ async function test_send_messages(page: Page): Promise<void> {
 
 async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
-    await page.waitForSelector("#stream-message", {visible: true});
+    await page.waitForSelector("#compose-stream-recipient", {visible: true});
     await check_compose_form_empty(page);
     await close_compose_box(page);
 }
@@ -94,14 +94,14 @@ async function test_reply_with_r_shortcut(page: Page): Promise<void> {
 }
 
 async function test_open_close_compose_box(page: Page): Promise<void> {
-    await page.waitForSelector("#stream-message", {visible: true});
+    await page.waitForSelector("#compose-stream-recipient", {visible: true});
     await close_compose_box(page);
-    await page.waitForSelector("#stream-message", {hidden: true});
+    await page.waitForSelector("#compose-stream-recipient", {hidden: true});
 
     await page.keyboard.press("KeyX");
-    await page.waitForSelector("#private-message", {visible: true});
+    await page.waitForSelector("#compose-private-recipient", {visible: true});
     await close_compose_box(page);
-    await page.waitForSelector("#private-message", {hidden: true});
+    await page.waitForSelector("#compose-private-recipient", {hidden: true});
 }
 
 async function test_narrow_to_private_messages_with_cordelia(page: Page): Promise<void> {

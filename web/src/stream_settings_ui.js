@@ -1166,7 +1166,7 @@ export function initialize() {
         // click; this fixes an issue where hitting "Enter" would
         // trigger this code path due to bootstrap magic.
         if (e.clientY !== 0) {
-            show_subs_pane.nothing_selected();
+            stream_edit.open_edit_panel_empty();
         }
     });
 

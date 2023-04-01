@@ -64,7 +64,7 @@ $(() => {
             e.preventDefault();
             e.stopPropagation();
             const labelID = $(e.currentTarget).attr("for");
-            $("#" + labelID).trigger("click");
+            $(`#${CSS.escape(labelID)}`).trigger("click");
         }
     });
 

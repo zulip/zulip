@@ -81,6 +81,7 @@
 
 .modal__content {
     display: flex;
+    flex-direction: column;
     font-size: 1rem;
     overflow-y: auto;
     padding: 0 24px;
