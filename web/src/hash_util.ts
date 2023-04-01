@@ -253,24 +253,6 @@ export function is_editing_stream(desired_stream_id: number): boolean {
     return stream_id === desired_stream_id;
 }
 
-export function is_editing_group(desired_group_id: number): boolean {
-    const hash_components = window.location.hash.slice(1).split(/\//);
-
-    if (hash_components[0] !== "groups") {
-        return false;
-    }
-
-    if (!hash_components[2]) {
-        return false;
-    }
-
-    // if the string casted to a number is valid, and another component
-    // after exists then it's a stream name/id pair.
-    const group_id = Number.parseFloat(hash_components[1]);
-
-    return group_id === desired_group_id;
-}
-
 export function is_create_new_stream_narrow(): boolean {
     return window.location.hash === "#streams/new";
 }

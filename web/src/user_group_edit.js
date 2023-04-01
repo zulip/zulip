@@ -85,7 +85,7 @@ function show_membership_settings(group) {
 }
 
 function enable_group_edit_settings(group) {
-    if (!hash_util.is_editing_group(group.id)) {
+    if (!is_editing_group(group.id)) {
         return;
     }
     const $edit_container = get_edit_container(group);
@@ -95,7 +95,7 @@ function enable_group_edit_settings(group) {
 }
 
 function disable_group_edit_settings(group) {
-    if (!hash_util.is_editing_group(group.id)) {
+    if (!is_editing_group(group.id)) {
         return;
     }
     const $edit_container = get_edit_container(group);
@@ -191,8 +191,15 @@ function open_right_panel_empty() {
     setup_group_list_tab_hash(tab_key);
 }
 
+export function is_editing_group(desired_group_id) {
+    if (!overlays.groups_open()) {
+        return false;
+    }
+    return user_group_settings_ui.get_active_data().id === desired_group_id;
+}
+
 export function handle_deleted_group(group_id) {
-    if (!hash_util.is_editing_group(group_id)) {
+    if (!is_editing_group(group_id)) {
         return;
     }
     open_right_panel_empty();

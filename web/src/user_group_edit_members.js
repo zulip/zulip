@@ -8,7 +8,6 @@ import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
@@ -37,7 +36,7 @@ function get_potential_members() {
 }
 
 export function update_member_list_widget(group_id, member_ids) {
-    if (!hash_util.is_editing_group(group_id)) {
+    if (!user_group_edit.is_editing_group(group_id)) {
         return;
     }
     const users = people.get_users_from_ids(member_ids);
