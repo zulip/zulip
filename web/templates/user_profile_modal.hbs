@@ -104,6 +104,17 @@
                     </div>
 
                     <div class="tabcontent" id="user-profile-groups-tab">
+                        {{#unless is_guest}}
+                        <div class="manage_user_group">
+                            <a href="#organization/user-groups-admin">
+                                {{#if can_edit_user_groups}}
+                                {{t "View and edit user groups" }}
+                                {{else}}
+                                {{t "View user groups" }}
+                                {{/if}}
+                            </a>
+                        </div>
+                        {{/unless}}
                         <div class="subscription-group-list">
                             <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
                         </div>

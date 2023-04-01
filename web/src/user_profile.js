@@ -18,6 +18,7 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
+import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -197,6 +198,8 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         user_avatar: people.medium_avatar_url_for_person(user),
         is_me: people.is_current_user(user.email),
         is_bot: user.is_bot,
+        is_guest: page_params.is_guest,
+        can_edit_user_groups: settings_data.user_can_edit_user_groups(),
         date_joined: timerender.get_localized_date_or_time_for_format(
             parseISO(user.date_joined),
             "dayofyear_year",
@@ -359,6 +362,10 @@ export function register_click_handlers() {
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
     $("body").on("click", "#user-profile-modal #name .user_profile_edit_button", () => {
+        hide_user_profile();
+    });
+
+    $("body").on("click", "#user-profile-modal .manage_user_group", () => {
         hide_user_profile();
     });
 

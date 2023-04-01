@@ -501,6 +501,12 @@ ul {
         }
     }
 
+    #user-profile-groups-tab {
+        .manage_user_group {
+            padding: 0 2px 6px;
+        }
+    }
+
     .stream-list-top-section {
         display: flex;
 
