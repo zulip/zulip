@@ -126,6 +126,11 @@ export function toggle_collapse(message) {
         return;
     }
 
+    const message_container = message_lists.current.view.message_containers.get(message.id);
+    if (message_container.is_hidden && !message.collapsed) {
+        return;
+    }
+
     const $content = $row.find(".message_content");
     const is_condensable = $content.hasClass("could-be-condensed");
     const is_condensed = $content.hasClass("condensed");

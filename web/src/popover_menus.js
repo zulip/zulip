@@ -397,11 +397,14 @@ export function initialize() {
                 const message_id = $(e.currentTarget).data("message-id");
                 const $row = message_lists.current.get_row(message_id);
                 const message = message_lists.current.get(rows.id($row));
+                const message_container = message_lists.current.view.message_containers.get(
+                    message.id,
+                );
                 if ($row) {
-                    if (message.collapsed) {
-                        condense.uncollapse($row);
-                    } else {
+                    if (!message_container.is_hidden && !message.collapsed) {
                         condense.collapse($row);
+                    } else {
+                        condense.uncollapse($row);
                     }
                 }
                 e.preventDefault();

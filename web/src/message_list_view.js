@@ -331,6 +331,7 @@ export class MessageListView {
             2. Hide reactions on that message.
             3. Do not give a background color to that message even if it mentions the
                current user.
+            4. Disable collapse operation on that message.
 
             Further, is a hidden message was just revealed, we make sure to show
             the sender.
