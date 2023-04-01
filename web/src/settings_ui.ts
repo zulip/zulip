@@ -30,17 +30,15 @@ export function do_settings_change(
     data: unknown,
     status_element: JQuery,
     {
-        error_continuation,
         failure_msg_html = strings.failure_html,
         sticky = false,
-        success_continuation,
         success_msg_html = strings.success_html,
         $error_msg_element,
+        error_continuation,
+        success_continuation,
     }: {
-        error_continuation?(xhr: JQuery.jqXHR): void;
         failure_msg_html?: string;
         sticky?: boolean;
-        success_continuation?(response_data: unknown): void;
         success_msg_html?: string;
         $error_msg_element?: JQuery;
         error_continuation?(xhr: JQuery.jqXHR): void;
@@ -90,7 +88,7 @@ export function disable_sub_setting_onchange(
     is_checked: boolean,
     sub_setting_id: string,
     disable_on_uncheck: boolean,
-    include_label: boolean = false,
+    include_label = false,
 ): void {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
         $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
