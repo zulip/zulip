@@ -597,7 +597,7 @@ input.recipient_box {
     }
 }
 
-.enter_sends {
+.open_enter_sends_dialog {
     font-size: 12px;
     height: 14px;
     padding-left: 4px;

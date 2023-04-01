@@ -272,7 +272,7 @@ export function initialize() {
         },
     });
 
-    tippy_no_propagation(".enter_sends", {
+    tippy_no_propagation(".open_enter_sends_dialog", {
         placement: "top",
         onShow(instance) {
             on_show_prep(instance);
