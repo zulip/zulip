@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as stream_ui_updates from "./stream_ui_updates";
@@ -13,7 +12,7 @@ export function update_toggler_for_group_setting() {
 }
 
 export function update_add_members_elements(group) {
-    if (!hash_util.is_editing_group(group.id)) {
+    if (!user_group_edit.is_editing_group(group.id)) {
         return;
     }
 
