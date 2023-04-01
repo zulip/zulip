@@ -153,11 +153,18 @@ export function launch(conf: WidgetConfig): void {
     const $submit_button = $dialog.find(".dialog_submit_button");
 
     // This is used to link the submit button with the form, if present, in the modal.
-    // This makes it so that submitting this form by pressing Enter on an input element
+    // This makes it so that submitting this form by pressing Enter on valid input elements
     // triggers a click on the submit button.
-    if (conf.form_id) {
-        $submit_button.attr("form", conf.form_id);
-    }
+    $dialog.on("keydown", (e) => {
+        if (
+            e.key === "Enter" &&
+            $("#emoji_name").val() !== "" &&
+            $("#emoji_file_input").val() !== ""
+        ) {
+            e.preventDefault();
+            $submit_button.trigger("click");
+        }
+    });
 
     // Set up handlers.
     $submit_button.on("click", (e) => {
