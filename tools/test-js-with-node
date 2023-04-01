@@ -144,7 +144,7 @@ EXEMPT_FILES = make_set(
         "web/src/reminder.js",
         "web/src/resize.js",
         "web/src/rows.js",
-        "web/src/scroll_bar.js",
+        "web/src/scroll_bar.ts",
         "web/src/search_pill_widget.js",
         "web/src/sent_messages.js",
         "web/src/sentry.ts",
