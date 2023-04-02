@@ -85,7 +85,7 @@ class GogsHookTests(WebhookTestCase):
 
     def test_pull_request_edited(self) -> None:
         expected_topic = "test / PR #1349 Test"
-        expected_message = """kostekIV edited [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
+        expected_message = """kostekIV edited [PR #2](https://try.gogs.io/kostekIV/test/pulls/2)."""
         self.check_webhook("pull_request__edited", expected_topic, expected_message)
 
     def test_pull_request_assigned(self) -> None:
