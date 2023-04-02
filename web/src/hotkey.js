@@ -34,6 +34,7 @@ import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
+import * as read_receipts from "./read_receipts";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as search from "./search";
@@ -141,7 +142,7 @@ const keypress_mappings = {
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
     85: {name: "mark_unread", message_view_only: true}, // 'U'
-    86: {name: "view_selected_stream", message_view_only: false}, // 'V'
+    86: {name: "view_read_receipts_or_view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
@@ -796,7 +797,12 @@ export function process_hotkey(e, hotkey) {
 
     // Prevent navigation in the background when the overlays are active.
     if (overlays.is_overlay_or_modal_open()) {
-        if (event_name === "view_selected_stream" && overlays.streams_open()) {
+        // Redirect to the stream messages of the selected stream
+        // in the stream settings overlay if it is open.
+        if (
+            event_name === "view_read_receipts_or_view_selected_stream" &&
+            overlays.streams_open()
+        ) {
             stream_settings_ui.view_stream();
             return true;
         }
@@ -999,6 +1005,9 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "mark_unread":
             unread_ops.mark_as_unread_from_here(msg.id);
+            return true;
+        case "view_read_receipts_or_view_selected_stream": // Show read receipts for the selected message
+            read_receipts.show_user_list(msg.id);
             return true;
         case "compose_quote_reply": // > : respond to selected message with quote
             compose_actions.quote_and_reply({trigger: "hotkey"});

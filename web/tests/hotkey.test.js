@@ -68,6 +68,7 @@ const popover_menus = mock_esm("../src/popover_menus", {
     get_visible_instance: () => undefined,
 });
 const reactions = mock_esm("../src/reactions");
+const read_receipts = mock_esm("../src/read_receipts");
 const search = mock_esm("../src/search");
 const settings_data = mock_esm("../src/settings_data");
 const stream_list = mock_esm("../src/stream_list");
@@ -359,6 +360,7 @@ run_test("misc", ({override}) => {
     // call get_message_reactions, so we verify just that.
     assert_mapping("=", reactions, "get_message_reactions");
     assert_mapping("-", condense, "toggle_collapse");
+    assert_mapping("V", read_receipts, "show_user_list");
     assert_mapping("r", compose_actions, "respond_to_message");
     assert_mapping("R", compose_actions, "respond_to_message", true);
     assert_mapping("j", navigate, "down");
