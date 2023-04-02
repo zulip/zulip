@@ -133,6 +133,7 @@ export function autosize_message_content() {
 }
 
 export function expand_compose_box() {
+    $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
     $("#compose_close").show();
     $("#compose_controls").hide();
     $(".message_comp").show();
