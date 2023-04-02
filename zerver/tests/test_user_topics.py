@@ -470,14 +470,17 @@ class UnmutedTopicsTests(ZulipTestCase):
         )
         self.assertEqual(user_ids, set())
 
+        url = "/api/v1/user_topics"
+
         def set_topic_visibility_for_user(user: UserProfile, visibility_policy: int) -> None:
-            do_set_user_topic_visibility_policy(
-                user,
-                stream,
-                "test TOPIC",
-                visibility_policy=visibility_policy,
-                last_updated=date_unmuted,
-            )
+            data = {
+                "stream_id": stream.id,
+                "topic": "test TOPIC",
+                "visibility_policy": visibility_policy,
+            }
+            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
+                result = self.api_post(user, url, data)
+                self.assert_json_success(result)
 
         set_topic_visibility_for_user(hamlet, UserTopic.VisibilityPolicy.UNMUTED)
         set_topic_visibility_for_user(cordelia, UserTopic.VisibilityPolicy.MUTED)
