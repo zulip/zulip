@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List
-from unittest import mock
 
+import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -25,10 +25,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
         data = {"stream_id": stream.id, "topic": "Verona3", "op": "add"}
-        with mock.patch(
-            "zerver.views.user_topics.timezone_now",
-            return_value=datetime(2020, 1, 1, tzinfo=timezone.utc),
-        ):
+        with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
             result = self.api_patch(user, url, data)
             self.assert_json_success(result)
 
@@ -60,10 +57,7 @@ class MutedTopicsTests(ZulipTestCase):
         data = {"stream_id": stream.id, "topic": "test TOPIC", "op": "add"}
 
         def mute_topic_for_user(user: UserProfile) -> None:
-            with mock.patch(
-                "zerver.views.user_topics.timezone_now",
-                return_value=datetime(2020, 1, 1, tzinfo=timezone.utc),
-            ):
+            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
                 result = self.api_patch(user, url, data)
                 self.assert_json_success(result)
 
@@ -102,10 +96,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
         for data in payloads:
-            with mock.patch(
-                "zerver.views.user_topics.timezone_now",
-                return_value=datetime(2020, 1, 1, tzinfo=timezone.utc),
-            ):
+            with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
                 result = self.api_patch(user, url, data)
                 self.assert_json_success(result)
 
