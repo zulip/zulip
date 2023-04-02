@@ -463,7 +463,7 @@ button {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 label {
-  display: block;
+  display: table-row;
   margin-bottom: 5px;
 }
 input[type="text"],
