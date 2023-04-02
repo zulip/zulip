@@ -23,13 +23,14 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        do_set_user_topic_visibility_policy(
-            user,
-            stream,
-            "Verona3",
-            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
-            last_updated=datetime(2020, 1, 1, tzinfo=timezone.utc),
-        )
+        url = "/api/v1/users/me/subscriptions/muted_topics"
+        data = {"stream_id": stream.id, "topic": "Verona3", "op": "add"}
+        with mock.patch(
+            "zerver.views.user_topics.timezone_now",
+            return_value=datetime(2020, 1, 1, tzinfo=timezone.utc),
+        ):
+            result = self.api_patch(user, url, data)
+            self.assert_json_success(result)
 
         stream.deactivated = True
         stream.save()
@@ -55,14 +56,16 @@ class MutedTopicsTests(ZulipTestCase):
         )
         self.assertEqual(user_ids, set())
 
+        url = "/api/v1/users/me/subscriptions/muted_topics"
+        data = {"stream_id": stream.id, "topic": "test TOPIC", "op": "add"}
+
         def mute_topic_for_user(user: UserProfile) -> None:
-            do_set_user_topic_visibility_policy(
-                user,
-                stream,
-                "test TOPIC",
-                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
-                last_updated=date_muted,
-            )
+            with mock.patch(
+                "zerver.views.user_topics.timezone_now",
+                return_value=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            ):
+                result = self.api_patch(user, url, data)
+                self.assert_json_success(result)
 
         mute_topic_for_user(hamlet)
         user_ids = stream_topic_target.user_ids_with_visibility_policy(
