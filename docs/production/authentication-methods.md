@@ -584,6 +584,12 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
+### SCIM
+
+Many SAML IdPs also offer SCIM provisioning to manage automatically
+deactivating accounts; consider configuring the [Zulip SCIM
+integration](../production/scim.md).
+
 ### Using Keycloak as a SAML IdP
 
 1. Make sure you reviewed [this article][saml-help-center], which
