@@ -57,7 +57,6 @@ module = [
     "cairosvg.*", # https://github.com/Kozea/CairoSVG/issues/373
     "circuitbreaker.*",
     "coverage.*", # https://github.com/nedbat/coveragepy/issues/1434
-    "cssutils.*",
     "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
     "disposable_email_domains.*",
@@ -75,7 +74,6 @@ module = [
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
     "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
-    "premailer.*",
     "pyinotify.*",
     "pyoembed.*",
     "pyuca.*",
