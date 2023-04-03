@@ -15,6 +15,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from PIL import Image
 from urllib3 import encode_multipart_formdata
+from urllib3.fields import RequestField
 
 import zerver.lib.upload
 from zerver.actions.create_realm import do_create_realm
@@ -34,21 +35,9 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import (
-    avatar_disk_path,
-    get_test_image_file,
-    read_test_image_file,
-)
-from zerver.lib.upload import (
-    delete_message_attachment,
-    upload_message_attachment,
-)
-from zerver.lib.upload.base import (
-    BadImageError,
-    ZulipUploadBackend,
-    resize_emoji,
-    sanitize_name,
-)
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, read_test_image_file
+from zerver.lib.upload import delete_message_attachment, upload_message_attachment
+from zerver.lib.upload.base import BadImageError, ZulipUploadBackend, resize_emoji, sanitize_name
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
@@ -163,13 +152,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         Test coverage for files without content-type in the metadata;
         in which case we try to guess the content-type from the filename.
         """
-        data, content_type = encode_multipart_formdata({"file": ("somefile", b"zulip!", None)})
+        field = RequestField("file", b"zulip!", filename="somefile")
+        field.make_multipart()
+        data, content_type = encode_multipart_formdata([field])
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
         )
         self.assert_json_success(result)
 
-        data, content_type = encode_multipart_formdata({"file": ("somefile.txt", b"zulip!", None)})
+        field = RequestField("file", b"zulip!", filename="somefile.txt")
+        field.make_multipart()
+        data, content_type = encode_multipart_formdata([field])
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
         )

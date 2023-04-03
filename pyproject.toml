@@ -135,6 +135,7 @@ ignore = [
     "E731", # Do not assign a lambda expression, use a def
     "N802", # Function name should be lowercase
     "N806", # Variable in function should be lowercase
+    "PLC1901", # `s == ""` can be simplified to `not s` as an empty string is falsey
     "PLR0911", # Too many return statements
     "PLR0912", # Too many branches
     "PLR0913", # Too many arguments to function call
@@ -152,6 +153,8 @@ ignore = [
     "S107", # Possible hardcoded password
     "S110", # `try`-`except`-`pass` detected, consider logging the exception
     "S113", # Probable use of requests call without timeout
+    "S310", # Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+    "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
     "S324", # Probable use of insecure hash functions in `hashlib`
     "SIM103", # Return the condition directly
     "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
