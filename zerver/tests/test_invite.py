@@ -987,7 +987,7 @@ earl-test@zulip.com""",
         # field, because we've included that field inside the mailto:
         # link for the sender.
         self.assertIn(
-            '<a href="mailto:hamlet@zulip.com" style="color:#5f5ec7; text-decoration:underline">&lt;/a&gt; https://www.google.com (hamlet@zulip.com)</a> wants',
+            '<a href="mailto:hamlet@zulip.com" style="color: #5f5ec7;text-decoration: underline;">&lt;/a&gt; https://www.google.com (hamlet@zulip.com)</a> wants',
             body,
         )
 

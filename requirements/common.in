@@ -56,7 +56,7 @@ html2text
 https://github.com/zulip/talon/archive/137ea31ca506069f9a8bbddde0d0174f395a6893.zip#egg=talon-core==1.6.0.zulip1&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
-premailer
+css-inline
 
 # Needed for JWT-based auth
 PyJWT

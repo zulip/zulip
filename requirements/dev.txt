@@ -155,10 +155,6 @@ bracex==2.3.post1 \
     --hash=sha256:351b7f20d56fb9ea91f9b9e9e7664db466eb234188c175fd943f8f755c807e73 \
     --hash=sha256:e7b23fc8b2cd06d3dec0692baabecb249dda94e06a617901ff03a6c56fd71693
     # via wcmatch
-cachetools==5.3.0 \
-    --hash=sha256:13dfddc7b8df938c21a940dfa6557ce6e94a2f1cdfa58eb90c805721d58f2c14 \
-    --hash=sha256:429e1a1e845c008ea6c85aa35d4b98b65d6a9763eeef3e37e92728a12d1de9d4
-    # via premailer
 cairocffi==1.4.0 \
     --hash=sha256:509339b32ccd8d7b00c2204c32736cde78db53a32e6a162d312478d25626cd9a
     # via cairosvg
@@ -474,22 +470,40 @@ cryptography==39.0.2 \
     #   social-auth-core
     #   types-pyopenssl
     #   types-redis
+css-inline==0.8.7 \
+    --hash=sha256:0e87293717865bca00bbc2046864e33a421468129a8a8fe938abf2397c4a8e26 \
+    --hash=sha256:20ee0894e7a72434750799fced0c7404fed19f3d0538c7fb3ff61d4efacd473d \
+    --hash=sha256:2bf6053352d053d32a2294510416c704e5b62325a8214dca5c764455e318948c \
+    --hash=sha256:3604d7af3df90681a5a31d2a1438bd237ae1ba171f2ea1cb62824f4909238a63 \
+    --hash=sha256:36a392ed87f840621838e63937e151d236a62cfdba2760f503273330691ea3d8 \
+    --hash=sha256:39a90bd53272ee68a4d7909dc9b03240b296c50249b964cb253faf361c90e9dd \
+    --hash=sha256:51cc996cfce5fd10aa5e41569c664cded198f30f4706e699e97942893aa9e7f9 \
+    --hash=sha256:5b08837acd1fe60a8f8cbd44dfce88dda1676aca47eeb51bf512c02e90803b77 \
+    --hash=sha256:6579c9ea5e288e644bd78dbfd3d2bae9c33eb11e3f02d2c61cf4b5683c8f97da \
+    --hash=sha256:6803c2fb2064330de1761a44ae86ab6c9b78d1761c36ebdd8919346e595d702d \
+    --hash=sha256:68dac7010c27624627f7df9be12888b9129fd658804f52f8feac25f7d4766050 \
+    --hash=sha256:6c0f02ddc5b694520d0fb8db7961e703120a373e516a74cfa6c8303b1c131e42 \
+    --hash=sha256:6e0afb35e17888b2ddd8efee738f1f68ae569615cb32b66427381372cab2d6b2 \
+    --hash=sha256:773a150ba085d73ea8a4f27f562dcf90a7bc8dcecf0d1867b660f22d036c6a6a \
+    --hash=sha256:7e5d5aebf87bcacc6bd3f548e0648f4e1b26d4b50e7239df234a42cb1374c039 \
+    --hash=sha256:819bf4c331e59da07d824529027c00ec618c2f0b1d498f43e5281988339ac082 \
+    --hash=sha256:84e2b2c5c7c16b5ff546f9fae53e7f0d24bc63e9de6a2a655809c3698ad9f9e2 \
+    --hash=sha256:c5910202e7583f0d1b6aea34d63cd378e28808f8bcf210a9c961cb26ccc5ed25 \
+    --hash=sha256:ea7d4313eed1de7def6d2e9c4780f11e1faed3800f2e2ad4de47dc15ba7a40da \
+    --hash=sha256:f0757b71ae23d4131d7ca274bb35d41f5faa41b88eed9090df3ab409689d055d \
+    --hash=sha256:f3b5dc09f6de78fa9f7152e701fdfa2ed827a7c0543a6746ba9879e8731c6da5
+    # via -r requirements/common.in
 cssselect==1.2.0 \
     --hash=sha256:666b19839cfaddb9ce9d36bfe4c969132c647b92fc9088c4e23f786b30f1b3dc \
     --hash=sha256:da1885f0c10b60c03ed5eccbb6b68d6eff248d91976fcde348f395d54c9fd35e
     # via
     #   parsel
-    #   premailer
     #   scrapy
     #   talon-core
 cssselect2==0.7.0 \
     --hash=sha256:1ccd984dab89fc68955043aca4e1b03e0cf29cad9880f6e28e3ba7a74b14aa5a \
     --hash=sha256:fd23a65bfd444595913f02fc71f6b286c29261e354c41d722ca7a261a49b5969
     # via cairosvg
-cssutils==2.6.0 \
-    --hash=sha256:30c72f3a5c5951a11151640600aae7b3bf10e4c0d5c87f5bc505c2cd4a26e0c2 \
-    --hash=sha256:f7dcd23c1cec909fdf3630de346e1413b7b2555936dec14ba2ebb9913bf0818e
-    # via premailer
 dataclasses-json==0.5.7 \
     --hash=sha256:bc285b5f892094c3a53d558858a88553dd6a61a11ab1a8128a0e554385dcc5dd \
     --hash=sha256:c2c11bc8214fbf709ffc369d11446ff6945254a7f09128154a7620613d8fda90
@@ -1063,7 +1077,6 @@ lxml==4.6.5 \
     # via
     #   -r requirements/common.in
     #   parsel
-    #   premailer
     #   pyoembed
     #   python3-saml
     #   scrapy
@@ -1462,10 +1475,6 @@ platformdirs==3.1.0 \
 polib==1.2.0 \
     --hash=sha256:1c77ee1b81feb31df9bca258cbc58db1bbb32d10214b173882452c73af06d62d \
     --hash=sha256:f3ef94aefed6e183e342a8a269ae1fc4742ba193186ad76f175938621dbfc26b
-    # via -r requirements/common.in
-premailer==3.10.0 \
-    --hash=sha256:021b8196364d7df96d04f9ade51b794d0b77bcc19e998321c515633a2273be1a \
-    --hash=sha256:d1875a8411f5dc92b53ef9f193db6c0f879dc378d618e0ad292723e388bfe4c2
     # via -r requirements/common.in
 prompt-toolkit==3.0.38 \
     --hash=sha256:23ac5d50538a9a38c8bde05fecb47d0b403ecd0662857a86f886f798563d5b9b \
@@ -1948,7 +1957,6 @@ requests[security]==2.28.2 \
     #   -r requirements/common.in
     #   matrix-client
     #   moto
-    #   premailer
     #   pyoembed
     #   python-digitalocean
     #   python-gcm
