@@ -958,7 +958,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     fix_realm_authentication_bitfield(data, "zerver_realm", "authentication_methods")
     update_model_ids(Realm, data, "realm")
 
-    realm = Realm(**data["zerver_realm"][0])
+    # Create the realm, but mark it deactivated for now, while we
+    # import the supporting data structures, which may take a bit.
+    realm_properties = dict(**data["zerver_realm"][0])
+    realm_properties["deactivated"] = True
+    realm = Realm(**realm_properties)
 
     if realm.notifications_stream_id is not None:
         notifications_stream_id: Optional[int] = int(realm.notifications_stream_id)
@@ -1365,9 +1369,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     logging.info("Importing attachment data from %s", fn)
     with open(fn, "rb") as f:
-        data = orjson.loads(f.read())
+        attachment_data = orjson.loads(f.read())
 
-    import_attachments(data)
+    import_attachments(attachment_data)
 
     # Import the analytics file.
     import_analytics_data(realm=realm, import_dir=import_dir)
@@ -1376,6 +1380,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     else:
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+
+    # Activate the realm
+    realm.deactivated = data["zerver_realm"][0]["deactivated"]
+    realm.save()
+
     return realm
 
 
