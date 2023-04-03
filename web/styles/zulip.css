@@ -2288,11 +2288,6 @@ select.invite-as {
     display: none;
 }
 
-#generate_multiuse_invite_button {
-    position: relative;
-    top: 1px;
-}
-
 #custom-invite-expiration-time {
     #custom-expiration-time-input {
         width: 5ch;
