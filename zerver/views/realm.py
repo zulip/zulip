@@ -179,10 +179,11 @@ def update_realm(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
         realm.ensure_not_on_limited_plan()
-        message_retention_days = parse_message_retention_days(
-            message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
+        message_retention_days = (  # noqa: F841 # used by locals() below
+            parse_message_retention_days(
+                message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
+            )
         )
-    message_retention_days  # used by locals() below
 
     if (
         invite_to_realm_policy is not None or invite_required is not None

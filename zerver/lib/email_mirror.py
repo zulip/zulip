@@ -3,7 +3,7 @@ import re
 import secrets
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Dict, List, Match, Optional, Tuple
+from typing import Dict, List, Match, Optional, Tuple, cast
 
 from django.conf import settings
 
@@ -231,15 +231,18 @@ def send_mm_reply_to_stream(
 
 
 def get_message_part_by_type(message: EmailMessage, content_type: str) -> Optional[str]:
-    charsets = message.get_charsets()
+    charsets = cast(  # https://github.com/python/typeshed/pull/9944
+        List[Optional[str]], message.get_charsets()
+    )
 
     for idx, part in enumerate(message.walk()):
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
             assert isinstance(content, bytes)
-            if charsets[idx]:
+            charset = charsets[idx]
+            if charset is not None:
                 try:
-                    return content.decode(charsets[idx], errors="ignore")
+                    return content.decode(charset, errors="ignore")
                 except LookupError:
                     # The RFCs do not define how to handle unknown
                     # charsets, but treating as US-ASCII seems

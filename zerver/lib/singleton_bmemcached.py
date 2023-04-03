@@ -7,7 +7,7 @@ from django_bmemcached.memcached import BMemcached
 
 @lru_cache(None)
 def _get_bmemcached(location: str, params: bytes) -> BMemcached:
-    return BMemcached(location, pickle.loads(params))
+    return BMemcached(location, pickle.loads(params))  # noqa: S301
 
 
 def SingletonBMemcached(location: str, params: Dict[str, Any]) -> BMemcached:
