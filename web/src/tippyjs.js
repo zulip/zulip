@@ -133,6 +133,27 @@ export function initialize() {
         },
     });
 
+    // Variant of .tippy-left-sidebar-tooltip configuration. Since
+    // this element doesn't have an always visible label, and
+    // thus hovering it is a way to find out what it does, give
+    // it the faster LONG_HOVER_DELAY.
+    delegate("body", {
+        target: "#show_all_private_messages",
+        placement: "right",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
     // The below definitions are for specific tooltips that require
     // custom JavaScript code or configuration.  Note that since the
     // below specify the target directly, elements using those should
@@ -546,15 +567,6 @@ export function initialize() {
             return true;
         },
         delay: LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-    });
-
-    delegate("body", {
-        target: "#show_all_private_messages",
-        placement: "bottom",
-        content: $t({
-            defaultMessage: "All direct messages (P)",
-        }),
         appendTo: () => document.body,
     });
 
