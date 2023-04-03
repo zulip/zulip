@@ -108,7 +108,7 @@
                             <div id="below-compose-content">
                                 <div class="compose_bottom_top_container">
                                     <div class="compose_right_float_container order-3">
-                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)" tabindex=0>
+                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button">
                                             <img class="loader" alt="" src="" />
                                             <span>{{t 'Send' }}</span>
                                         </button>
@@ -118,6 +118,14 @@
                                         <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
                                             <i class="fa fa-chevron-up"></i>
                                         </button>
+                                        <template id="send-enter-tooltip-template">
+                                            {{t 'Send' }}
+                                            {{tooltip_hotkey_hints "Enter"}}
+                                        </template>
+                                        <template id="send-ctrl-enter-tooltip-template">
+                                            {{t 'Send' }}
+                                            {{tooltip_hotkey_hints "Ctrl" "Enter"}}
+                                        </template>
                                     </div>
                                     {{> compose_control_buttons }}
                                 </div>

@@ -14,6 +14,7 @@ import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
+import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -63,13 +64,19 @@ function hide_tooltip_if_reference_removed(
     observer.observe(target_node, config);
 }
 
-// We use two delay settings for tooltips. The default "instant"
+// We use three delay settings for tooltips. The default "instant"
 // version has just a tiny bit of delay to create a natural feeling
 // transition, while the "long" version is intended for elements where
 // we want to avoid distracting the user with the tooltip
 // unnecessarily.
 const INSTANT_HOVER_DELAY = [100, 20];
 const LONG_HOVER_DELAY = [750, 20];
+// EXTRA_LONG_HOVER_DELAY is for elements like the compose box send
+// button where the tooltip content is almost exactly the same as the
+// text in the button, and the tooltip exists just to advertise a
+// keyboard shortcut. For these tooltips, it's very important to avoid
+// distracting users unnecessarily.
+const EXTRA_LONG_HOVER_DELAY = [1500, 20];
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -161,6 +168,19 @@ export function initialize() {
         // This ensures that the upload files tooltip
         // doesn't hide behind the left sidebar.
         appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#compose-send-button",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            if (user_settings.enter_sends) {
+                instance.setContent(parse_html($("#send-enter-tooltip-template").html()));
+            } else {
+                instance.setContent(parse_html($("#send-ctrl-enter-tooltip-template").html()));
+            }
+        },
     });
 
     delegate("body", {
