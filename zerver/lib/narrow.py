@@ -268,14 +268,16 @@ class NarrowBuilder:
             "near": self.by_near,
             "id": self.by_id,
             "search": self.by_search,
-            "pm-with": self.by_pm_with,
+            "dm": self.by_dm,
+            # "pm-with:" is a legacy alias for "dm:"
+            "pm-with": self.by_dm,
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
             # for documented search operators with dashes, also implicitly supported
             # clients sending those same operators with underscores. We can remove
             # support for the below operators when support for the associated dashed
             # operator is removed.
-            "pm_with": self.by_pm_with,
+            "pm_with": self.by_dm,
             "group_pm_with": self.by_group_pm_with,
         }
 
@@ -508,7 +510,7 @@ class NarrowBuilder:
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
-    def by_pm_with(
+    def by_dm(
         self, query: Select, operand: Union[str, Iterable[int]], maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
@@ -542,22 +544,22 @@ class NarrowBuilder:
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
 
-        # Group DM
+        # Group direct message
         if recipient.type == Recipient.HUDDLE:
             cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
 
-        # 1:1 PM
+        # 1:1 direct message
         other_participant = None
 
-        # Find if another person is in PM
+        # Find if another person is in direct message
         for user in user_profiles:
             if user.id != self.user_profile.id:
                 other_participant = user
 
-        # PM with another person
+        # Direct message with another person
         if other_participant:
-            # We need bidirectional messages PM with another person.
+            # We need bidirectional direct messages with another person.
             # But Recipient.PERSONAL objects only encode the person who
             # received the message, and not the other participant in
             # the thread (the sender), we need to do a somewhat
@@ -576,7 +578,7 @@ class NarrowBuilder:
             )
             return query.where(maybe_negate(cond))
 
-        # PM with self
+        # Direct message with self
         cond = and_(
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
@@ -695,7 +697,7 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
             # in handle_operators_supporting_id_based_api function where you will need to update
             # operators_supporting_id, or operators_supporting_ids array.
             operators_supporting_id = ["sender", "group-pm-with", "stream"]
-            operators_supporting_ids = ["pm-with"]
+            operators_supporting_ids = ["pm-with", "dm"]
             operators_non_empty_operand = {"search"}
 
             operator = elem.get("operator", "")

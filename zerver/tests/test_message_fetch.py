@@ -295,60 +295,60 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="sender", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_pm_with_operator_and_not_the_same_user_as_operand(self) -> None:
-        term = dict(operator="pm-with", operand=self.othello_email)
+    def test_add_term_using_dm_operator_and_not_the_same_user_as_operand(self) -> None:
+        term = dict(operator="dm", operand=self.othello_email)
         self._do_add_term_test(
             term,
             "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s",
         )
 
-    def test_add_term_using_pm_with_operator_not_the_same_user_as_operand_and_negated(
+    def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="pm-with", operand=self.othello_email, negated=True)
+        term = dict(operator="dm", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
-    def test_add_term_using_pm_with_operator_the_same_user_as_operand(self) -> None:
-        term = dict(operator="pm-with", operand=self.hamlet_email)
+    def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
+        term = dict(operator="dm", operand=self.hamlet_email)
         self._do_add_term_test(
             term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
         )
 
-    def test_add_term_using_pm_with_operator_the_same_user_as_operand_and_negated(
+    def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
-        term = dict(operator="pm-with", operand=self.hamlet_email, negated=True)
+        term = dict(operator="dm", operand=self.hamlet_email, negated=True)
         self._do_add_term_test(
             term, "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)"
         )
 
-    def test_add_term_using_pm_with_operator_and_self_and_user_as_operand(self) -> None:
+    def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
         myself_and_other = ",".join(
             [
                 self.example_user("hamlet").email,
                 self.example_user("othello").email,
             ]
         )
-        term = dict(operator="pm-with", operand=myself_and_other)
+        term = dict(operator="dm", operand=myself_and_other)
         self._do_add_term_test(
             term,
             "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s",
         )
 
-    def test_add_term_using_pm_with_operator_more_than_one_user_as_operand(self) -> None:
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
         two_others = ",".join(
             [
                 self.example_user("cordelia").email,
                 self.example_user("othello").email,
             ]
         )
-        term = dict(operator="pm-with", operand=two_others)
+        term = dict(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE recipient_id = %(recipient_id_1)s")
 
-    def test_add_term_using_pm_with_operator_self_and_user_as_operand_and_negated(
+    def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
         myself_and_other = ",".join(
@@ -357,32 +357,32 @@ class NarrowBuilderTest(ZulipTestCase):
                 self.example_user("othello").email,
             ]
         )
-        term = dict(operator="pm-with", operand=myself_and_other, negated=True)
+        term = dict(operator="dm", operand=myself_and_other, negated=True)
         self._do_add_term_test(
             term,
             "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
-    def test_add_term_using_pm_with_operator_more_than_one_user_as_operand_and_negated(
+    def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
         self,
-    ) -> None:
+    ) -> None:  # NEGATED
         two_others = ",".join(
             [
                 self.example_user("cordelia").email,
                 self.example_user("othello").email,
             ]
         )
-        term = dict(operator="pm-with", operand=two_others, negated=True)
+        term = dict(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-    def test_add_term_using_pm_with_operator_with_comma_noise(self) -> None:
-        term = dict(operator="pm-with", operand=" ,,, ,,, ,")
+    def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
+        term = dict(operator="dm", operand=" ,,, ,,, ,")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_pm_with_operator_with_existing_and_non_existing_user_as_operand(
+    def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
-        term = dict(operator="pm-with", operand=self.othello_email + ",non-existing@zulip.com")
+        term = dict(operator="dm", operand=self.othello_email + ",non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_id_operator(self) -> None:
@@ -531,6 +531,13 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="is", operand="private", negated=True)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
+    # Test that "pm-with" (legacy alias for "dm") works.
+    def test_add_term_using_pm_with_operator(self) -> None:
+        term = dict(operator="pm-with", operand=self.hamlet_email)
+        self._do_add_term_test(
+            term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
+        )
+
     # Test that the underscore version of "pm-with" works.
     def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
         term = dict(operator="pm_with", operand=self.hamlet_email)
@@ -591,7 +598,7 @@ class NarrowLibraryTest(ZulipTestCase):
             is_spectator_compatible([{"operator": "sender", "operand": "hamlet@zulip.com"}])
         )
         self.assertFalse(
-            is_spectator_compatible([{"operator": "pm-with", "operand": "hamlet@zulip.com"}])
+            is_spectator_compatible([{"operator": "dm", "operand": "hamlet@zulip.com"}])
         )
         self.assertFalse(
             is_spectator_compatible([{"operator": "group-pm-with", "operand": "hamlet@zulip.com"}])
@@ -614,6 +621,10 @@ class NarrowLibraryTest(ZulipTestCase):
 
         # "is:private" is a legacy alias for "is:dm".
         self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "private"}]))
+        # "pm-with:"" is a legacy alias for "dm:"
+        self.assertFalse(
+            is_spectator_compatible([{"operator": "pm-with", "operand": "hamlet@zulip.com"}])
+        )
 
 
 class IncludeHistoryTest(ZulipTestCase):
@@ -1515,7 +1526,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.get_and_check_messages(
             dict(
                 narrow=orjson.dumps(
-                    [["pm-with", othello_email]],
+                    [["dm", othello_email]],
                 ).decode(),
             ),
         )
@@ -1523,7 +1534,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.get_and_check_messages(
             dict(
                 narrow=orjson.dumps(
-                    [dict(operator="pm-with", operand=othello_email)],
+                    [dict(operator="dm", operand=othello_email)],
                 ).decode(),
             ),
         )
@@ -1754,9 +1765,9 @@ class GetOldMessagesTest(ZulipTestCase):
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 
-    def test_get_messages_with_narrow_pm_with(self) -> None:
+    def test_get_messages_with_narrow_dm(self) -> None:
         """
-        A request for old messages with a narrow by pm-with only returns
+        A request for old messages with a narrow by direct message only returns
         conversations with that user.
         """
         me = self.example_user("hamlet")
@@ -1776,8 +1787,8 @@ class GetOldMessagesTest(ZulipTestCase):
             [self.example_user("iago"), self.example_user("cordelia")],
         )
 
-        # Send a 1:1 and group PM containing Aaron.
-        # Then deactivate aaron to test pm-with narrow includes messages
+        # Send a 1:1 and group direct message containing Aaron.
+        # Then deactivate Aaron to test "dm" narrow includes messages
         # from deactivated users also.
         self.send_personal_message(me, self.example_user("aaron"))
         self.send_huddle_message(
@@ -1794,21 +1805,21 @@ class GetOldMessagesTest(ZulipTestCase):
         for personal in personals:
             emails = dr_emails(get_display_recipient(personal.recipient))
             self.login_user(me)
-            narrow: List[Dict[str, Any]] = [dict(operator="pm-with", operand=emails)]
+            narrow: List[Dict[str, Any]] = [dict(operator="dm", operand=emails)]
             result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
 
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message["display_recipient"]), emails)
 
-            # check passing id is consistent with passing emails as operand
+            # check passing user IDs is consistent with passing user emails as operand
             ids = dr_ids(get_display_recipient(personal.recipient))
-            narrow = [dict(operator="pm-with", operand=ids)]
+            narrow = [dict(operator="dm", operand=ids)]
             result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
 
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message["display_recipient"]), emails)
 
-    def test_get_visible_messages_with_narrow_pm_with(self) -> None:
+    def test_get_visible_messages_with_narrow_dm(self) -> None:
         me = self.example_user("hamlet")
         self.login_user(me)
         self.subscribe(self.example_user("hamlet"), "Scotland")
@@ -1817,7 +1828,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for i in range(5):
             message_ids.append(self.send_personal_message(me, self.example_user("iago")))
 
-        narrow = [dict(operator="pm-with", operand=self.example_user("iago").email)]
+        narrow = [dict(operator="dm", operand=self.example_user("iago").email)]
         self.message_visibility_test(narrow, message_ids, 2)
 
     def test_get_messages_with_narrow_group_pm_with(self) -> None:
@@ -3032,14 +3043,16 @@ class GetOldMessagesTest(ZulipTestCase):
         for operand in ["sender", "group-pm-with", "stream"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
 
-        # str or int list is required for pm-with operator
+        # str or int list is required for "dm" and "pm-with" operator
         invalid_operands = [None]
         error_msg = 'elem["operand"] is not a string or an integer list'
-        self.exercise_bad_narrow_operand_using_dict_api("pm-with", invalid_operands, error_msg)
+        for operand in ["dm", "pm-with"]:
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
 
         invalid_operands = [["2"]]
         error_msg = 'elem["operand"][0] is not an integer'
-        self.exercise_bad_narrow_operand_using_dict_api("pm-with", invalid_operands, error_msg)
+        for operand in ["dm", "pm-with"]:
+            self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
 
         # For others only str is acceptable
         invalid_operands = [2, None, [1]]
@@ -3082,12 +3095,12 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_bad_narrow_one_on_one_email_content(self) -> None:
         """
-        If an invalid 'pm-with' is requested in get_messages, an
-        error is returned.
+        If an invalid "dm" narrow is requested in get_messages,
+        an error is returned.
         """
         self.login("hamlet")
         bad_stream_content: Tuple[int, List[None], List[str]] = (0, [], ["x", "y"])
-        self.exercise_bad_narrow_operand("pm-with", bad_stream_content, "Bad value for 'narrow'")
+        self.exercise_bad_narrow_operand("dm", bad_stream_content, "Bad value for 'narrow'")
 
     def test_bad_narrow_nonexistent_stream(self) -> None:
         self.login("hamlet")
@@ -3103,14 +3116,12 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_bad_narrow_nonexistent_email(self) -> None:
         self.login("hamlet")
         self.exercise_bad_narrow_operand(
-            "pm-with", ["non-existent-user@zulip.com"], "Invalid narrow operator: unknown user"
+            "dm", ["non-existent-user@zulip.com"], "Invalid narrow operator: unknown user"
         )
 
-    def test_bad_narrow_pm_with_id_list(self) -> None:
+    def test_bad_narrow_dm_id_list(self) -> None:
         self.login("hamlet")
-        self.exercise_bad_narrow_operand(
-            "pm-with", [-24], "Bad value for 'narrow': [[\"pm-with\",-24]]"
-        )
+        self.exercise_bad_narrow_operand("dm", [-24], "Bad value for 'narrow': [[\"dm\",-24]]")
 
     def test_message_without_rendered_content(self) -> None:
         """Older messages may not have rendered_content in the database"""
@@ -3589,7 +3600,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 0,
-                "narrow": f'[["pm-with", "{othello_email}"]]',
+                "narrow": f'[["dm", "{othello_email}"]]',
             },
             sql,
         )
@@ -3601,7 +3612,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
                 "anchor": 0,
                 "num_before": 1,
                 "num_after": 0,
-                "narrow": f'[["pm-with", "{othello_email}"]]',
+                "narrow": f'[["dm", "{othello_email}"]]',
             },
             sql,
         )
@@ -3613,7 +3624,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 9,
-                "narrow": f'[["pm-with", "{othello_email}"]]',
+                "narrow": f'[["dm", "{othello_email}"]]',
             },
             sql,
         )
@@ -3679,7 +3690,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
             sql,
         )
 
-        # Narrow to pms with yourself
+        # Narrow to direct messages with yourself
         sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query(
@@ -3687,7 +3698,7 @@ recipient_id = %(recipient_id_3)s AND upper(subject) = upper(%(param_2)s))\
                 "anchor": 0,
                 "num_before": 0,
                 "num_after": 9,
-                "narrow": f'[["pm-with", "{hamlet_email}"]]',
+                "narrow": f'[["dm", "{hamlet_email}"]]',
             },
             sql,
         )
