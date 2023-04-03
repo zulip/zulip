@@ -78,7 +78,7 @@ curl "https://sentry.io/api/0/organizations/$SENTRY_ORG/releases/" \
 
 if [ -n "$MERGE_BASE" ]; then
     echo "sentry: Setting commit range based on merge-base to upstream of $MERGE_BASE"
-    sudo -u zulip --preserve-env=SENTRY_AUTH_TOKEN sentry-cli releases --org="$SENTRY_ORG" set-commits "$SENTRY_RELEASE" --commit="zulip/zulip@$MERGE_BASE"
+    sentry-cli releases --org="$SENTRY_ORG" set-commits "$SENTRY_RELEASE" --commit="zulip/zulip@$MERGE_BASE"
 fi
 
 if [ -n "$SENTRY_FRONTEND_PROJECT" ]; then
