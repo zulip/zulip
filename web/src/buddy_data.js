@@ -196,11 +196,14 @@ export function get_title_data(user_ids_string, is_group) {
     const last_seen = user_last_seen_time_status(user_id);
     const is_my_user = people.is_my_user_id(user_id);
 
-    // Users has a status.
-    if (user_status.get_status_text(user_id)) {
+    const user_status_text_or_emoji =
+        user_status.get_status_text(user_id) || user_status.get_status_emoji(user_id)?.emoji_name;
+
+    // Users has a status or emoji.
+    if (user_status_text_or_emoji) {
         return {
             first_line: person.full_name,
-            second_line: user_status.get_status_text(user_id),
+            second_line: user_status_text_or_emoji,
             third_line: last_seen,
             show_you: is_my_user,
         };
