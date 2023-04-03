@@ -2,36 +2,20 @@
 import os
 from typing import Set
 
-from cssutils import profile
-from cssutils.profiles import Profiles, macros, properties
-from premailer import Premailer
+import css_inline
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 EMAIL_TEMPLATES_PATH = os.path.join(ZULIP_PATH, "templates", "zerver", "emails")
 CSS_SOURCE_PATH = os.path.join(EMAIL_TEMPLATES_PATH, "email.css")
 
 
-def configure_cssutils() -> None:
-    # These properties are not supported by cssutils by default and will
-    # result in warnings when premailer package is run.
-    properties[Profiles.CSS_LEVEL_2]["-ms-interpolation-mode"] = r"none|bicubic|nearest-neighbor"
-    properties[Profiles.CSS_LEVEL_2]["-ms-text-size-adjust"] = r"none|auto|{percentage}"
-    properties[Profiles.CSS_LEVEL_2]["mso-table-lspace"] = r"0|{num}(pt)"
-    properties[Profiles.CSS_LEVEL_2]["mso-table-rspace"] = r"0|{num}(pt)"
-    properties[Profiles.CSS_LEVEL_2]["-webkit-text-size-adjust"] = r"none|auto|{percentage}"
-    properties[Profiles.CSS_LEVEL_2]["mso-hide"] = "all"
-    properties[Profiles.CSS_LEVEL_2]["pointer-events"] = (
-        r"auto|none|visiblePainted|"
-        r"visibleFill|visibleStroke|"
-        r"visible|painted|fill|stroke|all|inherit"
-    )
-
-    profile.addProfiles(
-        [(Profiles.CSS_LEVEL_2, properties[Profiles.CSS_LEVEL_2], macros[Profiles.CSS_LEVEL_2])]
-    )
+def get_inliner_instance() -> css_inline.CSSInliner:
+    with open(CSS_SOURCE_PATH) as file:
+        content = file.read()
+    return css_inline.CSSInliner(extra_css=content)
 
 
-configure_cssutils()
+inliner = get_inliner_instance()
 
 
 def inline_template(template_source_name: str) -> None:
@@ -45,13 +29,11 @@ def inline_template(template_source_name: str) -> None:
 
     with open(template_path) as template_source_file:
         template_str = template_source_file.read()
-    output = Premailer(
-        template_str, external_styles=[CSS_SOURCE_PATH], allow_loading_external_files=True
-    ).transform()
+    output = inliner.inline(template_str)
 
     output = escape_jinja2_characters(output)
 
-    # Premailer.transform will try to complete the DOM tree,
+    # Inline method of css-inline will try to complete the DOM tree,
     # adding html, head, and body tags if they aren't there.
     # While this is correct for the email_base_default template,
     # it is wrong for the other templates that extend this
@@ -83,7 +65,7 @@ def escape_jinja2_characters(text: str) -> str:
 
 
 def strip_unnecessary_tags(text: str) -> str:
-    end_block = "</body>\n</html>"
+    end_block = "</body></html>"
     start_block = "{% extends"
     start = text.find(start_block)
     end = text.rfind(end_block)

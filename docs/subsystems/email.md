@@ -131,7 +131,7 @@ limited CSS support and generally require us to inject any CSS we're
 using in the emails into the email as inline styles. And then you
 also need both plain-text and HTML emails. We solve these problems
 using a combination of the
-[premailer](https://github.com/peterbe/premailer) library and having
+[css-inline](https://github.com/Stranger6667/css-inline) library and having
 two copies of each email (plain-text and HTML).
 
 So for each email, there are two source templates: the `.txt` version
@@ -139,7 +139,7 @@ So for each email, there are two source templates: the `.txt` version
 `.txt` version is used directly; while the `.source.html` template is
 processed by `scripts/setup/inline_email_css.py` (generating a `.html` template
 under `templates/zerver/emails/compiled`); that tool (powered by
-`premailer`) injects the CSS we use for styling our emails
+`css-inline`) injects the CSS we use for styling our emails
 (`templates/zerver/emails/email.css`) into the templates inline.
 
 What this means is that when you're editing emails, **you need to run

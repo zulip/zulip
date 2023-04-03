@@ -673,7 +673,7 @@ html_rules: List["Rule"] = [
             "web/templates/single_message.hbs",
             # Old-style email templates need to use inline style
             # attributes; it should be possible to clean these up
-            # when we convert these templates to use premailer.
+            # when we convert these templates to use css-inline.
             "templates/zerver/emails/email_base_messages.html",
             # Email log templates; should clean up.
             "templates/zerver/email.html",
