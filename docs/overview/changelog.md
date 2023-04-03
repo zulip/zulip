@@ -11,6 +11,90 @@ This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of all changes.
 
+#### Highlights
+
+- (Unfinished) Many significant visual changes as part of Zulip's
+  ongoing redesign project, including message feed headers, date
+  dividers, error banners and tooltips.
+- (Unfinished) Added support for unmuting a topic in a muted stream,
+  previously the 4th most upvoted GitHub issue.
+- Numerous improvements to the Help Center, including documentation
+  for how to to many common tasks in the Zulip mobile apps.
+- Redesigned the interface and permissions model for moving topics to
+  be independent from message content editing, providing a cleaner
+  experience and better configurability.
+- Renamed "Private messages" to "Direct messages" across the user
+  interface. We expect API changes to be integrated gradually over
+  coming releases due to backwards compatibility considerations.
+- Added a new personal privacy setting for to what extent the user's
+  email address should be shared with other users in the organization;
+  previously this was solely controlled by organization
+  administrators. This is presented to the user during account
+  creation.
+
+#### Full feature changelog
+
+- Added full support for using JWT authentication to integrate Zulip
+  with another application.
+- Added new stream setting controlling which users can remove other
+  subscribers from the stream.
+- Added new `z` keyboard shortcut to view a message in context.
+- Added new `=` keyboard shortcut to upvote an existing emoji reaction.
+- Clarified automated notifications when moving and resolving topics.
+- Improved many interaction details in the settings subsystem,
+  including how files are uploaded, hover behaviors, etc.
+- Improved the logged out experience to suggest logging in to see more
+  streams in the left sidebar.
+- Improved many subtle details of compose box autocomplete, file
+  uploads, and error handling. Browser undo now works more
+  consistently in the compose box.
+- Improved subscriber management in stream settings to support sorting
+  users and seeing their user cards after a click.
+- Improved previously unspecified behavior when multiple overlapping
+  linkifiers applied to syntax within a message.
+- Improved subject lines for email notifications in topics that have
+  been resolved so that email clients will thread them with the
+  pre-resolution topic.
+- Improved the Slack incoming integration's handling of fancier Slack
+  syntax.
+- Improved how uploaded files are served with the S3 file uploads
+  backend to better support browser caching.
+- Improved the instructions for data imports from third-party tools to
+  be much more detailed.
+- Improved the web application's main loading indicator.
+- Improved the visuals of todo and poll widgets.
+- Improved the content of onboarding emails.
+- Improved default for whether to include the Zulip realm name in
+  the subject line of email notifications.
+- Improved notification format for most Git integrations.
+- Improved rendering format for emoji inside headings.
+- Fixed missing localization for dates/times in the message feed.
+- Fixed a subtle issue causing files uploaded via the incoming email
+  gateway to not be viewable.
+- Fixed a subtle compose box issue that could cause a message to be
+  sent twice.
+- Fixed several subtle bugs involving messages that failed to send.
+- Fixed an issue where newly created users could get email
+  notifications for messages from Welcome Bot.
+- Fixed an issue the management command to garbage-collect uploaded
+  files that are no longer used in a message was not running in cron.
+- Fixed noticeable lag when marking messages as unread in the web app.
+- Added support for configurable hooks to be run when upgrading the
+  Zulip server.
+- Added support for using TLS to secure the RabbitMQ connection.
+- Added additional confirmation dialogs for actions deserving caution,
+  including marking all messages as read, removing the last user from a
+  private stream, and disabling all notifications for direct messages.
+- The Zulip API now includes a `ignored_parameters_unsupported` field
+  to help client developers debug when they are attempting to use a
+  parameter that the Zulip server does not support.
+- Migrated web application error reporting to use Sentry.
+- Significant portions of the original Bootstrap CSS framework have
+  been deleted. This is an ongoing project.
+- Converted many JavaScript modules to TypeScript.
+- Reorganized the codebase, with new web/, help/, and api_docs/
+  top-level directories.
+
 #### Upgrade notes for 7.0
 
 - When the [S3 storage backend](../production/upload-backends.md) is used for
