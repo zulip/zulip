@@ -18,6 +18,7 @@ from django.utils.timezone import now as timezone_now
 from django_sendfile.utils import _get_sendfile
 from PIL import Image
 from urllib3 import encode_multipart_formdata
+from urllib3.fields import RequestField
 
 import zerver.lib.upload
 from zerver.actions.create_realm import do_create_realm
@@ -183,13 +184,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         Test coverage for files without content-type in the metadata;
         in which case we try to guess the content-type from the filename.
         """
-        data, content_type = encode_multipart_formdata({"file": ("somefile", b"zulip!", None)})
+        field = RequestField("file", b"zulip!", filename="somefile")
+        field.make_multipart()
+        data, content_type = encode_multipart_formdata([field])
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
         )
         self.assert_json_success(result)
 
-        data, content_type = encode_multipart_formdata({"file": ("somefile.txt", b"zulip!", None)})
+        field = RequestField("file", b"zulip!", filename="somefile.txt")
+        field.make_multipart()
+        data, content_type = encode_multipart_formdata([field])
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
         )
