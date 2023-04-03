@@ -127,10 +127,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="stream", operand="NonExistingStream")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    def test_add_term_using_is_operator_and_private_operand(self) -> None:
-        term = dict(operator="is", operand="private")
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-
     def test_add_term_using_streams_operator_and_invalid_operand_should_raise_error(
         self,
     ) -> None:  # NEGATED
@@ -209,11 +205,15 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))",
         )
 
-    def test_add_term_using_is_operator_private_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="is", operand="private", negated=True)
+    def test_add_term_using_is_operator_and_dm_operand(self) -> None:
+        term = dict(operator="is", operand="dm")
+        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
+
+    def test_add_term_using_is_operator_dm_operand_and_negated(self) -> None:  # NEGATED
+        term = dict(operator="is", operand="dm", negated=True)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
-    def test_add_term_using_is_operator_and_non_private_operand(self) -> None:
+    def test_add_term_using_is_operator_and_non_dm_operand(self) -> None:
         for operand in ["starred", "mentioned", "alerted"]:
             term = dict(operator="is", operand=operand)
             self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
@@ -226,7 +226,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="is", operand="unread", negated=True)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
-    def test_add_term_using_is_operator_non_private_operand_and_negated(self) -> None:  # NEGATED
+    def test_add_term_using_is_operator_non_dm_operand_and_negated(self) -> None:  # NEGATED
         term = dict(operator="is", operand="starred", negated=True)
         where_clause = "WHERE (flags & %(flags_1)s) = %(param_1)s"
         params = dict(
@@ -522,6 +522,15 @@ class NarrowBuilderTest(ZulipTestCase):
 
         self.assertRaises(BadNarrowOperatorError, _build_query, term)
 
+    # Test "is:private" (legacy alias for "is:dm")
+    def test_add_term_using_is_operator_and_private_operand(self) -> None:
+        term = dict(operator="is", operand="private")
+        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
+
+    def test_add_term_using_is_operator_private_operand_and_negated(self) -> None:  # NEGATED
+        term = dict(operator="is", operand="private", negated=True)
+        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
+
     # Test that the underscore version of "pm-with" works.
     def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
         term = dict(operator="pm_with", operand=self.hamlet_email)
@@ -552,7 +561,7 @@ class NarrowLibraryTest(ZulipTestCase):
         fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/narrow.json")
         with open(fixtures_path, "rb") as f:
             scenarios = orjson.loads(f.read())
-        self.assert_length(scenarios, 10)
+        self.assert_length(scenarios, 11)
         for scenario in scenarios:
             narrow = scenario["narrow"]
             accept_events = scenario["accept_events"]
@@ -597,10 +606,14 @@ class NarrowLibraryTest(ZulipTestCase):
             )
         )
         self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "starred"}]))
-        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "private"}]))
+        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "dm"}]))
         self.assertTrue(is_spectator_compatible([{"operator": "streams", "operand": "public"}]))
+
         # Malformed input not allowed
         self.assertFalse(is_spectator_compatible([{"operator": "has"}]))
+
+        # "is:private" is a legacy alias for "is:dm".
+        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "private"}]))
 
 
 class IncludeHistoryTest(ZulipTestCase):
@@ -651,7 +664,12 @@ class IncludeHistoryTest(ZulipTestCase):
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile, False))
 
-        # History doesn't apply to PMs.
+        # History doesn't apply to direct messages.
+        narrow = [
+            dict(operator="is", operand="dm"),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, user_profile, False))
+        # "is:private" is a legacy alias for "is:dm".
         narrow = [
             dict(operator="is", operand="private"),
         ]
@@ -1539,7 +1557,14 @@ class GetOldMessagesTest(ZulipTestCase):
             result = self.client_get("/json/messages", dict(web_public_stream_get_params))
             self.assert_json_error(result, "Invalid subdomain", status_code=404)
 
-        # Cannot access private messages without login.
+        # Cannot access direct messages without login.
+        direct_messages_get_params: Dict[str, Union[int, str, bool]] = {
+            **get_params,
+            "narrow": orjson.dumps([dict(operator="is", operand="dm")]).decode(),
+        }
+        result = self.client_get("/json/messages", dict(direct_messages_get_params))
+        self.check_unauthenticated_response(result)
+        # "is:private" is a legacy alias for "is:dm".
         private_message_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
             "narrow": orjson.dumps([dict(operator="is", operand="private")]).decode(),
@@ -1550,11 +1575,11 @@ class GetOldMessagesTest(ZulipTestCase):
         # narrow should pass conditions in `is_spectator_compatible`.
         non_spectator_compatible_narrow_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
-            # "is:private" is not a is_spectator_compatible narrow.
+            # "is:dm" is not a is_spectator_compatible narrow.
             "narrow": orjson.dumps(
                 [
                     dict(operator="streams", operand="web-public"),
-                    dict(operator="is", operand="private"),
+                    dict(operator="is", operand="dm"),
                 ]
             ).decode(),
         }
@@ -1613,7 +1638,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def setup_web_public_test(self, num_web_public_message: int = 1) -> None:
         """
         Send N+2 messages, N in a web-public stream, then one in a non-web-public stream
-        and then a private message.
+        and then a direct message.
         """
         user_profile = self.example_user("iago")
         do_set_realm_property(
@@ -1633,7 +1658,7 @@ class GetOldMessagesTest(ZulipTestCase):
             user_profile, non_web_public_stream.name, content="non-web-public message"
         )
         self.send_personal_message(
-            user_profile, self.example_user("hamlet"), content="private message"
+            user_profile, self.example_user("hamlet"), content="direct message"
         )
         self.logout()
 

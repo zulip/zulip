@@ -133,7 +133,7 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
 
 def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
     """Changes to this function should come with corresponding changes to
-    BuildNarrowFilterTest."""
+    NarrowLibraryTest."""
     check_supported_events_narrow_filter(narrow)
 
     def narrow_filter(event: Mapping[str, Any]) -> bool:
@@ -156,7 +156,8 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
             elif operator == "sender":
                 if operand.lower() != message["sender_email"].lower():
                     return False
-            elif operator == "is" and operand == "private":
+            elif operator == "is" and operand in ["dm", "private"]:
+                # "is:private" is a legacy alias for "is:dm"
                 if message["type"] != "private":
                     return False
             elif operator == "is" and operand in ["starred"]:
@@ -336,7 +337,8 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        if operand == "private":
+        if operand in ["dm", "private"]:
+            # "is:private" is a legacy alias for "is:dm"
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
