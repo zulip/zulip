@@ -11,8 +11,8 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_name,
-    access_stream_for_unmute_topic_by_id,
-    access_stream_for_unmute_topic_by_name,
+    access_stream_to_remove_visibility_policy_by_id,
+    access_stream_to_remove_visibility_policy_by_name,
     check_for_exactly_one_stream_arg,
 )
 from zerver.lib.validator import check_int, check_string_in
@@ -50,10 +50,10 @@ def unmute_topic(
     error = _("Topic is not muted")
 
     if stream_name is not None:
-        stream = access_stream_for_unmute_topic_by_name(user_profile, stream_name, error)
+        stream = access_stream_to_remove_visibility_policy_by_name(user_profile, stream_name, error)
     else:
         assert stream_id is not None
-        stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
+        stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)
 
     do_set_user_topic_visibility_policy(
         user_profile, stream, topic_name, visibility_policy=UserTopic.VisibilityPolicy.INHERIT

@@ -491,7 +491,7 @@ def access_web_public_stream(stream_id: int, realm: Realm) -> Stream:
     return stream
 
 
-def access_stream_for_unmute_topic_by_name(
+def access_stream_to_remove_visibility_policy_by_name(
     user_profile: UserProfile, stream_name: str, error: str
 ) -> Stream:
     """
@@ -514,7 +514,7 @@ def access_stream_for_unmute_topic_by_name(
     return stream
 
 
-def access_stream_for_unmute_topic_by_id(
+def access_stream_to_remove_visibility_policy_by_id(
     user_profile: UserProfile, stream_id: int, error: str
 ) -> Stream:
     try:
