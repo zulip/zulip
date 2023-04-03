@@ -142,6 +142,17 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker opened [issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.check_webhook("issues", expected_topic, expected_message)
 
+    def test_issue_assigned(self) -> None:
+        expected_message = "sbansal1999 assigned [issue #7](https://github.com/sbansal1999/testing-gh/issues/7) (assigned to sbansal1999):\n\n~~~ quote\nIDK how this works, lets see if it can be fixed or not.\n~~~"
+        expected_topic = "testing-gh / issue #7 Sample Issue testing something"
+        self.check_webhook("issues__assigned", expected_topic, expected_message)
+
+    def test_issue_assigned_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "sbansal1999 assigned [issue #7 Sample Issue testing something](https://github.com/sbansal1999/testing-gh/issues/7) (assigned to sbansal1999):\n\n~~~ quote\nIDK how this works, lets see if it can be fixed or not.\n~~~"
+        self.check_webhook("issues__assigned", expected_topic, expected_message)
+
     def test_membership_msg(self) -> None:
         expected_message = (
             "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
