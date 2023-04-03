@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+source "$(dirname "$0")/../common/zulip_notify.sh"
+zulip_send "Starting deploy from $from to $to on $(hostname)"
