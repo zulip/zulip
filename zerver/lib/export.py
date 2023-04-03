@@ -1833,6 +1833,7 @@ def do_export_realm(
     exportable_user_ids: Optional[Set[int]] = None,
     public_only: bool = False,
     consent_message_id: Optional[int] = None,
+    export_as_active: Optional[bool] = None,
 ) -> str:
     response: TableData = {}
 
@@ -1876,6 +1877,10 @@ def do_export_realm(
     zerver_reaction: TableData = {}
     fetch_reaction_data(response=zerver_reaction, message_ids=message_ids)
     response.update(zerver_reaction)
+
+    # Override the "deactivated" flag on the realm
+    if export_as_active is not None:
+        response["zerver_realm"][0]["deactivated"] = not export_as_active
 
     # Write realm data
     export_file = os.path.join(output_dir, "realm.json")
@@ -2267,6 +2272,7 @@ def export_realm_wrapper(
     public_only: bool,
     percent_callback: Optional[Callable[[Any], None]] = None,
     consent_message_id: Optional[int] = None,
+    export_as_active: Optional[bool] = None,
 ) -> Optional[str]:
     tarball_path = do_export_realm(
         realm=realm,
@@ -2274,6 +2280,7 @@ def export_realm_wrapper(
         threads=threads,
         public_only=public_only,
         consent_message_id=consent_message_id,
+        export_as_active=export_as_active,
     )
     shutil.rmtree(output_dir)
     print(f"Tarball written to {tarball_path}")

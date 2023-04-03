@@ -541,6 +541,7 @@ class TestExport(ZulipTestCase):
                 output_dir=mock.ANY,
                 percent_callback=mock.ANY,
                 upload=False,
+                export_as_active=None,
             )
             mock_input.assert_called_once_with("Continue? [y/N] ")
 
