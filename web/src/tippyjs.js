@@ -116,6 +116,23 @@ export function initialize() {
         target: ".tippy-zulip-tooltip",
     });
 
+    delegate("body", {
+        target: ".tippy-left-sidebar-tooltip",
+        placement: "right",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
     // The below definitions are for specific tooltips that require
     // custom JavaScript code or configuration.  Note that since the
     // below specify the target directly, elements using those should
