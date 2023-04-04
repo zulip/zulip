@@ -19,6 +19,11 @@ import * as user_groups from "./user_groups";
 
 let group_list_widget;
 
+// Ideally this should be included in page params.
+// Like we have page_params.max_stream_name_length` and
+// `page_params.max_stream_description_length` for streams.
+export const max_user_group_name_length = 100;
+
 export function set_up_click_handlers() {
     $("#groups_overlay").on("click", ".left #clear_search_group_name", (e) => {
         const $input = $("#groups_overlay .left #search_group_name");
@@ -177,6 +182,7 @@ export function setup_page(callback) {
     function populate_and_fill() {
         const template_data = {
             can_create_or_edit_user_groups: settings_data.user_can_edit_user_groups(),
+            max_user_group_name_length,
         };
 
         const rendered = render_user_group_settings_overlay(template_data);
