@@ -10271,7 +10271,7 @@ paths:
                           the time interval the client should use for sending presence requests
                           to the server (and thus receive presence updates from the server).
 
-                          It is important for presence implementatios to use both this and
+                          It is important for presence implementations to use both this and
                           `server_presence_offline_threshold_seconds` correctly, so that a Zulip
                           server can change these values to manage the trade-off between load and
                           freshness of presence data.

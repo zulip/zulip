@@ -221,7 +221,7 @@ export class MessageListView {
         // These three data structures keep track of groups of messages in the DOM.
         //
         // The message_groups are blocks of messages rendered into the
-        // DOM that will share a common recipent bar heading.
+        // DOM that will share a common recipient bar heading.
         //
         // A message_container an object containing a Message object
         // plus additional computed metadata needed for rendering it
