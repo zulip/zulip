@@ -3,27 +3,33 @@ import $ from "jquery";
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
+import render_edit_invite_user_modal from "../templates/settings/edit_invite_user_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
+import {beforeSend, get_invite_streams} from "./invite";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
 const meta = {
     loaded: false,
+    invites: [],
 };
 
 export function reset() {
     meta.loaded = false;
+    meta.invites = [];
 }
 
 function failed_listing_invites(xhr) {
@@ -58,6 +64,7 @@ function populate_invites(invites_data) {
 
     add_invited_as_text(invites_data.invites);
 
+    meta.invites = invites_data.invites;
     const $invites_table = $("#admin_invites_table").expectOne();
     ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
@@ -177,6 +184,46 @@ export function set_up(initialize_event_handlers = true) {
     });
 }
 
+function get_invitation_data() {
+    const invite_as = Number.parseInt($("#invite_as").val(), 10);
+    const stream_ids = [];
+
+    $("#invite-stream-checkboxes input:checked").each(function () {
+        const stream_id = Number.parseInt($(this).val(), 10);
+        stream_ids.push(stream_id);
+    });
+
+    const data = {
+        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
+        invite_as,
+        stream_ids: JSON.stringify(stream_ids),
+    };
+    return data;
+}
+
+function do_edit_invite() {
+    const $invite_status = $("#dialog_error");
+    const data = get_invitation_data();
+
+    channel.patch({
+        url: "/json/invites/multiuse/" + meta.invite_id,
+        data,
+        beforeSend,
+        success() {
+            dialog_widget.close_modal();
+        },
+        error(xhr) {
+            const arr = JSON.parse(xhr.responseText);
+            ui_report.message(arr.msg, $invite_status, "alert-warning");
+        },
+        complete() {
+            $("#edit-invite-form .dialog_submit_button").text($t({defaultMessage: "Save changes"}));
+            $("#edit-invite-form .dialog_submit_button").prop("disabled", false);
+            $("#edit-invite-form .dialog_cancel_button").prop("disabled", false);
+        },
+    });
+}
+
 export function on_load_success(invites_data, initialize_event_handlers) {
     meta.loaded = true;
     populate_invites(invites_data);
@@ -211,6 +258,70 @@ export function on_load_success(invites_data, initialize_event_handlers) {
 
         $(".dialog_submit_button").attr("data-invite-id", meta.invite_id);
         $(".dialog_submit_button").attr("data-is-multiuse", meta.is_multiuse);
+    });
+
+    $(".admin_invites_table").on("click", ".edit-invite", (e) => {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
+        e.stopPropagation();
+        e.preventDefault();
+
+        meta.invite_id = Number.parseInt($(e.currentTarget).attr("data-invite-id"), 10);
+        const html_body = render_edit_invite_user_modal({
+            invite_as_options: settings_config.user_role_values,
+            is_admin: page_params.is_admin,
+            is_owner: page_params.is_owner,
+            streams: get_invite_streams(),
+            notifications_stream: stream_data.get_notifications_stream(),
+        });
+
+        function invite_user_modal_post_render() {
+            $("#edit-invite-form .dialog_submit_button").prop("disabled", true);
+            const initial_invite = meta.invites.find(
+                (invite) => invite.id === meta.invite_id && invite.is_multiuse,
+            );
+            for (const stream_id of initial_invite.stream_ids) {
+                $(`[value=${stream_id}]`).prop("checked", true);
+            }
+            $("#invite_as").val(initial_invite.invited_as);
+
+            function state_unchanged() {
+                const initial_streams = initial_invite.stream_ids.sort();
+                let selected_streams = [];
+                $("#streams_to_add input:checked").each((_, stream) => {
+                    const stream_id = Number.parseInt(stream.value, 10);
+                    selected_streams.push(stream_id);
+                });
+                selected_streams = selected_streams.sort();
+                return (
+                    selected_streams.length === initial_streams.length &&
+                    selected_streams.every((val, index) => val === initial_streams[index]) &&
+                    Number.parseInt($("#invite_as").val(), 10) === initial_invite.invited_as
+                );
+            }
+
+            $("#edit-invite-form").on("change", "input:checkbox, select", () => {
+                $("#edit-invite-form .dialog_submit_button").prop("disabled", state_unchanged());
+            });
+            $("#invite_check_all_button").on("click", () => {
+                $("#streams_to_add :checkbox").prop("checked", true);
+                $("#edit-invite-form .dialog_submit_button").prop("disabled", state_unchanged());
+            });
+            $("#invite_uncheck_all_button").on("click", () => {
+                $("#streams_to_add :checkbox").prop("checked", false);
+                $("#edit-invite-form .dialog_submit_button").prop("disabled", state_unchanged());
+            });
+        }
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Edit invite"}),
+            html_body,
+            html_submit_button: $t_html({defaultMessage: "Save changes"}),
+            id: "edit-invite-form",
+            loading_spinner: true,
+            on_click: do_edit_invite,
+            post_render: invite_user_modal_post_render,
+        });
     });
 
     $(".admin_invites_table").on("click", ".resend-invite", (e) => {

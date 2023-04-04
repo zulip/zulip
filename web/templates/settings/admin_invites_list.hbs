@@ -32,7 +32,17 @@
         <span>{{invited_as_text}}</span>
     </td>
     <td class="actions">
-        {{#unless is_multiuse}}
+        {{#if is_multiuse}}
+        <button
+          class="button rounded small edit-invite btn-warning"
+          {{#if disable_buttons}}disabled="disabled"{{/if}}
+          data-invite-id="{{id}}"
+          data-is-multiuse="{{is_multiuse}}"
+          data-tippy-content="{{t 'Edit'}}"
+          >
+            <i class="fa fa-pencil"></i>
+        </button>
+        {{else}}
         <button
           class="button rounded small resend-invite btn-warning"
           {{#if disable_buttons}}disabled="disabled"{{/if}}
@@ -41,7 +51,7 @@
           >
             <i class="fa fa-paper-plane"></i>
         </button>
-        {{/unless}}
+        {{/if}}
         <button
           class="button rounded small revoke-invite btn-danger"
           {{#if disable_buttons}}disabled="disabled"{{/if}}

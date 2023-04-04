@@ -472,7 +472,7 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: ".revoke-invite, .resend-invite",
+        target: ".edit-invite, .revoke-invite, .resend-invite",
         appendTo: () => document.querySelector(".organization-box"),
     });
 }
