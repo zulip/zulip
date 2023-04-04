@@ -47,6 +47,8 @@
     font-size: 1.375rem;
     font-weight: 600;
     line-height: 1.25;
+    overflow: hidden;
+    word-wrap: break-word;
 
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
