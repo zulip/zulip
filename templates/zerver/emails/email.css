@@ -1,4 +1,4 @@
-/* stylelint-disable color-no-hex  */
+/* stylelint-disable color-no-hex, media-feature-range-notation */
 /* hex color codes are used instead of our standard of hsl colors,
 because hex color codes are rendered by all email clients
 consistently.  Whereas HSL colors don't work with Hotmail. */
