@@ -8,18 +8,18 @@
 # glibc and musl (Alpine, Void, etc.) systems equally well.
 set -euo pipefail
 
-version=1.6.5
+version=1.6.7
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="tx-linux-amd64.tar.gz"
-        sha256=040c6f4c15c6ef609c532db60763133ad5bda113d00eae71bad11d31c80fedb7
+        sha256=8b328e8cccf8f9fe6dfbf7069c94d6408edb8657e7485386674349fd5a8b4cc5
         ;;
 
     aarch64)
         tarball="tx-linux-arm64.tar.gz"
-        sha256=16e764a4a8051b9c43052d6595402df6fc8fa207fb35c513a927f39f626ff137
+        sha256=c68673878f9ff611d76be1ad800a8207be326d466c18f008f85b91ffcbae2402
         ;;
 esac
 
