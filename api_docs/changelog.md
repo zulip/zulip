@@ -22,6 +22,8 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 171**
 
+* `PATCH /invites/multiuse`: Added support for editing multiuse invites
+  to users as admin with regards to role and associated streams.
 * `GET /invites`: Added the `stream_ids` field to be returned for all
   multiuse invite objects.
 

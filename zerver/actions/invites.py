@@ -476,6 +476,20 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
     notify_invites_changed(realm)
 
 
+def do_edit_multiuse_invite_link(
+    multiuse_invite: MultiuseInvite,
+    invited_as: int,
+    streams: Sequence[Stream],
+) -> None:
+    # The `streams` and `invited_as` fields of a `multiuse_invite` can be edited.
+    multiuse_invite.streams.set(streams)
+    multiuse_invite.invited_as = invited_as
+    multiuse_invite.save()
+
+    realm = multiuse_invite.referred_by.realm
+    notify_invites_changed(realm)
+
+
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:
     # These are two structurally for the caller's code path.
     assert prereg_user.referred_by is not None
