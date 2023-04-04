@@ -750,7 +750,7 @@ button.login-social-button {
     width: 328px;
     height: auto;
     /* Using 44px gives us more space between text and icon so that they don't overlap. */
-    /* Tested in Russian laguange which has the maximum text. */
+    /* Tested in Russian language which has the maximum text. */
     padding-left: 44px;
     line-height: 1;
 

@@ -6092,8 +6092,8 @@ class MobileAuthOTPTest(ZulipTestCase):
         result = otp_encrypt_api_key(api_key, otp)
         self.assertEqual(result, "4ad1e9f7" * 8)
 
-        decryped = otp_decrypt_api_key(result, otp)
-        self.assertEqual(decryped, api_key)
+        decrypted = otp_decrypt_api_key(result, otp)
+        self.assertEqual(decrypted, api_key)
 
 
 class FollowupEmailTest(ZulipTestCase):
