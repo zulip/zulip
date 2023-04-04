@@ -360,7 +360,6 @@ tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
 ./manage.py import '' ~/zulip-export-zcmpxfm6
 # ./scripts/start-server
-# ./manage.py reactivate_realm -r ''  # Reactivates the organization
 ```
 
 This could take several minutes to run depending on how much data you're
@@ -373,12 +372,11 @@ importing.
 The commands above create an imported organization on the root domain
 (`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
 custom subdomain, e.g. if you already have an existing organization on the
-root domain. Replace the last three lines above with the following, after replacing
+root domain. Replace the last two lines above with the following, after replacing
 `<subdomain>` with the desired subdomain.
 
 ```bash
 ./manage.py import <subdomain> ~/zulip-export-zcmpxfm6
-./manage.py reactivate_realm -r <subdomain>  # Reactivates the organization
 ```
 
 ### Logging in
