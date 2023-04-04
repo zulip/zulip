@@ -370,6 +370,7 @@ class UnsupportedWebhookEventTypeError(WebhookError):
     """
 
     code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
+    http_status_code = 200
     data_fields = ["webhook_name", "event_type"]
 
     def __init__(self, event_type: Optional[str]) -> None:
@@ -378,7 +379,9 @@ class UnsupportedWebhookEventTypeError(WebhookError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
+        return _(
+            "The '{event_type}' event isn't currently supported by the {webhook_name} webhook; ignoring"
+        )
 
 
 class AnomalousWebhookPayloadError(WebhookError):

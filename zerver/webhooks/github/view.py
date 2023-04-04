@@ -54,7 +54,7 @@ class Helper:
         self.include_title = include_title
 
     def log_unsupported(self, event: str) -> None:
-        summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
+        summary = f"The '{event}' event isn't currently supported by the GitHub webhook; ignoring"
         log_unsupported_webhook_event(
             summary=summary,
         )

@@ -546,7 +546,7 @@ A temporary team so that I can get some webhook fixtures!
         stack_info = m.call_args[1]["stack_info"]
 
         self.assertIn(
-            "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook",
+            "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook; ignoring",
             msg,
         )
         self.assertTrue(stack_info)
