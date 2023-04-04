@@ -102,7 +102,7 @@ function populate_invites(invites_data) {
 function do_revoke_invite() {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
-    const $revoke_button = meta.$current_revoke_invite_user_modal_row.find("button.revoke");
+    const $revoke_button = meta.$current_revoke_invite_user_modal_row.find("button.revoke-invite");
 
     if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
@@ -133,7 +133,7 @@ function do_revoke_invite() {
 
 function do_resend_invite() {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
-    const $resend_button = meta.$current_resend_invite_user_modal_row.find("button.resend");
+    const $resend_button = meta.$current_resend_invite_user_modal_row.find("button.resend-invite");
 
     if (modal_invite_id !== meta.invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
@@ -183,7 +183,7 @@ export function on_load_success(invites_data, initialize_event_handlers) {
     if (!initialize_event_handlers) {
         return;
     }
-    $(".admin_invites_table").on("click", ".revoke", (e) => {
+    $(".admin_invites_table").on("click", ".revoke-invite", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
@@ -213,7 +213,7 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         $(".dialog_submit_button").attr("data-is-multiuse", meta.is_multiuse);
     });
 
-    $(".admin_invites_table").on("click", ".resend", (e) => {
+    $(".admin_invites_table").on("click", ".resend-invite", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();

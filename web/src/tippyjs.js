@@ -470,4 +470,9 @@ export function initialize() {
         delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: ".revoke-invite, .resend-invite",
+        appendTo: () => document.querySelector(".organization-box"),
+    });
 }
