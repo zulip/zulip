@@ -127,8 +127,13 @@ elif action == "start":
 
 def restart_or_start(service: str) -> None:
     our_verb = action
-    if our_verb == "restart" and len(list_supervisor_processes([service], only_running=True)) == 0:
+    existing_services = list_supervisor_processes([service])
+    running_services = list_supervisor_processes([service], only_running=True)
+    if our_verb == "restart" and len(running_services) == 0:
         our_verb = "start"
+    elif our_verb == "start" and existing_services == running_services:
+        logging.info("%s already started!", service)
+        return
     subprocess.check_call(["supervisorctl", our_verb, service])
 
 
@@ -202,9 +207,11 @@ if has_application_server():
 # If we were doing this non-gracefully, or starting as opposed to
 # restarting, we need to turn the workers (back) on.  There's no
 # advantage to doing this not-all-at-once.
-if (action == "start" or args.less_graceful) and len(workers) > 0:
-    logging.info("Starting workers")
-    subprocess.check_call(["supervisorctl", "start", *workers])
+if action == "start" or args.less_graceful:
+    workers = list_supervisor_processes(workers, only_running=False)
+    if workers:
+        logging.info("Starting workers")
+        subprocess.check_call(["supervisorctl", "start", *workers])
 
 logging.info("Done!")
 print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
