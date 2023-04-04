@@ -237,7 +237,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             )
         destroy_event_queue(user_profile, client_descriptor.event_queue.id)
 
-        # If `enable_offline_email_notifications` is disabled, email otifications shouldn't
+        # If `enable_offline_email_notifications` is disabled, email notifications shouldn't
         # be sent even for PMs
         user_profile.enable_offline_email_notifications = False
         user_profile.save()
@@ -282,7 +282,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             )
         destroy_event_queue(user_profile, client_descriptor.event_queue.id)
 
-        # If `enable_offline_push_notifications` is disabled, push otifications shouldn't
+        # If `enable_offline_push_notifications` is disabled, push notifications shouldn't
         # be sent even for mentions
         user_profile.enable_offline_push_notifications = False
         user_profile.save()

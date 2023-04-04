@@ -401,7 +401,7 @@ input.text-error {
         text-align: left;
         /* 20-22vw for fitting content in the 4 column grid layout. We
            need to set max-width so to avoid content overflow in different
-           languagues on different widths. */
+           languages on different widths. */
         max-width: 21vw;
 
         @media (width < 1200px) {
