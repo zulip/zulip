@@ -2655,6 +2655,19 @@ select.invite-as {
     margin-right: 0;
 }
 
+.inline-status-emoji {
+    /* Treat as an inline flex container, with an anonymous block around
+      the username text node, for positioning status emoji */
+    display: inline-flex;
+
+    .status-emoji {
+        /* Preserve the distance between the emoji
+           and username that was previously due to
+           whitespace. */
+        margin-left: 6px;
+    }
+}
+
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;

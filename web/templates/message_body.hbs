@@ -4,7 +4,7 @@
 <span class="message_sender no-select">
     {{#if include_sender}}
         <span class="sender_info_hover sender_name auto-select" role="button" tabindex="0">
-            <span class="view_user_card_tooltip" data-tooltip-template-id="view-user-card-tooltip-template">
+            <span class="view_user_card_tooltip inline-status-emoji" data-tooltip-template-id="view-user-card-tooltip-template">
                 {{msg/sender_full_name}}
                 {{#unless status_message}}
                 {{> status_emoji msg/status_emoji_info}}
