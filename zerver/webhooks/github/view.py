@@ -490,6 +490,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         url=payload["review"]["html_url"].tame(check_string),
         type="PR review",
         title=title if include_title else None,
+        message=payload["review"]["body"].tame(check_string),
     )
 
 
