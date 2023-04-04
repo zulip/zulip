@@ -45,7 +45,9 @@ def send_presence_changed(
     # The mobile app handles these events so we need to use the old format.
     # The format of the event should also account for the slim_presence
     # API parameter when this becomes possible in the future.
-    presence_dict = format_legacy_presence_dict(presence)
+    presence_dict = format_legacy_presence_dict(
+        presence.last_active_time, presence.last_connected_time
+    )
     event = dict(
         type="presence",
         email=user_profile.email,
