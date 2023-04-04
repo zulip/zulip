@@ -242,6 +242,7 @@ function open_invite_user_modal(e) {
 
     gear_menu.close();
 
+    const streams = get_invite_streams();
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
     const html_body = render_invite_user_modal({
         is_admin: page_params.is_admin,
@@ -256,6 +257,9 @@ function open_invite_user_modal(e) {
 
     function invite_user_modal_post_render() {
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+        for (const stream of streams.filter((stream) => stream.default_stream)) {
+            $(`input[value=${stream.stream_id}]`).prop("checked", true);
+        }
 
         autosize($("#invitee_emails").trigger("focus"));
 

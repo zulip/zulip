@@ -37,46 +37,6 @@
             <p id="custom_expires_on"></p>
         </div>
     </div>
-    <div class="input-group">
-        <label for="invite_as">{{t "User(s) join as" }}
-            {{> help_link_widget link="/help/roles-and-permissions" }}
-        </label>
-        <select id="invite_as" class="invite-as bootstrap-focus-style">
-            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
-            {{#if is_admin}}
-            <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
-            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Organization administrators" }}</option>
-            {{/if}}
-            {{#if is_owner}}
-            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Organization owners" }}</option>
-            {{/if}}
-        </select>
-    </div>
-    <div>
-        <label>{{t "Streams they should join" }}</label>
-        <div id="streams_to_add">
-            <div class="invite-stream-controls">
-                <button class="btn btn-link" type="button" id="invite_check_all_button">{{t "Check all" }}</button> |
-                <button class="btn btn-link" type="button" id="invite_uncheck_all_button">{{t "Uncheck all" }}</button>
-            </div>
-            <div id="invite-stream-checkboxes" class="new-style">
-                {{#each streams}}
 
-                    <label class="checkbox display-block">
-                        <input type="checkbox" name="stream" value="{{stream_id}}"
-                          {{#if default_stream}}checked="checked"{{/if}} />
-                        <span></span>
-                        {{#if (or invite_only is_web_public)}} {{>stream_privacy}} {{name}}
-                        {{else}}
-                        #{{name}}
-                        {{/if}}
-                        {{#if (eq name ../notifications_stream)}}
-                        <i>({{t 'Receives new stream announcements' }})</i>
-                        {{/if}}
-                    </label>
-                {{/each}}
-            </div>
-        </div>
-    </div>
+    {{>invite_role_and_streams_form}}
 </form>
