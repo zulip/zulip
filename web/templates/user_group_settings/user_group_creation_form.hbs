@@ -9,7 +9,7 @@
                     {{t "User group name" }}
                 </label>
                 <input type="text" name="user_group_name" id="create_user_group_name" class="settings_text_input"
-                  placeholder="{{t 'User group name' }}" value="" autocomplete="off" />
+                  placeholder="{{t 'User group name' }}" value="" autocomplete="off" maxlength="{{ max_user_group_name_length }}"/>
                 <div id="user_group_name_error" class="user_group_creation_error"></div>
             </section>
             <section class="block">
