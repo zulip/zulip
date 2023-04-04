@@ -33,6 +33,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
+from sentry_sdk import capture_exception
 from two_factor.utils import default_device
 from typing_extensions import Concatenate, ParamSpec
 
@@ -368,6 +369,8 @@ def webhook_view(
                 else:
                     if isinstance(err, WebhookError):
                         err.webhook_name = webhook_client_name
+                    if isinstance(err, UnsupportedWebhookEventTypeError):
+                        capture_exception(err)
                     log_exception_to_webhook_logger(request, err)
                 raise err
 
@@ -777,6 +780,8 @@ def authenticated_rest_api_view(
 
                 if isinstance(err, WebhookError):
                     err.webhook_name = webhook_client_name
+                if isinstance(err, UnsupportedWebhookEventTypeError):
+                    capture_exception(err)
                 log_exception_to_webhook_logger(request, err)
                 raise err
 
