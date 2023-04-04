@@ -52,3 +52,6 @@ class UpdownHookTests(WebhookTestCase):
             topic_name=topic_name,
             content=up_content,
         )
+
+    def test_unknown_event(self) -> None:
+        self.check_webhook("unknown_event", expect_noop=True)
