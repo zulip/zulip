@@ -2631,10 +2631,13 @@ select.invite-as {
 .emoji {
     height: 25px;
     width: 25px;
-    position: relative;
-    margin-top: -7px;
+    /* Maintain `vertical-align` for inline-block styles in messages: */
     vertical-align: middle;
-    top: 3px;
+    /* But, for all others, use flexbox and its align-self property.
+      What is excellent about this is that flexbox will ignore the
+      `vertical-align` value, while inline-block contexts will ignore
+      the `align-self` property: */
+    align-self: center;
 }
 
 .status-emoji {
