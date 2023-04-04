@@ -1115,7 +1115,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-height: 600px) {
+@media (height <= 600px) {
     .password-container {
         margin-top: 10px;
     }

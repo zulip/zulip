@@ -139,7 +139,7 @@
     }
 
     /* #footer responsivity and global fixes */
-    @media (max-width: 940px) {
+    @media (width <= 940px) {
         .footer__container {
             justify-content: flex-start;
             row-gap: 0;
@@ -150,7 +150,7 @@
         }
     }
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
         .footer__legal {
             padding: 0 10px;
         }
@@ -169,7 +169,7 @@
         }
     }
 
-    @media (max-width: 400px) {
+    @media (width <= 400px) {
         .footer__container {
             gap: 0;
             flex-direction: column;
