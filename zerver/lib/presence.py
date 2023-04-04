@@ -48,36 +48,18 @@ def get_modern_user_presence_info(
 def get_legacy_user_presence_info(
     last_active_time: datetime.datetime, last_connected_time: datetime.datetime
 ) -> Dict[str, Any]:
-    # Reformats the modern UserPresence data structure so that legacy
-    # API clients can still access presence data.
-    #
-    # We expect this code to remain mostly unchanged until we can delete it.
-
-    if timezone_now() - last_active_time > datetime.timedelta(minutes=2):
-        dt = last_connected_time
-        status = UserPresence.LEGACY_STATUS_IDLE
-    else:
-        dt = last_active_time
-        status = UserPresence.LEGACY_STATUS_ACTIVE
-
-    client_name = "website"
-    timestamp = datetime_to_timestamp(dt)
-
-    # This field was never used by clients of the legacy API, so we
-    # just set it to a fixed value for API format compatibility.
-    pushable = False
+    """
+    Reformats the modern UserPresence data structure so that legacy
+    API clients can still access presence data.
+    We expect this code to remain mostly unchanged until we can delete it.
+    """
 
     # Now we put things together in the legacy presence format with
     # one client + an `aggregated` field.
     #
     # TODO: Look at whether we can drop to just the "aggregated" field
     # if no clients look at the rest.
-    most_recent_info = dict(
-        client=client_name,
-        status=status,
-        timestamp=timestamp,
-        pushable=pushable,
-    )
+    most_recent_info = format_legacy_presence_dict(last_active_time, last_connected_time)
 
     result = {}
 
@@ -89,28 +71,34 @@ def get_legacy_user_presence_info(
         timestamp=most_recent_info["timestamp"],
     )
 
-    result[client_name] = most_recent_info
+    result["website"] = most_recent_info
 
     return result
 
 
-def format_legacy_presence_dict(presence: UserPresence) -> Dict[str, Any]:
+def format_legacy_presence_dict(
+    last_active_time: datetime.datetime, last_connected_time: datetime.datetime
+) -> Dict[str, Any]:
     """
     This function assumes it's being called right after the presence object was updated,
     and is not meant to be used on old presence data.
     """
     if (
-        presence.last_active_time
+        last_active_time
         + datetime.timedelta(seconds=settings.PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS)
-        >= presence.last_connected_time
+        >= last_connected_time
     ):
         status = UserPresence.LEGACY_STATUS_ACTIVE
-        timestamp = datetime_to_timestamp(presence.last_active_time)
+        timestamp = datetime_to_timestamp(last_active_time)
     else:
         status = UserPresence.LEGACY_STATUS_IDLE
-        timestamp = datetime_to_timestamp(presence.last_connected_time)
+        timestamp = datetime_to_timestamp(last_connected_time)
 
-    return dict(client="website", status=status, timestamp=timestamp, pushable=False)
+    # This field was never used by clients of the legacy API, so we
+    # just set it to a fixed value for API format compatibility.
+    pushable = False
+
+    return dict(client="website", status=status, timestamp=timestamp, pushable=pushable)
 
 
 def get_presence_for_user(
