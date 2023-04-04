@@ -193,6 +193,7 @@ h3,
 .play_notification_sound {
     display: inline;
     margin-left: 4px;
+    vertical-align: middle;
 
     & i {
         font-size: 22px;
