@@ -17342,13 +17342,20 @@ components:
             email:
               type: string
               description: |
-                The email address of the user who owns the API key
+                The email address of the user who owns the API key.
+            user_id:
+              type: integer
+              description: |
+                The unique ID of the user who owns the API key.
+
+                **Changes**: New in Zulip 7.0 (feature level 171).
           example:
             {
               "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
               "email": "iago@zulip.com",
               "msg": "",
               "result": "success",
+              "user_id": 5,
             }
     CodedError:
       allOf:

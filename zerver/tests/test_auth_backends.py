@@ -4460,7 +4460,8 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
-        self.assert_json_success(result)
+        json_response = self.assert_json_success(result)
+        self.assertEqual(json_response["user_id"], self.user_profile.id)
 
     def test_invalid_email(self) -> None:
         result = self.client_post(
@@ -4500,7 +4501,8 @@ class FetchAPIKeyTest(ZulipTestCase):
                 "/api/v1/fetch_api_key",
                 dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
             )
-        self.assert_json_success(result)
+        json_response = self.assert_json_success(result)
+        self.assertEqual(json_response["user_id"], self.user_profile.id)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
@@ -4530,7 +4532,8 @@ class FetchAPIKeyTest(ZulipTestCase):
             "/api/v1/fetch_api_key",
             dict(username="hamlet", password=self.ldap_password("hamlet")),
         )
-        self.assert_json_success(result)
+        json_response = self.assert_json_success(result)
+        self.assertEqual(json_response["user_id"], self.user_profile.id)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
@@ -4663,6 +4666,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         data = self.assert_json_success(result)
         self.assertEqual(data["email"], self.email)
+        self.assertEqual(data["user_id"], self.user_profile.id)
         user_api_keys = get_all_api_keys(self.user_profile)
         self.assertIn(data["api_key"], user_api_keys)
 

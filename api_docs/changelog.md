@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 171**:
+
+* [`POST /fetch_api_key`](/api/fetch-api-key),
+  [`POST /dev_fetch_api_key`](/api/dev-fetch-api-key): The return values
+  for these endpoints now include the unique ID of the user who owns the
+  API key.
+
 **Feature level 170**
 
 * [`POST /user_topics`](/api/update-user-topic):
