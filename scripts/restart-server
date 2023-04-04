@@ -115,6 +115,14 @@ if (
 ):
     action = "start"
     verbing = "Starting"
+elif action == "start":
+    existing_services = list_supervisor_processes([*workers, "zulip-django", "zulip-tornado:*"])
+    running_services = list_supervisor_processes(
+        [*workers, "zulip-django", "zulip-tornado:*"], only_running=True
+    )
+    if existing_services == running_services:
+        logging.info("Zulip is already started; nothing to do!")
+        sys.exit(0)
 
 
 def restart_or_start(service: str) -> None:
