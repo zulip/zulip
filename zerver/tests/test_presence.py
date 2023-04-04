@@ -679,7 +679,7 @@ class FormatLegacyPresenceDictTest(ZulipTestCase):
             user_profile=hamlet, realm=hamlet.realm, last_active_time=now, last_connected_time=now
         )
         self.assertEqual(
-            format_legacy_presence_dict(presence),
+            format_legacy_presence_dict(presence.last_active_time, presence.last_connected_time),
             dict(
                 client="website",
                 status=UserPresence.LEGACY_STATUS_ACTIVE,
@@ -695,7 +695,7 @@ class FormatLegacyPresenceDictTest(ZulipTestCase):
             last_connected_time=now,
         )
         self.assertEqual(
-            format_legacy_presence_dict(presence),
+            format_legacy_presence_dict(presence.last_active_time, presence.last_connected_time),
             dict(
                 client="website",
                 status=UserPresence.LEGACY_STATUS_ACTIVE,
@@ -711,7 +711,7 @@ class FormatLegacyPresenceDictTest(ZulipTestCase):
             last_connected_time=now,
         )
         self.assertEqual(
-            format_legacy_presence_dict(presence),
+            format_legacy_presence_dict(presence.last_active_time, presence.last_connected_time),
             dict(
                 client="website",
                 status=UserPresence.LEGACY_STATUS_IDLE,
