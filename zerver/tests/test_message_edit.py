@@ -1354,8 +1354,11 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        # This code path adds 19 (12 + 4/visibility_policy + 1/user + 1) to
-        # the number of database queries for moving a topic.
+        # Verify how many total database queries are required. We
+        # expect 6 queries (4/visibility_policy to update the muted
+        # state + 1/user with a UserTopic row for the events data)
+        # beyond what is typical were there not UserTopic records to
+        # update. Ideally, we'd eliminate the per-user component.
         with self.assert_database_query_count(19):
             check_update_message(
                 user_profile=hamlet,
