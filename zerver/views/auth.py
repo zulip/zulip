@@ -1000,7 +1000,10 @@ def api_fetch_api_key(
 
     api_key = process_api_key_fetch_authenticate_result(request, user_profile)
 
-    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(
+        request,
+        data={"api_key": api_key, "email": user_profile.delivery_email, "user_id": user_profile.id},
+    )
 
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
