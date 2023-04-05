@@ -680,14 +680,48 @@ input[type="checkbox"] {
     #emoji-file-name {
         font-size: 14px;
         white-space: nowrap;
-        height: 1rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        width: 75%;
         font-style: italic;
+        color: hsl(0deg 0% 67%);
+        padding-bottom: 0.5rem;
+    }
+
+    #emoji_file_input_error div {
         color: hsl(0deg 0% 67%);
     }
 
     #emoji_preview_text {
         margin-top: 6px;
     }
+
+    #emoji_preview_image {
+        object-fit: cover;
+    }
+
+    #emoji_image_select_button {
+        float: right;
+        background-color: hsl(240deg 96% 68%);
+        color: hsl(0deg 0% 100%) !important;
+    }
+}
+
+.cropper-modal {
+    background-color: transparent;
+}
+
+.uppy-Root {
+    margin-bottom: 0.3rem;
+}
+
+.uppy-DashboardContent-back,
+.uppy-DashboardContent-save {
+    display: none;
+}
+
+.uppy-ImageCropper-controls {
+    gap: 0.7rem;
 }
 
 #emoji_file_input_error {
@@ -890,13 +924,39 @@ input[type="checkbox"] {
         margin: 5px 0 8px;
     }
 
-    .edit_bot_avatar_preview_text {
+    #edit_bot_avatar_preview_text {
         display: none;
     }
 }
 
 #add_bot_preview_text {
     display: none;
+}
+
+#bot_avatar_file {
+    max-width: 75%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edit_bot_avatar_file {
+    max-width: 75%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#edit_bot_avatar_select_button {
+    float: right;
+    background-color: hsl(240deg 96% 68%);
+    color: hsl(0deg 0% 100%) !important;
+}
+
+#bot_avatar_select_button {
+    float: right;
+    background-color: hsl(240deg 96% 68%);
+    color: hsl(0deg 0% 100%) !important;
 }
 
 .edit_bot_avatar_preview_image,

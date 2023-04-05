@@ -23,6 +23,10 @@ export function build_bot_create_widget() {
     const $upload_button = $("#bot_avatar_upload_button");
     const $preview_text = $("#add_bot_preview_text");
     const $preview_image = $("#add_bot_preview_image");
+    const $select_button = $("#bot_avatar_select_button");
+    const $all_elements_to_hide = $(
+        ".new-bot-form :not(#avatar_upload_container, #payload_url_inputbox, #config_inputbox,  #service_name_list), .modal__footer, #optional_text, #bot_avatar_file",
+    );
     return upload_widget.build_widget(
         get_file_input,
         $file_name_field,
@@ -31,6 +35,8 @@ export function build_bot_create_widget() {
         $upload_button,
         $preview_text,
         $preview_image,
+        $select_button,
+        $all_elements_to_hide,
     );
 }
 
@@ -43,8 +49,12 @@ export function build_bot_edit_widget($target) {
     const $input_error = $target.find(".edit_bot_avatar_error");
     const $clear_button = $target.find(".edit_bot_avatar_clear_button");
     const $upload_button = $target.find(".edit_bot_avatar_upload_button");
-    const $preview_text = $target.find(".edit_bot_avatar_preview_text");
+    const $preview_text = $target.find("#edit_bot_avatar_preview_text");
     const $preview_image = $target.find(".edit_bot_avatar_preview_image");
+    const $select_button = $("#edit_bot_avatar_select_button");
+    const $all_elements_to_hide = $(
+        ".edit_bot_form :not(.edit-avatar-section,.dropdown-menu, #current_bot_avatar_image), .deactivate_bot_button , .modal__footer",
+    );
 
     return upload_widget.build_widget(
         get_file_input,
@@ -54,6 +64,8 @@ export function build_bot_edit_widget($target) {
         $upload_button,
         $preview_text,
         $preview_image,
+        $select_button,
+        $all_elements_to_hide,
     );
 }
 

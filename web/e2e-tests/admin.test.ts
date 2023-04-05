@@ -186,6 +186,8 @@ async function test_add_emoji(page: Page): Promise<void> {
     await (emoji_upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
         "static/images/logo/zulip-icon-128x128.png",
     );
+    await page.click("#emoji_image_select_button");
+    await page.waitForSelector("#add-custom-emoji-modal .dialog_submit_button", {visible: true});
     await page.click("#add-custom-emoji-modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 

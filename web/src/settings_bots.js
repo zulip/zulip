@@ -21,6 +21,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
 import * as ui_report from "./ui_report";
+import * as upload_widget from "./upload_widget";
 import * as user_profile from "./user_profile";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
@@ -230,11 +231,8 @@ export function add_a_new_bot() {
             });
             formData.append("config_data", JSON.stringify(config_data));
         }
-        for (const [i, file] of Array.prototype.entries.call(
-            $("#bot_avatar_file_input")[0].files,
-        )) {
-            formData.append("file-" + i, file);
-        }
+
+        formData.append("file-0", upload_widget.get_cropped_file());
 
         channel.post({
             url: "/json/bots",
@@ -393,10 +391,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             formData.append("config_data", JSON.stringify(config_data));
         }
 
-        const $file_input = $("#bot-edit-form").find(".edit_bot_avatar_file_input");
-        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
-            formData.append("file-" + i, file);
-        }
+        formData.append("file-0", upload_widget.get_cropped_file());
 
         channel.patch({
             url,

@@ -165,9 +165,14 @@ export function add_custom_emoji_post_render() {
     const $upload_button = $("#emoji_upload_button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
+    const $select_button = $("#emoji_image_select_button");
+    const $all_elements_to_hide = $(
+        "#add-custom-emoji-modal .dialog_submit_button, #add-custom-emoji-modal .dialog_cancel_button,.emoji_name_input",
+    );
     const $placeholder_icon = $("#emoji_placeholder_icon");
 
     $preview_image.hide();
+    $preview_text.hide();
 
     upload_widget.build_widget(
         get_file_input,
@@ -177,6 +182,9 @@ export function add_custom_emoji_post_render() {
         $upload_button,
         $preview_text,
         $preview_image,
+        $select_button,
+        $all_elements_to_hide,
+        $placeholder_icon,
     );
 
     get_file_input().on("input", () => {
@@ -254,9 +262,7 @@ function show_modal() {
         }
 
         const formData = new FormData();
-        for (const [i, file] of Array.prototype.entries.call($("#emoji_file_input")[0].files)) {
-            formData.append("file-" + i, file);
-        }
+        formData.append("file-0", upload_widget.get_cropped_file());
 
         if (is_default_emoji(emoji.name)) {
             if (!page_params.is_admin) {
