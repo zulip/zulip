@@ -76,6 +76,7 @@ run_test("get_emoji_details_by_name", () => {
         reaction_type: "zulip_extra_emoji",
         emoji_code: "zulip",
         url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
+        still_url: null,
     });
 
     // Test adding realm emoji.
@@ -97,6 +98,7 @@ run_test("get_emoji_details_by_name", () => {
         reaction_type: "realm_emoji",
         emoji_code: "102",
         url: "/some/path/to/emoji",
+        still_url: null,
     });
 
     // Test sending without emoji name.

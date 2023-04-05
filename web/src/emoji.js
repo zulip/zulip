@@ -217,29 +217,27 @@ export function get_emoji_details_by_name(emoji_name) {
         throw new Error("Emoji name must be passed.");
     }
 
-    const emoji_info = {emoji_name};
-
     if (active_realm_emojis.has(emoji_name)) {
-        if (emoji_name === "zulip") {
-            emoji_info.reaction_type = "zulip_extra_emoji";
-        } else {
-            emoji_info.reaction_type = "realm_emoji";
-        }
         const emoji_code_info = active_realm_emojis.get(emoji_name);
-        emoji_info.emoji_code = emoji_code_info.id;
-        emoji_info.url = emoji_code_info.emoji_url;
-        if (emoji_code_info.still_url) {
-            emoji_info.still_url = emoji_code_info.still_url;
-        }
-    } else {
-        const codepoint = get_emoji_codepoint(emoji_name);
-        if (codepoint === undefined) {
-            throw new Error("Bad emoji name: " + emoji_name);
-        }
-        emoji_info.reaction_type = "unicode_emoji";
-        emoji_info.emoji_code = codepoint;
+        return {
+            emoji_name,
+            emoji_code: emoji_code_info.id,
+            url: emoji_code_info.emoji_url,
+            still_url: emoji_code_info.still_url,
+            reaction_type: emoji_name === "zulip" ? "zulip_extra_emoji" : "realm_emoji",
+        };
     }
-    return emoji_info;
+
+    const codepoint = get_emoji_codepoint(emoji_name);
+    if (codepoint === undefined) {
+        throw new Error("Bad emoji name: " + emoji_name);
+    }
+
+    return {
+        emoji_name,
+        reaction_type: "unicode_emoji",
+        emoji_code: codepoint,
+    };
 }
 
 export function get_emoji_details_for_rendering(opts) {
