@@ -20,20 +20,5 @@ class zulip::hooks::sentry {
     target => $bin,
   }
 
-  file { '/etc/zulip/hooks/pre-deploy.d/sentry.hook':
-    ensure => file,
-    mode   => '0755',
-    owner  => 'zulip',
-    group  => 'zulip',
-    source => 'puppet:///modules/zulip/hooks/pre-deploy.d/sentry.hook',
-    tag    => ['hooks'],
-  }
-  file { '/etc/zulip/hooks/post-deploy.d/sentry.hook':
-    ensure => file,
-    mode   => '0755',
-    owner  => 'zulip',
-    group  => 'zulip',
-    source => 'puppet:///modules/zulip/hooks/post-deploy.d/sentry.hook',
-    tag    => ['hooks'],
-  }
+  zulip::hooks::file { ['pre-deploy.d/sentry.hook', 'post-deploy.d/sentry.hook']: }
 }
