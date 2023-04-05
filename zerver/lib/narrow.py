@@ -272,6 +272,8 @@ class NarrowBuilder:
             "dm": self.by_dm,
             # "pm-with:" is a legacy alias for "dm:"
             "pm-with": self.by_dm,
+            "dm-including": self.by_dm_including,
+            # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
             # for documented search operators with dashes, also implicitly supported
@@ -604,6 +606,49 @@ class NarrowBuilder:
 
         return set(self_recipient_ids) & set(narrow_recipient_ids)
 
+    def by_dm_including(
+        self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
+    ) -> Select:
+        # This operator does not support is_web_public_query.
+        assert not self.is_web_public_query
+        assert self.user_profile is not None
+
+        try:
+            if isinstance(operand, str):
+                narrow_user_profile = get_user_including_cross_realm(operand, self.realm)
+            else:
+                narrow_user_profile = get_user_by_id_in_realm_including_cross_realm(
+                    operand, self.realm
+                )
+        except UserProfile.DoesNotExist:
+            raise BadNarrowOperatorError("unknown user " + str(operand))
+
+        # "dm-including" when combined with the user's own ID/email as the operand
+        # should return all group and 1:1 direct messages (including direct messages
+        # with self), so the simplest query to get these messages is the same as "is:dm".
+        if narrow_user_profile.id == self.user_profile.id:
+            cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
+            return query.where(maybe_negate(cond))
+
+        # all direct messages including another person (group and 1:1)
+        huddle_recipient_ids = self._get_huddle_recipients(narrow_user_profile)
+
+        self_recipient_id = self.user_profile.recipient_id
+        # See note above in `by_dm` about needing bidirectional messages
+        # for direct messages with another person.
+        cond = or_(
+            and_(
+                column("sender_id", Integer) == narrow_user_profile.id,
+                column("recipient_id", Integer) == self_recipient_id,
+            ),
+            and_(
+                column("sender_id", Integer) == self.user_profile.id,
+                column("recipient_id", Integer) == narrow_user_profile.recipient_id,
+            ),
+            column("recipient_id", Integer).in_(huddle_recipient_ids),
+        )
+        return query.where(maybe_negate(cond))
+
     def by_group_pm_with(
         self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
     ) -> Select:
@@ -700,7 +745,7 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
             # that supports user IDs. Relevant code is located in web/src/message_fetch.js
             # in handle_operators_supporting_id_based_api function where you will need to update
             # operators_supporting_id, or operators_supporting_ids array.
-            operators_supporting_id = ["sender", "group-pm-with", "stream"]
+            operators_supporting_id = ["sender", "group-pm-with", "stream", "dm-including"]
             operators_supporting_ids = ["pm-with", "dm"]
             operators_non_empty_operand = {"search"}
 
@@ -839,9 +884,9 @@ def exclude_muting_conditions(
     # muted messages exist where their absence might make conversation
     # difficult to understand. As a result, we do not need to consider
     # muted users in this server-side logic for returning messages to
-    # clients. (We could in theory exclude PMs from muted users, but
-    # they're likely to be sufficiently rare to not be worth extra
-    # logic/testing here).
+    # clients. (We could in theory exclude direct messages from muted
+    # users, but they're likely to be sufficiently rare to not be worth
+    # extra logic/testing here).
 
     return conditions
 
