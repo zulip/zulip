@@ -181,4 +181,4 @@ window.addEventListener("popstate", () => {
 
 $("body").addClass("noscroll");
 
-$(".highlighted")[0].scrollIntoView({block: "center"});
+$(".highlighted")[0]?.scrollIntoView({block: "center"});
