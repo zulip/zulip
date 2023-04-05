@@ -29,6 +29,7 @@ from scripts.lib.zulip_tools import (
     assert_running_as_root,
     get_config,
     get_config_file,
+    get_zulip_pwent,
     listening_publicly,
     parse_os_release,
     parse_version_from,
@@ -445,11 +446,22 @@ def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
     path = f"/etc/zulip/hooks/{kind}.d"
     if not os.path.exists(path):
         return
+    # Pass in, via environment variables, the old/new "version
+    # string" (which is a `git describe` output)
+    env = os.environ.copy()
+    env["ZULIP_OLD_VERSION"] = old_version
+    env["ZULIP_NEW_VERSION"] = NEW_ZULIP_VERSION
+
+    # preexec_fn=su_to_zulip normally handles this, but our explicit
+    # env overrides that
+    env["HOME"] = get_zulip_pwent().pw_dir
+
     for script_name in sorted(f for f in os.listdir(path) if f.endswith(".hook")):
         subprocess.check_call(
-            [os.path.join(path, script_name), old_version, NEW_ZULIP_VERSION],
+            [os.path.join(path, script_name)],
             cwd=deploy_path,
             preexec_fn=su_to_zulip,
+            env=env,
         )
 
 
