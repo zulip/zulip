@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
+    pgroonga_apt_sign_key=$(readlink -f "$LIST_PATH/pgroonga-packages.groonga.org.asc")
+
     remove_pgroonga_apt_tmp_dir() {
         rm -rf "$pgroonga_apt_tmp_dir"
     }
@@ -10,7 +13,6 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
     {
         cd "$pgroonga_apt_tmp_dir" || exit 1
         tmp_gpg_home=.gnupg
-        pgroonga_apt_sign_key="$LIST_PATH/pgroonga-packages.groonga.org.asc"
         gpg --homedir="$tmp_gpg_home" --import "$pgroonga_apt_sign_key"
         # Find fingerprint of the first key.
         pgroonga_apt_sign_key_fingerprint=$(
