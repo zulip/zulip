@@ -40,19 +40,6 @@ if ! which sentry-cli >/dev/null; then
     exit 0
 fi
 
-merge_base=""
-if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null || true)" = "true" ]; then
-    # Extract the merge-base that tools/cache-zulip-git-version
-    # encoded into ./zulip-git-version, and turn it from a `git
-    # describe` into a commit hash
-    merge_base_described=$(head -n2 ./zulip-git-version | tail -1)
-    if [[ "$merge_base_described" =~ ^.*-g([0-9a-f]{7,})$ ]]; then
-        merge_base=$(git rev-parse "${BASH_REMATCH[1]}")
-    else
-        merge_base=$(git rev-parse "$merge_base_described")
-    fi
-fi
-
 sentry_release="zulip-server@$ZULIP_NEW_VERSION"
 echo "$sentry_release" >./sentry-release
 
@@ -71,6 +58,7 @@ curl "https://sentry.io/api/0/organizations/$sentry_org/releases/" \
     -d "$json" \
     --silent -o /dev/null
 
+merge_base="${ZULIP_NEW_MERGE_BASE_COMMIT:-}"
 if [ -n "$merge_base" ]; then
     echo "sentry: Setting commit range based on merge-base to upstream of $merge_base"
     sentry-cli releases --org="$sentry_org" set-commits "$sentry_release" --commit="zulip/zulip@$merge_base"

@@ -150,11 +150,14 @@ if args.from_git:
     logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 
+from version import ZULIP_MERGE_BASE as NEW_ZULIP_MERGE_BASE
 from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
 logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)
-
+old_merge_base = (
+    parse_version_from(DEPLOYMENTS_DIR + "/current", merge_base=True) if args.from_git else ""
+)
 
 # Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
 rabbitmq_dist_listen = listening_publicly(25672)
@@ -456,6 +459,23 @@ def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
     # env overrides that
     env["HOME"] = get_zulip_pwent().pw_dir
 
+    def resolve_version_string(version: str) -> str:
+        matches = re.search(r"-\d+-g([a-f0-9]{7,})$", version)
+        to_parse = version
+        if matches is not None:
+            to_parse = matches.group(1)
+        return subprocess.check_output(
+            ["git", "rev-parse", to_parse], cwd=deploy_path, preexec_fn=su_to_zulip, text=True
+        ).strip()
+
+    if args.from_git:
+        # If we have a git repo, we also resolve those `git describe`
+        # values to full commit hashes, as well as provide the
+        # merge-base of the old/new commits with mainline.
+        env["ZULIP_OLD_COMMIT"] = resolve_version_string(old_version)
+        env["ZULIP_NEW_COMMIT"] = resolve_version_string(NEW_ZULIP_VERSION)
+        env["ZULIP_OLD_MERGE_BASE_COMMIT"] = resolve_version_string(old_merge_base)
+        env["ZULIP_NEW_MERGE_BASE_COMMIT"] = resolve_version_string(NEW_ZULIP_MERGE_BASE)
     for script_name in sorted(f for f in os.listdir(path) if f.endswith(".hook")):
         subprocess.check_call(
             [os.path.join(path, script_name)],
