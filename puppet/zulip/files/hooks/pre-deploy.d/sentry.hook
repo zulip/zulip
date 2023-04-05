@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Arguments: OLD_COMMIT NEW_COMMIT ...where both are `git describe`
-# output or tag names.  The CWD will be the new deploy directory.
 
 set -e
 set -u
@@ -42,8 +40,6 @@ if ! which sentry-cli >/dev/null; then
     exit 0
 fi
 
-new_version="$2"
-
 merge_base=""
 if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null || true)" = "true" ]; then
     # Extract the merge-base that tools/cache-zulip-git-version
@@ -57,7 +53,7 @@ if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null || true)" = "true" ]; th
     fi
 fi
 
-sentry_release="zulip-server@$new_version"
+sentry_release="zulip-server@$ZULIP_NEW_VERSION"
 echo "$sentry_release" >./sentry-release
 
 echo "sentry: Creating release $sentry_release"
