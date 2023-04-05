@@ -95,7 +95,7 @@ export function get_item(key, config) {
     }
 }
 
-export function hide_upload_status(config) {
+export function hide_upload_banner(config) {
     get_item("send_button", config).prop("disabled", false);
     get_item("upload_banner", config).remove();
 }
@@ -175,7 +175,7 @@ export async function upload_files(uppy, config, files) {
         compose_ui.autosize_textarea(get_item("textarea", config));
         uppy.cancelAll();
         get_item("textarea", config).trigger("focus");
-        hide_upload_status(config);
+        hide_upload_banner(config);
     });
 
     for (const file of files) {
@@ -319,7 +319,7 @@ export function setup_upload(config) {
             // Hide upload status for 100ms after the 1s transition to 100%
             // so that the user can see the progress bar at 100%.
             setTimeout(() => {
-                hide_upload_status(config);
+                hide_upload_banner(config);
             }, 1100);
         }
     });

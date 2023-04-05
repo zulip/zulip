@@ -163,14 +163,14 @@ test("get_item", () => {
     );
 });
 
-test("hide_upload_status", () => {
+test("hide_upload_banner", () => {
     let banner_removed = false;
     $("#compose_banners .upload_banner").remove = () => {
         banner_removed = true;
     };
     $("#compose-send-button").prop("disabled", true);
 
-    upload.hide_upload_status({mode: "compose"});
+    upload.hide_upload_banner({mode: "compose"});
 
     assert.ok(banner_removed);
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -228,9 +228,9 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         },
         getFiles: () => [...files],
     };
-    let hide_upload_status_called = false;
-    override_rewire(upload, "hide_upload_status", (config) => {
-        hide_upload_status_called = true;
+    let hide_upload_banner_called = false;
+    override_rewire(upload, "hide_upload_banner", (config) => {
+        hide_upload_banner_called = true;
         assert.equal(config.mode, "compose");
     });
     const config = {mode: "compose"};
@@ -311,7 +311,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     assert.ok(banner_shown);
     assert.equal(add_file_counter, 1);
 
-    hide_upload_status_called = false;
+    hide_upload_banner_called = false;
     uppy_cancel_all_called = false;
     let compose_ui_replace_syntax_called = false;
     files = [
@@ -328,14 +328,14 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     });
     on_click_close_button_callback();
     assert.ok(uppy_cancel_all_called);
-    assert.ok(hide_upload_status_called);
+    assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
     assert.ok(compose_ui_replace_syntax_called);
-    hide_upload_status_called = false;
+    hide_upload_banner_called = false;
     compose_ui_replace_syntax_called = false;
     $("#compose-textarea").val("user modified text");
     on_click_close_button_callback();
-    assert.ok(hide_upload_status_called);
+    assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
     assert.ok(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
@@ -568,9 +568,9 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
     set_global("setTimeout", (func) => {
         func();
     });
-    let hide_upload_status_called = false;
-    override_rewire(upload, "hide_upload_status", () => {
-        hide_upload_status_called = true;
+    let hide_upload_banner_called = false;
+    override_rewire(upload, "hide_upload_banner", () => {
+        hide_upload_banner_called = true;
     });
     $("#compose_banner .upload_banner").removeClass("error");
     files = [
@@ -588,16 +588,16 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
         },
     ];
     on_complete_callback();
-    assert.ok(hide_upload_status_called);
+    assert.ok(hide_upload_banner_called);
     assert.equal(files.length, 0);
 
-    hide_upload_status_called = false;
+    hide_upload_banner_called = false;
     $("#compose_banners .upload_banner").addClass("error");
     on_complete_callback();
-    assert.ok(!hide_upload_status_called);
+    assert.ok(!hide_upload_banner_called);
 
     $("#compose_banners .upload_banner").removeClass("error");
-    hide_upload_status_called = false;
+    hide_upload_banner_called = false;
     files = [
         {
             id: "uppy-zulip/jpeg-1e-image/jpeg-163515-1578367331279",
@@ -613,7 +613,7 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
         },
     ];
     on_complete_callback();
-    assert.ok(!hide_upload_status_called);
+    assert.ok(!hide_upload_banner_called);
     assert.equal(files.length, 1);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
