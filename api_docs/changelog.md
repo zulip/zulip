@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 173**
+
+* `GET /invites`: Added the `stream_ids` field to be returned for all
+  multiuse invite objects.
+
 **Feature level 172**
 
 * [`PATCH /messages/{message_id}`](/api/update-message): Topic editing

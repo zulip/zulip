@@ -388,6 +388,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
                 ),
                 invited_as=invite.invited_as,
                 is_multiuse=True,
+                stream_ids=list(invite.streams.values_list("id", flat=True)),
             )
         )
     return invites
