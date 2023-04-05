@@ -385,6 +385,38 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm", operand=self.othello_email + ",non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
+    def test_add_term_using_dm_including_operator_with_logged_in_user_email(self) -> None:
+        term = dict(operator="dm-including", operand=self.hamlet_email)
+        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
+
+    def test_add_term_using_dm_including_operator_with_different_user_email(self) -> None:
+        # Test without any such group direct messages existing
+        term = dict(operator="dm-including", operand=self.othello_email)
+        self._do_add_term_test(
+            term,
+            "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])",
+        )
+
+        # Test with at least one such group direct messages existing
+        self.send_huddle_message(
+            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
+        )
+
+        term = dict(operator="dm-including", operand=self.othello_email)
+        self._do_add_term_test(
+            term,
+            "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3])",
+        )
+
+    def test_add_term_using_dm_including_operator_with_different_user_email_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        term = dict(operator="dm-including", operand=self.othello_email, negated=True)
+        self._do_add_term_test(
+            term,
+            "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
+        )
+
     def test_add_term_using_id_operator(self) -> None:
         term = dict(operator="id", operand=555)
         self._do_add_term_test(term, "WHERE id = %(param_1)s")
@@ -399,29 +431,6 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator="id", operand=555, negated=True)
         self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
-    def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
-        # Test without any such group PM threads existing
-        term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-        # Test with at least one such group PM thread existing
-        self.send_huddle_message(
-            self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
-        )
-
-        term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-    def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
-        self,
-    ) -> None:  # NEGATED
-        term = dict(operator="group-pm-with", operand=self.othello_email, negated=True)
-        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
-
-    def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
-        term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self) -> None:
@@ -545,6 +554,25 @@ class NarrowBuilderTest(ZulipTestCase):
             term, "WHERE sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s"
         )
 
+    # Test that deprecated "group-pm-with" (replaced by "dm-including" ) works.
+    def test_add_term_using_dm_including_operator_with_non_existing_user(self) -> None:
+        term = dict(operator="dm-including", operand="non-existing@zulip.com")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
+        term = dict(operator="group-pm-with", operand=self.othello_email)
+        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
+
+    def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
+        self,
+    ) -> None:  # NEGATED
+        term = dict(operator="group-pm-with", operand=self.othello_email, negated=True)
+        self._do_add_term_test(term, "WHERE (recipient_id NOT IN (__[POSTCOMPILE_recipient_id_1]))")
+
+    def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
+        term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
+        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
     # Test that the underscore version of "group-pm-with" works.
     def test_add_term_using_underscore_version_of_group_pm_with_operator(self) -> None:
         term = dict(operator="group_pm_with", operand=self.othello_email)
@@ -601,7 +629,7 @@ class NarrowLibraryTest(ZulipTestCase):
             is_spectator_compatible([{"operator": "dm", "operand": "hamlet@zulip.com"}])
         )
         self.assertFalse(
-            is_spectator_compatible([{"operator": "group-pm-with", "operand": "hamlet@zulip.com"}])
+            is_spectator_compatible([{"operator": "dm-including", "operand": "hamlet@zulip.com"}])
         )
         self.assertTrue(is_spectator_compatible([{"operator": "stream", "operand": "Denmark"}]))
         self.assertTrue(
@@ -624,6 +652,10 @@ class NarrowLibraryTest(ZulipTestCase):
         # "pm-with:"" is a legacy alias for "dm:"
         self.assertFalse(
             is_spectator_compatible([{"operator": "pm-with", "operand": "hamlet@zulip.com"}])
+        )
+        # "group-pm-with:" was deprecated by the addition of "dm-including:"
+        self.assertFalse(
+            is_spectator_compatible([{"operator": "group-pm-with", "operand": "hamlet@zulip.com"}])
         )
 
 
@@ -1831,10 +1863,122 @@ class GetOldMessagesTest(ZulipTestCase):
         narrow = [dict(operator="dm", operand=self.example_user("iago").email)]
         self.message_visibility_test(narrow, message_ids, 2)
 
+    def test_get_messages_with_narrow_dm_including(self) -> None:
+        """
+        A request for old messages with a narrow by "dm-including" only
+        returns direct messages (both group and 1:1) with that user.
+        """
+        me = self.example_user("hamlet")
+
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        matching_message_ids = []
+        # group direct message, sent by current user
+        matching_message_ids.append(
+            self.send_huddle_message(
+                me,
+                [iago, cordelia, othello],
+            ),
+        )
+        # group direct message, sent by searched user
+        matching_message_ids.append(
+            self.send_huddle_message(
+                cordelia,
+                [me, othello],
+            ),
+        )
+        # group direct message, sent by another user
+        matching_message_ids.append(
+            self.send_huddle_message(
+                othello,
+                [me, cordelia],
+            ),
+        )
+        # direct 1:1 message, sent by current user to searched user
+        matching_message_ids.append(
+            self.send_personal_message(me, cordelia),
+        )
+        # direct 1:1 message, sent by searched user to current user
+        matching_message_ids.append(
+            self.send_personal_message(cordelia, me),
+        )
+
+        non_matching_message_ids = []
+        # direct 1:1 message, does not include current user
+        non_matching_message_ids.append(
+            self.send_personal_message(iago, cordelia),
+        )
+        # direct 1:1 message, does not include searched user
+        non_matching_message_ids.append(
+            self.send_personal_message(iago, me),
+        )
+        # direct 1:1 message, current user to self
+        non_matching_message_ids.append(
+            self.send_personal_message(me, me),
+        )
+        # group direct message, sent by current user
+        non_matching_message_ids.append(
+            self.send_huddle_message(
+                me,
+                [iago, othello],
+            ),
+        )
+        # group direct message, sent by searched user
+        non_matching_message_ids.append(
+            self.send_huddle_message(
+                cordelia,
+                [iago, othello],
+            ),
+        )
+
+        self.login_user(me)
+        test_operands = [cordelia.email, cordelia.id]
+        for operand in test_operands:
+            narrow = [dict(operator="dm-including", operand=operand)]
+            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
+            for message in result["messages"]:
+                self.assertIn(message["id"], matching_message_ids)
+                self.assertNotIn(message["id"], non_matching_message_ids)
+
+    def test_get_visible_messages_with_narrow_dm_including(self) -> None:
+        me = self.example_user("hamlet")
+        self.login_user(me)
+
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        message_ids = []
+        message_ids.append(
+            self.send_huddle_message(
+                me,
+                [iago, cordelia, othello],
+            ),
+        )
+        message_ids.append(self.send_personal_message(me, cordelia))
+        message_ids.append(
+            self.send_huddle_message(
+                cordelia,
+                [me, othello],
+            ),
+        )
+        message_ids.append(self.send_personal_message(cordelia, me))
+        message_ids.append(
+            self.send_huddle_message(
+                iago,
+                [cordelia, me],
+            ),
+        )
+
+        narrow = [dict(operator="dm-including", operand=cordelia.email)]
+        self.message_visibility_test(narrow, message_ids, 2)
+
     def test_get_messages_with_narrow_group_pm_with(self) -> None:
         """
-        A request for old messages with a narrow by group-pm-with only returns
-        group-private conversations with that user.
+        A request for old messages with a narrow by deprecated "group-pm-with"
+        only returns direct message group conversations with that user.
         """
         me = self.example_user("hamlet")
 
@@ -3037,10 +3181,10 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_invalid_narrow_operand_in_dict(self) -> None:
         self.login("hamlet")
 
-        # str or int is required for sender, group-pm-with, stream
+        # str or int is required for "sender", "stream", "dm-including" and "group-pm-with" operators
         invalid_operands = [["1"], [2], None]
         error_msg = 'elem["operand"] is not a string or integer'
-        for operand in ["sender", "group-pm-with", "stream"]:
+        for operand in ["sender", "group-pm-with", "stream", "dm-including"]:
             self.exercise_bad_narrow_operand_using_dict_api(operand, invalid_operands, error_msg)
 
         # str or int list is required for "dm" and "pm-with" operator
