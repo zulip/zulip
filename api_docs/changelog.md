@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 175**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new user setting `web_mark_read_on_scroll_policy` . This determines whether to mark
+  messages as read or not as the client scrolls through their feed.
+
 **Feature level 174**:
 
 * [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message):

@@ -398,6 +398,10 @@ def update_realm_user_settings_defaults(
     request: HttpRequest,
     user_profile: UserProfile,
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_mark_read_on_scroll_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
+        default=None,
+    ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),

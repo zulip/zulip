@@ -9089,6 +9089,25 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: web_mark_read_on_scroll_policy
+          in: query
+          description: |
+            Whether or not to mark messages as read when the client scrolls through their
+            feed.
+
+            - 1 - Always
+            - 2 - Only in conversation views
+            - 3 - Never
+
+            **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+            like the "Always" setting, without any way to configure this.
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: color_scheme
           in: query
           description: |
@@ -11132,6 +11151,18 @@ paths:
                             description: |
                               This setting has no effect at present. It is reserved for use in controlling
                               the default font size in Zulip.
+                          web_mark_read_on_scroll_policy:
+                            type: integer
+                            description: |
+                              Whether or not to mark messages as read when the client scrolls through their
+                              feed.
+
+                              - 1 - Always
+                              - 2 - Only in conversation views
+                              - 3 - Never
+
+                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+                              like the "Always" setting, without any way to configure this.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -13085,6 +13116,18 @@ paths:
                             description: |
                               This setting has no effect at present. It is reserved for use in
                               controlling the default font size in Zulip.
+                          web_mark_read_on_scroll_policy:
+                            type: integer
+                            description: |
+                              Whether or not to mark messages as read when the client scrolls through their
+                              feed.
+
+                              - 1 - Always
+                              - 2 - Only in conversation views
+                              - 3 - Never
+
+                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+                              like the "Always" setting, without any way to configure this.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -14030,6 +14073,25 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: web_mark_read_on_scroll_policy
+          in: query
+          description: |
+            Whether or not to mark messages as read when the client scrolls through their
+            feed.
+
+            - 1 - Always
+            - 2 - Only in conversation views
+            - 3 - Never
+
+            **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+            like the "Always" setting, without any way to configure this.
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: starred_message_counts
           in: query
           description: |

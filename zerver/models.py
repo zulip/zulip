@@ -1574,6 +1574,21 @@ class UserBaseSettings(models.Model):
     ]
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
+    # UI setting controlling whether or not the Zulip web app will
+    # mark messages as read as it scrolls through the feed.
+
+    MARK_READ_ON_SCROLL_ALWAYS = 1
+    MARK_READ_ON_SCROLL_CONVERSATION_ONLY = 2
+    MARK_READ_ON_SCROLL_NEVER = 3
+
+    WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES = [
+        MARK_READ_ON_SCROLL_ALWAYS,
+        MARK_READ_ON_SCROLL_CONVERSATION_ONLY,
+        MARK_READ_ON_SCROLL_NEVER,
+    ]
+
+    web_mark_read_on_scroll_policy = models.SmallIntegerField(default=MARK_READ_ON_SCROLL_ALWAYS)
+
     # Emoji sets
     GOOGLE_EMOJISET = "google"
     GOOGLE_BLOB_EMOJISET = "google-blob"
@@ -1731,6 +1746,7 @@ class UserBaseSettings(models.Model):
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
+        web_mark_read_on_scroll_policy=int,
         user_list_style=int,
     )
 
