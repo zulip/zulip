@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+if [ -z "${ZULIP_NEW_MERGE_BASE_COMMIT:-}" ]; then
+    echo "push_git_ref: Can't push because deploy is not from git!"
+    exit 0
+fi
+
+if ! repo=$(crudini --get /etc/zulip/zulip.conf push_git_ref repo); then
+    echo "push_git_ref: No repo set!  Set push_git_ref.repo in /etc/zulip/zulip.conf"
+    exit 0
+fi
+
+if ! ref=$(crudini --get /etc/zulip/zulip.conf push_git_ref ref); then
+    echo "push_git_ref: No ref set!  Set push_git_ref.ref in /etc/zulip/zulip.conf"
+    exit 0
+fi
+
+git push -f "$repo" "$ZULIP_NEW_MERGE_BASE_COMMIT:$ref"
