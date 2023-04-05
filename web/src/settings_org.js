@@ -1391,13 +1391,13 @@ export function build_page() {
         $delete_button.hide();
     }
 
-    function upload_realm_logo_or_icon($file_input, night, icon) {
+    function upload_realm_logo_or_icon(file_input, night, icon) {
         const form_data = new FormData();
         let widget;
         let url;
 
         form_data.append("csrfmiddlewaretoken", csrf_token);
-        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
+        for (const [i, file] of Array.prototype.entries.call(file_input.files)) {
             form_data.append("file-" + i, file);
         }
         if (icon) {

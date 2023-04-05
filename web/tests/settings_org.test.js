@@ -267,7 +267,7 @@ function test_change_save_button_state() {
 }
 
 function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    const file_input = [{files: ["image1.png", "image2.png"]}];
+    const file_input = {files: ["image1.png", "image2.png"]};
 
     let posted;
     override(channel, "post", (req) => {

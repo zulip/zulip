@@ -261,6 +261,7 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
         "static/images/logo/zulip-icon-128x128.png",
     );
 
+    await page.click(".dialog_submit_button");
     await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
         visible: true,
     });
@@ -275,6 +276,8 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
 
 async function delete_realm_icon(page: Page): Promise<void> {
     await page.click("li[data-section='organization-profile']");
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: true});
+
     await page.click("#realm-icon-upload-widget .image-delete-button");
 
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});

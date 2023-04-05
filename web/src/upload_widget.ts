@@ -255,29 +255,75 @@ export function build_direct_upload_widget(
     $input_error: JQuery,
     // jQuery button to open file dialog
     $upload_button: JQuery,
-    upload_function: (
-        $file_input: JQuery<HTMLInputElement>,
-        night: boolean | null,
-        icon: boolean,
-    ) => void,
+    upload_function: ($file_input: {files: File[]}, night: boolean | null, icon: boolean) => void,
     max_file_upload_size = default_max_file_size,
-): void {
     // default value of max uploaded file size
-    function accept(): void {
-        $input_error.hide();
-        const $realm_logo_section = $upload_button.closest(".image_upload_widget");
-        if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
-            upload_function(get_file_input(), true, false);
-        } else if ($realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
-            upload_function(get_file_input(), false, false);
-        } else {
-            upload_function(get_file_input(), null, true);
-        }
-    }
-
+): void {
     function clear(): void {
+        uppy.close();
         const $control = get_file_input();
         $control.val("");
+    }
+
+    function submit(): void {
+        $(".uppy-DashboardContent-save").trigger("click");
+    }
+    function accept(): void {
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Image editor"}),
+            html_body: "<div id='ImageEditorContainer'></div>",
+            html_submit_button: $t_html({defaultMessage: "Crop & Select"}),
+            loading_spinner: true,
+            id: "image-editor-modal",
+            on_click: submit,
+            on_hidden: clear,
+        });
+
+        const $realm_logo_section = $upload_button.closest(".image_upload_widget");
+        if (uppy_image_editor_options.cropperOptions && uppy_image_editor_options.actions) {
+            if (
+                $realm_logo_section.attr("id") === "realm-night-logo-upload-widget" ||
+                $realm_logo_section.attr("id") === "realm-day-logo-upload-widget"
+            ) {
+                uppy_image_editor_options.cropperOptions.aspectRatio = 8;
+                uppy_image_editor_options.actions.cropSquare = false;
+            } else {
+                uppy_image_editor_options.cropperOptions.aspectRatio = 1;
+                uppy_image_editor_options.actions.cropSquare = true;
+            }
+        }
+
+        set_custom_uppy_options("#ImageEditorContainer");
+        uppy = new Uppy({
+            id: "emoji-uppy",
+            allowMultipleUploadBatches: false,
+            restrictions: {
+                allowedFileTypes: supported_types,
+                maxNumberOfFiles: 1,
+                maxFileSize: max_file_upload_size * 1024 * 1024,
+            },
+        })
+            .use(Dashboard, uppy_dashboard_options)
+            .use(ImageEditor, uppy_image_editor_options)
+            .on("file-added", (file) => {
+                if (file.type === "image/jpeg") {
+                    file.type = "image/png";
+                }
+            })
+            .on("file-editor:complete", () => {
+                const file = uppy.getFiles()[0];
+                uppy.close();
+                cropfile = new File([file.data], file.name);
+                $input_error.hide();
+                if ($realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
+                    upload_function({files: [get_cropped_file()]}, true, false);
+                } else if ($realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
+                    upload_function({files: [get_cropped_file()]}, false, false);
+                } else {
+                    upload_function({files: [get_cropped_file()]}, null, true);
+                }
+                dialog_widget.close_modal();
+            });
     }
 
     $upload_button.on("drop", (e) => {
@@ -311,6 +357,12 @@ export function build_direct_upload_widget(
                 clear();
             } else {
                 accept();
+                uppy.addFile({
+                    source: "file input",
+                    name: file.name,
+                    type: file.type,
+                    data: file,
+                });
             }
         } else {
             $input_error.text($t({defaultMessage: "Please just upload one file."}));
