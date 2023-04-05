@@ -68,7 +68,7 @@ export function smart_insert_inline($textarea, syntax) {
     autosize_textarea($textarea);
 }
 
-export function smart_insert_block($textarea, syntax) {
+export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
     const pos = $textarea.caret();
     const before_str = $textarea.val().slice(0, pos);
     const after_str = $textarea.val().slice(pos);
@@ -77,20 +77,20 @@ export function smart_insert_block($textarea, syntax) {
         // Insert newline/s before the content block if there is
         // already some content in the compose box and the content
         // block is not being inserted at the beginning, such
-        // that there are at least 2 new lines between the content
-        // and start of the content block.
+        // that there are at least padding_newlines number of new
+        // lines between the content and start of the content block.
         let new_lines_before_count = 0;
         let current_pos = pos - 1;
         while (
             current_pos >= 0 &&
             before_str.charAt(current_pos) === "\n" &&
-            new_lines_before_count < 2
+            new_lines_before_count < padding_newlines
         ) {
-            // count up to 2 new lines before cursor
+            // count up to padding_newlines number of new lines before cursor
             current_pos -= 1;
             new_lines_before_count += 1;
         }
-        const new_lines_needed_before_count = 2 - new_lines_before_count;
+        const new_lines_needed_before_count = padding_newlines - new_lines_before_count;
         syntax = "\n".repeat(new_lines_needed_before_count) + syntax;
     }
 
@@ -99,16 +99,16 @@ export function smart_insert_block($textarea, syntax) {
     while (
         current_pos < after_str.length &&
         after_str.charAt(current_pos) === "\n" &&
-        new_lines_after_count < 2
+        new_lines_after_count < padding_newlines
     ) {
-        // count up to 2 new lines after cursor
+        // count up to padding_newlines number of new lines after cursor
         current_pos += 1;
         new_lines_after_count += 1;
     }
     // Insert newline/s after the content block, such that there
-    // are at least 2 new lines between the content block and
-    // the content after the cursor, if any.
-    const new_lines_needed_after_count = 2 - new_lines_after_count;
+    // are at least padding_newlines number of new lines between
+    // the content block and the content after the cursor, if any.
+    const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
     syntax = syntax + "\n".repeat(new_lines_needed_after_count);
 
     // text-field-edit ensures `$textarea` is focused before inserting
@@ -122,6 +122,7 @@ export function insert_syntax_and_focus(
     syntax,
     $textarea = $("#compose-textarea"),
     mode = "inline",
+    padding_newlines,
 ) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
@@ -129,7 +130,7 @@ export function insert_syntax_and_focus(
     if (mode === "inline") {
         smart_insert_inline($textarea, syntax);
     } else if (mode === "block") {
-        smart_insert_block($textarea, syntax);
+        smart_insert_block($textarea, syntax, padding_newlines);
     }
 }
 
