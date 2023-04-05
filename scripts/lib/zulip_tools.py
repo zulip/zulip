@@ -107,10 +107,11 @@ def get_deploy_root() -> str:
     )
 
 
-def parse_version_from(deploy_path: str) -> str:
+def parse_version_from(deploy_path: str, merge_base: bool = False) -> str:
     try:
+        varname = "ZULIP_MERGE_BASE" if merge_base else "ZULIP_VERSION"
         return subprocess.check_output(
-            [sys.executable, "-c", "from version import ZULIP_VERSION; print(ZULIP_VERSION)"],
+            [sys.executable, "-c", f"from version import {varname}; print({varname})"],
             cwd=deploy_path,
             text=True,
         ).strip()
