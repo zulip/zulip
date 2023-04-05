@@ -1,5 +1,3 @@
-from typing import Any, List, Mapping
-
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -146,9 +144,8 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             op="start",
         )
 
-        events: List[Mapping[str, Any]] = []
         with self.assert_database_query_count(4):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
+            with self.capture_send_event_calls(expected_num_events=1) as events:
                 result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
@@ -176,15 +173,13 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         huddle_hash = get_huddle_hash(list(expected_recipient_ids))
         self.assertFalse(Huddle.objects.filter(huddle_hash=huddle_hash).exists())
 
-        events: List[Mapping[str, Any]] = []
-
         params = dict(
             to=orjson.dumps([user.id for user in recipient_users]).decode(),
             op="start",
         )
 
         with self.assert_database_query_count(5):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
+            with self.capture_send_event_calls(expected_num_events=1) as events:
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -215,8 +210,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         email = user.email
         expected_recipient_emails = {email}
         expected_recipient_ids = {user.id}
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 user,
                 "/api/v1/typing",
@@ -256,8 +250,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             op="start",
         )
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
@@ -285,8 +278,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_emails = {email}
         expected_recipient_ids = {user.id}
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             params = dict(
                 to=orjson.dumps([user.id]).decode(),
                 op="stop",
@@ -319,8 +311,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_emails = {user.email for user in expected_recipients}
         expected_recipient_ids = {user.id for user in expected_recipients}
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             params = dict(
                 to=orjson.dumps([recipient.id]).decode(),
                 op="stop",
@@ -362,9 +353,8 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic,
         )
 
-        events: List[Mapping[str, Any]] = []
         with self.assert_database_query_count(5):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
+            with self.capture_send_event_calls(expected_num_events=1) as events:
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -397,9 +387,8 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             topic=topic,
         )
 
-        events: List[Mapping[str, Any]] = []
         with self.assert_database_query_count(5):
-            with self.tornado_redirected_to_list(events, expected_num_events=1):
+            with self.capture_send_event_calls(expected_num_events=1) as events:
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -430,8 +419,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         # Test typing events sent when `send_private_typing_notifications` set to `True`.
         self.assertTrue(sender.send_private_typing_notifications)
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
@@ -444,8 +432,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         sender.save()
 
         # No events should be sent now
-        events = []
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0) as events:
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_error(result, "User has disabled typing notifications for direct messages")
@@ -472,8 +459,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         # Test typing events sent when `send_stream_typing_notifications` set to `True`.
         self.assertTrue(sender.send_stream_typing_notifications)
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -485,8 +471,7 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         sender.save()
 
         # No events should be sent now
-        events = []
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0) as events:
             result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_error(result, "User has disabled typing notifications for stream messages")
         self.assertEqual(events, [])

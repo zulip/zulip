@@ -1,7 +1,7 @@
 import datetime
 import sys
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Set, Union
 from unittest import mock
 
 import orjson
@@ -1682,8 +1682,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             self.send_stream_message(
                 user,
                 stream_name,

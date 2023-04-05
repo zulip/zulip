@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List
 from unittest import mock
 
 import orjson
@@ -443,8 +443,7 @@ class ReactionEventTest(ZulipTestCase):
             "emoji_name": "smile",
         }
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
@@ -490,8 +489,7 @@ class ReactionEventTest(ZulipTestCase):
         add = self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
         self.assert_json_success(add)
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_delete(
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
@@ -528,8 +526,7 @@ class ReactionEventTest(ZulipTestCase):
 
         # Hamlet and Polonius joined after the message was sent, and
         # so only Iago should receive the event.
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
@@ -548,7 +545,7 @@ class ReactionEventTest(ZulipTestCase):
         message_after_id = self.send_stream_message(
             iago, "test_reactions_stream", "after subscription history private"
         )
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_after_id}/reactions", reaction_info
             )
@@ -573,7 +570,7 @@ class ReactionEventTest(ZulipTestCase):
         # Since stream history is public to subscribers, reacting to
         # message_before_id should notify all subscribers:
         # Iago and Hamlet.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
@@ -597,7 +594,7 @@ class ReactionEventTest(ZulipTestCase):
         )
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
@@ -617,7 +614,7 @@ class ReactionEventTest(ZulipTestCase):
             hamlet,
             "hello to single receiver",
         )
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 hamlet, f"/api/v1/messages/{private_message_id}/reactions", reaction_info
             )
@@ -633,7 +630,7 @@ class ReactionEventTest(ZulipTestCase):
             [polonius, iago],
             "hello message to multiple receiver",
         )
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(
                 polonius, f"/api/v1/messages/{huddle_message_id}/reactions", reaction_info
             )
@@ -1062,8 +1059,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
             "emoji_code": "1f354",
             "reaction_type": "unicode_emoji",
         }
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             with mock.patch("zerver.actions.reactions.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits!"
@@ -1106,8 +1102,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         )
         self.assert_json_success(add)
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_delete(
                 reaction_sender,
                 f"/api/v1/messages/{pm_id}/reactions",
@@ -1147,7 +1142,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
             reaction_type="whatever",
         )
 
-        with self.tornado_redirected_to_list([], expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1):
             with mock.patch("zerver.actions.reactions.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."

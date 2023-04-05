@@ -1,6 +1,6 @@
 import filecmp
 import os
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -163,8 +163,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -330,8 +329,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.login_user(user)
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -384,8 +382,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         request_data = {
             "principals": '["' + iago.email + '"]',
         }
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=3):
+        with self.capture_send_event_calls(expected_num_events=3) as events:
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], request_data)
             self.assert_json_success(result)
 
@@ -401,8 +398,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_request_data = {
             "principals": '["hambot-bot@zulip.testserver"]',
         }
-        events_bot: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events_bot, expected_num_events=2):
+        with self.capture_send_event_calls(expected_num_events=2) as events_bot:
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], bot_request_data)
             self.assert_json_success(result)
 
@@ -428,8 +424,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot(default_sending_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_sending_stream"], "Denmark")
@@ -512,8 +507,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot(default_events_register_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_events_register_stream"], "Denmark")

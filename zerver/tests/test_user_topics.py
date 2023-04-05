@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List
 
 import time_machine
 from django.utils.timezone import now as timezone_now
@@ -323,8 +323,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
                 result = self.api_post(user, url, data)
                 self.assert_json_success(result)
@@ -390,8 +389,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         mock_date_mute_removed = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
                 result = self.api_post(user, url, data)
                 self.assert_json_success(result)
@@ -518,8 +516,7 @@ class UnmutedTopicsTests(ZulipTestCase):
 
         mock_date_unmuted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
                 result = self.api_post(user, url, data)
                 self.assert_json_success(result)
@@ -585,8 +582,7 @@ class UnmutedTopicsTests(ZulipTestCase):
 
         mock_date_unmute_removed = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.capture_send_event_calls(expected_num_events=2) as events:
             with time_machine.travel(datetime(2020, 1, 1, tzinfo=timezone.utc), tick=False):
                 result = self.api_post(user, url, data)
                 self.assert_json_success(result)

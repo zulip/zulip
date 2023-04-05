@@ -1692,10 +1692,10 @@ Output:
         )
 
     @contextmanager
-    def tornado_redirected_to_list(
-        self, lst: List[Mapping[str, Any]], expected_num_events: int
-    ) -> Iterator[None]:
-        lst.clear()
+    def capture_send_event_calls(
+        self, expected_num_events: int
+    ) -> Iterator[List[Mapping[str, Any]]]:
+        lst: List[Mapping[str, Any]] = []
 
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
@@ -1711,7 +1711,7 @@ Output:
             # never be sent in tests, and we would be unable to verify them. Hence, we use
             # this helper to make sure the `send_event` calls actually run.
             with self.captureOnCommitCallbacks(execute=True):
-                yield
+                yield lst
 
         self.assert_length(lst, expected_num_events)
 

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Mapping, Set
+from typing import TYPE_CHECKING, Any, List, Set
 from unittest import mock
 
 import orjson
@@ -322,8 +322,7 @@ class UnreadCountTests(ZulipTestCase):
             self.example_user("hamlet"), "Denmark", "hello"
         )
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/mark_stream_as_read",
                 {
@@ -392,8 +391,7 @@ class UnreadCountTests(ZulipTestCase):
         unrelated_message_id = self.send_stream_message(
             self.example_user("hamlet"), "Denmark", "hello", "Denmark2"
         )
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/mark_topic_as_read",
                 {
@@ -1683,11 +1681,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -1756,11 +1751,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -1829,11 +1821,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -1958,8 +1947,7 @@ class MarkUnreadTest(ZulipTestCase):
         # ones that already have UserMessage rows are already unread,
         # and the others don't have UserMessage rows and cannot be
         # marked as unread without first subscribing.
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0) as events:
             result = self.client_post(
                 "/json/messages/flags",
                 {"messages": orjson.dumps(message_ids).decode(), "op": "remove", "flag": "read"},
@@ -1984,7 +1972,7 @@ class MarkUnreadTest(ZulipTestCase):
         # have UserMessage rows will be ignored.
         message_ids = before_subscribe_stream_message_ids + message_ids
         self.login("hamlet")
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/messages/flags",
                 {"messages": orjson.dumps(message_ids).decode(), "op": "add", "flag": "read"},
@@ -2018,7 +2006,7 @@ class MarkUnreadTest(ZulipTestCase):
         # This also create new 'historical' UserMessage rows for the
         # messages in subscribed streams that didn't have them
         # previously.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/messages/flags",
                 {"messages": orjson.dumps(message_ids).decode(), "op": "remove", "flag": "read"},
@@ -2090,11 +2078,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -2160,11 +2145,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -2231,11 +2213,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -2297,11 +2276,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
