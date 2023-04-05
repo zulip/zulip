@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Optional
 from unittest import mock
 from urllib.parse import urlsplit
 
@@ -1367,8 +1367,7 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
     # force_send_update is passed.
     @override_settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=3)
     def test_presence_events_disabled_on_larger_realm(self) -> None:
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1):
             do_update_user_presence(
                 self.example_user("cordelia"),
                 get_client("website"),
@@ -1377,7 +1376,7 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
                 force_send_update=True,
             )
 
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0):
             do_update_user_presence(
                 self.example_user("hamlet"),
                 get_client("website"),

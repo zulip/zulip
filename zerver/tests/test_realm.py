@@ -2,7 +2,7 @@ import datetime
 import os
 import re
 from datetime import timedelta
-from typing import Any, Dict, List, Mapping, Union
+from typing import Any, Dict, List, Union
 from unittest import mock
 
 import orjson
@@ -136,8 +136,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_name_events(self) -> None:
         realm = get_realm("zulip")
         new_name = "Puliz"
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             do_set_realm_property(realm, "name", new_name, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
@@ -153,8 +152,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_description_events(self) -> None:
         realm = get_realm("zulip")
         new_description = "zulip dev group"
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             do_set_realm_property(realm, "description", new_description, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
@@ -171,8 +169,7 @@ class RealmTest(ZulipTestCase):
         self.login("iago")
         new_description = "zulip dev group"
         data = dict(description=new_description)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_patch("/json/realm", data)
             self.assert_json_success(result)
             realm = get_realm("zulip")

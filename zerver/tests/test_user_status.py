@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict
 
 import orjson
 
@@ -118,8 +118,7 @@ class UserStatusTest(ZulipTestCase):
     def update_status_and_assert_event(
         self, payload: Dict[str, Any], expected_event: Dict[str, Any], num_events: int = 1
     ) -> None:
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=num_events):
+        with self.capture_send_event_calls(expected_num_events=num_events) as events:
             result = self.client_post("/json/users/me/status", payload)
         self.assert_json_success(result)
         self.assertEqual(events[0]["event"], expected_event)

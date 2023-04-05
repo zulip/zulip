@@ -1,5 +1,4 @@
 import datetime
-from typing import Any, List, Mapping
 from unittest import mock
 
 import orjson
@@ -230,11 +229,8 @@ class TestFullStack(ZulipTestCase):
 
         params = dict(status_text="on vacation")
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(cordelia, "/api/v1/users/me/status", params)
 
         self.assert_json_success(result)

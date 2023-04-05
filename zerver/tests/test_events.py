@@ -309,7 +309,7 @@ class BaseAction(ZulipTestCase):
 
         # We want even those `send_event` calls which have been hooked to
         # `transaction.on_commit` to execute in tests.
-        # See the comment in `ZulipTestCase.tornado_redirected_to_list`.
+        # See the comment in `ZulipTestCase.capture_send_event_calls`.
         with self.captureOnCommitCallbacks(execute=True):
             action()
 
