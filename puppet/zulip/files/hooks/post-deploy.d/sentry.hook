@@ -3,40 +3,7 @@
 set -e
 set -u
 
-if ! grep -q 'SENTRY_DSN' /etc/zulip/settings.py; then
-    echo "sentry: No DSN configured!  Set SENTRY_DSN in /etc/zulip/settings.py"
-    exit 0
-fi
-
-if ! SENTRY_AUTH_TOKEN=$(crudini --get /etc/zulip/zulip-secrets.conf secrets sentry_release_auth_token); then
-    echo "sentry: No release auth token set!  Set sentry_release_auth_token in /etc/zulip/zulip-secrets.conf"
-    exit 0
-fi
-export SENTRY_AUTH_TOKEN
-
-if ! sentry_org=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
-    echo "sentry: No organization set!  Set sentry.organization in /etc/zulip/zulip.conf"
-    exit 0
-fi
-
-sentry_project=$(crudini --get /etc/zulip/zulip.conf sentry project)
-sentry_frontend_project=$(crudini --get /etc/zulip/zulip.conf sentry frontend_project)
-if [ -z "$sentry_project" ] && [ -z "$sentry_frontend_project" ]; then
-    echo "sentry: No project set!  Set sentry.project and/or sentry.frontend_project in /etc/zulip/zulip.conf"
-    exit 0
-fi
-
-if ! which sentry-cli >/dev/null; then
-    echo "sentry: No sentry-cli installed!"
-    exit 0
-fi
-
-if ! [ -f ./sentry-release ]; then
-    echo "sentry: No Sentry sentry-release file found!"
-    exit 0
-fi
-
-sentry_release=$(cat ./sentry-release)
+source "$(dirname "$0")/../common/sentry.sh"
 
 deploy_environment=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || echo "development")
 
