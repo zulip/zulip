@@ -183,6 +183,8 @@ export async function upload_files(uppy, config, files) {
             compose_ui.insert_syntax_and_focus(
                 get_translated_status(file),
                 get_item("textarea", config),
+                "block",
+                1,
             );
             compose_ui.autosize_textarea(get_item("textarea", config));
             uppy.addFile({
