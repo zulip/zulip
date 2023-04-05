@@ -358,6 +358,7 @@ test("sending", ({override, override_rewire}) => {
             reaction_type: "zulip_extra_emoji",
             emoji_name: "zulip",
             emoji_code: "zulip",
+            still_url: null,
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
         });
     }
