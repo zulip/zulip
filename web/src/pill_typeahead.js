@@ -35,6 +35,7 @@ export function set_up($input, pills, opts) {
         items: 5,
         fixed: true,
         dropup: true,
+        helpOnEmptyStrings: opts.help_on_empty_strings,
         source() {
             let source = [];
             if (include_streams(this.query)) {
