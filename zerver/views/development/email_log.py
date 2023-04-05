@@ -1,5 +1,4 @@
 import os
-import subprocess
 import urllib
 from contextlib import suppress
 from typing import Optional
@@ -52,13 +51,6 @@ def clear_emails(request: HttpRequest) -> HttpResponse:
 
 @require_safe
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
-    if not settings.TEST_SUITE:  # nocoverage
-        # It's really convenient to automatically inline the email CSS
-        # here, since that saves a step when testing out changes to
-        # the email CSS.  But we don't run this inside the test suite,
-        # because by role, the tests shouldn't be doing a provision-like thing.
-        subprocess.check_call(["./scripts/setup/inline_email_css.py"])
-
     # We import the Django test client inside the view function,
     # because it isn't needed in production elsewhere, and not
     # importing it saves ~50ms of unnecessary manage.py startup time.

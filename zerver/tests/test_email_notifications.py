@@ -101,7 +101,7 @@ class TestCustomEmails(ZulipTestCase):
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
         )
         send_custom_email(
             [hamlet],
@@ -120,7 +120,9 @@ class TestCustomEmails(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         from_name = "from_name_test"
         email_subject = "subject_test"
-        markdown_template_path = "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.source.html"
+        markdown_template_path = (
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_no_headers_test.html"
+        )
 
         from zerver.lib.send_email import NoEmailArgumentError
 
@@ -151,7 +153,7 @@ class TestCustomEmails(ZulipTestCase):
         from_name = "from_name_test"
         email_subject = "subject_test"
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
         )
 
         from zerver.lib.send_email import DoubledEmailArgumentError
@@ -185,7 +187,7 @@ class TestCustomEmails(ZulipTestCase):
         non_admin_user = self.example_user("cordelia")
 
         markdown_template_path = (
-            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.source.html"
+            "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.html"
         )
         send_custom_email(
             [admin_user, non_admin_user],
@@ -449,6 +451,10 @@ class TestMissedMessages(ZulipTestCase):
         s = s.strip()
         return re.sub(r"\s+", " ", s)
 
+    def remove_style_attribute(self, s: str) -> str:
+        pattern = r'\sstyle="[^"]+"'
+        return re.sub(pattern, "", s)
+
     def _get_tokens(self) -> List[str]:
         return ["mm" + str(random.getrandbits(32)) for _ in range(30)]
 
@@ -463,6 +469,7 @@ class TestMissedMessages(ZulipTestCase):
         verify_body_does_not_include: Sequence[str] = [],
         trigger: str = "",
         mentioned_user_group_id: Optional[int] = None,
+        remove_style: bool = False,
     ) -> None:
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
@@ -500,7 +507,10 @@ class TestMissedMessages(ZulipTestCase):
         if verify_html_body:
             for text in verify_body_include:
                 assert isinstance(msg.alternatives[0][0], str)
-                self.assertIn(text, self.normalize_string(msg.alternatives[0][0]))
+                html = self.normalize_string(msg.alternatives[0][0])
+                if remove_style:
+                    html = self.remove_style_attribute(html)
+                self.assertIn(text, html)
         else:
             for text in verify_body_include:
                 self.assertIn(text, self.normalize_string(msg.body))
@@ -1261,11 +1271,16 @@ class TestMissedMessages(ZulipTestCase):
             f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_id}.png"
         )
         verify_body_include = [
-            f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick" style="height: 20px;">'
+            f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick">'
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
+            msg_id,
+            verify_body_include,
+            email_subject,
+            send_as_user=False,
+            verify_html_body=True,
+            remove_style=True,
         )
 
     def test_emojiset_in_missed_message(self) -> None:
@@ -1278,11 +1293,16 @@ class TestMissedMessages(ZulipTestCase):
             "Extremely personal message with a hamburger :hamburger:!",
         )
         verify_body_include = [
-            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
+            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger">'
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
+            msg_id,
+            verify_body_include,
+            email_subject,
+            send_as_user=False,
+            verify_html_body=True,
+            remove_style=True,
         )
 
     def test_stream_link_in_missed_message(self) -> None:
@@ -1298,7 +1318,12 @@ class TestMissedMessages(ZulipTestCase):
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(
-            msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
+            msg_id,
+            verify_body_include,
+            email_subject,
+            send_as_user=False,
+            verify_html_body=True,
+            remove_style=True,
         )
 
     def test_pm_link_in_missed_message_header(self) -> None:
@@ -1338,7 +1363,8 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn("Iago:\n> @**King Hamlet**\n\n--\nYou are", mail.outbox[0].body)
         # If message content starts with <p> tag the sender name is appended inside the <p> tag.
         self.assertIn(
-            '<p><b>Iago</b>: <span class="user-mention"', mail.outbox[0].alternatives[0][0]
+            '<p><b>Iago</b>: <span class="user-mention"',
+            self.remove_style_attribute(mail.outbox[0].alternatives[0][0]),
         )
 
         assert isinstance(mail.outbox[1], EmailMultiAlternatives)
@@ -1346,8 +1372,8 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn("Iago:\n> * 1\n>  *2\n\n--\nYou are receiving", mail.outbox[1].body)
         # If message content does not starts with <p> tag sender name is appended before the <p> tag
         self.assertIn(
-            "       <b>Iago</b>: <div><ul>\n<li>1<br/>\n *2</li>\n</ul></div>\n",
-            mail.outbox[1].alternatives[0][0],
+            "       <b>Iago</b>: <div><ul>\n<li>1<br>\n *2</li>\n</ul></div>\n",
+            self.remove_style_attribute(mail.outbox[1].alternatives[0][0]),
         )
 
         assert isinstance(mail.outbox[2], EmailMultiAlternatives)
@@ -1356,7 +1382,7 @@ class TestMissedMessages(ZulipTestCase):
         # Sender name is not appended to message for PM missed messages
         self.assertIn(
             ">\n                    \n                        <div><p>Hello</p></div>\n",
-            mail.outbox[2].alternatives[0][0],
+            self.remove_style_attribute(mail.outbox[2].alternatives[0][0]),
         )
 
     def test_multiple_missed_personal_messages(self) -> None:
