@@ -40,7 +40,10 @@
             </div>
         </div>
 
-        <div>{{t "Organization profile picture" }}</div>
+        <div id="organization-profile-heading">{{t "Organization profile picture" }}
+            <div class="inline-block margin-left subsection-failed-status"><p class="hide alert-error"></p></div>
+        </div>
+
         <div class="realm-icon-section">
             {{> image_upload_widget
               widget = "realm-icon"
@@ -54,10 +57,11 @@
             <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview organization profile' }}"></i>
         </a>
 
-        <div class="subsection-header">
+        <div class="subsection-header" id="organization-logo-heading">
             <h3>{{t "Organization logo" }}
                 {{> ../help_link_widget link="/help/create-your-organization-profile#add-a-wide-logo" }}
             </h3>
+            <div class="inline-block margin-left subsection-failed-status"><p class="hide alert-error"></p></div>
             {{> upgrade_tip_widget }}
         </div>
 

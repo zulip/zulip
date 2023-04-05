@@ -609,8 +609,8 @@ input[type="checkbox"] {
     .alert-notification.timezone-setting-status {
         padding-top: 0;
         padding-bottom: 0;
-        margin-top: 0;
         padding-left: 0;
+        margin-top: 0;
         margin-left: 5px;
         border: none;
     }

@@ -16,7 +16,7 @@ export function build_realm_logo_widget(upload_function, is_night) {
 
     const $delete_button_elem = $(logo_section_id + " .image-delete-button");
     const $file_input_elem = $(logo_section_id + " .image_file_input");
-    const $file_input_error_elem = $(logo_section_id + " .image_file_input_error");
+    const $file_input_error_elem = $("#organization-logo-heading .subsection-failed-status p");
     const $upload_button_elem = $(logo_section_id + " .image_upload_button");
 
     const get_file_input = function () {
