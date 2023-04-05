@@ -3,7 +3,7 @@
     <div class="alert" id="dev_env_msg"></div>
     {{/if}}
     <div class="input-group">
-        <label for="invitee_emails">{{t "Emails (one on each line or comma-separated)" }}</label>
+        <label for="invitee_emails" class="text_cursor">{{t "Emails (one on each line or comma-separated)" }}</label>
         <textarea rows="2" id="invitee_emails" name="invitee_emails" class="invitee_emails" placeholder="{{t 'One or more email addresses...' }}"></textarea>
         {{#if is_admin}}
         <div id="invite-method-choice">
@@ -19,7 +19,7 @@
         {{/if}}
     </div>
     <div class="input-group">
-        <label for="expires_in">{{t "Invitation expires after" }}</label>
+        <label for="expires_in" class="text_cursor">{{t "Invitation expires after" }}</label>
         <select id="expires_in" class="invite-expires-in bootstrap-focus-style">
             {{#each expires_in_options}}
                 <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
@@ -38,7 +38,7 @@
         </div>
     </div>
     <div class="input-group">
-        <label for="invite_as">{{t "User(s) join as" }}
+        <label for="invite_as" class="text_cursor">{{t "User(s) join as" }}
             {{> help_link_widget link="/help/roles-and-permissions" }}
         </label>
         <select id="invite_as" class="invite-as bootstrap-focus-style">

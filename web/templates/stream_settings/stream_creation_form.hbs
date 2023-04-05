@@ -5,7 +5,7 @@
         <div id="stream_creating_indicator"></div>
         <div class="stream-creation-body" data-simplebar>
             <section class="block">
-                <label for="create_stream_name">
+                <label for="create_stream_name" class="text_cursor">
                     {{t "Stream name" }}
                 </label>
                 <input type="text" name="stream_name" id="create_stream_name" class="settings_text_input"
@@ -13,7 +13,7 @@
                 <div id="stream_name_error" class="stream_creation_error"></div>
             </section>
             <section class="block">
-                <label for="create_stream_description">
+                <label for="create_stream_description" class="text_cursor">
                     {{t "Stream description" }}
                     {{> ../help_link_widget link="/help/change-the-stream-description" }}
                 </label>
@@ -29,7 +29,7 @@
                 </div>
             </section>
             <section class="block">
-                <label for="people_to_add">
+                <label for="people_to_add" class="text_cursor">
                     <h4 class="stream_setting_subsection_title">{{t "Choose subscribers" }}</h4>
                 </label>
                 <div id="stream_subscription_error" class="stream_creation_error"></div>

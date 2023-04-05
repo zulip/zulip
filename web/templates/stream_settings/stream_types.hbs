@@ -52,7 +52,7 @@
 {{#if (or is_owner is_stream_edit)}}
 <div>
     <div class="input-group inline-block message-retention-setting-group time-limit-setting">
-        <label class="dropdown-title">{{t "Message retention period" }}
+        <label class="dropdown-title text_cursor">{{t "Message retention period" }}
             {{> ../help_link_widget link="/help/message-retention-policy" }}
         </label>
 
@@ -68,7 +68,7 @@
         </select>
 
         <div class="dependent-settings-block stream-message-retention-days-input">
-            <label class="inline-block">
+            <label class="inline-block text_cursor">
                 {{t 'Retention period (days)' }}:
             </label>
             <input type="text" autocomplete="off"

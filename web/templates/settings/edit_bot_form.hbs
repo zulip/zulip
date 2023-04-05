@@ -1,20 +1,20 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
     <form class="new-style edit_bot_form name-setting">
         <div class="input-group name_change_container">
-            <label for="edit_bot_full_name">{{t "Full name" }}</label>
+            <label for="edit_bot_full_name" class="text_cursor">{{t "Full name" }}</label>
             <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
-            <label for="email">{{t "Email" }}</label>
+            <label for="email" class="text_cursor">{{t "Email" }}</label>
             <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
         </div>
         <div class="input-group user_id_container">
-            <label for="user_id">{{t "User ID" }}</label>
+            <label for="user_id" class="text_cursor">{{t "User ID" }}</label>
             <input type="text" autocomplete="off" name="user_id" class="modal_text_input" value="{{ user_id }}" readonly/>
         </div>
         <div class="input-group">
-            <label class="input-label" for="bot-role-select">{{t 'Role' }}
+            <label class="input-label text_cursor" for="bot-role-select">{{t 'Role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}
             </label>
             <select name="bot-role-select" id="bot-role-select" class="modal_select bootstrap-focus-style" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
@@ -22,7 +22,7 @@
             </select>
         </div>
         <div class="input-group edit_bot_owner_container">
-            <label for="bot_owner_select">{{t "Owner" }}</label>
+            <label for="bot_owner_select" class="text_cursor">{{t "Owner" }}</label>
             {{> dropdown_list_widget
               widget_name="edit_bot_owner"
               list_placeholder=(t 'Filter users')}}
@@ -30,7 +30,7 @@
         <div id="service_data">
         </div>
         <div class="input-group edit-avatar-section">
-            <label>Avatar</label>
+            <label class="text_cursor">Avatar</label>
             {{!-- Shows the current avatar --}}
             <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
             <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />

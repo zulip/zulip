@@ -88,7 +88,7 @@
         </div>
 
         <div class="input-group">
-            <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
+            <label for="desktop_icon_count_display" class="dropdown-title text_cursor">{{ settings_label.desktop_icon_count_display }}</label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>
@@ -125,7 +125,7 @@
 
         <div class="input-group time-limit-setting">
 
-            <label for="email_notifications_batching_period">
+            <label for="email_notifications_batching_period" class="text_cursor">
                 {{t "Delay before sending message notification emails" }}
             </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
@@ -134,7 +134,7 @@
                 {{/each}}
             </select>
             <div class="dependent-settings-block">
-                <label for="email_notification_batching_period_edit_minutes" class="inline-block">
+                <label for="email_notification_batching_period_edit_minutes" class="inline-block text_cursor">
                     {{t 'Delay period (minutes)' }}:
                 </label>
                 <input type="text"

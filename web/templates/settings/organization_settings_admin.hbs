@@ -20,7 +20,7 @@
                   label=admin_settings_label.realm_digest_emails_enabled}}
                 {{/if}}
                 <div class="input-group">
-                    <label for="realm_digest_weekday" class="dropdown-title">{{t "Day of the week to send digests" }}</label>
+                    <label for="realm_digest_weekday" class="dropdown-title text_cursor">{{t "Day of the week to send digests" }}</label>
                     <select name="realm_digest_weekday"
                       id="id_realm_digest_weekday"
                       class="setting-widget prop-element settings_select bootstrap-focus-style"
@@ -71,7 +71,7 @@
 
             <div class="inline-block organization-settings-parent">
                 <div class="input-group time-limit-setting">
-                    <label for="id_realm_message_retention_days" class="dropdown-title">{{t "Message retention period" }}
+                    <label for="id_realm_message_retention_days" class="dropdown-title text_cursor">{{t "Message retention period" }}
                     </label>
                     <select name="realm_message_retention_days"
                       id="id_realm_message_retention_days" class="prop-element settings_select bootstrap-focus-style"
@@ -82,7 +82,7 @@
                     </select>
 
                     <div class="dependent-settings-block">
-                        <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label">
+                        <label for="id_realm_message_retention_custom_input" class="inline-block realm-time-limit-label text_cursor">
                             {{t 'Retention period (days)' }}:
                         </label>
                         <input type="text" id="id_realm_message_retention_custom_input" autocomplete="off"
@@ -102,7 +102,7 @@
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
-                    <label for="realm_video_chat_provider" class="dropdown-title">
+                    <label for="realm_video_chat_provider" class="dropdown-title text_cursor">
                         {{t 'Video call provider' }}
                     </label>
                     <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
@@ -112,7 +112,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="realm_giphy_rating" class="dropdown-title">
+                    <label for="realm_giphy_rating" class="dropdown-title text_cursor">
                         {{t 'GIPHY integration' }}
                         {{> ../help_link_widget link=giphy_help_link }}
                     </label>

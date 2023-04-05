@@ -7,7 +7,7 @@
                 <div class="alert-notification" id="account-settings-status"></div>
                 <form class="grid">
                     <div class="input-group">
-                        <label class="inline-block title">{{t "Email" }}</label>
+                        <label class="inline-block title text_cursor">{{t "Email" }}</label>
                         <div id="change_email_button_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
                             <button id="change_email_button" type="button" class="button btn-link small rounded inline-block" {{#unless user_can_change_email}}disabled="disabled"{{/unless}}>
                                 {{page_params.delivery_email}}
@@ -27,7 +27,7 @@
                 <form class="password-change-form grid">
                     {{#if page_params.realm_email_auth_enabled}}
                     <div>
-                        <label class="inline-block title">{{t "Password" }}</label>
+                        <label class="inline-block title text_cursor">{{t "Password" }}</label>
                         <div class="input-group inline-block" id="pw_change_link">
                             <button id="change_password" type="button" class="change_password_button btn-link small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i></button>
                         </div>
@@ -84,7 +84,7 @@
                   prefix="user_"}}
             </div>
             <div class="input-group">
-                <label for="email_address_visibility" class="dropdown-title">{{t "Who can access your email address" }}
+                <label for="email_address_visibility" class="dropdown-title text_cursor">{{t "Who can access your email address" }}
                     {{> ../help_link_widget link="/help/configure-email-visibility" }}
                 </label>
                 <select name="email_address_visibility" class="email_address_visibility prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number"

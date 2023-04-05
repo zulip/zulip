@@ -99,6 +99,10 @@ kbd {
     order: 3;
 }
 
+.text_cursor {
+    cursor: text;
+}
+
 /*
 Consistent placeholder styling, introduced to allow us to style the
 Reply box like a placeholder.  Chrome uses color to set placeholder,
