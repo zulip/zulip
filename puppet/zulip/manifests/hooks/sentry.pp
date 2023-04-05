@@ -20,5 +20,9 @@ class zulip::hooks::sentry {
     target => $bin,
   }
 
-  zulip::hooks::file { ['pre-deploy.d/sentry.hook', 'post-deploy.d/sentry.hook']: }
+  zulip::hooks::file { [
+    'common/sentry.sh',
+    'pre-deploy.d/sentry.hook',
+    'post-deploy.d/sentry.hook',
+  ]: }
 }
