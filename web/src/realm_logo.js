@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as channel from "./channel";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
+import * as ui_util from "./ui_util";
 import * as upload_widget from "./upload_widget";
 
 export function build_realm_logo_widget(upload_function, is_night) {
@@ -105,16 +106,5 @@ export function initialize() {
     render();
 
     // Rerender the realm-logo when the browser detects color scheme changes.
-    const media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
-    // MediaQueryList.addEventListener is missing in Safari < 14
-    const listener = () => {
-        if ($(":root").hasClass("color-scheme-automatic")) {
-            render();
-        }
-    };
-    if ("addEventListener" in media_query_list) {
-        media_query_list.addEventListener("change", listener);
-    } else {
-        media_query_list.addListener(listener);
-    }
+    ui_util.listener_for_preferred_color_scheme_change(render);
 }
