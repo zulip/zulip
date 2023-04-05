@@ -14,24 +14,25 @@ if ! SENTRY_AUTH_TOKEN=$(crudini --get /etc/zulip/zulip-secrets.conf secrets sen
     echo "sentry: No release auth token set!  Set sentry_release_auth_token in /etc/zulip/zulip-secrets.conf"
     exit 0
 fi
+export SENTRY_AUTH_TOKEN
 
-if ! SENTRY_ORG=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
+if ! sentry_org=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
     echo "sentry: No organization set!  Set sentry.organization in /etc/zulip/zulip.conf"
     exit 0
 fi
 
-SENTRY_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry project)
-SENTRY_FRONTEND_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry frontend_project)
-if [ -z "$SENTRY_PROJECT" ] && [ -z "$SENTRY_FRONTEND_PROJECT" ]; then
+sentry_project=$(crudini --get /etc/zulip/zulip.conf sentry project)
+sentry_frontend_project=$(crudini --get /etc/zulip/zulip.conf sentry frontend_project)
+if [ -z "$sentry_project" ] && [ -z "$sentry_frontend_project" ]; then
     echo "sentry: No project set!  Set sentry.project and/or sentry.frontend_project in /etc/zulip/zulip.conf"
     exit 0
 fi
 
-if [ -n "$SENTRY_PROJECT" ] && ! grep -q 'SENTRY_DSN' /etc/zulip/settings.py; then
+if [ -n "$sentry_project" ] && ! grep -q 'SENTRY_DSN' /etc/zulip/settings.py; then
     echo "sentry: sentry.project is set but SENTRY_DSN is not set in /etc/zulip/settings.py"
     exit 0
 fi
-if [ -n "$SENTRY_FRONTEND_PROJECT" ] && ! grep -q 'SENTRY_FRONTEND_DSN' /etc/zulip/settings.py; then
+if [ -n "$sentry_frontend_project" ] && ! grep -q 'SENTRY_FRONTEND_DSN' /etc/zulip/settings.py; then
     echo "sentry: sentry.frontend_project is set but SENTRY_FRONTEND_DSN is not set in /etc/zulip/settings.py"
     exit 0
 fi
@@ -41,47 +42,45 @@ if ! which sentry-cli >/dev/null; then
     exit 0
 fi
 
-NEW_VERSION="$2"
+new_version="$2"
 
-MERGE_BASE=""
+merge_base=""
 if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null || true)" = "true" ]; then
     # Extract the merge-base that tools/cache-zulip-git-version
     # encoded into ./zulip-git-version, and turn it from a `git
     # describe` into a commit hash
-    MERGE_BASE_DESCRIBED=$(head -n2 ./zulip-git-version | tail -1)
-    if [[ "$MERGE_BASE_DESCRIBED" =~ ^.*-g([0-9a-f]{7,})$ ]]; then
-        MERGE_BASE=$(git rev-parse "${BASH_REMATCH[1]}")
+    merge_base_described=$(head -n2 ./zulip-git-version | tail -1)
+    if [[ "$merge_base_described" =~ ^.*-g([0-9a-f]{7,})$ ]]; then
+        merge_base=$(git rev-parse "${BASH_REMATCH[1]}")
     else
-        MERGE_BASE=$(git rev-parse "$MERGE_BASE_DESCRIBED")
+        merge_base=$(git rev-parse "$merge_base_described")
     fi
 fi
 
-SENTRY_RELEASE="zulip-server@$NEW_VERSION"
-echo "$SENTRY_RELEASE" >./sentry-release
+sentry_release="zulip-server@$new_version"
+echo "$sentry_release" >./sentry-release
 
-echo "sentry: Creating release $SENTRY_RELEASE"
-
-export SENTRY_AUTH_TOKEN
+echo "sentry: Creating release $sentry_release"
 
 # sentry-cli only supports passing one project when making a new
 # release, and we want to possibly create more than once at once.  Use
 # curl to make the API request.
 json=$(jq -nc '{version: $ARGS.named.version,
                 projects: $ARGS.positional | map(select( . != ""))}' \
-    --arg version "$SENTRY_RELEASE" \
-    --args "$SENTRY_PROJECT" "$SENTRY_FRONTEND_PROJECT")
-curl "https://sentry.io/api/0/organizations/$SENTRY_ORG/releases/" \
+    --arg version "$sentry_release" \
+    --args "$sentry_project" "$sentry_frontend_project")
+curl "https://sentry.io/api/0/organizations/$sentry_org/releases/" \
     -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
     -H 'Content-Type: application/json' \
     -d "$json" \
     --silent -o /dev/null
 
-if [ -n "$MERGE_BASE" ]; then
-    echo "sentry: Setting commit range based on merge-base to upstream of $MERGE_BASE"
-    sentry-cli releases --org="$SENTRY_ORG" set-commits "$SENTRY_RELEASE" --commit="zulip/zulip@$MERGE_BASE"
+if [ -n "$merge_base" ]; then
+    echo "sentry: Setting commit range based on merge-base to upstream of $merge_base"
+    sentry-cli releases --org="$sentry_org" set-commits "$sentry_release" --commit="zulip/zulip@$merge_base"
 fi
 
-if [ -n "$SENTRY_FRONTEND_PROJECT" ]; then
+if [ -n "$sentry_frontend_project" ]; then
     echo "sentry: Uploading sourcemaps"
-    sentry-cli releases --org="$SENTRY_ORG" --project="$SENTRY_FRONTEND_PROJECT" files "$SENTRY_RELEASE" upload-sourcemaps static/webpack-bundles/
+    sentry-cli releases --org="$sentry_org" --project="$sentry_frontend_project" files "$sentry_release" upload-sourcemaps static/webpack-bundles/
 fi

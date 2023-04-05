@@ -14,15 +14,16 @@ if ! SENTRY_AUTH_TOKEN=$(crudini --get /etc/zulip/zulip-secrets.conf secrets sen
     echo "sentry: No release auth token set!  Set sentry_release_auth_token in /etc/zulip/zulip-secrets.conf"
     exit 0
 fi
+export SENTRY_AUTH_TOKEN
 
-if ! SENTRY_ORG=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
+if ! sentry_org=$(crudini --get /etc/zulip/zulip.conf sentry organization); then
     echo "sentry: No organization set!  Set sentry.organization in /etc/zulip/zulip.conf"
     exit 0
 fi
 
-SENTRY_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry project)
-SENTRY_FRONTEND_PROJECT=$(crudini --get /etc/zulip/zulip.conf sentry frontend_project)
-if [ -z "$SENTRY_PROJECT" ] && [ -z "$SENTRY_FRONTEND_PROJECT" ]; then
+sentry_project=$(crudini --get /etc/zulip/zulip.conf sentry project)
+sentry_frontend_project=$(crudini --get /etc/zulip/zulip.conf sentry frontend_project)
+if [ -z "$sentry_project" ] && [ -z "$sentry_frontend_project" ]; then
     echo "sentry: No project set!  Set sentry.project and/or sentry.frontend_project in /etc/zulip/zulip.conf"
     exit 0
 fi
@@ -37,16 +38,15 @@ if ! [ -f ./sentry-release ]; then
     exit 0
 fi
 
-SENTRY_RELEASE=$(cat ./sentry-release)
+sentry_release=$(cat ./sentry-release)
 
-ENVIRONMENT=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || echo "development")
+deploy_environment=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || echo "development")
 
-echo "sentry: Adding deploy of '$ENVIRONMENT' and finalizing release"
+echo "sentry: Adding deploy of '$deploy_environment' and finalizing release"
 
-export SENTRY_AUTH_TOKEN
-sentry-cli releases --org="$SENTRY_ORG" deploys "$SENTRY_RELEASE" new \
-    --env "$ENVIRONMENT" \
+sentry-cli releases --org="$sentry_org" deploys "$sentry_release" new \
+    --env "$deploy_environment" \
     --started "$(stat -c %Y ./sentry-release)" \
     --finished "$(date +%s)" \
     --name "$(hostname --fqdn)"
-sentry-cli releases --org="$SENTRY_ORG" finalize "$SENTRY_RELEASE"
+sentry-cli releases --org="$sentry_org" finalize "$sentry_release"
