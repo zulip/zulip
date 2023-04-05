@@ -41,6 +41,7 @@ from zerver.actions.default_streams import (
 from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
+    do_edit_multiuse_invite_link,
     do_invite_users,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
@@ -2607,6 +2608,32 @@ class NormalActionsTest(BaseAction):
             user_settings_object=True,
         )
         check_user_settings_update("events[0]", events[0])
+
+    def test_multiuse_invite_edit_event(self) -> None:
+        self.user_profile = self.example_user("iago")
+        self.login("iago")
+
+        initial_invited_as = PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        initial_streams = [get_stream("Denmark", self.user_profile.realm)]
+        invite_expires_in_minutes = 2 * 24 * 60
+        do_create_multiuse_invite_link(
+            self.user_profile,
+            initial_invited_as,
+            invite_expires_in_minutes,
+            initial_streams,
+        )
+
+        initial_multiuse_object = MultiuseInvite.objects.get()
+        modified_invited_as = PreregistrationUser.INVITE_AS["MODERATOR"]
+        modified_streams = [get_stream("Verona", self.user_profile.realm)]
+        events = self.verify_action(
+            lambda: do_edit_multiuse_invite_link(
+                initial_multiuse_object, modified_invited_as, modified_streams
+            ),
+            num_events=1,
+            state_change_expected=False,
+        )
+        check_invites_changed("events[0]", events[0])
 
 
 class RealmPropertyActionTest(BaseAction):

@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
+    do_edit_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
     do_resend_user_invite_email,
@@ -153,6 +154,34 @@ def revoke_multiuse_invite(
         raise JsonableError(_("Invitation has already been revoked"))
 
     do_revoke_multi_use_invite(invite)
+    return json_success(request)
+
+
+@require_realm_admin
+@has_request_variables
+def edit_multiuse_invite(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    invite_id: int,
+    stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    invite_as: int = REQ(json_validator=check_int),
+) -> HttpResponse:
+    try:
+        invite = MultiuseInvite.objects.get(id=invite_id)
+    except MultiuseInvite.DoesNotExist:
+        raise JsonableError(_("Invite does not exist with id: {}.").format(invite_id))
+
+    check_if_owner_required(invite_as, user_profile)
+
+    streams: List[Stream] = []
+    for stream_id in stream_ids:
+        try:
+            (stream, sub) = access_stream_by_id(user_profile, stream_id)
+        except JsonableError:
+            raise JsonableError(_("Stream does not exist with id: {}.").format(stream_id))
+        streams.append(stream)
+
+    do_edit_multiuse_invite_link(invite, invite_as, streams)
     return json_success(request)
 
 
