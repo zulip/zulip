@@ -244,6 +244,10 @@
     }
 }
 
+.deactivation_reason {
+    margin-top: 10px;
+}
+
 #select_stream_widget {
     .dropdown-toggle:disabled {
         pointer-events: none;

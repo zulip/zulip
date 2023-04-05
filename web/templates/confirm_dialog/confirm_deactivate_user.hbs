@@ -42,3 +42,15 @@
         <textarea class="email_field_textarea settings_textarea" rows="8" maxlength="2000"></textarea>
     </div>
 </div>
+<div class="deactivation_reason">
+    <label for="deactivation_reason_title" class="dropdown-title">{{t "Reason for Deactivation"}}</label>
+    <select name="deactivation_reason_dropdown" id="deactivation_reason_dropdown" class="modal_select bootstrap-focus-style">
+        {{#each deactivation_reasons}}
+            <option value="{{this.value}}">{{this.name}}</option>
+        {{/each}}
+    </select>
+    <div id="deactivation_reason_other">
+        <label for="deactivation_reason_other_title" class="dropdown-title">{{t "Reason (up to 120 characters)" }}</label>
+        <input type="text" id="deactivation_reason_field" class="modal_text_input" name="reason" autocomplete="off" maxlength="120" />
+    </div>
+</div>

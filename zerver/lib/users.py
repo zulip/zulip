@@ -445,6 +445,7 @@ def format_user_row(
         is_owner=is_owner,
         is_guest=is_guest,
         is_billing_admin=row["is_billing_admin"],
+        deactivation_reason=row["deactivation_reason"],
         role=row["role"],
         is_bot=is_bot,
         full_name=row["full_name"],

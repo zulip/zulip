@@ -1818,6 +1818,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     is_active = models.BooleanField(default=True, db_index=True)
 
     is_billing_admin = models.BooleanField(default=False, db_index=True)
+    deactivation_reason = models.CharField(max_length=MAX_NAME_LENGTH, null=True)
 
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)

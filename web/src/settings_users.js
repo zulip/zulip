@@ -262,6 +262,8 @@ function human_info(person) {
     info.is_current_user = people.is_my_user_id(person.user_id);
     info.cannot_deactivate = info.is_current_user || (person.is_owner && !page_params.is_owner);
     info.display_email = person.delivery_email;
+    info.reason = person.deactivation_reason;
+    info.is_inactive = !info.is_active;
 
     if (info.is_active) {
         // TODO: We might just want to show this
@@ -359,7 +361,7 @@ section.deactivated.create_table = (deactivated_users) => {
             onupdate: reset_scrollbar($deactivated_users_table),
         },
         $parent_container: $("#admin-deactivated-users-list").expectOne(),
-        init_sort: ["alphabetic", "full_name"],
+        init_sort: ["alphabetic", "full_name", "reason"],
         sort_fields: {
             email: sort_email,
             role: sort_role,
@@ -486,8 +488,14 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                 admin_email: people.my_current_email(),
                 realm_uri,
                 realm_name,
+                deactivation_reasons: settings_config.deactivation_reason_values,
             };
             const html_body = render_settings_deactivation_user_modal(opts);
+
+            function set_fields_visibility() {
+                set_email_field_visibility();
+                set_reason_field_visbility();
+            }
 
             function set_email_field_visibility() {
                 const $send_email_checkbox = $("#dialog_widget_modal").find(".send_email");
@@ -503,6 +511,23 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                 });
             }
 
+            function set_reason_field_visbility() {
+                const $deactivation_reason_dropdown = $("#dialog_widget_modal").find(
+                    "#deactivation_reason_dropdown",
+                );
+                const $deactivation_reason_text = $("#dialog_widget_modal").find(
+                    "#deactivation_reason_other",
+                );
+                $deactivation_reason_text.hide();
+                $deactivation_reason_dropdown.on("change", () => {
+                    if ($deactivation_reason_dropdown.val() === "other") {
+                        $deactivation_reason_text.show();
+                    } else {
+                        $deactivation_reason_text.hide();
+                    }
+                });
+            }
+
             dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
@@ -513,7 +538,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                 html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
-                post_render: set_email_field_visibility,
+                post_render: set_fields_visibility,
                 loading_spinner,
             });
         },
@@ -534,9 +559,26 @@ function handle_deactivation($tbody) {
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
             let data = {};
+            let deactivation_reason = "";
+            let deactivation_notification_comment = "";
             if ($(".send_email").is(":checked")) {
+                deactivation_notification_comment = $(".email_field_textarea").val();
+            }
+            if ($("#deactivation_reason_dropdown").val() === "other") {
+                deactivation_reason = $("#deactivation_reason_field").val();
+            } else {
+                const deactivation_reasons = settings_config.deactivation_reason_values;
+                deactivation_reason = $("#deactivation_reason_dropdown").val();
+                for (const reason of deactivation_reasons) {
+                    if (reason.value === deactivation_reason) {
+                        deactivation_reason = reason.name;
+                    }
+                }
+            }
+            if (deactivation_notification_comment !== "" || deactivation_reason !== "") {
                 data = {
-                    deactivation_notification_comment: $(".email_field_textarea").val(),
+                    deactivation_reason,
+                    deactivation_notification_comment,
                 };
             }
 

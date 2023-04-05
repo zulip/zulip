@@ -550,6 +550,9 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
     """Reactivate a user that had previously been deactivated"""
     change_user_is_active(user_profile, True)
 
+    if user_profile.deactivation_reason is not None:
+        user_profile.deactivation_reason = None
+        user_profile.save(update_fields=["deactivation_reason"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,

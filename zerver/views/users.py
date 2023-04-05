@@ -110,6 +110,9 @@ def deactivate_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: int,
+    deactivation_reason: Optional[str] = REQ(
+        str_validator=check_capped_string(max_length=2000), default=None
+    ),
     deactivation_notification_comment: Optional[str] = REQ(
         str_validator=check_capped_string(max_length=2000), default=None
     ),
@@ -119,12 +122,15 @@ def deactivate_user_backend(
         raise OrganizationOwnerRequiredError
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
+    if deactivation_reason is not None:
+        deactivation_reason = deactivation_reason.strip()
     if deactivation_notification_comment is not None:
         deactivation_notification_comment = deactivation_notification_comment.strip()
     return _deactivate_user_profile_backend(
         request,
         user_profile,
         target,
+        deactivation_reason=deactivation_reason,
         deactivation_notification_comment=deactivation_notification_comment,
     )
 
@@ -144,7 +150,11 @@ def deactivate_bot_backend(
 ) -> HttpResponse:
     target = access_bot_by_id(user_profile, bot_id)
     return _deactivate_user_profile_backend(
-        request, user_profile, target, deactivation_notification_comment=None
+        request,
+        user_profile,
+        target,
+        deactivation_reason=None,
+        deactivation_notification_comment=None,
     )
 
 
@@ -153,12 +163,16 @@ def _deactivate_user_profile_backend(
     user_profile: UserProfile,
     target: UserProfile,
     *,
+    deactivation_reason: Optional[str],
     deactivation_notification_comment: Optional[str],
 ) -> HttpResponse:
     do_deactivate_user(target, acting_user=user_profile)
 
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.
+    if deactivation_reason is not None:
+        print("deactivation_reason is not None")
+        do_change_user_deactivate_reason(target, deactivation_reason)
     if deactivation_notification_comment is not None:
         send_email(
             "zerver/emails/deactivate",
@@ -172,6 +186,10 @@ def _deactivate_user_profile_backend(
         )
     return json_success(request)
 
+
+def do_change_user_deactivate_reason(user_profile: UserProfile, deactivation_reason: str) -> None:
+    user_profile.deactivation_reason = deactivation_reason
+    user_profile.save(update_fields=["deactivation_reason"])
 
 def reactivate_user_backend(
     request: HttpRequest, user_profile: UserProfile, user_id: int

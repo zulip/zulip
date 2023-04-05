@@ -118,6 +118,25 @@ export const get_all_display_settings = (): DisplaySettings => ({
     },
 });
 
+export const deactivation_reason_values = [
+    {
+        name: $t({defaultMessage: "Unspecified"}),
+        value: "unspecified",
+    },
+    {
+        name: $t({defaultMessage: "Spammer"}),
+        value: "spammer",
+    },
+    {
+        name: $t({defaultMessage: "User Request"}),
+        value: "user_request",
+    },
+    {
+        name: $t({defaultMessage: "Other"}),
+        value: "other",
+    },
+];
+
 export const email_address_visibility_values = {
     everyone: {
         code: 1,
