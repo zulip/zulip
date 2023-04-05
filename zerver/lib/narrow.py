@@ -12,6 +12,7 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
+    Set,
     Tuple,
     TypeVar,
     Union,
@@ -585,6 +586,24 @@ class NarrowBuilder:
         )
         return query.where(maybe_negate(cond))
 
+    def _get_huddle_recipients(self, other_user: UserProfile) -> Set[int]:
+        self_recipient_ids = [
+            recipient_tuple["recipient_id"]
+            for recipient_tuple in Subscription.objects.filter(
+                user_profile=self.user_profile,
+                recipient__type=Recipient.HUDDLE,
+            ).values("recipient_id")
+        ]
+        narrow_recipient_ids = [
+            recipient_tuple["recipient_id"]
+            for recipient_tuple in Subscription.objects.filter(
+                user_profile=other_user,
+                recipient__type=Recipient.HUDDLE,
+            ).values("recipient_id")
+        ]
+
+        return set(self_recipient_ids) & set(narrow_recipient_ids)
+
     def by_group_pm_with(
         self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
     ) -> Select:
@@ -600,22 +619,7 @@ class NarrowBuilder:
         except UserProfile.DoesNotExist:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
-        self_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
-                user_profile=self.user_profile,
-                recipient__type=Recipient.HUDDLE,
-            ).values("recipient_id")
-        ]
-        narrow_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
-                user_profile=narrow_profile,
-                recipient__type=Recipient.HUDDLE,
-            ).values("recipient_id")
-        ]
-
-        recipient_ids = set(self_recipient_ids) & set(narrow_recipient_ids)
+        recipient_ids = self._get_huddle_recipients(narrow_profile)
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
