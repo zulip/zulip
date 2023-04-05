@@ -94,3 +94,18 @@ export async function play_audio(elem: HTMLVideoElement): Promise<void> {
         blueslip.debug(`Unable to play audio. ${error.name}: ${error.message}`);
     }
 }
+
+export function listener_for_preferred_color_scheme_change(callback: () => void): void {
+    const media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
+    // MediaQueryList.addEventListener is missing in Safari < 14
+    const listener: () => void = () => {
+        if ($(":root").hasClass("color-scheme-automatic")) {
+            callback();
+        }
+    };
+    if ("addEventListener" in media_query_list) {
+        media_query_list.addEventListener("change", listener);
+    } else {
+        (media_query_list as MediaQueryList).addListener(listener);
+    }
+}
