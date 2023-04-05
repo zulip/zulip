@@ -72,15 +72,6 @@ def compilemessages_paths() -> List[str]:
     return paths
 
 
-def inline_email_css_paths() -> List[str]:
-    paths = [
-        "scripts/setup/inline_email_css.py",
-        "templates/zerver/emails/email.css",
-    ]
-    paths += glob.glob("templates/zerver/emails/*.source.html")
-    return paths
-
-
 def configure_rabbitmq_paths() -> List[str]:
     paths = [
         "scripts/setup/configure-rabbitmq",
@@ -180,16 +171,6 @@ def need_to_run_compilemessages() -> bool:
     )
 
 
-def need_to_run_inline_email_css() -> bool:
-    if not os.path.exists("templates/zerver/emails/compiled/"):
-        return True
-
-    return is_digest_obsolete(
-        "last_email_source_files_hash",
-        inline_email_css_paths(),
-    )
-
-
 def need_to_run_configure_rabbitmq(settings_list: List[str]) -> bool:
     obsolete = is_digest_obsolete(
         "last_configure_rabbitmq_hash",
@@ -245,15 +226,6 @@ def main(options: argparse.Namespace) -> int:
         )
     else:
         print("No need to run `tools/setup/build_timezone_values`.")
-
-    if options.is_force or need_to_run_inline_email_css():
-        run(["scripts/setup/inline_email_css.py"])
-        write_new_digest(
-            "last_email_source_files_hash",
-            inline_email_css_paths(),
-        )
-    else:
-        print("No need to run `scripts/setup/inline_email_css.py`.")
 
     if not options.is_build_release_tarball_only:
         # The following block is skipped when we just need the development

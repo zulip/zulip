@@ -33,9 +33,6 @@ setup_node_modules(production=True)
 # Build emoji
 run(["./tools/setup/emoji/build_emoji"])
 
-# Inline CSS in emails
-run(["./scripts/setup/inline_email_css.py"])
-
 # Copy over static files from the zulip_bots package
 run(["./tools/setup/generate_zulip_bots_static_files.py"])
 

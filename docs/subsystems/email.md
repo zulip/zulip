@@ -13,12 +13,12 @@ with only a few things you need to know to get started.
 
 - All email templates are in `templates/zerver/emails/`. Each email has three
   template files: `<template_prefix>.subject.txt`, `<template_prefix>.txt`, and
-  `<template_prefix>.source.html`. Email templates, along with all other templates
+  `<template_prefix>.html`. Email templates, along with all other templates
   in the `templates/` directory, are Jinja2 templates.
-- Most of the CSS and HTML layout for emails is in `email_base.html`. Note
+- Most of the CSS and HTML layout for emails is in `email_base_default.html`. Note
   that email has to ship with all of its CSS and HTML, so nothing in
   `static/` is useful for an email. If you're adding new CSS or HTML for an
-  email, there's a decent chance it should go in `email_base.html`.
+  email, there's a decent chance it should go in `email_base_default.html`.
 - All email is eventually sent by `zerver.lib.send_email.send_email`. There
   are several other functions in `zerver.lib.send_email`, but all of them
   eventually call the `send_email` function. The most interesting one is
@@ -104,11 +104,6 @@ email_password = gmail_password
 
 ### Notes
 
-- After changing any HTML email or `email_base.html`, you need to run
-  `scripts/setup/inline_email_css.py` for the changes to be reflected
-  in the development environment. The script generates files like
-  `templates/zerver/emails/compiled/<template_prefix>.html`.
-
 - Images won't be displayed in a real email client unless you change
   the `base_image_uri` used for emails to a public URL such as
   `https://chat.zulip.org/static/images/emails` (image links to
@@ -134,29 +129,18 @@ using a combination of the
 [css-inline](https://github.com/Stranger6667/css-inline) library and having
 two copies of each email (plain-text and HTML).
 
-So for each email, there are two source templates: the `.txt` version
-(for plain-text format) as well as a `.source.html` template. The
-`.txt` version is used directly; while the `.source.html` template is
-processed by `scripts/setup/inline_email_css.py` (generating a `.html` template
-under `templates/zerver/emails/compiled`); that tool (powered by
-`css-inline`) injects the CSS we use for styling our emails
-(`templates/zerver/emails/email.css`) into the templates inline.
-
-What this means is that when you're editing emails, **you need to run
-`scripts/setup/inline_email_css.py`** after making changes to see the changes
-take effect. Our tooling automatically runs this as part of
-`tools/provision` and production deployments; but you should bump
-`PROVISION_VERSION` when making changes to emails that change test
-behavior, or other developers will get test failures until they
-provision.
+So, for each email, there are two source templates: the `.txt` version
+(for plain-text format) as well as a `.html` template. The `.txt` version
+is used directly, while `.html` is processed by `css-inline`, which injects
+the CSS we use for styling our emails (`templates/zerver/emails/email.css`)
+into the templates just before sending an email.
 
 While this model is great for the markup side, it isn't ideal for
 [translations](../translating/translating.md). The Django
 translation system works with exact strings, and having different new
 markup can require translators to re-translate strings, which can
 result in problems like needing 2 copies of each string (one for
-plain-text, one for HTML) and/or needing to re-translate a bunch of
-strings after making a CSS tweak. Re-translating these strings is
+plain-text, one for HTML). Re-translating these strings is
 relatively easy in Transifex, but annoying.
 
 So when writing email templates, we try to translate individual
@@ -166,7 +150,7 @@ translators to not have to deal with multiple versions of each string
 in our emails.
 
 One can test whether you did the translating part right by running
-`scripts/setup/inline_email_css.py && manage.py makemessages` and then searching
+`manage.py makemessages` and then searching
 for the strings in `locale/en/LC_MESSAGES/django.po`; if there
 are multiple copies or they contain CSS colors, you did it wrong.
 
@@ -179,5 +163,5 @@ code path for the "you don't have an account email" might not be,
 since we might not know what language to use in the second case.
 
 Future work in this space could be to actually generate the plain-text
-versions of emails from the `.source.html` markup, so that we don't
+versions of emails from the `.html` markup, so that we don't
 need to maintain two copies of each email's text.

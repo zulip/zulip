@@ -1,4 +1,4 @@
-{% import 'zerver/emails/compiled/macros.html' as  macros %}
+{% import 'zerver/emails/macros.html' as  macros %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -10,8 +10,8 @@
         <table border="0" cellpadding="0" cellspacing="0" class="body">
             <tr>
                 <td>&nbsp;</td>
-                <td class="container">
-                    <div class="content">
+                <td class="container wide-container">
+                    <div class="content wide-content">
                         <a href="#" class="illustration">
                             {% block illustration %}{% endblock %}
                         </a>
