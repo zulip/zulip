@@ -57,8 +57,17 @@ function set_hash(hash) {
     }
     if (history.pushState) {
         const url = get_full_url(hash);
-        history.pushState(null, null, url);
-        browser_history.update_web_public_hash(hash);
+        try {
+            history.pushState(null, null, url);
+            browser_history.update_web_public_hash(hash);
+        } catch (error) {
+            if (error instanceof TypeError) {
+                // The window has been destroyed and the history object has been marked dead, so cannot
+                // be updated.  Silently do nothing, since there's nothing we can do.
+            } else {
+                throw error;
+            }
+        }
     } else {
         blueslip.warn("browser does not support pushState");
         window.location.hash = hash;
