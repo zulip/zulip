@@ -14,6 +14,7 @@ label {
 label,
 h4,
 h3,
+div,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
