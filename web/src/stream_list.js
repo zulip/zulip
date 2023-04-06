@@ -596,7 +596,7 @@ export function get_sidebar_stream_topic_info(filter) {
 }
 
 function deselect_stream_items() {
-    $("ul#stream_filters li").removeClass("active-filter");
+    $("ul#stream_filters li").removeClass("active-filter stream-expanded");
 }
 
 export function update_stream_sidebar_for_narrow(filter) {
@@ -627,6 +627,11 @@ export function update_stream_sidebar_for_narrow(filter) {
     if (!info.topic_selected) {
         $stream_li.addClass("active-filter");
     }
+
+    // Always add 'stream-expanded' class irrespective of whether
+    // topic is selected or not. This is required for proper styling
+    // masked unread counts.
+    $stream_li.addClass("stream-expanded");
 
     if (stream_id !== topic_list.active_stream_id()) {
         topic_zoom.clear_topics();

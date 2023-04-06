@@ -459,7 +459,7 @@ test_ui("narrowing", ({mock_template}) => {
     };
 
     stream_list.handle_narrow_deactivated();
-    assert.equal(removed_classes, "active-filter");
+    assert.equal(removed_classes, "active-filter stream-expanded");
     assert.ok(topics_closed);
 });
 
