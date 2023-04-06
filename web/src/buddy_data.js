@@ -108,10 +108,9 @@ export function user_last_seen_time_status(user_id) {
     }
 
     const last_active_date = presence.last_active_date(user_id);
-    let last_seen;
     if (page_params.realm_is_zephyr_mirror_realm) {
         // We don't send presence data to clients in Zephyr mirroring realms
-        last_seen = $t({defaultMessage: "Unknown"});
+        return $t({defaultMessage: "Activity unknown"});
     } else if (last_active_date === undefined) {
         // There are situations where the client has incomplete presence
         // history on a user.  This can happen when users are deactivated,
@@ -120,11 +119,9 @@ export function user_last_seen_time_status(user_id) {
         //
         // We give this vague status for such users; we will get to
         // delete this code when we finish rewriting the presence API.
-        last_seen = $t({defaultMessage: "More than 2 weeks ago"});
-    } else {
-        last_seen = timerender.last_seen_status_from_date(last_active_date);
+        return $t({defaultMessage: "Active more than 2 weeks ago"});
     }
-    return $t({defaultMessage: "Last active: {last_seen}"}, {last_seen});
+    return timerender.last_seen_status_from_date(last_active_date);
 }
 
 export function info_for(user_id) {
