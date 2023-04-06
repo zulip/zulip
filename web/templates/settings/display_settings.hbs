@@ -27,6 +27,12 @@
                 {{> dropdown_options_widget option_values=color_scheme_values}}
             </select>
         </div>
+        <div class="input-group">
+            <label for="button_label" class="dropdown-title">{{t "Style for left sidebar links" }}</label>
+            <select name="button_label" class="setting_button_label prop-element settings_select bootstrap-focus-style" id="{{prefix}}button_label" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=button_label_values}}
+            </select>
+        </div>
     </div>
 
     <div class="emoji-display-settings {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">

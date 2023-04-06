@@ -92,6 +92,7 @@ export function build_page() {
             settings_config.web_mark_read_on_scroll_policy_values,
         user_list_style_values: settings_config.user_list_style_values,
         color_scheme_values: settings_config.color_scheme_values,
+        button_label_values: settings_config.button_label_values,
         default_view_values: settings_config.default_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications(user_settings).general_settings,
@@ -121,6 +122,10 @@ export function build_page() {
 
     settings_bots.update_bot_settings_tip($("#personal-bot-settings-tip"), false);
     $(".settings-box").html(rendered_settings_tab);
+
+    $("#user_button_label").on("input", () => {
+        $("#global_filters").toggleClass("top-left-layout-icons");
+    });
 }
 
 export function open_settings_overlay() {

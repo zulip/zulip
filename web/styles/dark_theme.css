@@ -724,7 +724,8 @@
     }
 
     #message_edit_tooltip:hover,
-    .clear_search_button:hover {
+    .clear_search_button:hover,
+    .top-left-sidebar-menu-icon:hover .zulip-icon {
         color: hsl(0deg 0% 100%);
     }
 

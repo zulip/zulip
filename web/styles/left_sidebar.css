@@ -627,6 +627,72 @@ li.topic-list-item:hover .topic-sidebar-menu-icon {
     color: hsl(0deg 0% 53%);
 }
 
+.top-left-sidebar-menu-icon {
+    display: none;
+}
+
+#left-sidebar .top-left-layout-icons {
+    padding: 10px 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    .top_left_texts {
+        display: none;
+    }
+
+    .filter-icon i {
+        padding-right: 0 !important;
+    }
+
+    .unread_count {
+        position: absolute;
+        bottom: 1rem;
+        left: 1.2rem;
+    }
+
+    .top_left_starred_messages .unread_count,
+    .top_left_drafts .unread_count {
+        background-color: hsl(0deg 0.55% 71.18%);
+        border: 0;
+        color: hsl(0deg 0% 100%);
+        opacity: 0.8;
+    }
+
+    .fa,
+    i.fa-at,
+    i.fa-star {
+        font-size: 20px;
+    }
+
+    .all-messages-sidebar-menu-icon,
+    .starred-messages-sidebar-menu-icon,
+    .drafts-sidebar-menu-icon {
+        display: none;
+    }
+
+    .top_left_all_messages:hover .all-messages-sidebar-menu-icon,
+    .top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
+    .top_left_drafts:hover .drafts-sidebar-menu-icon {
+        display: none;
+    }
+
+    .top-left-sidebar-menu-icon {
+        height: 15px;
+        width: 15px;
+        display: block;
+        cursor: pointer;
+
+        .zulip-icon {
+            font-size: 15px;
+        }
+
+        &:hover {
+            color: hsl(0deg 0% 0%);
+        }
+    }
+}
+
 ul.topic-list {
     list-style-type: none;
     font-weight: normal;

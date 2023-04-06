@@ -8,7 +8,7 @@
                         <i class="fa fa-align-left" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
-                    <span>{{t 'All messages' }}</span>
+                    <span class="top_left_texts">{{t 'All messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
                 <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
@@ -19,7 +19,7 @@
                         <i class="fa fa-clock-o" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
-                    <span>{{t 'Recent conversations' }}</span>
+                    <span class="top_left_texts">{{t 'Recent conversations' }}</span>
                 </a>
             </li>
             <li class="top_left_mentions top_left_row hidden-for-spectators">
@@ -28,7 +28,7 @@
                         <i class="fa fa-at" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
-                    <span>{{t 'Mentions' }}</span>
+                    <span class="top_left_texts">{{t 'Mentions' }}</span>
                     <span class="unread_count"></span>
                 </a>
             </li>
@@ -38,7 +38,7 @@
                         <i class="fa fa-star" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
-                    <span>{{t 'Starred messages' }}</span>
+                    <span class="top_left_texts">{{t 'Starred messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
@@ -49,7 +49,7 @@
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </span>
                     {{~!-- squash whitespace --~}}
-                    <span>{{t 'Drafts' }}</span>
+                    <span class="top_left_texts">{{t 'Drafts' }}</span>
                     <span class="unread_count"></span>
                 </a>
                 <span class="arrow drafts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
@@ -63,6 +63,9 @@
                     <span>{{t 'Scheduled messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
+            </li>
+            <li>
+                <span class="arrow top-left-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
         </ul>
     </div>

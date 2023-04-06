@@ -61,6 +61,7 @@ const popover_instances = {
     starred_messages: null,
     drafts: null,
     all_messages: null,
+    top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
     compose_mobile_button: null,
@@ -792,28 +793,30 @@ export function initialize() {
     });
 
     // Starred messages popover
+    function starred_messages_onMount(instance) {
+        const $popper = $(instance.popper);
+        popover_instances.starred_messages = instance;
+
+        $popper.one("click", "#unstar_all_messages", () => {
+            starred_messages_ui.confirm_unstar_all_messages();
+            instance.hide();
+        });
+        $popper.one("click", "#toggle_display_starred_msg_count", () => {
+            const data = {};
+            const starred_msg_counts = user_settings.starred_message_counts;
+            data.starred_message_counts = JSON.stringify(!starred_msg_counts);
+
+            channel.patch({
+                url: "/json/settings",
+                data,
+            });
+            instance.hide();
+        });
+    }
+
+    // Starred messages popover
     register_popover_menu(".starred-messages-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            popover_instances.starred_messages = instance;
-
-            $popper.one("click", "#unstar_all_messages", () => {
-                starred_messages_ui.confirm_unstar_all_messages();
-                instance.hide();
-            });
-            $popper.one("click", "#toggle_display_starred_msg_count", () => {
-                const data = {};
-                const starred_msg_counts = user_settings.starred_message_counts;
-                data.starred_message_counts = JSON.stringify(!starred_msg_counts);
-
-                channel.patch({
-                    url: "/json/settings",
-                    data,
-                });
-                instance.hide();
-            });
-        },
         onShow(instance) {
             popovers.hide_all_except_sidebars();
             const show_unstar_all_button = starred_messages.get_count() > 0;
@@ -827,29 +830,36 @@ export function initialize() {
                 ),
             );
         },
+        onMount(instance) {
+            starred_messages_onMount(instance);
+        },
         onHidden(instance) {
             instance.destroy();
             popover_instances.starred_messages = undefined;
         },
     });
 
+    function drafts_sidebar_onMount(instance) {
+        const $popper = $(instance.popper);
+        $popper.addClass("drafts-popover");
+        popover_instances.drafts = instance;
+
+        $popper.one("click", "#delete_all_drafts_sidebar", () => {
+            drafts.confirm_delete_all_drafts();
+            instance.hide();
+        });
+    }
+
     // Drafts popover
     register_popover_menu(".drafts-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.addClass("drafts-popover");
-            popover_instances.drafts = instance;
-
-            $popper.one("click", "#delete_all_drafts_sidebar", () => {
-                drafts.confirm_delete_all_drafts();
-                instance.hide();
-            });
-        },
         onShow(instance) {
             popovers.hide_all_except_sidebars();
 
             instance.setContent(parse_html(render_drafts_sidebar_actions({})));
+        },
+        onMount(instance) {
+            drafts_sidebar_onMount(instance);
         },
         onHidden(instance) {
             instance.destroy();
@@ -857,22 +867,26 @@ export function initialize() {
         },
     });
 
+    function all_messages_onMount(instance) {
+        const $popper = $(instance.popper);
+        $popper.addClass("all-messages-popover");
+        popover_instances.all_messages = instance;
+
+        $popper.one("click", "#mark_all_messages_as_read", () => {
+            unread_ops.confirm_mark_all_as_read();
+            instance.hide();
+        });
+    }
+
     // All messages popover
     register_popover_menu(".all-messages-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.addClass("all-messages-popover");
-            popover_instances.all_messages = instance;
-
-            $popper.one("click", "#mark_all_messages_as_read", () => {
-                unread_ops.confirm_mark_all_as_read();
-                instance.hide();
-            });
-        },
         onShow(instance) {
             popovers.hide_all_except_sidebars();
             instance.setContent(parse_html(render_all_messages_sidebar_actions()));
+        },
+        onMount(instance) {
+            all_messages_onMount(instance);
         },
         onHidden(instance) {
             instance.destroy();
@@ -911,6 +925,32 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.send_later = undefined;
+        },
+    });
+
+    register_popover_menu(".top-left-sidebar-menu-icon", {
+        ...left_sidebar_tippy_options,
+        onShow(instance) {
+            popovers.hide_all_except_sidebars();
+            const show_unstar_all_button = starred_messages.get_count() > 0;
+            const content = [
+                render_all_messages_sidebar_actions() +
+                    render_starred_messages_sidebar_actions({
+                        show_unstar_all_button,
+                        starred_message_counts: user_settings.starred_message_counts,
+                    }) +
+                    render_drafts_sidebar_actions({}),
+            ];
+            instance.setContent(parse_html(content));
+        },
+        onMount(instance) {
+            starred_messages_onMount(instance);
+            drafts_sidebar_onMount(instance);
+            all_messages_onMount(instance);
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.top_left_sidebar = undefined;
         },
     });
 }

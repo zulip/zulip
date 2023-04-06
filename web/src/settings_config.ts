@@ -96,6 +96,17 @@ export const color_scheme_values = {
     },
 };
 
+export const button_label_values = {
+    text: {
+        code: 1,
+        description: $t({defaultMessage: "Text"}),
+    },
+    button: {
+        code: 2,
+        description: $t({defaultMessage: "Icons"}),
+    },
+};
+
 export const twenty_four_hour_time_values = {
     twenty_four_hour_clock: {
         value: true,

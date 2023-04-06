@@ -242,6 +242,10 @@ function draft_notify() {
         placement: "right",
     })[0];
     instance.show();
+    if (instance.popper) {
+        // to keep `saved as draft` tooltip in single line by preventing text from wrapping to the next line
+        instance.popper.querySelector(".tippy-content").style.whiteSpace = "nowrap";
+    }
     function remove_instance() {
         instance.destroy();
     }
