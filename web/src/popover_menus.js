@@ -188,7 +188,7 @@ function on_show_prep(instance) {
     popovers.hide_all_except_sidebars();
 }
 
-function tippy_no_propagation(target, popover_props) {
+export function register_popover_menu(target, popover_props) {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
     // parent elements. Tippy's built-in `delegate` method does not
@@ -329,7 +329,7 @@ export function do_schedule_message(send_at_time) {
 }
 
 export function initialize() {
-    tippy_no_propagation("#streams_inline_icon", {
+    register_popover_menu("#streams_inline_icon", {
         onShow(instance) {
             popover_instances.stream_settings = instance;
             const can_create_streams =
@@ -423,7 +423,7 @@ export function initialize() {
     // Click event handlers for it are handled in `compose_ui` and
     // we don't want to close this popover on click inside it but
     // only if user clicked outside it.
-    tippy_no_propagation(".compose_control_menu_wrapper", {
+    register_popover_menu(".compose_control_menu_wrapper", {
         placement: "top",
         onShow(instance) {
             instance.setContent(
@@ -442,7 +442,7 @@ export function initialize() {
         },
     });
 
-    tippy_no_propagation("#stream_filters .topic-sidebar-menu-icon", {
+    register_popover_menu("#stream_filters .topic-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
         onShow(instance) {
             popover_instances.topics_menu = instance;
@@ -564,7 +564,7 @@ export function initialize() {
         },
     });
 
-    tippy_no_propagation(".open_enter_sends_dialog", {
+    register_popover_menu(".open_enter_sends_dialog", {
         placement: "top",
         onShow(instance) {
             on_show_prep(instance);
@@ -607,7 +607,7 @@ export function initialize() {
         },
     });
 
-    tippy_no_propagation(".actions_hover .zulip-icon-ellipsis-v-solid", {
+    register_popover_menu(".actions_hover .zulip-icon-ellipsis-v-solid", {
         // 320px is our minimum supported width for mobile. We will allow the value to flex
         // to a max of 350px but we shouldn't make the popover wider than this.
         maxWidth: "min(max(320px, 100vw), 350px)",
@@ -786,7 +786,7 @@ export function initialize() {
     });
 
     // Starred messages popover
-    tippy_no_propagation(".starred-messages-sidebar-menu-icon", {
+    register_popover_menu(".starred-messages-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -828,7 +828,7 @@ export function initialize() {
     });
 
     // Drafts popover
-    tippy_no_propagation(".drafts-sidebar-menu-icon", {
+    register_popover_menu(".drafts-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -852,7 +852,7 @@ export function initialize() {
     });
 
     // All messages popover
-    tippy_no_propagation(".all-messages-sidebar-menu-icon", {
+    register_popover_menu(".all-messages-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
