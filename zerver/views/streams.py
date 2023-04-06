@@ -406,6 +406,7 @@ def update_stream_backend(
                 require_system_group=permissions_configuration.require_system_group,
                 allow_internet_group=permissions_configuration.allow_internet_group,
                 allow_owners_group=permissions_configuration.allow_owners_group,
+                allow_nobody_group=permissions_configuration.allow_nobody_group,
             )
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile
@@ -587,6 +588,7 @@ def add_subscriptions_backend(
             user_profile,
             setting_name="can_remove_subscribers_group",
             require_system_group=True,
+            allow_nobody_group=False,
         )
     else:
         can_remove_subscribers_group = UserGroup.objects.get(

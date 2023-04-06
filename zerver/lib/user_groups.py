@@ -65,6 +65,7 @@ def access_user_group_for_setting(
     require_system_group: bool = False,
     allow_internet_group: bool = False,
     allow_owners_group: bool = False,
+    allow_nobody_group: bool = True,
 ) -> UserGroup:
     user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
 
@@ -79,6 +80,11 @@ def access_user_group_for_setting(
     if not allow_owners_group and user_group.name == UserGroup.OWNERS_GROUP_NAME:
         raise JsonableError(
             _("'{}' setting cannot be set to '@role:owners' group.").format(setting_name)
+        )
+
+    if not allow_nobody_group and user_group.name == UserGroup.NOBODY_GROUP_NAME:
+        raise JsonableError(
+            _("'{}' setting cannot be set to '@role:nobody' group.").format(setting_name)
         )
 
     return user_group
