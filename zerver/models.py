@@ -2619,6 +2619,7 @@ class Stream(models.Model):
             require_system_group=True,
             allow_internet_group=False,
             allow_owners_group=False,
+            allow_nobody_group=False,
         ),
     }
 

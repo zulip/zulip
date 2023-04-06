@@ -279,3 +279,4 @@ class GroupPermissionSetting:
     require_system_group: bool
     allow_internet_group: bool
     allow_owners_group: bool
+    allow_nobody_group: bool
