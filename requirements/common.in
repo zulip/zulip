@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django[argon2]==4.1.*
+Django[argon2]==4.2.*
 
 # needed for NotRequired, ParamSpec
 typing-extensions
