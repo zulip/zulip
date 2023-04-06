@@ -532,8 +532,8 @@ export function initialize() {
         const title_data = buddy_data.get_title_data(user_id_string, false);
 
         // `target_node` is the `ul` element since it stays in DOM even after updates.
-        function get_target_node(tippy_instance) {
-            return $(tippy_instance.reference).parents("ul").get(0);
+        function get_target_node() {
+            return document.querySelector("#user_presences");
         }
 
         function check_reference_removed(mutation, instance) {
