@@ -69,3 +69,12 @@ export type UpdateMessageEvent = {
 // TODO/typescript: Move the User and Stream placeholder
 // types to their appropriate modules.
 export type User = Record<string, never>;
+
+// TODO/typescript: Move this to channel
+export type AjaxRequestHandler = (args: {
+    url: string;
+    data?: Record<string, unknown> | string | unknown[];
+    ignoreReload?: boolean;
+    success?(response_data: unknown, textStatus: string, jqXHR: JQuery.jqXHR): void;
+    error?(xhr: JQuery.jqXHR, error_type: string, xhn: string): void;
+}) => void;
