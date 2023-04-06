@@ -541,6 +541,19 @@ class TestCreateStreams(ZulipTestCase):
             "'can_remove_subscribers_group' setting cannot be set to '@role:owners' group.",
         )
 
+        nobody_group = UserGroup.objects.get(name="@role:nobody", is_system_group=True, realm=realm)
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "can_remove_subscribers_group_id": orjson.dumps(nobody_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(
+            result,
+            "'can_remove_subscribers_group' setting cannot be set to '@role:nobody' group.",
+        )
+
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self) -> None:
@@ -2102,6 +2115,16 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(
             result,
             "'can_remove_subscribers_group' setting cannot be set to '@role:owners' group.",
+        )
+
+        nobody_group = UserGroup.objects.get(name="@role:nobody", is_system_group=True, realm=realm)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"can_remove_subscribers_group_id": orjson.dumps(nobody_group.id).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "'can_remove_subscribers_group' setting cannot be set to '@role:nobody' group.",
         )
 
         # For private streams, even admins must be subscribed to the stream to change
