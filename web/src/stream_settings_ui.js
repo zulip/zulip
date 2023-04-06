@@ -744,6 +744,7 @@ export function setup_page(callback) {
 
         $("#clear_search_stream_name").on("click", () => {
             $("#stream_filter input[type='text']").val("");
+            $("#stream_filter input[type='text']").trigger("focus");
             redraw_left_panel();
         });
 

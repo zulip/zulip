@@ -47,7 +47,7 @@ export class UserSearch {
         }
 
         this.$input.val("");
-        this.$input.trigger("blur");
+        this.$input.trigger("focus");
         this._reset_items();
     }
 

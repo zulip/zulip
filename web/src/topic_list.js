@@ -198,7 +198,7 @@ export function clear_topic_search(e) {
     const $input = $("#filter-topic-input");
     if ($input.length) {
         $input.val("");
-        $input.trigger("blur");
+        $input.trigger("focus");
 
         // Since this changes the contents of the search input, we
         // need to rerender the topic list.
