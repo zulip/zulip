@@ -1,5 +1,17 @@
 import time
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    TypeVar,
+    Union,
+    overload,
+)
 
 from psycopg2.extensions import connection, cursor
 from psycopg2.sql import Composable
@@ -47,6 +59,41 @@ class TimeTrackingConnection(connection):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.queries: List[Dict[str, str]] = []
         super().__init__(*args, **kwargs)
+
+    @overload
+    def cursor(
+        self,
+        name: Union[str, bytes, None] = ...,
+        *,
+        withhold: bool = ...,
+        scrollable: Optional[bool] = ...,
+    ) -> TimeTrackingCursor:
+        ...
+
+    @overload
+    def cursor(
+        self,
+        name: Union[str, bytes, None] = ...,
+        *,
+        cursor_factory: Callable[..., CursorT] = ...,
+        withhold: bool = ...,
+        scrollable: Optional[bool] = ...,
+    ) -> CursorT:
+        ...
+
+    @overload
+    def cursor(
+        self,
+        name: Union[str, bytes, None],
+        cursor_factory: Callable[..., CursorT] = ...,
+        withhold: bool = ...,
+        scrollable: Optional[bool] = ...,
+    ) -> CursorT:
+        ...
+
+    def cursor(self, *args: Any, **kwargs: Any) -> cursor:
+        kwargs["cursor_factory"] = TimeTrackingCursor
+        return super().cursor(*args, **kwargs)
 
 
 def reset_queries() -> None:
