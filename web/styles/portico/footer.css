@@ -19,7 +19,7 @@
 
     .footer__container {
         max-width: 1132px;
-        padding: 52px 52px 0;
+        padding: 24px 52px 52px;
         display: flex;
         justify-content: space-between;
         gap: 40px;
@@ -28,6 +28,7 @@
     }
 
     .footer__section {
+        margin-top: 28px;
         flex-shrink: 0;
     }
 
@@ -42,7 +43,7 @@
         opacity: 0.8;
         text-transform: uppercase;
         border-bottom: 0;
-        margin-bottom: 0;
+        margin: 0;
     }
 
     .footer__section ul {
@@ -83,7 +84,7 @@
     }
 
     .footer__legal {
-        margin: 24px 0 5px;
+        margin: 0 0 5px;
         padding: 0 52px;
         border-top: 1px solid hsl(0deg 0% 100% / 10%);
 
