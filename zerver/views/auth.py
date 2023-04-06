@@ -1002,6 +1002,36 @@ def api_fetch_api_key(
 
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
+@csrf_exempt
+@require_post
+@has_request_variables
+def api_fetch_token(
+    request: HttpRequest, username: str = REQ(), password: str = REQ()
+) -> HttpResponse:
+    return_data: Dict[str, bool] = {}
+
+    realm = get_realm_from_request(request)
+    return json_success(request, data={"realm": realm, "username": username, 'password': password})
+
+    if realm is None:
+        raise InvalidSubdomainError
+
+    if not ldap_auth_enabled(realm=realm):
+        # In case we don't authenticate against LDAP, check for a valid
+        # email. LDAP backend can authenticate against a non-email.
+        validate_login_email(username)
+    user_profile = authenticate(
+        request=request, username=username, password=password, realm=realm, return_data=return_data
+    )
+    if user_profile is None:
+        raise get_api_key_fetch_authenticate_failure(return_data)
+
+    assert isinstance(user_profile, UserProfile)
+
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
+
+    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
+
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
     """Returns which authentication methods are enabled on the server"""
@@ -1083,6 +1113,7 @@ def json_fetch_api_key(
 
     api_key = get_api_key(user_profile)
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
+
 
 
 logout_then_login = require_post(django_logout_then_login)

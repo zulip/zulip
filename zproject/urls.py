@@ -23,6 +23,7 @@ from zerver.tornado.views import cleanup_event_queue, get_events, get_events_int
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
+    api_fetch_token,
     api_fetch_api_key,
     api_get_server_settings,
     json_fetch_api_key,
@@ -717,6 +718,7 @@ v1_api_mobile_patterns = [
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     path("fetch_api_key", api_fetch_api_key),
+    path("fetch_token", api_fetch_token),
     # The endpoint for regenerating and obtaining a new API key
     # should only be available by authenticating with the current
     # API key - as we consider access to the API key sensitive
