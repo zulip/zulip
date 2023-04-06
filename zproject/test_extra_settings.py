@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import ldap
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
+from zerver.lib.db import TimeTrackingConnection
 from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
@@ -36,7 +36,6 @@ DATABASES["default"] = {
     "TEST_NAME": "django_zulip_tests",
     "OPTIONS": {
         "connection_factory": TimeTrackingConnection,
-        "cursor_factory": TimeTrackingCursor,
     },
 }
 
