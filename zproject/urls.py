@@ -723,6 +723,9 @@ v1_api_mobile_patterns = [
     # API key - as we consider access to the API key sensitive
     # and just having a logged-in session should be insufficient.
     rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
+    #  This view accepts a JWT containing an email and returns an API key
+    #  and the details for a single user.
+    path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
 # View for uploading messages from email mirror
@@ -753,11 +756,6 @@ urls += [
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
-#  This view accepts a JWT containing an email and returns an API key
-#  and the details for a single user.
-urls += [
-    path("api/v1/jwt/fetch_api_key", jwt_fetch_api_key),
-]
 
 # SCIM2
 
