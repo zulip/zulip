@@ -321,13 +321,13 @@ run_test("hash_interactions", ({override}) => {
 run_test("save_narrow", ({override}) => {
     const helper = test_helper({override});
 
-    let operators = [{operator: "is", operand: "private"}];
+    let operators = [{operator: "is", operand: "dm"}];
 
     blueslip.expect("warn", "browser does not support pushState");
     hashchange.save_narrow(operators);
 
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
-    assert.equal(window.location.hash, "#narrow/is/private");
+    assert.equal(window.location.hash, "#narrow/is/dm");
 
     let url_pushed;
     override(history, "pushState", (state, title, url) => {

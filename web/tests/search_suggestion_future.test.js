@@ -112,11 +112,11 @@ test("subset_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("private_suggestions", () => {
-    let query = "is:private";
+test("dm_suggestions", () => {
+    let query = "is:dm";
     let suggestions = get_suggestions("", query);
     let expected = [
-        "is:private",
+        "is:dm",
         "pm-with:alice@zulip.com",
         "pm-with:bob@zulip.com",
         "pm-with:jeff@zulip.com",
@@ -126,7 +126,7 @@ test("private_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "al";
-    let base_query = "is:private";
+    let base_query = "is:dm";
     suggestions = get_suggestions(base_query, query);
     expected = [
         "al",
@@ -137,6 +137,19 @@ test("private_suggestions", () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    // "is:private" was renamed to "is:dm", so
+    // we suggest "is:dm" to anyone with "is:private"
+    // in their muscle memory.
+    query = "is:pr";
+    suggestions = get_suggestions("", query);
+    expected = ["is:dm"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "is:private";
+    suggestions = get_suggestions("", query);
+    expected = ["is:dm"];
+    assert.deepEqual(suggestions.strings, expected);
+
     query = "pm-with:t";
     suggestions = get_suggestions("", query);
     expected = ["pm-with:t", "pm-with:ted@zulip.com"];
@@ -144,7 +157,7 @@ test("private_suggestions", () => {
 
     query = "-pm-with:t";
     suggestions = get_suggestions("", query);
-    expected = ["-pm-with:t", "is:private -pm-with:ted@zulip.com"];
+    expected = ["-pm-with:t", "is:dm -pm-with:ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "pm-with:ted@zulip.com";
@@ -181,7 +194,7 @@ test("private_suggestions", () => {
     // Users can enter bizarre queries, and if they do, we want to
     // be conservative with suggestions.
     query = "near:3";
-    base_query = "is:private";
+    base_query = "is:dm";
     suggestions = get_suggestions(base_query, query);
     expected = ["near:3"];
     assert.deepEqual(suggestions.strings, expected);
@@ -200,7 +213,7 @@ test("private_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "al";
-    base_query = "is:starred has:link is:private";
+    base_query = "is:starred has:link is:dm";
     suggestions = get_suggestions(base_query, query);
     expected = [
         "al",
@@ -263,27 +276,27 @@ test("group_suggestions", () => {
     expected = ["pm-with:bob@zulip.com,red"];
     assert.deepEqual(suggestions.strings, expected);
 
-    // is:private should be properly prepended to each suggestion if the pm-with
+    // is:dm should be properly prepended to each suggestion if the pm-with
     // operator is negated.
 
     query = "-pm-with:bob@zulip.com,";
     suggestions = get_suggestions("", query);
     expected = [
         "-pm-with:bob@zulip.com,",
-        "is:private -pm-with:bob@zulip.com,alice@zulip.com",
-        "is:private -pm-with:bob@zulip.com,jeff@zulip.com",
-        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
+        "is:dm -pm-with:bob@zulip.com,alice@zulip.com",
+        "is:dm -pm-with:bob@zulip.com,jeff@zulip.com",
+        "is:dm -pm-with:bob@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-pm-with:bob@zulip.com,t";
     suggestions = get_suggestions("", query);
-    expected = ["-pm-with:bob@zulip.com,t", "is:private -pm-with:bob@zulip.com,ted@zulip.com"];
+    expected = ["-pm-with:bob@zulip.com,t", "is:dm -pm-with:bob@zulip.com,ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-pm-with:bob@zulip.com,Smit";
     suggestions = get_suggestions("", query);
-    expected = ["-pm-with:bob@zulip.com,Smit", "is:private -pm-with:bob@zulip.com,ted@zulip.com"];
+    expected = ["-pm-with:bob@zulip.com,Smit", "is:dm -pm-with:bob@zulip.com,ted@zulip.com"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "-pm-with:bob@zulip.com,red";
@@ -369,7 +382,7 @@ test("empty_query_suggestions", () => {
     const expected = [
         "",
         "streams:public",
-        "is:private",
+        "is:dm",
         "is:starred",
         "is:mentioned",
         "is:alerted",
@@ -388,7 +401,7 @@ test("empty_query_suggestions", () => {
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
     }
-    assert.equal(describe("is:private"), "Direct messages");
+    assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
     assert.equal(describe("is:alerted"), "Alerted messages");
@@ -466,7 +479,7 @@ test("check_is_suggestions", ({override}) => {
     let suggestions = get_suggestions("", query);
     let expected = [
         "i",
-        "is:private",
+        "is:dm",
         "is:starred",
         "is:mentioned",
         "is:alerted",
@@ -483,7 +496,7 @@ test("check_is_suggestions", ({override}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
 
-    assert.equal(describe("is:private"), "Direct messages");
+    assert.equal(describe("is:dm"), "Direct messages");
     assert.equal(describe("is:starred"), "Starred messages");
     assert.equal(describe("is:mentioned"), "@-mentions");
     assert.equal(describe("is:alerted"), "Alerted messages");
@@ -494,7 +507,7 @@ test("check_is_suggestions", ({override}) => {
     suggestions = get_suggestions("", query);
     expected = [
         "-i",
-        "-is:private",
+        "-is:dm",
         "-is:starred",
         "-is:mentioned",
         "-is:alerted",
@@ -503,7 +516,7 @@ test("check_is_suggestions", ({override}) => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    assert.equal(describe("-is:private"), "Exclude direct messages");
+    assert.equal(describe("-is:dm"), "Exclude direct messages");
     assert.equal(describe("-is:starred"), "Exclude starred messages");
     assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
     assert.equal(describe("-is:alerted"), "Exclude alerted messages");
@@ -515,7 +528,7 @@ test("check_is_suggestions", ({override}) => {
     expected = [
         "",
         "streams:public",
-        "is:private",
+        "is:dm",
         "is:starred",
         "is:mentioned",
         "is:alerted",
@@ -531,7 +544,7 @@ test("check_is_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = "";
-    let base_query = "is:private";
+    let base_query = "is:dm";
     suggestions = get_suggestions(base_query, query);
     expected = [
         "is:starred",
@@ -549,14 +562,7 @@ test("check_is_suggestions", ({override}) => {
 
     query = "is:";
     suggestions = get_suggestions("", query);
-    expected = [
-        "is:private",
-        "is:starred",
-        "is:mentioned",
-        "is:alerted",
-        "is:unread",
-        "is:resolved",
-    ];
+    expected = ["is:dm", "is:starred", "is:mentioned", "is:alerted", "is:unread", "is:resolved"];
     assert.deepEqual(suggestions.strings, expected);
 
     query = "is:st";
@@ -729,7 +735,7 @@ test("topic_suggestions", ({override}) => {
     expected = ["topic:", "topic:REXX"];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = get_suggestions("is:private stream:devel", "topic:");
+    suggestions = get_suggestions("is:dm stream:devel", "topic:");
     expected = ["topic:"];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -980,15 +986,15 @@ test("queries_with_spaces", () => {
 // When input search query contains multiple operators
 // and a pill hasn't been formed from those operators.
 test("multiple_operators_without_pills", () => {
-    let query = "is:private al";
+    let query = "is:dm al";
     let base_query = "";
     let suggestions = get_suggestions(base_query, query);
     let expected = [
-        "is:private al",
-        "is:private is:alerted",
-        "is:private sender:alice@zulip.com",
-        "is:private pm-with:alice@zulip.com",
-        "is:private group-pm-with:alice@zulip.com",
+        "is:dm al",
+        "is:dm is:alerted",
+        "is:dm sender:alice@zulip.com",
+        "is:dm pm-with:alice@zulip.com",
+        "is:dm group-pm-with:alice@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 

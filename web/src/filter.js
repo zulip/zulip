@@ -91,7 +91,7 @@ function message_matches_search_term(message, operator, operand) {
 
         case "is":
             switch (operand) {
-                case "private":
+                case "dm":
                     return message.type === "private";
                 case "starred":
                     return message.starred;
@@ -228,6 +228,12 @@ export class Filter {
         operator = Filter.canonicalize_operator(operator);
 
         switch (operator) {
+            case "is":
+                // "is:private" was renamed to "is:dm"
+                if (operand === "private") {
+                    operand = "dm";
+                }
+                break;
             case "has":
                 // images -> image, etc.
                 operand = operand.replace(/s$/, "");
@@ -451,7 +457,7 @@ export class Filter {
 
         // All search/narrow term types, including negations, with the
         // property that if a message is in the view, then any other
-        // message sharing its recipient (stream/topic or private
+        // message sharing its recipient (stream/topic or direct
         // message recipient) must also be present in the view.
         const valid_term_types = new Set([
             "stream",
@@ -461,8 +467,8 @@ export class Filter {
             "pm-with",
             "group-pm-with",
             "not-group-pm-with",
-            "is-private",
-            "not-is-private",
+            "is-dm",
+            "not-is-dm",
             "is-resolved",
             "not-is-resolved",
             "in-home",
@@ -505,7 +511,7 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, ["is-private"])) {
+        if (_.isEqual(term_types, ["is-dm"])) {
             return true;
         }
 
@@ -549,8 +555,8 @@ export class Filter {
     is_common_narrow() {
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
-        // is: private, pm-with:,
-        // is: mentioned, is: resolved
+        // is:dm, pm-with:,
+        // is:mentioned, is:resolved
         if (this.can_mark_messages_read()) {
             return true;
         }
@@ -607,8 +613,8 @@ export class Filter {
                     return (
                         "/#narrow/stream/" + stream_data.name_to_slug(this.operands("stream")[0])
                     );
-                case "is-private":
-                    return "/#narrow/is/private";
+                case "is-dm":
+                    return "/#narrow/is/dm";
                 case "is-starred":
                     return "/#narrow/is/starred";
                 case "is-mentioned":
@@ -655,7 +661,7 @@ export class Filter {
                 }
                 context.zulip_icon = "hashtag";
                 break;
-            case "is-private":
+            case "is-dm":
                 context.icon = "envelope";
                 break;
             case "is-starred":
@@ -719,7 +725,7 @@ export class Filter {
                     return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
                     return $t({defaultMessage: "Mentions"});
-                case "is-private":
+                case "is-dm":
                     return $t({defaultMessage: "Direct messages"});
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
@@ -742,7 +748,7 @@ export class Filter {
 
     contains_only_private_messages() {
         return (
-            (this.has_operator("is") && this.operands("is")[0] === "private") ||
+            (this.has_operator("is") && this.operands("is")[0] === "dm") ||
             this.has_operator("pm-with") ||
             this.has_operator("group-pm-with")
         );
@@ -802,7 +808,7 @@ export class Filter {
             return terms;
         }
 
-        return terms.filter((term) => Filter.term_type(term) !== "is-private");
+        return terms.filter((term) => Filter.term_type(term) !== "is-dm");
     }
 
     _canonicalize_operators(operators_mixed_case) {
@@ -938,7 +944,7 @@ export class Filter {
             "id",
             "is-alerted",
             "is-mentioned",
-            "is-private",
+            "is-dm",
             "is-starred",
             "is-unread",
             "is-resolved",
@@ -1024,6 +1030,7 @@ export class Filter {
                 return verb + operand + " messages";
             case "mentioned":
                 return verb + "@-mentions";
+            case "dm":
             case "private":
                 return verb + "direct messages";
             case "resolved":

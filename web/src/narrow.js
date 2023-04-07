@@ -994,7 +994,7 @@ export function to_compose_target() {
         // If there are no recipients or any recipient is
         // invalid, narrow to all PMs.
         if (emails.length === 0 || invalid.length > 0) {
-            by("is", "private", opts);
+            by("is", "dm", opts);
             return;
         }
         by("pm-with", util.normalize_recipients(recipient_string), opts);

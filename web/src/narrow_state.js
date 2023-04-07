@@ -255,7 +255,7 @@ export function _possible_unread_message_ids() {
         return unread.get_msg_ids_for_user_ids_string(current_filter_pm_string);
     }
 
-    if (current_filter.can_bucket_by("is-private")) {
+    if (current_filter.can_bucket_by("is-dm")) {
         return unread.get_msg_ids_for_private();
     }
 
@@ -279,12 +279,13 @@ export function _possible_unread_message_ids() {
     return undefined;
 }
 
-// Are we narrowed to PMs: all PMs or PMs with particular people.
+// Are we narrowed to direct messages: all direct messages
+// or direct messages with particular people.
 export function narrowed_to_pms() {
     if (current_filter === undefined) {
         return false;
     }
-    return current_filter.has_operator("pm-with") || current_filter.has_operand("is", "private");
+    return current_filter.has_operator("pm-with") || current_filter.has_operand("is", "dm");
 }
 
 export function narrowed_by_pm_reply() {

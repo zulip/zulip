@@ -187,8 +187,8 @@ function pick_empty_narrow_banner() {
                             },
                         ),
                     };
-                case "private":
-                    // You have no private messages.
+                case "dm":
+                    // You have no direct messages.
                     if (
                         page_params.realm_private_message_policy ===
                         settings_config.private_message_policy_values.disabled.code
@@ -308,7 +308,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             if (!first_operand.includes(",")) {
-                // You have no private messages with this person
+                // You have no direct messages with this person
                 if (people.is_current_user(first_operand)) {
                     return {
                         title: $t({
