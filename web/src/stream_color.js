@@ -68,7 +68,7 @@ export function set_colorpicker_color(colorpicker, color) {
     });
 }
 
-export function update_stream_color(sub, color, {update_historical = false} = {}) {
+export function update_stream_color(sub, color) {
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.
@@ -91,9 +91,7 @@ export function update_stream_color(sub, color, {update_historical = false} = {}
         )}'] .large-icon`,
     ).css("color", color);
 
-    if (update_historical) {
-        update_historical_message_color(sub.name, color);
-    }
+    update_historical_message_color(sub.name, color);
     update_stream_privacy_color(stream_id, color);
     message_view_header.colorize_message_view_header();
 }
