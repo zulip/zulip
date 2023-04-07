@@ -936,7 +936,6 @@ def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> Json
 
 
 @csrf_exempt
-@require_post
 @has_request_variables
 def jwt_fetch_api_key(
     request: HttpRequest,
@@ -975,7 +974,6 @@ def jwt_fetch_api_key(
 
 
 @csrf_exempt
-@require_post
 @has_request_variables
 def api_fetch_api_key(
     request: HttpRequest, username: str = REQ(), password: str = REQ()

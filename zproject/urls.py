@@ -512,6 +512,7 @@ v1_api_and_json_patterns = [
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
+    rest_path("jwt/fetch_api_key", POST=(jwt_fetch_api_key, {"intentionally_undocumented"})),
 ]
 
 integrations_view = IntegrationView.as_view()
@@ -755,11 +756,6 @@ urls += [
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
-#  This view accepts a JWT containing an email and returns an API key
-#  and the details for a single user.
-urls += [
-    path("api/v1/jwt/fetch_api_key", jwt_fetch_api_key),
-]
 
 # SCIM2
 
