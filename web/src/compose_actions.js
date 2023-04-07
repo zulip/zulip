@@ -348,6 +348,13 @@ export function start(msg_type, opts) {
         $("#compose-textarea").data("draft-id", opts.draft_id);
     }
 
+    if (opts.content !== undefined) {
+        // If we were provided with message content, we might need to
+        // resize the compose box, or display that it's too long.
+        compose_ui.autosize_textarea($("#compose-textarea"));
+        compose_validate.check_overflow_text();
+    }
+
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
 

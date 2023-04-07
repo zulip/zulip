@@ -14,8 +14,6 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
-import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import {localstorage} from "./localstorage";
@@ -320,8 +318,6 @@ export function restore_draft(draft_id) {
     compose_fade.clear_compose();
     compose.clear_preview_area();
     compose_actions.start(compose_args.type, compose_args);
-    compose_ui.autosize_textarea($("#compose-textarea"));
-    compose_validate.check_overflow_text();
 }
 
 const DRAFT_LIFETIME = 30;
