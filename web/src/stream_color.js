@@ -1,3 +1,4 @@
+import {colord, extend} from "colord";
 import $ from "jquery";
 
 import * as color_class from "./color_class";
@@ -5,10 +6,22 @@ import {$t} from "./i18n";
 import * as message_view_header from "./message_view_header";
 import * as stream_settings_ui from "./stream_settings_ui";
 
-function update_table_stream_color(table, stream_name, color) {
-    // This is ugly, but temporary, as the new design will make it
-    // so that we only have color in the headers.
-    const style = color;
+extend([lchPlugin]);
+
+export function get_stream_privacy_icon_color(color) {
+    // LCH stands for Lightness, Chroma, and Hue.
+    // This function restricts Lightness of a color to be between 20 to 75.
+    color = colord(color).toLch();
+    const min_color_l = 20;
+    const max_color_l = 75;
+    if (color.l < min_color_l) {
+        color.l = min_color_l;
+    } else if (color.l > max_color_l) {
+        color.l = max_color_l;
+    }
+    return colord(color).toHex();
+}
+
 
     const $stream_labels = table.find(".stream_label");
 
@@ -36,7 +49,10 @@ function update_table_stream_color(table, stream_name, color) {
 }
 
 function update_stream_privacy_color(id, color) {
-    $(`.stream-privacy-${CSS.escape(id)}`).css("color", color);
+    $(`.stream-privacy-original-color-${CSS.escape(id)}`).css("color", color);
+    color = get_stream_privacy_icon_color(color);
+    // `modified-color` is only used in recipient bars.
+    $(`.stream-privacy-modified-color-${CSS.escape(id)}`).css("color", color);
 }
 
 function update_historical_message_color(stream_name, color) {
