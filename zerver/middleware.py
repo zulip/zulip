@@ -323,18 +323,18 @@ def parse_client(
     if req_client is not None:
         return req_client, None
     if "User-Agent" in request.headers:
-        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
+        user_agent_dict: Optional[Dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
     else:
-        user_agent = None
-    if user_agent is None:
+        user_agent_dict = None
+    if user_agent_dict is None:
         # In the future, we will require setting USER_AGENT, but for
         # now we just want to tag these requests so we can review them
         # in logs and figure out the extent of the problem
         return "Unspecified", None
 
-    client_name = user_agent["name"]
+    client_name = user_agent_dict["name"]
     if client_name.startswith("Zulip"):
-        return client_name, user_agent.get("version")
+        return client_name, user_agent_dict.get("version")
 
     # We could show browser versions in logs, and it'd probably be a
     # good idea, but the current parsing will just get you Mozilla/5.0.
