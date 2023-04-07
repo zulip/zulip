@@ -17,6 +17,12 @@ export function all_rendered_message_lists() {
     return rendered_message_lists;
 }
 
+export function update_recipient_bar_background_color() {
+    for (const msg_list of all_rendered_message_lists()) {
+        msg_list.view.update_recipient_bar_background_color();
+    }
+}
+
 export function initialize() {
     home = new message_list.MessageList({
         table_name: "zhome",

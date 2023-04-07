@@ -182,7 +182,6 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
 
     mock_template("stream_privacy.hbs", false, (data) => {
         assert.equal(data.invite_only, true);
-        assert.equal(data.dark_background, "dark_background");
         return "<div>privacy-html";
     });
     stream_list.redraw_stream_privacy(social);
@@ -668,7 +667,6 @@ test_ui("rename_stream", ({mock_template}) => {
             is_web_public: undefined,
             color: payload.color,
             pin_to_top: true,
-            dark_background: payload.dark_background,
         });
         return {to_$: () => $li_stub};
     });

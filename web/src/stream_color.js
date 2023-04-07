@@ -1,12 +1,33 @@
 import {colord, extend} from "colord";
+import lchPlugin from "colord/plugins/lch";
+import mixPlugin from "colord/plugins/mix";
 import $ from "jquery";
 
-import * as color_class from "./color_class";
 import {$t} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
+import * as overlays from "./overlays";
+import * as row from "./rows";
+import * as settings_data from "./settings_data";
+import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 
-extend([lchPlugin]);
+extend([lchPlugin, mixPlugin]);
+
+export function update_stream_recipient_color($stream_header) {
+    if ($stream_header.length) {
+        const stream_id = Number.parseInt($($stream_header).attr("data-stream-id"), 10);
+        const stream_name = stream_data.maybe_get_stream_name(stream_id);
+        if (!stream_name) {
+            return;
+        }
+        const stream_color = stream_data.get_color(stream_name);
+        const recipient_bar_color = get_recipient_bar_color(stream_color);
+        $stream_header
+            .find(".message-header-contents")
+            .css("background-color", recipient_bar_color);
+    }
+}
 
 export function get_stream_privacy_icon_color(color) {
     // LCH stands for Lightness, Chroma, and Hue.
@@ -22,28 +43,23 @@ export function get_stream_privacy_icon_color(color) {
     return colord(color).toHex();
 }
 
+export function get_recipient_bar_color(color) {
+    // Mixes 50% of color to 40% of white (light theme) / black (dark theme).
+    const using_dark_theme = settings_data.using_dark_theme();
+    color = get_stream_privacy_icon_color(color);
+    return colord(using_dark_theme ? "#000000" : "#ffffff")
+        .mix(color, using_dark_theme ? 0.5 : 0.4)
+        .toHex();
+}
 
+function update_table_message_recipient_stream_color(table, stream_name, recipient_bar_color) {
     const $stream_labels = table.find(".stream_label");
-
     for (const label of $stream_labels) {
         const $label = $(label);
         if ($label.text().trim() === stream_name) {
-            const $messages = $label.closest(".recipient_row").children(".message_row");
-            $messages
-                .children(".messagebox")
-                .css(
-                    "box-shadow",
-                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
-                );
-            $messages
-                .children(".date_row")
-                .css(
-                    "box-shadow",
-                    "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
-                );
-            $label.css({background: style, "border-left-color": style});
-            $label.removeClass("dark_background");
-            $label.addClass(color_class.get_css_class(color));
+            $label
+                .closest(".message_header_stream .message-header-contents")
+                .css({background: recipient_bar_color});
         }
     }
 }
@@ -55,10 +71,20 @@ function update_stream_privacy_color(id, color) {
     $(`.stream-privacy-modified-color-${CSS.escape(id)}`).css("color", color);
 }
 
-function update_historical_message_color(stream_name, color) {
-    update_table_stream_color($(".focused_table"), stream_name, color);
-    if ($(".focused_table").attr("id") !== "#zhome") {
-        update_table_stream_color($("#zhome"), stream_name, color);
+function update_message_recipient_color(stream_name, color) {
+    const recipient_color = get_recipient_bar_color(color);
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        const $table = row.get_table(msg_list.table_name);
+        update_table_message_recipient_stream_color($table, stream_name, recipient_color);
+    }
+
+    // Update color for drafts if open.
+    if (overlays.drafts_open()) {
+        update_table_message_recipient_stream_color(
+            $(".drafts-container"),
+            stream_name,
+            recipient_color,
+        );
     }
 }
 
@@ -107,7 +133,7 @@ export function update_stream_color(sub, color) {
         )}'] .large-icon`,
     ).css("color", color);
 
-    update_historical_message_color(sub.name, color);
+    update_message_recipient_color(sub.name, color);
     update_stream_privacy_color(stream_id, color);
     message_view_header.colorize_message_view_header();
 }

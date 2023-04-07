@@ -689,6 +689,7 @@ export function dispatch_normal_event(event) {
                         realm_logo.render();
                     }
                     $("body").fadeIn(300);
+                    message_lists.update_recipient_bar_background_color();
                 }, 300);
             }
             if (event.property === "starred_message_counts") {
