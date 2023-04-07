@@ -201,6 +201,14 @@ export class DropdownListWidget {
                     break;
                 }
             }
+
+            if (keydown_util.is_enter_event(e) && e.target === $search_input[0]) {
+                e.stopPropagation();
+                e.preventDefault();
+                // Select the first option from the menu on pressing
+                // "Enter" when focus is on the search input.
+                dropdown_elements().first().trigger("click");
+            }
         });
     }
 
@@ -524,6 +532,14 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
 
                     break;
                 }
+            }
+
+            if (keydown_util.is_enter_event(e) && e.target === $search_input[0]) {
+                e.stopPropagation();
+                e.preventDefault();
+                // Select the first option from the menu on pressing
+                // "Enter" when focus is on the search input.
+                dropdown_elements().first().trigger("click");
             }
         });
     }
