@@ -141,7 +141,7 @@ export class DropdownListWidget {
         });
     }
 
-    dropdown_focus_events() {
+    dropdown_keyboard_events() {
         const $search_input = $(
             `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
         );
@@ -235,7 +235,7 @@ export class DropdownListWidget {
             }
         });
 
-        this.dropdown_focus_events();
+        this.dropdown_keyboard_events();
 
         this.render(this.initial_value);
         this.register_event_handlers();
@@ -456,7 +456,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
         tippy_instance.destroy();
     }
 
-    dropdown_focus_events() {
+    dropdown_keyboard_events() {
         // Main keydown event handler which transfers the focus from one child element
         // to another.
 
