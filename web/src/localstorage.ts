@@ -1,10 +1,18 @@
+import {z} from "zod";
+
 import * as blueslip from "./blueslip";
 
-type FormData = {
-    data: unknown;
-    __valid: true;
-    expires: number | null;
-};
+const formDataSchema = z
+    .object({
+        data: z.unknown(),
+        __valid: z.literal(true),
+        expires: z.number().nullable(),
+    })
+    // z.unknown by default marks the field as optional.
+    // Use zod transform to make optional data field non-optional.
+    .transform((o) => ({data: o.data, ...o}));
+
+type FormData = z.infer<typeof formDataSchema>;
 
 export type LocalStorage = {
     setExpiry(expires: number, isGlobal: boolean): LocalStorage;
@@ -53,17 +61,17 @@ const ls = {
                 return undefined;
             }
             data = JSON.parse(raw_data);
+            data = formDataSchema.parse(data);
+            if (
+                // JSON forms of data with `Infinity` turns into `null`,
+                // so if null then it hasn't expired since nothing was specified.
+                data.expires === null ||
+                !ls.isExpired(data.expires)
+            ) {
+                return data;
+            }
         } catch {
             // data stays undefined
-        }
-        if (
-            data &&
-            data.__valid &&
-            // JSON forms of data with `Infinity` turns into `null`,
-            // so if null then it hasn't expired since nothing was specified.
-            (data.expires === null || !ls.isExpired(data.expires))
-        ) {
-            return data;
         }
 
         return undefined;
