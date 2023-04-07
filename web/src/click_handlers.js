@@ -809,16 +809,22 @@ export function initialize() {
         settings_display.launch_default_language_setting_modal();
     });
 
+    // We cannot update recipient bar color using dark_theme.enable/disable due to
+    // it being called before message lists are initialized and the order cannot be changed.
+    // Also, since these buttons are only visible for spectators which doesn't have events,
+    // if theme is changed in a different tab, the theme of this tab remains the same.
     $("body").on("click", "#gear-menu .dark-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
         dark_theme.enable();
+        message_lists.update_recipient_bar_background_color();
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
         dark_theme.disable();
+        message_lists.update_recipient_bar_background_color();
     });
 
     // MAIN CLICK HANDLER
