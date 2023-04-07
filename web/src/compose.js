@@ -1,3 +1,5 @@
+/* Main compose box module for sending messages. */
+
 import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";

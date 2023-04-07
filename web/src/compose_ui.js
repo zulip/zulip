@@ -1,3 +1,6 @@
+/* Compose box module responsible for manipulating the compose box
+   textarea correctly. */
+
 import autosize from "autosize";
 import $ from "jquery";
 import {insert, replace, set, wrapSelection} from "text-field-edit";
@@ -474,6 +477,8 @@ export function format_text($textarea, type) {
     }
 }
 
+/* TODO: This functions don't belong in this module, as they have
+ * nothing to do with the compose textarea. */
 export function hide_compose_spinner() {
     compose_spinner_visible = false;
     $("#compose-send-button .loader").hide();

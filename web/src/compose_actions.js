@@ -1,3 +1,5 @@
+/* Module primarily for opening/closing the compose box. */
+
 import autosize from "autosize";
 import $ from "jquery";
 

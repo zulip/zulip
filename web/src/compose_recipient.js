@@ -1,3 +1,5 @@
+/* Compose box module responsible for the message's recipient */
+
 import $ from "jquery";
 import _ from "lodash";
 
