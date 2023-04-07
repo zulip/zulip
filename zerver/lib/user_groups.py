@@ -1,6 +1,6 @@
 from typing import Dict, Iterable, List, Sequence, TypedDict
 
-from django.db.models import QuerySet
+from django.db.models import F, QuerySet
 from django.utils.translation import gettext as _
 from django_cte import With
 from django_stubs_ext import ValuesQuerySet
@@ -157,10 +157,10 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserPro
 def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
     cte = With.recursive(
         lambda cte: UserGroup.objects.filter(id=user_group.id)
-        .values("id")
-        .union(cte.join(UserGroup, direct_supergroups=cte.col.id).values("id"))
+        .values(group_id=F("id"))
+        .union(cte.join(UserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id")))
     )
-    return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
+    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
 
 
 def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
@@ -169,11 +169,11 @@ def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:
     cte = With.recursive(
-        lambda cte: user_profile.direct_groups.values("id").union(
-            cte.join(UserGroup, direct_subgroups=cte.col.id).values("id")
+        lambda cte: user_profile.direct_groups.values(group_id=F("id")).union(
+            cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id"))
         )
     )
-    return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
+    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
 
 
 def is_user_in_group(
