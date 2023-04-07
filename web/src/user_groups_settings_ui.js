@@ -179,6 +179,7 @@ export function update_group(group_id) {
 export function change_state(section) {
     if (section === "new") {
         do_open_create_user_group();
+        redraw_user_group_list();
         return;
     }
 
@@ -271,9 +272,15 @@ export function setup_page(callback) {
         $groups_overlay_container.append(rendered);
 
         const $container = $("#groups_overlay_container .user-groups-list");
-        const user_groups_list = user_groups.get_realm_user_groups();
 
-        group_list_widget = ListWidget.create($container, user_groups_list, {
+        /*
+            As change_state function called after this initial build up
+            redraws left panel based on active tab we avoid building extra dom
+            here as the required group-rows are anyway going to be created
+            immediately after this due to call to change_state. So we call
+            `ListWidget.create` with empty user groups list.
+        */
+        group_list_widget = ListWidget.create($container, [], {
             name: "user-groups-overlay",
             get_item: ListWidget.default_get_item,
             modifier_html(item) {
