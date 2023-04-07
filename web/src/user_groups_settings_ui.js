@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
-import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
 import * as blueslip from "./blueslip";
@@ -137,15 +136,7 @@ export function add_group_to_table(group) {
         return;
     }
 
-    const settings_html = render_user_group_settings({
-        group,
-        can_edit: user_group_edit.can_edit(group.id),
-    });
-
     redraw_user_group_list();
-    scroll_util
-        .get_content_element($("#groups_overlay_container .settings"))
-        .append($(settings_html));
 
     if (user_group_create.get_name() === group.name) {
         // This `user_group_create.get_name()` check tells us whether the
