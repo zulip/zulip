@@ -4,6 +4,7 @@ import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as markdown from "./markdown";
+import * as message_lists from "./message_lists";
 import * as scroll_bar from "./scroll_bar";
 
 /*
@@ -56,6 +57,7 @@ export function switch_to_light_theme() {
         command: "/day",
         on_success(data) {
             dark_theme.disable();
+            message_lists.update_recipient_bar_background_color();
             feedback_widget.show({
                 populate($container) {
                     const rendered_msg = markdown.parse_non_message(data.msg);
@@ -78,6 +80,7 @@ export function switch_to_dark_theme() {
         command: "/night",
         on_success(data) {
             dark_theme.enable();
+            message_lists.update_recipient_bar_background_color();
             feedback_widget.show({
                 populate($container) {
                     const rendered_msg = markdown.parse_non_message(data.msg);
