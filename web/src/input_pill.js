@@ -5,7 +5,6 @@ import $ from "jquery";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
-import * as compose_recipient from "./compose_recipient";
 import * as keydown_util from "./keydown_util";
 import * as ui_util from "./ui_util";
 
@@ -163,6 +162,11 @@ export function create(opts) {
                 if (typeof store.removePillFunction === "function") {
                     store.removePillFunction(pill);
                 }
+
+                // This is needed to run the "change" event handler registered in
+                // compose_recipient.js, which calls the `update_on_recipient_change` to update
+                // the compose_fade state.
+                store.$input.trigger("change");
 
                 return pill;
             }
@@ -358,8 +362,6 @@ export function create(opts) {
 
             funcs.removePill($pill[0]);
             $next.trigger("focus");
-
-            compose_recipient.update_on_recipient_change();
         });
 
         store.$parent.on("click", function (e) {
