@@ -68,31 +68,6 @@ const bot = {
     is_bot: true,
 };
 
-function hide_all_empty_narrow_messages() {
-    const all_empty_narrow_messages = [
-        ".empty_feed_notice",
-        "#empty_narrow_message",
-        "#nonsubbed_private_nonexistent_stream_narrow_message",
-        "#nonsubbed_stream_narrow_message",
-        "#empty_star_narrow_message",
-        "#empty_narrow_all_mentioned",
-        "#empty_narrow_all_private_message",
-        "#no_unread_narrow_message",
-        "#non_existing_user",
-        "#non_existing_users",
-        "#empty_narrow_private_message",
-        "#empty_narrow_self_private_message",
-        "#empty_narrow_multi_private_message",
-        "#empty_narrow_group_private_message",
-        "#silent_user",
-        "#empty_search_narrow_message",
-        "#empty_narrow_resolved_topics",
-    ];
-    for (const selector of all_empty_narrow_messages) {
-        $(selector).hide();
-    }
-}
-
 run_test("empty_narrow_html", ({mock_template}) => {
     mock_template("empty_feed_notice.hbs", true, (data, html) => html);
 
@@ -182,7 +157,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
     );
 });
 
-run_test("uris", () => {
+run_test("urls", () => {
     people.add_active_user(ray);
     people.add_active_user(alice);
     people.add_active_user(me);
@@ -213,7 +188,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     mock_template("empty_feed_notice.hbs", true, (data, html) => html);
 
     narrow_state.reset_current_filter();
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -225,7 +199,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     // for non-existent or private stream
     set_filter([["stream", "Foo"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -235,7 +208,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     // for non-subbed public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
     set_filter([["stream", "Rome"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -248,7 +220,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     // for non-web-public stream for spectator
     page_params.is_spectator = true;
     set_filter([["stream", "Rome"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -262,7 +233,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ["stream", "Rome"],
         ["topic", "foo"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -278,7 +248,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ["stream", "web-public-stream"],
         ["topic", "foo"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -287,7 +256,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     page_params.is_spectator = false;
 
     set_filter([["is", "starred"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -298,7 +266,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["is", "mentioned"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -312,7 +279,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
     set_filter([["is", "private"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -325,7 +291,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["is", "private"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -336,7 +301,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["is", "unread"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -344,7 +308,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["is", "resolved"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -357,7 +320,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     // prioritize information about invalid user(s) in narrow/search
     set_filter([["pm-with", ["Yo"]]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -366,7 +328,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     people.add_active_user(alice);
     set_filter([["pm-with", ["alice@example.com", "Yo"]]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -374,7 +335,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["pm-with", "alice@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -387,7 +347,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     // the organization has disabled sending private messages
     people.add_active_user(bot);
     set_filter([["pm-with", "bot@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -400,7 +359,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     // group private messages with bots are not possible when
     // sending private messages is disabled
     set_filter([["pm-with", bot.email + "," + alice.email]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -413,7 +371,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["pm-with", "alice@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -426,7 +383,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
     set_filter([["pm-with", me.email]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -437,7 +393,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["pm-with", me.email + "," + alice.email]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -453,7 +408,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     // prioritize information about invalid user in narrow/search
     set_filter([["group-pm-with", ["Yo"]]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -461,7 +415,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["group-pm-with", "alice@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -473,7 +426,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     // group private messages with bots are not possible when
     // sending private messages is disabled
     set_filter([["group-pm-with", "bot@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -486,7 +438,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["group-pm-with", "alice@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -497,7 +448,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["sender", "ray@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -505,7 +455,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["sender", "sinwar@example.com"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -516,7 +465,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ["sender", "alice@example.com"],
         ["stream", "Rome"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -524,7 +472,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["is", "invalid"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -542,7 +489,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     stream_data.subscribe_myself(my_stream);
 
     set_filter([["stream", "my stream"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -553,7 +499,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     set_filter([["stream", ""]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -568,7 +513,6 @@ run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
 
     narrow_state.reset_current_filter();
     set_filter([["search", "grail"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.match($(".empty_feed_notice_main").html(), /<span>grail<\/span>/);
 });
@@ -593,7 +537,6 @@ run_test("show_search_stopwords", ({mock_template}) => {
     };
     narrow_state.reset_current_filter();
     set_filter([["search", "what about grail"]]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -613,7 +556,6 @@ run_test("show_search_stopwords", ({mock_template}) => {
         ["stream", "streamA"],
         ["search", "what about grail"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -635,7 +577,6 @@ run_test("show_search_stopwords", ({mock_template}) => {
         ["topic", "topicA"],
         ["search", "what about grail"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -658,7 +599,6 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         ["stream", "streamA"],
         ["stream", "streamB"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -672,7 +612,6 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         ["topic", "topicA"],
         ["topic", "topicB"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -689,7 +628,6 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         ["sender", "alice@example.com"],
         ["sender", "ray@example.com"],
     ]);
-    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
