@@ -42,7 +42,7 @@ stream_data.add_sub(general);
 
 function get_list_info(zoomed) {
     const stream_id = general.stream_id;
-    return topic_list_data.get_list_info(stream_id, zoomed);
+    return topic_list_data.get_list_info(stream_id, zoomed, topic_list.get_topic_search_term());
 }
 
 function test(label, f) {

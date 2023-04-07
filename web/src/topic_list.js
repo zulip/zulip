@@ -125,7 +125,11 @@ export class TopicListWidget {
     }
 
     build_list(spinner) {
-        const list_info = topic_list_data.get_list_info(this.my_stream_id, zoomed);
+        const list_info = topic_list_data.get_list_info(
+            this.my_stream_id,
+            zoomed,
+            get_topic_search_term(),
+        );
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
