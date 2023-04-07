@@ -5,6 +5,7 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as util from "./util";
 
@@ -386,6 +387,19 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
         set_message_position(message_top, message_height, viewport_info, 1 / 2);
     } else if (is_below) {
         set_message_position(message_top, message_height, viewport_info, 1 / 7);
+    }
+}
+
+export function maybe_scroll_to_show_message_top() {
+    // Sets the top of the message to the top of the viewport.
+    // Only applies if the top of the message is out of view above the visible area.
+    const $selected_message = message_lists.current.selected_row();
+    const viewport_info = message_viewport_info();
+    const message_top = $selected_message.offset().top;
+    const message_height = $selected_message.safeOuterHeight(true);
+    if (message_top < viewport_info.visible_top) {
+        set_message_position(message_top, message_height, viewport_info, 0);
+        popovers.set_suppress_scroll_hide();
     }
 }
 

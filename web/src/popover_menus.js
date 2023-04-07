@@ -34,6 +34,7 @@ import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
+import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
@@ -211,6 +212,7 @@ export function toggle_message_actions_menu(message) {
         return true;
     }
 
+    message_viewport.maybe_scroll_to_show_message_top();
     const $popover_reference = $(".selected_message .actions_hover .zulip-icon-ellipsis-v-solid");
     message_actions_popover_keyboard_toggle = true;
     $popover_reference.trigger("click");
