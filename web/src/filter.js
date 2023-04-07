@@ -999,14 +999,20 @@ export class Filter {
     static describe_is_operator(operator) {
         const verb = operator.negated ? "exclude " : "";
         const operand = operator.operand;
-        const operand_list = ["starred", "alerted", "unread"];
-        if (operand_list.includes(operand)) {
-            return verb + operand + " messages";
-        } else if (operand === "mentioned") {
-            return verb + "@-mentions";
-        } else if (operand === "private") {
-            return verb + "direct messages";
+
+        switch (operand) {
+            case "starred":
+            case "alerted":
+            case "unread":
+                return verb + operand + " messages";
+            case "mentioned":
+                return verb + "@-mentions";
+            case "private":
+                return verb + "direct messages";
+            case "resolved":
+                return verb + "topics marked as resolved";
         }
+
         return "invalid " + operand + " operand for is operator";
     }
 
