@@ -659,11 +659,11 @@
 .preview_content.rendered_markdown {
     /*  Ensure that the first child and last child
     don't have blank area at the top and bottom respectively. */
-    & :first-child {
+    & > :first-child {
         margin-top: 0;
     }
 
-    & :last-child {
+    & > :last-child {
         margin-bottom: 0;
     }
 }
