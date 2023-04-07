@@ -174,7 +174,7 @@ MIDDLEWARE = (
     "zerver.middleware.JsonErrorHandler",
     "zerver.middleware.RateLimitMiddleware",
     "zerver.middleware.FlushDisplayRecipientCache",
-    "zerver.middleware.ZulipCommonMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "zerver.middleware.LocaleMiddleware",
     "zerver.middleware.HostDomainMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",

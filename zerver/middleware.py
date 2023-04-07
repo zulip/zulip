@@ -11,7 +11,6 @@ from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.http.response import HttpResponseBase
-from django.middleware.common import CommonMiddleware
 from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
 from django.utils import translation
@@ -685,28 +684,6 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
             assert isinstance(response, HttpResponse)
             response.content = alter_content(request, response.content)
         return response
-
-
-class ZulipCommonMiddleware(CommonMiddleware):
-    """
-    Patched version of CommonMiddleware to disable the APPEND_SLASH
-    redirect behavior inside Tornado.
-
-    While this has some correctness benefit in encouraging clients
-    to implement the API correctly, this also saves about 600us in
-    the runtime of every GET /events query, as the APPEND_SLASH
-    route resolution logic is surprisingly expensive.
-
-    TODO: We should probably extend this behavior to apply to all of
-    our API routes.  The APPEND_SLASH behavior is really only useful
-    for non-API endpoints things like /login.  But doing that
-    transition will require more careful testing.
-    """
-
-    def should_redirect_with_slash(self, request: HttpRequest) -> bool:
-        if settings.RUNNING_INSIDE_TORNADO:
-            return False
-        return super().should_redirect_with_slash(request)
 
 
 def validate_scim_bearer_token(request: HttpRequest) -> bool:
