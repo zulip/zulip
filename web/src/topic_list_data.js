@@ -3,7 +3,6 @@ import * as resolved_topic from "../shared/src/resolved_topic";
 import * as hash_util from "./hash_util";
 import * as narrow_state from "./narrow_state";
 import * as stream_topic_history from "./stream_topic_history";
-import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -11,7 +10,7 @@ import * as util from "./util";
 const max_topics = 8;
 const max_topics_with_unread = 12;
 
-export function get_list_info(stream_id, zoomed) {
+export function get_list_info(stream_id, zoomed, search_term) {
     let topics_selected = 0;
     let more_topics_unreads = 0;
     let more_topics_have_unread_mention_messages = false;
@@ -24,7 +23,6 @@ export function get_list_info(stream_id, zoomed) {
 
     let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
     if (zoomed) {
-        const search_term = topic_list.get_topic_search_term();
         topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
     }
 
