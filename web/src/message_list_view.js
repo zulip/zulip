@@ -29,6 +29,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
+import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
@@ -175,6 +176,8 @@ function populate_group_from_message_container(group, message_container) {
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
         group.color_class = color_class.get_css_class(group.background_color);
+        const color = stream_data.get_color(message_container.msg.stream);
+        group.stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
         group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
         group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
         group.topic = message_container.msg.topic;
