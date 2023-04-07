@@ -262,6 +262,10 @@ export function setup_page(callback) {
         $groups_overlay_container.empty();
         $groups_overlay_container.append(rendered);
 
+        // Initially as the overlay is build with empty right panel,
+        // active_group_id is undefined.
+        reset_active_group_id();
+
         const $container = $("#groups_overlay_container .user-groups-list");
 
         /*
