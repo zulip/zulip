@@ -797,30 +797,29 @@ def do_update_message(
         # can access. We move the user topic records for such
         # users, but removing the old topic visibility_policy
         # and then creating a new one.
-        for visibility_policy in UserTopic.VisibilityPolicy.values:
+        for visibility_policy, user_profiles in user_profiles_for_visibility_policy.items():
             # Using the dict, we get the user_profiles lists for the original_topic
             # that corresponds to each visibility_policy.
             # Perform the remove and create operation for each of
             # these user_profiles lists.
-            if visibility_policy in user_profiles_for_visibility_policy:
-                bulk_do_set_user_topic_visibility_policy(
-                    user_profiles_for_visibility_policy[visibility_policy],
-                    stream_being_edited,
-                    orig_topic_name,
-                    visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
-                    # do_set_user_topic_visibility_policy with visibility_policy
-                    # set to 'new_visibility_policy' will send an updated muted topic
-                    # event, which contains the full set of muted
-                    # topics, just after this.
-                    skip_muted_topics_event=True,
-                )
+            bulk_do_set_user_topic_visibility_policy(
+                user_profiles,
+                stream_being_edited,
+                orig_topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+                # do_set_user_topic_visibility_policy with visibility_policy
+                # set to 'new_visibility_policy' will send an updated muted topic
+                # event, which contains the full set of muted
+                # topics, just after this.
+                skip_muted_topics_event=True,
+            )
 
-                bulk_do_set_user_topic_visibility_policy(
-                    user_profiles_for_visibility_policy[visibility_policy],
-                    new_stream if new_stream is not None else stream_being_edited,
-                    topic_name if topic_name is not None else orig_topic_name,
-                    visibility_policy=visibility_policy,
-                )
+            bulk_do_set_user_topic_visibility_policy(
+                user_profiles,
+                new_stream if new_stream is not None else stream_being_edited,
+                topic_name if topic_name is not None else orig_topic_name,
+                visibility_policy=visibility_policy,
+            )
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
