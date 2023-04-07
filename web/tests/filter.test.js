@@ -1157,6 +1157,10 @@ test("describe", () => {
     string = "alerted messages";
     assert.equal(Filter.describe(narrow), string);
 
+    narrow = [{operator: "is", operand: "resolved"}];
+    string = "topics marked as resolved";
+    assert.equal(Filter.describe(narrow), string);
+
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
     string = "invalid something_we_do_not_support operand for is operator";
     assert.equal(Filter.describe(narrow), string);
