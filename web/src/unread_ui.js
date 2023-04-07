@@ -13,7 +13,6 @@ import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 import {notify_server_messages_read} from "./unread_ops";
 
-let last_mention_count = 0;
 let user_closed_mark_as_read_turned_off_banner = false;
 export function hide_mark_as_read_turned_off_banner() {
     // Use visibility instead of hide() to prevent messages on the screen from
@@ -30,26 +29,6 @@ export function notify_messages_remain_unread() {
     if (!user_closed_mark_as_read_turned_off_banner) {
         $("#mark_as_read_turned_off_banner").toggleClass("invisible", false);
     }
-}
-
-function do_new_messages_animation($li) {
-    $li.addClass("new_messages");
-    function mid_animation() {
-        $li.removeClass("new_messages");
-        $li.addClass("new_messages_fadeout");
-    }
-    function end_animation() {
-        $li.removeClass("new_messages_fadeout");
-    }
-    setTimeout(mid_animation, 3000);
-    setTimeout(end_animation, 6000);
-}
-
-export function animate_mention_changes($li, new_mention_count) {
-    if (new_mention_count > last_mention_count) {
-        do_new_messages_animation($li);
-    }
-    last_mention_count = new_mention_count;
 }
 
 export function set_count_toggle_button($elem, count) {

@@ -2,7 +2,8 @@ import $ from "jquery";
 
 import * as resize from "./resize";
 import * as ui_util from "./ui_util";
-import * as unread_ui from "./unread_ui";
+
+let last_mention_count = 0;
 
 export function update_starred_count(count) {
     const $starred_li = $(".top_left_starred_messages");
@@ -19,7 +20,7 @@ export function update_dom_with_unread_counts(counts) {
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_li, counts.home_unread_messages);
 
-    unread_ui.animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+    animate_mention_changes($mentioned_li, counts.mentioned_message_count);
 }
 
 function remove($elem) {
@@ -77,4 +78,24 @@ export function narrow_to_recent_topics() {
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);
+}
+
+export function animate_mention_changes($li, new_mention_count) {
+    if (new_mention_count > last_mention_count) {
+        do_new_messages_animation($li);
+    }
+    last_mention_count = new_mention_count;
+}
+
+function do_new_messages_animation($li) {
+    $li.addClass("new_messages");
+    function mid_animation() {
+        $li.removeClass("new_messages");
+        $li.addClass("new_messages_fadeout");
+    }
+    function end_animation() {
+        $li.removeClass("new_messages_fadeout");
+    }
+    setTimeout(mid_animation, 3000);
+    setTimeout(end_animation, 6000);
 }
