@@ -28,8 +28,11 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
 
     url = payload["pull_request"]["html_url"].tame(check_string)
     number = payload["pull_request"]["number"].tame(check_int)
-    target_branch = payload["pull_request"]["head"]["ref"].tame(check_string)
-    base_branch = payload["pull_request"]["base"]["ref"].tame(check_string)
+    target_branch = None
+    base_branch = None
+    if action != "edited":
+        target_branch = payload["pull_request"]["head"]["ref"].tame(check_string)
+        base_branch = payload["pull_request"]["base"]["ref"].tame(check_string)
     title = payload["pull_request"]["title"].tame(check_string) if include_title else None
     stringified_assignee = assignee["login"].tame(check_string) if assignee else None
 

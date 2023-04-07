@@ -36,7 +36,9 @@ class GiteaHookTests(WebhookTestCase):
 
     def test_pull_request_edited(self) -> None:
         expected_topic = "test / PR #1906 test 2"
-        expected_message = """kostekIV edited [PR #5](https://try.gitea.io/kostekIV/test/pulls/5) from `d` to `master`."""
+        expected_message = (
+            """kostekIV edited [PR #5](https://try.gitea.io/kostekIV/test/pulls/5)."""
+        )
         self.check_webhook("pull_request__edited", expected_topic, expected_message)
 
     def test_pull_request_reopened(self) -> None:
