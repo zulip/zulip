@@ -94,9 +94,7 @@ export default function render_tabs(contributors: Contributor[]): void {
     const template = _.template($("#contributors-template").html());
     const count_template = _.template($("#count-template").html());
     const total_count_template = _.template($("#total-count-template").html());
-    const contributors_list = contributors
-        ? contributors.filter((c) => exclude_bot_contributors(c))
-        : [];
+    const contributors_list = contributors.filter((c) => exclude_bot_contributors(c));
     const mapped_contributors_list = contributors_list.map((c) => ({
         name: get_display_name(c),
         github_username: c.github_username,

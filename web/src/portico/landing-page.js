@@ -196,7 +196,7 @@ $(() => {
 
     if (window.location.pathname === "/team/") {
         const contributors = page_params.contributors;
-        delete page_params.contributors;
+        page_params.contributors = [];
         render_tabs(contributors);
     }
 
