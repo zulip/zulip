@@ -516,11 +516,14 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id1",
             is_stream: true,
             stream_name: "stream",
-            stream_color: "#FFFFFF",
-            dark_background: "",
+            stream_id: 30,
+            recipient_bar_color: "#e2e2e2",
+            stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
+            invite_only: undefined,
+            is_web_public: undefined,
         },
         {
             draft_id: "id2",
@@ -547,11 +550,14 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id3",
             is_stream: true,
             stream_name: "stream 2",
-            stream_color: "#FFFFFF",
-            dark_background: "",
+            recipient_bar_color: "#e2e2e2",
+            stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
+            stream_id: undefined,
+            invite_only: false,
+            is_web_public: false,
         },
     ];
 
@@ -681,21 +687,27 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id1",
             is_stream: true,
             stream_name: "stream",
-            stream_color: "#FFFFFF",
-            dark_background: "",
+            stream_id: 30,
+            recipient_bar_color: "#e2e2e2",
+            stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
+            invite_only: false,
+            is_web_public: false,
         },
         {
             draft_id: "id3",
             is_stream: true,
             stream_name: "stream 2",
-            stream_color: "#FFFFFF",
-            dark_background: "",
+            stream_id: undefined,
+            recipient_bar_color: "#e2e2e2",
+            stream_privacy_icon_color: "#b9b9b9",
             topic: "topic",
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
+            invite_only: false,
+            is_web_public: false,
         },
     ];
 
@@ -720,7 +732,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
 
     sub_store.get = function (stream_id) {
         assert.equal(stream_id, 30);
-        return {name: "stream"};
+        return {name: "stream", invite_only: false, is_web_public: false};
     };
 
     mock_template("draft_table_body.hbs", false, (data) => {

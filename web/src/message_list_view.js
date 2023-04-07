@@ -11,7 +11,6 @@ import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
-import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
@@ -174,9 +173,8 @@ function populate_group_from_message_container(group, message_container) {
     group.is_private = message_container.msg.is_private;
 
     if (group.is_stream) {
-        group.background_color = stream_data.get_color(message_container.msg.stream);
-        group.color_class = color_class.get_css_class(group.background_color);
         const color = stream_data.get_color(message_container.msg.stream);
+        group.recipient_bar_color = stream_color.get_recipient_bar_color(color);
         group.stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
         group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
         group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
@@ -1556,6 +1554,15 @@ export class MessageListView {
             if (!$prev_header_date_row.hasClass("recipient_row_date_unchanged")) {
                 $prev_header_date_row.addClass("hide-date-separator-header");
             }
+        }
+    }
+
+    update_recipient_bar_background_color() {
+        const $table = rows.get_table(this.table_name);
+        const $stream_headers = $table.find(".message_header_stream");
+        for (const stream_header of $stream_headers) {
+            const $stream_header = $(stream_header);
+            stream_color.update_stream_recipient_color($stream_header);
         }
     }
 }
