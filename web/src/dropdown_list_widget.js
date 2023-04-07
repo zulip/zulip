@@ -76,19 +76,9 @@ export class DropdownListWidget {
 
     register_event_handlers() {
         $(`#${CSS.escape(this.container_id)} .dropdown-list-body`).on(
-            "click keypress",
+            "click",
             ".list_item",
             (e) => {
-                const $setting_elem = $(e.currentTarget).closest(
-                    `.${CSS.escape(this.widget_name)}_setting`,
-                );
-                if (e.type === "keypress") {
-                    if (keydown_util.is_enter_event(e)) {
-                        $setting_elem.find(".dropdown-menu").dropdown("toggle");
-                    } else {
-                        return;
-                    }
-                }
                 const value = $(e.currentTarget).attr("data-value");
                 this.update(value);
             },
@@ -202,12 +192,16 @@ export class DropdownListWidget {
                 }
             }
 
-            if (keydown_util.is_enter_event(e) && e.target === $search_input[0]) {
+            if (keydown_util.is_enter_event(e)) {
                 e.stopPropagation();
                 e.preventDefault();
-                // Select the first option from the menu on pressing
-                // "Enter" when focus is on the search input.
-                dropdown_elements().first().trigger("click");
+                if (e.target === $search_input[0]) {
+                    // Select the first option from the menu on pressing
+                    // "Enter" when focus is on the search input.
+                    dropdown_elements().first().trigger("click");
+                } else if ($(e.target).parent().hasClass("list_item")) {
+                    $(e.target).trigger("click");
+                }
             }
         });
     }
@@ -534,12 +528,16 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
                 }
             }
 
-            if (keydown_util.is_enter_event(e) && e.target === $search_input[0]) {
+            if (keydown_util.is_enter_event(e)) {
                 e.stopPropagation();
                 e.preventDefault();
-                // Select the first option from the menu on pressing
-                // "Enter" when focus is on the search input.
-                dropdown_elements().first().trigger("click");
+                if (e.target === $search_input[0]) {
+                    // Select the first option from the menu on pressing
+                    // "Enter" when focus is on the search input.
+                    dropdown_elements().first().trigger("click");
+                } else if ($(e.target).parent().hasClass("list_item")) {
+                    $(e.target).trigger("click");
+                }
             }
         });
     }
@@ -550,11 +548,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
             `#${CSS.escape(this.container_id)} .dropdown-list-body`,
         ).expectOne();
 
-        $dropdown_list_body.on("click keypress", ".list_item", (e) => {
-            if (e.type === "keypress" && !keydown_util.is_enter_event(e)) {
-                return;
-            }
-
+        $dropdown_list_body.on("click", ".list_item", (e) => {
             const $element = e.target.closest("li");
             if ($element.hasClass("checked")) {
                 this.remove_check_mark($element);
