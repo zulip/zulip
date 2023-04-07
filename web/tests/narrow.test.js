@@ -286,10 +286,10 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // organization has disabled sending private messages
+    // organization has disabled sending direct messages
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
-    set_filter([["is", "private"]]);
+    set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -298,10 +298,10 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // sending private messages enabled
+    // sending direct messages enabled
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
-    set_filter([["is", "private"]]);
+    set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -325,7 +325,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         empty_narrow_html("translated: No topics are marked as resolved."),
     );
 
-    // organization has disabled sending private messages
+    // organization has disabled sending direct messages
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
@@ -354,8 +354,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // private messages with a bot are possible even though
-    // the organization has disabled sending private messages
+    // direct messages with a bot are possible even though
+    // the organization has disabled sending direct messages
     people.add_active_user(bot);
     set_filter([["pm-with", "bot@example.com"]]);
     narrow_banner.show_empty_narrow_message();
@@ -367,8 +367,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // group private messages with bots are not possible when
-    // sending private messages is disabled
+    // group direct messages with bots are not possible when
+    // sending direct messages is disabled
     set_filter([["pm-with", bot.email + "," + alice.email]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -378,7 +378,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // sending private messages enabled
+    // sending direct messages enabled
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["pm-with", "alice@example.com"]]);
@@ -413,7 +413,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // organization has disabled sending private messages
+    // organization has disabled sending direct messages
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
@@ -434,8 +434,8 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // group private messages with bots are not possible when
-    // sending private messages is disabled
+    // group direct messages with bots are not possible when
+    // sending direct messages is disabled
     set_filter([["group-pm-with", "bot@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
@@ -445,7 +445,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // sending private messages enabled
+    // sending direct messages enabled
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
     set_filter([["group-pm-with", "alice@example.com"]]);
@@ -748,21 +748,21 @@ run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 
     // Test with all invalid persons
     emails = "alice,random,ray";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 
     // Test with no persons
     emails = "";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 });
 
 run_test("narrow_compute_title", ({override}) => {

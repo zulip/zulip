@@ -100,7 +100,7 @@ function get_stream_suggestions(last, operators) {
     const invalid = [
         {operator: "stream"},
         {operator: "streams"},
-        {operator: "is", operand: "private"},
+        {operator: "is", operand: "dm"},
         {operator: "pm-with"},
         {operator: "group-pm-with"},
     ];
@@ -194,7 +194,7 @@ function get_group_suggestions(last, operators) {
 
         let terms = [term];
         if (negated) {
-            terms = [{operator: "is", operand: "private"}, term];
+            terms = [{operator: "is", operand: "dm"}, term];
         }
 
         return {
@@ -222,9 +222,9 @@ function make_people_getter(last) {
 
         let query;
 
-        // This next block is designed to match the behavior of the
-        // `is:private` block in get_person_suggestions
-        if (last.operator === "is" && last.operand === "private") {
+        // This next block is designed to match the behavior
+        // of the "is:dm" block in get_person_suggestions.
+        if (last.operator === "is" && last.operand === "dm") {
             query = "";
         } else {
             query = last.operand;
@@ -238,8 +238,8 @@ function make_people_getter(last) {
 
 // Possible args for autocomplete_operator: pm-with, sender, from, group-pm-with
 function get_person_suggestions(people_getter, last, operators, autocomplete_operator) {
-    if (last.operator === "is" && last.operand === "private") {
-        // Interpret 'is:private' as equivalent to 'pm-with:'
+    if (last.operator === "is" && last.operand === "dm") {
+        // Interpret "is:dm" as equivalent to "pm-with:".
         last = {operator: "pm-with", operand: "", negated: false};
     }
 
@@ -289,9 +289,10 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
             },
         ];
         if (autocomplete_operator === "pm-with" && last.negated) {
-            // In the special case of '-pm-with', add 'is:private' before it
-            // because we assume the user still wants to narrow to PMs
-            terms.unshift({operator: "is", operand: "private"});
+            // In the special case of "-pm-with", add "is:dm" before it
+            // because we assume the user still wants to narrow to direct
+            // messages.
+            terms.unshift({operator: "is", operand: "dm"});
         }
 
         return {
@@ -349,7 +350,7 @@ export function get_topic_suggestions_from_candidates({candidate_topics, guess})
 function get_topic_suggestions(last, operators) {
     const invalid = [
         {operator: "pm-with"},
-        {operator: "is", operand: "private"},
+        {operator: "is", operand: "dm"},
         {operator: "group-pm-with"},
         {operator: "topic"},
     ];
@@ -504,7 +505,7 @@ function get_streams_filter_suggestions(last, operators) {
             search_string: "streams:public",
             description_html: "All public streams in organization",
             invalid: [
-                {operator: "is", operand: "private"},
+                {operator: "is", operand: "dm"},
                 {operator: "stream"},
                 {operator: "group-pm-with"},
                 {operator: "pm-with"},
@@ -518,10 +519,10 @@ function get_streams_filter_suggestions(last, operators) {
 function get_is_filter_suggestions(last, operators) {
     const suggestions = [
         {
-            search_string: "is:private",
+            search_string: "is:dm",
             description_html: "direct messages",
             invalid: [
-                {operator: "is", operand: "private"},
+                {operator: "is", operand: "dm"},
                 {operator: "is", operand: "resolved"},
                 {operator: "stream"},
                 {operator: "pm-with"},
@@ -553,7 +554,7 @@ function get_is_filter_suggestions(last, operators) {
             description_html: "topics marked as resolved",
             invalid: [
                 {operator: "is", operand: "resolved"},
-                {operator: "is", operand: "private"},
+                {operator: "is", operand: "dm"},
                 {operator: "pm-with"},
                 {operator: "group-pm-with"},
             ],
@@ -626,6 +627,14 @@ function get_sent_by_me_suggestions(last, operators) {
 }
 
 function get_operator_suggestions(last) {
+    // Suggest "is:dm" to anyone with "is:private" in their muscle memory
+    if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
+        const is_dm = format_as_suggestion([
+            {operator: last.operator, operand: "dm", negated: last.negated},
+        ]);
+        return [is_dm];
+    }
+
     if (!(last.operator === "search")) {
         return [];
     }

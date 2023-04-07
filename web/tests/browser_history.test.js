@@ -21,7 +21,7 @@ function test(label, f) {
 
 test("basics", () => {
     const hash1 = "#settings/profile";
-    const hash2 = "#narrow/is/private";
+    const hash2 = "#narrow/is/dm";
     browser_history.go_to_location(hash1);
     assert.equal(window.location.hash, hash1);
 
@@ -69,7 +69,7 @@ test("update internal hash if required", ({override_rewire}) => {
 test("web-public view hash restore", () => {
     browser_history.update("#");
     assert.equal(window.location.hash, "");
-    const new_hash = "#narrow/is/private";
+    const new_hash = "#narrow/is/dm";
     browser_history.update(new_hash);
     assert.equal(window.location.hash, new_hash);
     browser_history.return_to_web_public_hash();

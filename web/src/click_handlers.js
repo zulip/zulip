@@ -730,7 +730,7 @@ export function initialize() {
         },
     );
 
-    /* The PRIVATE MESSAGES label's click behavior is complicated;
+    /* The DIRECT MESSAGES label's click behavior is complicated;
      * only when zoomed in does it have a navigation effect, so we need
      * this click handler rather than just a link. */
     $("body").on(
@@ -740,7 +740,7 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
 
-            window.location.hash = "narrow/is/private";
+            window.location.hash = "narrow/is/dm";
         },
     );
 

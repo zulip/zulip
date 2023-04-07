@@ -194,7 +194,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
 
-    operators = [{operator: "is", operand: "private"}];
+    operators = [{operator: "is", operand: "dm"}];
     filter = new Filter(operators);
     assert.ok(filter.contains_only_private_messages());
     assert.ok(filter.can_mark_messages_read());
@@ -203,6 +203,12 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+
+    // "is:private" was renamed to "is:dm"
+    operators = [{operator: "is", operand: "private"}];
+    filter = new Filter(operators);
+    assert.ok(filter.has_operand("is", "dm"));
+    assert.ok(!filter.has_operand("is", "private"));
 
     operators = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(operators);
@@ -270,7 +276,7 @@ test("basics", () => {
     // filter.supports_collapsing_recipients loop.
     operators = [
         {operator: "is", operand: "resolved", negated: true},
-        {operator: "is", operand: "private", negated: true},
+        {operator: "is", operand: "dm", negated: true},
         {operator: "stream", operand: "stream_name", negated: true},
         {operator: "streams", operand: "web-public", negated: true},
         {operator: "streams", operand: "public"},
@@ -444,12 +450,12 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_when_searching(group_pm);
     assert_not_mark_read_when_searching(pm_with);
 
-    const is_private = [{operator: "is", operand: "private"}];
-    filter = new Filter(is_private);
+    const is_dm = [{operator: "is", operand: "dm"}];
+    filter = new Filter(is_dm);
     assert.ok(filter.can_mark_messages_read());
-    assert_not_mark_read_with_is_operands(is_private);
-    assert_not_mark_read_with_has_operands(is_private);
-    assert_not_mark_read_when_searching(is_private);
+    assert_not_mark_read_with_is_operands(is_dm);
+    assert_not_mark_read_with_has_operands(is_dm);
+    assert_not_mark_read_when_searching(is_dm);
 
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
@@ -593,17 +599,17 @@ test("redundancies", () => {
 
     terms = [
         {operator: "pm-with", operand: "joe@example.com,"},
-        {operator: "is", operand: "private"},
+        {operator: "is", operand: "dm"},
     ];
     filter = new Filter(terms);
     assert.ok(filter.can_bucket_by("pm-with"));
 
     terms = [
         {operator: "pm-with", operand: "joe@example.com,", negated: true},
-        {operator: "is", operand: "private"},
+        {operator: "is", operand: "dm"},
     ];
     filter = new Filter(terms);
-    assert.ok(filter.can_bucket_by("is-private", "not-pm-with"));
+    assert.ok(filter.can_bucket_by("is-dm", "not-pm-with"));
 });
 
 test("canonicalization", () => {
@@ -690,7 +696,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["topic", "Bar"]]);
     assert.ok(!predicate({type: "private"}));
 
-    predicate = get_predicate([["is", "private"]]);
+    predicate = get_predicate([["is", "dm"]]);
     assert.ok(predicate({type: "private"}));
     assert.ok(!predicate({type: "stream"}));
 
@@ -814,7 +820,7 @@ test("predicate_basics", () => {
     );
     assert.ok(
         !predicate({
-            // you must be a part of the group pm
+            // you must be a part of the group direct message
             type: "private",
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
@@ -1167,7 +1173,7 @@ test("describe", () => {
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: "is", operand: "private"},
+        {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch"},
     ];
     string = "direct messages, search for lunch";
@@ -1210,7 +1216,7 @@ test("describe", () => {
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: "is", operand: "private"},
+        {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch", negated: true},
     ];
     string = "direct messages, exclude lunch";
@@ -1287,17 +1293,17 @@ test("can_bucket_by", () => {
     assert.equal(filter.can_bucket_by("stream", "topic"), false);
     assert.equal(filter.can_bucket_by("pm-with"), true);
     assert.equal(filter.can_bucket_by("is-mentioned"), false);
-    assert.equal(filter.can_bucket_by("is-private"), false);
+    assert.equal(filter.can_bucket_by("is-dm"), false);
 
-    terms = [{operator: "is", operand: "private"}];
+    terms = [{operator: "is", operand: "dm"}];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("is-mentioned"), false);
-    assert.equal(filter.can_bucket_by("is-private"), true);
+    assert.equal(filter.can_bucket_by("is-dm"), true);
 
     terms = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("is-mentioned"), true);
-    assert.equal(filter.can_bucket_by("is-private"), false);
+    assert.equal(filter.can_bucket_by("is-dm"), false);
 
     terms = [
         {operator: "is", operand: "mentioned"},
@@ -1305,17 +1311,17 @@ test("can_bucket_by", () => {
     ];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("is-mentioned"), true);
-    assert.equal(filter.can_bucket_by("is-private"), false);
+    assert.equal(filter.can_bucket_by("is-dm"), false);
 
     // The call below returns false for somewhat arbitrary
-    // reasons -- we say is-private has precedence over
+    // reasons -- we say is-dm has precedence over
     // is-starred.
     assert.equal(filter.can_bucket_by("is-starred"), false);
 
     terms = [{operator: "is", operand: "mentioned", negated: true}];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("is-mentioned"), false);
-    assert.equal(filter.can_bucket_by("is-private"), false);
+    assert.equal(filter.can_bucket_by("is-dm"), false);
 
     terms = [{operator: "is", operand: "resolved"}];
     filter = new Filter(terms);
@@ -1323,7 +1329,7 @@ test("can_bucket_by", () => {
     assert.equal(filter.can_bucket_by("stream"), false);
     assert.equal(filter.can_bucket_by("pm-with"), false);
     assert.equal(filter.can_bucket_by("is-mentioned"), false);
-    assert.equal(filter.can_bucket_by("is-private"), false);
+    assert.equal(filter.can_bucket_by("is-dm"), false);
 });
 
 test("term_type", () => {
@@ -1343,6 +1349,7 @@ test("term_type", () => {
     assert_term_type(term("stream", "whatever"), "stream");
     assert_term_type(term("pm-with", "whomever"), "pm-with");
     assert_term_type(term("pm-with", "whomever", true), "not-pm-with");
+    assert_term_type(term("is", "dm"), "is-dm");
     assert_term_type(term("is", "private"), "is-private");
     assert_term_type(term("has", "link"), "has-link");
     assert_term_type(term("has", "attachment", true), "not-has-attachment");
@@ -1493,7 +1500,7 @@ test("navbar_helpers", () => {
     const in_home = [{operator: "in", operand: "home"}];
     const in_all = [{operator: "in", operand: "all"}];
     const is_starred = [{operator: "is", operand: "starred"}];
-    const is_private = [{operator: "is", operand: "private"}];
+    const is_dm = [{operator: "is", operand: "dm"}];
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const streams_public = [{operator: "streams", operand: "public"}];
@@ -1553,11 +1560,11 @@ test("navbar_helpers", () => {
             redirect_url_with_search: "#",
         },
         {
-            operator: is_private,
+            operator: is_dm,
             is_common_narrow: true,
             icon: "envelope",
             title: "translated: Direct messages",
-            redirect_url_with_search: "/#narrow/is/private",
+            redirect_url_with_search: "/#narrow/is/dm",
         },
         {
             operator: is_mentioned,
@@ -1783,8 +1790,12 @@ run_test("is_spectator_compatible", () => {
         ]),
     );
     assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "starred"}]));
-    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "private"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "dm"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "streams", operand: "public"}]));
+
     // Malformed input not allowed
     assert.ok(!Filter.is_spectator_compatible([{operator: "has"}]));
+
+    // "is:private" was renamed to "is:dm"
+    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "private"}]));
 });

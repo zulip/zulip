@@ -158,14 +158,20 @@ run_test("get_unread_ids", () => {
         msg_id: private_msg.id,
     });
 
+    // "is:private" was renamed to "is:dm"
     terms = [{operator: "is", operand: "private"}];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [private_msg.id]);
+
+    terms = [{operator: "is", operand: "dm"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [private_msg.id]);
 
     // For a negated search, our candidate ids will be all
     // unread messages, even ones that don't pass the filter.
-    terms = [{operator: "is", operand: "private", negated: true}];
+    terms = [{operator: "is", operand: "dm", negated: true}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id, private_msg.id]);

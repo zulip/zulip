@@ -400,7 +400,7 @@ export function initialize() {
                         defaultMessage: "Currently viewing the entire stream.",
                     });
                 } else if (
-                    _.isEqual(narrow_filter.sorted_term_types(), ["is-private"]) &&
+                    _.isEqual(narrow_filter.sorted_term_types(), ["is-dm"]) &&
                     compose_state.get_message_type() === "private"
                 ) {
                     display_current_view = $t({

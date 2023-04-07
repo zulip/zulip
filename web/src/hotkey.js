@@ -824,7 +824,7 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "narrow_private":
             return do_narrow_action((target, opts) => {
-                narrow.by("is", "private", opts);
+                narrow.by("is", "dm", opts);
             });
         case "query_streams":
             stream_list.initiate_search();

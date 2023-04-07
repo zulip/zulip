@@ -273,7 +273,7 @@ export function is_spectator_compatible(hash) {
     // This implementation should agree with the similar function in zerver/lib/narrow.py.
     const web_public_allowed_hashes = [
         "",
-        // full #narrow hash handled in narrow.is_spectator_compatible
+        // full #narrow hash handled in filter.is_spectator_compatible
         "narrow",
         // TODO/compatibility: #recent_topics was renamed to #recent
         // in 2022. We should support the old URL fragment at least
