@@ -97,16 +97,29 @@ export function get_active_data() {
     };
 }
 
-export function switch_to_group_row(group_id) {
-    const $group_row = row_for_group_id(group_id);
-    const $container = $(".user-groups-list");
+export function switch_to_group_row(group) {
+    if (is_group_already_present(group)) {
+        /*
+            It is possible that this function may be called at times
+            when group-row for concerned group may not be present this
+            might occur when user manually edits the url for a group
+            that user is not member of and #groups overlay is open with
+            your-groups tab active.
 
-    get_active_data().$row.removeClass("active");
-    $group_row.addClass("active");
+            To handle such cases we perform these steps only if the group
+            is listed in the left panel else we simply open the settings
+            for the concerned group.
+        */
+        const $group_row = row_for_group_id(group.id);
+        const $container = $(".user-groups-list");
 
-    scroll_util.scroll_element_into_container($group_row, $container);
+        get_active_data().$row.removeClass("active");
+        $group_row.addClass("active");
 
-    $group_row.trigger("click");
+        scroll_util.scroll_element_into_container($group_row, $container);
+    }
+
+    user_group_edit.show_group_settings(group);
 }
 
 function show_right_section() {
@@ -189,7 +202,11 @@ export function change_state(section) {
             group_list_toggler.goto("your-groups");
         } else {
             show_right_section();
-            switch_to_group_row(group_id);
+            // We show the list of user groups in the left panel
+            // based on the tab that is active. It is `your-groups`
+            // tab by default.
+            redraw_user_group_list();
+            switch_to_group_row(group);
         }
         return;
     }
