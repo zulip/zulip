@@ -2432,17 +2432,17 @@ class NormalActionsTest(BaseAction):
         self.login("hamlet")
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        uri = None
+        url = None
 
         def do_upload() -> None:
-            nonlocal uri
+            nonlocal url
             result = self.client_post("/json/user_uploads", {"file": fp})
 
             response_dict = self.assert_json_success(result)
             self.assertIn("uri", response_dict)
-            uri = response_dict["uri"]
+            url = response_dict["uri"]
             base = "/user_uploads/"
-            self.assertEqual(base, uri[: len(base)])
+            self.assertEqual(base, url[: len(base)])
 
         events = self.verify_action(lambda: do_upload(), num_events=1, state_change_expected=False)
 
@@ -2455,8 +2455,8 @@ class NormalActionsTest(BaseAction):
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
-        assert uri is not None
-        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
+        assert url is not None
+        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + url + ")"
         events = self.verify_action(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
             num_events=2,
