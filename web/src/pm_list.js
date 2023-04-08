@@ -31,7 +31,7 @@ export function set_count(count) {
     ui_util.update_unread_count_in_dom(get_private_messages_section_header(), count);
 }
 
-function close() {
+export function close() {
     private_messages_collapsed = true;
     $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
     $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
@@ -100,7 +100,13 @@ export function update_private_messages() {
 }
 
 export function expand() {
+    // Only one thing can be zoomed at a time.
+    if (topic_zoom.is_zoomed_in()) {
+        topic_zoom.zoom_out();
+    }
+
     private_messages_collapsed = false;
+
     $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
     $("#toggle_private_messages_section_icon").removeClass("fa-caret-right");
     update_private_messages();

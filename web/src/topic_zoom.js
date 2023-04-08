@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as stream_list from "./stream_list";
 import * as topic_list from "./topic_list";
@@ -15,6 +16,7 @@ function zoom_in() {
     const stream_id = topic_list.active_stream_id();
 
     popovers.hide_all_except_sidebars();
+    pm_list.close();
     topic_list.zoom_in();
     stream_list.zoom_in_topics({
         stream_id,
