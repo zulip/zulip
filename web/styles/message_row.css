@@ -81,7 +81,7 @@ $time_column_max_width: 150px;
         .message_time {
             line-height: 1;
             justify-self: end;
-            padding-right: 10px;
+            padding-right: 5px;
             min-width: $time_column_min_width;
             text-align: end;
             grid-row-start: 1;
@@ -157,7 +157,6 @@ $time_column_max_width: 150px;
         */
         .messagebox .messagebox-content {
             grid-template-rows: 25px repeat(3, auto);
-            padding-top: 2px;
 
             .message_content {
                 padding-top: 0;

@@ -56,11 +56,31 @@ body,
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
+
+    /* Colors used across the app */
+    --color-background-private-message-header: hsl(46deg 35% 93%);
+    --color-text-private-message-header: hsl(0deg 0% 100%);
+    --color-background-private-message-content: hsl(45deg 20% 96%);
+    --color-text-message-header: hsl(0deg 0% 15%);
+    --color-message-list-border: hsl(0deg 0% 80%);
+    --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
+    --color-message-header-icon-interactive: hsl(0deg 0% 0%);
+    --color-background: hsl(0deg 0% 100%);
+    --color-background-mention: hsl(8deg 94% 94%);
 }
 
 %dark-theme {
     --color-default-text: hsl(0deg 0% 100%);
     --color-date: hsl(0deg 0% 100% / 75%);
+    --color-background-private-message-header: hsl(46deg 25% 20%);
+    --color-text-private-message-header: hsl(0deg 0% 100%);
+    --color-background-private-message-content: hsl(46deg 25% 14%);
+    --color-text-message-header: hsl(0deg 0% 100%);
+    --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
+    --color-message-header-icon-interactive: hsl(0deg 0% 100%);
+    --color-message-list-border: hsl(0deg 0% 7%);
+    --color-background: hsl(212deg 28% 18%);
+    --color-background-mention: hsl(8deg 78% 43% / 15%);
 }
 
 :root.dark-theme {
@@ -729,10 +749,6 @@ strong {
     position: relative;
 }
 
-.message_header_stream a.message_label_clickable {
-    color: inherit;
-}
-
 #gear-menu .light-theme {
     display: none;
 }
@@ -1075,6 +1091,7 @@ td.pointer {
     cursor: pointer;
     vertical-align: top;
     border: none;
+    padding: 0 5px;
 
     &:hover .message_controls,
     &:focus-within .message_controls,
@@ -1099,39 +1116,116 @@ td.pointer {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 600;
-    line-height: 14px;
+    font-size: calc(15em / 14);
+    line-height: 120%;
     position: relative;
     z-index: 0;
+    background-color: var(--color-background);
+
+    .message-header-contents {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 28px;
+        border: 1px solid var(--color-message-list-border);
+        border-radius: 7px 7px 0 0;
+    }
+
+    &.message_header_stream {
+        /* Add box shadow to hide message border (first one) and message
+           selected box shadow (second one) that are visible
+           due to top borders of sticky recipient bar being curved. */
+        box-shadow: -1px -5px 0 5px var(--color-background),
+            1px -5px 0 0 var(--color-background);
+
+        & a.message_label_clickable {
+            color: var(--color-text-message-header);
+
+            &:hover {
+                color: var(--color-text-message-header) !important;
+                text-decoration: none;
+            }
+        }
+
+        .stream_topic_separator {
+            line-height: 0;
+            color: var(--color-message-header-icon-non-interactive);
+            position: relative;
+            top: 0.5px;
+        }
+
+        .stream_topic {
+            display: inline-block;
+            padding: 5px 6px 5px 2px;
+            height: 17px;
+            line-height: 17px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            .message_label_clickable.narrows_by_topic {
+                position: relative;
+                top: 0.5px;
+            }
+        }
+
+    }
 }
 
 .message_list {
     .recipient_row {
-        border-bottom: 1px solid hsl(0deg 0% 88%);
         /* This value should be in sync with `margin_between_recipient_rows`
-           in `message_list_view`. */
+        in `message_list_view`. */
         margin-bottom: 10px;
+        border-radius: 5px;
+
+        .message_row:last-of-type {
+            border-radius: 0 0 7px 7px;
+            border-bottom: 1px solid var(--color-message-list-border);
+
+            .unread-marker-fill {
+                border-radius: 0 0 0 7px;
+                height: calc(100% - 2px);
+            }
+
+            .messagebox {
+                border-radius: 0 0 7px 7px;
+                padding-bottom: 5px;
+            }
+        }
+
+        .message_header + .message_row {
+            .messagebox {
+                padding-top: 5px;
+            }
+        }
     }
 
     .message_header {
         position: sticky;
         top: var(--sidebar-top);
         z-index: 3;
-        box-shadow: 0 -1px 0 0 hsl(0deg 0% 100%);
+        box-shadow: 0 -1px 0 0 var(--color-background);
+
+        &.sticky_header {
+            .recipient_row_date {
+                display: block;
+            }
+        }
     }
 }
 
 .stream_label {
-    display: inline-block;
-    padding: 4px 6px 3px;
-    font-weight: normal;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 2px 5px 10px;
     height: 17px;
     line-height: 17px;
-    border-color: hsl(0deg 0% 0% / 0%) hsl(0deg 0% 0% / 0%) hsl(0deg 0% 0% / 0%)
-        hsl(0deg 0% 88%);
-    background-color: hsl(0deg 0% 88%);
-    border-width: 0;
     position: relative;
+    top: 0.5px;
     text-decoration: none;
+    font-weight: 600;
+    overflow: hidden;
 
     .recipient-row-stream-icon {
         font-size: 12px;
@@ -1147,30 +1241,7 @@ td.pointer {
         text-decoration: none;
     }
 
-    &::after {
-        left: 100%;
-        top: 50%;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-        margin-top: -11px;
-        border-style: solid;
-        border-width: 11px 0 11px 5px;
-        border-color: inherit;
-        z-index: 2;
-        transform: scale(0.9999);
-    }
-}
 
-.stream_topic {
-    display: inline-block;
-    padding: 3px 3px 2px 9px;
-    height: 17px;
-    line-height: 17px;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .recipient_bar_controls {
@@ -1191,6 +1262,7 @@ td.pointer {
     line-height: 17px; /* identical to box height, or 131% */
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    padding-top: 1px;
 
     /* Display the date when unchanged only for sticky headers. */
     &.recipient_row_date_unchanged {
@@ -1207,8 +1279,14 @@ td.pointer {
 }
 
 .recipient_bar_icon {
-    padding-left: 4px;
-    padding-right: 4px;
+    color: var(--color-message-header-icon-interactive);
+    opacity: 0.2;
+    padding-left: 6px;
+    padding-right: 6px;
+
+    &:hover {
+        opacity: 0.4 !important;
+    }
 }
 
 #mark_as_read_turned_off_banner {
@@ -1276,64 +1354,49 @@ td.pointer {
 }
 
 .message_header_private_message {
-    background-color: hsl(0deg 0% 100%);
-
-    .message_label_clickable {
-        background-color: hsl(0deg 0% 27%);
-        display: inline-block;
-        padding: 3px 6px 2px;
-        font-weight: normal;
-        height: 17px;
-        line-height: 17px;
-        border-left-color: hsl(0deg 0% 27%);
-    }
-
-    /* Base color backgrounds for message boxes,
-       private messages, mentions, and unread messages */
+    /* This is required for box-shadow appear above the message content. */
+    z-index: 1;
+    box-shadow: -1px -5px 0 5px var(--color-background),
+        1px -5px 0 0 var(--color-background);
+    background-color: var(--color-background);
 
     .message-header-contents {
-        background-color: hsl(192deg 19% 75% / 20%);
-        box-shadow: inset 1px 1px 0 hsl(0deg 0% 88%);
+        background-color: var(--color-background-private-message-header);
+    }
+
+    .message_label_clickable {
+        display: flex;
+        padding: 5px 0 5px 10px;
+        font-weight: 600;
+        height: 17px;
+        line-height: 17px;
+        color: var(--color-text-message-header);
+
+        &:hover {
+            color: var(--color-text-message-header) !important;
+            text-decoration: none;
+        }
+
+        .private_message_header_icon {
+            font-size: 15px;
+            position: relative;
+            top: 1px;
+            width: 16px;
+            height: 16px;
+        }
     }
 }
 
 .private-message {
+    background-color: var(--color-background-private-message-content);
+
     .alert-msg {
         background-color: hsl(192deg 20% 95%);
     }
 
-    .messagebox,
     .date_row {
-        background-color: hsl(192deg 19% 75% / 20%);
-        /* The 5th parameter here is a spread-radius, which, when negative,
-         * causes the shadow to shrink (be smaller than the target
-         * element), resulting in a visual width of 3px-1px=2px. This
-         * is a workaround for a regression found in Electron
-         * v18.3.15+ where the box-shadow with spread-radius >= 0
-         * would cause horizontal separator lines to appear between
-         * messages in the color of the left ruler. The root cause of
-         * that regression is yet unknown.
-         *
-         * Similar CSS for stream messages is present directly in the
-         * Handlebars templates, since the color used there is the
-         * stream's configured color.
-         */
-        box-shadow: inset 3px 0 0 -1px hsl(0deg 0% 27%),
-            -1px 0 0 0 hsl(0deg 0% 27%);
+        background-color: var(--color-background-private-message-content);
     }
-}
-
-.message-header-contents {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-right: 1px solid hsl(0deg 0% 88%);
-    background-color: hsl(0deg 0% 88%);
-}
-
-.group_mention .messagebox,
-.direct_mention .messagebox {
-    background-color: hsl(8deg 94% 94%);
 }
 
 .recipient_row .message_row:first-child .unread_marker {
@@ -1344,7 +1407,6 @@ td.pointer {
     display: block;
     position: absolute;
     height: 100%;
-    left: 2px;
     top: 0;
     opacity: 0;
     z-index: 2;
@@ -1361,8 +1423,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    background-color: hsl(107deg 74% 29%);
-    width: 3px;
+    border-left: 2px solid hsl(107deg 74% 29%);
     height: 100%;
 }
 
@@ -1371,19 +1432,14 @@ td.pointer {
     opacity: 1;
 }
 
-.message_header + .selected_message {
-    /* Sticky message header overlaps 1px with the box-shadow, so we add another
-       2px wide box-shadow 1px below from top to compensate for that. */
-    .messagebox-content {
-        box-shadow: inset 0 1px 0 2px hsl(215deg 47% 50%),
-            inset 0 0 0 2px hsl(215deg 47% 50%), 0 0 0 1px hsl(215deg 47% 50%);
-    }
-}
-
 .selected_message {
     .messagebox-content {
-        box-shadow: inset 0 0 0 2px hsl(215deg 47% 50%),
-            0 0 0 1px hsl(215deg 47% 50%);
+        /* We add an outline and shift it inside the message so that without
+           any vertical padding changes, we can have the outline surrounding
+           the message without overflowing the boundary of the message in any case. */
+        outline: 1px solid hsl(217deg 64% 59% / 60%);
+        border-radius: 5px;
+        outline-offset: -1px;
     }
 }
 
@@ -1480,8 +1536,13 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsl(0deg 0% 0% / 10%);
-    border-right: 1px solid hsl(0deg 0% 0% / 10%);
+    border-left: 1px solid var(--color-message-list-border);
+    border-right: 1px solid var(--color-message-list-border);
+
+    &.group_mention,
+    &.direct_mention {
+        background-color: var(--color-background-mention);
+    }
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
@@ -1495,6 +1556,8 @@ div.message_table {
             text-align: right;
             letter-spacing: 0.04em;
             color: var(--color-date);
+            /* To match time in message row and date in recipient row. */
+            padding-right: 6px;
         }
     }
 }
@@ -2381,7 +2444,7 @@ select.invite-as {
     content: " ";
     vertical-align: middle;
     height: 0;
-    opacity: 0.35;
+    opacity: 0.15;
     border-bottom: 1px solid hsl(0deg 0% 0%);
 }
 
@@ -2397,6 +2460,8 @@ select.invite-as {
 .date_row span::after {
     width: 6px;
     left: 0.25em;
+    /* Align date with message time and recipient bar date. */
+    margin-right: -1px;
 }
 
 .sub-unsub-message span::before,
