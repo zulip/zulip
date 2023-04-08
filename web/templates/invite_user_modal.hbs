@@ -1,4 +1,4 @@
-<form id="invite-user-form">{{ csrf_input }}
+<form id="invite-user-form">
     {{#if development_environment}}
     <div class="alert" id="dev_env_msg"></div>
     {{/if}}
@@ -28,7 +28,7 @@
         <p id="expires_on"></p>
         <div id="custom-invite-expiration-time" class="dependent-settings-block">
             <label for="expires_in">{{t "Custom time" }}</label>
-            <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="{{time_input}}" maxlength="3"/>
+            <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="" maxlength="3"/>
             <select class="custom-expiration-time bootstrap-focus-style" id="custom-expiration-time-unit">
                 {{#each time_choices}}
                     <option name="custom_time_choice" class="custom_time_choice" value="{{this}}">{{this}}</option>

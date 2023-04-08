@@ -10,6 +10,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
@@ -50,7 +51,7 @@ function get_common_invitation_data() {
         stream_ids.push(stream_id);
     });
     const data = {
-        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
+        csrfmiddlewaretoken: csrf_token,
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: expires_in,
