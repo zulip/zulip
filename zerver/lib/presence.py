@@ -1,7 +1,7 @@
 import datetime
 import time
 from collections import defaultdict
-from typing import Any, Dict, Mapping, Sequence, Set
+from typing import Any, Dict, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -26,13 +26,41 @@ def get_presence_dicts_for_rows(
 
     for presence_row in all_rows:
         user_key = get_user_key(presence_row)
+
+        last_active_time = user_presence_datetime_with_date_joined_default(
+            presence_row["last_active_time"], presence_row["user_profile__date_joined"]
+        )
+        last_connected_time = user_presence_datetime_with_date_joined_default(
+            presence_row["last_connected_time"], presence_row["user_profile__date_joined"]
+        )
+
         info = get_user_presence_info(
-            presence_row["last_active_time"],
-            presence_row["last_connected_time"],
+            last_active_time,
+            last_connected_time,
         )
         user_statuses[user_key] = info
 
     return user_statuses
+
+
+def user_presence_datetime_with_date_joined_default(
+    dt: Optional[datetime.datetime], date_joined: datetime.datetime
+) -> datetime.datetime:
+    """
+    Our data models support UserPresence objects not having None
+    values for last_active_time/last_connected_time. The legacy API
+    however has always sent timestamps, so for backward
+    compatibility we cannot send such values through the API and need
+    to default to a sane datetime.
+
+    This helper functions expects to take a last_active_time or
+    last_connected_time value and the date_joined of the user, which
+    will serve as the default value if the first argument is None.
+    """
+    if dt is None:
+        return date_joined
+
+    return dt
 
 
 def get_modern_user_presence_info(
@@ -110,6 +138,7 @@ def get_presence_for_user(
         "user_profile__email",
         "user_profile_id",
         "user_profile__enable_offline_push_notifications",
+        "user_profile__date_joined",
     )
     presence_rows = list(query)
 
@@ -136,6 +165,7 @@ def get_presence_dict_by_realm(
         "user_profile__email",
         "user_profile_id",
         "user_profile__enable_offline_push_notifications",
+        "user_profile__date_joined",
     )
 
     presence_rows = list(query)

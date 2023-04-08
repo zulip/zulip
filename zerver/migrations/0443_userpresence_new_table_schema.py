@@ -113,11 +113,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "last_connected_time",
-                    models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+                    models.DateTimeField(
+                        db_index=True, default=django.utils.timezone.now, null=True
+                    ),
                 ),
                 (
                     "last_active_time",
-                    models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+                    models.DateTimeField(
+                        db_index=True, default=django.utils.timezone.now, null=True
+                    ),
                 ),
                 (
                     "realm",
