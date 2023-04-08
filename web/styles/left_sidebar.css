@@ -37,16 +37,24 @@ $before_unread_count_padding: 3px;
         position: relative;
         top: 1px;
     }
+
+    .zulip-icon.zulip-icon-hashtag {
+        font-size: 13px;
+        position: relative;
+        top: 1.5px;
+    }
+
+    .zulip-icon.zulip-icon-lock {
+        font-size: 13px;
+    }
 }
 
-/* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
-.stream-privacy span.hashtag,
 #left-sidebar .filter-icon i {
     padding-right: 3px;
 
-    &.fa-lock {
+    &.zulip-icon-lock {
         position: relative;
-        top: 1px;
+        top: 2px;
     }
 }
 
