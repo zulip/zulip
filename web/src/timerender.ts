@@ -187,6 +187,53 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     };
 }
 
+// Relative time rendering for use in most screens like Recent conversations.
+//
+// Current date is passed as an argument for unit testing
+export function relative_time_string_from_date(
+    last_active_date: Date,
+    current_date = new Date(),
+): string {
+    const minutes = differenceInMinutes(current_date, last_active_date);
+    if (minutes <= 2) {
+        return $t({defaultMessage: "Just now"});
+    }
+    if (minutes < 60) {
+        return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
+    }
+
+    const days_old = differenceInCalendarDays(current_date, last_active_date);
+    const hours = Math.floor(minutes / 60);
+
+    if (hours < 24) {
+        if (hours === 1) {
+            return $t({defaultMessage: "An hour ago"});
+        }
+        return $t({defaultMessage: "{hours} hours ago"}, {hours});
+    }
+
+    if (days_old === 1) {
+        return $t({defaultMessage: "Yesterday"});
+    }
+
+    if (days_old < 90) {
+        return $t({defaultMessage: "{days_old} days ago"}, {days_old});
+    } else if (
+        days_old > 90 &&
+        days_old < 365 &&
+        last_active_date.getFullYear() === current_date.getFullYear()
+    ) {
+        // Online more than 90 days ago, in the same year
+        return get_localized_date_or_time_for_format(last_active_date, "dayofyear");
+    }
+    return get_localized_date_or_time_for_format(last_active_date, "dayofyear_year");
+}
+
+// Relative time logic variant use in the buddy list, where every
+// string has "Active" init. This is hard to deduplicate with
+// relative_time_string_from_date because of complexities involved in i18n and
+// word order.
+//
 // Current date is passed as an argument for unit testing
 export function last_seen_status_from_date(
     last_active_date: Date,
