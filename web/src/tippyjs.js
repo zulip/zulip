@@ -138,6 +138,13 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".toggle-subscription-tooltip",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "bottom",
+    });
+
+    delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
         delay: EXTRA_LONG_HOVER_DELAY,
