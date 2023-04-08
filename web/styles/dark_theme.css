@@ -168,7 +168,6 @@
     #settings_page .right,
     #streams_header,
     .private_messages_container,
-    .message_header,
     .header {
         background-color: hsl(212deg 28% 18%);
     }
@@ -363,10 +362,6 @@
         }
     }
 
-    .message_header {
-        box-shadow: 0 -1px 0 0 hsl(212deg 28% 18%);
-    }
-
     /* these are converting grey things to "new grey" */
     :disabled,
     input:not([type="radio"]):read-only,
@@ -524,21 +519,12 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .message-header-contents,
-    .message_header_private_message .message-header-contents {
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: transparent;
-    }
-
     .compose_control_buttons_container .divider {
         color: hsl(236deg 33% 90% / 50%);
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark theme */
     #compose-content,
-    .message_list .recipient_row,
-    .message_row,
-    .draft-row .draft-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 20%);
     }
@@ -896,11 +882,6 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .draft-row .draft-info-box,
-    .message_header_private_message .message-header-contents {
-        box-shadow: none;
-    }
-
     .draft-row .message_header_private_message .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
@@ -911,9 +892,8 @@
         text-shadow: none;
     }
 
-    .group_mention .messagebox,
-    .direct_mention .messagebox {
-        background-color: hsl(8deg 78% 43% / 15%);
+    .selected_message .messagebox-content {
+        border-color: hsl(217deg 64% 59% / 70%);
     }
 
     .rendered_markdown {
