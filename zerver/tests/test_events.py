@@ -1216,6 +1216,14 @@ class NormalActionsTest(BaseAction):
     def test_away_events(self) -> None:
         client = get_client("website")
 
+        # Updating user status to away activates the codepath of disabling
+        # the presence_enabled user setting. Correctly simulating the presence
+        # event status for a typical user requires settings the user's date_joined
+        # further into the past. See test_change_presence_enabled for more details,
+        # since it tests that codepath directly.
+        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.save()
+
         # Set all
         away_val = True
         events = self.verify_action(
@@ -1919,6 +1927,15 @@ class NormalActionsTest(BaseAction):
 
     def test_change_presence_enabled(self) -> None:
         presence_enabled_setting = "presence_enabled"
+
+        # Disabling presence will lead to the creation of a UserPresence object for the user
+        # with a last_connected_time slightly preceding the moment of flipping the setting
+        # and last_active_time set to None. The presence API defaults to user_profile.date_joined
+        # for backwards compatibility when dealing with a None value. Thus for this test to properly
+        # check that the presence event emitted will have "idle" status, we need to simulate
+        # the (more realistic) scenario where date_joined is further in the past and not super recent.
+        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.save()
 
         for val in [True, False]:
             events = self.verify_action(

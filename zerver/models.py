@@ -4120,11 +4120,11 @@ class UserPresence(models.Model):
     # The last time the user had a client connected to Zulip,
     # including idle clients where the user hasn't interacted with the
     # system recently (and thus might be AFK).
-    last_connected_time = models.DateTimeField(default=timezone_now, db_index=True)
+    last_connected_time = models.DateTimeField(default=timezone_now, db_index=True, null=True)
     # The last time a client connected to Zulip reported that the user
     # was actually present (E.g. via focusing a browser window or
     # interacting with a computer running the desktop app)
-    last_active_time = models.DateTimeField(default=timezone_now, db_index=True)
+    last_active_time = models.DateTimeField(default=timezone_now, db_index=True, null=True)
 
     # The following constants are used in the presence API for
     # communicating whether a user is active (last_active_time recent)
