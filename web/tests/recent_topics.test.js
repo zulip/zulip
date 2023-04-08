@@ -136,7 +136,7 @@ mock_esm("../src/stream_list", {
     handle_narrow_deactivated: noop,
 });
 mock_esm("../src/timerender", {
-    last_seen_status_from_date: () => "Just now",
+    relative_time_string_from_date: () => "Just now",
     get_full_datetime: () => "date at time",
 });
 mock_esm("../src/sub_store", {
