@@ -430,7 +430,10 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             default_text: $t({defaultMessage: "No owner"}),
             value: owner_id,
             on_update(value) {
-                $("#edit_bot_modal .dialog_submit_button").prop("disabled", value === null);
+                const new_Owner_ID = Number.parseInt(value, 10);
+                if (new_Owner_ID !== owner_id) {
+                    $("#edit_bot_modal .dialog_submit_button").prop("disabled", value === null);
+                }
             },
         };
         // Note: Rendering this is quite expensive in
