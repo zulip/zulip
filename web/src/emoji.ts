@@ -54,7 +54,7 @@ type EmojiDict = {
 };
 
 // Details needed by template to render an emoji.
-type EmojiRenderingDetails = {
+export type EmojiRenderingDetails = {
     emoji_name: string;
     reaction_type: string;
     emoji_code: string | number;

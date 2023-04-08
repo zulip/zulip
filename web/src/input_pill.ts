@@ -5,12 +5,74 @@ import $ from "jquery";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
+import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 
-export function create(opts) {
+export type InputPillItem<T> = {
+    display_value: string;
+    type: string;
+    img_src?: string;
+    deactivated?: boolean;
+    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code: boolean}; // TODO: Move this in user_status.js
+} & T;
+
+type InputPillCreateOptions<T> = {
+    $container: JQuery;
+    pill_config?: {
+        show_user_status_emoji?: boolean;
+    };
+    create_item_from_text: (
+        text: string,
+        existing_items: InputPillItem<T>[],
+    ) => InputPillItem<T> | undefined;
+    get_text_from_item: (item: InputPillItem<T>) => string;
+};
+
+type InputPill<T> = {
+    item: InputPillItem<T>;
+    $element: JQuery;
+};
+
+type InputPillStore<T> = {
+    pills: InputPill<T>[];
+    pill_config: InputPillCreateOptions<T>["pill_config"];
+    $parent: JQuery;
+    $input: JQuery;
+    create_item_from_text: InputPillCreateOptions<T>["create_item_from_text"];
+    get_text_from_item: InputPillCreateOptions<T>["get_text_from_item"];
+    onPillCreate?: () => void;
+    removePillFunction?: (pill: InputPill<T>) => void;
+    createPillonPaste?: () => void;
+};
+
+type InputPillRenderingDetails = {
+    display_value: string;
+    has_image: boolean;
+    img_src?: string;
+    deactivated?: boolean;
+    has_status?: boolean;
+    status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code: boolean};
+};
+
+// These are the functions that are exposed to other modules.
+type InputPillContainer<T> = {
+    appendValue: (text: string) => void;
+    appendValidatedData: (item: InputPillItem<T>) => void;
+    getByElement: (element: HTMLElement) => InputPill<T> | undefined;
+    items: () => InputPillItem<T>[];
+    onPillCreate: (callback: () => void) => void;
+    onPillRemove: (callback: (pill: InputPill<T>) => void) => void;
+    createPillonPaste: (callback: () => void) => void;
+    clear: () => void;
+    clear_text: () => void;
+    is_pending: () => boolean;
+    _get_pills_for_testing: () => InputPill<T>[];
+};
+
+export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T> | undefined {
     if (!opts.$container) {
         blueslip.error("Pill needs container.");
         return undefined;
@@ -28,7 +90,7 @@ export function create(opts) {
 
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
-    const store = {
+    const store: InputPillStore<T> = {
         pills: [],
         pill_config: opts.pill_config,
         $parent: opts.$container,
@@ -42,12 +104,12 @@ export function create(opts) {
     // of the `this` arg in the `Function.prototype.bind` use in the prototype.
     const funcs = {
         // return the value of the contenteditable input form.
-        value(input_elem) {
-            return input_elem.textContent;
+        value(input_elem: HTMLElement) {
+            return input_elem.textContent ?? "";
         },
 
         // clear the value of the input form.
-        clear(input_elem) {
+        clear(input_elem: HTMLElement) {
             input_elem.textContent = "";
         },
 
@@ -63,11 +125,11 @@ export function create(opts) {
             return store.$input.text().trim() !== "";
         },
 
-        create_item(text) {
+        create_item(text: string) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items);
 
-            if (!item || !item.display_value) {
+            if (!item?.display_value) {
                 store.$input.addClass("shake");
                 return undefined;
             }
@@ -77,7 +139,7 @@ export function create(opts) {
 
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData(item) {
+        appendValidatedData(item: InputPillItem<T>) {
             if (!item.display_value) {
                 blueslip.error("no display_value returned");
                 return;
@@ -90,7 +152,7 @@ export function create(opts) {
 
             const has_image = item.img_src !== undefined;
 
-            const opts = {
+            const opts: InputPillRenderingDetails = {
                 display_value: item.display_value,
                 has_image,
                 deactivated: item.deactivated,
@@ -108,12 +170,12 @@ export function create(opts) {
                 opts.has_status = has_status;
             }
 
-            if (typeof store.onPillCreate === "function") {
+            if (store.onPillCreate !== undefined) {
                 store.onPillCreate();
             }
 
             const pill_html = render_input_pill(opts);
-            const payload = {
+            const payload: InputPill<T> = {
                 item,
                 $element: $(pill_html),
             };
@@ -124,7 +186,7 @@ export function create(opts) {
 
         // this appends a pill to the end of the container but before the
         // input block.
-        appendPill(value) {
+        appendPill(value: string) {
             if (value.length === 0) {
                 return true;
             }
@@ -136,7 +198,7 @@ export function create(opts) {
             const payload = this.create_item(value);
             // if the pill object is undefined, then it means the pill was
             // rejected so we should return out of this.
-            if (!payload) {
+            if (payload === undefined) {
                 return false;
             }
 
@@ -148,19 +210,19 @@ export function create(opts) {
         // from the DOM, removes it from the array and returns it.
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
-        removePill(element) {
-            let idx;
+        removePill(element: HTMLElement) {
+            let idx: number | undefined;
             for (let x = 0; x < store.pills.length; x += 1) {
                 if (store.pills[x].$element[0] === element) {
                     idx = x;
                 }
             }
 
-            if (typeof idx === "number") {
+            if (idx !== undefined) {
                 store.pills[idx].$element.remove();
                 const pill = store.pills.splice(idx, 1);
-                if (typeof store.removePillFunction === "function") {
-                    store.removePillFunction(pill);
+                if (store.removePillFunction !== undefined) {
+                    store.removePillFunction(pill[0]);
                 }
 
                 // This is needed to run the "change" event handler registered in
@@ -180,18 +242,18 @@ export function create(opts) {
         // If quiet is a truthy value, the event handler associated with the
         // pill will not be evaluated. This is useful when using clear to reset
         // the pills.
-        removeLastPill(quiet) {
+        removeLastPill(quiet?: boolean) {
             const pill = store.pills.pop();
 
             if (pill) {
                 pill.$element.remove();
-                if (!quiet && typeof store.removePillFunction === "function") {
+                if (!quiet && store.removePillFunction !== undefined) {
                     store.removePillFunction(pill);
                 }
             }
         },
 
-        removeAllPills(quiet) {
+        removeAllPills(quiet?: boolean) {
             while (store.pills.length > 0) {
                 this.removeLastPill(quiet);
             }
@@ -199,7 +261,7 @@ export function create(opts) {
             this.clear(store.$input[0]);
         },
 
-        insertManyPills(pills) {
+        insertManyPills(pills: string | string[]) {
             if (typeof pills === "string") {
                 pills = pills.split(/,/g).map((pill) => pill.trim());
             }
@@ -210,7 +272,7 @@ export function create(opts) {
                 (pill) =>
                     // if this returns `false`, it errored and we should push it to
                     // the draft pills.
-                    funcs.appendPill(pill) === false,
+                    !funcs.appendPill(pill),
             );
 
             store.$input.text(drafts.join(", "));
@@ -225,7 +287,7 @@ export function create(opts) {
             return drafts.length === 0;
         },
 
-        getByElement(element) {
+        getByElement(element: HTMLElement) {
             return store.pills.find((pill) => pill.$element[0] === element);
         },
 
@@ -238,7 +300,7 @@ export function create(opts) {
         },
 
         createPillonPaste() {
-            if (typeof store.createPillonPaste === "function") {
+            if (store.createPillonPaste !== undefined) {
                 return store.createPillonPaste();
             }
             return true;
@@ -263,7 +325,7 @@ export function create(opts) {
                     // if the pill to append was rejected, no need to clear the
                     // input; it may have just been a typo or something close but
                     // incorrect.
-                    if (ret !== false) {
+                    if (ret) {
                         // clear the input.
                         funcs.clear(e.target);
                         e.stopPropagation();
@@ -277,7 +339,7 @@ export function create(opts) {
             // deletion, otherwise delete the last pill in the sequence.
             if (
                 e.key === "Backspace" &&
-                (funcs.value(e.target).length === 0 || window.getSelection().anchorOffset === 0)
+                (funcs.value(e.target).length === 0 || window.getSelection()?.anchorOffset === 0)
             ) {
                 e.preventDefault();
                 funcs.removeLastPill();
@@ -289,7 +351,7 @@ export function create(opts) {
             // should switch to focus the last pill in the list.
             // the rest of the events then will be taken care of in the function
             // below that handles events on the ".pill" class.
-            if (e.key === "ArrowLeft" && window.getSelection().anchorOffset === 0) {
+            if (e.key === "ArrowLeft" && window.getSelection()?.anchorOffset === 0) {
                 store.$parent.find(".pill").last().trigger("focus");
             }
 
@@ -298,7 +360,7 @@ export function create(opts) {
             if (e.key === ",") {
                 // if the pill is successful, it will create the pill and clear
                 // the input.
-                if (funcs.appendPill(store.$input.text().trim()) !== false) {
+                if (funcs.appendPill(store.$input.text().trim())) {
                     funcs.clear(store.$input[0]);
                 }
                 e.preventDefault();
@@ -343,7 +405,9 @@ export function create(opts) {
             e.preventDefault();
 
             // get text representation of clipboard
-            const text = (e.originalEvent || e).clipboardData.getData("text/plain");
+            const text = ((e.originalEvent ?? e) as ClipboardEvent).clipboardData?.getData(
+                "text/plain",
+            );
 
             // insert text manually
             document.execCommand("insertText", false, text);
@@ -371,18 +435,18 @@ export function create(opts) {
         });
 
         store.$parent.on("copy", ".pill", (e) => {
-            const $element = store.$parent.find(":focus");
-            const data = funcs.getByElement($element[0]);
-            e.originalEvent.clipboardData.setData(
+            const $element = e.currentTarget as HTMLElement;
+            const {item} = funcs.getByElement($element)!;
+            (e.originalEvent as ClipboardEvent).clipboardData?.setData(
                 "text/plain",
-                store.get_text_from_item(data.item),
+                store.get_text_from_item(item),
             );
             e.preventDefault();
         });
     }
 
     // the external, user-accessible prototype.
-    const prototype = {
+    const prototype: InputPillContainer<T> = {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
