@@ -364,6 +364,13 @@
         background-color: hsl(208deg 17% 29%);
     }
 
+    .private-message .message_length_controller {
+        .message_expander,
+        .message_condenser {
+            background-color: hsl(208deg 17% 29%);
+        }
+    }
+
     .active_private_messages_section {
         #private_messages_section,
         #private_messages_list,
@@ -501,6 +508,13 @@
         .emoji-popover-category-tabs
         .emoji-popover-tab-item.active {
         background-color: hsl(0deg 0% 0% / 50%);
+    }
+
+    .message_length_controller {
+        .message_expander,
+        .message_condenser {
+            background-color: hsl(212deg 28% 18%);
+        }
     }
 
     .new-style .tab-switcher .ind-tab.selected,

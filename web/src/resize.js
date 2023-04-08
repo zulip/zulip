@@ -170,7 +170,7 @@ export function handler() {
     }
     resize_page_components();
 
-    // Re-compute and display/remove [More] links to messages
+    // Re-compute and display/remove 'Show more' buttons to messages
     condense.condense_and_collapse($(".message_table .message_row"));
 
     // This function might run onReady (if we're in a narrow window),

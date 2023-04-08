@@ -115,7 +115,7 @@ the hotkeys too:
   - click on the star button in the right column
   - use 'Ctrl + S' to star a message
 - Message length
-  - send a long message and see if '[More]' appears
+  - send a long message and see if 'Show more' button appears
   - click on the 'more' or 'collapse' link
   - use i to collapse/expand a message irrespective of message length
 - use 'v' to show all images in the thread

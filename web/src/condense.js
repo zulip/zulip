@@ -21,11 +21,13 @@ This library implements two related, similar concepts:
 const _message_content_height_cache = new Map();
 
 function show_more_link($row) {
+    $row.find(".expand_condense_buttons_wrapper").show();
     $row.find(".message_condenser").hide();
     $row.find(".message_expander").show();
 }
 
 function show_condense_link($row) {
+    $row.find(".expand_condense_buttons_wrapper").show();
     $row.find(".message_expander").hide();
     $row.find(".message_condenser").show();
 }
@@ -43,29 +45,31 @@ function uncondense_row($row) {
 }
 
 export function uncollapse($row) {
-    // Uncollapse a message, restoring the condensed message [More] or
-    // [Show less] link if necessary.
+    // Uncollapse a message, restoring the condensed message "Show more" or
+    // "Show less" button if necessary.
     const message = message_lists.current.get(rows.id($row));
     message.collapsed = false;
     message_flags.save_uncollapsed(message);
 
     const process_row = function process_row($row) {
         const $content = $row.find(".message_content");
+        const $expand_condense_buttons_wrapper = $row.find("expand_condense_buttons_wrapper");
         $content.removeClass("collapsed");
 
         if (message.condensed === true) {
             // This message was condensed by the user, so re-show the
-            // [More] link.
+            // "Show more" button.
             condense_row($row);
         } else if (message.condensed === false) {
             // This message was un-condensed by the user, so re-show the
-            // [Show less] link.
+            // "Show less" button.
             uncondense_row($row);
         } else if ($content.hasClass("could-be-condensed")) {
             // By default, condense a long message.
             condense_row($row);
         } else {
-            // This was a short message, no more need for a [More] link.
+            // This was a short message, no more need for a "Show more" button.
+            $expand_condense_buttons_wrapper.hide();
             $row.find(".message_expander").hide();
         }
     };
@@ -78,8 +82,8 @@ export function uncollapse($row) {
 }
 
 export function collapse($row) {
-    // Collapse a message, hiding the condensed message [More] or
-    // [Show less] link if necessary.
+    // Collapse a message, hiding the condensed message 'Show more' or
+    // 'Show less' button if necessary.
     const message = message_lists.current.get(rows.id($row));
     message.collapsed = true;
 
@@ -116,7 +120,7 @@ export function toggle_collapse(message) {
     // This function implements a multi-way toggle, to try to do what
     // the user wants for messages:
     //
-    // * If the message is currently showing any [More] link, either
+    // * If the message is currently showing any "Show more", button either
     //   because it was previously condensed or collapsed, fully display it.
     // * If the message is fully visible, either because it's too short to
     //   condense or because it's already uncondensed, collapse it
@@ -199,6 +203,7 @@ export function condense_and_collapse(elems) {
 
     for (const elem of elems) {
         const $content = $(elem).find(".message_content");
+        const $expand_condense_buttons_wrapper = $(elem).find(".expand_condense_buttons_wrapper");
 
         if ($content.length !== 1) {
             // We could have a "/me did this" message or something
@@ -222,8 +227,10 @@ export function condense_and_collapse(elems) {
         if (long_message) {
             // All long messages are flagged as such.
             $content.addClass("could-be-condensed");
+            $expand_condense_buttons_wrapper.show();
         } else {
             $content.removeClass("could-be-condensed");
+            $expand_condense_buttons_wrapper.hide();
         }
 
         // If message.condensed is defined, then the user has manually
@@ -246,10 +253,11 @@ export function condense_and_collapse(elems) {
             $(elem).find(".message_expander").hide();
         }
 
-        // Completely hide the message and replace it with a [More]
+        // Completely hide the message and replace it with a "Show more"
         // link if the user has collapsed it.
         if (message.collapsed) {
             $content.addClass("collapsed");
+            $expand_condense_buttons_wrapper.show();
             $(elem).find(".message_expander").show();
         }
     }

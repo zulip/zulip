@@ -1312,6 +1312,13 @@ td.pointer {
         box-shadow: inset 3px 0 0 -1px hsl(0deg 0% 27%),
             -1px 0 0 0 hsl(0deg 0% 27%);
     }
+
+    .message_length_controller {
+        .message_expander,
+        .message_condenser {
+            background-color: hsl(192deg 20% 95%);
+        }
+    }
 }
 
 .message-header-contents {
@@ -1512,6 +1519,7 @@ div.focused_table {
     display: block;
     position: relative;
     overflow: hidden;
+    mask-image: none;
 
     &:empty {
         display: none;
@@ -1521,12 +1529,26 @@ div.focused_table {
         max-height: 8.5em;
         min-height: 0;
         overflow: hidden;
+        mask-image: linear-gradient(
+            to bottom,
+            hsl(0deg 0% 100%) 60%,
+            hsl(0deg 0% 100% / 0%)
+        );
+        mask-size: cover;
+
+        ~ .message_length_controller {
+            margin: -15px 0 5px;
+        }
     }
 
     &.collapsed {
         max-height: 0;
         min-height: 0;
         overflow: hidden;
+
+        ~ .message_length_controller {
+            margin: -10px 0 5px;
+        }
     }
 }
 
@@ -1661,16 +1683,35 @@ div.focused_table {
     margin-bottom: 10px;
 }
 
+.topic_move_breadcrumb_messages {
+    margin-top: 10px !important;
+}
+
 .message_length_controller {
-    display: none;
-    text-align: center;
-    color: hsl(200deg 100% 40%);
+    display: flex;
+    justify-content: center;
+    height: 25px;
+    position: relative;
+    margin: 5px 0;
 
-    /* to make message-uncollapse easier */
-    margin-top: 10px;
+    .message_expander,
+    .message_condenser {
+        display: none;
+        position: absolute;
+        text-align: center;
+        padding: 1px 10px;
+        color: inherit;
+        background-color: hsl(0deg 0% 100%);
+        border-radius: 4px;
+        border: solid 1px hsl(217deg 64% 59% / 80%);
+        font-size: 13px;
+        font-weight: 400;
+        outline: none;
 
-    &:hover {
-        text-decoration: underline;
+        &:hover {
+            border: solid 1px hsl(217deg 64% 59% / 100%);
+            color: hsl(200deg 100% 40%);
+        }
     }
 }
 
