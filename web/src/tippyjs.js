@@ -116,6 +116,27 @@ export function initialize() {
         target: ".tippy-zulip-tooltip",
     });
 
+    // variant of tippy-zulip-tooltip above having delay=LONG_HOVER_DELAY,
+    // default placement="top" with fallback placement="bottom",
+    // and appended to body
+    delegate("body", {
+        target: ".tippy-zulip-delayed-tooltip",
+        // Disable trigger on focus, to avoid displaying on-click.
+        trigger: "mouseenter",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
     delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
         placement: "right",
