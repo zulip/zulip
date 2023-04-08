@@ -1035,13 +1035,13 @@ class StreamAdminTest(ZulipTestCase):
         fp.name = "zulip.txt"
 
         result = self.client_post("/json/user_uploads", {"file": fp})
-        uri = self.assert_json_success(result)["uri"]
+        url = self.assert_json_success(result)["uri"]
 
         owner = self.example_user("desdemona")
         realm = owner.realm
         stream = self.make_stream("test_stream", realm=realm)
         self.subscribe(owner, "test_stream")
-        body = f"First message ...[zulip.txt](http://{realm.host}" + uri + ")"
+        body = f"First message ...[zulip.txt](http://{realm.host}" + url + ")"
         msg_id = self.send_stream_message(owner, "test_stream", body, "test")
         attachment = Attachment.objects.get(messages__id=msg_id)
 

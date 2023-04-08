@@ -125,7 +125,7 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
 
-        data["pattern"] = r"ZUL-URI-(?P<id>\d+)"
+        data["pattern"] = r"ZUL-URL-(?P<id>\d+)"
         data["url_format_string"] = "https://example.com/%ba/%(id)s"
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)

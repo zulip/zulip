@@ -1480,7 +1480,7 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
-        # Test URI escaping
+        # Test URL escaping
         RealmFilter(
             realm=realm,
             pattern=r"url-(?P<id>[0-9]+)",
