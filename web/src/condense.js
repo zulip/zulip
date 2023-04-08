@@ -43,8 +43,8 @@ function uncondense_row($row) {
 }
 
 export function uncollapse($row) {
-    // Uncollapse a message, restoring the condensed message [More] or
-    // [Show less] link if necessary.
+    // Uncollapse a message, restoring the condensed message "Show more" or
+    // "Show less" button if necessary.
     const message = message_lists.current.get(rows.id($row));
     message.collapsed = false;
     message_flags.save_uncollapsed(message);
@@ -55,11 +55,11 @@ export function uncollapse($row) {
 
         if (message.condensed === true) {
             // This message was condensed by the user, so re-show the
-            // [More] link.
+            // "Show more" button.
             condense_row($row);
         } else if (message.condensed === false) {
             // This message was un-condensed by the user, so re-show the
-            // [Show less] link.
+            // "Show less" button.
             uncondense_row($row);
         } else if ($content.hasClass("could-be-condensed")) {
             // By default, condense a long message.
@@ -116,7 +116,7 @@ export function toggle_collapse(message) {
     // This function implements a multi-way toggle, to try to do what
     // the user wants for messages:
     //
-    // * If the message is currently showing any [More] link, either
+    // * If the message is currently showing any "Show more" button, either
     //   because it was previously condensed or collapsed, fully display it.
     // * If the message is fully visible, either because it's too short to
     //   condense or because it's already uncondensed, collapse it
@@ -246,8 +246,8 @@ export function condense_and_collapse(elems) {
             $(elem).find(".message_expander").hide();
         }
 
-        // Completely hide the message and replace it with a [More]
-        // link if the user has collapsed it.
+        // Completely hide the message and replace it with a "Show more"
+        // button if the user has collapsed it.
         if (message.collapsed) {
             $content.addClass("collapsed");
             $(elem).find(".message_expander").show();

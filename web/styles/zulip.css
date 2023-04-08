@@ -1106,6 +1106,13 @@ td.pointer {
             visibility: visible;
         }
     }
+
+    &:hover {
+        .message_expander {
+            color: hsl(240deg 47% 54% / 100%);
+            background-color: hsl(240deg 44% 56% / 8%);
+        }
+    }
 }
 
 .message_header {
@@ -1602,6 +1609,12 @@ div.focused_table {
         max-height: 8.5em;
         min-height: 0;
         overflow: hidden;
+        mask-image: linear-gradient(
+            to top,
+            hsl(0deg 0% 100% / 0%) 0%,
+            hsl(0deg 0% 100%) 50px
+        );
+        mask-size: cover;
     }
 
     &.collapsed {
@@ -1743,15 +1756,30 @@ div.focused_table {
 }
 
 .message_length_controller {
-    display: none;
-    text-align: center;
-    color: hsl(200deg 100% 40%);
+    .message_length_toggle {
+        display: none;
+        text-align: center;
+        width: 100%;
+        height: 24px;
+        margin-bottom: 3px;
+        color: hsl(240deg 20% 50%);
+        background: hsla(0deg 0% 100% / 0%);
+        border-radius: 4px;
+        border: none;
+        font-size: 14px;
+        font-weight: 400;
+        outline: none;
+        text-transform: uppercase;
 
-    /* to make message-uncollapse easier */
-    margin-top: 10px;
+        &:hover {
+            color: hsl(240deg 52% 53% / 100%);
+            background-color: hsl(240deg 44% 56% / 15%);
+        }
 
-    &:hover {
-        text-decoration: underline;
+        &:active {
+            color: hsl(240deg 52% 53% / 100%);
+            background-color: hsl(240deg 44% 56% / 20%);
+        }
     }
 }
 

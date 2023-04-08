@@ -482,6 +482,29 @@
         background-color: hsl(0deg 0% 0% / 50%);
     }
 
+    .messagebox {
+        &:hover {
+            .message_expander {
+                background-color: hsl(240deg 44% 56% / 15%);
+            }
+        }
+    }
+
+    .message_length_controller {
+        .message_length_toggle {
+            color: hsl(240deg 30% 65% / 100%);
+            background: transparent;
+
+            &:hover {
+                background-color: hsl(240deg 44% 56% / 25%);
+            }
+
+            &:active {
+                background-color: hsl(240deg 44% 56% / 15%);
+            }
+        }
+    }
+
     .new-style .tab-switcher .ind-tab.selected,
     div.message_content thead,
     .table-striped thead th,

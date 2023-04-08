@@ -60,8 +60,11 @@
 <div class="message_edit">
     <div class="message_edit_form"></div>
 </div>
-<div class="message_expander message_length_controller" title="{{t 'Expand message (-)' }}">{{t "[More…]" }}</div>
-<div class="message_condenser message_length_controller" title="{{t 'Show less' }} (-)">[{{t "Show less" }}]</div>
+
+<div class="message_length_controller">
+    <button type="button" class="message_expander message_length_toggle" title="{{t 'Show more' }} (-)">{{t "Show more" }}</button>
+    <button type="button" class="message_condenser message_length_toggle" title="{{t 'Show less' }} (-)">{{t "Show less" }}</button>
+</div>
 
 {{#unless is_hidden}}
 <div class="message_reactions">{{> message_reactions }}</div>
