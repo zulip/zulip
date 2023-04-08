@@ -176,7 +176,7 @@ export function handler() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     update_recent_topics_filters_height();
 
-    // Re-compute and display/remove [More] links to messages
+    // Re-compute and display/remove 'Show more' buttons to messages
     condense.condense_and_collapse(message_lists.all_current_message_rows());
 
     // This function might run onReady (if we're in a narrow window),
