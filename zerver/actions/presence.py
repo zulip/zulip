@@ -5,7 +5,10 @@ from django.conf import settings
 from django.db import transaction
 
 from zerver.actions.user_activity import update_user_activity_interval
-from zerver.lib.presence import format_legacy_presence_dict
+from zerver.lib.presence import (
+    format_legacy_presence_dict,
+    user_presence_datetime_with_date_joined_default,
+)
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Client, UserPresence, UserProfile, active_user_ids, get_client
@@ -42,12 +45,17 @@ def send_presence_changed(
         # stop sending them at all.
         return
 
+    last_active_time = user_presence_datetime_with_date_joined_default(
+        presence.last_active_time, user_profile.date_joined
+    )
+    last_connected_time = user_presence_datetime_with_date_joined_default(
+        presence.last_connected_time, user_profile.date_joined
+    )
+
     # The mobile app handles these events so we need to use the old format.
     # The format of the event should also account for the slim_presence
     # API parameter when this becomes possible in the future.
-    presence_dict = format_legacy_presence_dict(
-        presence.last_active_time, presence.last_connected_time
-    )
+    presence_dict = format_legacy_presence_dict(last_active_time, last_connected_time)
     event = dict(
         type="presence",
         email=user_profile.email,
@@ -81,37 +89,34 @@ def do_update_user_presence(
 ) -> None:
     client = consolidate_client(client)
 
-    # TODO: While we probably DO want creating an account to
-    # automatically create a first `UserPresence` object with
-    # last_connected_time and last_active_time as the current time,
-    # our presence tests don't understand this, and it'd be perhaps
-    # wrong for some cases of account creation via the API.  So we may
-    # want a "never" value here as the default.
+    # If the user doesn't have a UserPresence row yet, we create one with
+    # sensible defaults. If we're getting a presence update, clearly the user
+    # at least connected, so last_connected_time should be set. last_active_time
+    # will depend on whether the status sent is idle or active.
     defaults = dict(
-        # Given that these are defaults for creation of a UserPresence row
-        # if one doesn't yet exist, the most sensible way to do this
-        # is to set both last_active_time and last_connected_time
-        # to log_time.
-        last_active_time=log_time,
+        last_active_time=None,
         last_connected_time=log_time,
         realm_id=user_profile.realm_id,
     )
-    if status == UserPresence.LEGACY_STATUS_IDLE_INT:
-        # If the presence entry for the user is just to be created, and
-        # we want it to be created as idle, then there needs to be an appropriate
-        # offset between last_active_time and last_connected_time, since that's
-        # what the event-sending system calculates the status based on, via
-        # format_legacy_presence_dict.
-        defaults["last_active_time"] = log_time - datetime.timedelta(
-            seconds=settings.PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS + 1
-        )
+    if status == UserPresence.LEGACY_STATUS_ACTIVE_INT:
+        defaults["last_active_time"] = log_time
 
     (presence, created) = UserPresence.objects.get_or_create(
         user_profile=user_profile,
         defaults=defaults,
     )
 
-    time_since_last_active = log_time - presence.last_active_time
+    if presence.last_active_time is not None:
+        time_since_last_active = log_time - presence.last_active_time
+    else:
+        # The user was never active, so let's consider this large to go over any thresholds
+        # we may have.
+        time_since_last_active = datetime.timedelta(days=1)
+    if presence.last_connected_time is not None:
+        time_since_last_connected = log_time - presence.last_connected_time
+    else:
+        # Same approach as above.
+        time_since_last_connected = datetime.timedelta(days=1)
 
     assert (3 * settings.PRESENCE_PING_INTERVAL_SECS + 20) <= settings.OFFLINE_THRESHOLD_SECS
     now_online = time_since_last_active > datetime.timedelta(
@@ -136,7 +141,7 @@ def do_update_user_presence(
     # times per minute with multiple connected browser windows.
     # We also need to be careful not to wrongly "update" the timestamp if we actually already
     # have newer presence than the reported log_time.
-    if not created and log_time - presence.last_connected_time > datetime.timedelta(
+    if not created and time_since_last_connected > datetime.timedelta(
         seconds=settings.PRESENCE_UPDATE_MIN_FREQ_SECONDS
     ):
         presence.last_connected_time = log_time
@@ -149,7 +154,7 @@ def do_update_user_presence(
     ):
         presence.last_active_time = log_time
         update_fields.append("last_active_time")
-        if log_time > presence.last_connected_time:
+        if presence.last_connected_time is None or log_time > presence.last_connected_time:
             # Update last_connected_time as well to ensure
             # last_connected_time >= last_active_time.
             presence.last_connected_time = log_time
