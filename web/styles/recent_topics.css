@@ -66,10 +66,6 @@
             width: 10px;
         }
 
-        .fa-lock {
-            padding-right: 3px;
-        }
-
         .fa-envelope {
             font-size: 0.7rem;
             margin-right: 2px;
@@ -458,8 +454,12 @@
         }
     }
 
-    .stream-privacy .zulip-icon.zulip-icon-globe {
-        left: -1px;
+    .stream-privacy {
+        .zulip-icon {
+            position: relative;
+            left: -1px;
+            top: 1.5px;
+        }
     }
 }
 

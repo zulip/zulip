@@ -163,7 +163,7 @@ BAD_HTML7 = """
 <div class="foobar">
 <input type="foobar" name="temp" value="{{dyn_name}}"
        {{#unless invite_only}}checked="checked"{{/unless}} /> {{dyn_name}}
-{{#if invite_only}}<i class="fa fa-lock"></i>{{/if}}
+{{#if invite_only}}<i class="zulip-icon zulip-icon-lock"></i>{{/if}}
 </div>
 """
 
@@ -171,7 +171,7 @@ GOOD_HTML7 = """
 <div class="foobar">
     <input type="foobar" name="temp" value="{{dyn_name}}"
       {{#unless invite_only}}checked="checked"{{/unless}} /> {{dyn_name}}
-    {{#if invite_only}}<i class="fa fa-lock"></i>{{/if}}
+    {{#if invite_only}}<i class="zulip-icon zulip-icon-lock"></i>{{/if}}
 </div>
 """
 

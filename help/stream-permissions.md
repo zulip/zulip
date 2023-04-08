@@ -3,14 +3,15 @@
 Streams are similar to chat rooms, IRC channels, or email lists in that they
 determine who receives a message. Zulip supports a few types of streams:
 
-* **Public** (**#**): Members can join and view the complete message history.
+* **Public** (<i class="zulip-icon zulip-icon-hashtag"></i>):
+  Members can join and view the complete message history.
   Public streams are visible to guest users only if they are
   subscribed (exactly like private streams with shared history).
 
-* **Private** (<i class="fa fa-lock"></i>): New subscribers must be
-  added by an existing subscriber. Only subscribers and organization
-  administrators can see the stream's name and description, and only
-  subscribers can view topics and messages with the stream:
+* **Private** (<i class="zulip-icon zulip-icon-lock"></i>):
+  New subscribers must be added by an existing subscriber. Only subscribers
+  and organization administrators can see the stream's name and description,
+  and only subscribers can view topics and messages with the stream:
     * In **private streams with shared history**, new subscribers can
     access the stream's full message history.
     * In **private streams with protected history**, new subscribers

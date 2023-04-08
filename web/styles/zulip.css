@@ -1168,6 +1168,15 @@ td.pointer {
             }
         }
 
+        .stream-privacy i {
+            font-size: 15px;
+
+            &.zulip-icon-globe,
+            &.zulip-icon-hashtag {
+                position: relative;
+                top: -0.5px;
+            }
+        }
     }
 }
 
@@ -1241,7 +1250,19 @@ td.pointer {
         text-decoration: none;
     }
 
+    .stream-privacy {
+        min-width: unset;
+        width: 16px;
+        height: 16px;
 
+        .hashtag {
+            padding-right: 0;
+
+            &::after {
+                font-size: 16px;
+            }
+        }
+    }
 }
 
 .recipient_bar_controls {
@@ -1801,12 +1822,6 @@ div.focused_table {
         display: none;
     }
 
-    .zulip-icon.zulip-icon-globe {
-        font-size: 14px;
-        position: relative;
-        top: 1px;
-    }
-
     .sub_count,
     .stream,
     & > span {
@@ -1832,11 +1847,6 @@ div.focused_table {
         }
 
         .fa {
-            &.fa-lock {
-                position: relative;
-                top: 0.5px;
-            }
-
             .fa-envelope {
                 font-size: 14px;
                 margin: 0 5px;
@@ -1856,6 +1866,12 @@ div.focused_table {
         text-decoration: none;
         /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
         padding-right: calc(3px + 10px);
+
+        .zulip-icon {
+            font-size: 14px;
+            position: relative;
+            top: 1px;
+        }
     }
 
     .divider {
@@ -2410,7 +2426,6 @@ select.invite-as {
 }
 
 .date_row {
-    padding-left: 2px;
     text-align: right;
 }
 
