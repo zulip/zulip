@@ -194,10 +194,10 @@ export function last_seen_status_from_date(
 ): string {
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes <= 2) {
-        return $t({defaultMessage: "Active just now"});
+        return $t({defaultMessage: "Just now"});
     }
     if (minutes < 60) {
-        return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
+        return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
     }
 
     const days_old = differenceInCalendarDays(current_date, last_active_date);
@@ -205,17 +205,17 @@ export function last_seen_status_from_date(
 
     if (hours < 24) {
         if (hours === 1) {
-            return $t({defaultMessage: "Active an hour ago"});
+            return $t({defaultMessage: "An hour ago"});
         }
-        return $t({defaultMessage: "Active {hours} hours ago"}, {hours});
+        return $t({defaultMessage: "{hours} hours ago"}, {hours});
     }
 
     if (days_old === 1) {
-        return $t({defaultMessage: "Active yesterday"});
+        return $t({defaultMessage: "Yesterday"});
     }
 
     if (days_old < 90) {
-        return $t({defaultMessage: "Active {days_old} days ago"}, {days_old});
+        return $t({defaultMessage: "{days_old} days ago"}, {days_old});
     } else if (
         days_old > 90 &&
         days_old < 365 &&
@@ -223,7 +223,7 @@ export function last_seen_status_from_date(
     ) {
         // Online more than 90 days ago, in the same year
         return $t(
-            {defaultMessage: "Active {last_active_date}"},
+            {defaultMessage: "{last_active_date}"},
             {
                 last_active_date: get_localized_date_or_time_for_format(
                     last_active_date,
@@ -233,7 +233,7 @@ export function last_seen_status_from_date(
         );
     }
     return $t(
-        {defaultMessage: "Active {last_active_date}"},
+        {defaultMessage: "{last_active_date}"},
         {
             last_active_date: get_localized_date_or_time_for_format(
                 last_active_date,

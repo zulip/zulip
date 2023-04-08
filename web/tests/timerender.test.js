@@ -471,49 +471,49 @@ run_test("last_seen_status_from_date", () => {
         assert.equal(actual_status, expected_status);
     }
 
-    assert_same({seconds: -20}, $t({defaultMessage: "Active just now"}));
+    assert_same({seconds: -20}, $t({defaultMessage: "Just now"}));
 
-    assert_same({minutes: -1}, $t({defaultMessage: "Active just now"}));
+    assert_same({minutes: -1}, $t({defaultMessage: "Just now"}));
 
-    assert_same({minutes: -2}, $t({defaultMessage: "Active just now"}));
+    assert_same({minutes: -2}, $t({defaultMessage: "Just now"}));
 
-    assert_same({minutes: -30}, $t({defaultMessage: "Active 30 minutes ago"}));
+    assert_same({minutes: -30}, $t({defaultMessage: "30 minutes ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
+    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
-    assert_same({hours: -20}, $t({defaultMessage: "Active 20 hours ago"}));
+    assert_same({hours: -20}, $t({defaultMessage: "20 hours ago"}));
 
-    assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
 
-    assert_same({hours: -48}, $t({defaultMessage: "Active 2 days ago"}));
+    assert_same({hours: -48}, $t({defaultMessage: "2 days ago"}));
 
-    assert_same({days: -2}, $t({defaultMessage: "Active 2 days ago"}));
+    assert_same({days: -2}, $t({defaultMessage: "2 days ago"}));
 
-    assert_same({days: -61}, $t({defaultMessage: "Active 61 days ago"}));
+    assert_same({days: -61}, $t({defaultMessage: "61 days ago"}));
 
-    assert_same({days: -300}, $t({defaultMessage: "Active May 6, 2015"}));
+    assert_same({days: -300}, $t({defaultMessage: "May 6, 2015"}));
 
-    assert_same({days: -366}, $t({defaultMessage: "Active Mar 1, 2015"}));
+    assert_same({days: -366}, $t({defaultMessage: "Mar 1, 2015"}));
 
-    assert_same({years: -3}, $t({defaultMessage: "Active Mar 1, 2013"}));
+    assert_same({years: -3}, $t({defaultMessage: "Mar 1, 2013"}));
 
     // Set base_date to May 1 2016 12.30 AM (months are zero based)
     base_date = new Date(2016, 4, 1, 0, 30);
 
-    assert_same({days: -91}, $t({defaultMessage: "Active Jan 31"}));
+    assert_same({days: -91}, $t({defaultMessage: "Jan 31"}));
 
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "An hour ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
+    assert_same({hours: -2}, $t({defaultMessage: "2 hours ago"}));
 
-    assert_same({hours: -12}, $t({defaultMessage: "Active 12 hours ago"}));
+    assert_same({hours: -12}, $t({defaultMessage: "12 hours ago"}));
 
-    assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "Yesterday"}));
 });
 
 run_test("set_full_datetime", () => {
