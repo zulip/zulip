@@ -229,6 +229,10 @@ def process_client(
         client_name = "website"
 
     request_notes.client = get_client(client_name)
+
+    # Clear request_notes.client_name to avoid code using it;
+    # request_notes.client is preferred once populated.
+    request_notes.client_name = None
     if user is not None and user.is_authenticated:
         update_user_activity(request, user, query)
 

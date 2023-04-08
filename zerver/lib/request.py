@@ -52,6 +52,12 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     of `assert request_notes.foo is not None` when accessing them.
     """
 
+    # The client* fields are a bit messy. The main `client` field is a
+    # Client object representing the type of client being used; it is
+    # set inside `process_client`.
+    #
+    # client_name is initially set earlier, by parsing the User-Agent
+    # in middleware,
     client: Optional[Client] = None
     client_name: Optional[str] = None
     client_version: Optional[str] = None

@@ -361,6 +361,14 @@ class LogRequests(MiddlewareMixin):
             # Avoid re-initializing request_notes.log_data if it's already there.
             return
 
+        # We store the metadata from parsing User-Agent in
+        # request_notes.client_name here. This value is used to
+        # describe the User-Agent for those requests where
+        # process_client does not end up being called, either due to
+        # an error or because the request does not use our
+        # authenticate decorators. process_client sets
+        # request_notes.client and sets request_notes.client.name to
+        # None, to avoid that stale value being used.
         try:
             request_notes.client_name, request_notes.client_version = parse_client(request)
         except JsonableError as e:
@@ -425,7 +433,12 @@ class LogRequests(MiddlewareMixin):
         )
         content = response.content if isinstance(response, HttpResponse) else None
 
-        assert request_notes.client_name is not None and request_notes.log_data is not None
+        client_name = (
+            request_notes.client.name
+            if request_notes.client is not None
+            else request_notes.client_name
+        )
+        assert client_name is not None and request_notes.log_data is not None
         assert request.method is not None
         write_log_line(
             request_notes.log_data,
@@ -433,7 +446,7 @@ class LogRequests(MiddlewareMixin):
             request.method,
             remote_ip,
             requestor_for_logs,
-            request_notes.client_name,
+            client_name,
             client_version=request_notes.client_version,
             status_code=response.status_code,
             error_content=content,
