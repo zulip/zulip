@@ -16,6 +16,7 @@ from zerver.actions.message_edit import (
 from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_change_user_role
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids, truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
@@ -1359,7 +1360,7 @@ class EditMessageTest(EditMessageTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(21):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1464,7 +1465,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(30):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1495,7 +1496,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(33):
+        with self.assert_database_query_count(35):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1528,7 +1529,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(30):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1551,7 +1552,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(26):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -1650,7 +1651,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(24):
+        with self.assert_database_query_count(26):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1720,6 +1721,174 @@ class EditMessageTest(EditMessageTestCase):
         assert_has_visibility_policy(
             aaron, change_all_topic_name, UserTopic.VisibilityPolicy.MUTED, expected=False
         )
+
+    def test_merge_user_topic_states_on_move_messages(self) -> None:
+        stream_name = "Stream 123"
+        stream = self.make_stream(stream_name)
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+
+        def assert_has_visibility_policy(
+            user_profile: UserProfile,
+            topic_name: str,
+            visibility_policy: int,
+        ) -> None:
+            self.assertTrue(
+                topic_has_visibility_policy(user_profile, stream.id, topic_name, visibility_policy)
+            )
+
+        self.subscribe(hamlet, stream_name)
+        self.login_user(hamlet)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(cordelia)
+        self.subscribe(aaron, stream_name)
+        self.login_user(aaron)
+
+        # Test the following cases:
+        #
+        #  orig_topic | target_topic | final behaviour
+        #   INHERIT       INHERIT       INHERIT
+        #   INHERIT        MUTED        INHERIT
+        #   INHERIT       UNMUTED       UNMUTED
+        orig_topic = "Topic1"
+        target_topic = "Topic1 edited"
+        orig_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name=orig_topic, content="Hello World"
+        )
+        self.send_stream_message(
+            hamlet, stream_name, topic_name=target_topic, content="Hello World 2"
+        )
+
+        # By default:
+        # visibility_policy of 'hamlet', 'cordelia', 'aaron' for 'orig_topic': INHERIT
+        # visibility_policy of 'hamlet' for 'target_topic': INHERIT
+        #
+        # So we don't need to manually set visibility_policy to INHERIT whenever required,
+        # here and later in this test.
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            aaron, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+
+        check_update_message(
+            user_profile=hamlet,
+            message_id=orig_message_id,
+            stream_id=None,
+            topic_name=target_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(hamlet, target_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(cordelia, target_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(aaron, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
+
+        # Test the following cases:
+        #
+        #  orig_topic | target_topic | final behaviour
+        #     MUTED       INHERIT        INHERIT
+        #     MUTED        MUTED          MUTED
+        #     MUTED       UNMUTED        UNMUTED
+        orig_topic = "Topic2"
+        target_topic = "Topic2 edited"
+        orig_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name=orig_topic, content="Hello World"
+        )
+        self.send_stream_message(
+            hamlet, stream_name, topic_name=target_topic, content="Hello World 2"
+        )
+
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            aaron, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            aaron, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+
+        check_update_message(
+            user_profile=hamlet,
+            message_id=orig_message_id,
+            stream_id=None,
+            topic_name=target_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(hamlet, target_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(cordelia, target_topic, UserTopic.VisibilityPolicy.MUTED)
+        assert_has_visibility_policy(aaron, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
+
+        # Test the following cases:
+        #
+        #  orig_topic | target_topic | final behaviour
+        #    UNMUTED       INHERIT        UNMUTED
+        #    UNMUTED        MUTED         UNMUTED
+        #    UNMUTED       UNMUTED        UNMUTED
+        orig_topic = "Topic3"
+        target_topic = "Topic3 edited"
+        orig_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name=orig_topic, content="Hello World"
+        )
+        self.send_stream_message(
+            hamlet, stream_name, topic_name=target_topic, content="Hello World 2"
+        )
+
+        do_set_user_topic_visibility_policy(
+            hamlet, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+        do_set_user_topic_visibility_policy(
+            aaron, stream, orig_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+        do_set_user_topic_visibility_policy(
+            cordelia, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+        do_set_user_topic_visibility_policy(
+            aaron, stream, target_topic, visibility_policy=UserTopic.VisibilityPolicy.UNMUTED
+        )
+
+        check_update_message(
+            user_profile=hamlet,
+            message_id=orig_message_id,
+            stream_id=None,
+            topic_name=target_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        assert_has_visibility_policy(hamlet, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(cordelia, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(aaron, orig_topic, UserTopic.VisibilityPolicy.INHERIT)
+        assert_has_visibility_policy(hamlet, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
+        assert_has_visibility_policy(cordelia, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
+        assert_has_visibility_policy(aaron, target_topic, UserTopic.VisibilityPolicy.UNMUTED)
 
     @mock.patch("zerver.actions.message_edit.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
@@ -2981,7 +3150,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(55), cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(57), cache_tries_captured() as cache_tries:
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
