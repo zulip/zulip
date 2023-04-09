@@ -157,23 +157,26 @@ def register_remote_push_device(
     if user_id is None and user_uuid is None:
         raise JsonableError(_("Missing user_id or user_uuid"))
     if user_id is not None and user_uuid is not None:
-        # We don't want "hybrid" registrations with both.
-        # Our RemotePushDeviceToken should be either in the new uuid format
-        # or the legacy id one.
-        raise JsonableError(_("Specify only one of user_id or user_uuid"))
-
+        kwargs: Dict[str, object] = {"user_uuid": user_uuid, "user_id": None}
+        # Delete pre-existing user_id registration for this user+device to avoid
+        # duplication. Further down, uuid registration will be created.
+        RemotePushDeviceToken.objects.filter(
+            server=server, token=token, kind=token_kind, user_id=user_id
+        ).delete()
+    else:
+        # One of these is None, so these will kwargs will leads to a proper registration
+        # of either user_id or user_uuid type
+        kwargs = {"user_id": user_id, "user_uuid": user_uuid}
     try:
         with transaction.atomic():
             RemotePushDeviceToken.objects.create(
-                # Exactly one of these two user identity fields will be None.
-                user_id=user_id,
-                user_uuid=user_uuid,
                 server=server,
                 kind=token_kind,
                 token=token,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone.now(),
+                **kwargs,
             )
     except IntegrityError:
         pass
