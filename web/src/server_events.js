@@ -269,6 +269,7 @@ export function home_view_loaded() {
 }
 
 export function initialize() {
+    reload.add_reload_hook(cleanup_event_queue);
     watchdog.on_unsuspend(() => {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
@@ -278,7 +279,7 @@ export function initialize() {
     get_events();
 }
 
-export function cleanup_event_queue() {
+function cleanup_event_queue() {
     // Submit a request to the server to clean up our event queue
     if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
         return;
