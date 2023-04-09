@@ -1,5 +1,6 @@
 import datetime
 import logging
+from collections import Counter
 from typing import Any, Dict, List, Optional, Type, TypeVar
 from uuid import UUID
 
@@ -164,7 +165,7 @@ def register_remote_push_device(
             server=server, token=token, kind=token_kind, user_id=user_id
         ).delete()
     else:
-        # One of these is None, so these will kwargs will leads to a proper registration
+        # One of these is None, so these kwargs will lead to a proper registration
         # of either user_id or user_uuid type
         kwargs = {"user_id": user_id, "user_uuid": user_uuid}
     try:
@@ -219,13 +220,73 @@ def unregister_all_remote_push_devices(
     return json_success(request)
 
 
+def delete_duplicate_registrations(
+    registrations: List[RemotePushDeviceToken], server_id: int, user_id: int, user_uuid: str
+) -> List[RemotePushDeviceToken]:
+    """
+    When migrating to support registration by UUID, we introduced a bug where duplicate
+    registrations for the same device+user could be created - one by user_id and one by
+    user_uuid. Given no good way of detecting these duplicates at database level, we need to
+    take advantage of the fact that when a remote server sends a push notification request
+    to us, it sends both user_id and user_uuid of the user.
+    See https://github.com/zulip/zulip/issues/24969 for reference.
+
+    This function, knowing the user_id and user_uuid of the user, can detect duplicates
+    and delete the legacy user_id registration if appropriate.
+
+    Return the list of registrations with the user_id-based duplicates removed.
+    """
+
+    # All registrations passed here should be of the same kind (apple vs android).
+    assert len({registration.kind for registration in registrations}) == 1
+    kind = registrations[0].kind
+
+    tokens_counter = Counter(device.token for device in registrations)
+
+    tokens_to_deduplicate = []
+    for key in tokens_counter:
+        if tokens_counter[key] <= 1:
+            continue
+        if tokens_counter[key] > 2:
+            raise AssertionError(
+                f"More than two registrations for token {key} for user id:{user_id} uuid:{user_uuid}, shouldn't be possible"
+            )
+        assert tokens_counter[key] == 2
+        tokens_to_deduplicate.append(key)
+
+    if not tokens_to_deduplicate:
+        return registrations
+
+    logger.info(
+        "Deduplicating push registrations for server id:%s user id:%s uuid:%s and tokens:%s",
+        server_id,
+        user_id,
+        user_uuid,
+        sorted(tokens_to_deduplicate),
+    )
+    RemotePushDeviceToken.objects.filter(
+        token__in=tokens_to_deduplicate, kind=kind, server_id=server_id, user_id=user_id
+    ).delete()
+
+    deduplicated_registrations_to_return = []
+    for registration in registrations:
+        if registration.token in tokens_to_deduplicate and registration.user_id is not None:
+            # user_id registrations are the ones we deleted
+            continue
+        deduplicated_registrations_to_return.append(registration)
+
+    return deduplicated_registrations_to_return
+
+
 @has_request_variables
 def remote_server_notify_push(
     request: HttpRequest,
     server: RemoteZulipServer,
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
-    user_identity = UserPushIdentityCompat(payload.get("user_id"), payload.get("user_uuid"))
+    user_id = payload.get("user_id")
+    user_uuid = payload.get("user_uuid")
+    user_identity = UserPushIdentityCompat(user_id, user_uuid)
 
     gcm_payload = payload["gcm_payload"]
     apns_payload = payload["apns_payload"]
@@ -238,6 +299,10 @@ def remote_server_notify_push(
             server=server,
         )
     )
+    if android_devices and user_id is not None and user_uuid is not None:
+        android_devices = delete_duplicate_registrations(
+            android_devices, server.id, user_id, user_uuid
+        )
 
     apple_devices = list(
         RemotePushDeviceToken.objects.filter(
@@ -246,6 +311,8 @@ def remote_server_notify_push(
             server=server,
         )
     )
+    if apple_devices and user_id is not None and user_uuid is not None:
+        apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
 
     logger.info(
         "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
