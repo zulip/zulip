@@ -211,6 +211,8 @@ export function initialize() {
             $searchbox.css({"box-shadow": "unset"});
         });
     }
+
+    narrow.register_search_callback(update_button_visibility, clear_search_form);
 }
 
 export function focus_search() {

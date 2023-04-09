@@ -9,7 +9,9 @@ const {page_params} = require("./lib/zpage_params");
 
 const noop = () => {};
 
-const narrow = mock_esm("../src/narrow");
+const narrow = mock_esm("../src/narrow", {
+    register_search_callback() {},
+});
 const narrow_state = mock_esm("../src/narrow_state", {
     filter: () => false,
 });

@@ -31,7 +31,6 @@ import * as pm_list from "./pm_list";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as resize from "./resize";
-import * as search from "./search";
 import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
 import * as spectators from "./spectators";
@@ -49,6 +48,14 @@ import * as widgetize from "./widgetize";
 let unnarrow_times;
 
 const LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000;
+
+let search_update_button_visibility;
+let search_clear_search_form;
+
+export function register_search_callback(update_button_visibility, clear_search_form) {
+    search_update_button_visibility = update_button_visibility;
+    search_clear_search_form = clear_search_form;
+}
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
@@ -579,7 +586,7 @@ export function activate(raw_operators, opts) {
     }
     compose_closed_ui.update_reply_recipient_label();
 
-    search.update_button_visibility();
+    search_update_button_visibility();
 
     compose_actions.on_narrow(opts);
 
@@ -1032,7 +1039,7 @@ export function deactivate(coming_from_recent_topics = false) {
       message_list_data structure caching system that happens to have
       message_lists.home in it.
      */
-    search.clear_search_form();
+    search_clear_search_form();
     // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {

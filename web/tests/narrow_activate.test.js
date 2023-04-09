@@ -179,6 +179,8 @@ run_test("basics", () => {
         });
     };
 
+    narrow.register_search_callback(search.update_button_visibility, search.clear_search_form);
+
     narrow.activate(terms, {
         then_select_id: selected_id,
     });
