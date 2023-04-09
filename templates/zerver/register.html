@@ -119,7 +119,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                         </select>
                     </div>
                     <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}
-                        <a href="{{ root_domain_uri }}/help/import-your-settings"><i class="fa fa-question-circle"></i></a>
+                        <a href="{{ root_domain_url }}/help/import-your-settings"><i class="fa fa-question-circle"></i></a>
                     </label>
                 </div>
                 {% endif %}
@@ -224,7 +224,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                         <input id="id_terms" class="required" type="checkbox" name="terms"
                           {% if form.terms.value() %}checked="checked"{% endif %} />
                         <span></span>
-                        {% trans %}I agree to the <a href="{{ root_domain_uri }}/policies/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.{% endtrans %}
+                        {% trans %}I agree to the <a href="{{ root_domain_url }}/policies/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.{% endtrans %}
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}
@@ -278,7 +278,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     {% endfor %}
                 </select>
                 <p>
-                    {% trans %}You can also change this setting <a href="{{ root_domain_uri }}/help/configure-email-visibility" target="_blank" rel="noopener noreferrer">after you join</a>.{% endtrans %}
+                    {% trans %}You can also change this setting <a href="{{ root_domain_url }}/help/configure-email-visibility" target="_blank" rel="noopener noreferrer">after you join</a>.{% endtrans %}
                 </p>
             </main>
             <footer class="modal__footer">
