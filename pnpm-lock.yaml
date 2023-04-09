@@ -193,6 +193,9 @@ dependencies:
   shebang-loader:
     specifier: ^0.0.1
     version: 0.0.1
+  shortcut-buttons-flatpickr:
+    specifier: ^0.4.0
+    version: 0.4.0
   simplebar:
     specifier: ^6.2.0
     version: 6.2.5
@@ -10473,6 +10476,10 @@ packages:
 
   /shell-quote@1.8.1:
     resolution: {integrity: sha512-6j1W9l1iAs/4xYBI1SYOVZyFcCis9b4KCLQ8fgAGG07QvzaRLVVRQvAy85yNmmZSjYjg4MWh4gNvlPujU/5LpA==}
+
+  /shortcut-buttons-flatpickr@0.4.0:
+    resolution: {integrity: sha512-JKmT4my3Hm1e18OvG4Q6RcFhN4WRqqpTMkHrvZ7fup/dp6aTIWGVCHdRYtASkp/FCzDlJh6iCLQ/VcwwNpAMoQ==}
+    dev: false
 
   /side-channel@1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}

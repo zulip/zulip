@@ -2656,6 +2656,12 @@ select.invite-as {
         font-weight: 600;
     }
 
+    .shortcut-buttons-flatpickr-wrapper {
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+    }
+
     @media (width < $md_min) {
         /* Center align flatpickr on mobile
          * devices so that it doesn't go out of

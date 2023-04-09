@@ -47,13 +47,15 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
                 // navigate between the elements in flatpickr itself
                 // and the confirmation button at the bottom of the
                 // popover.
-                const elems = [
+                let elems = [
                     instance.selectedDateElem,
                     instance.hourElement,
                     instance.minuteElement,
                     instance.amPM,
                     $(".flatpickr-confirm")[0],
+                    $(".shortcut-buttons-flatpickr-button")[0],
                 ];
+                elems = elems.filter((e) => e !== undefined);
                 const i = elems.indexOf(event.target);
                 const n = elems.length;
                 const remain = (i + (event.shiftKey ? -1 : 1)) % n;
@@ -129,6 +131,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         instance.close();
         instance.destroy();
     });
+
     instance.open();
     instance.selectedDateElem.focus();
 
