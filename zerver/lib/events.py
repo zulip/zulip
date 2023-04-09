@@ -483,7 +483,11 @@ def fetch_initial_state_data(
         state["full_name"] = settings_user.full_name
 
     if want("realm_bot"):
-        state["realm_bots"] = [] if user_profile is None else get_owned_bot_dicts(user_profile)
+        state["realm_bots"] = (
+            []
+            if user_profile is None
+            else get_owned_bot_dicts(user_profile, client_gravatar=client_gravatar)
+        )
 
     # This does not yet have an apply_event counterpart, since currently,
     # new entries for EMBEDDED_BOTS can only be added directly in the codebase.
@@ -883,7 +887,9 @@ def apply_event(
                     if was_admin and not now_admin:
                         state["realm_bots"] = []
                     if not was_admin and now_admin:
-                        state["realm_bots"] = get_owned_bot_dicts(user_profile)
+                        state["realm_bots"] = get_owned_bot_dicts(
+                            user_profile, client_gravatar=client_gravatar
+                        )
 
             if person_user_id in state["raw_users"]:
                 p = state["raw_users"][person_user_id]
@@ -933,7 +939,11 @@ def apply_event(
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
         if event["op"] == "add":
-            state["realm_bots"].append(event["bot"])
+            bot = copy.deepcopy(event["bot"])
+
+            if client_gravatar and bot["avatar_url"].startswith("https://secure.gravatar.com/"):
+                bot["avatar_url"] = None
+            state["realm_bots"].append(bot)
         elif event["op"] == "remove":
             user_id = event["bot"]["user_id"]
             for bot in state["realm_bots"]:

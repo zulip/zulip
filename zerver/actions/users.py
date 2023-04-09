@@ -14,7 +14,7 @@ from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
-from zerver.lib.avatar import avatar_url_from_dict
+from zerver.lib.avatar import get_avatar_field
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
@@ -495,7 +495,10 @@ def get_service_dicts_for_bots(
 
 
 def get_owned_bot_dicts(
-    user_profile: UserProfile, include_all_realm_bots_if_admin: bool = True
+    user_profile: UserProfile,
+    include_all_realm_bots_if_admin: bool = True,
+    *,
+    client_gravatar: bool = False,
 ) -> List[Dict[str, Any]]:
     if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
         result = get_bot_dicts_in_realm(user_profile.realm)
@@ -516,7 +519,15 @@ def get_owned_bot_dicts(
             "default_events_register_stream": botdict["default_events_register_stream__name"],
             "default_all_public_streams": botdict["default_all_public_streams"],
             "owner_id": botdict["bot_owner_id"],
-            "avatar_url": avatar_url_from_dict(botdict),
+            "avatar_url": get_avatar_field(
+                user_id=botdict["id"],
+                realm_id=botdict["realm_id"],
+                email=botdict["email"],
+                avatar_source=botdict["avatar_source"],
+                avatar_version=botdict["avatar_version"],
+                medium=False,
+                client_gravatar=client_gravatar,
+            ),
             "services": services_by_ids[botdict["id"]],
         }
         for botdict in result

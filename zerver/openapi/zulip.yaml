@@ -7316,8 +7316,12 @@ paths:
                       ignored_parameters_unsupported: {}
                       avatar_url:
                         type: string
+                        nullable: true
                         description: |
                           URL for the user's avatar.
+
+                          **Changes**: In Zulip 7.0 (feature level 177)
+                          this will be `null` when client can compute the URL.
 
                           **Changes**: New in Zulip 2.1.0.
                         example: "x"
@@ -13499,11 +13503,15 @@ paths:
                           for use in settings UI showing the user's avatar.
                       avatar_url:
                         type: string
+                        nullable: true
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           The URL of the avatar for the current user at 100x100
                           resolution. See also `avatar_url_medium`.
+
+                          **Changes**: In Zulip 7.0 (feature level 177)
+                          this will be `null` when client can compute the URL.
                       can_create_streams:
                         type: boolean
                         deprecated: true
@@ -16218,8 +16226,12 @@ components:
             Whether the bot can send messages to all streams by default.
         avatar_url:
           type: string
+          nullable: true
           description: |
             The URL of the bot's avatar.
+
+            **Changes**: In Zulip 7.0 (feature level 177)
+            this will be `null` when client can compute the URL.
         owner_id:
           type: integer
           nullable: true
