@@ -285,7 +285,7 @@ export class Filter {
         if (["group-pm-with", "pm-with", "sender", "from"].includes(operator) === false) {
             encoded = encoded.replace(/\+/g, " ");
         }
-        return util.robust_uri_decode(encoded).trim();
+        return util.robust_url_decode(encoded).trim();
     }
 
     // Parse a string into a list of operators (see below).

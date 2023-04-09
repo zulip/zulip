@@ -106,8 +106,8 @@ run_test("blueslip", () => {
 
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("error", "Unknown people in message");
-    const uri = people.pm_with_url({type: "private", display_recipient: [{id: 42}]});
-    assert.equal(uri.indexOf("unk"), uri.length - 3);
+    const url = people.pm_with_url({type: "private", display_recipient: [{id: 42}]});
+    assert.equal(url.indexOf("unk"), url.length - 3);
 
     blueslip.expect("error", "Undefined field id");
     assert.equal(people.my_custom_profile_data(undefined), undefined);

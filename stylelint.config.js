@@ -37,7 +37,7 @@ module.exports = {
         // Zulip CSS should have no dependencies on external resources
         "function-url-no-scheme-relative": true,
         "function-url-scheme-allowed-list": [
-            "data", // Allow data URIs
+            "data", // Allow data URLs
         ],
     },
 };

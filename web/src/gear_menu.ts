@@ -113,7 +113,7 @@ export function version_display_string(): string {
 export function initialize(): void {
     const rendered_gear_menu = render_gear_menu({
         realm_name: page_params.realm_name,
-        realm_uri: new URL(page_params.realm_uri).hostname,
+        realm_url: new URL(page_params.realm_uri).hostname,
         is_owner: page_params.is_owner,
         is_admin: page_params.is_admin,
         is_self_hosted: page_params.realm_plan_type === 1,

@@ -73,7 +73,7 @@ run_test("t_tag", ({mock_template}) => {
         should_display_quote_and_reply: true,
         editability_menu_item: true,
         should_display_hide_option: true,
-        conversation_time_uri:
+        conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/stream/101-devel/topic/testing/near/99",
     };
 

@@ -167,8 +167,8 @@ run_test("test_by_conversation_and_time_url", () => {
 });
 
 run_test("test_search_public_streams_notice_url", () => {
-    function get_operators(uri) {
-        return hash_util.parse_narrow(uri.split("/"));
+    function get_operators(url) {
+        return hash_util.parse_narrow(url.split("/"));
     }
 
     assert.equal(

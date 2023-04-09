@@ -281,19 +281,19 @@ export function setup_upload(config) {
     });
 
     uppy.on("upload-success", (file, response) => {
-        const uri = response.body.uri;
-        if (uri === undefined) {
+        const url = response.body.uri;
+        if (url === undefined) {
             return;
         }
-        const split_uri = uri.split("/");
-        const filename = split_uri.at(-1);
+        const split_url = url.split("/");
+        const filename = split_url.at(-1);
         if (config.mode === "compose" && !compose_state.composing()) {
             compose_actions.start("stream");
         }
-        const filename_uri = "[" + filename + "](" + uri + ")";
+        const filename_url = "[" + filename + "](" + url + ")";
         compose_ui.replace_syntax(
             get_translated_status(file),
-            filename_uri,
+            filename_url,
             get_item("textarea", config),
         );
         compose_ui.autosize_textarea(get_item("textarea", config));
