@@ -193,12 +193,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Missing user_id or user_uuid")
         result = self.uuid_post(
-            self.server_uuid,
-            endpoint,
-            {"user_id": user_id, "user_uuid": "xxx", "token": token, "token_kind": token_kind},
-        )
-        self.assert_json_error(result, "Specify only one of user_id or user_uuid")
-        result = self.uuid_post(
             self.server_uuid, endpoint, {"user_id": user_id, "token": token, "token_kind": 17}
         )
         self.assert_json_error(result, "Invalid token type")
@@ -279,6 +273,40 @@ class PushBouncerNotificationTest(BouncerTestCase):
             "The mobile push notification service registration for your server has been deactivated",
             401,
         )
+
+    def test_register_device_deduplication(self) -> None:
+        hamlet = self.example_user("hamlet")
+        token = "111222"
+        user_id = hamlet.id
+        user_uuid = str(hamlet.uuid)
+        token_kind = PushDeviceToken.GCM
+
+        endpoint = "/api/v1/remotes/push/register"
+
+        # First we create a legacy user_id registration.
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {"user_id": user_id, "token_kind": token_kind, "token": token},
+        )
+        self.assert_json_success(result)
+
+        registrations = list(RemotePushDeviceToken.objects.filter(token=token))
+        self.assert_length(registrations, 1)
+        self.assertEqual(registrations[0].user_id, user_id)
+        self.assertEqual(registrations[0].user_uuid, None)
+
+        # Register same user+device with uuid now. The old registration should be deleted
+        # to avoid duplication.
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {"user_id": user_id, "user_uuid": user_uuid, "token_kind": token_kind, "token": token},
+        )
+        registrations = list(RemotePushDeviceToken.objects.filter(token=token))
+        self.assert_length(registrations, 1)
+        self.assertEqual(registrations[0].user_id, None)
+        self.assertEqual(str(registrations[0].user_uuid), user_uuid)
 
     def test_remote_push_user_endpoints(self) -> None:
         endpoints = [
