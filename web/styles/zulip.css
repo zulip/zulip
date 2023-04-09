@@ -1886,7 +1886,7 @@ div.focused_table {
         padding: 10px 15px 0 0;
 
         @media (width < $sm_min) {
-            padding: 5px 15px 0 0;
+            padding: 0 15px 0 0;
         }
     }
 
@@ -2758,7 +2758,7 @@ select.invite-as {
     /* Usually the styling is applied directly to the icon, but here
     the icon is `position: static`, so we can't. */
     .search_closed {
-        top: 4px;
+        top: 5px;
     }
 
     #streamlist-toggle,
