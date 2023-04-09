@@ -70,7 +70,7 @@ function create_devel_sidebar_row({mock_template}) {
     $subscription_block.set_find_results(".unread_mention_info", $devel_unread_mention_info);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
-        assert.equal(data.uri, "#narrow/stream/100-devel");
+        assert.equal(data.url, "#narrow/stream/100-devel");
         return "<devel-sidebar-row-stub>";
     });
 
@@ -93,7 +93,7 @@ function create_social_sidebar_row({mock_template}) {
     $subscription_block.set_find_results(".unread_mention_info", $social_unread_mention_info);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
-        assert.equal(data.uri, "#narrow/stream/200-social");
+        assert.equal(data.url, "#narrow/stream/200-social");
         return "<social-sidebar-row-stub>";
     });
 
@@ -662,7 +662,7 @@ test_ui("rename_stream", ({mock_template}) => {
         assert.deepEqual(payload, {
             name: "Development",
             id: 1000,
-            uri: "#narrow/stream/1000-Development",
+            url: "#narrow/stream/1000-Development",
             is_muted: false,
             invite_only: undefined,
             is_web_public: undefined,

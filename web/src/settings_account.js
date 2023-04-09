@@ -498,7 +498,7 @@ export function set_up() {
                 api_key: $("#api_key_value").text(),
             };
             const data = settings_bots.generate_zuliprc_content(bot_object);
-            $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
+            $(this).attr("href", settings_bots.encode_zuliprc_as_url(data));
         });
 
         $("#api_key_modal [data-micromodal-close]").on("click", () => {

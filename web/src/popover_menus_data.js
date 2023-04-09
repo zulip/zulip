@@ -87,7 +87,7 @@ export function get_actions_popover_content_context(message_id) {
 
     const should_display_quote_and_reply = message.content !== "<p>(deleted)</p>" && not_spectator;
 
-    const conversation_time_uri = hash_util.by_conversation_and_time_url(message);
+    const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
     const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
     const should_display_read_receipts_option =
@@ -116,7 +116,7 @@ export function get_actions_popover_content_context(message_id) {
         should_display_add_reaction_option,
         should_display_edit_history_option,
         should_display_hide_option,
-        conversation_time_uri,
+        conversation_time_url,
         narrowed: narrow_state.active(),
         should_display_delete_option,
         should_display_read_receipts_option,

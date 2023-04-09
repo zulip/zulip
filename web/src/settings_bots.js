@@ -82,13 +82,13 @@ export function render_bots() {
     }
 }
 
-export function generate_zuliprc_uri(bot_id) {
+export function generate_zuliprc_url(bot_id) {
     const bot = bot_data.get(bot_id);
     const data = generate_zuliprc_content(bot);
-    return encode_zuliprc_as_uri(data);
+    return encode_zuliprc_as_url(data);
 }
 
-export function encode_zuliprc_as_uri(zuliprc) {
+export function encode_zuliprc_as_url(zuliprc) {
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 }
 
@@ -596,7 +596,7 @@ export function set_up() {
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
         const $bot_info = $(this).closest(".bot-information-box").find(".bot_info");
         const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
-        $(this).attr("href", generate_zuliprc_uri(bot_id));
+        $(this).attr("href", generate_zuliprc_url(bot_id));
     });
 
     $("#active_bots_list").on("click", "button.open_bots_subscribed_streams", (e) => {

@@ -117,7 +117,7 @@ export function normalize_recipients(recipients: string): string {
 // one by one until the decode succeeds.  This makes sense if
 // we are decoding input that the user is in the middle of
 // typing.
-export function robust_uri_decode(str: string): string {
+export function robust_url_decode(str: string): string {
     let end = str.length;
     while (end > 0) {
         try {

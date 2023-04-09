@@ -534,8 +534,8 @@ export function pm_perma_link(message) {
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const uri = "#narrow/pm-with/" + slug;
-    return uri;
+    const url = "#narrow/pm-with/" + slug;
+    return url;
 }
 
 export function pm_with_url(message) {
@@ -560,8 +560,8 @@ export function pm_with_url(message) {
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const uri = "#narrow/pm-with/" + slug;
-    return uri;
+    const url = "#narrow/pm-with/" + slug;
+    return url;
 }
 
 export function update_email_in_reply_to(reply_to, user_id, new_email) {
