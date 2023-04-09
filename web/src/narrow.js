@@ -240,10 +240,13 @@ export function activate(raw_operators, opts) {
         return;
     }
 
+    const coming_from_recent_topics = recent_topics_util.is_visible();
+
     // The empty narrow is the home view; so deactivate any narrow if
-    // no operators were specified.
+    // no operators were specified. Take us to all messages when this
+    // happens from recent conversations view.
     if (raw_operators.length === 0) {
-        deactivate();
+        deactivate(coming_from_recent_topics);
         return;
     }
 
@@ -406,7 +409,7 @@ export function activate(raw_operators, opts) {
     // recursively.
     reset_ui_state();
 
-    if (recent_topics_util.is_visible()) {
+    if (coming_from_recent_topics) {
         recent_topics_ui.hide();
     } else {
         // If recent topics was not visible, then we are switching
