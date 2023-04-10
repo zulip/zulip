@@ -652,8 +652,6 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Controls whether or not error reports (tracebacks) are emailed to the
 ## server administrators.
 # ERROR_REPORTING = True
-## For frontend (JavaScript) tracebacks
-# BROWSER_ERROR_REPORTING = False
 
 ## Controls the DSN used to report errors to Sentry.io
 # SENTRY_DSN = "https://aaa@bbb.ingest.sentry.io/1234"

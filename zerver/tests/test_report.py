@@ -1,18 +1,8 @@
-from typing import Callable, ContextManager, Dict, List, Tuple
+from typing import Callable, ContextManager, List, Tuple
 from unittest import mock
 
-import orjson
-from django.test import override_settings
-
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.utils import statsd
-
-
-def fix_params(raw_params: Dict[str, object]) -> Dict[str, str]:
-    # A few of our few legacy endpoints need their
-    # individual parameters serialized as JSON.
-    return {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
 
 
 class StatsMock:
@@ -131,70 +121,6 @@ class TestReport(ZulipTestCase):
             ("timing", ("unnarrow.initial_free.zulip", 6)),
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
-
-    @override_settings(BROWSER_ERROR_REPORTING=True)
-    def test_report_error(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
-        self.make_stream("errors", user.realm)
-
-        params = fix_params(
-            dict(
-                message="hello",
-                stacktrace="trace",
-                user_agent="agent",
-                href="href",
-                log="log",
-                more_info=dict(foo="bar", draft_content="**draft**"),
-            )
-        )
-
-        version_mock = mock.patch("zerver.views.report.ZULIP_VERSION", spec="1.2.3")
-        with mock_queue_publish("zerver.views.report.queue_json_publish") as m, version_mock:
-            result = self.client_post("/json/report/error", params)
-        self.assert_json_success(result)
-
-        report = m.call_args[0][1]["report"]
-        for k in set(params) - {"more_info"}:
-            self.assertEqual(report[k], params[k])
-
-        self.assertEqual(report["more_info"], dict(foo="bar", draft_content="'**xxxxx**'"))
-        self.assertEqual(report["user"]["user_email"], user.delivery_email)
-
-        # Test with no more_info
-        del params["more_info"]
-        with mock_queue_publish("zerver.views.report.queue_json_publish") as m, version_mock:
-            result = self.client_post("/json/report/error", params)
-        self.assert_json_success(result)
-
-        with self.settings(BROWSER_ERROR_REPORTING=False):
-            result = self.client_post("/json/report/error", params)
-        self.assert_json_success(result)
-
-        # If js_source_map is present, then the stack trace should be annotated.
-        # DEVELOPMENT=False and TEST_SUITE=False are necessary to ensure that
-        # js_source_map actually gets instantiated.
-        with self.settings(DEVELOPMENT=False, TEST_SUITE=False), mock.patch(
-            "zerver.lib.unminify.SourceMap.annotate_stacktrace"
-        ) as annotate, self.assertLogs(level="INFO") as info_logs, version_mock:
-            result = self.client_post("/json/report/error", params)
-        self.assert_json_success(result)
-        # fix_params (see above) adds quotes when JSON encoding.
-        annotate.assert_called_once_with('"trace"')
-        self.assertEqual(
-            info_logs.output, ["INFO:root:Processing traceback with type browser for None"]
-        )
-
-        # Now test without authentication.
-        self.logout()
-        with self.settings(DEVELOPMENT=False, TEST_SUITE=False), mock.patch(
-            "zerver.lib.unminify.SourceMap.annotate_stacktrace"
-        ) as annotate, self.assertLogs(level="INFO") as info_logs:
-            result = self.client_post("/json/report/error", params)
-        self.assert_json_success(result)
-        self.assertEqual(
-            info_logs.output, ["INFO:root:Processing traceback with type browser for None"]
-        )
 
     def test_report_csp_violations(self) -> None:
         fixture_data = self.fixture_data("csp_report.json")
