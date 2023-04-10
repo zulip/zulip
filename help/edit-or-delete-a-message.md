@@ -61,6 +61,24 @@ message is still accessible via Zulip's [edit
 history](/help/view-a-messages-edit-history) feature.  This can be the
 least confusing option for other users.
 
+{start_tabs}
+
+{tab|desktop-web}
+
+{!message-actions.md!}
+
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon.
+
+1. Delete the content of the message.
+
+1. Click **Save**.
+
+!!! warn ""
+    **Note:** If you don't see the **pencil** (<i class="fa fa-pencil"></i>) icon,
+    you are not permitted to edit this message.
+
+{end_tabs}
+
 ### Delete a message completely
 
 For cases where someone accidentally shared secret information publicly
