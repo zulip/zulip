@@ -61,10 +61,7 @@ export function smart_insert_inline($textarea, syntax) {
         syntax += " ";
     }
 
-    // text-field-edit ensures `$textarea` is focused before inserting
-    // the new syntax.
     insert($textarea[0], syntax);
-
     autosize_textarea($textarea);
 }
 
@@ -111,10 +108,7 @@ export function smart_insert_block($textarea, syntax) {
     const new_lines_needed_after_count = 2 - new_lines_after_count;
     syntax = syntax + "\n".repeat(new_lines_needed_after_count);
 
-    // text-field-edit ensures `$textarea` is focused before inserting
-    // the new syntax.
     insert($textarea[0], syntax);
-
     autosize_textarea($textarea);
 }
 
@@ -126,6 +120,17 @@ export function insert_syntax_and_focus(
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert_inline and smart_inline_block.
+    //
+    // We focus the textarea first. In theory, we could let the
+    // `insert` function of text-area-edit take care of this, since it
+    // will focus the target element before manipulating it.
+    //
+    // But it unfortunately will blur it afterwards if the original
+    // focus was something else, which is not behavior we want, so we
+    // just focus the textarea in question ourselves before calling
+    // it.
+    $textarea.trigger("focus");
+
     if (mode === "inline") {
         smart_insert_inline($textarea, syntax);
     } else if (mode === "block") {
