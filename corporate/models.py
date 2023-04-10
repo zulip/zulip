@@ -26,7 +26,7 @@ class Customer(models.Model):
     # only for their paid employees.  We don't prevent these
     # organizations from adding more users than the number of licenses
     # they purchased.
-    exempt_from_from_license_number_check = models.BooleanField(default=False)
+    exempt_from_license_number_check = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f"{self.realm!r} {self.stripe_customer_id}"
