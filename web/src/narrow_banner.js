@@ -225,9 +225,74 @@ function pick_empty_narrow_banner() {
                     return {
                         title: $t({defaultMessage: "No topics are marked as resolved."}),
                     };
+                case "alerted":
+                    return {
+                        title: $t({
+                            defaultMessage: "You haven't been alerted for any message yet.",
+                        }),
+                    };
             }
-            // fallthrough to default case if no match is found
-            break;
+            return {
+                title: $t(
+                    {
+                        defaultMessage:
+                            'Search operator "{operator}" cannot be used with "{operand}"',
+                    },
+                    {operator: first_operator, operand: first_operand},
+                ),
+                html: $t_html(
+                    {
+                        defaultMessage:
+                            "See <z-link>searching for messages help page</z-link> for details.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a href="/help/search-for-messages">${content_html.join("")}</a>`,
+                    },
+                ),
+            };
+        case "has": {
+            switch (first_operand) {
+                case "link":
+                    return {
+                        title: $t({
+                            defaultMessage: "You haven't received any messages with links yet.",
+                        }),
+                    };
+                case "image":
+                    return {
+                        title: $t({
+                            defaultMessage: "You haven't received any messages with images yet.",
+                        }),
+                    };
+                case "attachment":
+                    return {
+                        title: $t({
+                            defaultMessage:
+                                "You haven't received any messages with attachments yet.",
+                        }),
+                    };
+            }
+            return {
+                title: $t(
+                    {
+                        defaultMessage:
+                            'Search operator "{operator}" cannot be used with "{operand}"',
+                    },
+                    {operator: first_operator, operand: first_operand},
+                ),
+                html: $t_html(
+                    {
+                        defaultMessage:
+                            "See <z-link>searching for messages help page</z-link> for details.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a href="/help/search-for-messages">${content_html.join("")}</a>`,
+                    },
+                ),
+            };
+        }
         case "stream":
             if (!stream_data.is_subscribed_by_name(first_operand)) {
                 // You are narrowed to a stream which does not exist or is a private stream
@@ -276,6 +341,14 @@ function pick_empty_narrow_banner() {
             }
             // else fallthrough to default case
             break;
+        // Misspelling of "stream" operator
+        case "streams": {
+            return {
+                title: $t({
+                    defaultMessage: 'Invalid operator "streams", did you mean to use "stream"?',
+                }),
+            };
+        }
         case "search": {
             // You are narrowed to empty search results.
             return {

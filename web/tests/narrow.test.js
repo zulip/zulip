@@ -336,6 +336,13 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         empty_narrow_html("translated: No topics are marked as resolved."),
     );
 
+    set_filter([["is", "alerted"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You haven't been alerted for any message yet."),
+    );
+
     // organization has disabled sending direct messages
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
@@ -506,9 +513,47 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            'translated: Search operator "is" cannot be used with "invalid"',
+            'translated HTML: See <a href="/help/search-for-messages">searching for messages help page</a> for details.',
         ),
+    );
+
+    set_filter([["has", "links"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You haven't received any messages with links yet."),
+    );
+
+    set_filter([["has", "image"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You haven't received any messages with images yet."),
+    );
+
+    set_filter([["has", "attachment"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You haven't received any messages with attachments yet."),
+    );
+
+    set_filter([["has", "invalid"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            'translated: Search operator "has" cannot be used with "invalid"',
+            'translated HTML: See <a href="/help/search-for-messages">searching for messages help page</a> for details.',
+        ),
+    );
+
+    set_filter([["streams", "foobar"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html('translated: Invalid operator "streams", did you mean to use "stream"?'),
     );
 
     const my_stream = {
