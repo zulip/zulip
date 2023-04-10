@@ -83,7 +83,6 @@ module = [
     "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
     "social_core.*",
     "social_django.*",
-    "sourcemap.*",
     "talon_core.*",
     "tlds.*",
     "twitter.*",

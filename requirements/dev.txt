@@ -2111,10 +2111,6 @@ soupsieve==2.4 \
     # via
     #   -r requirements/common.in
     #   beautifulsoup4
-sourcemap==0.2.1 \
-    --hash=sha256:be00a90185e7a16b87bbe62a68ffd5e38bc438ef4700806d9b90e44d8027787c \
-    --hash=sha256:c448a8c48f9482e522e4582106b0c641a83b5dbc7f13927b178848e3ea20967b
-    # via -r requirements/common.in
 sphinx==6.1.3 \
     --hash=sha256:0dac3b698538ffef41716cf97ba26c1c7788dba73ce6f150c1ff5b4720786dd2 \
     --hash=sha256:807d1cb3d6be87eb78a381c3e70ebd8d346b9a25f3753e9947e866b2786865fc

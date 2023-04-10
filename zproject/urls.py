@@ -132,7 +132,6 @@ from zerver.views.registration import (
 )
 from zerver.views.report import (
     report_csp_violations,
-    report_error,
     report_narrow_times,
     report_send_times,
     report_unnarrow_times,
@@ -491,11 +490,6 @@ v1_api_and_json_patterns = [
     # These endpoints are for internal error/performance reporting
     # from the browser to the web app, and we don't expect to ever
     # include in our API documentation.
-    rest_path(
-        "report/error",
-        # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
-        POST=(report_error, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
     rest_path("report/send_times", POST=(report_send_times, {"intentionally_undocumented"})),
     rest_path(
         "report/narrow_times",

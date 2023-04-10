@@ -1,47 +1,25 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import logging
-from typing import Any, Mapping, Optional, Union
-from urllib.parse import SplitResult
+from typing import Union
 
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from version import ZULIP_VERSION
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import human_users_only
-from zerver.lib.markdown import privacy_clean_markdown
-from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.storage import static_path
-from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import (
     WildValue,
     check_bool,
-    check_dict,
     check_string,
     to_non_negative_int,
     to_wild_value,
 )
 from zerver.models import UserProfile
-
-js_source_map: Optional[SourceMap] = None
-
-
-# Read the source map information for decoding JavaScript backtraces.
-def get_js_source_map() -> Optional[SourceMap]:
-    global js_source_map
-    if not js_source_map and not (settings.DEVELOPMENT or settings.TEST_SUITE):
-        js_source_map = SourceMap(
-            [
-                static_path("webpack-bundles"),
-            ]
-        )
-    return js_source_map
 
 
 @human_users_only
@@ -114,72 +92,6 @@ def report_unnarrow_times(
     base_key = statsd_key(realm.string_id, clean_periods=True)
     statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
     statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
-    return json_success(request)
-
-
-@has_request_variables
-def report_error(
-    request: HttpRequest,
-    maybe_user_profile: Union[AnonymousUser, UserProfile],
-    message: str = REQ(),
-    stacktrace: str = REQ(),
-    user_agent: str = REQ(),
-    href: str = REQ(),
-    log: str = REQ(),
-    web_version: Optional[str] = REQ(default=None),
-    more_info: Mapping[str, Any] = REQ(json_validator=check_dict([]), default={}),
-) -> HttpResponse:
-    """Accepts an error report and stores in a queue for processing.  The
-    actual error reports are later handled by do_report_error"""
-    if not settings.BROWSER_ERROR_REPORTING:
-        return json_success(request)
-    more_info = dict(more_info)
-
-    js_source_map = get_js_source_map()
-    if js_source_map:
-        stacktrace = js_source_map.annotate_stacktrace(stacktrace)
-
-    server_version = str(ZULIP_VERSION)
-
-    # Get the IP address of the request
-    remote_ip = request.META["REMOTE_ADDR"]
-
-    # For the privacy of our users, we remove any actual text content
-    # in draft_content (from drafts rendering exceptions).  See the
-    # comment on privacy_clean_markdown for more details.
-    if more_info.get("draft_content"):
-        more_info["draft_content"] = privacy_clean_markdown(more_info["draft_content"])
-
-    if maybe_user_profile.is_authenticated:
-        user = {
-            "user_email": maybe_user_profile.delivery_email,
-            "user_full_name": maybe_user_profile.full_name,
-            "user_role": maybe_user_profile.get_role_name(),
-        }
-    else:
-        user = None
-
-    queue_json_publish(
-        "error_reports",
-        dict(
-            type="browser",
-            report=dict(
-                host=SplitResult("", request.get_host(), "", "", "").hostname,
-                ip_address=remote_ip,
-                user=user,
-                server_path=settings.DEPLOY_ROOT,
-                server_version=server_version,
-                web_version=web_version,
-                user_agent=user_agent,
-                href=href,
-                message=message,
-                stacktrace=stacktrace,
-                log=log,
-                more_info=more_info,
-            ),
-        ),
-    )
-
     return json_success(request)
 
 
