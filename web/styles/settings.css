@@ -1411,7 +1411,11 @@ $option_title_width: 180px;
 
 #profile-settings,
 #edit-user-form {
+    
+  
+
     .custom_user_field {
+
         padding-bottom: 20px;
 
         .field_hint {
@@ -1440,6 +1444,11 @@ $option_title_width: 180px;
                 opacity: 1;
             }
         }
+
+        .pronouns_type_field{
+            margin-bottom: 10%;
+        }
+    
 
         .datepicker {
             cursor: default;
@@ -1665,6 +1674,8 @@ $option_title_width: 180px;
         }
     }
 }
+
+
 
 #get_api_key_button {
     display: block;
