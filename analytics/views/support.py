@@ -121,7 +121,7 @@ def get_confirmations(
     return confirmation_dicts
 
 
-VALID_DOWNGRADE_METHODS = [
+VALID_MODIFY_PLAN_METHODS = [
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
@@ -160,8 +160,8 @@ def support(
     ),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
-    downgrade_method: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_DOWNGRADE_METHODS)
+    modify_plan: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
     scrub_realm: bool = REQ(default=False, json_validator=check_bool),
     query: Optional[str] = REQ("q", default=None),
@@ -251,18 +251,18 @@ def support(
         elif approve_sponsorship:
             do_approve_sponsorship(realm, acting_user=acting_user)
             context["success_message"] = f"Sponsorship approved for {realm.string_id}"
-        elif downgrade_method is not None:
-            if downgrade_method == "downgrade_at_billing_cycle_end":
+        elif modify_plan is not None:
+            if modify_plan == "downgrade_at_billing_cycle_end":
                 downgrade_at_the_end_of_billing_cycle(realm)
                 context[
                     "success_message"
                 ] = f"{realm.string_id} marked for downgrade at the end of billing cycle"
-            elif downgrade_method == "downgrade_now_without_additional_licenses":
+            elif modify_plan == "downgrade_now_without_additional_licenses":
                 downgrade_now_without_creating_additional_invoices(realm)
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded without creating additional invoices"
-            elif downgrade_method == "downgrade_now_void_open_invoices":
+            elif modify_plan == "downgrade_now_void_open_invoices":
                 downgrade_now_without_creating_additional_invoices(realm)
                 voided_invoices_count = void_all_open_invoices(realm)
                 context[
