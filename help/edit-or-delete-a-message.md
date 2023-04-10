@@ -17,15 +17,31 @@ content.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!message-actions.md!}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon.
 
-1. Edit the message, and click **Save**.
+1. Edit the content of the message.
+
+1. Click **Save**.
 
 !!! warn ""
     **Note:** If you don't see the **pencil** (<i class="fa fa-pencil"></i>) icon,
     you are not permitted to edit this message.
+
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **Edit message**.
+
+1. Edit the content of the message.
+
+1. Approve by tapping the **checkmark**
+   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
+   button in the bottom right corner of the app.
 
 {end_tabs}
 
