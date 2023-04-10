@@ -95,14 +95,19 @@ def unsign_string(signed_string: str, salt: str) -> str:
     return signer.unsign(signed_string)
 
 
-def validate_licenses(charge_automatically: bool, licenses: Optional[int], seat_count: int) -> None:
+def validate_licenses(
+    charge_automatically: bool,
+    licenses: Optional[int],
+    seat_count: int,
+    exempt_from_license_number_check: bool,
+) -> None:
     min_licenses = seat_count
     max_licenses = None
     if not charge_automatically:
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
         max_licenses = MAX_INVOICED_LICENSES
 
-    if licenses is None or licenses < min_licenses:
+    if licenses is None or (not exempt_from_license_number_check and licenses < min_licenses):
         raise BillingError(
             "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
         )

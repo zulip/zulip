@@ -237,7 +237,12 @@ def update_plan(
                     licenses=licenses
                 )
             )
-        validate_licenses(plan.charge_automatically, licenses, get_latest_seat_count(user.realm))
+        validate_licenses(
+            plan.charge_automatically,
+            licenses,
+            get_latest_seat_count(user.realm),
+            plan.customer.exempt_from_license_number_check,
+        )
         update_license_ledger_for_manual_plan(plan, timezone_now(), licenses=licenses)
         return json_success(request)
 
@@ -258,6 +263,7 @@ def update_plan(
             plan.charge_automatically,
             licenses_at_next_renewal,
             get_latest_seat_count(user.realm),
+            plan.customer.exempt_from_license_number_check,
         )
         update_license_ledger_for_manual_plan(
             plan, timezone_now(), licenses_at_next_renewal=licenses_at_next_renewal
