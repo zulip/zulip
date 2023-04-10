@@ -217,6 +217,7 @@ export function setup_page(callback) {
                     );
                 },
             },
+            init_sort: ["alphabetic", "name"],
             $simplebar_container: $container,
         });
 

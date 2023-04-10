@@ -51,7 +51,7 @@ function format_member_list_elem(person) {
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
         email: person.delivery_email,
-        can_edit_subscribers: user_group_edit.can_edit(current_group_id),
+        can_remove_subscribers: user_group_edit.can_edit(current_group_id),
     });
 }
 
