@@ -77,6 +77,12 @@ least confusing option for other users.
     **Note:** If you don't see the **pencil** (<i class="fa fa-pencil"></i>) icon,
     you are not permitted to edit this message.
 
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **Delete message** to delete the content of the message.
+
 {end_tabs}
 
 ### Delete a message completely
