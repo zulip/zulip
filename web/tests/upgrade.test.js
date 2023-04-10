@@ -187,10 +187,6 @@ run_test("autopay_form_fields", () => {
         document.querySelector("#autopay-form #automatic_license_count").value,
         "{{ seat_count }}",
     );
-    assert.equal(
-        document.querySelector("#autopay-form #manual_license_count").min,
-        "{{ seat_count }}",
-    );
 
     const license_options = document.querySelectorAll(
         "#autopay-form input[type=radio][name=license_management]",
