@@ -627,7 +627,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 "/activity/support",
                 {
                     "realm_id": f"{iago.realm_id}",
-                    "downgrade_method": "downgrade_at_billing_cycle_end",
+                    "modify_plan": "downgrade_at_billing_cycle_end",
                 },
             )
             m.assert_called_once_with(get_realm("zulip"))
@@ -642,7 +642,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 "/activity/support",
                 {
                     "realm_id": f"{iago.realm_id}",
-                    "downgrade_method": "downgrade_now_without_additional_licenses",
+                    "modify_plan": "downgrade_now_without_additional_licenses",
                 },
             )
             m.assert_called_once_with(get_realm("zulip"))
@@ -658,7 +658,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     "/activity/support",
                     {
                         "realm_id": f"{iago.realm_id}",
-                        "downgrade_method": "downgrade_now_void_open_invoices",
+                        "modify_plan": "downgrade_now_void_open_invoices",
                     },
                 )
                 m1.assert_called_once_with(get_realm("zulip"))
