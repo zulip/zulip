@@ -847,4 +847,8 @@ export const system_user_groups_list = [
         name: "@role:owners",
         display_name: $t({defaultMessage: "Owners"}),
     },
+    {
+        name: "@role:nobody",
+        display_name: $t({defaultMessage: "Nobody"}),
+    },
 ];

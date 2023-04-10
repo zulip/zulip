@@ -244,10 +244,18 @@ run_test("is_user_in_group", () => {
 });
 
 run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
+    const nobody = {
+        name: "@role:nobody",
+        description: "foo",
+        id: 1,
+        members: new Set([]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
     const owners = {
         name: "@role:owners",
         description: "foo",
-        id: 1,
+        id: 2,
         members: new Set([1]),
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
@@ -255,7 +263,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const admins = {
         name: "@role:administrators",
         description: "foo",
-        id: 2,
+        id: 3,
         members: new Set([2]),
         is_system_group: true,
         direct_subgroup_ids: new Set([1]),
@@ -263,7 +271,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const moderators = {
         name: "@role:moderators",
         description: "foo",
-        id: 3,
+        id: 4,
         members: new Set([3]),
         is_system_group: true,
         direct_subgroup_ids: new Set([2]),
@@ -271,7 +279,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const members = {
         name: "@role:members",
         description: "foo",
-        id: 4,
+        id: 5,
         members: new Set([4]),
         is_system_group: true,
         direct_subgroup_ids: new Set([6]),
@@ -279,7 +287,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const everyone = {
         name: "@role:everyone",
         description: "foo",
-        id: 5,
+        id: 6,
         members: new Set([]),
         is_system_group: true,
         direct_subgroup_ids: new Set([4]),
@@ -287,14 +295,14 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const full_members = {
         name: "@role:fullmembers",
         description: "foo",
-        id: 6,
+        id: 7,
         members: new Set([5]),
         is_system_group: true,
         direct_subgroup_ids: new Set([3]),
     };
     const internet = {
         name: "@role:internet",
-        id: 7,
+        id: 8,
         members: new Set([]),
         is_system_group: true,
         direct_subgroup_ids: new Set([5]),
@@ -302,22 +310,23 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const students = {
         description: "Students group",
         name: "Students",
-        id: 8,
+        id: 9,
         members: new Set([1, 2]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
     };
 
     const expected_groups_list = [
-        {name: "translated: Admins, moderators, members and guests", value: "5"},
-        {name: "translated: Admins, moderators and members", value: "4"},
-        {name: "translated: Admins, moderators and full members", value: "6"},
-        {name: "translated: Admins and moderators", value: "3"},
-        {name: "translated: Admins", value: "2"},
+        {name: "translated: Admins, moderators, members and guests", value: "6"},
+        {name: "translated: Admins, moderators and members", value: "5"},
+        {name: "translated: Admins, moderators and full members", value: "7"},
+        {name: "translated: Admins and moderators", value: "4"},
+        {name: "translated: Admins", value: "3"},
     ];
 
     user_groups.initialize({
         realm_user_groups: [
+            nobody,
             owners,
             admins,
             moderators,
