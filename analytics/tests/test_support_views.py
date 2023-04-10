@@ -667,6 +667,17 @@ class TestSupportEndpoint(ZulipTestCase):
                     ["zulip downgraded and voided 1 open invoices"], result
                 )
 
+        with mock.patch("analytics.views.support.switch_realm_from_standard_to_plus_plan") as m:
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{iago.realm_id}",
+                    "modify_plan": "upgrade_to_plus",
+                },
+            )
+            m.assert_called_once_with(get_realm("zulip"))
+            self.assert_in_success_response(["zulip upgraded to Plus"], result)
+
     def test_scrub_realm(self) -> None:
         cordelia = self.example_user("cordelia")
         lear_realm = get_realm("lear")
