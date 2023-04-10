@@ -2,7 +2,7 @@
     <div class="tab-container"></div>
     <div class="button-group">
         {{#if can_edit}}
-        <button class="button small rounded btn-danger deactivate" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        <button class="button small rounded btn-danger deactivate tippy-zulip-tooltip" data-tippy-content="{{t 'Delete group'}}" type="button" name="delete_button"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
         {{/if}}
     </div>
 </div>
