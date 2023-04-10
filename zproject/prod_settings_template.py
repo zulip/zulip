@@ -546,10 +546,11 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 JWT_AUTH_KEYS: Dict[str, Any] = {
     # Subdomain for which this JWT configuration will apply.
     "nextner": {
-        "key": get_secret("jwt_auth_key"),
+        "key": "nextner0123456789",
     },
     "": {
-        "key": get_secret("jwt_auth_key"),
+        # "key": get_secret("jwt_auth_key"),
+        "key": "nextner0123456789",
     },
     "zulip": {
         # Shared secret key used to validate jwt tokens, which should be stored
@@ -557,7 +558,8 @@ JWT_AUTH_KEYS: Dict[str, Any] = {
         # The key needs to be securely, randomly generated. Note that if you're
         # using the default HS256 algorithm, per RFC 7518, the key needs
         # to have at least 256 bits of entropy.
-        "key": get_secret("jwt_auth_key"),
+        # "key": get_secret("jwt_auth_key"),
+        "key": "nextner0123456789",
         # Algorithm with which the JWT token are signed.
         "algorithms": ["HS256"],
     }
