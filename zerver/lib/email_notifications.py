@@ -762,33 +762,37 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         .count()
     )
     unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
-    context = common_context(user)
-    context.update(
-        unsubscribe_link=unsubscribe_link,
-        keyboard_shortcuts_link=user.realm.uri + "/help/keyboard-shortcuts",
-        realm_name=user.realm.name,
+    realm_url = user.realm.uri
+
+    followup_day1_context = common_context(user)
+    followup_day1_context.update(
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
         is_demo_org=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
 
-    context["getting_organization_started_link"] = (
-        user.realm.uri + "/help/getting-your-organization-started-with-zulip"
+    followup_day1_context["getting_organization_started_link"] = (
+        realm_url + "/help/getting-your-organization-started-with-zulip"
     )
-    context["getting_user_started_link"] = user.realm.uri + "/help/getting-started-with-zulip"
+
+    followup_day1_context["getting_user_started_link"] = (
+        realm_url + "/help/getting-started-with-zulip"
+    )
 
     # Imported here to avoid import cycles.
     from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap
 
     if email_belongs_to_ldap(user.realm, user.delivery_email):
-        context["ldap"] = True
+        followup_day1_context["ldap"] = True
         for backend in get_backends():
             # If the user is doing authentication via LDAP, Note that
             # we exclude ZulipLDAPUserPopulator here, since that
             # isn't used for authentication.
             if isinstance(backend, ZulipLDAPAuthBackend):
-                context["ldap_username"] = backend.django_to_ldap_username(user.delivery_email)
+                followup_day1_context["ldap_username"] = backend.django_to_ldap_username(
+                    user.delivery_email
+                )
                 break
 
     send_future_email(
@@ -797,7 +801,7 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         to_user_ids=[user.id],
         from_name=from_name,
         from_address=from_address,
-        context=context,
+        context=followup_day1_context,
     )
 
     # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
@@ -805,13 +809,19 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
     onboarding_email_schedule = get_onboarding_email_schedule(user)
 
     if other_account_count == 0:
+        followup_day2_context = common_context(user)
+
+        followup_day2_context.update(
+            unsubscribe_link=unsubscribe_link,
+        )
+
         send_future_email(
             "zerver/emails/followup_day2",
             user.realm,
             to_user_ids=[user.id],
             from_name=from_name,
             from_address=from_address,
-            context=context,
+            context=followup_day2_context,
             delay=onboarding_email_schedule["followup_day2"],
         )
 
