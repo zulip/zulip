@@ -54,6 +54,7 @@ if settings.BILLING_ENABLED:
         get_discount_for_realm,
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
+        switch_realm_from_standard_to_plus_plan,
         update_billing_method_of_current_plan,
         update_sponsorship_status,
         void_all_open_invoices,
@@ -125,6 +126,7 @@ VALID_MODIFY_PLAN_METHODS = [
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
+    "upgrade_to_plus",
 ]
 
 VALID_STATUS_VALUES = [
@@ -268,6 +270,9 @@ def support(
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"
+            elif modify_plan == "upgrade_to_plus":
+                switch_realm_from_standard_to_plus_plan(realm)
+                context["success_message"] = f"{realm.string_id} upgraded to Plus"
         elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)
             context["success_message"] = f"{realm.string_id} scrubbed."
