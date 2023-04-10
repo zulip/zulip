@@ -1,5 +1,6 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
+import * as group_permission_settings from "./group_permission_settings";
 import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
@@ -203,17 +204,29 @@ export function is_user_in_group(user_group_id: number, user_id: number): boolea
 }
 
 export function get_realm_user_groups_for_dropdown_list_widget(
-    require_system_group: boolean,
-    exclude_internet_group: boolean,
-    exclude_owners_group: boolean,
+    setting_name: string,
 ): UserGroupForDropdownListWidget[] {
+    const group_setting_config =
+        group_permission_settings.get_group_permission_setting_config(setting_name);
+
+    if (group_setting_config === undefined) {
+        return [];
+    }
+
+    const {require_system_group, allow_internet_group, allow_owners_group, allow_nobody_group} =
+        group_setting_config;
+
     const system_user_groups = settings_config.system_user_groups_list
         .filter((group) => {
-            if (exclude_internet_group && group.name === "@role:internet") {
+            if (!allow_internet_group && group.name === "@role:internet") {
                 return false;
             }
 
-            if (exclude_owners_group && group.name === "@role:owners") {
+            if (!allow_owners_group && group.name === "@role:owners") {
+                return false;
+            }
+
+            if (!allow_nobody_group && group.name === "@role:nobody") {
                 return false;
             }
 
