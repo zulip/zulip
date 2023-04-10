@@ -118,7 +118,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         return record
 
     def run_handler(self, record: logging.LogRecord) -> Dict[str, object]:
-        with patch("zerver.lib.error_notify.notify_server_error") as patched_notify:
+        with patch("zerver.worker.queue_processors.do_report_error") as patched_notify:
             self.handler.emit(record)
             patched_notify.assert_called_once()
             return patched_notify.call_args[0][0]
@@ -210,7 +210,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         # Test the catch-all exception handler doesn't throw
         with patch(
-            "zerver.lib.error_notify.notify_server_error", side_effect=Exception("queue error")
+            "zerver.worker.queue_processors.do_report_error", side_effect=Exception("queue error")
         ):
             self.handler.emit(record)
         with mock_queue_publish(

@@ -830,11 +830,16 @@ class ErrorReporter(QueueProcessingWorker):
         error_types = ["browser", "server"]
         assert event["type"] in error_types
 
-        logging.info(
-            "Processing traceback with type %s for %s", event["type"], event.get("user_email")
-        )
-        if settings.ERROR_REPORTING:
-            do_report_error(event["type"], event["report"])
+        # Drop any old remaining browser-side errors; these now use
+        # Sentry.
+        if event["type"] == "browser":
+            return
+
+        if not settings.ERROR_REPORTING:
+            return
+
+        logging.info("Processing traceback for %s", event.get("user_email"))
+        do_report_error(event["report"])
 
 
 @assign_queue("digest_emails")
