@@ -30,7 +30,6 @@ import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow_state from "./narrow_state";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
@@ -43,6 +42,7 @@ import * as stream_popover from "./stream_popover";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
 
@@ -307,13 +307,39 @@ export function initialize() {
                 return;
             }
 
-            $popper.one("click", ".sidebar-popover-mute-topic", () => {
-                muted_topics_ui.mute_topic(stream_id, topic_name);
+            $popper.one("click", ".sidebar-popover-unmute-topic", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.UNMUTED,
+                );
                 instance.hide();
             });
 
-            $popper.one("click", ".sidebar-popover-unmute-topic", () => {
-                muted_topics_ui.unmute_topic(stream_id, topic_name);
+            $popper.one("click", ".sidebar-popover-remove-unmute", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.INHERIT,
+                );
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-mute-topic", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.MUTED,
+                );
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-remove-mute", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.INHERIT,
+                );
                 instance.hide();
             });
 
