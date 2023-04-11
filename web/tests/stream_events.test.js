@@ -410,7 +410,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
-    override(unread_ui, "hide_mark_as_read_turned_off_banner", noop);
+    override(unread_ui, "hide_unread_banner", noop);
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 

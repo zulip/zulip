@@ -110,7 +110,7 @@ mock_esm("../src/user_topics", {
 });
 const narrow = mock_esm("../src/narrow", {
     update_narrow_title: noop,
-    hide_mark_as_read_turned_off_banner: noop,
+    hide_unread_banner: noop,
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
 });

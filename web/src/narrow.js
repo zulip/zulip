@@ -178,7 +178,7 @@ export function reset_ui_state() {
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
-    unread_ui.reset_mark_as_read_turned_off_banner();
+    unread_ui.reset_unread_banner();
 }
 
 export function handle_middle_pane_transition() {

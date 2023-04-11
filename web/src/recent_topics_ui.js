@@ -884,7 +884,7 @@ export function show() {
     set_visible(true);
     $(".header").css("padding-bottom", "0px");
 
-    unread_ui.hide_mark_as_read_turned_off_banner();
+    unread_ui.hide_unread_banner();
 
     // We want to show `new stream message` instead of
     // `new topic`, which we are already doing in this
