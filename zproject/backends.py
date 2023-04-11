@@ -399,6 +399,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
         use_dummy_backend: bool = False,
         return_data: Optional[Dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
+        print('ZulipDummyBackend', 11111111111111111111111111111111111111111111111111111111, realm)
         if use_dummy_backend:
             return common_get_active_user(username, realm, return_data)
         return None
@@ -421,7 +422,6 @@ def check_password_strength(password: str) -> bool:
         return False
 
     return True
-
 
 class EmailAuthBackend(ZulipAuthMixin):
     """
@@ -2740,6 +2740,47 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         assert isinstance(result, bool)
         return result
 
+
+@external_auth_method
+class ZulipRemoteJWTBackend(ExternalAuthMethod):
+    """
+    See also api_jwt_fetch_api_key in zerver/views/auth.py.
+    """
+    auth_backend_name = "RemoteJWT"
+    name = "remotejwt"
+    create_unknown_user = True
+
+    def authenticate(self, request: Optional[HttpRequest]=None, *,
+                     username: str, jwt_payload: Dict[str, Any], realm: Realm,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+
+        # if not auth_enabled_helper(["RemoteJWT"], realm):
+        #     return None
+
+        # We want to get the user by email, not delivery_email
+        print('ZulipRemoteJWTBackend', 222222222222222222222222222222222222222222222222, realm)
+        user_profile = common_get_active_user(username, realm)
+        if user_profile is not None:
+            return user_profile
+
+        user_profile = do_create_user(username, None, realm, '', '')
+
+        # TODO: Update user e-mail from JWT token?
+        # if jwt_payload.get('email', None):
+        #     user_profile.delivery_email = jwt_payload['email']
+        #     user_profile.save(update_fields=["delivery_email"])
+
+        return user_profile
+
+    @classmethod
+    def dict_representation(cls, realm: Optional[Realm]=None) -> List[ExternalAuthMethodDictT]:
+        return [dict(
+            name=cls.name,
+            display_name="JWT",
+            display_icon=cls.display_icon,
+            login_url=reverse("login-social", args=(cls.name,)),
+            signup_url=reverse("signup-social", args=(cls.name,)),
+        )]
 
 def validate_otp_params(
     mobile_flow_otp: Optional[str] = None, desktop_flow_otp: Optional[str] = None

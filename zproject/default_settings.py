@@ -457,8 +457,8 @@ TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 STATSD_HOST = ""
 
 # Configuration for JWT auth (sign in and API key fetch)
-JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {"nextner": {"key": "nextner_super_secret_key", "algorithms": ["HS256"]},
-                                        "": {"key": "nextner_super_secret_key", "algorithms": ["HS256"]}}
+JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {"nextner": {"key": "nextner1234567890", "algorithms": ["HS256"]},
+                                        "": {"key": "nextner123456789", "algorithms": ["HS256"]}}
 
 # https://docs.djangoproject.com/en/3.2/ref/settings/#std:setting-SERVER_EMAIL
 # Django setting for what from address to use in error emails.

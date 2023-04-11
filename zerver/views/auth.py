@@ -981,9 +981,9 @@ def api_fetch_api_key(
     request: HttpRequest, username: str = REQ(), password: str = REQ()
 ) -> HttpResponse:
     return_data: Dict[str, bool] = {}
-
-    realm = get_realm_from_request(request)
-    return json_success(request, data={"realm": realm, "username": username, 'password': password})
+    email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+    # realm = get_realm_from_request(request)
+    # return json_success(request, data={"realm": realm, "username": username, 'password': password})
 
     if realm is None:
         raise InvalidSubdomainError
@@ -1013,7 +1013,7 @@ def api_fetch_token(
     return_data: Dict[str, bool] = {}
 
     realm = get_realm_from_request(request)
-    return json_success(request, data={"realm": realm, "username": username, 'password': password})
+    # return json_success(request, data={"realm": realm, "username": username, 'password': password})
 
     if realm is None:
         raise InvalidSubdomainError
