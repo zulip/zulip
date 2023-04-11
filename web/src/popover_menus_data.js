@@ -128,13 +128,17 @@ export function get_actions_popover_content_context(message_id) {
 export function get_topic_popover_content_context({stream_id, topic_name, url}) {
     const sub = sub_store.get(stream_id);
     const topic_muted = user_topics.is_topic_muted(sub.stream_id, topic_name);
+    const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
+        stream_muted: sub.is_muted,
         topic_name,
         topic_muted,
+        topic_unmuted,
+        development_environment: page_params.development_environment,
         can_move_topic,
         is_realm_admin: page_params.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
