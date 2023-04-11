@@ -47,7 +47,11 @@ const muted = {
 stream_data.add_sub(general);
 stream_data.add_sub(muted);
 
-user_topics.add_muted_topic(general.stream_id, "muted topic");
+user_topics.update_user_topics(
+    general.stream_id,
+    "muted topic",
+    user_topics.all_visibility_policies.MUTED,
+);
 
 function test(label, f) {
     run_test(label, (helpers) => {

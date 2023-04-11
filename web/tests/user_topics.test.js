@@ -56,29 +56,60 @@ test("edge_cases", () => {
 
 test("add_and_remove_mutes", () => {
     assert.ok(!user_topics.is_topic_muted(devel.stream_id, "java"));
-    user_topics.add_muted_topic(devel.stream_id, "java");
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.MUTED);
     assert.ok(user_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.add_muted_topic(devel.stream_id, "java");
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.MUTED);
     assert.ok(user_topics.is_topic_muted(devel.stream_id, "java"));
 
-    user_topics.remove_muted_topic(devel.stream_id, "java");
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
     assert.ok(!user_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test idempotency
-    user_topics.remove_muted_topic(devel.stream_id, "java");
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
     assert.ok(!user_topics.is_topic_muted(devel.stream_id, "java"));
 
     // test unknown stream is harmless too
-    user_topics.remove_muted_topic(unknown.stream_id, "java");
+    user_topics.update_user_topics(unknown.stream_id, "java", all_visibility_policies.INHERIT);
     assert.ok(!user_topics.is_topic_muted(unknown.stream_id, "java"));
+});
+
+test("add_and_remove_unmutes", () => {
+    assert.ok(!user_topics.is_topic_unmuted(devel.stream_id, "java"));
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.UNMUTED);
+    assert.ok(user_topics.is_topic_unmuted(devel.stream_id, "java"));
+
+    // test idempotency
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.UNMUTED);
+    assert.ok(user_topics.is_topic_unmuted(devel.stream_id, "java"));
+
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    assert.ok(!user_topics.is_topic_unmuted(devel.stream_id, "java"));
+
+    // test idempotency
+    user_topics.update_user_topics(devel.stream_id, "java", all_visibility_policies.INHERIT);
+    assert.ok(!user_topics.is_topic_unmuted(devel.stream_id, "java"));
+
+    // test unknown stream is harmless too
+    user_topics.update_user_topics(unknown.stream_id, "java", all_visibility_policies.INHERIT);
+    assert.ok(!user_topics.is_topic_unmuted(unknown.stream_id, "java"));
 });
 
 test("get_mutes", () => {
     assert.deepEqual(user_topics.get_muted_topics(), []);
-    user_topics.add_muted_topic(office.stream_id, "gossip", 1577836800);
-    user_topics.add_muted_topic(devel.stream_id, "java", 1577836700);
+    user_topics.update_user_topics(
+        office.stream_id,
+        "gossip",
+        all_visibility_policies.MUTED,
+        1577836800,
+    );
+    user_topics.update_user_topics(
+        devel.stream_id,
+        "java",
+        all_visibility_policies.MUTED,
+        1577836700,
+    );
     const all_muted_topics = user_topics
         .get_muted_topics()
         .sort((a, b) => a.date_muted - b.date_muted);

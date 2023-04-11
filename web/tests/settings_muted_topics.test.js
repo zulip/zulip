@@ -21,7 +21,12 @@ const frontend = {
 stream_data.add_sub(frontend);
 
 run_test("settings", ({override}) => {
-    user_topics.add_muted_topic(frontend.stream_id, "js", 1577836800);
+    user_topics.update_user_topics(
+        frontend.stream_id,
+        "js",
+        user_topics.all_visibility_policies.MUTED,
+        1577836800,
+    );
     let populate_list_called = false;
     override(list_widget, "create", ($container, list) => {
         assert.deepEqual(list, [
