@@ -53,8 +53,8 @@ dependencies:
     specifier: ^2.0.0
     version: 2.1.0
   autosize:
-    specifier: ^6.0.1
-    version: 6.0.1
+    specifier: ^5.0.2
+    version: 5.0.2
   babel-loader:
     specifier: ^9.1.0
     version: 9.1.2(@babel/core@7.21.4)(webpack@5.77.0)
@@ -3683,8 +3683,8 @@ packages:
       postcss-value-parser: 4.2.0
     dev: false
 
-  /autosize@6.0.1:
-    resolution: {integrity: sha512-f86EjiUKE6Xvczc4ioP1JBlWG7FKrE13qe/DxBCpe8GCipCq2nFw73aO8QEBKHfSbYGDN5eB9jXWKen7tspDqQ==}
+  /autosize@5.0.2:
+    resolution: {integrity: sha512-FPVt5ynkqUAA9gcMZnJHka1XfQgr1WNd/yRfIjmj5WGmjua+u5Hl9hn8M2nU5CNy2bEIcj1ZUwXq7IOHsfZG9w==}
     dev: false
 
   /available-typed-arrays@1.0.5:
