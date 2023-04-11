@@ -43,7 +43,7 @@ export function close() {
 
 export function _build_private_messages_list() {
     const conversations = pm_list_data.get_conversations();
-    const pm_list_info = pm_list_data.get_list_info(zoomed);
+    const pm_list_info = pm_list_data.get_list_info(zoomed, get_pm_search_term());
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
     const more_conversations_unread_count = pm_list_info.more_conversations_unread_count;
 

@@ -195,7 +195,7 @@ test("get_list_info_unread_messages", ({override}) => {
     assert.equal(narrow_state.filter(), undefined);
 
     // Initialize an empty list to start.
-    list_info = pm_list_data.get_list_info(false);
+    list_info = pm_list_data.get_list_info(false, pm_list.get_pm_search_term());
     check_list_info(list_info, 0, 0, []);
 
     // Mock to arrange that each user has exactly 1 unread.
@@ -206,7 +206,7 @@ test("get_list_info_unread_messages", ({override}) => {
     pm_conversations.recent.insert([alice.user_id], 1);
     pm_conversations.recent.insert([me.user_id], 2);
 
-    list_info = pm_list_data.get_list_info(false);
+    list_info = pm_list_data.get_list_info(false, pm_list.get_pm_search_term());
     check_list_info(list_info, 2, 0, ["Me Myself", "Alice"]);
 
     // Visible conversations are limited to value of
@@ -229,7 +229,7 @@ test("get_list_info_unread_messages", ({override}) => {
     pm_conversations.recent.insert([cardelio.user_id], 16);
     pm_conversations.recent.insert([iago.user_id], 17);
 
-    list_info = pm_list_data.get_list_info(false);
+    list_info = pm_list_data.get_list_info(false, pm_list.get_pm_search_term());
     check_list_info(list_info, 15, 2, [
         "Iago",
         "Cardelio",
@@ -252,7 +252,7 @@ test("get_list_info_unread_messages", ({override}) => {
     // one-on-one conversation with her to the list and one
     // unread is removed from more_conversations_unread_count.
     set_pm_with_filter("alice@zulip.com");
-    list_info = pm_list_data.get_list_info(false);
+    list_info = pm_list_data.get_list_info(false, pm_list.get_pm_search_term());
     check_list_info(list_info, 16, 1, [
         "Iago",
         "Cardelio",
@@ -276,7 +276,7 @@ test("get_list_info_unread_messages", ({override}) => {
     override(pm_list, "get_pm_search_term", () => "");
     // Zooming will show all conversations and there will
     // be no unreads in more_conversations_unread_count.
-    list_info = pm_list_data.get_list_info(true);
+    list_info = pm_list_data.get_list_info(true, pm_list.get_pm_search_term());
     check_list_info(list_info, 17, 0, [
         "Iago",
         "Cardelio",
@@ -315,7 +315,7 @@ test("get_list_info_no_unread_messages", ({override}) => {
 
     // Visible conversations are limited to value of
     // `max_conversations_to_show`.
-    list_info = pm_list_data.get_list_info(false);
+    list_info = pm_list_data.get_list_info(false, pm_list.get_pm_search_term());
     check_list_info(list_info, 8, 0, [
         "Bob, Cardelio",
         "Alice, Cardelio",
@@ -330,7 +330,7 @@ test("get_list_info_no_unread_messages", ({override}) => {
     // Narrowing to private messages with Alice adds older
     // one-on-one conversation with her to the list.
     set_pm_with_filter("alice@zulip.com");
-    list_info = pm_list_data.get_list_info(false);
+    list_info = pm_list_data.get_list_info(false, pm_list.get_pm_search_term());
     check_list_info(list_info, 9, 0, [
         "Bob, Cardelio",
         "Alice, Cardelio",
@@ -346,7 +346,7 @@ test("get_list_info_no_unread_messages", ({override}) => {
     // Need to set filter to empty to get the list of all
     override(pm_list, "get_pm_search_term", () => "");
     // Zooming will show all conversations.
-    list_info = pm_list_data.get_list_info(true);
+    list_info = pm_list_data.get_list_info(true, pm_list.get_pm_search_term());
     check_list_info(list_info, 10, 0, [
         "Bob, Cardelio",
         "Alice, Cardelio",
@@ -364,13 +364,13 @@ test("get_list_info_no_unread_messages", ({override}) => {
     // If DM search input is empty, we show all 7 DMs.
     const zoomed = true;
     override(pm_list, "get_pm_search_term", () => "");
-    list_info = pm_list_data.get_list_info(zoomed);
-    assert.equal(list_info.conversations_to_be_shown.length, 7);
+    list_info = pm_list_data.get_list_info(zoomed, pm_list.get_pm_search_term());
+    assert.equal(list_info.conversations_to_be_shown.length, 10);
     assert.equal(list_info.more_conversations_unread_count, 0);
 
     // when DM search is open then we list DMs based on search term.
     override(pm_list, "get_pm_search_term", () => "z,c");
-    list_info = pm_list_data.get_list_info(zoomed);
-    assert.equal(list_info.conversations_to_be_shown.length, 3);
+    list_info = pm_list_data.get_list_info(zoomed, pm_list.get_pm_search_term());
+    assert.equal(list_info.conversations_to_be_shown.length, 6);
     assert.equal(list_info.more_conversations_unread_count, 0);
 });
