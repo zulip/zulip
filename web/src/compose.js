@@ -31,6 +31,7 @@ import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
+import {get_timestamp_for_flatpickr} from "./timerender";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -702,7 +703,7 @@ export function initialize() {
             flatpickr.show_flatpickr(
                 $(compose_click_target)[0],
                 on_timestamp_selection,
-                new Date(),
+                get_timestamp_for_flatpickr(),
                 {
                     // place the time picker above the icon and center it horizontally
                     position: "above center",

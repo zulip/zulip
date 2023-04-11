@@ -355,9 +355,10 @@ export function get_timestamp_for_flatpickr(timestring: string): Date {
         // we use it to initialize the flatpickr instance.
         timestamp = parseISO(timestring);
     } finally {
-        // Otherwise, default to showing the current time.
+        // Otherwise, default to showing the current time to the hour.
         if (!timestamp || !isValid(timestamp)) {
             timestamp = new Date();
+            timestamp.setMinutes(0, 0);
         }
     }
     return timestamp;

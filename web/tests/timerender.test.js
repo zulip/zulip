@@ -369,8 +369,10 @@ run_test("get_timestamp_for_flatpickr", () => {
     // Freeze time for testing.
     MockDate.set(date_2017.getTime());
 
-    // Invalid timestamps should show current time.
-    assert.equal(func("random str").valueOf(), Date.now());
+    // Invalid timestamps should show current time on the hour.
+    const date_without_minutes = new Date();
+    date_without_minutes.setMinutes(0, 0);
+    assert.equal(func("random str").valueOf(), date_without_minutes.getTime());
 
     // Valid ISO timestamps should return the timestamp.
     assert.equal(func(date_2017.toISOString()).valueOf(), date_2017.getTime());
