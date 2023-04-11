@@ -186,7 +186,7 @@ export function initialize() {
         // Remove tooltip when user is trying to tab through all the icons.
         // If user tabs slowly, tooltips are displayed otherwise they are
         // destroyed before they can be displayed.
-        e.currentTarget._tippy.destroy();
+        e.currentTarget?._tippy?.destroy();
     });
 
     delegate("body", {
