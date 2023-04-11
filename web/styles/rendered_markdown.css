@@ -23,32 +23,15 @@
         margin-left: 0;
     }
 
+    /* Ensure ordered lists are nicely centered in 1-line messages */
     & ol {
-        margin: 2px 0 5px;
-
-        & li {
-            display: block;
-        }
-
-        /* Ensure ordered lists are nicely centered in 1-line messages for up to 2
-           digit markers, else the markers take up as much space as needed without
-           being cut off at the beginning */
-        & li::before {
-            content: counter(list-item) ". ";
-            text-align: right;
-            counter-increment: list-item;
-            display: inline-block;
-            min-width: 20px;
-            margin-right: 3px;
-        }
+        margin: 2px 0 5px 20px;
     }
 
-    /* Invert direction of text alignment and margin of markers in ordered lists
-       for proper centering in Right-To-Left languages */
-    &.rtl ol li::before {
-        text-align: left;
-        margin-left: 3px;
-        margin-right: unset;
+    /* Swap the left and right margins of ordered list for Right-To-Left languages */
+    &.rtl ol {
+        margin-right: 8px;
+        margin-left: 0;
     }
 
     /* Reduce top-margin when a paragraph is followed by an ordered or bulleted list */
