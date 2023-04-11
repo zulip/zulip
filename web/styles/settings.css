@@ -11,6 +11,10 @@ label {
     }
 }
 
+label:not([for]) {
+    cursor: text;
+}
+
 label,
 h4,
 h3,

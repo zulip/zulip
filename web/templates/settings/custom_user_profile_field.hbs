@@ -4,9 +4,9 @@
     <div class="field_hint">{{ field.hint }}</div>
     <div class="field">
         {{#if is_long_text_field}}
-        <textarea maxlength="500" class="custom_user_field_value settings_textarea">{{ field_value.value }}</textarea>
+        <textarea id="{{field.name}}" maxlength="500" class="custom_user_field_value settings_textarea">{{ field_value.value }}</textarea>
         {{else if is_select_field}}
-        <select class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style">
+        <select id="{{field.name}}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style">
             <option value=""></option>
             {{#each field_choices}}
                 <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
@@ -17,15 +17,15 @@
             <div class="input" contenteditable="true"></div>
         </div>
         {{else if is_date_field }}
-        <input class="custom_user_field_value datepicker {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" data-field-id="{{ field.id }}" type="text"
+        <input id="{{field.name}}" class="custom_user_field_value datepicker {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" data-field-id="{{ field.id }}" type="text"
           value="{{ field_value.value }}" />
         <span class="remove_date"><i class="fa fa-close"></i></span>
         {{else if is_url_field }}
-        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
+        <input id="{{field.name}}"class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
         {{else if is_pronouns_field}}
-        <input class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
+        <input id="{{field.name}}" class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{else}}
-        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
+        <input id="{{field.name}}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{/if}}
     </div>
 </div>
