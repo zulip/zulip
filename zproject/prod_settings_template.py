@@ -548,12 +548,13 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 JWT_AUTH_KEYS: Dict[str, Any] = {
     # Subdomain for which this JWT configuration will apply.
     "nextner": {
-        "key": "nextner0123456789",
+        "key": get_secret("jwt_auth_key"),
+        # "key": "nextner0123456789",
         "algorithms": ["HS256"],
     },
     "": {
-        # "key": get_secret("jwt_auth_key"),
-        "key": "nextner0123456789",
+        "key": get_secret("jwt_auth_key"),
+        # "key": "nextner0123456789",
         "algorithms": ["HS256"],
     },
     "zulip": {
