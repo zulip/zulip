@@ -10,7 +10,7 @@ import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import {get_time_from_date_muted} from "./util";
 
-const muted_topics = new Map();
+const all_user_topics = new Map();
 
 export const all_visibility_policies = {
     INHERIT: 0,
@@ -19,45 +19,56 @@ export const all_visibility_policies = {
     FOLLOWED: 3,
 };
 
-export function add_muted_topic(stream_id, topic, date_muted) {
-    let sub_dict = muted_topics.get(stream_id);
-    if (!sub_dict) {
-        sub_dict = new FoldDict();
-        muted_topics.set(stream_id, sub_dict);
-    }
-    const time = get_time_from_date_muted(date_muted);
-    sub_dict.set(topic, time);
-}
-
-export function remove_muted_topic(stream_id, topic) {
-    const sub_dict = muted_topics.get(stream_id);
-    if (sub_dict) {
+export function update_user_topics(stream_id, topic, visibility_policy, date_updated) {
+    let sub_dict = all_user_topics.get(stream_id);
+    if (visibility_policy === all_visibility_policies.INHERIT && sub_dict) {
         sub_dict.delete(topic);
+    } else {
+        if (!sub_dict) {
+            sub_dict = new FoldDict();
+            all_user_topics.set(stream_id, sub_dict);
+        }
+        const time = get_time_from_date_muted(date_updated);
+        sub_dict.set(topic, {date_updated: time, visibility_policy});
     }
 }
 
-export function is_topic_muted(stream_id, topic) {
+export function get_topic_visibility_policy(stream_id, topic) {
     if (stream_id === undefined) {
         return false;
     }
-    const sub_dict = muted_topics.get(stream_id);
-    return (sub_dict && sub_dict.get(topic)) || false;
+    const sub_dict = all_user_topics.get(stream_id);
+    if (sub_dict && sub_dict.get(topic)) {
+        return sub_dict.get(topic).visibility_policy;
+    }
+
+    return all_visibility_policies.INHERIT;
+}
+
+export function is_topic_unmuted(stream_id, topic) {
+    return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.UNMUTED;
+}
+
+export function is_topic_muted(stream_id, topic) {
+    return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.MUTED;
 }
 
 export function get_muted_topics() {
     const topics = [];
-    for (const [stream_id, sub_dict] of muted_topics) {
+    for (const [stream_id, sub_dict] of all_user_topics) {
         const stream = stream_data.maybe_get_stream_name(stream_id);
         for (const topic of sub_dict.keys()) {
-            const date_muted = sub_dict.get(topic);
-            const date_muted_str = timerender.render_now(new Date(date_muted)).time_str;
-            topics.push({
-                stream_id,
-                stream,
-                topic,
-                date_muted,
-                date_muted_str,
-            });
+            if (sub_dict.get(topic).visibility_policy === all_visibility_policies.MUTED) {
+                const date_muted = sub_dict.get(topic).date_updated;
+                const date_muted_str = timerender.render_now(new Date(date_muted)).time_str;
+                topics.push({
+                    stream_id,
+                    stream,
+                    topic,
+                    date_muted,
+                    date_muted_str,
+                });
+            }
         }
     }
     return topics;
@@ -114,7 +125,7 @@ export function set_user_topic_visibility_policy(stream_id, topic, visibility_po
 export function set_user_topic(user_topic) {
     const stream_id = user_topic.stream_id;
     const topic = user_topic.topic_name;
-    const date_muted = user_topic.last_updated;
+    const date_updated = user_topic.last_updated;
 
     const stream_name = stream_data.maybe_get_stream_name(stream_id);
 
@@ -123,18 +134,11 @@ export function set_user_topic(user_topic) {
         return;
     }
 
-    switch (user_topic.visibility_policy) {
-        case visibility_policy.MUTED:
-            add_muted_topic(stream_id, topic, date_muted);
-            break;
-        case visibility_policy.INHERIT:
-            remove_muted_topic(stream_id, topic);
-            break;
-    }
+    update_user_topics(stream_id, topic, user_topic.visibility_policy, date_updated);
 }
 
 export function set_user_topics(user_topics) {
-    muted_topics.clear();
+    all_user_topics.clear();
 
     for (const user_topic of user_topics) {
         set_user_topic(user_topic);

@@ -233,7 +233,11 @@ test("muting", () => {
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), [message.id]);
     test_notifiable_count(counts.home_unread_messages, 0);
 
-    user_topics.add_muted_topic(social.stream_id, "test_muting");
+    user_topics.update_user_topics(
+        social.stream_id,
+        "test_muting",
+        user_topics.all_visibility_policies.MUTED,
+    );
     counts = unread.get_counts();
     assert.equal(counts.stream_count.get(stream_id), 0);
     assert.equal(counts.home_unread_messages, 0);
@@ -470,7 +474,7 @@ test("mentions", () => {
 
     const muted_stream_id = 401;
 
-    user_topics.add_muted_topic(401, "lunch");
+    user_topics.update_user_topics(401, "lunch", user_topics.all_visibility_policies.MUTED);
 
     const already_read_message = {
         id: 14,
@@ -593,7 +597,7 @@ test("mention updates", () => {
 
 test("stream_has_any_unread_mentions", () => {
     const muted_stream_id = 401;
-    user_topics.add_muted_topic(401, "lunch");
+    user_topics.update_user_topics(401, "lunch", user_topics.all_visibility_policies.MUTED);
 
     const mention_me_message = {
         id: 15,
