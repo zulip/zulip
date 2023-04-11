@@ -3,7 +3,6 @@ import $ from "jquery";
 import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as ui from "./ui";
 import * as user_topics from "./user_topics";
 
@@ -42,7 +41,11 @@ export function set_up() {
 
         e.stopPropagation();
 
-        muted_topics_ui.unmute_topic(stream_id, topic);
+        user_topics.set_user_topic_visibility_policy(
+            stream_id,
+            topic,
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     populate_list();
