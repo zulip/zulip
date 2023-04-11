@@ -87,11 +87,11 @@ def add_subscriptions(client: Client) -> None:
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
-    ensure_users([26], ["newbie"])
+    ensure_users([25], ["newbie"])
     # {code_example|start}
     # To subscribe other users to a stream, you may pass
     # the `principals` argument, like so:
-    user_id = 26
+    user_id = 25
     result = client.add_subscriptions(
         streams=[
             {"name": "new stream", "description": "New stream for testing"},
@@ -633,13 +633,13 @@ def test_user_not_authorized_error(nonadmin_client: Client) -> None:
 
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
-    ensure_users([11, 26], ["iago", "newbie"])
+    ensure_users([11, 25], ["iago", "newbie"])
 
     # {code_example|start}
     # Get the subscribers to a stream
     result = client.get_subscribers(stream="new stream")
     # {code_example|end}
-    assert result["subscribers"] == [11, 26]
+    assert result["subscribers"] == [11, 25]
 
 
 def get_user_agent(client: Client) -> None:

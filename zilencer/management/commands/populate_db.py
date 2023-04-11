@@ -543,7 +543,6 @@ class Command(BaseCommand):
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             zulip_realm_bots = [
-                ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
             ]
             for i in range(options["extra_bots"]):

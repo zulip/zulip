@@ -321,9 +321,6 @@ REMINDER_BOT = "reminder-bot@zulip.com"
 # The following bots are optional system bots not enabled by
 # default.  The default ones are defined in INTERNAL_BOTS, in settings.py.
 
-# ERROR_BOT sends Django exceptions to an "errors" stream in the
-# system realm.
-ERROR_BOT: Optional[str] = None
 # These are extra bot users for our end-to-end Nagios message
 # sending tests.
 NAGIOS_STAGING_SEND_BOT = "nagios-staging-send-bot@zulip.com" if PRODUCTION else None
