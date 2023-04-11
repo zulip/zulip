@@ -20,7 +20,7 @@ from zerver.lib.email_mirror import (
     get_missed_message_token_from_address,
     is_forwarded,
     is_missed_message_address,
-    log_and_report,
+    log_error,
     process_message,
     process_missed_message,
     redact_email_address,
@@ -1688,25 +1688,20 @@ class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
         incoming_valid_message["To"] = "address@wrongdomain, address@notzulip"
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with mock.patch("zerver.lib.email_mirror.log_and_report") as mock_log_and_report:
+        with mock.patch("zerver.lib.email_mirror.log_error") as mock_log_error:
             process_message(incoming_valid_message)
-            mock_log_and_report.assert_called_with(
+            mock_log_error.assert_called_with(
                 incoming_valid_message, "Missing recipient in mirror email", None
             )
 
 
 class TestEmailMirrorLogAndReport(ZulipTestCase):
-    def test_log_and_report(self) -> None:
+    def test_log_error(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.subscribe(user_profile, "errors")
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
-
-        address = Address(addr_spec=stream_to_address)
-        scrubbed_address = Address(
-            username="X" * len(address.username), domain=address.domain
-        ).addr_spec
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("Test body")
@@ -1714,51 +1709,22 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         with self.assertLogs("zerver.lib.email_mirror", "ERROR") as error_log:
-            log_and_report(incoming_valid_message, "test error message", stream_to_address)
+            log_error(incoming_valid_message, "test error message", stream_to_address)
         self.assertEqual(
             error_log.output,
             [
                 f"ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX@testserver <Address to stream id: {stream.id}>\ntest error message"
             ],
         )
-        message = most_recent_message(user_profile)
-
-        self.assertEqual("email mirror error", message.topic_name())
-
-        msg_content = message.content.strip("~").strip()
-        expected_content = "Sender: {}\nTo: {} <Address to stream id: {}>\ntest error message"
-        expected_content = expected_content.format(
-            self.example_email("hamlet"), scrubbed_address, stream.id
-        )
-        self.assertEqual(msg_content, expected_content)
 
         with self.assertLogs("zerver.lib.email_mirror", "ERROR") as error_log:
-            log_and_report(incoming_valid_message, "test error message", None)
+            log_error(incoming_valid_message, "test error message", None)
         self.assertEqual(
             error_log.output,
             [
                 "ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: No recipient found\ntest error message"
             ],
         )
-
-        message = most_recent_message(user_profile)
-        self.assertEqual("email mirror error", message.topic_name())
-        msg_content = message.content.strip("~").strip()
-        expected_content = "Sender: {}\nTo: No recipient found\ntest error message"
-        expected_content = expected_content.format(self.example_email("hamlet"))
-        self.assertEqual(msg_content, expected_content)
-
-    def test_log_and_report_no_errorbot(self) -> None:
-        with self.settings(ERROR_BOT=None):
-            incoming_valid_message = EmailMessage()
-            incoming_valid_message.set_content("Test body")
-            incoming_valid_message["Subject"] = "Test subject"
-            incoming_valid_message["From"] = self.example_email("hamlet")
-            with self.assertLogs(logger_name, level="ERROR") as m:
-                log_and_report(incoming_valid_message, "test error message", None)
-                expected_content = "Sender: {}\nTo: No recipient found\ntest error message"
-                expected_content = expected_content.format(self.example_email("hamlet"))
-            self.assertEqual(m.output, [f"ERROR:{logger_name}:{expected_content}"])
 
     def test_redact_email_address(self) -> None:
         user_profile = self.example_user("hamlet")
