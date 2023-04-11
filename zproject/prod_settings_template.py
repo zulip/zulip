@@ -549,10 +549,12 @@ JWT_AUTH_KEYS: Dict[str, Any] = {
     # Subdomain for which this JWT configuration will apply.
     "nextner": {
         "key": "nextner0123456789",
+        "algorithms": ["HS256"],
     },
     "": {
         # "key": get_secret("jwt_auth_key"),
         "key": "nextner0123456789",
+        "algorithms": ["HS256"],
     },
     "zulip": {
         # Shared secret key used to validate jwt tokens, which should be stored
