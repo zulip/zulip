@@ -221,6 +221,34 @@ Blueslip supports several error levels:
 - `blueslip.debug`: Similar to `blueslip.log`, but are not printed to
   the JS console in development.
 
+### Sentry JavaScript error logging
+
+Zulip's optional JavaScript [Sentry][sentry] integration will aggregate errors
+to show which users and realms are affected, any logging which happened prior to
+the exception, and any DOM interactions which happened prior to the error.
+
+You can enable it by:
+
+1.  Create a [project][sentry-project] in your Sentry organization
+    with a platform of "JavaScript."
+2.  Copy your [Sentry DSN][sentry-dsn] into `/etc/zulip/settings.py`
+    as `SENTRY_FRONTEND_DSN`:
+    ```python3
+    ## Controls the DSN used to report JavaScript errors to Sentry.io
+    SENTRY_FRONTEND_DSN = "https://bbb@bbb.ingest.sentry.io/1234"
+    ```
+3.  If you wish to [sample][sentry-sample] some fraction of the errors, you
+    should adjust `SENTRY_FRONTEND_SAMPLE_RATE` down from `1.0`.
+4.  As the `zulip` user, restart Zulip by running:
+    ```shell
+    /home/zulip/deployments/current/scripts/restart-server
+    ```
+
+You may also want to enable Zulip's [Sentry deploy
+hook][sentry-deploy-hook].
+
+[sentry-sample]: https://docs.sentry.io/platforms/javascript/configuration/sampling/
+
 ## Frontend performance reporting
 
 In order to make it easier to debug potential performance problems in
