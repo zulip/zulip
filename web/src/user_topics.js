@@ -7,7 +7,7 @@ import {get_time_from_date_muted} from "./util";
 
 const muted_topics = new Map();
 
-export const visibility_policy = {
+export const all_visibility_policies = {
     INHERIT: 0,
     MUTED: 1,
     UNMUTED: 2,

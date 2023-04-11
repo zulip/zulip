@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {visibility_policy} = require("../src/user_topics");
+const {all_visibility_policies} = require("../src/user_topics");
 
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -113,19 +113,19 @@ test("set_user_topics", () => {
             stream_id: social.stream_id,
             topic_name: "breakfast",
             last_updated: "1577836800",
-            visibility_policy: visibility_policy.MUTED,
+            visibility_policy: all_visibility_policies.MUTED,
         },
         {
             stream_id: design.stream_id,
             topic_name: "typography",
             last_updated: "1577836800",
-            visibility_policy: visibility_policy.MUTED,
+            visibility_policy: all_visibility_policies.MUTED,
         },
         {
             stream_id: 999, // BOGUS STREAM ID
             topic_name: "random",
             last_updated: "1577836800",
-            visibility_policy: visibility_policy.MUTED,
+            visibility_policy: all_visibility_policies.MUTED,
         },
     ];
 
@@ -152,7 +152,7 @@ test("set_user_topics", () => {
         stream_id: design.stream_id,
         topic_name: "typography",
         last_updated: "1577836800",
-        visibility_policy: visibility_policy.INHERIT,
+        visibility_policy: all_visibility_policies.INHERIT,
     });
     assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
 });
@@ -165,7 +165,7 @@ test("case_insensitivity", () => {
             stream_id: social.stream_id,
             topic_name: "breakfast",
             last_updated: "1577836800",
-            visibility_policy: visibility_policy.MUTED,
+            visibility_policy: all_visibility_policies.MUTED,
         },
     ]);
     assert.ok(user_topics.is_topic_muted(social.stream_id, "breakfast"));
