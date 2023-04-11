@@ -17,18 +17,19 @@
             <div class="white-box">
                 <p>
                     {% trans %}
-                    You've successfully unsubscribed from Zulip {{ subscription_type }} emails.
+                    You've successfully unsubscribed from Zulip {{ subscription_type }} emails for
+                    <a href="{{ realm_uri }}">{{ realm_name }}</a>.
                     {% endtrans %}
                 </p>
 
+                {% if subscription_type != "welcome" %}
                 <p>
                     {% trans %}
-                    You can undo this change or review your
-                    preferences in your
-                    <a href="{{ realm_uri }}/#settings/notifications">Zulip notification
-                    settings</a>.
+                    You can undo this change or review your preferences in your
+                    <a href="{{ realm_uri }}/#settings/notifications">notification settings</a>.
                     {% endtrans %}
                 </p>
+                {% endif %}
             </div>
         </div>
     </div>
