@@ -18,7 +18,7 @@
     "@zxcvbn-ts/core": "^2.0.0",
     "@zxcvbn-ts/language-common": "^2.0.0",
     "@zxcvbn-ts/language-en": "^2.0.0",
-    "autosize": "^6.0.1",
+    "autosize": "^5.0.2",
     "babel-loader": "^9.1.0",
     "babel-plugin-formatjs": "^10.2.6",
     "babel-plugin-istanbul": "^6.1.1",
