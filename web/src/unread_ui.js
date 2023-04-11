@@ -13,20 +13,20 @@ import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 import {notify_server_messages_read} from "./unread_ops";
 
-let user_closed_mark_as_read_turned_off_banner = false;
-export function hide_mark_as_read_turned_off_banner() {
+let user_closed_unread_banner = false;
+export function hide_unread_banner() {
     // Use visibility instead of hide() to prevent messages on the screen from
     // shifting vertically.
     $("#mark_as_read_turned_off_banner").toggleClass("invisible", true);
 }
 
-export function reset_mark_as_read_turned_off_banner() {
-    hide_mark_as_read_turned_off_banner();
-    user_closed_mark_as_read_turned_off_banner = false;
+export function reset_unread_banner() {
+    hide_unread_banner();
+    user_closed_unread_banner = false;
 }
 
 export function notify_messages_remain_unread() {
-    if (!user_closed_mark_as_read_turned_off_banner) {
+    if (!user_closed_unread_banner) {
         $("#mark_as_read_turned_off_banner").toggleClass("invisible", false);
     }
 }
@@ -98,7 +98,7 @@ export function initialize() {
     update_unread_counts();
 
     $("#mark_as_read_turned_off_banner").html(render_mark_as_read_turned_off_banner());
-    hide_mark_as_read_turned_off_banner();
+    hide_unread_banner();
     $("#mark_view_read").on("click", () => {
         // Mark all messages in the current view as read.
         //
@@ -112,10 +112,10 @@ export function initialize() {
         // New messages received may be marked as read based on narrow type.
         message_lists.current.resume_reading();
 
-        hide_mark_as_read_turned_off_banner();
+        hide_unread_banner();
     });
     $("#mark_as_read_close").on("click", () => {
-        hide_mark_as_read_turned_off_banner();
-        user_closed_mark_as_read_turned_off_banner = true;
+        hide_unread_banner();
+        user_closed_unread_banner = true;
     });
 }

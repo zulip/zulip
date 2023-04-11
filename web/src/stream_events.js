@@ -173,7 +173,7 @@ export function mark_unsubscribed(sub) {
 
         // This update would likely be better implemented by having it
         // disappear whenever no unread messages remain.
-        unread_ui.hide_mark_as_read_turned_off_banner();
+        unread_ui.hide_unread_banner();
     }
 
     // Unread messages in the now-unsubscribe stream need to be
