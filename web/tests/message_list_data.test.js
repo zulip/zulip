@@ -126,7 +126,7 @@ run_test("basics", () => {
 run_test("muting", () => {
     let mld = new MessageListData({
         excludes_muted_topics: false,
-        filter: new Filter([{operator: "pm-with", operand: "alice@example.com"}]),
+        filter: new Filter([{operator: "dm", operand: "alice@example.com"}]),
     });
 
     const msgs = [

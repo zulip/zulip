@@ -143,7 +143,7 @@ run_test("get_unread_ids", () => {
     // this actually does filtering
     assert_unread_info({flavor: "not_found"});
 
-    terms = [{operator: "pm-with", operand: "alice@example.com"}];
+    terms = [{operator: "dm", operand: "alice@example.com"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -176,7 +176,7 @@ run_test("get_unread_ids", () => {
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id, private_msg.id]);
 
-    terms = [{operator: "pm-with", operand: "bob@example.com"}];
+    terms = [{operator: "dm", operand: "bob@example.com"}];
     set_filter(terms);
 
     unread_ids = candidate_ids();

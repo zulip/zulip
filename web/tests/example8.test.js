@@ -77,7 +77,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     override(page_params, "user_id", anna.user_id);
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
-    narrow_state.set_current_filter(new Filter([{operator: "pm-with", operand: group_emails}]));
+    narrow_state.set_current_filter(new Filter([{operator: "dm", operand: group_emails}]));
 
     // Based on typing_events.MAX_USERS_TO_DISPLAY_NAME (which is currently 3),
     // we display either the list of all users typing (if they do not exceed

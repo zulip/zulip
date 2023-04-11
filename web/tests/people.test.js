@@ -771,8 +771,8 @@ test_people("message_methods", () => {
         display_recipient: [{id: maria.user_id}, {id: me.user_id}, {id: charles.user_id}],
         sender_id: charles.user_id,
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/301,302-group");
-    assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,301,302-group");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/301,302-group");
+    assert.equal(people.pm_perma_link(message), "#narrow/dm/30,301,302-group");
     assert.equal(people.pm_reply_to(message), "Athens@example.com,charles@example.com");
     assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png?s=50");
 
@@ -781,8 +781,8 @@ test_people("message_methods", () => {
         display_recipient: [{id: maria.user_id}, {id: me.user_id}],
         avatar_url: "legacy.png",
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/302-Maria-Athens");
-    assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,302-pm");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/302-Maria-Athens");
+    assert.equal(people.pm_perma_link(message), "#narrow/dm/30,302-dm");
     assert.equal(people.pm_reply_to(message), "Athens@example.com");
     assert.equal(people.small_avatar_url(message), "http://zulip.zulipdev.com/legacy.png?s=50");
 
@@ -818,8 +818,8 @@ test_people("message_methods", () => {
         type: "private",
         display_recipient: [{id: me.user_id}],
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/30-Me-Myself");
-    assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30-pm");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/30-Me-Myself");
+    assert.equal(people.pm_perma_link(message), "#narrow/dm/30-dm");
 
     message = {type: "stream"};
     assert.equal(people.pm_with_user_ids(message), undefined);

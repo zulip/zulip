@@ -283,7 +283,7 @@ function pick_empty_narrow_banner() {
                 search_data: retrieve_search_query_data(),
             };
         }
-        case "pm-with": {
+        case "dm": {
             if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
                 if (!first_operand.includes(",")) {
                     return {

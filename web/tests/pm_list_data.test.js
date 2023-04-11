@@ -74,7 +74,7 @@ function test(label, f) {
 }
 
 function set_pm_with_filter(emails) {
-    const active_filter = new Filter([{operator: "pm-with", operand: emails}]);
+    const active_filter = new Filter([{operator: "dm", operand: emails}]);
     narrow_state.set_current_filter(active_filter);
 }
 
@@ -102,7 +102,7 @@ test("get_conversations", ({override}) => {
             is_zero: false,
             recipients: "Me Myself",
             unread: 1,
-            url: "#narrow/pm-with/103-Me-Myself",
+            url: "#narrow/dm/103-Me-Myself",
             user_circle_class: "user_circle_empty",
             user_ids_string: "103",
             status_emoji_info: {
@@ -115,7 +115,7 @@ test("get_conversations", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
-            url: "#narrow/pm-with/101,102-group",
+            url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             is_group: true,
             status_emoji_info: undefined,
@@ -153,7 +153,7 @@ test("get_conversations bot", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
-            url: "#narrow/pm-with/314-Outgoing-webhook",
+            url: "#narrow/dm/314-Outgoing-webhook",
             status_emoji_info: undefined,
             user_circle_class: "user_circle_green",
             is_group: false,
@@ -164,7 +164,7 @@ test("get_conversations bot", ({override}) => {
             unread: 1,
             is_zero: false,
             is_active: false,
-            url: "#narrow/pm-with/101,102-group",
+            url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             status_emoji_info: undefined,
             is_group: true,

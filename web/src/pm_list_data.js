@@ -19,7 +19,7 @@ export function get_active_user_ids_string() {
         return undefined;
     }
 
-    const emails = filter.operands("pm-with")[0];
+    const emails = filter.operands("dm")[0];
 
     if (!emails) {
         return undefined;

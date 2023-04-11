@@ -814,7 +814,7 @@ export function register_click_handlers() {
         if (overlays.is_active()) {
             overlays.close_active();
         }
-        narrow.by("pm-with", email, {trigger: "user sidebar popover"});
+        narrow.by("dm", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
     });

@@ -166,11 +166,11 @@ test("initialize", ({mock_template}) => {
                         },
                     ],
                     [
-                        "pm-with:zo",
+                        "dm:zo",
                         {
                             description_html: "direct messages with",
                             is_person: true,
-                            search_string: "pm-with:user7@zulipdev.com",
+                            search_string: "dm:user7@zulipdev.com",
                             user_pill_context: {
                                 display_value: "<strong>Zo</strong>e",
                                 has_image: true,
@@ -203,7 +203,7 @@ test("initialize", ({mock_template}) => {
                         },
                     ],
                 ]),
-                strings: ["zo", "sender:zo", "pm-with:zo", "group-pm-with:zo"],
+                strings: ["zo", "sender:zo", "dm:zo", "group-pm-with:zo"],
             };
 
             /* Test source */

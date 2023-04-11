@@ -530,11 +530,11 @@ export function pm_perma_link(message) {
     if (user_ids.length >= 3) {
         suffix = "group";
     } else {
-        suffix = "pm";
+        suffix = "dm";
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const url = "#narrow/pm-with/" + slug;
+    const url = "#narrow/dm/" + slug;
     return url;
 }
 
@@ -560,7 +560,7 @@ export function pm_with_url(message) {
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const url = "#narrow/pm-with/" + slug;
+    const url = "#narrow/dm/" + slug;
     return url;
 }
 
