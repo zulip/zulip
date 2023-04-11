@@ -79,7 +79,7 @@ test("narrowed", () => {
     assert.ok(narrow_state.narrowed_by_stream_reply());
     assert.ok(!narrow_state.narrowed_to_starred());
 
-    set_filter([["pm-with", "steve@zulip.com"]]);
+    set_filter([["dm", "steve@zulip.com"]]);
     assert.ok(narrow_state.narrowed_to_pms());
     assert.ok(narrow_state.narrowed_by_reply());
     assert.ok(narrow_state.narrowed_by_pm_reply());
@@ -178,9 +178,9 @@ test("set_compose_defaults", () => {
     assert.equal(stream_and_topic.stream, "Foo");
     assert.equal(stream_and_topic.topic, "Bar");
 
-    set_filter([["pm-with", "foo@bar.com"]]);
-    let pm_test = narrow_state.set_compose_defaults();
-    assert.equal(pm_test.private_message_recipient, undefined);
+    set_filter([["dm", "foo@bar.com"]]);
+    let dm_test = narrow_state.set_compose_defaults();
+    assert.equal(dm_test.private_message_recipient, undefined);
 
     const john = {
         email: "john@doe.com",
@@ -190,9 +190,15 @@ test("set_compose_defaults", () => {
     people.add_active_user(john);
     people.add_active_user(john);
 
+    set_filter([["dm", "john@doe.com"]]);
+    dm_test = narrow_state.set_compose_defaults();
+    assert.equal(dm_test.private_message_recipient, "john@doe.com");
+
+    // Even though we renamed "pm-with" to "dm",
+    // compose defaults are set correctly.
     set_filter([["pm-with", "john@doe.com"]]);
-    pm_test = narrow_state.set_compose_defaults();
-    assert.equal(pm_test.private_message_recipient, "john@doe.com");
+    dm_test = narrow_state.set_compose_defaults();
+    assert.equal(dm_test.private_message_recipient, "john@doe.com");
 
     set_filter([
         ["topic", "duplicate"],
@@ -216,13 +222,13 @@ test("update_email", () => {
 
     people.add_active_user(steve);
     set_filter([
-        ["pm-with", "steve@foo.com"],
+        ["dm", "steve@foo.com"],
         ["sender", "steve@foo.com"],
         ["stream", "steve@foo.com"], // try to be tricky
     ]);
     narrow_state.update_email(steve.user_id, "showell@foo.com");
     const filter = narrow_state.filter();
-    assert.deepEqual(filter.operands("pm-with"), ["showell@foo.com"]);
+    assert.deepEqual(filter.operands("dm"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("sender"), ["showell@foo.com"]);
     assert.deepEqual(filter.operands("stream"), ["steve@foo.com"]);
 });
@@ -245,7 +251,7 @@ test("topic", () => {
 
     set_filter([
         ["sender", "test@foo.com"],
-        ["pm-with", "test@foo.com"],
+        ["dm", "test@foo.com"],
     ]);
     assert.equal(narrow_state.topic(), undefined);
 
@@ -278,8 +284,8 @@ test("stream_sub", () => {
 
 test("pm_ids_string", () => {
     // This function will return undefined unless we're clearly
-    // narrowed to a specific PM (including huddles) with real
-    // users.
+    // narrowed to a specific direct message (including group
+    // direct messages) with real users.
     narrow_state.set_current_filter(undefined);
     assert.equal(narrow_state.pm_ids_string(), undefined);
 
@@ -289,10 +295,10 @@ test("pm_ids_string", () => {
     ]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
 
-    set_filter([["pm-with", ""]]);
+    set_filter([["dm", ""]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
 
-    set_filter([["pm-with", "bogus@foo.com"]]);
+    set_filter([["dm", "bogus@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), undefined);
 
     const alice = {
@@ -310,6 +316,6 @@ test("pm_ids_string", () => {
     people.add_active_user(alice);
     people.add_active_user(bob);
 
-    set_filter([["pm-with", "bob@foo.com,alice@foo.com"]]);
+    set_filter([["dm", "bob@foo.com,alice@foo.com"]]);
     assert.equal(narrow_state.pm_ids_string(), "444,555");
 });

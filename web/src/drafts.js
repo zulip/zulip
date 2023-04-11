@@ -307,10 +307,9 @@ export function restore_draft(draft_id) {
         }
     } else {
         if (compose_args.private_message_recipient !== "") {
-            narrow.activate(
-                [{operator: "pm-with", operand: compose_args.private_message_recipient}],
-                {trigger: "restore draft"},
-            );
+            narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
+                trigger: "restore draft",
+            });
         }
     }
 

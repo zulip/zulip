@@ -14,11 +14,14 @@ async function expect_home(page: Page): Promise<void> {
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Verona > other topic", ["verona other topic c"]],
         ["Denmark > test", ["denmark message"]],
-        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm a", "group pm b"]],
-        ["You and Cordelia, Lear's daughter", ["pm c"]],
+        [
+            "You and Cordelia, Lear's daughter, King Hamlet",
+            ["group direct message a", "group direct message b"],
+        ],
+        ["You and Cordelia, Lear's daughter", ["direct message c"]],
         ["Verona > test", ["verona test d"]],
-        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm d"]],
-        ["You and Cordelia, Lear's daughter", ["pm e"]],
+        ["You and Cordelia, Lear's daughter, King Hamlet", ["group direct message d"]],
+        ["You and Cordelia, Lear's daughter", ["direct message e"]],
     ]);
 }
 
@@ -59,12 +62,12 @@ async function expect_test_topic(page: Page): Promise<void> {
     ]);
 }
 
-async function expect_huddle(page: Page): Promise<void> {
+async function expect_group_direct_messages(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
         [
             "You and Cordelia, Lear's daughter, King Hamlet",
-            ["group pm a", "group pm b", "group pm d"],
+            ["group direct message a", "group direct message b", "group direct message d"],
         ],
     ]);
     assert.strictEqual(
@@ -73,10 +76,10 @@ async function expect_huddle(page: Page): Promise<void> {
     );
 }
 
-async function expect_cordelia_private_narrow(page: Page): Promise<void> {
+async function expect_cordelia_direct_messages(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
-        ["You and Cordelia, Lear's daughter", ["pm c", "pm e"]],
+        ["You and Cordelia, Lear's daughter", ["direct message c", "direct message e"]],
     ]);
 }
 
@@ -120,7 +123,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await page.click(
         `#zhome [title="Narrow to your direct messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
-    await expect_huddle(page);
+    await expect_group_direct_messages(page);
 
     await un_narrow(page);
     await expect_home(page);
@@ -200,7 +203,7 @@ async function search_tests(page: Page): Promise<void> {
         page,
         "Cordelia",
         "Direct",
-        expect_cordelia_private_narrow,
+        expect_cordelia_direct_messages,
         "Cordelia, Lear's daughter - Zulip Dev - Zulip",
     );
 
@@ -242,7 +245,7 @@ async function search_tests(page: Page): Promise<void> {
 
     await search_and_check(
         page,
-        "pm-with:dummyuser@zulip.com",
+        "dm:dummyuser@zulip.com",
         "",
         expect_non_existing_user,
         "Invalid user - Zulip Dev - Zulip",
@@ -250,20 +253,23 @@ async function search_tests(page: Page): Promise<void> {
 
     await search_and_check(
         page,
-        "pm-with:dummyuser@zulip.com,dummyuser2@zulip.com",
+        "dm:dummyuser@zulip.com,dummyuser2@zulip.com",
         "",
         expect_non_existing_users,
         "Invalid users - Zulip Dev - Zulip",
     );
 }
 
-async function expect_all_pm(page: Page): Promise<void> {
+async function expect_all_direct_messages(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
-        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm a", "group pm b"]],
-        ["You and Cordelia, Lear's daughter", ["pm c"]],
-        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm d"]],
-        ["You and Cordelia, Lear's daughter", ["pm e"]],
+        [
+            "You and Cordelia, Lear's daughter, King Hamlet",
+            ["group direct message a", "group direct message b"],
+        ],
+        ["You and Cordelia, Lear's daughter", ["direct message c"]],
+        ["You and Cordelia, Lear's daughter, King Hamlet", ["group direct message d"]],
+        ["You and Cordelia, Lear's daughter", ["direct message e"]],
     ]);
     assert.strictEqual(
         await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
@@ -284,7 +290,7 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     const all_private_messages_icon = "#show_all_private_messages";
     await page.waitForSelector(all_private_messages_icon, {visible: true});
     await page.click(all_private_messages_icon);
-    await expect_all_pm(page);
+    await expect_all_direct_messages(page);
 
     await un_narrow(page);
 }
@@ -442,10 +448,10 @@ async function test_users_search(page: Page): Promise<void> {
     await assert_not_selected(page, "aaron");
     await assert_not_selected(page, "Desdemona");
 
-    // arrow up and press Enter. We should be taken to pms with Cordelia, Lear's daughter
+    // arrow up and press Enter. We should be taken to direct messages with Cordelia, Lear's daughter
     await arrow(page, "Up");
     await page.keyboard.press("Enter");
-    await expect_cordelia_private_narrow(page);
+    await expect_cordelia_direct_messages(page);
 }
 
 async function test_narrow_public_streams(page: Page): Promise<void> {
@@ -480,12 +486,12 @@ async function message_basic_tests(page: Page): Promise<void> {
         {stream: "Verona", topic: "test", content: "verona test b"},
         {stream: "Verona", topic: "other topic", content: "verona other topic c"},
         {stream: "Denmark", topic: "test", content: "denmark message"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group pm a"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group pm b"},
-        {recipient: "cordelia@zulip.com", content: "pm c"},
+        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message a"},
+        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message b"},
+        {recipient: "cordelia@zulip.com", content: "direct message c"},
         {stream: "Verona", topic: "test", content: "verona test d"},
-        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group pm d"},
-        {recipient: "cordelia@zulip.com", content: "pm e"},
+        {recipient: "cordelia@zulip.com, hamlet@zulip.com", content: "group direct message d"},
+        {recipient: "cordelia@zulip.com", content: "direct message e"},
     ]);
 
     await expect_home(page);

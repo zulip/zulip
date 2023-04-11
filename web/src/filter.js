@@ -175,7 +175,7 @@ function message_matches_search_term(message, operator, operand) {
             // message, but it is implicit by the fact that the current user has access to the message.
         }
 
-        case "pm-with": {
+        case "dm": {
             // TODO: use user_ids, not emails here
             if (message.type !== "private") {
                 return false;
@@ -212,6 +212,11 @@ export class Filter {
     static canonicalize_operator(operator) {
         operator = operator.toLowerCase();
 
+        if (operator === "pm-with") {
+            // "pm-with:" was renamed to "dm:"
+            return "dm";
+        }
+
         if (operator === "from") {
             return "sender";
         }
@@ -245,7 +250,7 @@ export class Filter {
             case "topic":
                 break;
             case "sender":
-            case "pm-with":
+            case "dm":
                 operand = operand.toString().toLowerCase();
                 if (operand === "me") {
                     operand = people.my_current_email();
@@ -294,7 +299,7 @@ export class Filter {
 
     static decodeOperand(encoded, operator) {
         encoded = encoded.replace(/"/g, "");
-        if (["group-pm-with", "pm-with", "sender", "from"].includes(operator) === false) {
+        if (["group-pm-with", "dm", "sender", "from", "pm-with"].includes(operator) === false) {
             encoded = encoded.replace(/\+/g, " ");
         }
         return util.robust_url_decode(encoded).trim();
@@ -342,7 +347,7 @@ export class Filter {
                 }
                 operand = Filter.decodeOperand(parts.join(":"), operator);
 
-                // We use Filter.operator_to_prefix() checks if the
+                // We use Filter.operator_to_prefix() to check if the
                 // operator is known.  If it is not known, then we treat
                 // it as a search for the given string (which may contain
                 // a `:`), not as a search operator.
@@ -446,7 +451,7 @@ export class Filter {
     }
 
     is_non_huddle_pm() {
-        return this.has_operator("pm-with") && this.operands("pm-with")[0].split(",").length === 1;
+        return this.has_operator("dm") && this.operands("dm")[0].split(",").length === 1;
     }
 
     supports_collapsing_recipients() {
@@ -464,7 +469,7 @@ export class Filter {
             "not-stream",
             "topic",
             "not-topic",
-            "pm-with",
+            "dm",
             "group-pm-with",
             "not-group-pm-with",
             "is-dm",
@@ -498,7 +503,7 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, ["pm-with"])) {
+        if (_.isEqual(term_types, ["dm"])) {
             return true;
         }
 
@@ -555,7 +560,7 @@ export class Filter {
     is_common_narrow() {
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
-        // is:dm, pm-with:,
+        // is:dm, dm,
         // is:mentioned, is:resolved
         if (this.can_mark_messages_read()) {
             return true;
@@ -621,11 +626,8 @@ export class Filter {
                     return "/#narrow/is/mentioned";
                 case "streams-public":
                     return "/#narrow/streams/public";
-                case "pm-with":
-                    return (
-                        "/#narrow/pm-with/" +
-                        people.emails_to_slug(this.operands("pm-with").join(","))
-                    );
+                case "dm":
+                    return "/#narrow/dm/" + people.emails_to_slug(this.operands("dm").join(","));
                 case "is-resolved":
                     return "/#narrow/topics/is/resolved";
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
@@ -670,7 +672,7 @@ export class Filter {
             case "is-mentioned":
                 context.icon = "at";
                 break;
-            case "pm-with":
+            case "dm":
                 context.icon = "envelope";
                 break;
             case "is-resolved":
@@ -697,10 +699,10 @@ export class Filter {
             return this._sub.name;
         }
         if (
-            (term_types.length === 2 && _.isEqual(term_types, ["pm-with", "near"])) ||
-            (term_types.length === 1 && _.isEqual(term_types, ["pm-with"]))
+            (term_types.length === 2 && _.isEqual(term_types, ["dm", "near"])) ||
+            (term_types.length === 1 && _.isEqual(term_types, ["dm"]))
         ) {
-            const emails = this.operands("pm-with")[0].split(",");
+            const emails = this.operands("dm")[0].split(",");
             const names = emails.map((email) => {
                 if (!people.get_by_email(email)) {
                     return email;
@@ -749,7 +751,7 @@ export class Filter {
     contains_only_private_messages() {
         return (
             (this.has_operator("is") && this.operands("is")[0] === "dm") ||
-            this.has_operator("pm-with") ||
+            this.has_operator("dm") ||
             this.has_operator("group-pm-with")
         );
     }
@@ -804,7 +806,7 @@ export class Filter {
     }
 
     _fix_redundant_is_private(terms) {
-        if (!terms.some((term) => Filter.term_type(term) === "pm-with")) {
+        if (!terms.some((term) => Filter.term_type(term) === "dm")) {
             return terms;
         }
 
@@ -881,6 +883,7 @@ export class Filter {
         for (const term of this._operators) {
             switch (term.operator) {
                 case "group-pm-with":
+                case "dm":
                 case "pm-with":
                 case "sender":
                 case "from":
@@ -937,7 +940,7 @@ export class Filter {
             "streams-public",
             "stream",
             "topic",
-            "pm-with",
+            "dm",
             "group-pm-with",
             "sender",
             "near",
@@ -1003,7 +1006,7 @@ export class Filter {
             case "sender":
                 return verb + "sent by";
 
-            case "pm-with":
+            case "dm":
                 return verb + "direct messages with";
 
             case "in":
@@ -1111,7 +1114,7 @@ export class Filter {
 
     is_conversation_view() {
         const term_type = this.sorted_term_types();
-        if (_.isEqual(term_type, ["stream", "topic"]) || _.isEqual(term_type, ["pm-with"])) {
+        if (_.isEqual(term_type, ["stream", "topic"]) || _.isEqual(term_type, ["dm"])) {
             return true;
         }
         return false;

@@ -147,7 +147,7 @@ function scroll_all_private_into_view() {
 export function handle_narrow_activated(filter) {
     const active_filter = filter;
     const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), ["is-dm"]);
-    const narrow_to_private_messages_section = active_filter.operands("pm-with").length !== 0;
+    const narrow_to_private_messages_section = active_filter.operands("dm").length !== 0;
 
     if (is_all_private_message_view) {
         // In theory, this should get expanded when we scroll to the

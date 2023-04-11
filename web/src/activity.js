@@ -278,7 +278,7 @@ export function narrow_for_user_id(opts) {
     const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
-    narrow.by("pm-with", email, {trigger: "sidebar"});
+    narrow.by("dm", email, {trigger: "sidebar"});
     user_filter.clear_and_hide_search();
 }
 

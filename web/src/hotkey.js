@@ -1031,7 +1031,7 @@ export function process_hotkey(e, hotkey) {
                 case "private":
                     narrow.activate(
                         [
-                            {operator: "pm-with", operand: msg.reply_to},
+                            {operator: "dm", operand: msg.reply_to},
                             {operator: "near", operand: msg.id},
                         ],
                         {trigger: "hotkey"},
