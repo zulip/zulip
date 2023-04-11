@@ -97,6 +97,7 @@ test("get_conversations", ({override}) => {
 
     const expected_data = [
         {
+            is_bot: false,
             is_active: false,
             is_group: false,
             is_zero: false,
@@ -118,6 +119,7 @@ test("get_conversations", ({override}) => {
             url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             is_group: true,
+            is_bot: false,
             status_emoji_info: undefined,
         },
     ];
@@ -155,8 +157,9 @@ test("get_conversations bot", ({override}) => {
             is_active: false,
             url: "#narrow/dm/314-Outgoing-webhook",
             status_emoji_info: undefined,
-            user_circle_class: "user_circle_green",
+            user_circle_class: "user_circle_empty",
             is_group: false,
+            is_bot: true,
         },
         {
             recipients: "Alice, Bob",
@@ -168,6 +171,7 @@ test("get_conversations bot", ({override}) => {
             user_circle_class: undefined,
             status_emoji_info: undefined,
             is_group: true,
+            is_bot: false,
         },
     ];
 
