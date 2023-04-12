@@ -417,6 +417,7 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
         .map((stream) => ({
             name: stream.name,
             value: stream.stream_id.toString(),
+            stream,
         }))
         .sort((a, b) => {
             if (a.name.toLowerCase() < b.name.toLowerCase()) {

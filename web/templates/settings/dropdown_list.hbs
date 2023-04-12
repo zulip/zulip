@@ -1,7 +1,11 @@
 {{#with item}}
 <li class="list_item" role="presentation" data-value="{{value}}">
     <a role="menuitem" tabindex="0">
-        {{name}}
+        {{#if stream}}
+            {{> ../inline_decorated_stream_name stream=stream}}
+        {{else}}
+            {{name}}
+        {{/if}}
     </a>
 </li>
 {{/with}}
