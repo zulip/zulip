@@ -186,11 +186,11 @@ class Confirmation(models.Model):
     REALM_REACTIVATION = 8
     type = models.PositiveSmallIntegerField()
 
-    def __str__(self) -> str:
-        return f"{self.content_object!r}"
-
     class Meta:
         unique_together = ("type", "confirmation_key")
+
+    def __str__(self) -> str:
+        return f"{self.content_object!r}"
 
 
 class ConfirmationType:
