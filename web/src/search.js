@@ -93,6 +93,9 @@ export function initialize() {
         fixed: true,
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
+        // With search pills, the contenteditable input will be empty
+        // even if some pills are present.
+        hideOnEmpty: page_params.search_pills_enabled,
         naturalSearch: true,
         highlighter(item) {
             const obj = search_map.get(item);
