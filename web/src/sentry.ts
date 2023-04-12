@@ -10,6 +10,9 @@ type UserInfo = {
 };
 
 export function normalize_path(path: string, is_portico = false): string {
+    if (path === undefined) {
+        return "unknown";
+    }
     path = path
         .replace(/\/\d+(\/|$)/, "/*$1")
         .replace(

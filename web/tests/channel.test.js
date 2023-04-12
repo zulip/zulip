@@ -378,3 +378,48 @@ test("while_reloading", () => {
         },
     });
 });
+
+test("error in callback", () => {
+    let success_called = false;
+    let error_called = false;
+    let raised_error = false;
+    test_with_mock_ajax({
+        run_code() {
+            channel.get({
+                url: "/json/endpoint",
+                success() {
+                    success_called = true;
+                    throw new Error("success");
+                },
+                error() {
+                    error_called = true;
+                    throw new Error("failure");
+                },
+            });
+        },
+        check_ajax_options(options) {
+            try {
+                options.simulate_success();
+            } catch (error) {
+                assert.equal(error.message, "success");
+                raised_error = true;
+            }
+            assert.ok(success_called);
+            assert.ok(raised_error);
+            assert.ok(!error_called);
+
+            success_called = false;
+            raised_error = false;
+
+            try {
+                options.simulate_error();
+            } catch (error) {
+                assert.equal(error.message, "failure");
+                raised_error = true;
+            }
+            assert.ok(!success_called);
+            assert.ok(raised_error);
+            assert.ok(error_called);
+        },
+    });
+});
