@@ -380,7 +380,7 @@ export function update_email(user_id, new_email) {
 }
 
 function insert_video_call_url(url, target_textarea) {
-    const link_text = $t({defaultMessage: "Click to join video call"});
+    const link_text = $t({defaultMessage: "Join video call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
 }
 

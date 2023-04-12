@@ -4,10 +4,8 @@
 
 {!start-composing.md!}
 
-1. Click the **video-camera** (<i class="fa fa-video-camera"></i>) icon in the
-bottom left corner of the compose box. This will insert a link like
-**[Click to join video call]\(https://meet.jit.si/123456789)** into the
-compose box.
+1. Click the **video camera** (<i class="fa fa-video-camera"></i>) at the bottom of
+the compose box. This will insert a **Join video call.** link into your message.
 
 1. Send the message.
 
@@ -15,7 +13,7 @@ compose box.
 
 !!! tip ""
 
-    You can replace "Click to join video call" with anything you want.
+    You can replace the "Join video call." label for the link with any text you like.
 
 {end_tabs}
 
