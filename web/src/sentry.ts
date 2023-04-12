@@ -9,6 +9,19 @@ type UserInfo = {
     role?: string;
 };
 
+export function normalize_path(path: string, is_portico = false): string {
+    path = path
+        .replace(/\/\d+(\/|$)/, "/*$1")
+        .replace(
+            /^\/(join|reactivate|new|accounts\/do_confirm|accounts\/confirm_new_email)\/[^/]+(\/?)$/,
+            "$1/*$2",
+        );
+    if (is_portico) {
+        return "portico: " + path;
+    }
+    return path;
+}
+
 if (page_params.server_sentry_dsn) {
     const url_matches = [/^\//, new RegExp("^" + _.escapeRegExp(page_params.webpack_public_path))];
     if (page_params.realm_uri !== undefined) {
@@ -52,6 +65,13 @@ if (page_params.server_sentry_dsn) {
         integrations: [
             new Sentry.BrowserTracing({
                 tracePropagationTargets: url_matches,
+                beforeNavigate(context) {
+                    return {
+                        ...context,
+                        metadata: {source: "custom"},
+                        name: normalize_path(location.pathname, sentry_key === "www"),
+                    };
+                },
             }),
         ],
         allowUrls: url_matches,
