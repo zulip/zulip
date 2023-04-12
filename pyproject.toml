@@ -100,6 +100,7 @@ select = [
     "ANN", # annotations
     "B", # bugbear
     "C4", # comprehensions
+    "DJ", # Django
     "DTZ", # naive datetime
     "E", # style errors
     "EXE", # shebang
@@ -130,6 +131,8 @@ ignore = [
     "B023", # Function definition does not bind loop variable
     "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
     "C408", # Unnecessary `dict` call (rewrite as a literal)
+    "DJ001", # Avoid using `null=True` on string-based fields
+    "DJ008", # Model does not define `__str__` method
     "E402", # Module level import not at top of file
     "E501", # Line too long
     "E731", # Do not assign a lambda expression, use a def
