@@ -389,7 +389,7 @@ test("file_input", ({override_rewire}) => {
     assert.ok(upload_files_called);
 });
 
-test("file_drop", ({override_rewire}) => {
+test("file_drop", ({override, override_rewire}) => {
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -422,12 +422,17 @@ test("file_drop", ({override_rewire}) => {
     override_rewire(upload, "upload_files", () => {
         upload_files_called = true;
     });
+    let compose_actions_start_called = false;
+    override(compose_actions, "respond_to_message", () => {
+        compose_actions_start_called = true;
+    });
     drop_handler(drop_event);
+    assert.ok(compose_actions_start_called);
     assert.equal(prevent_default_counter, 3);
     assert.equal(upload_files_called, true);
 });
 
-test("copy_paste", ({override_rewire}) => {
+test("copy_paste", ({override, override_rewire}) => {
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -453,11 +458,15 @@ test("copy_paste", ({override_rewire}) => {
     override_rewire(upload, "upload_files", () => {
         upload_files_called = true;
     });
+    let compose_actions_start_called = false;
+    override(compose_actions, "respond_to_message", () => {
+        compose_actions_start_called = true;
+    });
 
     paste_handler(event);
     assert.ok(get_as_file_called);
     assert.ok(upload_files_called);
-
+    assert.ok(compose_actions_start_called);
     upload_files_called = false;
     event = {
         originalEvent: {},
@@ -466,7 +475,7 @@ test("copy_paste", ({override_rewire}) => {
     assert.equal(upload_files_called, false);
 });
 
-test("uppy_events", ({override, override_rewire, mock_template}) => {
+test("uppy_events", ({override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
 
@@ -505,10 +514,7 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
             uri: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
         },
     };
-    let compose_actions_start_called = false;
-    override(compose_actions, "start", () => {
-        compose_actions_start_called = true;
-    });
+
     let compose_ui_replace_syntax_called = false;
     override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;
@@ -524,7 +530,7 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
         compose_ui_autosize_textarea_called = true;
     });
     on_upload_success_callback(file, response);
-    assert.ok(compose_actions_start_called);
+
     assert.ok(compose_ui_replace_syntax_called);
     assert.ok(compose_ui_autosize_textarea_called);
 
@@ -533,11 +539,9 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
             uri: undefined,
         },
     };
-    compose_actions_start_called = false;
     compose_ui_replace_syntax_called = false;
     compose_ui_autosize_textarea_called = false;
     on_upload_success_callback(file, response);
-    assert.equal(compose_actions_start_called, false);
     assert.equal(compose_ui_replace_syntax_called, false);
     assert.equal(compose_ui_autosize_textarea_called, false);
 

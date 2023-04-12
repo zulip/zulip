@@ -290,6 +290,9 @@ export function setup_upload(config) {
     $drag_drop_container.on("drop", (event) => {
         event.preventDefault();
         const files = event.originalEvent.dataTransfer.files;
+        if (config.mode === "compose" && !compose_state.composing()) {
+            compose_actions.respond_to_message({trigger: "file drop or paste"});
+        }
         upload_files(uppy, config, files);
     });
 
@@ -307,6 +310,9 @@ export function setup_upload(config) {
             const file = item.getAsFile();
             files.push(file);
         }
+        if (config.mode === "compose" && !compose_state.composing()) {
+            compose_actions.respond_to_message({trigger: "file drop or paste"});
+        }
         upload_files(uppy, config, files);
     });
 
@@ -317,9 +323,6 @@ export function setup_upload(config) {
         }
         const split_url = url.split("/");
         const filename = split_url.at(-1);
-        if (config.mode === "compose" && !compose_state.composing()) {
-            compose_actions.start("stream");
-        }
         const filename_url = "[" + filename + "](" + url + ")";
         compose_ui.replace_syntax(
             get_translated_status(file),
