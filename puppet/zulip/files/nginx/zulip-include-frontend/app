@@ -11,6 +11,7 @@ location /static/ {
     alias /home/zulip/prod-static/;
     include /etc/nginx/zulip-include/headers;
     add_header Access-Control-Allow-Origin *;
+    add_header Timing-Allow-Origin *;
 
     # Set a nonexistent path, so we just serve the nice Django 404 page.
     error_page 404 /django_static_404.html;
@@ -20,6 +21,7 @@ location /static/ {
     location ~ '\.[0-9a-f]{12}\.|[./][0-9a-f]{20}\.' {
         include /etc/nginx/zulip-include/headers;
         add_header Access-Control-Allow-Origin *;
+        add_header Timing-Allow-Origin *;
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
 }
