@@ -235,6 +235,7 @@ export default (
             },
             headers: {
                 "Access-Control-Allow-Origin": "*",
+                "Timing-Allow-Origin": "*",
             },
         },
         infrastructureLogging: {
