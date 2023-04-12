@@ -53,20 +53,20 @@ export function is_topic_muted(stream_id, topic) {
     return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.MUTED;
 }
 
-export function get_muted_topics() {
+export function get_user_topics_for_visibility_policy(visibility_policy) {
     const topics = [];
     for (const [stream_id, sub_dict] of all_user_topics) {
         const stream = stream_data.maybe_get_stream_name(stream_id);
         for (const topic of sub_dict.keys()) {
-            if (sub_dict.get(topic).visibility_policy === all_visibility_policies.MUTED) {
-                const date_muted = sub_dict.get(topic).date_updated;
-                const date_muted_str = timerender.render_now(new Date(date_muted)).time_str;
+            if (sub_dict.get(topic).visibility_policy === visibility_policy) {
+                const date_updated = sub_dict.get(topic).date_updated;
+                const date_updated_str = timerender.render_now(new Date(date_updated)).time_str;
                 topics.push({
                     stream_id,
                     stream,
                     topic,
-                    date_muted,
-                    date_muted_str,
+                    date_updated,
+                    date_updated_str,
                 });
             }
         }

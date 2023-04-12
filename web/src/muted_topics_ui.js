@@ -23,7 +23,9 @@ export function rerender_for_muted_topic(old_muted_topics) {
     // We only update those topics which could have been affected, because
     // we want to avoid doing a complete rerender of the recent topics view,
     // because that can be expensive.
-    const current_muted_topics = user_topics.get_muted_topics();
+    const current_muted_topics = user_topics.get_user_topics_for_visibility_policy(
+        user_topics.all_visibility_policies.MUTED,
+    );
     const maybe_affected_topics = _.unionWith(old_muted_topics, current_muted_topics, _.isEqual);
 
     for (const topic_data of maybe_affected_topics) {
@@ -32,7 +34,9 @@ export function rerender_for_muted_topic(old_muted_topics) {
 }
 
 export function handle_topic_updates(user_topic) {
-    const old_muted_topics = user_topics.get_muted_topics();
+    const old_muted_topics = user_topics.get_user_topics_for_visibility_policy(
+        user_topics.all_visibility_policies.MUTED,
+    );
     user_topics.set_user_topic(user_topic);
     popover_menus.get_topic_menu_popover()?.hide();
     unread_ui.update_unread_counts();

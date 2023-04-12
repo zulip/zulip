@@ -97,7 +97,12 @@ test("add_and_remove_unmutes", () => {
 });
 
 test("get_mutes", () => {
-    assert.deepEqual(user_topics.get_muted_topics(), []);
+    assert.deepEqual(
+        user_topics.get_user_topics_for_visibility_policy(
+            user_topics.all_visibility_policies.MUTED,
+        ),
+        [],
+    );
     user_topics.update_user_topics(
         office.stream_id,
         "gossip",
@@ -111,20 +116,20 @@ test("get_mutes", () => {
         1577836700,
     );
     const all_muted_topics = user_topics
-        .get_muted_topics()
-        .sort((a, b) => a.date_muted - b.date_muted);
+        .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.MUTED)
+        .sort((a, b) => a.date_updated - b.date_updated);
 
     assert.deepEqual(all_muted_topics, [
         {
-            date_muted: 1577836700000,
-            date_muted_str: "Dec 31, 2019",
+            date_updated: 1577836700000,
+            date_updated_str: "Dec 31, 2019",
             stream: devel.name,
             stream_id: devel.stream_id,
             topic: "java",
         },
         {
-            date_muted: 1577836800000,
-            date_muted_str: "Jan 1, 2020",
+            date_updated: 1577836800000,
+            date_updated_str: "Jan 1, 2020",
             stream: office.name,
             stream_id: office.stream_id,
             topic: "gossip",
@@ -162,22 +167,27 @@ test("set_user_topics", () => {
 
     user_topics.initialize();
 
-    assert.deepEqual(user_topics.get_muted_topics().sort(), [
-        {
-            date_muted: 1577836800000,
-            date_muted_str: "Jan 1, 2020",
-            stream: social.name,
-            stream_id: social.stream_id,
-            topic: "breakfast",
-        },
-        {
-            date_muted: 1577836800000,
-            date_muted_str: "Jan 1, 2020",
-            stream: design.name,
-            stream_id: design.stream_id,
-            topic: "typography",
-        },
-    ]);
+    assert.deepEqual(
+        user_topics
+            .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.MUTED)
+            .sort(),
+        [
+            {
+                date_updated: 1577836800000,
+                date_updated_str: "Jan 1, 2020",
+                stream: social.name,
+                stream_id: social.stream_id,
+                topic: "breakfast",
+            },
+            {
+                date_updated: 1577836800000,
+                date_updated_str: "Jan 1, 2020",
+                stream: design.name,
+                stream_id: design.stream_id,
+                topic: "typography",
+            },
+        ],
+    );
 
     user_topics.set_user_topic({
         stream_id: design.stream_id,
