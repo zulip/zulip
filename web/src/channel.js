@@ -1,9 +1,11 @@
+import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
+import {normalize_path} from "./sentry";
 import * as spectators from "./spectators";
 
 let password_change_in_progress = false;
@@ -24,6 +26,28 @@ function call(args) {
         return undefined;
     }
 
+    const existing_span = Sentry.getCurrentHub().getScope().getSpan();
+    const txn_title = `call ${args.type} ${normalize_path(args.url)}`;
+    const span_data = {
+        op: "function",
+        description: txn_title,
+        data: {
+            url: args.url,
+            method: args.type,
+        },
+    };
+    let span;
+    if (args.type === "GET" && args.url === "/json/events") {
+        // Leave the span unset, so we don't record a transaction
+    } else {
+        if (!existing_span) {
+            span = Sentry.startTransaction({...span_data, name: txn_title});
+        } else {
+            /* istanbul ignore next */
+            span = existing_span.startChild(span_data);
+        }
+    }
+
     // Remember the number of completed password changes when the
     // request was initiated. This allows us to detect race
     // situations where a password change occurred before we got a
@@ -37,6 +61,10 @@ function call(args) {
         orig_error = function () {};
     }
     args.error = function wrapped_error(xhr, error_type, xhn) {
+        if (span !== undefined) {
+            span.setHttpStatus(xhr.status);
+            span.finish();
+        }
         if (reload_state.is_in_progress()) {
             // If we're in the process of reloading the browser,
             // there's no point in running the error handler,
@@ -74,6 +102,7 @@ function call(args) {
                 // the login page conveys the same information with a
                 // smoother relogin experience.
                 window.location.replace(page_params.login_page);
+                return;
             }
         } else if (xhr.status === 403) {
             try {
@@ -98,6 +127,10 @@ function call(args) {
         orig_success = function () {};
     }
     args.success = function wrapped_success(data, textStatus, jqXHR) {
+        if (span !== undefined) {
+            span.setHttpStatus(jqXHR.status);
+            span.finish();
+        }
         if (reload_state.is_in_progress()) {
             // If we're in the process of reloading the browser,
             // there's no point in running the success handler,
@@ -110,7 +143,15 @@ function call(args) {
         orig_success(data, textStatus, jqXHR);
     };
 
-    return $.ajax(args);
+    try {
+        const scope = Sentry.getCurrentHub().pushScope();
+        if (span !== undefined) {
+            scope.setSpan(span);
+        }
+        return $.ajax(args);
+    } finally {
+        Sentry.getCurrentHub().popScope();
+    }
 }
 
 export function get(options) {
