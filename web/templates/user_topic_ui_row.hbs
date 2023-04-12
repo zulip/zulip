@@ -1,0 +1,10 @@
+{{#with user_topic}}
+<tr data-stream-id="{{stream_id}}" data-stream="{{stream}}" data-topic="{{topic}}" data-date-updated="{{date_updated_str}}">
+    <td>{{stream}}</td>
+    <td>{{topic}}</td>
+    <td class="topic_date_updated">{{date_updated_str}}</td>
+    <td class="actions">
+        <span><a class="settings-unmute-topic">{{t "Unmute" }}</a></span>
+    </td>
+</tr>
+{{/with}}

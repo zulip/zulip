@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
+import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
 import * as ui from "./ui";
@@ -17,8 +17,8 @@ export function populate_list() {
 
     ListWidget.create($muted_topics_table, all_muted_topics, {
         name: "muted-topics-list",
-        modifier(muted_topic) {
-            return render_muted_topic_ui_row({muted_topic});
+        modifier(user_topic) {
+            return render_user_topic_ui_row({user_topic});
         },
         filter: {
             $element: $search_input,
