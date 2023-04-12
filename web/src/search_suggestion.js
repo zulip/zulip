@@ -102,6 +102,7 @@ function get_stream_suggestions(last, operators) {
         {operator: "streams"},
         {operator: "is", operand: "private"},
         {operator: "pm-with"},
+        {operator: "group-pm-with"},
     ];
     if (!check_validity(last, operators, valid, invalid)) {
         return [];
@@ -235,7 +236,7 @@ function make_people_getter(last) {
     };
 }
 
-// Possible args for autocomplete_operator: pm-with, sender, from
+// Possible args for autocomplete_operator: pm-with, sender, from, group-pm-with
 function get_person_suggestions(people_getter, last, operators, autocomplete_operator) {
     if (last.operator === "is" && last.operand === "private") {
         // Interpret 'is:private' as equivalent to 'pm-with:'
@@ -251,11 +252,22 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const valid = ["search", autocomplete_operator];
     let invalid;
-    if (autocomplete_operator === "pm-with") {
-        invalid = [{operator: "pm-with"}, {operator: "stream"}];
-    } else {
-        // If not pm-with, then this must either be 'sender' or 'from'
-        invalid = [{operator: "sender"}, {operator: "from"}];
+
+    switch (autocomplete_operator) {
+        case "group-pm-with":
+            invalid = [{operator: "stream"}, {operator: "is", operand: "resolved"}];
+            break;
+        case "pm-with":
+            invalid = [
+                {operator: "pm-with"},
+                {operator: "stream"},
+                {operator: "is", operand: "resolved"},
+            ];
+            break;
+        case "sender":
+        case "from":
+            invalid = [{operator: "sender"}, {operator: "from"}];
+            break;
     }
 
     if (!check_validity(last, operators, valid, invalid)) {
@@ -338,6 +350,7 @@ function get_topic_suggestions(last, operators) {
     const invalid = [
         {operator: "pm-with"},
         {operator: "is", operand: "private"},
+        {operator: "group-pm-with"},
         {operator: "topic"},
     ];
     if (!check_validity(last, operators, ["stream", "topic", "search"], invalid)) {
@@ -509,6 +522,7 @@ function get_is_filter_suggestions(last, operators) {
             description_html: "direct messages",
             invalid: [
                 {operator: "is", operand: "private"},
+                {operator: "is", operand: "resolved"},
                 {operator: "stream"},
                 {operator: "pm-with"},
                 {operator: "in"},
@@ -537,7 +551,12 @@ function get_is_filter_suggestions(last, operators) {
         {
             search_string: "is:resolved",
             description_html: "topics marked as resolved",
-            invalid: [{operator: "is", operand: "resolved"}],
+            invalid: [
+                {operator: "is", operand: "resolved"},
+                {operator: "is", operand: "private"},
+                {operator: "pm-with"},
+                {operator: "group-pm-with"},
+            ],
         },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
