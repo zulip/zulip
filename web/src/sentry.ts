@@ -73,6 +73,10 @@ if (page_params.server_sentry_dsn) {
                         name: normalize_path(location.pathname, sentry_key === "www"),
                     };
                 },
+                shouldCreateSpanForRequest(url) {
+                    const parsed = new URL(url, window.location.href);
+                    return !["/json/events", "/json/users/me/presence"].includes(parsed.pathname);
+                },
             }),
         ],
         allowUrls: url_matches,
