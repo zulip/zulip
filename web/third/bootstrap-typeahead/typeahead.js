@@ -487,8 +487,13 @@ import {get_string_diff} from "../../src/util";
 
         default:
           var hideOnEmpty = false
-          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
-            hideOnEmpty = true
+          // backspace
+          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) {
+            // Support for inputs to set the hideOnEmpty option explicitly to false
+            // to display typeahead after hitting backspace to clear the input.
+            if (typeof(this.options.hideOnEmpty) === undefined || this.options.hideOnEmpty) {
+              hideOnEmpty = true;
+            }
           }
           this.lookup(hideOnEmpty)
       }
