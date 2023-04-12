@@ -833,13 +833,18 @@ div.overlay {
         font-size: 0.75em;
     }
 
-    &.fa-lock {
+    &.zulip-icon-lock {
+        position: relative;
+        top: 0.06em;
         padding-right: 1px;
-        font-size: 0.865em;
+        font-size: 0.8em;
     }
 
-    &.hashtag:empty::after {
-        font-size: 1em;
+    &.zulip-icon-hashtag {
+        position: relative;
+        top: 0.06em;
+        padding-right: 1px;
+        font-size: 0.75em;
     }
 }
 
