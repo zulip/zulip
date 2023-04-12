@@ -276,3 +276,7 @@ def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
         name=system_user_group_name, realm=user_profile.realm, is_system_group=True
     )
     return system_user_group
+
+
+def get_user_group_by_name(name: str, realm: Realm) -> int:
+    return UserGroup.objects.filter(name=name.strip(), realm=realm).first()

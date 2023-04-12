@@ -14,7 +14,7 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
-from zerver.actions.create_user import do_create_user, do_reactivate_user, notify_created_bot
+from zerver.actions.create_user import do_create_user, do_reactivate_user, notify_created_bot, check_add_user_group_for_create_user
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_update_user_custom_profile_data_if_changed,
@@ -680,8 +680,10 @@ def create_user_backend(
     user_profile: UserProfile,
     email: str = REQ(),
     password: str = REQ(),
+    group_name: str = REQ("group_name"),
     full_name_raw: str = REQ("full_name"),
 ) -> HttpResponse:
+    user_group = None
     if not user_profile.can_create_users:
         raise JsonableError(_("User not authorized for this query"))
 
@@ -728,7 +730,12 @@ def create_user_backend(
         tos_version=None,
         acting_user=user_profile,
     )
-    return json_success(request, data={"user_id": target_user.id, "api_key": target_user.api_key})
+    if group_name:
+        user_group = check_add_user_group_for_create_user(realm, group_name, target_user, acting_user=user_profile)
+        if user_group:
+            user_group = user_group.name
+
+    return json_success(request, data={"user_id": target_user.id, "api_key": target_user.api_key, "user_group": user_group})
 
 
 def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

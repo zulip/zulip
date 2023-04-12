@@ -7,7 +7,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.user_groups import access_user_group_by_id
+from zerver.lib.user_groups import access_user_group_by_id, get_user_group_by_name
 from zerver.models import (
     GroupGroupMembership,
     Realm,
@@ -197,6 +197,28 @@ def bulk_add_members_to_user_group(
     UserGroupMembership.objects.bulk_create(memberships)
 
     do_send_user_group_members_update_event("add_members", user_group, user_profile_ids)
+
+
+def check_add_user_group_for_create_user(
+    realm: Realm,
+    name: str,
+    user: UserProfile,
+    description: str = "",
+    *,
+    acting_user: Optional[UserProfile],
+) -> UserGroup:
+    user_group = None
+    try:
+        user_group = create_user_group_in_database(
+            name, [user], realm, description=description, acting_user=acting_user
+        )
+    except django.db.utils.IntegrityError:
+        pass
+    if not user_group:
+        user_group = get_user_group_by_name(name, realm)
+    if user_group:
+        UserGroupMembership.objects.create(user_group=user_group, user_profile=user)
+    return user_group
 
 
 @transaction.atomic(savepoint=False)
