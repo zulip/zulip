@@ -60,6 +60,7 @@ if (page_params.server_sentry_dsn) {
         initialScope: {
             tags: {
                 realm: sentry_key,
+                user_role: user_info.role ?? "Browser",
                 server_version: page_params.zulip_version,
             },
             user: user_info,
