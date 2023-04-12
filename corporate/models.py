@@ -28,6 +28,9 @@ class Customer(models.Model):
     # they purchased.
     exempt_from_from_license_number_check = models.BooleanField(default=False)
 
+    def __str__(self) -> str:
+        return f"{self.realm!r} {self.stripe_customer_id}"
+
     @property
     def is_self_hosted(self) -> bool:
         is_self_hosted = self.remote_server is not None
@@ -41,9 +44,6 @@ class Customer(models.Model):
         if is_cloud:
             assert self.remote_server is None
         return is_cloud
-
-    def __str__(self) -> str:
-        return f"{self.realm!r} {self.stripe_customer_id}"
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:

@@ -692,14 +692,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         },
     }
 
-    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
-        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
-        of the lazily evaluated `name` field without modifying the original."""
-        return {
-            rating_type: {"name": str(rating["name"]), "id": rating["id"]}
-            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
-        }
-
     # maximum rating of the GIFs that will be retrieved from GIPHY
     giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
 
@@ -793,6 +785,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
     night_logo_version = models.PositiveSmallIntegerField(default=1)
 
+    def __str__(self) -> str:
+        return f"{self.string_id} {self.id}"
+
+    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
+        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
+        of the lazily evaluated `name` field without modifying the original."""
+        return {
+            rating_type: {"name": str(rating["name"]), "id": rating["id"]}
+            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
+        }
+
     def authentication_methods_dict(self) -> Dict[str, bool]:
         """Returns the mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
@@ -812,9 +815,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             if backend in supported_backends:
                 ret[k] = v
         return ret
-
-    def __str__(self) -> str:
-        return f"{self.string_id} {self.id}"
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
@@ -1125,9 +1125,6 @@ class RealmEmoji(models.Model):
     PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
     STILL_PATH_ID_TEMPLATE = "{realm_id}/emoji/images/still/{emoji_filename_without_extension}.png"
 
-    def __str__(self) -> str:
-        return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -1136,6 +1133,9 @@ class RealmEmoji(models.Model):
                 name="unique_realm_emoji_when_false_deactivated",
             ),
         ]
+
+    def __str__(self) -> str:
+        return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
 def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
@@ -1286,6 +1286,9 @@ class RealmFilter(models.Model):
     class Meta:
         unique_together = ("realm", "pattern")
 
+    def __str__(self) -> str:
+        return f"{self.realm.string_id}: {self.pattern} {self.url_format_string}"
+
     def clean(self) -> None:
         """Validate whether the set of parameters in the URL Format string
         match the set of parameters in the regular expression.
@@ -1327,9 +1330,6 @@ class RealmFilter(models.Model):
                 _("Group %(name)r in linkifier pattern is not present in URL format string."),
                 params={"name": name},
             )
-
-    def __str__(self) -> str:
-        return f"{self.realm.string_id}: {self.pattern} {self.url_format_string}"
 
 
 def get_linkifiers_cache_key(realm_id: int) -> str:
@@ -1486,13 +1486,13 @@ class Recipient(models.Model):
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {PERSONAL: "personal", STREAM: "stream", HUDDLE: "huddle"}
 
-    def type_name(self) -> str:
-        # Raises KeyError if invalid
-        return self._type_names[self.type]
-
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self)
         return f"{display_recipient} ({self.type_id}, {self.type})"
+
+    def type_name(self) -> str:
+        # Raises KeyError if invalid
+        return self._type_names[self.type]
 
 
 class UserBaseSettings(models.Model):
@@ -2623,6 +2623,11 @@ class Stream(models.Model):
         ),
     }
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("name"), name="upper_stream_name_idx"),
+        ]
+
     def __str__(self) -> str:
         return self.name
 
@@ -2679,11 +2684,6 @@ class Stream(models.Model):
             stream_post_policy=self.stream_post_policy,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         )
-
-    class Meta:
-        indexes = [
-            models.Index(Upper("name"), name="upper_stream_name_idx"),
-        ]
 
 
 post_save.connect(flush_stream, sender=Stream)
@@ -4115,12 +4115,6 @@ class UserPresence(models.Model):
       https://zulip.readthedocs.io/en/latest/subsystems/presence.html
     """
 
-    class Meta:
-        unique_together = ("user_profile", "client")
-        index_together = [
-            ("realm", "timestamp"),
-        ]
-
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     client = models.ForeignKey(Client, on_delete=CASCADE)
@@ -4145,6 +4139,12 @@ class UserPresence(models.Model):
     # There is no "inactive" status, because that is encoded by the
     # timestamp being old.
     status = models.PositiveSmallIntegerField(default=ACTIVE)
+
+    class Meta:
+        unique_together = ("user_profile", "client")
+        index_together = [
+            ("realm", "timestamp"),
+        ]
 
     @staticmethod
     def status_to_string(status: int) -> str:
@@ -4345,15 +4345,15 @@ class ScheduledMessage(models.Model):
         default=SEND_LATER,
     )
 
+    def __str__(self) -> str:
+        display_recipient = get_display_recipient(self.recipient)
+        return f"{display_recipient} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
+
     def topic_name(self) -> str:
         return self.subject
 
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
-
-    def __str__(self) -> str:
-        display_recipient = get_display_recipient(self.recipient)
-        return f"{display_recipient} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
 
 
 EMAIL_TYPES = {
@@ -4662,6 +4662,9 @@ class CustomProfileField(models.Model):
     class Meta:
         unique_together = ("realm", "name")
 
+    def __str__(self) -> str:
+        return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
+
     def as_dict(self) -> ProfileDataElementBase:
         data_as_dict: ProfileDataElementBase = {
             "id": self.id,
@@ -4680,9 +4683,6 @@ class CustomProfileField(models.Model):
         if self.field_type in [CustomProfileField.SHORT_TEXT, CustomProfileField.LONG_TEXT]:
             return True
         return False
-
-    def __str__(self) -> str:
-        return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
 
 
 def custom_profile_fields_for_realm(realm_id: int) -> QuerySet[CustomProfileField]:
