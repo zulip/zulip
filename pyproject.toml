@@ -107,11 +107,13 @@ select = [
     "F", # flakes
     "G", # logging format
     "I", # import sorting
+    "INT", # gettext
     "ISC", # string concatenation
     "N", # naming
     "PGH", # pygrep-hooks
     "PIE", # miscellaneous
     "PL", # pylint
+    "PYI", # typing stubs
     "Q", # quotes
     "RSE", # raise
     "RUF", # Ruff
@@ -168,6 +170,9 @@ ignore = [
 line-length = 100
 src = [".", "tools"]
 target-version = "py38"
+
+[tool.ruff.flake8-gettext]
+extend-function-names = ["gettext_lazy"]
 
 [tool.ruff.isort]
 known-third-party = ["zulip"]
