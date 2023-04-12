@@ -87,16 +87,10 @@ table td {
 }
 
 .footer td,
-.footer p,
-.footer span,
-.footer a {
+.footer span {
     color: #5f5ec7;
     font-size: 12px;
     text-align: center;
-}
-
-.footer .content-block p {
-    margin-top: 0;
 }
 
 h1,
