@@ -455,3 +455,25 @@ export function get_full_datetime(time: Date): string {
 
     return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
 }
+
+type TimeLimitSetting = {
+    value: number;
+    unit: string;
+};
+
+export function get_time_limit_setting_in_appropriate_unit(
+    time_limit_in_seconds: number,
+): TimeLimitSetting {
+    const time_limit_in_minutes = Math.floor(time_limit_in_seconds / 60);
+    if (time_limit_in_minutes < 60) {
+        return {value: time_limit_in_minutes, unit: "minute"};
+    }
+
+    const time_limit_in_hours = Math.floor(time_limit_in_minutes / 60);
+    if (time_limit_in_hours < 24) {
+        return {value: time_limit_in_hours, unit: "hour"};
+    }
+
+    const time_limit_in_days = Math.floor(time_limit_in_hours / 24);
+    return {value: time_limit_in_days, unit: "day"};
+}
