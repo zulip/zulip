@@ -208,11 +208,6 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     await common.pm_recipient.set(page, "cordelia@zulip.com");
     await page.reload();
 
-    // Reloading into a private messages narrow opens compose box.
-    await page.waitForSelector("#compose-textarea", {visible: true});
-    await page.click("#compose_close");
-
-    console.log("Reloading finished. Opening drafts again now.");
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
 

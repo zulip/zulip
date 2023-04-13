@@ -24,7 +24,6 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
-import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
@@ -585,16 +584,6 @@ export function quote_and_reply(opts) {
 }
 
 export function on_narrow(opts) {
-    // We use force_close when jumping between PM narrows with the "p" key,
-    // so that we don't have an open compose box that makes it difficult
-    // to cycle quickly through unread messages.
-    if (opts.force_close) {
-        // This closes the compose box if it was already open, and it is
-        // basically a noop otherwise.
-        cancel();
-        return;
-    }
-
     if (opts.trigger === "narrow_to_compose_target") {
         compose_fade.update_message_list();
         return;
@@ -607,36 +596,6 @@ export function on_narrow(opts) {
 
     if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {
         compose_fade.update_message_list();
-        return;
-    }
-
-    if (narrow_state.narrowed_by_pm_reply()) {
-        opts = fill_in_opts_from_current_narrowed_view("private", opts);
-        // Do not open compose box if an invalid recipient is present.
-        if (!opts.private_message_recipient) {
-            if (compose_state.composing()) {
-                cancel();
-            }
-            return;
-        }
-        // Do not open compose box if organization has disabled sending
-        // private messages and recipient is not a bot.
-        if (
-            page_params.realm_private_message_policy ===
-                settings_config.private_message_policy_values.disabled.code &&
-            opts.private_message_recipient
-        ) {
-            const emails = opts.private_message_recipient.split(",");
-            if (emails.length !== 1 || !people.get_by_email(emails[0]).is_bot) {
-                // If we are navigating between private message conversations,
-                // we want the compose box to close for non-bot users.
-                if (compose_state.composing()) {
-                    cancel();
-                }
-                return;
-            }
-        }
-        start("private");
         return;
     }
 

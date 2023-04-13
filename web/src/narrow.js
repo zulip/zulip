@@ -899,10 +899,7 @@ export function narrow_to_next_pm_string() {
 
     const filter_expr = [{operator: "pm-with", operand: pm_with}];
 
-    // force_close parameter is true to not auto open compose_box
-    const opts = {
-        force_close: true,
-    };
+    const opts = {};
 
     activate(filter_expr, opts);
 }
