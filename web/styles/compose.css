@@ -323,7 +323,11 @@
         }
     }
 
-    &.warning {
+    /* warning and warning-style classes have the same CSS; this is since
+    the warning class has some associated javascript which we do not want
+    for some of the banners, for which we use the warning-style class. */
+    &.warning,
+    &.warning-style {
         background-color: hsl(50deg 75% 92%);
         border-color: hsl(38deg 44% 27% / 40%);
         color: hsl(38deg 44% 27%);

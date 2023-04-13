@@ -226,7 +226,8 @@
             }
         }
 
-        &.warning {
+        &.warning,
+        &.warning-style {
             background-color: hsl(53deg 100% 11%);
             border-color: hsl(38deg 44% 60% / 40%);
             color: hsl(50deg 45% 80%);

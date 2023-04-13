@@ -17,9 +17,15 @@ const MESSAGE_SENT_CLASSNAMES = {
     narrow_to_recipient: "narrow_to_recipient",
     scheduled_message_banner: "scheduled_message_banner",
 };
+// Technically, unmute_topic_notification is a message sent banner, but
+// it has distinct behavior / look - it has an associated action button,
+// does not disappear on scroll - so we don't include it here, as it needs
+// to be handled separately.
 
 export const CLASSNAMES = {
     ...MESSAGE_SENT_CLASSNAMES,
+    // unmute topic notifications are styled like warnings but have distinct behaviour
+    unmute_topic_notification: "unmute_topic_notification warning-style",
     // warnings
     topic_resolved: "topic_resolved",
     recipient_not_subscribed: "recipient_not_subscribed",
@@ -43,9 +49,12 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
-export function clear_message_sent_banners(): void {
+export function clear_message_sent_banners(include_unmute_banner = true): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         $(`#compose_banners .${CSS.escape(classname)}`).remove();
+    }
+    if (include_unmute_banner) {
+        clear_unmute_topic_notifications();
     }
     scroll_to_message_banner_message_id = null;
 }
@@ -63,6 +72,10 @@ export function clear_errors(): void {
 
 export function clear_warnings(): void {
     $(`#compose_banners .${CSS.escape(WARNING)}`).remove();
+}
+
+export function clear_unmute_topic_notifications(): void {
+    $(`#compose_banners .${CLASSNAMES.unmute_topic_notification.replaceAll(" ", ".")}`).remove();
 }
 
 export function clear_all(): void {

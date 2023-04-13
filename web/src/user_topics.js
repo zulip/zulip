@@ -2,6 +2,7 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as compose_banner from "./compose_banner";
 import * as feedback_widget from "./feedback_widget";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
@@ -75,7 +76,13 @@ export function get_user_topics_for_visibility_policy(visibility_policy) {
     return topics;
 }
 
-export function set_user_topic_visibility_policy(stream_id, topic, visibility_policy, from_hotkey) {
+export function set_user_topic_visibility_policy(
+    stream_id,
+    topic,
+    visibility_policy,
+    from_hotkey,
+    from_banner,
+) {
     const data = {
         stream_id,
         topic,
@@ -88,6 +95,10 @@ export function set_user_topic_visibility_policy(stream_id, topic, visibility_po
         success() {
             if (visibility_policy === all_visibility_policies.INHERIT) {
                 feedback_widget.dismiss();
+                return;
+            }
+            if (from_banner) {
+                compose_banner.clear_unmute_topic_notifications();
                 return;
             }
             if (!from_hotkey) {

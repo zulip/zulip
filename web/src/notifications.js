@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
+import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -166,6 +167,21 @@ export function is_window_focused() {
     return window_focused;
 }
 
+function notify_unmute(muted_narrow, stream_id, topic_name) {
+    const $unmute_notification = $(
+        render_unmute_topic_banner({
+            muted_narrow,
+            stream_id,
+            topic_name,
+            classname: compose_banner.CLASSNAMES.unmute_topic_notification,
+            banner_type: "",
+            button_text: $t({defaultMessage: "Unmute topic"}),
+        }),
+    );
+    compose_banner.clear_unmute_topic_notifications();
+    $("#compose_banners").append($unmute_notification);
+}
+
 export function notify_above_composebox(
     banner_text,
     classname,
@@ -182,7 +198,9 @@ export function notify_above_composebox(
             link_text,
         }),
     );
-    compose_banner.clear_message_sent_banners();
+    // We pass in include_unmute_banner as false because we don't want to
+    // clear any unmute_banner associated with this same message.
+    compose_banner.clear_message_sent_banners(false);
     $("#compose_banners").append($notification);
 }
 
@@ -559,20 +577,26 @@ function get_message_header(message) {
     );
 }
 
+export function get_muted_narrow(message) {
+    if (
+        message.type === "stream" &&
+        stream_data.is_muted(message.stream_id) &&
+        !user_topics.is_topic_unmuted(message.stream_id, message.topic)
+    ) {
+        return "stream";
+    }
+    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
+        return "topic";
+    }
+    return undefined;
+}
+
 export function get_local_notify_mix_reason(message) {
     const $row = message_lists.current.get_row(message.id);
     if ($row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
         return undefined;
-    }
-
-    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
-        return $t({defaultMessage: "Sent! Your message was sent to a topic you have muted."});
-    }
-
-    if (message.type === "stream" && stream_data.is_muted(message.stream_id)) {
-        return $t({defaultMessage: "Sent! Your message was sent to a stream you have muted."});
     }
 
     // offscreen because it is outside narrow
@@ -617,6 +641,15 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
                 "Slightly unexpected: A message not sent by us batches with those that were.",
             );
             continue;
+        }
+
+        const muted_narrow = get_muted_narrow(message);
+        if (muted_narrow) {
+            notify_unmute(muted_narrow, message.stream_id, message.topic);
+            // We don't `continue` after showing the unmute banner, allowing multiple
+            // banners (at max 2 including the unmute banner) to be shown at once,
+            // as it's common for the unmute case to occur simultaneously with
+            // another banner's case, like sending a message to another narrow.
         }
 
         let banner_text = get_local_notify_mix_reason(message);
@@ -728,7 +761,7 @@ export function register_click_handlers() {
             const message_id = $(e.currentTarget).data("message-id");
             message_lists.current.select_id(message_id);
             navigate.scroll_to_selected();
-            compose_banner.clear_message_sent_banners();
+            compose_banner.clear_message_sent_banners(false);
             e.stopPropagation();
             e.preventDefault();
         },
