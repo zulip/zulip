@@ -199,11 +199,18 @@ export function initialize() {
 
     delegate("body", {
         target: [
+            // Ideally this would be `#compose_buttons .button`, but the
+            // reply button's actual area is its containing span.
+            "#compose_buttons > .reply_button_container",
             "#left_bar_compose_mobile_button_big",
+            "#left_bar_compose_stream_button_big",
             "#left_bar_compose_private_button_big",
         ],
-        delay: LONG_HOVER_DELAY,
+        delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     delegate("body", {
