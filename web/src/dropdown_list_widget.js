@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import tippy from "tippy.js";
 
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_dropdown_list from "../templates/settings/dropdown_list.hbs";
 
 import * as blueslip from "./blueslip";
@@ -63,8 +64,16 @@ export class DropdownListWidget {
             return;
         }
 
-        const text = this.render_text(item.name);
-        $elem.text(text);
+        if (item.stream !== undefined) {
+            const stream = item.stream;
+            const rendered_stream_name_with_privacy_symbol_html =
+                render_inline_decorated_stream_name({stream});
+            $elem.html(rendered_stream_name_with_privacy_symbol_html);
+        } else {
+            const text = this.render_text(item.name);
+            $elem.text(text);
+        }
+
         $elem.removeClass("text-warning");
         $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
     }
