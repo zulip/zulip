@@ -240,9 +240,6 @@ export function last_seen_status_from_date(
     current_date = new Date(),
 ): string {
     const minutes = differenceInMinutes(current_date, last_active_date);
-    if (minutes <= 2) {
-        return $t({defaultMessage: "Active just now"});
-    }
     if (minutes < 60) {
         return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
     }

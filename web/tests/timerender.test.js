@@ -473,12 +473,6 @@ run_test("last_seen_status_from_date", () => {
         assert.equal(actual_status, expected_status);
     }
 
-    assert_same({seconds: -20}, $t({defaultMessage: "Active just now"}));
-
-    assert_same({minutes: -1}, $t({defaultMessage: "Active just now"}));
-
-    assert_same({minutes: -2}, $t({defaultMessage: "Active just now"}));
-
     assert_same({minutes: -30}, $t({defaultMessage: "Active 30 minutes ago"}));
 
     assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
