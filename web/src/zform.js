@@ -1,59 +1,34 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import render_widgets_zform_choices from "../templates/widgets/zform_choices.hbs";
 
 import * as blueslip from "./blueslip";
-import * as schema from "./schema";
 import * as transmit from "./transmit";
 
-export function validate_extra_data(data) {
-    function check(data) {
-        function check_choice_data(data) {
-            function check_choice_item(field_name, val) {
-                return schema.check_record(field_name, val, {
-                    short_name: schema.check_string,
-                    long_name: schema.check_string,
-                    reply: schema.check_string,
-                });
-            }
-
-            function check_choices(field_name, val) {
-                return schema.check_array(field_name, val, check_choice_item);
-            }
-
-            return schema.check_record("zform data", data, {
-                heading: schema.check_string,
-                choices: check_choices,
-            });
-        }
-
-        if (data.type === "choices") {
-            return check_choice_data(data);
-        }
-
-        return "unknown zform type: " + data.type;
-    }
-
-    const msg = check(data);
-
-    if (msg) {
-        blueslip.warn(msg);
-        return false;
-    }
-
-    return true;
-}
+const zform_widget_extra_data_schema = z.object({
+    choices: z.array(
+        z.object({
+            long_name: z.string(),
+            reply: z.string(),
+            short_name: z.string(),
+        }),
+    ),
+    heading: z.string(),
+    type: z.literal("choices"),
+});
 
 export function activate(opts) {
     const self = {};
 
     const $outer_elem = opts.$elem;
-    const data = opts.extra_data;
+    const parse_result = zform_widget_extra_data_schema.safeParse(opts.extra_data);
 
-    if (!validate_extra_data(data)) {
-        // callee will log reason we fail
+    if (!parse_result.success) {
+        blueslip.warn("invalid zform extra data", parse_result.error.issues);
         return undefined;
     }
+    const {data} = parse_result;
 
     function make_choices(data) {
         // Assign idx values to each of our choices so that
