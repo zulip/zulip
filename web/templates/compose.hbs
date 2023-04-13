@@ -16,12 +16,22 @@
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
-            <span class="new_message_button reply_button_container ">
+            <span class="new_message_button reply_button_container" data-tooltip-template-id="compose_reply_message_button_tooltip_template">
                 <button type="button" class="button small rounded compose_reply_button"
-                  id="left_bar_compose_reply_button_big"
-                  title="{{t 'Reply to selected message' }} (r)">
+                  id="left_bar_compose_reply_button_big">
                     <span class="compose_reply_button_label">{{t 'Compose message' }}</span>
                 </button>
+                <template id="compose_reply_message_button_tooltip_template">
+                    {{t 'Reply to selected message' }}
+                    {{tooltip_hotkey_hints "R"}}
+                </template>
+                <template id="compose_reply_selected_topic_button_tooltip_template">
+                    {{t 'Reply to selected conversation' }}
+                    {{tooltip_hotkey_hints "R"}}
+                </template>
+                <template id="compose_reply_button_disabled_tooltip_template">
+                    {{t 'You are not allowed to send direct messages in this organization.' }}
+                </template>
             </span>
             <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"
@@ -37,9 +47,17 @@
             <span class="new_message_button stream_button_container">
                 <button type="button" class="button small rounded compose_stream_button"
                   id="left_bar_compose_stream_button_big"
-                  title="{{t 'New topic' }} (c)">
+                  data-tooltip-template-id="new_topic_message_button_tooltip_template">
                     <span class="compose_stream_button_label">{{t 'New topic' }}</span>
                 </button>
+                <template id="new_topic_message_button_tooltip_template">
+                    {{t 'New topic' }}
+                    {{tooltip_hotkey_hints "C"}}
+                </template>
+                <template id="new_stream_message_button_tooltip_template">
+                    {{t 'New stream message' }}
+                    {{tooltip_hotkey_hints "C"}}
+                </template>
             </span>
             {{#unless embedded }}
             <span class="new_message_button private_button_container">

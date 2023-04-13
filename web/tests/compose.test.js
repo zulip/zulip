@@ -825,6 +825,7 @@ test_ui("DM policy disabled", ({override, override_rewire}) => {
 
 test_ui("narrow_button_titles", ({override}) => {
     override(narrow_state, "pm_ids_string", () => "31");
+    override(narrow_state, "is_message_feed_visible", () => true);
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
         $("#left_bar_compose_stream_button_big").text(),
