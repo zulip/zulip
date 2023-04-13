@@ -475,7 +475,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     allow_edit_history = models.BooleanField(default=True)
 
     # Defaults for new users
-    default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
+    default_language = models.CharField(default="ru", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
