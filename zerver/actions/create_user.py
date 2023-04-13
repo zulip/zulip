@@ -374,7 +374,7 @@ def do_create_user(
     tos_version: Optional[str] = None,
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
-    default_language: str = "en",
+    default_language: str = "ru",
     default_sending_stream: Optional[Stream] = None,
     default_events_register_stream: Optional[Stream] = None,
     default_all_public_streams: Optional[bool] = None,
