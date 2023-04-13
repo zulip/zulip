@@ -826,25 +826,17 @@ div.overlay {
 }
 
 .stream-privacy-type-icon {
-    &.zulip-icon-globe {
-        position: relative;
-        top: 0.06em;
-        padding-right: 1px;
+    position: relative;
+    top: 0.06em;
+    padding-right: 1px;
+
+    &.zulip-icon-globe,
+    &.zulip-icon-hashtag {
         font-size: 0.75em;
     }
 
     &.zulip-icon-lock {
-        position: relative;
-        top: 0.06em;
-        padding-right: 1px;
         font-size: 0.8em;
-    }
-
-    &.zulip-icon-hashtag {
-        position: relative;
-        top: 0.06em;
-        padding-right: 1px;
-        font-size: 0.75em;
     }
 }
 
