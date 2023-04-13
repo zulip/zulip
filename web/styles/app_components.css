@@ -828,7 +828,7 @@ div.overlay {
 .stream-privacy-type-icon {
     &.zulip-icon-globe {
         position: relative;
-        top: 1px;
+        top: 0.06em;
         padding-right: 1px;
         font-size: 0.75em;
     }
