@@ -107,6 +107,10 @@ def adjust_block_indentation(tokens: List[Token], fn: str) -> None:
 
 
 def fix_indents_for_multi_line_tags(tokens: List[Token]) -> None:
+    def fix(frag: str) -> str:
+        frag = frag.strip()
+        return continue_indent + frag if frag else ""
+
     for token in tokens:
         if token.kind == "code":
             continue
@@ -120,10 +124,6 @@ def fix_indents_for_multi_line_tags(tokens: List[Token]) -> None:
             continue_indent = token.indent + "  "
 
         frags = token.new_s.split("\n")
-
-        def fix(frag: str) -> str:
-            frag = frag.strip()
-            return continue_indent + frag if frag else ""
 
         token.new_s = frags[0] + "\n" + "\n".join(fix(frag) for frag in frags[1:])
 

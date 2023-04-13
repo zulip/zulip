@@ -316,6 +316,9 @@ def bulk_get_subscriber_user_ids(
 ) -> Dict[int, List[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
+    is_subscribed: bool
+    check_user_subscribed = lambda user_profile: is_subscribed
+
     for stream_dict in stream_dicts:
         stream_id = stream_dict["id"]
         is_subscribed = stream_id in subscribed_stream_ids
@@ -324,7 +327,7 @@ def bulk_get_subscriber_user_ids(
             validate_user_access_to_subscribers_helper(
                 user_profile,
                 stream_dict,
-                lambda user_profile: is_subscribed,
+                check_user_subscribed,
             )
         except JsonableError:
             continue

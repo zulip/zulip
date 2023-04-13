@@ -14,6 +14,7 @@ from unittest import mock
 import orjson
 from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
+from returns.curry import partial
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.actions.bots import (
@@ -457,21 +458,21 @@ class NormalActionsTest(BaseAction):
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
             self.verify_action(
-                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+                partial(self.send_stream_message, self.example_user("cordelia"), "Verona", content),
             )
 
     def test_topic_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**topic** hello " + str(i)
             self.verify_action(
-                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+                partial(self.send_stream_message, self.example_user("cordelia"), "Verona", content),
             )
 
     def test_stream_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**all** hello " + str(i)
             self.verify_action(
-                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+                partial(self.send_stream_message, self.example_user("cordelia"), "Verona", content),
             )
 
     def test_pm_send_message_events(self) -> None:
@@ -747,12 +748,12 @@ class NormalActionsTest(BaseAction):
             )
 
             self.verify_action(
-                lambda: do_update_message_flags(user_profile, "add", "read", [message]),
+                partial(do_update_message_flags, user_profile, "add", "read", [message]),
                 state_change_expected=True,
             )
 
             events = self.verify_action(
-                lambda: do_update_message_flags(user_profile, "remove", "read", [message]),
+                partial(do_update_message_flags, user_profile, "remove", "read", [message]),
                 state_change_expected=True,
             )
             check_update_message_flags_remove("events[0]", events[0])
@@ -761,12 +762,14 @@ class NormalActionsTest(BaseAction):
                 from_user=user_profile, to_user=self.example_user("cordelia"), content=content
             )
             self.verify_action(
-                lambda: do_update_message_flags(user_profile, "add", "read", [personal_message]),
+                partial(do_update_message_flags, user_profile, "add", "read", [personal_message]),
                 state_change_expected=True,
             )
 
             events = self.verify_action(
-                lambda: do_update_message_flags(user_profile, "remove", "read", [personal_message]),
+                partial(
+                    do_update_message_flags, user_profile, "remove", "read", [personal_message]
+                ),
                 state_change_expected=True,
             )
             check_update_message_flags_remove("events[0]", events[0])
@@ -778,12 +781,12 @@ class NormalActionsTest(BaseAction):
             )
 
             self.verify_action(
-                lambda: do_update_message_flags(user_profile, "add", "read", [huddle_message]),
+                partial(do_update_message_flags, user_profile, "add", "read", [huddle_message]),
                 state_change_expected=True,
             )
 
             events = self.verify_action(
-                lambda: do_update_message_flags(user_profile, "remove", "read", [huddle_message]),
+                partial(do_update_message_flags, user_profile, "remove", "read", [huddle_message]),
                 state_change_expected=True,
             )
             check_update_message_flags_remove("events[0]", events[0])
@@ -1712,8 +1715,11 @@ class NormalActionsTest(BaseAction):
         ):
             with fake_backends():
                 events = self.verify_action(
-                    lambda: do_set_realm_authentication_methods(
-                        self.user_profile.realm, auth_method_dict, acting_user=None
+                    partial(
+                        do_set_realm_authentication_methods,
+                        self.user_profile.realm,
+                        auth_method_dict,
+                        acting_user=None,
                     )
                 )
 
@@ -1727,8 +1733,14 @@ class NormalActionsTest(BaseAction):
         )
         for pinned in (True, False):
             events = self.verify_action(
-                lambda: do_change_subscription_property(
-                    self.user_profile, sub, stream, "pin_to_top", pinned, acting_user=None
+                partial(
+                    do_change_subscription_property,
+                    self.user_profile,
+                    sub,
+                    stream,
+                    "pin_to_top",
+                    pinned,
+                    acting_user=None,
                 )
             )
             check_subscription_update(
@@ -1795,8 +1807,14 @@ class NormalActionsTest(BaseAction):
             # First test with notification_settings_null enabled
             for value in (True, False):
                 events = self.verify_action(
-                    lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value, acting_user=None
+                    partial(
+                        do_change_subscription_property,
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name,
+                        value,
+                        acting_user=None,
                     ),
                     notification_settings_null=True,
                 )
@@ -1809,8 +1827,14 @@ class NormalActionsTest(BaseAction):
 
             for value in (True, False):
                 events = self.verify_action(
-                    lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value, acting_user=None
+                    partial(
+                        do_change_subscription_property,
+                        self.user_profile,
+                        sub,
+                        stream,
+                        setting_name,
+                        value,
+                        acting_user=None,
                     )
                 )
                 check_subscription_update(
@@ -1825,7 +1849,8 @@ class NormalActionsTest(BaseAction):
 
         for notifications_stream, notifications_stream_id in ((stream, stream.id), (None, -1)):
             events = self.verify_action(
-                lambda: do_set_realm_notifications_stream(
+                partial(
+                    do_set_realm_notifications_stream,
                     self.user_profile.realm,
                     notifications_stream,
                     notifications_stream_id,
@@ -1842,7 +1867,8 @@ class NormalActionsTest(BaseAction):
             (None, -1),
         ):
             events = self.verify_action(
-                lambda: do_set_realm_signup_notifications_stream(
+                partial(
+                    do_set_realm_signup_notifications_stream,
                     self.user_profile.realm,
                     signup_notifications_stream,
                     signup_notifications_stream_id,
@@ -1871,7 +1897,7 @@ class NormalActionsTest(BaseAction):
                 num_events = 5
 
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                partial(do_change_user_role, self.user_profile, role, acting_user=None),
                 num_events=num_events,
             )
             check_realm_user_update("events[0]", events[0], "role")
@@ -1919,7 +1945,7 @@ class NormalActionsTest(BaseAction):
             else:
                 num_events = 5
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                partial(do_change_user_role, self.user_profile, role, acting_user=None),
                 num_events=num_events,
             )
             check_realm_user_update("events[0]", events[0], "role")
@@ -1947,7 +1973,7 @@ class NormalActionsTest(BaseAction):
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_MODERATOR, UserProfile.ROLE_MEMBER]:
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                partial(do_change_user_role, self.user_profile, role, acting_user=None),
                 num_events=4,
             )
             check_realm_user_update("events[0]", events[0], "role")
@@ -1982,7 +2008,7 @@ class NormalActionsTest(BaseAction):
             else:
                 num_events = 5
             events = self.verify_action(
-                lambda: do_change_user_role(self.user_profile, role, acting_user=None),
+                partial(do_change_user_role, self.user_profile, role, acting_user=None),
                 num_events=num_events,
             )
             check_realm_user_update("events[0]", events[0], "role")
@@ -2028,7 +2054,8 @@ class NormalActionsTest(BaseAction):
 
             for setting_value in [True, False]:
                 events = self.verify_action(
-                    lambda: do_change_user_setting(
+                    partial(
+                        do_change_user_setting,
                         self.user_profile,
                         notification_setting,
                         setting_value,
@@ -2042,7 +2069,8 @@ class NormalActionsTest(BaseAction):
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
-                    lambda: do_change_user_setting(
+                    partial(
+                        do_change_user_setting,
                         self.user_profile,
                         notification_setting,
                         setting_value,
@@ -2070,8 +2098,12 @@ class NormalActionsTest(BaseAction):
 
         for val in [True, False]:
             events = self.verify_action(
-                lambda: do_change_user_setting(
-                    self.user_profile, presence_enabled_setting, val, acting_user=self.user_profile
+                partial(
+                    do_change_user_setting,
+                    self.user_profile,
+                    presence_enabled_setting,
+                    val,
+                    acting_user=self.user_profile,
                 ),
                 num_events=3,
             )
@@ -2545,7 +2577,7 @@ class NormalActionsTest(BaseAction):
 
             stream = self.make_stream(old_name)
             self.subscribe(self.user_profile, stream.name)
-            action = lambda: do_rename_stream(stream, new_name, self.user_profile)
+            action = partial(do_rename_stream, stream, new_name, self.user_profile)
             events = self.verify_action(action, num_events=3, include_streams=include_streams)
 
             check_stream_update("events[0]", events[0])
@@ -2574,14 +2606,14 @@ class NormalActionsTest(BaseAction):
     def test_deactivate_stream_neversubscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
             stream = self.make_stream(f"stream{i}")
-            action = lambda: do_deactivate_stream(stream, acting_user=None)
+            action = partial(do_deactivate_stream, stream, acting_user=None)
             events = self.verify_action(action, include_streams=include_streams)
             check_stream_delete("events[0]", events[0])
             self.assertIsNone(events[0]["streams"][0]["stream_weekly_traffic"])
 
     def test_subscribe_other_user_never_subscribed(self) -> None:
         for i, include_streams in enumerate([True, False]):
-            action = lambda: self.subscribe(self.example_user("othello"), f"test_stream{i}")
+            action = partial(self.subscribe, self.example_user("othello"), f"test_stream{i}")
             events = self.verify_action(action, num_events=2, include_streams=True)
             check_subscription_peer_add("events[1]", events[1])
 
@@ -2938,8 +2970,12 @@ class RealmPropertyActionTest(BaseAction):
             num_events = 1
 
             events = self.verify_action(
-                lambda: do_set_realm_property(
-                    self.user_profile.realm, name, val, acting_user=self.user_profile
+                partial(
+                    do_set_realm_property,
+                    self.user_profile.realm,
+                    name,
+                    val,
+                    acting_user=self.user_profile,
                 ),
                 state_change_expected=state_change_expected,
                 num_events=num_events,
@@ -3009,7 +3045,8 @@ class RealmPropertyActionTest(BaseAction):
             new_group_id = user_group.id
 
             events = self.verify_action(
-                lambda: do_change_realm_permission_group_setting(
+                partial(
+                    do_change_realm_permission_group_setting,
                     self.user_profile.realm,
                     setting_name,
                     user_group,
@@ -3089,8 +3126,12 @@ class RealmPropertyActionTest(BaseAction):
             now = timezone_now()
             state_change_expected = True
             events = self.verify_action(
-                lambda: do_set_realm_user_default_setting(
-                    realm_user_default, name, val, acting_user=self.user_profile
+                partial(
+                    do_set_realm_user_default_setting,
+                    realm_user_default,
+                    name,
+                    val,
+                    acting_user=self.user_profile,
                 ),
                 state_change_expected=state_change_expected,
             )
@@ -3174,8 +3215,12 @@ class UserDisplayActionTest(BaseAction):
                     num_events = 3
 
             events = self.verify_action(
-                lambda: do_change_user_setting(
-                    self.user_profile, setting_name, value, acting_user=self.user_profile
+                partial(
+                    do_change_user_setting,
+                    self.user_profile,
+                    setting_name,
+                    value,
+                    acting_user=self.user_profile,
                 ),
                 num_events=num_events,
                 user_settings_object=user_settings_object,
@@ -3201,8 +3246,12 @@ class UserDisplayActionTest(BaseAction):
 
         for value in values:
             events = self.verify_action(
-                lambda: do_change_user_setting(
-                    self.user_profile, "timezone", value, acting_user=self.user_profile
+                partial(
+                    do_change_user_setting,
+                    self.user_profile,
+                    "timezone",
+                    value,
+                    acting_user=self.user_profile,
                 ),
                 num_events=num_events,
             )
