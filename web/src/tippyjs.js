@@ -198,6 +198,15 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: [
+            "#left_bar_compose_mobile_button_big",
+            "#left_bar_compose_private_button_big",
+        ],
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
         target: ".compose_control_button",
         // Add some additional delay when they open
         // so that regular users don't have to see
