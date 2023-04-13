@@ -769,7 +769,7 @@ test("test get_sorted_options_list", () => {
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
-test("misc", ({override_rewire}) => {
+test("misc", ({override_rewire, mock_template}) => {
     page_params.is_admin = false;
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
@@ -842,7 +842,7 @@ test("misc", ({override_rewire}) => {
     assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
     override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
-        {name: "some_stream", stream_id: 75},
+        {name: "some_stream", stream_id: 75, invite_only: true},
         {name: "some_stream", stream_id: 42},
     ]);
 
@@ -873,8 +873,15 @@ test("misc", ({override_rewire}) => {
     let setting_name = "realm_notifications_stream_id";
     let $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     $elem.closest = () => $stub_notification_disable_parent;
+    let selected_stream_id = 42;
+    mock_template("inline_decorated_stream_name.hbs", true, (data, html) => {
+        assert.equal(data.stream.stream_id, selected_stream_id);
+        return html;
+    });
+
     settings_org.notifications_stream_widget.render(42);
-    assert.equal($elem.text(), "#some_stream");
+    assert.ok($elem.html().indexOf("some_stream") > 0);
+    assert.ok($elem.html().indexOf("zulip-icon-hashtag") > 0);
     assert.ok(!$elem.hasClass("text-warning"));
 
     settings_org.notifications_stream_widget.render(undefined);
@@ -884,8 +891,10 @@ test("misc", ({override_rewire}) => {
     setting_name = "realm_signup_notifications_stream_id";
     $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     $elem.closest = () => $stub_notification_disable_parent;
+    selected_stream_id = 75;
     settings_org.signup_notifications_stream_widget.render(75);
-    assert.equal($elem.text(), "#some_stream");
+    assert.ok($elem.html().indexOf("some_stream") > 0);
+    assert.ok($elem.html().indexOf("zulip-icon-lock") > 0);
     assert.ok(!$elem.hasClass("text-warning"));
 
     settings_org.signup_notifications_stream_widget.render(undefined);
