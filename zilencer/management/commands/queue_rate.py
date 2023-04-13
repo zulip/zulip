@@ -70,10 +70,7 @@ class Command(BaseCommand):
                         lambda: queue_json_publish(queue_name, {}),
                         number=count,
                     )
-                    duration = timeit(
-                        lambda: worker.start(),
-                        number=1,
-                    )
+                    duration = timeit(worker.start, number=1)
                     print(f"    {i}/{reps}: {count}/{duration}s = {count / duration}/s")
                     total_time += duration
                     writer.writerow(

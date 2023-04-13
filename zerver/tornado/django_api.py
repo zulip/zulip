@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import transaction
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
+from returns.curry import partial
 from urllib3.util import Retry
 
 from zerver.lib.queue import queue_json_publish
@@ -185,7 +186,7 @@ def send_event(
         queue_json_publish(
             notify_tornado_queue_name(port),
             dict(event=event, users=port_users),
-            lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
+            partial(send_notification_http, port),
         )
 
 
