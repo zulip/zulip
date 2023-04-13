@@ -73,25 +73,23 @@ def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
     for row in rows:
         counts[row["string_id"]][row["age"]] = row["cnt"]
 
+    def format_count(cnt: int, style: Optional[str] = None) -> Markup:
+        if style is not None:
+            good_bad = style
+        elif cnt == min_cnt:
+            good_bad = "bad"
+        elif cnt == max_cnt:
+            good_bad = "good"
+        else:
+            good_bad = "neutral"
+
+        return Markup('<td class="number {good_bad}">{cnt}</td>').format(good_bad=good_bad, cnt=cnt)
+
     result = {}
     for string_id in counts:
         raw_cnts = [counts[string_id].get(age, 0) for age in range(8)]
         min_cnt = min(raw_cnts[1:])
         max_cnt = max(raw_cnts[1:])
-
-        def format_count(cnt: int, style: Optional[str] = None) -> Markup:
-            if style is not None:
-                good_bad = style
-            elif cnt == min_cnt:
-                good_bad = "bad"
-            elif cnt == max_cnt:
-                good_bad = "good"
-            else:
-                good_bad = "neutral"
-
-            return Markup('<td class="number {good_bad}">{cnt}</td>').format(
-                good_bad=good_bad, cnt=cnt
-            )
 
         cnts = format_count(raw_cnts[0], "neutral") + Markup().join(map(format_count, raw_cnts[1:]))
         result[string_id] = dict(cnts=cnts)

@@ -1350,19 +1350,19 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
+        def test_resize(size: int = 50) -> None:
+            resized_img_data, is_animated, still_img_data = resize_emoji(
+                animated_large_img_data, size=50
+            )
+            im = Image.open(io.BytesIO(resized_img_data))
+            self.assertEqual((size, size), im.size)
+            self.assertTrue(is_animated)
+            assert still_img_data
+            still_image = Image.open(io.BytesIO(still_img_data))
+            self.assertEqual((50, 50), still_image.size)
+
         for img_format in ("gif", "png"):
             animated_large_img_data = read_test_image_file(f"animated_large_img.{img_format}")
-
-            def test_resize(size: int = 50) -> None:
-                resized_img_data, is_animated, still_img_data = resize_emoji(
-                    animated_large_img_data, size=50
-                )
-                im = Image.open(io.BytesIO(resized_img_data))
-                self.assertEqual((size, size), im.size)
-                self.assertTrue(is_animated)
-                assert still_img_data
-                still_image = Image.open(io.BytesIO(still_img_data))
-                self.assertEqual((50, 50), still_image.size)
 
             # Test an image larger than max is resized
             with patch("zerver.lib.upload.base.MAX_EMOJI_GIF_SIZE", 128):

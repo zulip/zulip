@@ -4,6 +4,7 @@ from typing import Any, Callable, Optional
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
+from returns.curry import partial
 
 from zerver.lib.rate_limiter import RateLimitedUser, client
 from zerver.models import get_user_profile_by_id
@@ -61,7 +62,7 @@ than max_api_calls! (trying to trim) %s %s",
 
         lists = client.keys(wildcard_list)
         for list_name in lists:
-            self._check_within_range(list_name, lambda: client.llen(list_name), trim_func)
+            self._check_within_range(list_name, partial(client.llen, list_name), trim_func)
 
         zsets = client.keys(wildcard_zset)
         for zset in zsets:
@@ -70,5 +71,7 @@ than max_api_calls! (trying to trim) %s %s",
             # elements to trim. We'd have to go through every list item and take
             # the intersection. The best we can do is expire it
             self._check_within_range(
-                zset, lambda: client.zcount(zset, 0, now), lambda key, max_calls: None
+                zset,
+                partial(client.zcount, zset, 0, now),
+                lambda key, max_calls: None,
             )
