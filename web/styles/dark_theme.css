@@ -882,7 +882,9 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .draft-row .message_header_private_message .message_label_clickable {
+    .overlay-message-row
+        .message_header_private_message
+        .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
     }
