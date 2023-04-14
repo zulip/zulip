@@ -867,3 +867,18 @@ export const system_user_groups_list = [
         display_name: $t({defaultMessage: "Nobody"}),
     },
 ];
+
+export const user_topic_visibility_policy_values = {
+    muted: {
+        code: 1,
+        description: $t({defaultMessage: "Muted"}),
+    },
+    unmuted: {
+        code: 2,
+        description: $t({defaultMessage: "Unmuted"}),
+    },
+    inherit: {
+        code: 0,
+        description: $t({defaultMessage: "Default for stream"}),
+    },
+};
