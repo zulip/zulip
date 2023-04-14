@@ -24,7 +24,7 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import to_float
+from zerver.lib.validator import check_int, to_float
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
@@ -146,6 +146,7 @@ def handle_deferred_message(
     message_to: Union[Sequence[str], Sequence[int]],
     topic_name: Optional[str],
     message_content: str,
+    scheduled_message_id: Optional[int],
     delivery_type: str,
     defer_until: str,
     tz_guess: Optional[str],
@@ -179,6 +180,7 @@ def handle_deferred_message(
         message_to,
         topic_name,
         message_content,
+        scheduled_message_id,
         delivery_type,
         deliver_at,
         realm=realm,
@@ -200,6 +202,9 @@ def send_message_backend(
     widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
     local_id: Optional[str] = REQ(default=None),
     queue_id: Optional[str] = REQ(default=None),
+    scheduled_message_id: Optional[int] = REQ(
+        default=None, json_validator=check_int, documentation_pending=True
+    ),
     delivery_type: str = REQ("delivery_type", default="send_now", documentation_pending=True),
     defer_until: Optional[str] = REQ("deliver_at", default=None, documentation_pending=True),
     tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
@@ -293,6 +298,7 @@ def send_message_backend(
             message_to,
             topic_name,
             message_content,
+            scheduled_message_id,
             delivery_type,
             defer_until,
             tz_guess,
