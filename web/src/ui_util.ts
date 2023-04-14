@@ -9,13 +9,16 @@ import * as keydown_util from "./keydown_util";
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 export function place_caret_at_end(el: HTMLElement): void {
     el.focus();
-
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(range);
+    if (el instanceof HTMLInputElement) {
+        el.setSelectionRange(el.value.length, el.value.length);
+    } else {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+    }
 }
 
 export function blur_active_element(): void {
