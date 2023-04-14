@@ -157,6 +157,9 @@ dependencies:
   mini-css-extract-plugin:
     specifier: ^2.2.2
     version: 2.7.5(webpack@5.77.0)
+  minimalistic-assert:
+    specifier: ^1.0.1
+    version: 1.0.1
   panzoom:
     specifier: ^9.4.2
     version: 9.4.3
@@ -282,6 +285,9 @@ devDependencies:
   '@types/micromodal':
     specifier: ^0.3.3
     version: 0.3.3
+  '@types/minimalistic-assert':
+    specifier: ^1.0.1
+    version: 1.0.1
   '@types/node':
     specifier: ^18.8.3
     version: 18.15.11
@@ -2874,6 +2880,10 @@ packages:
 
   /@types/mime@3.0.1:
     resolution: {integrity: sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==}
+
+  /@types/minimalistic-assert@1.0.1:
+    resolution: {integrity: sha512-LjFxDeQtgj+MYOOFuV+BILc/w9ryfxd2eNLF0oJdOBud+xCj80ZAEkAwt6y0qx81QMZ632yAaWdvIMjEK2HcmA==}
+    dev: true
 
   /@types/minimist@1.2.2:
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
