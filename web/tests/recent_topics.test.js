@@ -107,6 +107,7 @@ mock_esm("../src/user_topics", {
         }
         return false;
     },
+    is_topic_unmuted: () => false,
 });
 const narrow = mock_esm("../src/narrow", {
     update_narrow_title: noop,
