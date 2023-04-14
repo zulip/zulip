@@ -1385,6 +1385,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, "Test message 1")
+        self.assertEqual(message.rendered_content, "<p>Test message 1</p>")
         self.assertEqual(message.topic_name(), "Test topic")
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
@@ -1405,6 +1406,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, "Test message 3")
+        self.assertEqual(message.rendered_content, "<p>Test message 3</p>")
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 

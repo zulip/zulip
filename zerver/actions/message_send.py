@@ -467,7 +467,11 @@ def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) ->
         scheduled_message.recipient = send_request.message.recipient
         topic_name = send_request.message.topic_name()
         scheduled_message.set_topic_name(topic_name=topic_name)
+        rendering_result = render_markdown(
+            send_request.message, send_request.message.content, send_request.realm
+        )
         scheduled_message.content = send_request.message.content
+        scheduled_message.rendered_content = rendering_result.rendered_content
         scheduled_message.sending_client = send_request.message.sending_client
         scheduled_message.stream = send_request.stream
         scheduled_message.realm = send_request.realm
