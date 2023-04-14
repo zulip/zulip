@@ -165,7 +165,12 @@ function build_stream_popover(opts) {
     show_left_sidebar_menu_icon(elt);
 }
 
-export function build_move_topic_to_stream_popover(current_stream_id, topic_name, message) {
+export function build_move_topic_to_stream_popover(
+    current_stream_id,
+    topic_name,
+    only_topic_edit,
+    message,
+) {
     const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
         topic_name,
@@ -173,6 +178,7 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         notify_new_thread: message_edit.notify_new_thread_default,
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
+        only_topic_edit,
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,
@@ -184,7 +190,13 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
     let disable_stream_input = !settings_data.user_can_move_messages_between_streams();
     args.disable_topic_input = !settings_data.user_can_move_messages_to_another_topic();
 
-    let modal_heading = $t_html({defaultMessage: "Move topic"});
+    let modal_heading;
+    if (only_topic_edit) {
+        modal_heading = $t_html({defaultMessage: "Rename topic"});
+    } else {
+        modal_heading = $t_html({defaultMessage: "Move topic"});
+    }
+
     if (message !== undefined) {
         modal_heading = $t_html({defaultMessage: "Move messages"});
         // We disable topic input only for modal is opened from the message actions
@@ -235,7 +247,12 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         const params = get_params_from_form();
 
         const {old_topic_name} = params;
-        let select_stream_id = stream_widget.value();
+        let select_stream_id;
+        if (only_topic_edit) {
+            select_stream_id = undefined;
+        } else {
+            select_stream_id = stream_widget.value();
+        }
 
         let {
             current_stream_id,
@@ -321,7 +338,25 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
     }
 
     function move_topic_post_render() {
+        $("#move_topic_modal .dialog_submit_button").prop("disabled", true);
+
         const $topic_input = $("#move_topic_form .inline_topic_edit");
+        composebox_typeahead.initialize_topic_edit_typeahead(
+            $topic_input,
+            current_stream_name,
+            false,
+        );
+
+        if (only_topic_edit) {
+            // Set select_stream_id to current_stream_id since we user is not allowed
+            // to edit stream in topic-edit only UI.
+            const select_stream_id = current_stream_id;
+            $topic_input.on("input", () => {
+                update_submit_button_disabled_state(select_stream_id);
+            });
+            return;
+        }
+
         $stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
             ".stream_header_colorblock",
         );
@@ -338,16 +373,9 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         };
         stream_widget = new DropdownListWidget(opts);
 
-        composebox_typeahead.initialize_topic_edit_typeahead(
-            $topic_input,
-            current_stream_name,
-            false,
-        );
-
         stream_widget.setup();
 
         $("#select_stream_widget .dropdown-toggle").prop("disabled", disable_stream_input);
-        update_submit_button_disabled_state(stream_widget.value());
         $("#move_topic_modal .inline_topic_edit").on("input", () => {
             update_submit_button_disabled_state(stream_widget.value());
         });

@@ -1013,7 +1013,7 @@ export function process_hotkey(e, hotkey) {
                 return false;
             }
 
-            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, msg);
+            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
             return true;
         }
         case "zoom_to_message_near": {
