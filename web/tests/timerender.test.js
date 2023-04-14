@@ -529,7 +529,10 @@ run_test("relative_time_string_from_date", () => {
 
     function assert_same(duration, expected_status) {
         const past_date = add(base_date, duration);
-        const actual_status = timerender.relative_time_string_from_date(past_date, base_date);
+        const actual_status = timerender.relative_time_string_from_date({
+            date: past_date,
+            current_date: base_date,
+        });
         assert.equal(actual_status, expected_status);
     }
 
