@@ -190,11 +190,14 @@ export function render_now(time: Date, today = new Date()): TimeRender {
 // Relative time rendering for use in most screens like Recent conversations.
 //
 // Current date is passed as an argument for unit testing
-export function relative_time_string_from_date(
-    last_active_date: Date,
+export function relative_time_string_from_date({
+    date,
     current_date = new Date(),
-): string {
-    const minutes = differenceInMinutes(current_date, last_active_date);
+}: {
+    date: Date;
+    current_date?: Date;
+}): string {
+    const minutes = differenceInMinutes(current_date, date);
     if (minutes <= 2) {
         return $t({defaultMessage: "Just now"});
     }
@@ -202,7 +205,7 @@ export function relative_time_string_from_date(
         return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
     }
 
-    const days_old = differenceInCalendarDays(current_date, last_active_date);
+    const days_old = differenceInCalendarDays(current_date, date);
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
@@ -221,12 +224,12 @@ export function relative_time_string_from_date(
     } else if (
         days_old > 90 &&
         days_old < 365 &&
-        last_active_date.getFullYear() === current_date.getFullYear()
+        date.getFullYear() === current_date.getFullYear()
     ) {
         // Online more than 90 days ago, in the same year
-        return get_localized_date_or_time_for_format(last_active_date, "dayofyear");
+        return get_localized_date_or_time_for_format(date, "dayofyear");
     }
-    return get_localized_date_or_time_for_format(last_active_date, "dayofyear_year");
+    return get_localized_date_or_time_for_format(date, "dayofyear_year");
 }
 
 // Relative time logic variant use in the buddy list, where every

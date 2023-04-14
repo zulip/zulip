@@ -47,15 +47,15 @@ export function populate_exports_table(exports) {
             let deleted_timestamp = data.deleted_timestamp;
 
             if (failed_timestamp !== null) {
-                failed_timestamp = timerender.relative_time_string_from_date(
-                    new Date(failed_timestamp * 1000),
-                );
+                failed_timestamp = timerender.relative_time_string_from_date({
+                    date: new Date(failed_timestamp * 1000),
+                });
             }
 
             if (deleted_timestamp !== null) {
-                deleted_timestamp = timerender.relative_time_string_from_date(
-                    new Date(deleted_timestamp * 1000),
-                );
+                deleted_timestamp = timerender.relative_time_string_from_date({
+                    date: new Date(deleted_timestamp * 1000),
+                });
             }
 
             return render_admin_export_list({
@@ -63,9 +63,9 @@ export function populate_exports_table(exports) {
                     id: data.id,
                     acting_user: people.get_full_name(data.acting_user_id),
                     // Convert seconds -> milliseconds
-                    event_time: timerender.relative_time_string_from_date(
-                        new Date(data.export_time * 1000),
-                    ),
+                    event_time: timerender.relative_time_string_from_date({
+                        date: new Date(data.export_time * 1000),
+                    }),
                     url: data.export_url,
                     time_failed: failed_timestamp,
                     pending: data.pending,
