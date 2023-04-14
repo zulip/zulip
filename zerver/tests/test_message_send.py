@@ -1520,6 +1520,74 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(new_defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
+    def test_fetch_scheduled_messages(self) -> None:
+        self.login("hamlet")
+        # No scheduled message
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        self.assert_length(orjson.loads(result.content)["scheduled_messages"], 0)
+
+        content = "Test message"
+        defer_until = timezone_now().replace(tzinfo=None) + datetime.timedelta(days=1)
+        defer_until_str = str(defer_until)
+        self.do_schedule_message("stream", "Verona", content, defer_until_str)
+
+        # Single scheduled message
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        scheduled_messages = orjson.loads(result.content)["scheduled_messages"]
+
+        self.assert_length(scheduled_messages, 1)
+        self.assertEqual(scheduled_messages[0]["message_id"], self.last_scheduled_message().id)
+        self.assertEqual(scheduled_messages[0]["content"], content)
+        self.assertEqual(scheduled_messages[0]["to"], [self.get_stream_id("Verona")])
+        self.assertEqual(scheduled_messages[0]["type"], "stream")
+        self.assertEqual(scheduled_messages[0]["topic"], "Test topic")
+        self.assertEqual(
+            scheduled_messages[0]["deliver_at"], int(convert_to_UTC(defer_until).timestamp() * 1000)
+        )
+
+        othello = self.example_user("othello")
+        result = self.do_schedule_message(
+            "private", [othello.email], content + " 3", defer_until_str
+        )
+
+        # Multiple scheduled messages
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        self.assert_length(orjson.loads(result.content)["scheduled_messages"], 2)
+
+        # Check if another user can access these scheduled messages.
+        self.logout()
+        self.login("othello")
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        self.assert_length(orjson.loads(result.content)["scheduled_messages"], 0)
+
+    def test_delete_scheduled_messages(self) -> None:
+        self.login("hamlet")
+
+        content = "Test message"
+        defer_until = timezone_now().replace(tzinfo=None) + datetime.timedelta(days=1)
+        defer_until_str = str(defer_until)
+        self.do_schedule_message("stream", "Verona", content, defer_until_str)
+        message = self.last_scheduled_message()
+        self.logout()
+
+        # Other user cannot delete it.
+        othello = self.example_user("othello")
+        result = self.api_delete(othello, f"/api/v1/scheduled_messages/{message.id}")
+        self.assert_json_error(result, "Scheduled message does not exist", 404)
+
+        self.login("hamlet")
+        result = self.client_delete(f"/json/scheduled_messages/{message.id}")
+        self.assert_json_success(result)
+
+        # Already deleted.
+        result = self.client_delete(f"/json/scheduled_messages/{message.id}")
+        self.assert_json_error(result, "Scheduled message does not exist", 404)
+
+
 class StreamMessagesTest(ZulipTestCase):
     def assert_stream_message(
         self, stream_name: str, topic_name: str = "test topic", content: str = "test content"

@@ -921,6 +921,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "messages",
             "drafts",
             "webhooks",
+            "scheduled_messages",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
         for path, path_item in paths.items():
