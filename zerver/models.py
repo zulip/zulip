@@ -220,6 +220,28 @@ def get_display_recipient(recipient: "Recipient") -> DisplayRecipientT:
     )
 
 
+def get_recipient_ids(
+    recipient: Optional["Recipient"], user_profile_id: int
+) -> Tuple[List[int], str]:
+    if recipient is None:
+        recipient_type_str = ""
+        to = []
+    elif recipient.type == Recipient.STREAM:
+        recipient_type_str = "stream"
+        to = [recipient.type_id]
+    else:
+        recipient_type_str = "private"
+        if recipient.type == Recipient.PERSONAL:
+            to = [recipient.type_id]
+        else:
+            to = []
+            for r in get_display_recipient(recipient):
+                assert not isinstance(r, str)  # It will only be a string for streams
+                if r["id"] != user_profile_id:
+                    to.append(r["id"])
+    return to, recipient_type_str
+
+
 def get_realm_emoji_cache_key(realm: "Realm") -> str:
     return f"realm_emoji:{realm.id}"
 
@@ -3155,22 +3177,7 @@ class Draft(models.Model):
         return f"{self.user_profile.email} / {self.id} / {self.last_edit_time}"
 
     def to_dict(self) -> Dict[str, Any]:
-        if self.recipient is None:
-            recipient_type_str = ""
-            to = []
-        elif self.recipient.type == Recipient.STREAM:
-            recipient_type_str = "stream"
-            to = [self.recipient.type_id]
-        else:
-            recipient_type_str = "private"
-            if self.recipient.type == Recipient.PERSONAL:
-                to = [self.recipient.type_id]
-            else:
-                to = []
-                for r in get_display_recipient(self.recipient):
-                    assert not isinstance(r, str)  # It will only be a string for streams
-                    if r["id"] != self.user_profile_id:
-                        to.append(r["id"])
+        to, recipient_type_str = get_recipient_ids(self.recipient, self.user_profile_id)
         return {
             "id": self.id,
             "type": recipient_type_str,
