@@ -4326,6 +4326,7 @@ class ScheduledMessage(models.Model):
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
     subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
     content = models.TextField()
+    rendered_content = models.TextField()
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
