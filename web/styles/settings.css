@@ -1411,62 +1411,60 @@ $option_title_width: 180px;
 
 #profile-settings,
 #edit-user-form {
-    
-  
+  .custom_user_field {
+    padding-bottom: 20px;
 
-    .custom_user_field {
-
-        padding-bottom: 20px;
-
-        .field_hint {
-            color: hsl(0, 0%, 67%);
-        }
-        & textarea {
-            width: max(206px, 25vw);
-            max-width: 320px;
-            height: 80px;
-        }
-        &:hover .remove_date {
-            display: inline-flex;
-        }
-
-        .remove_date {
-            opacity: 0.5;
-            display: none;
-            cursor: pointer;
-            position: relative;
-            top: 2px;
-            left: -20px;
-
-            &:hover {
-                opacity: 1;
-            }
-        }
-
-        .pronouns_type_field{
-            margin-bottom: 10%;
-        }
-    
-
-        .datepicker {
-            cursor: default;
-        }
-
-        .person_picker {
-            min-width: 206px;
-        }
+    .field_hint {
+      color: hsl(0, 0%, 67%);
     }
 
-    #show_my_user_profile_modal {
-        width: 100%;
-        top: 20px;
-        position: sticky;
+    & textarea {
+      width: max(206px, 25vw);
+      max-width: 320px;
+      height: 80px;
     }
 
-    #show_my_user_profile_modal i {
-        padding-left: 2px;
-        vertical-align: middle;
+    &:hover .remove_date {
+      display: inline-flex;
     }
+
+    .remove_date {
+      opacity: 0.5;
+      display: none;
+      cursor: pointer;
+      position: relative;
+      top: 2px;
+      left: -20px;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    .pronouns_type_field {
+      margin-bottom: 10%;
+    }
+
+    .datepicker {
+      cursor: default;
+    }
+
+    .person_picker {
+      min-width: 206px;
+    }
+  }
+
+  #show_my_user_profile_modal {
+    width: 100%;
+    top: 20px;
+    position: sticky;
+  }
+
+  #show_my_user_profile_modal i {
+    padding-left: 2px;
+    vertical-align: middle;
+  }
+}
 
     & input,
     input[type="url"] {
