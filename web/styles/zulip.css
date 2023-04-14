@@ -201,6 +201,7 @@ p.n-margin {
     padding-top: var(--header-padding-bottom);
 }
 
+.scheduled-messages-loading-logo,
 .alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {

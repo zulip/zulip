@@ -1290,6 +1290,7 @@
         background-color: hsl(212deg 28% 18%);
     }
 
+    .scheduled-messages-loading-logo,
     .alert-zulip-logo,
     .top-messages-logo,
     .bottom-messages-logo {
