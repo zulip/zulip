@@ -4971,6 +4971,91 @@ paths:
                   - description: |
                       JSON response for when no draft exists with the provided ID.
                     example: {"result": "error", "msg": "Draft does not exist"}
+  /scheduled_messages:
+    get:
+      operationId: get-scheduled-messages
+      tags: ["scheduled_messages"]
+      summary: Get scheduled messages
+      description: |
+        Fetch all scheduled messages for the current user.
+
+        Scheduled messages are messages the user has scheduled to be
+        sent in the future via the send later feature.
+
+        **Changes**: New in Zulip 7.0 (feature level 173).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      scheduled_messages:
+                        type: array
+                        description: |
+                          Returns all of the current user's scheduled
+                          messages, ordered by scheduled timestamp (ascending).
+                        items:
+                          $ref: "#/components/schemas/ScheduledMessage"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "scheduled_messages":
+                          [
+                            {
+                              "message_id": 27,
+                              "to": [14],
+                              "type": "stream",
+                              "content": "Hi",
+                              "rendered_content": "<p>Hi</p>",
+                              "topic": "Introduction",
+                              "deliver_at": 1681662420000,
+                            },
+                          ],
+                      }
+  /scheduled_messages/{scheduled_message_id}:
+    delete:
+      operationId: delete-scheduled-message
+      tags: ["scheduled_messages"]
+      summary: Delete a scheduled message.
+      description: |
+        Delete/cancel a previously scheduled message.
+
+        **Changes**: New in Zulip 7.0 (feature level 173).
+      parameters:
+        - name: scheduled_message_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the scheduled message you want to delete.
+          required: True
+          example: 1
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - description: |
+                      Example response for when no scheduled message exists with the provided ID.
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Scheduled message does not exist",
+                      }
   /default_streams:
     post:
       operationId: add-default-stream
@@ -17079,6 +17164,64 @@ components:
         - to
         - topic
         - content
+    ScheduledMessage:
+      type: object
+      description: |
+        A dictionary for representing a scheduled message.
+      properties:
+        message_id:
+          type: integer
+          description: |
+            The unique ID of the scheduled message. It can be used to modify and
+            delete the scheduled message.
+        type:
+          type: string
+          description: |
+            The type of the scheduled message. Either unaddressed (empty string), "stream",
+            or "private" (for PMs and private group messages).
+          enum:
+            - ""
+            - stream
+            - private
+        to:
+          type: array
+          description: |
+            An array of the tentative target audience IDs. For "stream"
+            messages, this should contain exactly 1 ID, the ID of the
+            target stream. For private messages, this should be an array
+            of target user IDs. This cannot be an empty array since
+            scheduled messages are always addressed.
+          items:
+            type: integer
+        topic:
+          type: string
+          description: |
+            For stream scheduled message, the tentative topic name. For private messages,
+            this will be ignored and should ideally
+            be the empty string. Should not contain null bytes.
+        content:
+          type: string
+          description: |
+            The body of the scheduled message. Should not contain null bytes.
+        rendered_content:
+          type: string
+          description: |
+            The body of the scheduled message rendered in HTML.
+        deliver_at:
+          type: number
+          description: |
+            A Unix timestamp (seconds only) representing when the scheduled
+            message will be sent by the server.
+          example: 1595479019
+      additionalProperties: false
+      required:
+        - message_id
+        - type
+        - to
+        - topic
+        - content
+        - rendered_content
+        - deliver_at
     User:
       allOf:
         - $ref: "#/components/schemas/UserBase"

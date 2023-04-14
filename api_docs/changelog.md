@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 173**:
+
+* [`GET /scheduled_messages`](/api/get-scheduled-messages), [`DELETE
+  /scheduled_messages/<int:scheduled_message_id>`](/api/delete-scheduled-message):
+  Added new endpoints to fetch and delete scheduled messages.
+
 **Feature level 172**
 
 * [`PATCH /messages/{message_id}`](/api/update-message): Topic editing
