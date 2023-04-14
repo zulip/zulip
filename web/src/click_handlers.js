@@ -286,6 +286,7 @@ export function initialize() {
         stream_popover.build_move_topic_to_stream_popover(
             message.stream_id,
             message.topic,
+            false,
             message,
         );
         e.stopPropagation();

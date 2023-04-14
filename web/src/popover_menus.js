@@ -450,7 +450,12 @@ export function initialize() {
             });
 
             $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
-                stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name);
+                stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
+                stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
                 instance.hide();
             });
 
@@ -573,6 +578,7 @@ export function initialize() {
                 stream_popover.build_move_topic_to_stream_popover(
                     message.stream_id,
                     message.topic,
+                    false,
                     message,
                 );
                 e.preventDefault();
