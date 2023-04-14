@@ -1421,13 +1421,11 @@ $option_title_width: 180px;
         .field_hint {
             color: hsl(0, 0%, 67%);
         }
-
         & textarea {
             width: max(206px, 25vw);
             max-width: 320px;
             height: 80px;
         }
-
         &:hover .remove_date {
             display: inline-flex;
         }
