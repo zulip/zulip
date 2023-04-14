@@ -3156,13 +3156,13 @@ class Draft(models.Model):
 
     def to_dict(self) -> Dict[str, Any]:
         if self.recipient is None:
-            _type = ""
+            recipient_type_str = ""
             to = []
         elif self.recipient.type == Recipient.STREAM:
-            _type = "stream"
+            recipient_type_str = "stream"
             to = [self.recipient.type_id]
         else:
-            _type = "private"
+            recipient_type_str = "private"
             if self.recipient.type == Recipient.PERSONAL:
                 to = [self.recipient.type_id]
             else:
@@ -3173,7 +3173,7 @@ class Draft(models.Model):
                         to.append(r["id"])
         return {
             "id": self.id,
-            "type": _type,
+            "type": recipient_type_str,
             "to": to,
             "topic": self.topic,
             "content": self.content,
