@@ -30,6 +30,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         formatDate: (date) => formatISO(date),
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
+        minuteIncrement: 1,
         onKeyDown(selectedDates, dateStr, instance, event) {
             // See also the keydown handler below.
             //
