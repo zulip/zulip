@@ -34,9 +34,16 @@
             <div class="messagebox">
                 <div class="messagebox-content">
                     <div class="message_top_line">
-                        <div class="draft_controls">
-                            <i class="fa fa-pencil fa-lg restore-draft tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Restore draft' }} (Enter)"></i>
-                            <i class="fa fa-trash-o fa-lg delete-draft tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Delete draft' }} (Backspace)"></i>
+                            <i class="fa fa-pencil fa-lg restore-draft tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="restore-draft-tooltip-template"></i>
+                            <template id="restore-draft-tooltip-template">
+                                {{t 'Restore draft' }}
+                                {{tooltip_hotkey_hints "Enter"}}
+                            </template>
+                            <i class="fa fa-trash-o fa-lg delete-draft tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="delete-draft-tooltip-template"></i>
+                            <template id="delete-draft-tooltip-template">
+                                {{t 'Delete draft' }}
+                                {{tooltip_hotkey_hints "Backspace"}}
+                            </template>
                         </div>
                     </div>
                     <div class="message_content rendered_markdown restore-draft" title="{{t 'Restore draft' }}">{{rendered_markdown content}}</div>
