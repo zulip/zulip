@@ -659,6 +659,14 @@ export function initialize() {
             return;
         }
 
+        if ($target.is("#send_later i")) {
+            // Since the click for this is handled by tippyjs, we cannot add stopPropagation
+            // there without adding a special click event handler to show the popover,
+            // so it is better just do it here.
+            e.stopPropagation();
+            return;
+        }
+
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
         if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {

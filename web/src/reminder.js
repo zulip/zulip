@@ -3,8 +3,9 @@ import $ from "jquery";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_banner from "./compose_banner";
+import * as compose_ui from "./compose_ui";
 import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -46,7 +47,11 @@ export function patch_request_for_scheduling(request, message_content, deliver_a
     return new_request;
 }
 
-export function schedule_message(request = compose.create_message_object()) {
+export function schedule_message(
+    request = compose.create_message_object(),
+    success_callback = () => {},
+    scheduled_message_id = undefined,
+) {
     const raw_message = request.content.split("\n");
     const command_line = raw_message[0];
     const message = raw_message.slice(1).join("\n");
@@ -67,7 +72,9 @@ export function schedule_message(request = compose.create_message_object()) {
     } else if (deliver_at.trim() === "") {
         error_message = $t({defaultMessage: "Please specify a date or time."});
     } else if (message.trim() === "") {
-        error_message = $t({defaultMessage: "You have nothing to send!"});
+        $("#compose-textarea").toggleClass("invalid", false);
+        $("#compose-textarea").prop("disabled", false);
+        return;
     }
 
     if (error_message) {
@@ -87,18 +94,25 @@ export function schedule_message(request = compose.create_message_object()) {
         deferred_message_type.delivery_type,
     );
 
-    const success = function (data) {
+    const success = function () {
         if (request.delivery_type === deferred_message_types.scheduled.delivery_type) {
-            const deliver_at = data.deliver_at;
             notifications.notify_above_composebox(
-                $t_html({defaultMessage: `Message scheduled for {deliver_at}`}, {deliver_at}),
+                $t(
+                    {defaultMessage: `Your message has been scheduled for {deliver_at}.`},
+                    {deliver_at},
+                ),
+                "scheduled_message_banner",
+                "/#scheduled",
+                "",
+                $t({defaultMessage: "View scheduled messages"}),
             );
         }
-        $("#compose-textarea").prop("disabled", false);
-        compose.clear_compose_box();
+
+        success_callback();
     };
     const error = function (response) {
         $("#compose-textarea").prop("disabled", false);
+        compose_ui.hide_compose_spinner();
         compose_banner.show_error_message(
             response,
             compose_banner.CLASSNAMES.generic_compose_error,
@@ -110,6 +124,9 @@ export function schedule_message(request = compose.create_message_object()) {
     $("#compose-textarea").prop("disabled", true);
 
     const future_message = true;
+    if (scheduled_message_id) {
+        request.scheduled_message_id = scheduled_message_id;
+    }
     transmit.send_message(request, success, error, future_message);
 }
 
