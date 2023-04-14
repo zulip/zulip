@@ -214,6 +214,7 @@ js_rules = RuleList(
         {
             "pattern": r"assert\(",
             "description": "Use 'assert.ok' instead of 'assert'. We avoid the use of 'assert' as it can easily be confused with 'assert.equal'.",
+            "include_only": {"web/tests/"},
             "good_lines": ["assert.ok(...)"],
             "bad_lines": ["assert(...)"],
         },
