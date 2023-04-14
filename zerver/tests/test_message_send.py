@@ -1343,6 +1343,9 @@ class ScheduledMessageTest(ZulipTestCase):
     def last_scheduled_message(self) -> ScheduledMessage:
         return ScheduledMessage.objects.all().order_by("-id")[0]
 
+    def get_scheduled_message(self, id: str) -> ScheduledMessage:
+        return ScheduledMessage.objects.get(id=id)
+
     def do_schedule_message(
         self,
         msg_type: str,
@@ -1351,6 +1354,7 @@ class ScheduledMessageTest(ZulipTestCase):
         defer_until: str = "",
         tz_guess: str = "",
         delivery_type: str = "send_later",
+        scheduled_message_id: str = "",
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
@@ -1368,6 +1372,10 @@ class ScheduledMessageTest(ZulipTestCase):
         }
         if defer_until:
             payload["deliver_at"] = defer_until
+
+        if scheduled_message_id:
+            payload["scheduled_message_id"] = scheduled_message_id
+
         # `Topic` cannot be empty according to OpenAPI specification.
         intentionally_undocumented: bool = topic_name == ""
         result = self.client_post(
@@ -1479,6 +1487,38 @@ class ScheduledMessageTest(ZulipTestCase):
             result, "Missing deliver_at in a request for delayed message delivery"
         )
 
+    def test_edit_schedule_message(self) -> None:
+        content = "Original test message"
+        defer_until = timezone_now().replace(tzinfo=None) + datetime.timedelta(days=1)
+        defer_until_str = str(defer_until)
+
+        # Scheduling a message to a stream you are subscribed is successful.
+        result = self.do_schedule_message("stream", "Verona", content, defer_until_str)
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.content, "Original test message")
+        self.assertEqual(message.topic_name(), "Test topic")
+        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
+
+        # Edit content and time of scheduled message.
+        edited_content = "Edited test message"
+        new_defer_until = defer_until + datetime.timedelta(days=3)
+        new_defer_until_str = str(new_defer_until)
+
+        result = self.do_schedule_message(
+            "stream",
+            "Verona",
+            edited_content,
+            new_defer_until_str,
+            scheduled_message_id=str(message.id),
+        )
+        message = self.get_scheduled_message(str(message.id))
+        self.assert_json_success(result)
+        self.assertEqual(message.content, edited_content)
+        self.assertEqual(message.topic_name(), "Test topic")
+        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(new_defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
 class StreamMessagesTest(ZulipTestCase):
     def assert_stream_message(

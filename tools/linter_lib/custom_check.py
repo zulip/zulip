@@ -352,7 +352,7 @@ python_rules = RuleList(
         },
         # Directly fetching Message objects in e.g. views code is often a security bug.
         {
-            "pattern": "[^r]Message.objects.get",
+            "pattern": "[^a-z]Message.objects.get",
             "exclude": {
                 "zerver/tests",
                 "zerver/lib/onboarding.py",
