@@ -26,6 +26,7 @@ import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as typeahead_helper from "./typeahead_helper";
 import * as ui_report from "./ui_report";
+import * as ui_util from "./ui_util";
 import * as user_pill from "./user_pill";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
@@ -732,7 +733,7 @@ export function set_up() {
                 form_id: "change_email_form",
                 on_click: do_change_email,
                 on_shown() {
-                    $("#change_email_form input").trigger("focus");
+                    ui_util.place_caret_at_end($("#change_email_form input")[0]);
                 },
             });
         }
