@@ -1,8 +1,6 @@
 import * as message_lists from "./message_lists";
-import * as overlays from "./overlays";
 import * as popover_menus from "./popover_menus";
 import * as recent_topics_ui from "./recent_topics_ui";
-import * as settings_muted_topics from "./settings_muted_topics";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
@@ -18,9 +16,6 @@ export function handle_topic_updates(user_topic_event) {
     message_lists.current.update_muting_and_rerender();
     if (message_lists.current !== message_lists.home) {
         message_lists.home.update_muting_and_rerender();
-    }
-    if (overlays.settings_open() && settings_muted_topics.loaded) {
-        settings_muted_topics.populate_list();
     }
     recent_topics_ui.update_topic_visibility_policy(
         user_topic_event.stream_id,

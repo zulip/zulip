@@ -3,22 +3,35 @@ import $ from "jquery";
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
+import * as settings_config from "./settings_config";
 import * as ui from "./ui";
 import * as user_topics from "./user_topics";
 
 export let loaded = false;
 
 export function populate_list() {
-    const all_muted_topics = user_topics.get_user_topics_for_visibility_policy(
-        user_topics.all_visibility_policies.MUTED,
-    );
-    const $muted_topics_table = $("#muted_topics_table");
-    const $search_input = $("#muted_topics_search");
+    const all_user_topics = [];
+    const visibility_policies = Object.values(user_topics.all_visibility_policies);
+    for (const visibility_policy of visibility_policies) {
+        /* For visibility_policy=INHERIT, 'get_user_topics_for_visibility_policy' returns
+        an empty list as we only maintain the record of topics having visibility_policy
+        other than INHERIT; INHERIT is used to remove topics from the record. */
+        const user_topics_list =
+            user_topics.get_user_topics_for_visibility_policy(visibility_policy);
+        all_user_topics.push(...user_topics_list);
+    }
+    const $user_topics_table = $("#user_topics_table");
+    const $search_input = $("#user_topics_search");
 
-    ListWidget.create($muted_topics_table, all_muted_topics, {
-        name: "muted-topics-list",
+    ListWidget.create($user_topics_table, all_user_topics, {
+        name: "user-topics-list",
         modifier(user_topic) {
-            return render_user_topic_ui_row({user_topic});
+            const context = {
+                user_topic,
+                user_topic_visibility_policy_values:
+                    settings_config.user_topic_visibility_policy_values,
+            };
+            return render_user_topic_ui_row(context);
         },
         filter: {
             $element: $search_input,
@@ -26,28 +39,28 @@ export function populate_list() {
                 return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar($muted_topics_table.closest(".progressive-table-wrapper"));
+                ui.reset_scrollbar($user_topics_table.closest(".progressive-table-wrapper"));
             },
         },
-        $parent_container: $("#muted-topic-settings"),
-        $simplebar_container: $("#muted-topic-settings .progressive-table-wrapper"),
+        init_sort: ["numeric", "date_updated"],
+        initially_descending_sort: true,
+        $parent_container: $("#user-topic-settings"),
+        $simplebar_container: $("#user-topic-settings .progressive-table-wrapper"),
     });
 }
 
 export function set_up() {
     loaded = true;
-    $("body").on("click", ".settings-unmute-topic", function (e) {
+
+    $("body").on("change", ".settings_user_topic_visibility_policy", function (e) {
         const $row = $(this).closest("tr");
         const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
         const topic = $row.attr("data-topic");
+        const visibility_policy = this.value;
 
         e.stopPropagation();
 
-        user_topics.set_user_topic_visibility_policy(
-            stream_id,
-            topic,
-            user_topics.all_visibility_policies.INHERIT,
-        );
+        user_topics.set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
     });
 
     populate_list();
