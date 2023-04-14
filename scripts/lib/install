@@ -539,6 +539,10 @@ mkdir -p "$deploy_path"/prod-static/serve
 cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
 chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
 
+if ! [ -e /home/zulip/deployments/current/zulip-git-version ]; then
+    su zulip -c 'cd /home/zulip/deployments/current && ./scripts/lib/update-git-upstream && ./tools/cache-zulip-git-version'
+fi
+
 if ! [ -e "/home/zulip/prod-static/generated" ]; then
     # If we're installing from a Git checkout, we need to run
     # `tools/update-prod-static` in order to build the static
