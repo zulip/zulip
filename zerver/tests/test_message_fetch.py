@@ -4270,4 +4270,4 @@ class PersonalMessagesNearTest(ZulipTestCase):
             realm=realm,
             message=message,
         )
-        self.assertEqual(url, "http://zulip.testserver/#narrow/pm-with/77,80-pm/near/555")
+        self.assertEqual(url, "http://zulip.testserver/#narrow/dm/77,80-pm/near/555")

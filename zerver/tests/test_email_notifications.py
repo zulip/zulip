@@ -1449,7 +1449,7 @@ class TestMissedMessages(ZulipTestCase):
 
         encoded_name = "Cordelia,-Lear's-daughter"
         verify_body_include = [
-            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/pm-with/{cordelia.id}-{encoded_name}"
+            f"view it in Zulip Dev Zulip: http://zulip.testserver/#narrow/dm/{cordelia.id}-{encoded_name}"
         ]
         email_subject = "DMs with Cordelia, Lear's daughter"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user=False)
