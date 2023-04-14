@@ -85,6 +85,10 @@ export function drafts_open(): boolean {
     return open_overlay_name === "drafts";
 }
 
+export function scheduled_messages_open(): boolean {
+    return open_overlay_name === "scheduled";
+}
+
 export function active_modal(): string | undefined {
     if (!is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");

@@ -15,6 +15,7 @@ export const ERROR = "error";
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
     narrow_to_recipient: "narrow_to_recipient",
+    scheduled_message_banner: "scheduled_message_banner",
 };
 
 export const CLASSNAMES = {

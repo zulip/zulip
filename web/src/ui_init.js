@@ -72,6 +72,7 @@ import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
@@ -647,6 +648,7 @@ export function initialize_everything() {
     spoilers.initialize();
     lightbox.initialize();
     click_handlers.initialize();
+    scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();
     overlays.initialize();
     invite.initialize();

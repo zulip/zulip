@@ -208,6 +208,7 @@ export function is_overlay_hash(hash) {
         "message-formatting",
         "search-operators",
         "about-zulip",
+        "scheduled",
     ];
     const main_hash = get_hash_category(hash);
 
