@@ -447,6 +447,14 @@ export function process_enter_key(e) {
         return true;
     }
 
+    // Transfer the enter keypress from button to the `<i>` tag inside
+    // it since it is the trigger for the popover. <button> is already used
+    // to trigger the tooltip so it cannot be used to trigger the popover.
+    if (e.target.id === "send_later") {
+        $("#send_later i").trigger("click");
+        return true;
+    }
+
     if ($(e.target).attr("role") === "button") {
         e.target.click();
         return true;

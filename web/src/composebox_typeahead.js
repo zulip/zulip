@@ -222,7 +222,8 @@ function handle_keydown(e) {
                     // could result in focus being moved to the "Send
                     // button" after sending the message, preventing
                     // typing a next message!
-                    $("#compose-send-button").trigger("focus");
+                    compose_ui.get_submit_button().trigger("focus");
+
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -232,7 +233,7 @@ function handle_keydown(e) {
                     e.preventDefault();
                     if (
                         compose_validate.validate_message_length() &&
-                        !$("#compose-send-button").prop("disabled")
+                        !compose_ui.get_submit_button().prop("disabled")
                     ) {
                         compose.finish();
                     }

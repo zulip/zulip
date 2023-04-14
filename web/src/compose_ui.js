@@ -493,3 +493,10 @@ export function get_compose_click_target(e) {
     }
     return e.target;
 }
+
+export function get_submit_button() {
+    if (popover_menus.is_time_selected_for_schedule()) {
+        return $("#compose-schedule-confirm-button");
+    }
+    return $("#compose-send-button");
+}

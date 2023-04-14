@@ -889,6 +889,11 @@
         color: inherit;
     }
 
+    .send_later_popover_header,
+    .selected_send_later_time {
+        color: hsl(236deg 33% 90%);
+    }
+
     .nav-list > li > a,
     .nav-list .nav-header {
         text-shadow: none;
