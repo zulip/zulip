@@ -445,11 +445,20 @@ export function render_left_panel_superset() {
 }
 
 export function update_empty_left_panel_message() {
-    // Check if we have any subscribed streams to decide whether to
+    // Check if we have any streams in panel to decide whether to
     // display a notice.
-    const has_subscribed_streams = stream_data.subscribed_subs().length > 0;
-
-    if (has_subscribed_streams) {
+    let has_streams;
+    if (is_subscribed_stream_tab_active()) {
+        // We don't remove stream row from UI on unsubscribe, To handle
+        // this case here we are also checking DOM if there are streams
+        // displayed in panel or not.
+        has_streams =
+            stream_data.subscribed_subs().length ||
+            $("#manage_streams_container .stream-row:not(.notdisplayed)").length;
+    } else {
+        has_streams = stream_data.get_unsorted_subs().length;
+    }
+    if (has_streams) {
         $(".no-streams-to-show").hide();
         return;
     }
