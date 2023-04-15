@@ -136,7 +136,7 @@ const keypress_mappings = {
     71: {name: "G_end", message_view_only: true}, // 'G'
     74: {name: "vim_page_down", message_view_only: true}, // 'J'
     75: {name: "vim_page_up", message_view_only: true}, // 'K'
-    77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
+    77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
@@ -991,8 +991,8 @@ export function process_hotkey(e, hotkey) {
             reactions.toggle_emoji_reaction(msg.id, first_reaction.emoji_name);
             return true;
         }
-        case "toggle_topic_mute":
-            muted_topics_ui.toggle_topic_mute(msg);
+        case "toggle_topic_visibility_policy":
+            muted_topics_ui.toggle_topic_visibility_policy(msg);
             return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);

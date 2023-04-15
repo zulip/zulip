@@ -100,24 +100,26 @@ export function set_user_topic_visibility_policy(stream_id, topic, visibility_po
             // only useful when muting from the keyboard, since you
             // know what you did if you triggered muting with the
             // mouse.
-            const stream_name = stream_data.maybe_get_stream_name(stream_id);
-            feedback_widget.show({
-                populate($container) {
-                    const rendered_html = render_topic_muted();
-                    $container.html(rendered_html);
-                    $container.find(".stream").text(stream_name);
-                    $container.find(".topic").text(topic);
-                },
-                on_undo() {
-                    set_user_topic_visibility_policy(
-                        stream_id,
-                        topic,
-                        all_visibility_policies.INHERIT,
-                    );
-                },
-                title_text: $t({defaultMessage: "Topic muted"}),
-                undo_button_text: $t({defaultMessage: "Undo mute"}),
-            });
+            if (visibility_policy === all_visibility_policies.MUTED) {
+                const stream_name = stream_data.maybe_get_stream_name(stream_id);
+                feedback_widget.show({
+                    populate($container) {
+                        const rendered_html = render_topic_muted();
+                        $container.html(rendered_html);
+                        $container.find(".stream").text(stream_name);
+                        $container.find(".topic").text(topic);
+                    },
+                    on_undo() {
+                        set_user_topic_visibility_policy(
+                            stream_id,
+                            topic,
+                            all_visibility_policies.INHERIT,
+                        );
+                    },
+                    title_text: $t({defaultMessage: "Topic muted"}),
+                    undo_button_text: $t({defaultMessage: "Undo mute"}),
+                });
+            }
         },
     });
 }

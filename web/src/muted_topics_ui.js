@@ -6,6 +6,7 @@ import * as popover_menus from "./popover_menus";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as settings_muted_topics from "./settings_muted_topics";
 import * as stream_list from "./stream_list";
+import * as sub_store from "./sub_store";
 import * as unread_ui from "./unread_ui";
 import * as user_topics from "./user_topics";
 
@@ -38,23 +39,35 @@ export function handle_topic_updates(user_topic) {
     rerender_for_muted_topic(old_muted_topics);
 }
 
-export function toggle_topic_mute(message) {
+export function toggle_topic_visibility_policy(message) {
     const stream_id = message.stream_id;
     const topic = message.topic;
 
-    if (user_topics.is_topic_muted(stream_id, topic)) {
+    if (
+        user_topics.is_topic_muted(stream_id, topic) ||
+        user_topics.is_topic_unmuted(stream_id, topic)
+    ) {
         user_topics.set_user_topic_visibility_policy(
             stream_id,
             topic,
             user_topics.all_visibility_policies.INHERIT,
         );
     } else if (message.type === "stream") {
-        user_topics.set_user_topic_visibility_policy(
-            stream_id,
-            topic,
-            user_topics.all_visibility_policies.MUTED,
-            true,
-        );
+        if (sub_store.get(stream_id).is_muted) {
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic,
+                user_topics.all_visibility_policies.UNMUTED,
+                true,
+            );
+        } else {
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic,
+                user_topics.all_visibility_policies.MUTED,
+                true,
+            );
+        }
     }
 }
 
