@@ -1194,7 +1194,7 @@ td.pointer {
 
             .unread-marker-fill {
                 border-radius: 0 0 0 7px;
-                height: calc(100% - 2px);
+                height: calc(100% - 3px);
             }
 
             .messagebox {
@@ -1445,7 +1445,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    border-left: 2px solid hsl(107deg 74% 29%);
+    border-left: 1px solid hsl(217deg 100% 60%);
     height: 100%;
 }
 
