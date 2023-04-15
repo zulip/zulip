@@ -405,7 +405,7 @@ run_test("emoji picker", ({override}) => {
 run_test("G/M keys", () => {
     // TODO: move
     assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", muted_topics_ui, "toggle_topic_mute");
+    assert_mapping("M", muted_topics_ui, "toggle_topic_visibility_policy");
 });
 
 run_test("n/p keys", () => {
