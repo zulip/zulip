@@ -490,8 +490,8 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
-                        stream_settings_ui.remove_stream(stream.stream_id);
                         stream_data.delete_sub(stream.stream_id);
+                        stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
                         }
