@@ -343,11 +343,15 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "settings") {
+        settings.build_page();
+        admin.build_page();
         settings.launch(section);
         return;
     }
 
     if (base === "organization") {
+        settings.build_page();
+        admin.build_page();
         admin.launch(section);
         return;
     }
