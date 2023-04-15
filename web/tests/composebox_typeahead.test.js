@@ -676,8 +676,7 @@ function sorted_names_from(subs) {
 
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
-    override_rewire(compose_recipient, "update_on_recipient_change", noop);
-    override_rewire(stream_bar, "decorate", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     let pill_items = [];
     let cleared = false;

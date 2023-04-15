@@ -96,12 +96,21 @@
         }
     }
 
-    .right_part,
-    #compose-stream-recipient {
+    #compose-recipient {
         padding: 0;
         display: flex;
         align-items: center;
         flex: 1;
+
+        &.private {
+            #compose_recipient_selection_dropdown .dropdown-toggle {
+                border-radius: 4px !important;
+            }
+
+            .stream_header_colorblock {
+                display: none;
+            }
+        }
 
         .fa-angle-right {
             font-size: 0.9em;
@@ -127,17 +136,8 @@
         }
     }
 
-    .pm_recipient {
-        margin-left: 5px;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
-
-    #compose-private-recipient .to_text {
-        vertical-align: middle;
-
-        font-weight: 600;
+    #compose-private-recipient {
+        flex-grow: 1;
     }
 
     .message_header {
@@ -607,16 +607,9 @@ input.recipient_box {
     }
 }
 
-#compose-stream-recipient {
+#compose-recipient {
     min-width: 0;
-}
-
-#compose-stream-recipient,
-#compose-private-recipient {
     display: flex;
-}
-
-#compose-private-recipient {
     align-items: center;
     width: 100%;
 }

@@ -40,7 +40,7 @@ function hide_box() {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
-    $("#compose-stream-recipient").hide();
+    $("#stream_message_recipient_topic").hide();
     $("#compose-private-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
@@ -79,17 +79,22 @@ export function set_focus(msg_type, opts) {
     }
 }
 
-function show_compose_box(msg_type, opts) {
+export function show_compose_box(msg_type, opts) {
     if (msg_type === "stream") {
         $("#compose-private-recipient").hide();
-        $("#compose-stream-recipient").show();
+        $("#stream_message_recipient_topic").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
+        $("#compose-recipient").removeClass("private");
     } else {
         $("#compose-private-recipient").show();
-        $("#compose-stream-recipient").hide();
+        $("#stream_message_recipient_topic").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
+        $("#compose-recipient").addClass("private");
+        // TODO: maybe make a way for the dropdown to have a different
+        // string show on the button than in the list.
+        $("#compose_select_recipient_name").text($t({defaultMessage: "PM"}));
     }
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
@@ -97,6 +102,9 @@ function show_compose_box(msg_type, opts) {
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
 
+    if (opts.trigger === "toggle message") {
+        update_placeholder_text();
+    }
     set_focus(msg_type, opts);
 }
 
@@ -148,7 +156,7 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(opts.stream, $("#compose-stream-recipient .message_header_stream"));
+    stream_bar.decorate(opts.stream, $("#stream_message_recipient_topic .message_header_stream"));
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();

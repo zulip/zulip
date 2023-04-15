@@ -105,7 +105,7 @@
     }
 }
 
-.pm_recipient .pill-container {
+#compose-private-recipient.pill-container {
     padding: 0 2px;
     flex-grow: 1;
     align-content: center;

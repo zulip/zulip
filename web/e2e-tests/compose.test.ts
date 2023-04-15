@@ -41,7 +41,7 @@ async function test_send_messages(page: Page): Promise<void> {
 
 async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
-    await page.waitForSelector("#compose-stream-recipient", {visible: true});
+    await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
     await check_compose_form_empty(page);
     await close_compose_box(page);
 }
@@ -101,9 +101,9 @@ async function test_reply_with_r_shortcut(page: Page): Promise<void> {
 }
 
 async function test_open_close_compose_box(page: Page): Promise<void> {
-    await page.waitForSelector("#compose-stream-recipient", {visible: true});
+    await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
     await close_compose_box(page);
-    await page.waitForSelector("#compose-stream-recipient", {hidden: true});
+    await page.waitForSelector("#stream_message_recipient_topic", {hidden: true});
 
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#compose-private-recipient", {visible: true});

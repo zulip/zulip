@@ -765,8 +765,7 @@ test_ui("on_events", ({override}) => {
 
 test_ui("create_message_object", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
-    override_rewire(stream_bar, "decorate", noop);
-    override_rewire(compose_recipient, "update_on_recipient_change", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");
