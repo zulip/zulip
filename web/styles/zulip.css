@@ -1408,7 +1408,7 @@ td.pointer {
     }
 }
 
-.private-message {
+.message_row.private-message {
     background-color: var(--color-background-private-message-content);
 
     .alert-msg {
@@ -1568,6 +1568,7 @@ div.message_table {
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0;
+        background-color: var(--color-background);
 
         & span {
             font-size: calc(12em / 14);
@@ -2979,13 +2980,6 @@ select.invite-as {
         .date_row {
             position: relative;
             z-index: 3;
-            background-color: hsl(0deg 0% 100%);
-        }
-    }
-
-    .private-message.unread {
-        .date_row {
-            background-color: hsl(192deg 20% 95%);
         }
     }
 
@@ -2995,13 +2989,6 @@ select.invite-as {
         .date_row {
             position: unset;
             z-index: 0;
-            background-color: transparent;
-        }
-    }
-
-    .private-message.unread ~ .private-message.unread {
-        .date_row {
-            background-color: hsl(192deg 20% 95%);
         }
     }
 }
