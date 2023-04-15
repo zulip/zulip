@@ -101,12 +101,21 @@
         }
     }
 
-    .right_part,
-    #stream_message_recipient_topic {
+    #compose-recipient {
         padding: 0;
         display: flex;
         align-items: center;
         flex: 1;
+
+        &.compose-recipient-direct-selected {
+            #compose_recipient_selection_dropdown .dropdown-toggle {
+                border-radius: 4px !important;
+            }
+
+            .stream_header_colorblock {
+                display: none;
+            }
+        }
 
         .fa-angle-right {
             font-size: 0.9em;
@@ -132,17 +141,8 @@
         }
     }
 
-    .pm_recipient {
-        margin-left: 5px;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
-
-    #compose-private-recipient .to_text {
-        vertical-align: middle;
-
-        font-weight: 600;
+    #compose-direct-recipient {
+        flex-grow: 1;
     }
 
     .message_header {
@@ -616,12 +616,9 @@ input.recipient_box {
     }
 }
 
-#stream_message_recipient_topic,
-#compose-private-recipient {
+#compose-recipient {
+    min-width: 0;
     display: flex;
-}
-
-#compose-private-recipient {
     align-items: center;
     width: 100%;
 }

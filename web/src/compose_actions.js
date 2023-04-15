@@ -41,7 +41,7 @@ function hide_box() {
     drafts.update_draft();
     blur_compose_inputs();
     $("#stream_message_recipient_topic").hide();
-    $("#compose-private-recipient").hide();
+    $("#compose-direct-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
     $(".message_comp").hide();
@@ -79,17 +79,24 @@ export function set_focus(msg_type, opts) {
     }
 }
 
-function show_compose_box(msg_type, opts) {
+export function show_compose_box(msg_type, opts) {
     if (msg_type === "stream") {
-        $("#compose-private-recipient").hide();
+        $("#compose-direct-recipient").hide();
         $("#stream_message_recipient_topic").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
+        $("#compose-recipient").removeClass("compose-recipient-direct-selected");
     } else {
-        $("#compose-private-recipient").show();
+        $("#compose-direct-recipient").show();
         $("#stream_message_recipient_topic").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
+        $("#compose-recipient").addClass("compose-recipient-direct-selected");
+        // TODO: When "Direct message" is selected, we show "DM" on the dropdown
+        // button. It would be nice if the dropdown supported a way to attach
+        // the "DM" button display string so we wouldn't have to manually change
+        // it here.
+        $("#compose_select_recipient_name").text($t({defaultMessage: "DM"}));
     }
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
@@ -97,6 +104,9 @@ function show_compose_box(msg_type, opts) {
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
 
+    if (opts.trigger === "toggle recipient type") {
+        update_placeholder_text();
+    }
     set_focus(msg_type, opts);
 }
 
