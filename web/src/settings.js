@@ -5,7 +5,6 @@ import timezones from "../generated/timezones.json";
 import render_settings_overlay from "../templates/settings_overlay.hbs";
 import render_settings_tab from "../templates/settings_tab.hbs";
 
-import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import {$t, $t_html} from "./i18n";
@@ -132,8 +131,6 @@ export function open_settings_overlay() {
 }
 
 export function launch(section) {
-    build_page();
-    admin.build_page();
     settings_sections.reset_sections();
 
     open_settings_overlay();

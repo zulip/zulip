@@ -229,8 +229,6 @@ export function build_page() {
 }
 
 export function launch(section) {
-    settings.build_page();
-    build_page();
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();
