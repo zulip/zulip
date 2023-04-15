@@ -281,10 +281,13 @@ $time_column_max_width: 150px;
     /* Locally echoed messages. */
     &.locally-echoed .message_time {
         opacity: 0;
+        /* Don't show pointer when message_time doesn't has a link. */
+        cursor: default;
     }
 
     /* Show the spinner only for messages that are still locally echoed. */
     &.locally-echoed .slow-send-spinner {
         display: unset !important;
+        cursor: default;
     }
 }
