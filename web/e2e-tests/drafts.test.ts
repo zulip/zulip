@@ -169,7 +169,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     console.log("Restoring private message draft.");
     await page.click(".message_row.private-message .restore-draft");
     await wait_for_drafts_to_disappear(page);
-    await page.waitForSelector("#compose-private-recipient", {visible: true});
+    await page.waitForSelector("#compose-direct-recipient", {visible: true});
     await common.check_compose_state(page, {
         content: "Test private message.",
     });
@@ -201,7 +201,7 @@ async function test_delete_draft(page: Page): Promise<void> {
 async function test_save_draft_by_reloading(page: Page): Promise<void> {
     console.log("Saving draft by reloading.");
     await page.keyboard.press("KeyX");
-    await page.waitForSelector("#compose-private-recipient", {visible: true});
+    await page.waitForSelector("#compose-direct-recipient", {visible: true});
     await common.fill_form(page, "form#send_message_form", {
         content: "Test private message draft.",
     });

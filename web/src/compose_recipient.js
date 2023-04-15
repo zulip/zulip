@@ -3,6 +3,8 @@
 import $ from "jquery";
 import _ from "lodash";
 
+// todo: fix circular import here
+import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
@@ -15,6 +17,8 @@ import * as stream_data from "./stream_data";
 import * as util from "./util";
 
 export let compose_recipient_widget;
+
+const DIRECT_MESSAGE = "direct";
 
 function composing_to_current_topic_narrow() {
     return (
@@ -121,15 +125,47 @@ export function check_stream_posting_policy_for_compose_box(stream_name) {
     }
 }
 
-export function on_compose_select_recipient_update(new_value) {
-    const $stream_header_colorblock = $("#compose_recipient_selection_dropdown").find(
-        ".stream_header_colorblock",
-    );
-    stream_bar.decorate(new_value, $stream_header_colorblock);
-    update_on_recipient_change();
-    $("#stream_message_recipient_topic").trigger("focus").trigger("select");
+function switch_message_type(message_type) {
+    $("#compose-content .alert").hide();
 
-    check_stream_posting_policy_for_compose_box(new_value);
+    compose_state.set_message_type(message_type);
+
+    const opts = {
+        message_type,
+        trigger: "toggle recipient type",
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
+        private_message_recipient: compose_state.private_message_recipient(),
+    };
+    compose_actions.show_compose_box(message_type, opts);
+}
+
+export function on_compose_select_recipient_update(new_value) {
+    const message_type = compose_state.get_message_type();
+    if (new_value === DIRECT_MESSAGE) {
+        // TODO: In theory, we could do something more lightweight in
+        // the case it's already that value, but doing nothing would
+        // display the wrong and fail to update focus properly.
+        switch_message_type("private");
+
+        if (compose_state.private_message_recipient().length === 0) {
+            $("#private_message_recipient").trigger("focus").trigger("select");
+        }
+    } else {
+        const $stream_header_colorblock = $("#compose_recipient_selection_dropdown").find(
+            ".stream_header_colorblock",
+        );
+        stream_bar.decorate(new_value, $stream_header_colorblock);
+        if (message_type === "private") {
+            switch_message_type("stream");
+        }
+        // Always move focus to the topic input even if it's not empty,
+        // since it's likely the user will want to update the topic
+        // after updating the stream.
+        $("#stream_message_recipient_topic").trigger("focus").trigger("select");
+        check_stream_posting_policy_for_compose_box(new_value);
+    }
+    update_on_recipient_change();
 }
 
 export function update_stream_dropdown_options() {
@@ -144,7 +180,7 @@ export function possibly_update_dropdown_selection(old_stream_name, new_stream_n
 }
 
 function get_options_for_recipient_widget() {
-    return stream_data
+    const options = stream_data
         .subscribed_subs()
         .map((stream) => ({
             name: stream.name,
@@ -160,6 +196,13 @@ function get_options_for_recipient_widget() {
             }
             return 0;
         });
+
+    const direct_messages_option = {
+        name: $t({defaultMessage: "Direct message"}),
+        value: DIRECT_MESSAGE,
+    };
+    options.unshift(direct_messages_option);
+    return options;
 }
 
 export function initialize() {

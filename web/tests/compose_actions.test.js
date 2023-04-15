@@ -148,7 +148,7 @@ test("start", ({override, override_rewire}) => {
     start("stream", opts);
 
     assert_visible("#stream_message_recipient_topic");
-    assert_hidden("#compose-private-recipient");
+    assert_hidden("#compose-direct-recipient");
 
     assert.equal(compose_state.stream_name(), "stream1");
     assert.equal(compose_state.topic(), "topic1");
@@ -209,7 +209,7 @@ test("start", ({override, override_rewire}) => {
     start("private", opts);
 
     assert_hidden("#stream_message_recipient_topic");
-    assert_visible("#compose-private-recipient");
+    assert_visible("#compose-direct-recipient");
 
     assert.equal(compose_state.private_message_recipient(), "foo@example.com");
     assert.equal($("#compose-textarea").val(), "hello");
@@ -245,7 +245,7 @@ test("start", ({override, override_rewire}) => {
     assert.ok(abort_xhr_called);
     assert.ok(pill_cleared);
     assert_visible("#compose_controls");
-    assert_hidden("#compose-private-recipient");
+    assert_hidden("#compose-direct-recipient");
     assert.ok(!compose_state.composing());
 });
 
@@ -254,7 +254,7 @@ test("respond_to_message", ({override, override_rewire}) => {
     override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
-    override_rewire(compose_recipient, "update_on_recipient_change", () => {});
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_private_message_recipient({override});
     mock_stream_header_colorblock();
 

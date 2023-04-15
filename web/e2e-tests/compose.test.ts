@@ -106,9 +106,9 @@ async function test_open_close_compose_box(page: Page): Promise<void> {
     await page.waitForSelector("#stream_message_recipient_topic", {hidden: true});
 
     await page.keyboard.press("KeyX");
-    await page.waitForSelector("#compose-private-recipient", {visible: true});
+    await page.waitForSelector("#compose-direct-recipient", {visible: true});
     await close_compose_box(page);
-    await page.waitForSelector("#compose-private-recipient", {hidden: true});
+    await page.waitForSelector("#compose-direct-recipient", {hidden: true});
 }
 
 async function test_narrow_to_private_messages_with_cordelia(page: Page): Promise<void> {

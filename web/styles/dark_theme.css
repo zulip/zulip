@@ -475,7 +475,7 @@
     }
 
     #search_arrows .pill,
-    .pm_recipient .pill-container .pill {
+    #compose-direct-recipient.pill-container .pill {
         color: inherit;
         border: 1px solid hsl(0deg 0% 0% / 50%);
         background-color: hsl(0deg 0% 0% / 25%);
@@ -483,7 +483,7 @@
     }
 
     #search_arrows .pill:focus,
-    .pm_recipient .pill-container .pill:focus {
+    #compose-direct-recipient.pill-container .pill:focus {
         color: hsl(0deg 0% 100%);
         border: 1px solid hsl(176deg 78% 28% / 60%);
         background-color: hsl(176deg 49% 42% / 40%);
