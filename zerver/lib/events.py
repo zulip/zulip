@@ -227,7 +227,7 @@ def fetch_initial_state_data(
 
     if want("realm"):
         # The realm bundle includes both realm properties and server
-        # properties, since it's rare that one would one one and not
+        # properties, since it's rare that one would want one and not
         # the other. We expect most clients to want it.
         #
         # A note on naming: For some settings, one could imagine
