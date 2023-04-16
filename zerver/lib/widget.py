@@ -7,7 +7,7 @@ from zerver.models import Message, SubMessage
 
 
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
-    valid_widget_types = ["poll", "todo"]
+    valid_widget_types = ["poll", "todo", "roll"]
     tokens = content.split(" ")
 
     # tokens[0] will always exist
@@ -41,6 +41,22 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
             "options": options,
         }
         return extra_data
+    elif widget_type == "roll":
+        # let users roll die multiple times
+        lines = content.splitlines()
+        reroll = []
+        if lines and lines[0]:
+            question = lines.pop(0).strip()
+        for line in lines:
+            # If someone rerolled the die, append to list
+            option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), 1)
+            if len(option) > 0:
+                reroll.append(reroll)
+        extra_data = {
+            "reroll": reroll,
+        }
+        return extra_data
+
     return None
 
 

@@ -568,6 +568,35 @@ def validate_todo_data(todo_data: object) -> None:
     raise ValidationError(f"Unknown type for todo data: {todo_data['type']}")
 
 
+def validate_roll_data(roll_data: object) -> None:
+    check_dict([("type", check_string)])("todo data", roll_data)
+
+    assert isinstance(roll_data, dict)
+
+    if roll_data["type"] == "roll":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+            ]
+        )
+        checker("roll data", roll_data)
+        return
+
+    if roll_data["type"] == "reroll":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("key", check_int),
+            ]
+        )
+        checker("roll data", roll_data)
+        return
+
+    raise ValidationError(f"Unknown type for roll data: {roll_data['type']}")
+
+    
+
+
 # Converter functions for use with has_request_variables
 def to_non_negative_int(var_name: str, s: str, max_int_size: int = 2**32 - 1) -> int:
     x = int(s)

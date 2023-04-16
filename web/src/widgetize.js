@@ -5,11 +5,13 @@ import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import * as poll_widget from "./poll_widget";
 import * as todo_widget from "./todo_widget";
+import * as roll_widget from "./roll_widget";
 import * as zform from "./zform";
 
 const widgets = new Map([
     ["poll", poll_widget],
     ["todo", todo_widget],
+    ["roll", roll_widget],
     ["zform", zform],
 ]);
 
