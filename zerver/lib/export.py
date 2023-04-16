@@ -47,6 +47,7 @@ from zerver.models import (
     Reaction,
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmDomain,
     RealmEmoji,
     RealmFilter,
@@ -141,6 +142,7 @@ ALL_ZULIP_TABLES = {
     "zerver_reaction",
     "zerver_realm",
     "zerver_realmauditlog",
+    "zerver_realmauthenticationmethod",
     "zerver_realmdomain",
     "zerver_realmemoji",
     "zerver_realmfilter",
@@ -297,10 +299,6 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_usertopic": ["last_updated"],
 }
 
-BITHANDLER_FIELDS: Dict[TableName, List[Field]] = {
-    "zerver_realm": ["authentication_methods"],
-}
-
 
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
@@ -436,12 +434,6 @@ def floatify_datetime_fields(data: TableData, table: TableName) -> None:
             assert isinstance(dt, datetime.datetime)
             assert not timezone_is_naive(dt)
             item[field] = dt.timestamp()
-
-
-def listify_bithandler_fields(data: TableData, table: TableName) -> None:
-    for item in data[table]:
-        for field in BITHANDLER_FIELDS[table]:
-            item[field] = list(item[field])
 
 
 class Config:
@@ -668,8 +660,6 @@ def export_from_config(
     for t in exported_tables:
         if t in DATE_FIELDS:
             floatify_datetime_fields(response, t)
-        if table in BITHANDLER_FIELDS:
-            listify_bithandler_fields(response, table)
 
     # Now walk our children.  It's extremely important to respect
     # the order of children here.
@@ -688,6 +678,13 @@ def get_realm_config() -> Config:
     realm_config = Config(
         table="zerver_realm",
         is_seeded=True,
+    )
+
+    Config(
+        table="zerver_realmauthenticationmethod",
+        model=RealmAuthenticationMethod,
+        normal_parent=realm_config,
+        include_rows="realm_id__in",
     )
 
     Config(

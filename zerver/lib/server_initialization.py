@@ -7,11 +7,13 @@ from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.models import (
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmUserDefault,
     UserProfile,
     get_client,
     get_system_bot,
 )
+from zproject.backends import all_implemented_backend_names
 
 
 def server_initialized() -> bool:
@@ -27,6 +29,14 @@ def create_internal_realm() -> None:
     )
     RealmUserDefault.objects.create(realm=realm)
     create_system_user_groups_for_realm(realm)
+
+    # We create realms with all authentications methods enabled by default.
+    RealmAuthenticationMethod.objects.bulk_create(
+        [
+            RealmAuthenticationMethod(name=backend_name, realm=realm)
+            for backend_name in all_implemented_backend_names()
+        ]
+    )
 
     # Create some client objects for common requests.  Not required;
     # just ensures these get low IDs in production, and in development

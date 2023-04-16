@@ -23,6 +23,7 @@ from zerver.models import (
     Attachment,
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmReactivationStatus,
     RealmUserDefault,
     ScheduledEmail,
@@ -130,9 +131,13 @@ def do_set_realm_authentication_methods(
     old_value = realm.authentication_methods_dict()
     with transaction.atomic():
         for key, value in list(authentication_methods.items()):
-            index = getattr(realm.authentication_methods, key).number
-            realm.authentication_methods.set_bit(index, int(value))
-        realm.save(update_fields=["authentication_methods"])
+            # This does queries in a loop, but this isn't a performance sensitive
+            # path and is only run rarely.
+            if value:
+                RealmAuthenticationMethod.objects.get_or_create(realm=realm, name=key)
+            else:
+                RealmAuthenticationMethod.objects.filter(realm=realm, name=key).delete()
+
         updated_value = realm.authentication_methods_dict()
         RealmAuditLog.objects.create(
             realm=realm,

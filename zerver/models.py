@@ -271,6 +271,21 @@ def clear_supported_auth_backends_cache() -> None:
     supported_backends = None
 
 
+class RealmAuthenticationMethod(models.Model):
+    """
+    Tracks which authentication backends are enabled for a realm.
+    An enabled backend is represented in this table a row with appropriate
+    .realm value and .name matching the name of the target backend in the
+    AUTH_BACKEND_NAME_MAP dict.
+    """
+
+    realm = models.ForeignKey("Realm", on_delete=CASCADE, db_index=True)
+    name = models.CharField(max_length=80)
+
+    class Meta:
+        unique_together = ("realm", "name")
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -318,10 +333,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     _max_invites = models.IntegerField(null=True, db_column="max_invites")
     disallow_disposable_email_addresses = models.BooleanField(default=True)
-    authentication_methods: BitHandler = BitField(
-        flags=AUTHENTICATION_FLAGS,
-        default=2**31 - 1,
-    )
 
     # Allow users to access web-public streams without login. This
     # setting also controls API access of web-public streams.
@@ -825,17 +836,21 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         on the server, this will not return an entry for "Email")."""
         # This mapping needs to be imported from here due to the cyclic
         # dependency.
-        from zproject.backends import AUTH_BACKEND_NAME_MAP
+        from zproject.backends import AUTH_BACKEND_NAME_MAP, all_implemented_backend_names
 
         ret: Dict[str, bool] = {}
         supported_backends = [type(backend) for backend in supported_auth_backends()]
-        # `authentication_methods` is a bitfield.types.BitHandler, not
-        # a true dict; since it is still python2- and python3-compat,
-        # `iteritems` is its method to iterate over its contents.
-        for k, v in self.authentication_methods.iteritems():
-            backend = AUTH_BACKEND_NAME_MAP[k]
-            if backend in supported_backends:
-                ret[k] = v
+
+        for backend_name in all_implemented_backend_names():
+            backend_class = AUTH_BACKEND_NAME_MAP[backend_name]
+            if backend_class in supported_backends:
+                ret[backend_name] = False
+        for realm_authentication_method in RealmAuthenticationMethod.objects.filter(
+            realm_id=self.id
+        ):
+            backend_class = AUTH_BACKEND_NAME_MAP[realm_authentication_method.name]
+            if backend_class in supported_backends:
+                ret[realm_authentication_method.name] = True
         return ret
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
