@@ -2021,8 +2021,8 @@ msgstr ""
 #, python-format
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
-"%(email)s on %(realm_uri)s."
-msgstr "Jemand (möglicherweise du selbst) hat ein neues Passwort für dein Zulip-Konto %(email)s bei %(realm_uri)s angefordert."
+"%(email)s on %(realm_url)s."
+msgstr "Jemand (möglicherweise du selbst) hat ein neues Passwort für dein Zulip-Konto %(email)s bei %(realm_url)s angefordert."
 
 #: templates/zerver/emails/password_reset.html:13
 msgid "Click the button below to reset your password."

@@ -107,7 +107,7 @@ export function generate_zuliprc_content(bot) {
         "\nkey=" +
         bot.api_key +
         "\nsite=" +
-        page_params.realm_uri +
+        page_params.realm_url +
         (token === undefined ? "" : "\ntoken=" + token) +
         // Some tools would not work in files without a trailing new line.
         "\n"
@@ -122,7 +122,7 @@ export function generate_botserverrc_content(email, api_key, token) {
         "\nkey=" +
         api_key +
         "\nsite=" +
-        page_params.realm_uri +
+        page_params.realm_url +
         "\ntoken=" +
         token +
         "\n"

@@ -166,7 +166,7 @@ def _deactivate_user_profile_backend(
             from_address=FromAddress.NOREPLY,
             context={
                 "deactivation_notification_comment": deactivation_notification_comment,
-                "realm_uri": target.realm.url,
+                "realm_url": target.realm.url,
                 "realm_name": target.realm.name,
             },
         )

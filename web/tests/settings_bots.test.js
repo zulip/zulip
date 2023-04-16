@@ -45,7 +45,7 @@ bot_data.initialize(bot_data_params);
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        page_params.realm_uri = "https://chat.example.com";
+        page_params.realm_url = "https://chat.example.com";
         page_params.realm_embedded_bots = [
             {name: "converter", config: {}},
             {name: "giphy", config: {key: "12345678"}},

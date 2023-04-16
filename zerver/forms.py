@@ -403,7 +403,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         context = {
             "email": email,
-            "realm_uri": realm.url,
+            "realm_url": realm.url,
             "realm_name": realm.name,
         }
 
