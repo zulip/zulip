@@ -113,12 +113,16 @@ from zproject.settings_types import OIDCIdPConfigDict
 redis_client = get_redis_client()
 
 
+def all_implemented_backend_names() -> List[str]:
+    return list(AUTH_BACKEND_NAME_MAP.keys())
+
+
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
 # In each case, we both needs to check at the server level (via
 # `settings.AUTHENTICATION_BACKENDS`, queried via
 # `django.contrib.auth.get_backends`) and at the realm level (via the
-# `Realm.authentication_methods` BitField).
+# `RealmAuthenticationMethod` table).
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are

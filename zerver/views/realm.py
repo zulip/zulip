@@ -285,7 +285,7 @@ def update_realm(
 
     # The following realm properties do not fit the pattern above
     # authentication_methods is not supported by the do_set_realm_property
-    # framework because of its bitfield.
+    # framework because it's tracked through the RealmAuthenticationMethod table.
     if authentication_methods is not None and (
         realm.authentication_methods_dict() != authentication_methods
     ):

@@ -1211,7 +1211,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         flush_per_request_caches()
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(41):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1226,7 +1226,7 @@ class FetchQueriesTest(ZulipTestCase):
             muted_topics=1,
             muted_users=1,
             presence=1,
-            realm=0,
+            realm=4,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,

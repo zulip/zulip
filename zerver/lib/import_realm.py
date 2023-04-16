@@ -51,6 +51,7 @@ from zerver.models import (
     Reaction,
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmDomain,
     RealmEmoji,
     RealmFilter,
@@ -77,6 +78,7 @@ from zerver.models import (
 )
 
 realm_tables = [
+    ("zerver_realmauthenticationmethod", RealmAuthenticationMethod, "realmauthenticationmethod"),
     ("zerver_defaultstream", DefaultStream, "defaultstream"),
     ("zerver_realmemoji", RealmEmoji, "realmemoji"),
     ("zerver_realmdomain", RealmDomain, "realmdomain"),
@@ -105,6 +107,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "subscription": {},
     "defaultstream": {},
     "reaction": {},
+    "realmauthenticationmethod": {},
     "realmemoji": {},
     "realmdomain": {},
     "realmfilter": {},
@@ -598,19 +601,6 @@ def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> N
         del item[field_name + "_mask"]
 
 
-def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_name: Field) -> None:
-    """Used to fixup the authentication_methods bitfield to be an integer."""
-    for item in data[table]:
-        # The ordering of bits here is important for the imported value
-        # to end up as expected.
-        charlist = ["1" if field[1] else "0" for field in item[field_name]]
-        charlist.reverse()
-
-        values_as_bitstring = "".join(charlist)
-        values_as_int = int(values_as_bitstring, 2)
-        item[field_name] = values_as_int
-
-
 def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
     """
     The recipient column shouldn't be imported, we'll set the correct values
@@ -955,7 +945,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Fix realm subdomain information
     data["zerver_realm"][0]["string_id"] = subdomain
     data["zerver_realm"][0]["name"] = subdomain
-    fix_realm_authentication_bitfield(data, "zerver_realm", "authentication_methods")
     update_model_ids(Realm, data, "realm")
 
     # Create the realm, but mark it deactivated for now, while we

@@ -734,7 +734,7 @@ class SlackImporter(ZulipTestCase):
             passed_realm["zerver_realm"][0]["description"], "Organization imported from Slack!"
         )
         self.assertEqual(passed_realm["zerver_userpresence"], [])
-        self.assert_length(passed_realm.keys(), 15)
+        self.assert_length(passed_realm.keys(), 16)
 
         self.assertEqual(realm["zerver_stream"], [])
         self.assertEqual(realm["zerver_userprofile"], [])
@@ -1147,6 +1147,10 @@ class SlackImporter(ZulipTestCase):
         )
 
         self.assertEqual(Message.objects.filter(realm=realm).count(), 82)
+
+        # All auth backends are enabled initially.
+        for name, enabled in realm.authentication_methods_dict().items():
+            self.assertTrue(enabled)
 
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
