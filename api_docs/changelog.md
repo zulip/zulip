@@ -20,13 +20,22 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
-**Feature level 205**
+**Feature level 206**
 
 * [`POST /register`](/api/register-queue): `streams` field in the response
   now included web-public streams as well.
 * [`GET /events`](/api/get-events): Events for stream creation and deletion
   are now sent to the user if they gain or lose access to some streams due
   to change in their role.
+
+**Feature level 205**:
+
+* [`POST /register`](/api/register-queue), [`POST /server_settings`](/api/get-server-settings),
+  `PATCH /realm`:
+  Rename `realm_uri` to `realm_url` and keep the deprecated name `realm_uri` for
+  backwards-compatibility.
+* Mobile push notifications now include a `realm_url` field as an alias
+  of `realm_uri` in all notification payloads.
 
 **Feature level 204**
 

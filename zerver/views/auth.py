@@ -1119,6 +1119,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
     for settings_item in [
         "email_auth_enabled",
         "require_email_format_usernames",
+        "realm_url",
         "realm_uri",
         "realm_name",
         "realm_icon",
