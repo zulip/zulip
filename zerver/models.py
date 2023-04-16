@@ -294,19 +294,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
-    AUTHENTICATION_FLAGS = [
-        "Google",
-        "Email",
-        "GitHub",
-        "LDAP",
-        "Dev",
-        "RemoteUser",
-        "AzureAD",
-        "SAML",
-        "GitLab",
-        "Apple",
-        "OpenID Connect",
-    ]
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
 
