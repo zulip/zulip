@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 
 const list_widget = mock_esm("../src/list_widget");
 
-const settings_muted_topics = zrequire("settings_muted_topics");
+const settings_user_topics = zrequire("settings_user_topics");
 const stream_data = zrequire("stream_data");
 const user_topics = zrequire("user_topics");
 
@@ -42,11 +42,11 @@ run_test("settings", ({override}) => {
         populate_list_called = true;
     });
 
-    settings_muted_topics.reset();
-    assert.equal(settings_muted_topics.loaded, false);
+    settings_user_topics.reset();
+    assert.equal(settings_user_topics.loaded, false);
 
-    settings_muted_topics.set_up();
-    assert.equal(settings_muted_topics.loaded, true);
+    settings_user_topics.set_up();
+    assert.equal(settings_user_topics.loaded, true);
     assert.ok(populate_list_called);
 
     const topic_change_handler = $("body").get_on_handler(
