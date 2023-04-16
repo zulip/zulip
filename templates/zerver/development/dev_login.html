@@ -25,7 +25,7 @@ page can be easily identified in it's respective JavaScript file -->
                     {% if realm_web_public_access_enabled %}
                     <h2>{{_('Anonymous user') }}</h2>
                     <p>
-                        <input type="submit" formaction="{{ current_realm.uri }}{{ url('login-local') }}"
+                        <input type="submit" formaction="{{ current_realm.url }}{{ url('login-local') }}"
                           name="prefers_web_public_view" class="dev-button dev-login-button" value="Anonymous login" />
                     </p>
                     {% endif %}
@@ -33,7 +33,7 @@ page can be easily identified in it's respective JavaScript file -->
                     {% if direct_owners %}
                         {% for direct_owner in direct_owners %}
                         <p>
-                            <button type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('login-local') }}"
+                            <button type="submit" formaction="{{ direct_owner.realm.url }}{{ url('login-local') }}"
                               name="direct_email" class="dev-button dev-login-button" value="{{ direct_owner.delivery_email }}">
                                 {% if direct_owner.realm.demo_organization_scheduled_deletion_date %}
                                     {{ direct_owner.full_name }}
@@ -50,7 +50,7 @@ page can be easily identified in it's respective JavaScript file -->
                     {% if direct_admins %}
                         {% for direct_admin in direct_admins %}
                         <p>
-                            <input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('login-local') }}"
+                            <input type="submit" formaction="{{ direct_admin.realm.url }}{{ url('login-local') }}"
                               name="direct_email" class="dev-button dev-login-button" value="{{ direct_admin.delivery_email }}" />
                         </p>
                         {% endfor %}
@@ -61,7 +61,7 @@ page can be easily identified in it's respective JavaScript file -->
                     {% if direct_moderators %}
                         {% for direct_moderator in direct_moderators %}
                         <p>
-                            <input type="submit" formaction="{{ direct_moderator.realm.uri }}{{ url('login-local') }}"
+                            <input type="submit" formaction="{{ direct_moderator.realm.url }}{{ url('login-local') }}"
                               name="direct_email" class="dev-button dev-login-button" value="{{ direct_moderator.delivery_email }}" />
                         </p>
                         {% endfor %}
@@ -72,7 +72,7 @@ page can be easily identified in it's respective JavaScript file -->
                     {% if guest_users %}
                         {% for guest_user in guest_users %}
                         <p>
-                            <input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('login-local') }}"
+                            <input type="submit" formaction="{{ guest_user.realm.url }}{{ url('login-local') }}"
                               name="direct_email" class="dev-button dev-login-button" value="{{ guest_user.delivery_email }}" />
                         </p>
                         {% endfor %}
@@ -86,7 +86,7 @@ page can be easily identified in it's respective JavaScript file -->
                     {% if direct_users %}
                         {% for direct_user in direct_users %}
                         <p>
-                            <input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('login-local') }}"
+                            <input type="submit" formaction="{{ direct_user.realm.url }}{{ url('login-local') }}"
                               name="direct_email" class="dev-button dev-login-button" value="{{ direct_user.delivery_email }}" />
                         </p>
                         {% endfor %}
