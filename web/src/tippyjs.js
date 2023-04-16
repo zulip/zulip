@@ -246,7 +246,6 @@ export function initialize() {
     // box or it is not limited by the parent container.
     delegate("body", {
         target: [
-            ".recipient_bar_icon",
             "#streams_header .sidebar-title",
             "#userlist-title",
             "#user_filter_icon",
@@ -257,6 +256,32 @@ export function initialize() {
             "#add_streams_tooltip",
             "#filter_streams_tooltip",
         ],
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: ".recipient_bar_icon",
+        onShow(instance) {
+            if (!document.body.contains(instance.reference)) {
+                return false;
+            }
+            const $elem = $(instance.reference);
+
+            const config = {attributes: false, childList: true, subtree: true};
+            const target = $elem.parents(".message_header.message_header_stream.right_part").get(0);
+            const nodes_to_check_for_removal = [
+                $elem.parents(".recipient_bar_controls").get(0),
+                $elem.get(0),
+            ];
+            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+            return true;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            if (observer) {
+                observer.disconnect();
+            }
+        },
         appendTo: () => document.body,
     });
 
