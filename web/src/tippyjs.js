@@ -390,6 +390,15 @@ export function initialize() {
     });
 
     message_list_tooltip(".recipient_row_date > span", {
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $time_elem = $(instance.reference);
+            const message =
+                $time_elem.attr("data-tippy-content") +
+                " " +
+                $t({defaultMessage: "(Click to jump dates)"});
+            instance.setContent(message);
+        },
         onHidden(instance) {
             instance.destroy();
         },
