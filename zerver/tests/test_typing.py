@@ -132,6 +132,23 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
 
 
 class TypingHappyPathTestPMs(ZulipTestCase):
+    def test_valid_type_and_op_parameters(self) -> None:
+        recipient_type_name = ["direct", "private"]
+        operator_type = ["start", "stop"]
+        sender = self.example_user("hamlet")
+        recipient_user = self.example_user("othello")
+
+        for type in recipient_type_name:
+            for operator in operator_type:
+                params = dict(
+                    to=orjson.dumps([recipient_user.id]).decode(),
+                    op=operator,
+                    type=type,
+                )
+
+                result = self.api_post(sender, "/api/v1/typing", params)
+                self.assert_json_success(result)
+
     def test_start_to_single_recipient(self) -> None:
         sender = self.example_user("hamlet")
         recipient_user = self.example_user("othello")

@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 174**:
+
+* [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message):
+  Added `"direct"` as the preferred way to indicate a direct message for the
+  `type` parameter, deprecating the original `"private"`. While `"private"`
+  is still supported for direct messages, clients are encouraged to use to
+  the modern convention with servers that support it, because support for
+  `"private"` will eventually be removed.
+
 **Feature level 173**:
 
 * [`GET /scheduled_messages`](/api/get-scheduled-messages), [`DELETE

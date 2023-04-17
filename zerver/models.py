@@ -3023,6 +3023,16 @@ class ArchivedMessage(AbstractMessage):
 
 
 class Message(AbstractMessage):
+    # Recipient types used when a Message object is provided to
+    # Zulip clients via the API.
+    #
+    # A detail worth noting:
+    # * "direct" was introduced in 2023 with the goal of
+    #   deprecating the original "private" and becoming the
+    #   preferred way to indicate a personal or huddle
+    #   Recipient type via the API.
+    API_RECIPIENT_TYPES = ["direct", "private", "stream"]
+
     search_tsvector = SearchVectorField(null=True)
 
     def topic_name(self) -> str:

@@ -24,7 +24,7 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import check_int, to_float
+from zerver.lib.validator import check_int, check_string_in, to_float
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
@@ -193,7 +193,7 @@ def handle_deferred_message(
 def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_type_name: str = REQ("type"),
+    req_type: str = REQ("type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES)),
     req_to: Optional[str] = REQ("to", default=None),
     req_sender: Optional[str] = REQ("sender", default=None, documentation_pending=True),
     forged_str: Optional[str] = REQ("forged", default=None, documentation_pending=True),
@@ -210,7 +210,12 @@ def send_message_backend(
     tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
     time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
 ) -> HttpResponse:
-    recipient_type_name = message_type_name
+    recipient_type_name = req_type
+    if recipient_type_name == "direct":
+        # For now, use "private" from Message.API_RECIPIENT_TYPES.
+        # TODO: Use "direct" here, as well as in events and
+        # message (created, schdeduled, drafts) objects/dicts.
+        recipient_type_name = "private"
 
     # If req_to is None, then we default to an
     # empty list of recipients.

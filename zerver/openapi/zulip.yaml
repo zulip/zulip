@@ -5502,25 +5502,35 @@ paths:
       summary: Send a message
       tags: ["messages"]
       description: |
-        Send a stream or a private message.
+        Send a [stream message](/help/streams-and-topics) or a
+        [direct message](/help/direct-messages).
       parameters:
         - name: type
           in: query
           description: |
-            The type of message to be sent. `private` for a private message and
-            `stream` for a stream message.
+            The type of message to be sent.
+
+            `"direct"` for a direct message and `"stream"` for a stream message.
+
+            **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added as
+            the preferred way to request a direct message, deprecating the original
+            `"private"`. While `"private"` is still supported for requesting direct
+            messages, clients are encouraged to use to the modern convention with
+            servers that support it, because support for `"private"` will eventually
+            be removed.
           schema:
             type: string
             enum:
-              - private
+              - direct
               - stream
-          example: private
+              - private
+          example: direct
           required: true
         - name: to
           in: query
           description: |
             For stream messages, either the name or integer ID of the stream. For
-            private messages, either a list containing integer user IDs or a list
+            direct messages, either a list containing integer user IDs or a list
             containing string email addresses.
 
             **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
@@ -5624,7 +5634,7 @@ paths:
                             "result": "error",
                           }
                         description: |
-                          A typical failed JSON response for when a private message is sent to a user
+                          A typical failed JSON response for when a direct message is sent to a user
                           that does not exist:
   /messages/{message_id}/history:
     get:
@@ -15056,7 +15066,7 @@ paths:
       summary: Set "typing" status
       tags: ["users"]
       description: |
-        Notify other users whether the current user is typing a message.
+        Notify other users whether the current user is [typing a message](/help/typing-notifications).
 
         Clients implementing Zulip's typing notifications protocol should work as follows:
 
@@ -15100,15 +15110,21 @@ paths:
           description: |
             Type of the message being composed.
 
-            **Changes**: New in Zulip 4.0 (feature level 58). Previously, typing
-            notifications were only for private messages.
+            **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added
+            as the preferred way to indicate a direct message is being composed,
+            becoming the default value for this parameter and deprecating the
+            original `"private"`.
+
+            New in Zulip 4.0 (feature level 58). Previously, typing notifications
+            were only for direct messages.
           schema:
             type: string
             enum:
-              - private
+              - direct
               - stream
-            default: private
-          example: private
+              - private
+            default: direct
+          example: direct
         - name: op
           in: query
           description: |
@@ -15123,16 +15139,16 @@ paths:
         - name: to
           in: query
           description: |
-            For `"private"` type it is the user_ids of the recipients of the message being typed.
-            Send a JSON-encoded list of user_ids. (Use a list even if there is only one
-            recipient.)
+            For `"direct"` type it is the user IDs of the recipients of the message
+            being typed. Send a JSON-encoded list of user IDs. (Use a list even if
+            there is only one recipient.)
 
             For `"stream"` type it is a single element list containing ID of stream in
             which the message is being typed.
 
             **Changes**: Support for typing notifications for stream messages
             is new in Zulip 4.0 (feature level 58). Previously, typing
-            notifications were only for private messages.
+            notifications were only for direct messages.
 
             Before Zulip 2.0.0, this parameter accepted only a JSON-encoded
             list of email addresses. Support for the email address-based format was
@@ -15149,10 +15165,10 @@ paths:
           in: query
           description: |
             Topic to which message is being typed. Required for the `"stream"` type.
-            Ignored in the case of `"private"` type.
+            Ignored in the case of `"direct"` type.
 
             **Changes**: New in Zulip 4.0 (feature level 58). Previously, typing
-            notifications were only for private messages.
+            notifications were only for direct messages.
           schema:
             type: string
           example: typing notifications
