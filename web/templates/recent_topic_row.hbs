@@ -18,6 +18,8 @@
                 <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
                     {{#if is_group}}
                     <span class="fa fa-group"></span>
+                    {{else if is_bot}}
+                    <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
                     <span class="{{user_circle_class}} user_circle"></span>
                     {{/if}}

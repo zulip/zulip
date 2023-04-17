@@ -429,9 +429,8 @@ function format_conversation(conversation_data) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
-                // Bots do not have status emoji, and are modeled as
-                // always present.
-                context.user_circle_class = "user_circle_green";
+                // We display the bot icon rather than a user circle for bots.
+                context.is_bot = true;
             } else {
                 context.user_circle_class = buddy_data.get_user_circle_class(user_id);
             }
