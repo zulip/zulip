@@ -14,9 +14,10 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
-import {media_breakpoints_num} from "./css_variables";
+import { media_breakpoints_num } from "./css_variables";
 import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
+import * as flatpickr from "./flatpickr";
 import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
@@ -26,13 +27,14 @@ import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
-import {page_params} from "./page_params";
+import { page_params } from "./page_params";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
+import * as settings_account from "./settings_account";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
@@ -41,7 +43,7 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
-import {parse_html} from "./ui_util";
+import { parse_html } from "./ui_util";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
 
@@ -187,7 +189,7 @@ export function initialize() {
         if (page_params.is_spectator) {
             return;
         }
-        compose_actions.respond_to_message({trigger: "message click"});
+        compose_actions.respond_to_message({ trigger: "message click" });
         e.stopPropagation();
         popovers.hide_all();
     };
@@ -414,7 +416,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_recipient(row_id, {trigger: "message header"});
+        narrow.by_recipient(row_id, { trigger: "message header" });
     });
 
     $("#message_feed_container").on("click", ".narrows_by_topic", function (e) {
@@ -423,7 +425,7 @@ export function initialize() {
         }
         e.preventDefault();
         const row_id = get_row_id_for_narrowing(this);
-        narrow.by_topic(row_id, {trigger: "message header"});
+        narrow.by_topic(row_id, { trigger: "message header" });
     });
 
     // SIDEBARS
@@ -461,7 +463,7 @@ export function initialize() {
         .on("click", ".selectable_sidebar_block", (e) => {
             const $li = $(e.target).parents("li");
 
-            activity.narrow_for_user({$li});
+            activity.narrow_for_user({ $li });
 
             e.preventDefault();
             e.stopPropagation();
@@ -514,7 +516,7 @@ export function initialize() {
                 // it will be removed and we need to attach it on an element which will remain in the DOM.
                 const target_node = get_target_node(instance);
                 // We only need to know if any of the `li` elements were removed.
-                const config = {attributes: false, childList: true, subtree};
+                const config = { attributes: false, childList: true, subtree };
                 const callback = function (mutationsList) {
                     for (const mutation of mutationsList) {
                         // Hide instance if reference is in the removed node list.
@@ -600,7 +602,7 @@ export function initialize() {
             return;
         }
         const title_data = recent_topics_ui.get_pm_tooltip_data(user_ids_string);
-        const noop = () => {};
+        const noop = () => { };
         do_render_buddy_list_tooltip($elem, title_data, noop, noop, false, undefined, false);
     });
 
@@ -625,11 +627,34 @@ export function initialize() {
     });
 
     $(".restart_get_events_button").on("click", () => {
-        server_events.restart_get_events({dont_block: true});
+        server_events.restart_get_events({ dont_block: true });
     });
 
     $("#settings_page").on("click", ".collapse-settings-btn", () => {
         settings_toggle.toggle_org_setting_collapse();
+    });
+
+    $("#settings_page").on("click", ".custom_user_field .datepicker", () => {
+        console.log("in our code");
+        const el = document.getElementsByClassName('custom_user_field_value datepicker settings_text_input form-control input');
+        const on_timestamp_selection = (val) => {
+            $("#profile-settings .custom-profile-fields-form")
+                .find(".flatpickr-confirm visible lightTheme")
+                .on("click", function () {
+                    console.log("in our callback");
+                    $(this).parent().find(".custom_user_field_value").val(val);
+                });
+        };
+        flatpickr.show_flatpickr(
+            $(el)[0],
+            on_timestamp_selection,
+            new Date(),
+            {
+                // place the time picker above the icon and center it horizontally
+                position: "above center",
+            },
+        );
+
     });
 
     $("body").on("click", ".reload_link", () => {
@@ -639,11 +664,11 @@ export function initialize() {
     // COMPOSE
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
-        compose_actions.start("stream", {trigger: "empty feed message"});
+        compose_actions.start("stream", { trigger: "empty feed message" });
         e.preventDefault();
     });
     $("body").on("click", ".empty_feed_compose_private", (e) => {
-        compose_actions.start("private", {trigger: "empty feed message"});
+        compose_actions.start("private", { trigger: "empty feed message" });
         e.preventDefault();
     });
 
@@ -764,7 +789,7 @@ export function initialize() {
 
                 channel.post({
                     url: "/accounts/webathena_kerberos_login/",
-                    data: {cred: JSON.stringify(r.session)},
+                    data: { cred: JSON.stringify(r.session) },
                     success() {
                         $("#zephyr-mirror-error").removeClass("show");
                     },
