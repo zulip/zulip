@@ -256,6 +256,10 @@ li.show-more-topics {
 
             .pm_left_col {
                 min-width: $left_col_size;
+
+                & span:not(.user_circle) {
+                    opacity: 0.7;
+                }
             }
         }
 
