@@ -194,8 +194,18 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         // topic is fetched from the server after clicking submit.
         // Though, this will be changed soon as we are going to make topic
         // edit permission independent of message.
-        args.disable_topic_input = !message_edit.is_topic_editable(message);
-        disable_stream_input = !message_edit.is_stream_editable(message);
+
+        // We potentially got to this function by clicking a button that implied the
+        // user would be able to move their message.  Give a little bit of buffer in
+        // case the button has been around for a bit, e.g. we show the
+        // move_message_button (hovering plus icon) as long as the user would have
+        // been able to click it at the time the mouse entered the message_row. Also
+        // a buffer in case their computer is slow, or stalled for a second, etc
+        // If you change this number also change edit_limit_buffer in
+        // zerver.actions.message_edit.check_update_message
+        const move_limit_buffer = 5;
+        args.disable_topic_input = !message_edit.is_topic_editable(message, move_limit_buffer);
+        disable_stream_input = !message_edit.is_stream_editable(message, move_limit_buffer);
     }
 
     function get_params_from_form() {
