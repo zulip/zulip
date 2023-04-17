@@ -10,7 +10,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import (
-    check_schedule_message,
     check_send_message,
     compute_irc_user_fullname,
     compute_jabber_user_fullname,
@@ -18,6 +17,7 @@ from zerver.actions.message_send import (
     extract_private_recipients,
     extract_stream_indicator,
 )
+from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import render_markdown
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
