@@ -69,6 +69,10 @@
 .popover_user_name_row {
     display: flex;
     align-items: center;
+
+    .zulip-icon.zulip-icon-bot {
+        padding-left: 5px;
+    }
 }
 
 .user_info_popover_action_buttons {
