@@ -113,11 +113,11 @@ add_example("send_message", "/messages:post", 200, async (client, console) => {
     };
     console.log(await client.messages.send(params));
 
-    // Send a private message
+    // Send a direct message
     const user_id = 9;
     params = {
         to: [user_id],
-        type: "private",
+        type: "direct",
         content: "With mirth and laughter let old wrinkles come.",
     };
     console.log(await client.messages.send(params));
@@ -252,7 +252,8 @@ add_example("set_typing_status", "/typing:post", 200, async (client, console) =>
         to: [user_id1, user_id2],
     };
 
-    // The user has started to type in the group PM with Iago and Polonius
+    // The user has started typing in the group direct message
+    // with Iago and Polonius
     console.log(await client.typing.send(typingParams));
     // {code_example|end}
 });
