@@ -123,8 +123,8 @@ export function render_stream(stream) {
     }
 
     return render_typeahead_item({
-        primary: stream.name,
         secondary: desc,
+        stream,
         is_unsubscribed: !stream.subscribed,
     });
 }
