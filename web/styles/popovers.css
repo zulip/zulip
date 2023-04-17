@@ -429,9 +429,16 @@ ul {
     }
 
     .user_profile_edit_button {
-        margin-left: 10px;
         width: 25px;
         text-align: center;
+    }
+
+    .user_profile_name {
+        margin-right: 10px;
+    }
+
+    .zulip-icon.zulip-icon-bot {
+        padding: 3px 0 0;
     }
 
     #user_profile_edit_button_icon {
