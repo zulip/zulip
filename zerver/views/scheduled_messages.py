@@ -2,11 +2,10 @@ from typing import List, TypedDict
 
 from django.http import HttpRequest, HttpResponse
 
+from zerver.actions.scheduled_messages import delete_scheduled_message
 from zerver.lib.request import has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.models import ScheduledMessage, UserProfile, get_recipient_ids
-from zerver.tornado.django_api import send_event
 
 
 class ScheduledMessageDict(TypedDict):
@@ -49,14 +48,5 @@ def fetch_scheduled_messages(request: HttpRequest, user_profile: UserProfile) ->
 def delete_scheduled_messages(
     request: HttpRequest, user_profile: UserProfile, scheduled_message_id: int
 ) -> HttpResponse:
-    scheduled_message_object = access_scheduled_message(user_profile, scheduled_message_id)
-    scheduled_message_id = scheduled_message_object.id
-    scheduled_message_object.delete()
-
-    event = {
-        "type": "scheduled_message",
-        "op": "remove",
-        "scheduled_message_id": scheduled_message_id,
-    }
-    send_event(user_profile.realm, event, [user_profile.id])
+    delete_scheduled_message(user_profile, scheduled_message_id)
     return json_success(request)
