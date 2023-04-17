@@ -722,7 +722,7 @@ test("render_stream", ({mock_template}) => {
     };
 
     mock_template("typeahead_list_item.hbs", false, (args) => {
-        assert.equal(args.primary, stream.name);
+        assert.equal(args.stream, stream);
         assert.equal(args.secondary, stream.description);
         rendered = true;
         return "typeahead-item-stub";
@@ -741,7 +741,7 @@ test("render_stream w/long description", ({mock_template}) => {
     };
 
     mock_template("typeahead_list_item.hbs", false, (args) => {
-        assert.equal(args.primary, stream.name);
+        assert.equal(args.stream, stream);
         const short_desc = stream.description.slice(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;
