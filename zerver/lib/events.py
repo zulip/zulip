@@ -253,7 +253,8 @@ def fetch_initial_state_data(
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
         # fit into that framework.
-        state["realm_authentication_methods"] = realm.authentication_methods_dict()
+        realm_authentication_methods_dict = realm.authentication_methods_dict()
+        state["realm_authentication_methods"] = realm_authentication_methods_dict
 
         # We pretend these features are disabled because anonymous
         # users can't access them.  In the future, we may want to move
@@ -297,8 +298,12 @@ def fetch_initial_state_data(
         state["realm_digest_emails_enabled"] = (
             realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         )
-        state["realm_email_auth_enabled"] = email_auth_enabled(realm)
-        state["realm_password_auth_enabled"] = password_auth_enabled(realm)
+        state["realm_email_auth_enabled"] = email_auth_enabled(
+            realm, realm_authentication_methods_dict
+        )
+        state["realm_password_auth_enabled"] = password_auth_enabled(
+            realm, realm_authentication_methods_dict
+        )
 
         state["server_generation"] = settings.SERVER_GENERATION
         state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
