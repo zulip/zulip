@@ -1511,10 +1511,14 @@ export class MessageListView {
         } else {
             $sticky_header.addClass("sticky_header");
             const sticky_header_props = $sticky_header[0].getBoundingClientRect();
+            /* date separator starts to be hidden at this height difference. */
+            const date_separator_padding = 7;
+            const sticky_header_bottom = sticky_header_props.top + sticky_header_props.height;
+            const possible_new_date_separator_start = sticky_header_bottom - date_separator_padding;
             /* Get `message_row` under the sticky header. */
             const elements_below_sticky_header = document.elementsFromPoint(
                 sticky_header_props.left,
-                sticky_header_props.top,
+                possible_new_date_separator_start,
             );
             $message_row = $(
                 elements_below_sticky_header.filter((element) =>
