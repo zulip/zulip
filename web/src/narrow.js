@@ -11,7 +11,7 @@ import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import {Filter} from "./filter";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
+//import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
@@ -23,8 +23,9 @@ import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as narrow_banner from "./narrow_banner";
+import * as narrow_hooks from "./narrow_hooks";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
+// import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -36,7 +37,7 @@ import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
-import * as stream_list from "./stream_list";
+//import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
@@ -169,7 +170,8 @@ export function compute_narrow_title(filter) {
 export let narrow_title = "home";
 export function update_narrow_title(filter) {
     narrow_title = compute_narrow_title(filter);
-    notifications.redraw_title();
+    // notifications.redraw_title(); //todo hook
+    narrow_hooks.call_notification_hook();
 }
 
 export function reset_ui_state() {
@@ -410,7 +412,7 @@ export function activate(raw_operators, opts) {
     reset_ui_state();
 
     if (coming_from_recent_topics) {
-        recent_topics_ui.hide();
+        recent_topics_ui.hide(); // todo hook
     } else {
         // If recent topics was not visible, then we are switching
         // from another message list view. Save the scroll position in
@@ -563,7 +565,8 @@ export function activate(raw_operators, opts) {
     // Disabled when the URL fragment was the source
     // of this narrow.
     if (opts.change_hash) {
-        hashchange.save_narrow(operators);
+        //hashchange.save_narrow(operators); // todo hook
+        narrow_hooks.call_hashchange_activate_hook(operators);
     }
 
     if (page_params.search_pills_enabled && opts.trigger !== "search") {
@@ -582,7 +585,7 @@ export function activate(raw_operators, opts) {
     }
     compose_closed_ui.update_reply_recipient_label();
 
-    search.update_button_visibility();
+    search.update_button_visibility(); // todo hook
 
     compose_actions.on_narrow(opts);
 
@@ -590,7 +593,8 @@ export function activate(raw_operators, opts) {
 
     top_left_corner.handle_narrow_activated(current_filter);
     pm_list.handle_narrow_activated(current_filter);
-    stream_list.handle_narrow_activated(current_filter);
+    narrow_hooks.call_stream_list_activate_hook(current_filter);
+    //stream_list.handle_narrow_activated(current_filter); // todo hook
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
 
@@ -1009,7 +1013,8 @@ function handle_post_narrow_deactivate_processes() {
 
     top_left_corner.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();
-    stream_list.handle_narrow_deactivated();
+    narrow_hooks.call_stream_list_deactivate_hook();
+    //stream_list.handle_narrow_deactivated(); // todo hook
     compose_closed_ui.update_buttons_for_stream();
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
@@ -1035,7 +1040,7 @@ export function deactivate(coming_from_recent_topics = false) {
       message_list_data structure caching system that happens to have
       message_lists.home in it.
      */
-    search.clear_search_form();
+    search.clear_search_form(); // todo hook
     // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {
@@ -1067,8 +1072,8 @@ export function deactivate(coming_from_recent_topics = false) {
 
     reset_ui_state();
     handle_middle_pane_transition();
-    hashchange.save_narrow();
-
+    //hashchange.save_narrow(); // todo hook
+    narrow_hooks.call_hashchange_deactivate_hook();
     if (message_lists.current.selected_id() !== -1) {
         const preserve_pre_narrowing_screen_position =
             message_lists.current.selected_row().length > 0 &&

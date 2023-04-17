@@ -13,6 +13,7 @@ import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
+import * as narrow_hooks from "./narrow_hooks";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
@@ -593,6 +594,8 @@ export function initialize() {
     build_stream_list();
     update_subscribe_to_more_streams_link();
     set_event_handlers();
+    narrow_hooks.register_stream_list_activate_hook(handle_narrow_activated);
+    narrow_hooks.register_stream_list_deactivate_hook(handle_narrow_deactivated);
 }
 
 export function set_event_handlers() {

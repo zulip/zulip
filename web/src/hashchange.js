@@ -11,6 +11,7 @@ import * as info_overlay from "./info_overlay";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
+import * as narrow_hooks from "./narrow_hooks";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -412,4 +413,6 @@ export function initialize() {
         hashchanged(false, e.originalEvent);
     });
     hashchanged(true);
+    narrow_hooks.register_hashchange_activate_hook(handle_narrow_activated);
+    narrow_hooks.register_hashchange_deactivate_hook(handle_narrow_deactivated);
 }

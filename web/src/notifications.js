@@ -12,6 +12,7 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow from "./narrow";
+import * as narrow_hooks from "./narrow_hooks";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
@@ -96,6 +97,7 @@ export function initialize() {
         $("#realm-default-notification-sound-audio"),
         realm_user_settings_defaults,
     );
+    narrow_hooks.register_notification_hook(redraw_title);
 }
 
 export function update_notification_sound_source(container_elem, settings_object) {
