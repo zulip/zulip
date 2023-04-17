@@ -10,7 +10,7 @@ exports.intl = createIntl(
         locale: "en",
         defaultLocale: "en",
         defaultRichTextElements: Object.fromEntries(
-            ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
+            ["b", "code", "div", "em", "i", "kbd", "p", "span", "strong"].map((tag) => [
                 tag,
                 /* istanbul ignore next */
                 (content_html) => `<${tag}>${content_html.join("")}</${tag}>`,

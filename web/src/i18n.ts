@@ -29,7 +29,7 @@ export const intl = createIntl(
 export const $t = intl.formatMessage.bind(intl);
 
 export const default_html_elements = Object.fromEntries(
-    ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
+    ["b", "code", "div", "em", "i", "kbd", "p", "span", "strong"].map((tag) => [
         tag,
         (content_html: string[]) => `<${tag}>${content_html.join("")}</${tag}>`,
     ]),

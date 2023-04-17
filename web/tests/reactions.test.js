@@ -164,7 +164,7 @@ test("basics", () => {
             count: 1,
             vote_text: "1",
             user_ids: [7],
-            label: "translated: Cali reacted with :frown:",
+            label: "translated HTML: <div><span>Cali</span> reacted with :frown:</div>",
             emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
@@ -177,7 +177,7 @@ test("basics", () => {
             count: 1,
             vote_text: "1",
             user_ids: [5],
-            label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
+            label: "translated HTML: You (click to remove) reacted with :inactive_realm_emoji:",
             emoji_alt_code: false,
             is_realm_emoji: true,
             url: "/url/for/992",
@@ -192,7 +192,7 @@ test("basics", () => {
             count: 2,
             vote_text: "2",
             user_ids: [5, 6],
-            label: "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
+            label: "translated HTML: <div><span>You (click to remove) and Bob van Roberts</span> reacted with :smile:</div>",
             emoji_alt_code: false,
             class: "message_reaction reacted",
             is_realm_emoji: false,
@@ -205,7 +205,7 @@ test("basics", () => {
             count: 2,
             vote_text: "2",
             user_ids: [7, 8],
-            label: "translated: Cali and Alexus reacted with :tada:",
+            label: "translated HTML: <div><span>Cali</span> and <span>Alexus</span> reacted with :tada:</div>",
             emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
@@ -218,7 +218,7 @@ test("basics", () => {
             count: 3,
             vote_text: "3",
             user_ids: [5, 6, 7],
-            label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
+            label: "translated HTML: <div><span>You (click to remove), Bob van Roberts</span> and <span>Cali</span> reacted with :rocket:</div>",
             emoji_alt_code: false,
             class: "message_reaction reacted",
             is_realm_emoji: false,
@@ -231,7 +231,7 @@ test("basics", () => {
             count: 3,
             vote_text: "3",
             user_ids: [6, 7, 8],
-            label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
+            label: "translated HTML: <div><span>Bob van Roberts, Cali</span> and <span>Alexus</span> reacted with :wave:</div>",
             emoji_alt_code: false,
             class: "message_reaction",
             is_realm_emoji: false,
@@ -479,7 +479,7 @@ test("update_vote_text_on_message", ({override_rewire}) => {
                     emoji_code: "992",
                     emoji_name: "inactive_realm_emoji",
                     is_realm_emoji: true,
-                    label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
+                    label: "translated HTML: You (click to remove) reacted with :inactive_realm_emoji:",
                     local_id: "realm_emoji,992",
                     reaction_type: "realm_emoji",
                     still_url: "/still/url/for/992",
@@ -494,7 +494,7 @@ test("update_vote_text_on_message", ({override_rewire}) => {
                     emoji_code: "1f44b",
                     emoji_name: "wave",
                     is_realm_emoji: false,
-                    label: "translated: You (click to remove) and Bob van Roberts reacted with :wave:",
+                    label: "translated HTML: <div><span>You (click to remove) and Bob van Roberts</span> reacted with :wave:</div>",
                     local_id: "unicode_emoji,1f44b",
                     reaction_type: "unicode_emoji",
                     user_ids: [5, 6],
@@ -531,7 +531,7 @@ test("emoji_reaction_title", ({override}) => {
 
     assert.equal(
         reactions.get_reaction_title_data(message.id, local_id),
-        "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
+        "translated HTML: <div><span>You (click to remove) and Bob van Roberts</span> reacted with :smile:</div>",
     );
 });
 
@@ -617,7 +617,7 @@ test("add_reaction/remove_reaction", ({override}) => {
         emoji_code: alice_8ball_event.emoji_code,
         emoji_name: alice_8ball_event.emoji_name,
         is_realm_emoji: false,
-        label: "translated: You (click to remove) reacted with :8ball:",
+        label: "translated HTML: You (click to remove) reacted with :8ball:",
         local_id: "unicode_emoji,1f3b1",
         reaction_type: alice_8ball_event.reaction_type,
         user_ids: [alice.user_id],
@@ -661,7 +661,7 @@ test("add_reaction/remove_reaction", ({override}) => {
         emoji_code: bob_8ball_event.emoji_code,
         emoji_name: bob_8ball_event.emoji_name,
         is_realm_emoji: false,
-        label: "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
+        label: "translated HTML: <div><span>You (click to remove) and Bob van Roberts</span> reacted with :8ball:</div>",
         local_id: "unicode_emoji,1f3b1",
         reaction_type: bob_8ball_event.reaction_type,
         user_ids: [alice.user_id, bob.user_id],
@@ -696,7 +696,7 @@ test("add_reaction/remove_reaction", ({override}) => {
         emoji_code: cali_airplane_event.emoji_code,
         emoji_name: cali_airplane_event.emoji_name,
         is_realm_emoji: false,
-        label: "translated: Cali reacted with :airplane:",
+        label: "translated HTML: <div><span>Cali</span> reacted with :airplane:</div>",
         local_id: "unicode_emoji,2708",
         reaction_type: cali_airplane_event.reaction_type,
         user_ids: [cali.user_id],
@@ -762,7 +762,7 @@ test("add_reaction/remove_reaction", ({override}) => {
                     emoji_code: alice_8ball_event.emoji_code,
                     emoji_name: alice_8ball_event.emoji_name,
                     is_realm_emoji: false,
-                    label: "translated:  and  reacted with :8ball:",
+                    label: "translated HTML: <div><span></span> and <span></span> reacted with :8ball:</div>",
                     local_id: "unicode_emoji,1f3b1",
                     reaction_type: alice_8ball_event.reaction_type,
                     user_ids: [],
@@ -800,7 +800,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
         emoji_code: "1f3b1",
         emoji_name: "8ball",
         is_realm_emoji: false,
-        label: "translated: You (click to remove) reacted with :8ball:",
+        label: "translated HTML: You (click to remove) reacted with :8ball:",
         local_id: "unicode_emoji,1f3b1",
         reaction_type: "unicode_emoji",
         user_ids: [alice.user_id],
@@ -824,7 +824,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
             local_id: "unicode_emoji,1f3b1",
             class: "message_reaction reacted",
             message_id,
-            label: "translated: You (click to remove) reacted with :8ball:",
+            label: "translated HTML: You (click to remove) reacted with :8ball:",
             reaction_type: clean_reaction_object.reaction_type,
             is_realm_emoji: false,
             vote_text: "",
@@ -864,7 +864,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
         emoji_code: "zulip",
         emoji_name: "zulip",
         is_realm_emoji: false,
-        label: "translated: Bob van Roberts reacted with :zulip:",
+        label: "translated HTML: <div><span>Bob van Roberts</span> reacted with :zulip:</div>",
         local_id: "realm_emoji,zulip",
         reaction_type: "realm_emoji",
         user_ids: [bob.user_id],
@@ -890,7 +890,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             local_id: "realm_emoji,zulip",
             class: "message_reaction",
             message_id,
-            label: "translated: Bob van Roberts reacted with :zulip:",
+            label: "translated HTML: <div><span>Bob van Roberts</span> reacted with :zulip:</div>",
             still_url: null,
             reaction_type: clean_reaction_object.reaction_type,
             vote_text: "",
@@ -965,7 +965,7 @@ test("view.update_existing_reaction (me)", () => {
     assert.ok($our_reaction.hasClass("reacted"));
     assert.equal(
         $our_reaction.attr("aria-label"),
-        "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
+        "translated HTML: <div><span>You (click to remove) and Bob van Roberts</span> reacted with :8ball:</div>",
     );
 });
 
@@ -1024,7 +1024,7 @@ test("view.update_existing_reaction (them)", () => {
     assert.ok(!$our_reaction.hasClass("reacted"));
     assert.equal(
         $our_reaction.attr("aria-label"),
-        "translated: You (click to remove), Bob van Roberts, Cali and Alexus reacted with :8ball:",
+        "translated HTML: <div><span>You (click to remove), Bob van Roberts, Cali</span> and <span>Alexus</span> reacted with :8ball:</div>",
     );
 });
 
@@ -1072,7 +1072,7 @@ test("view.remove_reaction (me)", () => {
     assert.ok(!$message_reactions.hasClass("reacted"));
     assert.equal(
         $message_reactions.attr("aria-label"),
-        "translated: Bob van Roberts and Cali reacted with :8ball:",
+        "translated HTML: <div><span>Bob van Roberts</span> and <span>Cali</span> reacted with :8ball:</div>",
     );
 });
 
@@ -1114,7 +1114,7 @@ test("view.remove_reaction (them)", () => {
     assert.ok($message_reactions.hasClass("reacted"));
     assert.equal(
         $message_reactions.attr("aria-label"),
-        "translated: You (click to remove) reacted with :8ball:",
+        "translated HTML: You (click to remove) reacted with :8ball:",
     );
 });
 

@@ -6,7 +6,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -164,18 +164,24 @@ function generate_title(emoji_name, user_ids) {
 
     if (user_ids.length === 1) {
         if (current_user_reacted) {
-            return $t({defaultMessage: "You (click to remove) reacted with {emoji_name}"}, context);
+            return $t_html(
+                {defaultMessage: "You (click to remove) reacted with {emoji_name}"},
+                context,
+            );
         }
         context.username = usernames[0];
-        return $t({defaultMessage: "{username} reacted with {emoji_name}"}, context);
+        return $t_html(
+            {defaultMessage: "<div><span>{username}</span> reacted with {emoji_name}</div>"},
+            context,
+        );
     }
 
     if (user_ids.length === 2 && current_user_reacted) {
         context.other_username = usernames[0];
-        return $t(
+        return $t_html(
             {
                 defaultMessage:
-                    "You (click to remove) and {other_username} reacted with {emoji_name}",
+                    "<div><span>You (click to remove) and {other_username}</span> reacted with {emoji_name}</div>",
             },
             context,
         );
@@ -184,18 +190,18 @@ function generate_title(emoji_name, user_ids) {
     context.comma_separated_usernames = usernames.slice(0, -1).join(", ");
     context.last_username = usernames.at(-1);
     if (current_user_reacted) {
-        return $t(
+        return $t_html(
             {
                 defaultMessage:
-                    "You (click to remove), {comma_separated_usernames} and {last_username} reacted with {emoji_name}",
+                    "<div><span>You (click to remove), {comma_separated_usernames}</span> and <span>{last_username}</span> reacted with {emoji_name}</div>",
             },
             context,
         );
     }
-    return $t(
+    return $t_html(
         {
             defaultMessage:
-                "{comma_separated_usernames} and {last_username} reacted with {emoji_name}",
+                "<div><span>{comma_separated_usernames}</span> and <span>{last_username}</span> reacted with {emoji_name}</div>",
         },
         context,
     );
