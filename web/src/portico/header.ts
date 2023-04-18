@@ -87,14 +87,14 @@ $(() => {
         return false;
     });
 
-    $(".dropdown").on("click", (e) => {
-        const $this = $(e.target);
-        const dropdown_is_shown = $this.closest(".dropdown").hasClass("show");
+    $(".portico-header .dropdown").on("click", (e) => {
+        const $user_dropdown = $(e.target).closest(".dropdown");
+        const dropdown_is_shown = $user_dropdown.hasClass("show");
 
         if (!dropdown_is_shown) {
-            $this.closest(".dropdown").addClass("show");
+            $user_dropdown.addClass("show");
         } else if (dropdown_is_shown) {
-            $this.closest(".dropdown").removeClass("show");
+            $user_dropdown.removeClass("show");
         }
     });
 });
