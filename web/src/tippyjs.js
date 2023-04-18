@@ -309,6 +309,7 @@ export function initialize() {
 
     delegate("body", {
         target: ".narrow_to_compose_recipients",
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         content() {
             const narrow_filter = narrow_state.filter();
