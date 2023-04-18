@@ -567,4 +567,11 @@ export function initialize() {
         },
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: "#send_later",
+        delay: LONG_HOVER_DELAY,
+        placement: "top",
+        appendTo: () => document.body,
+    });
 }
