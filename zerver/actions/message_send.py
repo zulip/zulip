@@ -1154,7 +1154,7 @@ def check_send_private_message(
 def check_send_message(
     sender: UserProfile,
     client: Client,
-    message_type_name: str,
+    recipient_type_name: str,
     message_to: Union[Sequence[int], Sequence[str]],
     topic_name: Optional[str],
     message_content: str,
@@ -1168,7 +1168,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
 ) -> int:
-    addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
         message = check_message(
             sender,
@@ -1192,7 +1192,7 @@ def check_send_message(
 def check_schedule_message(
     sender: UserProfile,
     client: Client,
-    message_type_name: str,
+    recipient_type_name: str,
     message_to: Union[Sequence[str], Sequence[int]],
     topic_name: Optional[str],
     message_content: str,
@@ -1202,7 +1202,7 @@ def check_schedule_message(
     realm: Optional[Realm] = None,
     forwarder_user_profile: Optional[UserProfile] = None,
 ) -> int:
-    addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
 
     send_request = check_message(
         sender,

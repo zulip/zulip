@@ -2557,7 +2557,7 @@ class TestAddressee(ZulipTestCase):
 
         result = Addressee.legacy_build(
             sender=self.example_user("hamlet"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=user_ids,
             topic_name="random_topic",
             realm=realm,
@@ -2576,7 +2576,7 @@ class TestAddressee(ZulipTestCase):
 
         result = Addressee.legacy_build(
             sender=sender,
-            message_type_name="stream",
+            recipient_type_name="stream",
             message_to=[stream.id],
             topic_name="random_topic",
             realm=realm,

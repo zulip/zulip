@@ -324,7 +324,7 @@ class GetEventsTest(ZulipTestCase):
         check_send_message(
             sender=user_profile,
             client=get_client("whatever"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=[recipient_email],
             topic_name=None,
             message_content="hello",
@@ -357,7 +357,7 @@ class GetEventsTest(ZulipTestCase):
         check_send_message(
             sender=user_profile,
             client=get_client("whatever"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=[recipient_email],
             topic_name=None,
             message_content="hello",
