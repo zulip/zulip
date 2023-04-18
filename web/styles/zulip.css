@@ -1698,7 +1698,7 @@ div.focused_table {
     }
 }
 
-#inline_topic_edit {
+.inline_topic_edit {
     margin-bottom: 5px;
     width: 206px;
 
@@ -1722,7 +1722,7 @@ div.focused_table {
     justify-content: flex-start;
 }
 
-#inline_topic_edit:focus,
+.inline_topic_edit:focus,
 #message_edit_topic:focus {
     outline: none;
 }
