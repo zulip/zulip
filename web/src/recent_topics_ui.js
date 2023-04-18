@@ -759,7 +759,7 @@ function topic_offset_to_visible_area(topic_row) {
     return "visible";
 }
 
-function set_focus_to_element_in_center() {
+function recenter_focus_if_off_screen() {
     const table_wrapper_element = document.querySelector("#recent_topics_table .table_fix_head");
     const $topic_rows = $("#recent_topics_table table tbody tr");
 
@@ -857,7 +857,7 @@ export function complete_rerender() {
             popovers.hide_all();
 
             // Update the focused element for keyboard navigation if needed.
-            set_focus_to_element_in_center();
+            recenter_focus_if_off_screen();
         },
         get_min_load_count,
     });
