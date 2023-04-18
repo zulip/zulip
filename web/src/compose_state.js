@@ -68,13 +68,13 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
 }
 
 export function stream_name() {
-    return compose_recipient.compose_stream_widget.value();
+    return compose_recipient.compose_recipient_widget.value();
 }
 
 export function set_stream_name(newval) {
-    if (newval !== undefined && newval !== "" && compose_recipient.compose_stream_widget) {
-        compose_recipient.compose_stream_widget.render(newval);
-        compose_recipient.on_compose_select_stream_update(newval);
+    if (newval !== undefined && newval !== "" && compose_recipient.compose_recipient_widget) {
+        compose_recipient.compose_recipient_widget.render(newval);
+        compose_recipient.on_compose_select_recipient_update(newval);
     }
 }
 
@@ -128,7 +128,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
             return private_message_recipient().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
-        case "compose_select_stream_name":
+        case "compose_select_recipient_name":
             return stream_name() === "";
     }
 

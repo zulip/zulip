@@ -14,7 +14,7 @@ import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
 
-export let compose_stream_widget;
+export let compose_recipient_widget;
 
 function composing_to_current_topic_narrow() {
     return (
@@ -92,13 +92,13 @@ export function update_on_recipient_change() {
 }
 
 export function open_compose_stream_dropup() {
-    if ($("#id_compose_select_stream").hasClass("open")) {
+    if ($("#id_compose_select_recipient").hasClass("open")) {
         return;
     }
     // We trigger a click rather than directly toggling the element;
     // this is important to ensure the filter text gets cleared when
     // reopening the widget after previous use.
-    $("#id_compose_select_stream > .dropdown-toggle").trigger("click");
+    $("#id_compose_select_recipient > .dropdown-toggle").trigger("click");
 }
 
 export function check_stream_posting_policy_for_compose_box(stream_name) {
@@ -121,8 +121,8 @@ export function check_stream_posting_policy_for_compose_box(stream_name) {
     }
 }
 
-export function on_compose_select_stream_update(new_value) {
-    const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
+export function on_compose_select_recipient_update(new_value) {
+    const $stream_header_colorblock = $("#compose_recipient_selection_dropdown").find(
         ".stream_header_colorblock",
     );
     stream_bar.decorate(new_value, $stream_header_colorblock);
@@ -149,7 +149,7 @@ export function update_stream_dropdown_options() {
             }
             return 0;
         });
-    compose_stream_widget.replace_data(streams_list);
+    compose_recipient_widget.replace_data(streams_list);
 }
 
 export function possibly_update_dropdown_selection(old_stream_name, new_stream_name) {
@@ -177,16 +177,16 @@ export function initialize() {
             return 0;
         });
     const opts = {
-        widget_name: "compose_select_stream",
+        widget_name: "compose_select_recipient",
         data: streams_list,
         default_text: $t({defaultMessage: "Select a stream"}),
         value: null,
-        on_update: on_compose_select_stream_update,
+        on_update: on_compose_select_recipient_update,
     };
-    compose_stream_widget = new DropdownListWidget(opts);
-    compose_stream_widget.setup();
+    compose_recipient_widget = new DropdownListWidget(opts);
+    compose_recipient_widget.setup();
 
-    $("#compose_select_stream_widget").on("select", (e) => {
+    $("#compose_select_recipient_widget").on("select", (e) => {
         // We often focus on input fields to bring the user to fill it out.
         // In this situation, a focus on the dropdown div opens the dropdown
         // menu so that the user can select an option.
@@ -200,7 +200,7 @@ export function initialize() {
         "keyup",
         update_on_recipient_change,
     );
-    // changes for the stream dropdown are handled in on_compose_select_stream_update
+    // changes for the stream dropdown are handled in on_compose_select_recipient_update
     $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);

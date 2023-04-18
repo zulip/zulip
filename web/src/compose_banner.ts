@@ -126,8 +126,8 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     // can't be imported due to typescript and import circles.
     // TODO: Once we use stream IDs, not names, as the fundamental
     // compose_state storage for streams, this error will be impossible.
-    if ($("#id_compose_select_stream").hasClass("open")) {
+    if ($("#id_compose_select_recipient").hasClass("open")) {
         return;
     }
-    $("#id_compose_select_stream button").trigger("click");
+    $("#id_compose_select_recipient button").trigger("click");
 }

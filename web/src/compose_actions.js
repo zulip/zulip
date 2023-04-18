@@ -40,7 +40,7 @@ function hide_box() {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
-    $("#compose-stream-recipient").hide();
+    $("#stream_message_recipient_topic").hide();
     $("#compose-private-recipient").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
@@ -63,7 +63,7 @@ function get_focus_area(msg_type, opts) {
     }
 
     if (msg_type === "stream") {
-        return "#compose_select_stream_widget";
+        return "#compose_select_recipient_widget";
     }
     return "#private_message_recipient";
 }
@@ -82,12 +82,12 @@ export function set_focus(msg_type, opts) {
 function show_compose_box(msg_type, opts) {
     if (msg_type === "stream") {
         $("#compose-private-recipient").hide();
-        $("#compose-stream-recipient").show();
+        $("#stream_message_recipient_topic").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
     } else {
         $("#compose-private-recipient").show();
-        $("#compose-stream-recipient").hide();
+        $("#stream_message_recipient_topic").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
@@ -149,7 +149,7 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(opts.stream, $("#compose-stream-recipient .message_header_stream"));
+    stream_bar.decorate(opts.stream, $("#stream_message_recipient_topic .message_header_stream"));
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -269,8 +269,8 @@ export function start(msg_type, opts) {
         clear_box();
     }
 
-    compose_recipient.compose_stream_widget.render(opts.stream);
-    const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
+    compose_recipient.compose_recipient_widget.render(opts.stream);
+    const $stream_header_colorblock = $("#compose_recipient_selection_dropdown").find(
         ".stream_header_colorblock",
     );
     stream_bar.decorate(opts.stream, $stream_header_colorblock);

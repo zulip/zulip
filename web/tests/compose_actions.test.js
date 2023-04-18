@@ -69,7 +69,7 @@ const stream_bar = zrequire("stream_bar");
 const compose_recipient = zrequire("compose_recipient");
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },
@@ -147,7 +147,7 @@ test("start", ({override, override_rewire}) => {
     let opts = {};
     start("stream", opts);
 
-    assert_visible("#compose-stream-recipient");
+    assert_visible("#stream_message_recipient_topic");
     assert_hidden("#compose-private-recipient");
 
     assert.equal(compose_state.stream_name(), "stream1");
@@ -208,7 +208,7 @@ test("start", ({override, override_rewire}) => {
 
     start("private", opts);
 
-    assert_hidden("#compose-stream-recipient");
+    assert_hidden("#stream_message_recipient_topic");
     assert_visible("#compose-private-recipient");
 
     assert.equal(compose_state.private_message_recipient(), "foo@example.com");
@@ -444,7 +444,7 @@ test("get_focus_area", () => {
         }),
         "#compose-textarea",
     );
-    assert.equal(get_focus_area("stream", {}), "#compose_select_stream_widget");
+    assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget");
     assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
     assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
     assert.equal(
