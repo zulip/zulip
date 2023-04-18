@@ -187,13 +187,13 @@ export function open_group_edit_panel_for_row(group_row) {
 }
 
 export function initialize() {
-    $("#manage_groups_container").on("click", ".group-row", function (e) {
+    $("#groups_overlay_container").on("click", ".group-row", function (e) {
         if ($(e.target).closest(".check, .user_group_settings_wrapper").length === 0) {
             open_group_edit_panel_for_row(this);
         }
     });
 
-    $("#manage_groups_container").on("click", "#open_group_info_modal", (e) => {
+    $("#groups_overlay_container").on("click", "#open_group_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_group_id = get_user_group_id(e.target);
@@ -219,7 +219,7 @@ export function initialize() {
         });
     });
 
-    $("#manage_groups_container").on("click", ".group_settings_header .btn-danger", () => {
+    $("#groups_overlay_container").on("click", ".group_settings_header .btn-danger", () => {
         const active_group_data = user_group_settings_ui.get_active_data();
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);

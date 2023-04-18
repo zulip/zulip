@@ -119,7 +119,7 @@ export function add_group_to_table(group) {
     });
 
     group_list_widget.replace_list_data(user_groups.get_realm_user_groups());
-    ui.get_content_element($("#manage_groups_container .settings")).append($(settings_html));
+    ui.get_content_element($("#groups_overlay_container .settings")).append($(settings_html));
 
     // TODO: Address issue for visibility of newely created group.
     if (user_group_create.get_name() === group.name) {
@@ -181,11 +181,11 @@ export function setup_page(callback) {
 
         const rendered = render_user_group_settings_overlay(template_data);
 
-        const $manage_groups_container = ui.get_content_element($("#manage_groups_container"));
-        $manage_groups_container.empty();
-        $manage_groups_container.append(rendered);
+        const $groups_overlay_container = ui.get_content_element($("#groups_overlay_container"));
+        $groups_overlay_container.empty();
+        $groups_overlay_container.append(rendered);
 
-        const $container = $("#manage_groups_container .user-groups-list");
+        const $container = $("#groups_overlay_container .user-groups-list");
         const user_groups_list = user_groups.get_realm_user_groups();
 
         group_list_widget = ListWidget.create($container, user_groups_list, {
@@ -198,7 +198,7 @@ export function setup_page(callback) {
                 return render_browse_user_groups_list_item(item);
             },
             filter: {
-                $element: $("#manage_groups_container .left #search_group_name"),
+                $element: $("#groups_overlay_container .left #search_group_name"),
                 predicate(item, value) {
                     return (
                         item &&
@@ -225,14 +225,14 @@ export function setup_page(callback) {
 }
 
 export function initialize() {
-    $("#manage_groups_container").on("click", ".create_user_group_button", (e) => {
+    $("#groups_overlay_container").on("click", ".create_user_group_button", (e) => {
         e.preventDefault();
         open_create_user_group();
     });
 
-    $("#manage_groups_container").on("click", ".group-row", show_right_section);
+    $("#groups_overlay_container").on("click", ".group-row", show_right_section);
 
-    $("#manage_groups_container").on("click", ".fa-chevron-left", () => {
+    $("#groups_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $(".user-groups-header").removeClass("slide-left");
     });
