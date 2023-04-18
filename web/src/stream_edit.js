@@ -413,7 +413,7 @@ export function initialize() {
         stream_settings_ui.sub_or_unsub(sub);
     });
 
-    $("#manage_streams_container").on("click", "#open_stream_info_modal", (e) => {
+    $("#streams_overlay_container").on("click", "#open_stream_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const stream_id = get_stream_id(e.target);
@@ -441,7 +441,7 @@ export function initialize() {
         });
     });
 
-    $("#manage_streams_container").on("keypress", "#change_stream_description", (e) => {
+    $("#streams_overlay_container").on("keypress", "#change_stream_description", (e) => {
         // Stream descriptions can not be multiline, so disable enter key
         // to prevent new line
         if (keydown_util.is_enter_event(e)) {
@@ -475,7 +475,7 @@ export function initialize() {
         settings_ui.do_settings_change(channel.patch, url, data, $status_element);
     }
 
-    $("#manage_streams_container").on("click", ".copy_email_button", (e) => {
+    $("#streams_overlay_container").on("click", ".copy_email_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -541,13 +541,13 @@ export function initialize() {
         });
     });
 
-    $("#manage_streams_container").on(
+    $("#streams_overlay_container").on(
         "change",
         "#sub_is_muted_setting .sub_setting_control",
         stream_is_muted_changed,
     );
 
-    $("#manage_streams_container").on(
+    $("#streams_overlay_container").on(
         "change",
         ".sub_setting_checkbox .sub_setting_control",
         stream_setting_changed,
@@ -555,11 +555,11 @@ export function initialize() {
 
     // This handler isn't part of the normal edit interface; it's the convenient
     // checkmark in the subscriber list.
-    $("#manage_streams_container").on("click", ".sub_unsub_button", (e) => {
+    $("#streams_overlay_container").on("click", ".sub_unsub_button", (e) => {
         const sub = get_sub_for_target(e.target);
         // Makes sure we take the correct stream_row.
         const $stream_row = $(
-            `#manage_streams_container div.stream-row[data-stream-id='${CSS.escape(
+            `#streams_overlay_container div.stream-row[data-stream-id='${CSS.escape(
                 sub.stream_id,
             )}']`,
         );
@@ -574,7 +574,7 @@ export function initialize() {
         e.stopPropagation();
     });
 
-    $("#manage_streams_container").on("click", ".deactivate", (e) => {
+    $("#streams_overlay_container").on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -621,13 +621,13 @@ export function initialize() {
         $(".dialog_submit_button").attr("data-stream-id", stream_id);
     });
 
-    $("#manage_streams_container").on("click", ".stream-row", function (e) {
+    $("#streams_overlay_container").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             open_edit_panel_for_row(this);
         }
     });
 
-    $("#manage_streams_container").on("change", ".stream_message_retention_setting", (e) => {
+    $("#streams_overlay_container").on("change", ".stream_message_retention_setting", (e) => {
         const message_retention_setting_dropdown_value = e.target.value;
         settings_org.change_element_block_display_property(
             "stream_message_retention_custom_input",
@@ -635,7 +635,7 @@ export function initialize() {
         );
     });
 
-    $("#manage_streams_container").on("change input", "input, select, textarea", (e) => {
+    $("#streams_overlay_container").on("change input", "input, select, textarea", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -653,7 +653,7 @@ export function initialize() {
         return true;
     });
 
-    $("#manage_streams_container").on(
+    $("#streams_overlay_container").on(
         "click",
         ".subsection-header .subsection-changes-save button",
         (e) => {
@@ -671,7 +671,7 @@ export function initialize() {
         },
     );
 
-    $("#manage_streams_container").on(
+    $("#streams_overlay_container").on(
         "click",
         ".subsection-header .subsection-changes-discard button",
         (e) => {
