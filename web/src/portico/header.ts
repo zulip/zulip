@@ -80,4 +80,21 @@ $(() => {
             document.body.classList.remove("_full-height-no-scroll");
         }
     });
+
+    /* Used by navbar of non-corporate URLs. */
+    $(".portico-header li.logout").on("click", () => {
+        $("#logout_form").trigger("submit");
+        return false;
+    });
+
+    $(".dropdown").on("click", (e) => {
+        const $this = $(e.target);
+        const dropdown_is_shown = $this.closest(".dropdown").hasClass("show");
+
+        if (!dropdown_is_shown) {
+            $this.closest(".dropdown").addClass("show");
+        } else if (dropdown_is_shown) {
+            $this.closest(".dropdown").removeClass("show");
+        }
+    });
 });
