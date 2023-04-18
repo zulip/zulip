@@ -1414,9 +1414,9 @@ $option_title_width: 180px;
   .custom_user_field {
     padding-bottom: 20px;
 
-    .field_hint {
-      color: hsl(0, 0%, 67%);
-    }
+        .field_hint {
+            color: hsl(0deg 0% 67%);
+        }
 
     & textarea {
       width: max(206px, 25vw);
@@ -1449,10 +1449,14 @@ $option_title_width: 180px;
       cursor: default;
     }
 
-    .person_picker {
-      min-width: 206px;
+        .person_picker {
+            min-width: 206px;
+        }
+
+        .pronouns_type_field {
+            margin-bottom: 10%;
+        }
     }
-  }
 
   #show_my_user_profile_modal {
     width: 100%;
