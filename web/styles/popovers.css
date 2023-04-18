@@ -608,6 +608,7 @@ ul {
 
         .popover-inner {
             background-color: hsl(0deg 0% 100%);
+            width: 240px;
         }
     }
 
