@@ -22,6 +22,7 @@ import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
+import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
@@ -381,6 +382,14 @@ export function build_move_topic_to_stream_popover(
         });
     }
 
+    function focus_on_move_modal_render() {
+        if (!disable_stream_input && args.disable_topic_input) {
+            $("#select_stream_widget .button").trigger("focus");
+        } else {
+            ui_util.place_caret_at_end($(".move_messages_edit_topic")[0]);
+        }
+    }
+
     dialog_widget.launch({
         html_heading: modal_heading,
         html_body: render_move_topic_to_stream(args),
@@ -388,6 +397,7 @@ export function build_move_topic_to_stream_popover(
         id: "move_topic_modal",
         on_click: move_topic,
         loading_spinner: true,
+        on_shown: focus_on_move_modal_render,
         post_render: move_topic_post_render,
     });
 }
