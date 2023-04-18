@@ -97,7 +97,7 @@ class Addressee:
     @staticmethod
     def legacy_build(
         sender: UserProfile,
-        message_type_name: str,
+        recipient_type_name: str,
         message_to: Union[Sequence[int], Sequence[str]],
         topic_name: Optional[str],
         realm: Optional[Realm] = None,
@@ -108,7 +108,7 @@ class Addressee:
         if realm is None:
             realm = sender.realm
 
-        if message_type_name == "stream":
+        if recipient_type_name == "stream":
             if len(message_to) > 1:
                 raise JsonableError(_("Cannot send to multiple streams"))
 
@@ -131,7 +131,7 @@ class Addressee:
                 return Addressee.for_stream_id(stream_name_or_id, topic_name)
 
             return Addressee.for_stream_name(stream_name_or_id, topic_name)
-        elif message_type_name == "private":
+        elif recipient_type_name == "private":
             if not message_to:
                 raise JsonableError(_("Message must have recipients"))
 

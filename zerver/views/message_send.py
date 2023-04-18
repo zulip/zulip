@@ -51,11 +51,11 @@ def create_mirrored_message_users(
     user_profile: UserProfile,
     recipients: Iterable[str],
     sender: str,
-    message_type: str,
+    recipient_type_name: str,
 ) -> UserProfile:
     sender_email = sender.strip().lower()
     referenced_users = {sender_email}
-    if message_type == "private":
+    if recipient_type_name == "private":
         for email in recipients:
             referenced_users.add(email.lower())
 
@@ -142,7 +142,7 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
 def handle_deferred_message(
     sender: UserProfile,
     client: Client,
-    message_type_name: str,
+    recipient_type_name: str,
     message_to: Union[Sequence[str], Sequence[int]],
     topic_name: Optional[str],
     message_content: str,
@@ -176,7 +176,7 @@ def handle_deferred_message(
     check_schedule_message(
         sender,
         client,
-        message_type_name,
+        recipient_type_name,
         message_to,
         topic_name,
         message_content,
@@ -210,12 +210,14 @@ def send_message_backend(
     tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
     time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
 ) -> HttpResponse:
+    recipient_type_name = message_type_name
+
     # If req_to is None, then we default to an
     # empty list of recipients.
     message_to: Union[Sequence[int], Sequence[str]] = []
 
     if req_to is not None:
-        if message_type_name == "stream":
+        if recipient_type_name == "stream":
             stream_indicator = extract_stream_indicator(req_to)
 
             # For legacy reasons check_send_message expects
@@ -259,7 +261,7 @@ def send_message_backend(
         # same-realm constraint.
         if req_sender is None:
             raise JsonableError(_("Missing sender"))
-        if message_type_name != "private" and not can_forge_sender:
+        if recipient_type_name != "private" and not can_forge_sender:
             raise JsonableError(_("User not authorized for this query"))
 
         # For now, mirroring only works with recipient emails, not for
@@ -274,7 +276,7 @@ def send_message_backend(
 
         try:
             mirror_sender = create_mirrored_message_users(
-                client, user_profile, message_to, req_sender, message_type_name
+                client, user_profile, message_to, req_sender, recipient_type_name
             )
         except InvalidMirrorInputError:
             raise JsonableError(_("Invalid mirrored message"))
@@ -294,7 +296,7 @@ def send_message_backend(
         deliver_at = handle_deferred_message(
             sender,
             client,
-            message_type_name,
+            recipient_type_name,
             message_to,
             topic_name,
             message_content,
@@ -310,7 +312,7 @@ def send_message_backend(
     ret = check_send_message(
         sender,
         client,
-        message_type_name,
+        recipient_type_name,
         message_to,
         topic_name,
         message_content,

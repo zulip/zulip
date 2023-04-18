@@ -198,7 +198,7 @@ def send_mm_reply_to_stream(
         check_send_message(
             sender=user_profile,
             client=get_client("Internal"),
-            message_type_name="stream",
+            recipient_type_name="stream",
             message_to=[stream.id],
             topic_name=topic,
             message_content=body,

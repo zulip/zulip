@@ -949,7 +949,7 @@ def process_message_event(
 
     sender_id: int = wide_dict["sender_id"]
     message_id: int = wide_dict["id"]
-    message_type: str = wide_dict["type"]
+    recipient_type_name: str = wide_dict["type"]
     sending_client: str = wide_dict["client"]
 
     @lru_cache(maxsize=None)
@@ -970,7 +970,7 @@ def process_message_event(
 
         # If the recipient was offline and the message was a single or group PM to them
         # or they were @-notified potentially notify more immediately
-        private_message = message_type == "private"
+        private_message = recipient_type_name == "private"
         user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
             user_id=user_profile_id,
             flags=flags,
