@@ -34,8 +34,8 @@ async function test_empty_drafts(page: Page): Promise<void> {
 async function create_stream_message_draft(page: Page): Promise<void> {
     console.log("Creating stream message draft");
     await page.keyboard.press("KeyC");
-    await page.waitForSelector("#compose-stream-recipient", {visible: true});
-    await common.select_item_via_dropdown(page, "#compose_select_stream_widget", "Denmark");
+    await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
+    await common.select_item_via_dropdown(page, "#compose_select_recipient_widget", "Denmark");
     await common.fill_form(page, "form#send_message_form", {
         stream_message_recipient_topic: "tests",
         content: "Test stream message.",
@@ -114,7 +114,7 @@ async function test_restore_message_draft_via_draft_overlay(page: Page): Promise
     console.log("Restoring stream message draft");
     await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
     await wait_for_drafts_to_disappear(page);
-    await page.waitForSelector("#compose-stream-recipient", {visible: true});
+    await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
     await page.waitForSelector("#preview_message_area", {hidden: true});
     await common.check_compose_state(page, {
         stream: "Denmark",
@@ -129,7 +129,7 @@ async function test_restore_message_draft_via_draft_overlay(page: Page): Promise
 }
 
 async function edit_stream_message_draft(page: Page): Promise<void> {
-    await common.select_item_via_dropdown(page, "#compose_select_stream_widget", "Denmark");
+    await common.select_item_via_dropdown(page, "#compose_select_recipient_widget", "Denmark");
     await common.fill_form(page, "form#send_message_form", {
         stream_message_recipient_topic: "tests",
         content: "Updated stream message",

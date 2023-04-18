@@ -17,7 +17,7 @@ const stream_bar = zrequire("stream_bar");
 const noop = () => {};
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },

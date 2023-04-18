@@ -311,7 +311,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     compose_recipient.open_compose_stream_dropup = noop;
     override_rewire(compose_recipient, "update_on_recipient_change", noop);
     let stream_value = "";
-    compose_recipient.compose_stream_widget = {
+    compose_recipient.compose_recipient_widget = {
         value() {
             return stream_value;
         },

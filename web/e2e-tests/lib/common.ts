@@ -210,7 +210,7 @@ export async function check_compose_state(
     const form_params: Record<string, string> = {content: params.content};
     if (params.stream) {
         assert.equal(
-            await get_text_from_selector(page, "#compose_select_stream_name"),
+            await get_text_from_selector(page, "#compose_select_recipient_name"),
             params.stream,
         );
     }
@@ -432,7 +432,7 @@ export async function send_message(
     }
 
     if (params.stream) {
-        await select_item_via_dropdown(page, "#compose_select_stream_widget", params.stream);
+        await select_item_via_dropdown(page, "#compose_select_recipient_widget", params.stream);
         delete params.stream;
     }
 
