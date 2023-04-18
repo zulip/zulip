@@ -56,7 +56,7 @@ const ct = composebox_typeahead;
 ct.__Rewire__("max_num_items", 15);
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },

@@ -69,7 +69,7 @@ const stream_bar = zrequire("stream_bar");
 const compose_recipient = zrequire("compose_recipient");
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },
@@ -443,7 +443,7 @@ test("get_focus_area", () => {
         }),
         "#compose-textarea",
     );
-    assert.equal(get_focus_area("stream", {}), "#compose_select_stream_widget");
+    assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget");
     assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
     assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
     assert.equal(

@@ -63,7 +63,7 @@ function get_focus_area(msg_type, opts) {
     }
 
     if (msg_type === "stream") {
-        return "#compose_select_stream_widget";
+        return "#compose_select_recipient_widget";
     }
     return "#private_message_recipient";
 }
@@ -268,8 +268,8 @@ export function start(msg_type, opts) {
         clear_box();
     }
 
-    compose_recipient.compose_stream_widget.render(opts.stream);
-    const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
+    compose_recipient.compose_recipient_widget.render(opts.stream);
+    const $stream_header_colorblock = $("#compose_recipient_selection_dropdown").find(
         ".stream_header_colorblock",
     );
     stream_bar.decorate(opts.stream, $stream_header_colorblock);

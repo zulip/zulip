@@ -26,7 +26,7 @@ const compose_fade = zrequire("compose_fade");
 const compose_recipient = zrequire("compose_recipient");
 const compose_fade_helper = zrequire("compose_fade_helper");
 
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return "social";
     },

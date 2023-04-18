@@ -499,8 +499,8 @@ input.recipient_box {
     border-radius: 3px;
 }
 
-#compose_select_stream_widget,
-#compose_select_stream_widget .button {
+#compose_select_recipient_widget,
+#compose_select_recipient_widget .button {
     margin: 0;
     min-width: 0;
     flex: 1;
@@ -752,7 +752,7 @@ a.compose_control_button.hide {
     margin: auto;
 }
 
-#compose_stream_selection_dropdown {
+#compose_recipient_selection_dropdown {
     display: flex;
     justify-content: flex-start;
     flex: 0 1 200px;
@@ -780,7 +780,7 @@ a.compose_control_button.hide {
         left: -10px;
     }
 
-    #compose_select_stream_name {
+    #compose_select_recipient_name {
         flex-grow: 1;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -808,7 +808,7 @@ a.compose_control_button.hide {
     min-width: 0;
 }
 
-#id_compose_select_stream {
+#id_compose_select_recipient {
     display: flex;
 }
 

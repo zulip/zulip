@@ -28,7 +28,7 @@ const recent_topics_util = mock_esm("../src/recent_topics_util", {
 });
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },
@@ -650,7 +650,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 });
 
 run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
-    compose_recipient.on_compose_select_stream_update = () => {};
+    compose_recipient.on_compose_select_recipient_update = () => {};
     disallow_rewire(narrow, "activate");
 
     // No-op when not composing.
