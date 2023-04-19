@@ -7,12 +7,12 @@ type Hook = () => void;
 
 type OverlayOptions = {
     name: string;
-    $overlay: JQuery<HTMLElement>;
+    $overlay: JQuery;
     on_close: () => void;
 };
 
 type Overlay = {
-    $element: JQuery<HTMLElement>;
+    $element: JQuery;
     close_handler: () => void;
 };
 
