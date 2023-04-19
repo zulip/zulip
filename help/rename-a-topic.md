@@ -19,7 +19,9 @@ Organizations can [configure](/help/restrict-moving-messages) which
 
 {start_tabs}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon in the message recipient bar.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon in the message
+   recipient bar. If you do not see the **pencil** (<i class="fa
+   fa-pencil"></i>) icon, you do not have permission to rename this topic.
 
 1. Edit the topic name.
 
@@ -27,18 +29,19 @@ Organizations can [configure](/help/restrict-moving-messages) which
 
 {end_tabs}
 
-
 ### Via the left sidebar (alternate method)
 
 {start_tabs}
 
 {!topic-actions.md!}
 
-1. Select **Move topic**.
+1. Select **Move topic** or **Rename topic**. If you do not see either option,
+   you do not have permission to rename this topic.
 
 1. Edit the topic name.
 
-1. _(optional)_  Select the destination stream for the topic from the streams dropdown list.
+1. _(optional)_  If using the **Move topic** menu, select the destination stream
+   for the topic from the streams dropdown list.
 
 1. Toggle whether automated notices should be sent.
 
