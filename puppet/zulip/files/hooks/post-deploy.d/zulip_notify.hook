@@ -4,4 +4,5 @@ set -e
 set -u
 
 source "$(dirname "$0")/../common/zulip_notify.sh"
-zulip_send "Finished deploying from $from to $to on $(hostname)"
+
+zulip_send "Finished ${deploy_environment} deploy of [${commit_count} new commits](https://github.com/zulip/zulip/compare/${from}...${to}) on $(hostname)"
