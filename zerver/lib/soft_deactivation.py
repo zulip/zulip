@@ -178,7 +178,9 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # That second tiebreak is important in case a user is subscribed
     # and then unsubscribed without any messages being sent in the
     # meantime.  Without that tiebreak, we could end up incorrectly
-    # processing the ordering of those two subscription changes.
+    # processing the ordering of those two subscription changes.  Note
+    # that this means we cannot backfill events unless there are no
+    # pre-existing events for this stream/user pair!
     subscription_logs = list(
         RealmAuditLog.objects.filter(
             modified_user=user_profile, modified_stream_id__in=stream_ids, event_type__in=events
