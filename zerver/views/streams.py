@@ -9,6 +9,9 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from zerver.lib.request import has_request_variables, REQ
+from zerver.models import UserProfile
+from zerver.views.streams import StreamsView
 
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -806,7 +809,22 @@ def send_messages_for_new_subscribers(
     if len(notifications) > 0:
         do_send_messages(notifications, mark_as_read=[user_profile.id])
 
+class CustomStreamsView(StreamsView):
+    @has_request_variables
+    def reload_subscribed_streams(self, request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+        # Gets the subscribed streams and iterates to check if they are new subscriptions
+        subscribed_streams = user_profile.subscriptions.all()
+        for stream in subscribed_streams:
+            #If stream is new, reloads the stream
+            if stream.name not in user_profile.last_reminder:
+                self.stream_topic(request, stream.id)
 
+        #Updates the user's current subscriptions and saves the UserProfile object
+        user_profile.last_reminder = [stream.name for stream in subscribed_streams]
+        user_profile.save()
+
+        return HttpResponse(status=200)
+    
 @has_request_variables
 def get_subscribers_backend(
     request: HttpRequest,
