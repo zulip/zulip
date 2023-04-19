@@ -1448,6 +1448,10 @@ $option_title_width: 180px;
         .person_picker {
             min-width: 206px;
         }
+
+        .pronouns_type_field {
+            margin-bottom: 10%;
+        }
     }
 
     #show_my_user_profile_modal {
