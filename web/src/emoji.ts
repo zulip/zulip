@@ -251,7 +251,7 @@ export function update_emojis(realm_emojis: RealmEmojiMap): void {
             still_url: data.still_url,
             deactivated: data.deactivated,
         });
-        if (data.deactivated !== true) {
+        if (!data.deactivated) {
             active_realm_emojis.set(data.name, {
                 id: data.id,
                 emoji_name: data.name,
