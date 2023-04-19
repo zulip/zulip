@@ -64,9 +64,7 @@ export function set_muted_users(list: RawMutedUser[]): void {
     muted_users.clear();
 
     for (const user of list) {
-        if (user !== undefined && user.id !== undefined) {
-            add_muted_user(user.id, user.timestamp);
-        }
+        add_muted_user(user.id, user.timestamp);
     }
 }
 

@@ -303,9 +303,7 @@ export function clean_user_content_links(html: string): string {
             elt.removeAttribute("target");
         }
 
-        const is_inline_image =
-            elt.parentElement && elt.parentElement.classList.contains("message_inline_image");
-        if (is_inline_image) {
+        if (elt.parentElement?.classList.contains("message_inline_image")) {
             // For inline images we want to handle the tooltips explicitly, and disable
             // the browser's built in handling of the title attribute.
             const title = elt.getAttribute("title");
