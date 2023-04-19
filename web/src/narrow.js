@@ -594,6 +594,7 @@ export function activate(raw_operators, opts) {
     stream_list.handle_narrow_activated(current_filter);
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
+    unread_ui.update_unread_banner();
 
     // It is important to call this after other important updates
     // like narrow filter and compose recipients happen.

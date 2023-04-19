@@ -39,6 +39,10 @@ mock_esm("../src/recent_topics_util", {
 mock_esm("../src/pm_list", {
     handle_narrow_activated() {},
 });
+mock_esm("../src/unread_ui", {
+    reset_unread_banner() {},
+    update_unread_banner() {},
+});
 
 //
 // We have strange hacks in narrow.activate to sleep 0
