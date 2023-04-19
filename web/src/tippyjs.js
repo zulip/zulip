@@ -29,6 +29,38 @@ function get_tooltip_content(reference) {
     return "";
 }
 
+// We need to store all message list instances together to destroy them in case of re-rendering.
+const message_list_tippy_instances = new Set();
+
+// This keeps track of all the instances created and destroyed.
+const store_message_list_instances_plugin = {
+    fn() {
+        return {
+            onCreate(instance) {
+                message_list_tippy_instances.add(instance);
+            },
+            onDestroy(instance) {
+                // To make sure the `message_list_tippy_instances` contains only instances
+                // that are present in the DOM, we need to delete instances that are destroyed
+                message_list_tippy_instances.delete(instance);
+            },
+        };
+    },
+};
+
+// To prevent the appearance of tooltips whose reference is hidden or removed from the
+// DOM during re-rendering, we need to destroy all the message list present instances,
+// and then initialize triggers of the tooltips again after re-rendering.
+export function destroy_all_message_list_tooltips() {
+    for (const instance of message_list_tippy_instances) {
+        if (instance.reference === document.body) {
+            continue;
+        }
+        instance.destroy();
+    }
+    message_list_tippy_instances.clear();
+}
+
 // Defining observer outside ensures that at max only one observer is active at all times.
 let observer;
 function hide_tooltip_if_reference_removed(
@@ -78,6 +110,19 @@ const LONG_HOVER_DELAY = [750, 20];
 // keyboard shortcut. For these tooltips, it's very important to avoid
 // distracting users unnecessarily.
 const EXTRA_LONG_HOVER_DELAY = [1500, 20];
+
+// Tooltips present outside of message list table in DOM don't get
+// effected by `rerender` but since their original reference is removed,
+// their position is miscalculated and they get placed at top left of the
+// window. To avoid this, we use this wrapping function.
+function message_list_tooltip(target, props) {
+    delegate("body", {
+        target,
+        appendTo: () => document.body,
+        plugins: [store_message_list_instances_plugin],
+        ...props,
+    });
+}
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
