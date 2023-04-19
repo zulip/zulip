@@ -1101,4 +1101,12 @@ export class Filter {
         }
         return true;
     }
+
+    is_conversation_view() {
+        const term_type = this.sorted_term_types();
+        if (_.isEqual(term_type, ["stream", "topic"]) || _.isEqual(term_type, ["pm-with"])) {
+            return true;
+        }
+        return false;
+    }
 }

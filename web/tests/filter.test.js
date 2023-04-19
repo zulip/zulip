@@ -96,6 +96,7 @@ test("basics", () => {
     assert.ok(filter.includes_full_stream_history());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [
         {operator: "stream", operand: "foo"},
@@ -113,6 +114,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.can_bucket_by("stream"));
     assert.ok(filter.can_bucket_by("stream", "topic"));
+    assert.ok(!filter.is_conversation_view());
 
     operators = [
         {operator: "stream", operand: "foo"},
@@ -130,6 +132,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.can_bucket_by("stream"));
     assert.ok(filter.can_bucket_by("stream", "topic"));
+    assert.ok(!filter.is_conversation_view());
 
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't
@@ -141,6 +144,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     // Negated searches are just like positive searches for our purposes, since
     // the search logic happens on the backend and we need to have can_apply_locally()
@@ -153,6 +157,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     // Similar logic applies to negated "has" searches.
     operators = [{operator: "has", operand: "images", negated: true}];
@@ -164,6 +169,7 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(!filter.supports_collapsing_recipients());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [{operator: "streams", operand: "public", negated: true}];
     filter = new Filter(operators);
@@ -174,6 +180,7 @@ test("basics", () => {
     assert.ok(filter.has_negated_operand("streams", "public"));
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [{operator: "streams", operand: "public"}];
     filter = new Filter(operators);
@@ -185,6 +192,7 @@ test("basics", () => {
     assert.ok(!filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [{operator: "is", operand: "private"}];
     filter = new Filter(operators);
@@ -194,6 +202,7 @@ test("basics", () => {
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(operators);
@@ -203,6 +212,7 @@ test("basics", () => {
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [{operator: "is", operand: "starred"}];
     filter = new Filter(operators);
@@ -212,6 +222,7 @@ test("basics", () => {
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [{operator: "pm-with", operand: "joe@example.com"}];
     filter = new Filter(operators);
@@ -222,6 +233,7 @@ test("basics", () => {
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.is_conversation_view());
 
     operators = [{operator: "pm-with", operand: "joe@example.com,jack@example.com"}];
     filter = new Filter(operators);
@@ -231,6 +243,7 @@ test("basics", () => {
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.is_conversation_view());
 
     operators = [{operator: "group-pm-with", operand: "joe@example.com"}];
     filter = new Filter(operators);
@@ -241,6 +254,7 @@ test("basics", () => {
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     operators = [{operator: "is", operand: "resolved"}];
     filter = new Filter(operators);
@@ -250,6 +264,7 @@ test("basics", () => {
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
 
     // Highly complex query to exercise
     // filter.supports_collapsing_recipients loop.
@@ -271,6 +286,23 @@ test("basics", () => {
     // comment in the can_apply_locally implementation.
     assert.ok(!filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+
+    operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+    ];
+    filter = new Filter(operators);
+
+    assert.ok(!filter.is_search());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.allow_use_first_unread_when_narrowing());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.is_conversation_view());
 });
 
 function assert_not_mark_read_with_has_operands(additional_operators_to_test) {

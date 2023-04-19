@@ -1,0 +1,12 @@
+<p id="mark_as_read_turned_off_content">
+    {{#tr}}
+        Your Zulip app is <z-link>configured</z-link> to mark messages as read on scroll only in conversation views.
+        {{#*inline "z-link"}}<a href='help/marking-messages-as-read'>{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</p>
+<div id="mark_as_read_controls">
+    <button id="mark_view_read" class="btn btn-warning">
+        {{t 'Mark as read' }}
+    </button>
+</div>
+<button type="button" id="mark_as_read_close" class="close">×</button>

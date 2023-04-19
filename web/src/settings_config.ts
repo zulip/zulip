@@ -44,11 +44,10 @@ export const web_mark_read_on_scroll_policy_values = {
         code: 1,
         description: $t({defaultMessage: "Always"}),
     },
-    // The `conversation_only` option is not yet implemented.
-    // conversation_only: {
-    //    code: 2,
-    //    description: $t({defaultMessage: "Only in conversation views"}),
-    // },
+    conversation_only: {
+        code: 2,
+        description: $t({defaultMessage: "Only in conversation views"}),
+    },
     never: {
         code: 3,
         description: $t({defaultMessage: "Never"}),
