@@ -26,7 +26,7 @@ $(() => {
     // In case user presses `back` with menu open.
     // See https://github.com/zulip/zulip/pull/24301#issuecomment-1418547337.
     if ($(".top-menu-tab-input:checked").length === 1) {
-        const sub_menu_height = $(".top-menu-tab-input:checked ~ .top-menu-submenu").height() || 0;
+        const sub_menu_height = $(".top-menu-tab-input:checked ~ .top-menu-submenu").height() ?? 0;
         $("#top-menu-submenu-backdrop").css("height", sub_menu_height + 16);
     }
 

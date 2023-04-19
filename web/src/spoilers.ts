@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 function collapse_spoiler($spoiler: JQuery): void {
-    const spoiler_height = $spoiler.height() || 0;
+    const spoiler_height = $spoiler.height() ?? 0;
 
     // Set height to rendered height on next frame, then to zero on following
     // frame to allow CSS transition animation to work

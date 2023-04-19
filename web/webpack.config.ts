@@ -198,7 +198,7 @@ export default (
         },
         plugins: [
             new DefinePlugin({
-                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION || "development"),
+                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
             }),
             new DebugRequirePlugin(),
             new BundleTracker({

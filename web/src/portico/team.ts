@@ -48,7 +48,7 @@ const loaded_repos: string[] = [];
 function calculate_total_commits(contributor: Contributor): number {
     let commits = 0;
     for (const repo_name of all_repository_names) {
-        commits += contributor[repo_name] || 0;
+        commits += contributor[repo_name] ?? 0;
     }
     return commits;
 }
@@ -132,11 +132,11 @@ export default function render_tabs(contributors: Contributor[]): void {
 
         $(`#${CSS.escape(tab_name)}`).on("click", () => {
             if (!loaded_repos.includes(repo_name)) {
-                const filtered_by_repo = contributors_list.filter((c) => c[repo_name] || 0);
+                const filtered_by_repo = contributors_list.filter((c) => c[repo_name] ?? 0);
                 const html = filtered_by_repo
                     .sort((a, b) => {
-                        const a_commits = a[repo_name] || 0;
-                        const b_commits = b[repo_name] || 0;
+                        const a_commits = a[repo_name] ?? 0;
+                        const b_commits = b[repo_name] ?? 0;
                         return a_commits < b_commits ? 1 : a_commits > b_commits ? -1 : 0;
                     })
                     .map((c) =>
@@ -153,7 +153,7 @@ export default function render_tabs(contributors: Contributor[]): void {
                 $(`#tab-${CSS.escape(tab_name)} .contributors-grid`).html(html);
                 const contributor_count = filtered_by_repo.length;
                 const hundred_plus_contributor_count = filtered_by_repo.filter((c) => {
-                    const commits = c[repo_name] || 0;
+                    const commits = c[repo_name] ?? 0;
                     return commits >= 100;
                 }).length;
                 const repo_url = `https://github.com/zulip/${repo_name}`;
