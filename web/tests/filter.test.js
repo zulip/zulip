@@ -810,6 +810,35 @@ test("predicate_basics", () => {
         }),
     );
 
+    predicate = get_predicate([["dm-including", "nobody@example.com"]]);
+    assert.ok(
+        !predicate({
+            type: "private",
+            display_recipient: [{id: joe.user_id}, {id: me.user_id}],
+        }),
+    );
+
+    predicate = get_predicate([["dm-including", "Joe@example.com"]]);
+    assert.ok(
+        predicate({
+            type: "private",
+            display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
+        }),
+    );
+    assert.ok(
+        predicate({
+            type: "private",
+            display_recipient: [{id: joe.user_id}, {id: me.user_id}],
+        }),
+    );
+    assert.ok(
+        !predicate({
+            type: "private",
+            display_recipient: [{id: steve.user_id}, {id: me.user_id}],
+        }),
+    );
+    assert.ok(!predicate({type: "stream"}));
+
     predicate = get_predicate([["group-pm-with", "nobody@example.com"]]);
     assert.ok(
         !predicate({
@@ -1783,6 +1812,9 @@ run_test("is_spectator_compatible", () => {
     );
     assert.ok(Filter.is_spectator_compatible([{operator: "sender", operand: "hamlet@zulip.com"}]));
     assert.ok(!Filter.is_spectator_compatible([{operator: "dm", operand: "hamlet@zulip.com"}]));
+    assert.ok(
+        !Filter.is_spectator_compatible([{operator: "dm-including", operand: "hamlet@zulip.com"}]),
+    );
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
     );

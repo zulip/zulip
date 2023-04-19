@@ -134,6 +134,7 @@ test("dm_suggestions", ({override}) => {
         "is:dm is:alerted",
         "is:dm sender:alice@zulip.com",
         "is:dm dm:alice@zulip.com",
+        "is:dm dm-including:alice@zulip.com",
         "is:dm group-pm-with:alice@zulip.com",
         "is:dm",
     ];
@@ -217,6 +218,7 @@ test("dm_suggestions", ({override}) => {
         "is:starred has:link is:dm is:alerted",
         "is:starred has:link is:dm sender:alice@zulip.com",
         "is:starred has:link is:dm dm:alice@zulip.com",
+        "is:starred has:link is:dm dm-including:alice@zulip.com",
         "is:starred has:link is:dm group-pm-with:alice@zulip.com",
         "is:starred has:link is:dm",
         "is:starred has:link",
@@ -524,6 +526,7 @@ test("check_is_suggestions", ({override}) => {
         "is:resolved",
         "sender:alice@zulip.com",
         "dm:alice@zulip.com",
+        "dm-including:alice@zulip.com",
         "group-pm-with:alice@zulip.com",
         "has:image",
     ];
@@ -674,7 +677,13 @@ test("topic_suggestions", ({override}) => {
     stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
 
     suggestions = get_suggestions("", "te");
-    expected = ["te", "sender:ted@zulip.com", "dm:ted@zulip.com", "group-pm-with:ted@zulip.com"];
+    expected = [
+        "te",
+        "sender:ted@zulip.com",
+        "dm:ted@zulip.com",
+        "dm-including:ted@zulip.com",
+        "group-pm-with:ted@zulip.com",
+    ];
     assert.deepEqual(suggestions.strings, expected);
 
     stream_topic_history.add_message({
@@ -694,6 +703,7 @@ test("topic_suggestions", ({override}) => {
         "te",
         "sender:ted@zulip.com",
         "dm:ted@zulip.com",
+        "dm-including:ted@zulip.com",
         "group-pm-with:ted@zulip.com",
         "stream:office topic:team",
         "stream:office topic:test",
@@ -854,6 +864,8 @@ test("people_suggestions", ({override}) => {
         "sender:ted@zulip.com",
         "dm:bob@zulip.com", // bob térry
         "dm:ted@zulip.com",
+        "dm-including:bob@zulip.com",
+        "dm-including:ted@zulip.com",
         "group-pm-with:bob@zulip.com",
         "group-pm-with:ted@zulip.com",
     ];
@@ -866,6 +878,7 @@ test("people_suggestions", ({override}) => {
     assert.equal(is_person("dm:ted@zulip.com"), true);
     assert.equal(is_person("sender:ted@zulip.com"), true);
     assert.equal(is_person("group-pm-with:ted@zulip.com"), true);
+    assert.equal(is_person("dm-including:ted@zulip.com"), true);
 
     function has_image(q) {
         return suggestions.lookup_table.get(q).user_pill_context.has_image;
@@ -873,6 +886,7 @@ test("people_suggestions", ({override}) => {
     assert.equal(has_image("dm:bob@zulip.com"), true);
     assert.equal(has_image("sender:bob@zulip.com"), true);
     assert.equal(has_image("group-pm-with:bob@zulip.com"), true);
+    assert.equal(has_image("dm-including:bob@zulip.com"), true);
 
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
@@ -880,6 +894,7 @@ test("people_suggestions", ({override}) => {
     assert.equal(describe("dm:ted@zulip.com"), "Direct messages with");
     assert.equal(describe("sender:ted@zulip.com"), "Sent by");
     assert.equal(describe("group-pm-with:ted@zulip.com"), "Group direct messages including");
+    assert.equal(describe("dm-including:ted@zulip.com"), "Direct messages including");
 
     let expectedString = "<strong>Te</strong>d Smith";
 
@@ -889,6 +904,7 @@ test("people_suggestions", ({override}) => {
     assert.equal(get_full_name("sender:ted@zulip.com"), expectedString);
     assert.equal(get_full_name("dm:ted@zulip.com"), expectedString);
     assert.equal(get_full_name("group-pm-with:ted@zulip.com"), expectedString);
+    assert.equal(get_full_name("dm-including:ted@zulip.com"), expectedString);
 
     expectedString = example_avatar_url + "?s=50";
 
@@ -898,10 +914,17 @@ test("people_suggestions", ({override}) => {
     assert.equal(get_avatar_url("dm:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("sender:bob@zulip.com"), expectedString);
     assert.equal(get_avatar_url("group-pm-with:bob@zulip.com"), expectedString);
+    assert.equal(get_avatar_url("dm-including:bob@zulip.com"), expectedString);
 
     suggestions = get_suggestions("", "Ted "); // note space
 
-    expected = ["Ted", "sender:ted@zulip.com", "dm:ted@zulip.com", "group-pm-with:ted@zulip.com"];
+    expected = [
+        "Ted",
+        "sender:ted@zulip.com",
+        "dm:ted@zulip.com",
+        "dm-including:ted@zulip.com",
+        "group-pm-with:ted@zulip.com",
+    ];
 
     assert.deepEqual(suggestions.strings, expected);
 

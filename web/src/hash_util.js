@@ -40,6 +40,7 @@ export function build_reload_url() {
 export function encode_operand(operator, operand) {
     if (
         operator === "group-pm-with" ||
+        operator === "dm-including" ||
         operator === "dm" ||
         operator === "sender" ||
         operator === "pm-with"
@@ -68,6 +69,7 @@ export function encode_stream_name(operand) {
 export function decode_operand(operator, operand) {
     if (
         operator === "group-pm-with" ||
+        operator === "dm-including" ||
         operator === "dm" ||
         operator === "sender" ||
         operator === "pm-with"
