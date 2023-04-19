@@ -133,11 +133,11 @@ run_test("initialize", ({mock_template}) => {
             const search_suggestions = {
                 lookup_table: new Map([
                     [
-                        "group-pm-with:zo",
+                        "dm-including:zo",
                         {
                             description_html: "group direct messages including",
                             is_person: true,
-                            search_string: "group-pm-with:user7@zulipdev.com",
+                            search_string: "dm-including:user7@zulipdev.com",
                             user_pill_context: {
                                 display_value: "<strong>Zo</strong>e",
                                 has_image: true,
@@ -185,7 +185,7 @@ run_test("initialize", ({mock_template}) => {
                         },
                     ],
                 ]),
-                strings: ["zo", "sender:zo", "dm:zo", "group-pm-with:zo"],
+                strings: ["zo", "sender:zo", "dm:zo", "dm-including:zo"],
             };
 
             /* Test source */

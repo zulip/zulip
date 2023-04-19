@@ -161,20 +161,6 @@ function message_matches_search_term(message, operator, operand) {
         case "sender":
             return people.id_matches_email_operand(message.sender_id, operand);
 
-        case "group-pm-with": {
-            const operand_ids = people.pm_with_operand_ids(operand);
-            if (!operand_ids) {
-                return false;
-            }
-            const user_ids = people.group_pm_with_user_ids(message);
-            if (!user_ids) {
-                return false;
-            }
-            return user_ids.includes(operand_ids[0]);
-            // We should also check if the current user is in the recipient list (user_ids) of the
-            // message, but it is implicit by the fact that the current user has access to the message.
-        }
-
         case "dm": {
             // TODO: use user_ids, not emails here
             if (message.type !== "private") {
@@ -229,6 +215,11 @@ export class Filter {
             return "dm";
         }
 
+        if (operator === "group-pm-with") {
+            // "group-pm-with:" was replaced with "dm-including:"
+            return "dm-including";
+        }
+
         if (operator === "from") {
             return "sender";
         }
@@ -269,7 +260,6 @@ export class Filter {
                 }
                 break;
             case "dm-including":
-            case "group-pm-with":
                 operand = operand.toString().toLowerCase();
                 break;
             case "search":
@@ -489,8 +479,6 @@ export class Filter {
             "dm",
             "dm-including",
             "not-dm-including",
-            "group-pm-with",
-            "not-group-pm-with",
             "is-dm",
             "not-is-dm",
             "is-resolved",
@@ -771,8 +759,7 @@ export class Filter {
         return (
             (this.has_operator("is") && this.operands("is")[0] === "dm") ||
             this.has_operator("dm") ||
-            this.has_operator("dm-including") ||
-            this.has_operator("group-pm-with")
+            this.has_operator("dm-including")
         );
     }
 
@@ -963,7 +950,6 @@ export class Filter {
             "topic",
             "dm",
             "dm-including",
-            "group-pm-with",
             "sender",
             "near",
             "id",
@@ -1040,9 +1026,6 @@ export class Filter {
             // Note: We hack around using this in "describe" below.
             case "is":
                 return verb + "messages that are";
-
-            case "group-pm-with":
-                return verb + "group direct messages including";
         }
         return "";
     }

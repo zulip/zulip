@@ -425,42 +425,6 @@ function pick_empty_narrow_banner() {
                 ),
             };
         }
-        case "group-pm-with": {
-            const person_in_group_pm = people.get_by_email(first_operand);
-            if (!person_in_group_pm) {
-                return {
-                    title: $t({defaultMessage: "This user does not exist!"}),
-                };
-            }
-            if (
-                page_params.realm_private_message_policy ===
-                settings_config.private_message_policy_values.disabled.code
-            ) {
-                return {
-                    title: $t({
-                        defaultMessage:
-                            "You are not allowed to send group direct messages in this organization.",
-                    }),
-                };
-            }
-            return {
-                title: $t(
-                    {
-                        defaultMessage: "You have no group direct messages with {person} yet.",
-                    },
-                    {person: person_in_group_pm.full_name},
-                ),
-                html: $t_html(
-                    {
-                        defaultMessage: "Why not <z-link>start the conversation</z-link>?",
-                    },
-                    {
-                        "z-link": (content_html) =>
-                            `<a href="#" class="empty_feed_compose_private">${content_html}</a>`,
-                    },
-                ),
-            };
-        }
     }
     return default_banner;
 }
