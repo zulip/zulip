@@ -201,6 +201,14 @@ class zulip::app_frontend_base {
     group  => 'zulip',
     mode   => '0750',
   }
+  $access_log_retention_days = zulipconf('application_server','access_log_retention_days', 14)
+  file { '/etc/logrotate.d/zulip':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/logrotate/zulip.template.erb'),
+  }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
     require => Package[$zulip::common::nagios_plugins],
