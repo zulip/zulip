@@ -108,7 +108,7 @@ export const twenty_four_hour_time_values = {
     },
 };
 
-export interface DisplaySettings {
+export type DisplaySettings = {
     settings: {
         user_display_settings: string[];
     };
@@ -116,7 +116,7 @@ export interface DisplaySettings {
         high_contrast_mode: boolean;
         dense_mode: boolean;
     };
-}
+};
 
 /* istanbul ignore next */
 export const get_all_display_settings = (): DisplaySettings => ({
@@ -761,7 +761,7 @@ export function get_notifications_table_row_data(
     });
 }
 
-export interface AllNotifications {
+export type AllNotifications = {
     general_settings: {label: string; notification_settings: NotificationSettingCheckbox[]}[];
     settings: {
         desktop_notification_settings: string[];
@@ -773,7 +773,7 @@ export interface AllNotifications {
         push_notifications: boolean;
         enable_online_push_notifications: boolean;
     };
-}
+};
 
 export const all_notifications = (settings_object: Settings): AllNotifications => ({
     general_settings: [

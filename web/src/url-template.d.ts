@@ -6,14 +6,14 @@
 declare module "url-template" {
     export type PrimitiveValue = string | number | boolean | null;
 
-    export interface Template {
+    export type Template = {
         expand(
             context: Record<
                 string,
                 PrimitiveValue | PrimitiveValue[] | Record<string, PrimitiveValue>
             >,
         ): string;
-    }
+    };
 
     export function parse(template: string): Template;
 }

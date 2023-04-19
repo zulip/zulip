@@ -3,9 +3,9 @@ import $ from "jquery";
 
 // TODO: Move this to message_store when it is
 // converted to TypeScript.
-interface Message {
+type Message = {
     content: string;
-}
+};
 
 // We need to check if the message content contains the specified HTML
 // elements.  We wrap the message.content in a <div>; this is
