@@ -21,7 +21,7 @@ async function open_set_user_status_modal(page: Page): Promise<void> {
     await page.waitForSelector(".user_popover", {visible: true});
     // We are using evaluate to click because it is very hard to detect if the user info popover has opened.
     await page.evaluate(() =>
-        (document.querySelector(".update_status_text") as HTMLAnchorElement)!.click(),
+        document.querySelector<HTMLAnchorElement>(".update_status_text")!.click(),
     );
 
     // Wait for the modal to completely open.
@@ -33,7 +33,7 @@ async function test_user_status(page: Page): Promise<void> {
     // Check by clicking on common statues.
     await page.click(".user-status-value:nth-child(2)");
     await page.waitForFunction(
-        () => (document.querySelector(".user-status") as HTMLInputElement).value === "In a meeting",
+        () => document.querySelector<HTMLInputElement>(".user-status")!.value === "In a meeting",
     );
     // It should select calendar emoji.
     await page.waitForSelector(".selected-emoji.emoji-1f4c5");
@@ -41,7 +41,7 @@ async function test_user_status(page: Page): Promise<void> {
     // Clear everything.
     await page.click("#clear_status_message_button");
     await page.waitForFunction(
-        () => (document.querySelector(".user-status") as HTMLInputElement).value === "",
+        () => document.querySelector<HTMLInputElement>(".user-status")!.value === "",
     );
     await page.waitForSelector(".status-emoji-wrapper .smiley-icon", {visible: true});
 
