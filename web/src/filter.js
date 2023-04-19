@@ -191,6 +191,18 @@ function message_matches_search_term(message, operator, operand) {
 
             return _.isEqual(operand_ids, user_ids);
         }
+
+        case "dm-including": {
+            const operand_ids = people.pm_with_operand_ids(operand);
+            if (!operand_ids) {
+                return false;
+            }
+            const user_ids = people.all_user_ids_in_pm(message);
+            if (!user_ids) {
+                return false;
+            }
+            return user_ids.includes(operand_ids[0]);
+        }
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -256,6 +268,7 @@ export class Filter {
                     operand = people.my_current_email();
                 }
                 break;
+            case "dm-including":
             case "group-pm-with":
                 operand = operand.toString().toLowerCase();
                 break;
@@ -299,7 +312,11 @@ export class Filter {
 
     static decodeOperand(encoded, operator) {
         encoded = encoded.replace(/"/g, "");
-        if (["group-pm-with", "dm", "sender", "from", "pm-with"].includes(operator) === false) {
+        if (
+            ["dm-including", "dm", "sender", "from", "pm-with", "group-pm-with"].includes(
+                operator,
+            ) === false
+        ) {
             encoded = encoded.replace(/\+/g, " ");
         }
         return util.robust_url_decode(encoded).trim();
@@ -470,6 +487,8 @@ export class Filter {
             "topic",
             "not-topic",
             "dm",
+            "dm-including",
+            "not-dm-including",
             "group-pm-with",
             "not-group-pm-with",
             "is-dm",
@@ -752,6 +771,7 @@ export class Filter {
         return (
             (this.has_operator("is") && this.operands("is")[0] === "dm") ||
             this.has_operator("dm") ||
+            this.has_operator("dm-including") ||
             this.has_operator("group-pm-with")
         );
     }
@@ -882,6 +902,7 @@ export class Filter {
     update_email(user_id, new_email) {
         for (const term of this._operators) {
             switch (term.operator) {
+                case "dm-including":
                 case "group-pm-with":
                 case "dm":
                 case "pm-with":
@@ -941,6 +962,7 @@ export class Filter {
             "stream",
             "topic",
             "dm",
+            "dm-including",
             "group-pm-with",
             "sender",
             "near",
@@ -1008,6 +1030,9 @@ export class Filter {
 
             case "dm":
                 return verb + "direct messages with";
+
+            case "dm-including":
+                return verb + "direct messages including";
 
             case "in":
                 return verb + "messages in";

@@ -429,6 +429,59 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         settings_config.private_message_policy_values.disabled.code;
 
     // prioritize information about invalid user in narrow/search
+    set_filter([["dm-including", ["Yo"]]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
+    );
+
+    set_filter([["dm-including", "alice@example.com"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to send direct messages in this organization.",
+        ),
+    );
+
+    // direct messages with a bot are possible even though
+    // the organization has disabled sending direct messages
+    set_filter([["dm-including", "bot@example.com"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages including Example Bot yet.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
+    // sending direct messages enabled
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.by_anyone.code;
+    set_filter([["dm-including", "alice@example.com"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages including Alice Smith yet.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
+    set_filter([["dm-including", me.email]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You don't have any direct message conversations yet."),
+    );
+
+    // organization has disabled sending direct messages
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.disabled.code;
+
+    // prioritize information about invalid user in narrow/search
     set_filter([["group-pm-with", ["Yo"]]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
