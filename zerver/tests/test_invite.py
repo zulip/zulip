@@ -1542,7 +1542,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "bob"})
         response = self.submit_reg_form_for_user(email, "password", key=registration_key)
         self.assert_in_success_response(
-            ["New members cannot join this organization because all Zulip licenses are"], response
+            ["Organization cannot accept new members right now"], response
         )
 
         guest_prereg_user = PreregistrationUser.objects.create(
