@@ -1584,6 +1584,10 @@ $option_title_width: 180px;
                     hsl(200deg 100% 35%)
                 );
             }
+
+            &:focus {
+                text-decoration: none;
+            }
         }
     }
 }
