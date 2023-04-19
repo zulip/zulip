@@ -1,6 +1,7 @@
 import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
+import timersPromises from "timers/promises";
 
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
@@ -317,7 +318,7 @@ export async function assert_compose_box_content(
 export async function wait_for_fully_processed_message(page: Page, content: string): Promise<void> {
     // Wait in parallel for the message list scroll animation, which
     // interferes with Puppeteer accurately clicking on messages.
-    const scroll_delay = page.waitForTimeout(400);
+    const scroll_delay = timersPromises.setTimeout(400);
 
     await page.waitForFunction(
         (content: string) => {
