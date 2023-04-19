@@ -16,14 +16,6 @@ class zulip_ops::app_frontend {
   zulip_ops::firewall_allow{ 'http': }
   zulip_ops::firewall_allow{ 'https': }
 
-  file { '/etc/logrotate.d/zulip':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/logrotate/zulip',
-  }
-
   file { "${zulip::common::supervisor_conf_dir}/redis_tunnel.conf":
     ensure  => file,
     require => Package['supervisor', 'autossh'],
