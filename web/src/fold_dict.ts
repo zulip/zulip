@@ -29,7 +29,7 @@ export class FoldDict<V> {
         return mapping.v;
     }
 
-    set(key: string, value: V): FoldDict<V> {
+    set(key: string, value: V): this {
         this._items.set(this._munge(key), {k: key, v: value});
         return this;
     }
