@@ -24,6 +24,7 @@ import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as starred_messages from "./starred_messages";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -558,4 +559,5 @@ export function remove_messages(message_ids) {
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
     recent_topics_ui.update_topics_of_deleted_message_ids(message_ids);
+    starred_messages.remove(message_ids);
 }
