@@ -121,7 +121,7 @@ export function launch(conf: WidgetConfig): void {
     // * loading_spinner: Whether to show a loading spinner inside the
     //   submit button when clicked.
 
-    const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
+    const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
     const html = render_dialog_widget({
         heading_text: conf.html_heading,
         link: conf.help_link,

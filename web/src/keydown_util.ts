@@ -37,6 +37,6 @@ export function is_enter_event(event: JQuery.KeyDownEvent): boolean {
     // phonetic input method like ZhuYin in a character-based
     // language. See #22062 for details. Further reading:
     // https://developer.mozilla.org/en-US/docs/Glossary/Input_method_editor
-    const isComposing: boolean = event.originalEvent?.isComposing || false;
+    const isComposing = event.originalEvent?.isComposing ?? false;
     return !isComposing && event.key === "Enter";
 }

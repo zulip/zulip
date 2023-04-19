@@ -204,7 +204,7 @@ function build_emojis_by_name({
                 const emoji_dict: EmojiDict = {
                     name: emoji_name,
                     display_name: emoji_name,
-                    aliases: default_emoji_aliases.get(codepoint) || [],
+                    aliases: default_emoji_aliases.get(codepoint) ?? [],
                     is_realm_emoji: false,
                     emoji_code: codepoint,
                     has_reacted: false,

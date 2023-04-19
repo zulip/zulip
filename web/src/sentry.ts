@@ -46,7 +46,7 @@ if (page_params.server_sentry_dsn) {
 
     Sentry.init({
         dsn: page_params.server_sentry_dsn,
-        environment: page_params.server_sentry_environment || "development",
+        environment: page_params.server_sentry_environment ?? "development",
         tunnel: "/error_tracing",
 
         release: "zulip-server@" + ZULIP_VERSION,
@@ -56,8 +56,8 @@ if (page_params.server_sentry_dsn) {
             }),
         ],
         allowUrls: url_matches,
-        sampleRate: page_params.server_sentry_sample_rate || 0,
-        tracesSampleRate: page_params.server_sentry_trace_rate || 0,
+        sampleRate: page_params.server_sentry_sample_rate ?? 0,
+        tracesSampleRate: page_params.server_sentry_trace_rate ?? 0,
         initialScope: {
             tags: {
                 realm: sentry_key,
