@@ -1868,38 +1868,40 @@ paths:
                                 message_ids:
                                   type: array
                                   description: |
-                                    The `message_ids` property will be present for clients that support
-                                    the `bulk_message_deletion` client capability.
+                                    Only present for clients that support the `bulk_message_deletion`
+                                    [client capability][client-capabilities].
 
-                                    An containing the IDs of the newly deleted messages.
+                                    A list containing the IDs of the newly deleted messages.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                   items:
                                     type: integer
                                 message_id:
                                   type: integer
                                   description: |
-                                    The `message_id` property will be present for clients that do not support
-                                    the `bulk_message_deletion` client capability.
+                                    Only present for clients that do not support the `bulk_message_deletion`
+                                    [client capability][client-capabilities].
 
                                     The ID of the newly deleted message.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 message_type:
                                   type: string
                                   description: |
-                                    The type of message. Either 'stream' or 'private'. The other keys
-                                    present in the event, necessary to update various frontend data structures
-                                    that might be tracking the message, depend on the message type.
+                                    The type of message. Either `"stream"` or `"private"`.
                                   enum:
                                     - private
                                     - stream
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present for stream messages.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The ID of the stream to which the message was sent.
                                 topic:
                                   type: string
                                   description: |
-                                    Only present for stream messages.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The topic to which the message was sent.
                               example:
@@ -2397,12 +2399,15 @@ paths:
                                 message being typed, with the additional rule that typing
                                 notifications for stream messages are only sent to clients
                                 that included `stream_typing_notifications` in their
-                                `client_capabilities` when registering the event queue.
+                                [client capabilities][client-capabilities] when registering
+                                the event queue.
+
+                                See [POST /typing](/api/set-typing-status) endpoint for more details.
 
                                 **Changes**: Typing notifications for stream messages are new in
                                 Zulip 4.0 (feature level 58).
 
-                                See the [typing endpoint docs](/api/set-typing-status) for more details.
+                                [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2418,11 +2423,10 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be "stream" or "private",
-                                    as with sending a message.
+                                    Type of message being composed. Must be `"stream"` or `"private"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly private `private`.
+                                    all typing notifications were implicitly private messages.
                                   enum:
                                     - private
                                     - stream
@@ -2430,7 +2434,7 @@ paths:
                                   additionalProperties: false
                                   type: object
                                   description: |
-                                    Object describing the "sender" (i.e. the user who is typing a message).
+                                    Object describing the user who is typing the message.
                                   properties:
                                     user_id:
                                       type: integer
@@ -2443,12 +2447,12 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `private`.
+                                    Only present if `message_type` is `"private"`.
 
-                                    Array of dictionaries describing the set of users who would be recipients
-                                    of the message being typed. Each dictionary contains details on one
-                                    one of the recipients users; the sending user is guaranteed to appear
-                                    among the recipients.
+                                    Array of dictionaries describing the set of users who would be
+                                    recipients of the message being typed. Each dictionary contains
+                                    details about one of the recipients. The sending user is guaranteed
+                                    to appear among the recipients.
                                   items:
                                     type: object
                                     additionalProperties: false
@@ -2466,7 +2470,7 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The unique ID of the stream to which message is being typed.
 
@@ -2475,7 +2479,7 @@ paths:
                                 topic:
                                   type: string
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     Topic within the stream where the message is being typed.
 
@@ -2485,6 +2489,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "start",
+                                  "message_type": "private",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -2512,12 +2517,15 @@ paths:
                                 that was previously being typed, with the additional rule
                                 that typing notifications for stream messages are only sent to
                                 clients that included `stream_typing_notifications` in their
-                                `client_capabilities` when registering the event queue.
+                                [client capabilities][client-capabilities] when registering
+                                the event queue.
+
+                                See [POST /typing](/api/set-typing-status) endpoint for more details.
 
                                 **Changes**: Typing notifications for stream messages are new in
                                 Zulip 4.0 (feature level 58).
 
-                                See the [typing endpoint docs](/api/set-typing-status) for more details.
+                                [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2533,11 +2541,10 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be "stream" or "private",
-                                    as with sending a message.
+                                    Type of message being composed. Must be `"stream"` or `"private"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly private `private`.
+                                    all typing notifications were implicitly private messages.
                                   enum:
                                     - private
                                     - stream
@@ -2545,8 +2552,7 @@ paths:
                                   additionalProperties: false
                                   type: object
                                   description: |
-                                    Object describing the "sender" (i.e. the user who was previously
-                                    typing a message).
+                                    Object describing the user who was previously typing the message.
                                   properties:
                                     user_id:
                                       type: integer
@@ -2559,12 +2565,12 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present for typing notifications for (group) private messages.
+                                    Only present if `message_type` is `"private"`.
 
-                                    Array of dictionaries describing the set of users who would be recipients
-                                    of the message that stopped being typed. Each dictionary contains
-                                    details on one one of the recipients users; the sending user is
-                                    guaranteed to appear among the recipients.
+                                    Array of dictionaries describing the set of users who would be
+                                    recipients of the message that was previously being typed. Each
+                                    dictionary contains details about one of the recipients. The
+                                    sending user is guaranteed to appear among the recipients.
                                   items:
                                     type: object
                                     additionalProperties: false
@@ -2582,7 +2588,7 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The unique ID of the stream to which message is being typed.
 
@@ -2591,7 +2597,7 @@ paths:
                                 topic:
                                   type: string
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     Topic within the stream where the message is being typed.
 
@@ -2601,6 +2607,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "stop",
+                                  "message_type": "private",
                                   "sender":
                                     {
                                       "user_id": 10,
