@@ -12,7 +12,7 @@ type MutedUser = {
     date_muted_str: string;
 };
 
-const muted_users: Map<number, number> = new Map();
+const muted_users = new Map<number, number>();
 
 export function add_muted_user(user_id: number, date_muted?: number): void {
     const time = get_time_from_date_muted(date_muted);
