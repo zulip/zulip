@@ -257,7 +257,7 @@ test("basics", () => {
     assert.ok(filter.has_operator("dm"));
     assert.ok(!filter.has_operator("    pm-with"));
 
-    operators = [{operator: "group-pm-with", operand: "joe@example.com"}];
+    operators = [{operator: "dm-including", operand: "joe@example.com"}];
     filter = new Filter(operators);
     assert.ok(!filter.is_non_huddle_pm());
     assert.ok(filter.contains_only_private_messages());
@@ -267,6 +267,12 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
+
+    // "group-pm-with" was replaced with "dm-including"
+    operators = [{operator: "group-pm-with", operand: "joe@example.com"}];
+    filter = new Filter(operators);
+    assert.ok(filter.has_operator("dm-including"));
+    assert.ok(!filter.has_operator("group-pm-with"));
 
     operators = [{operator: "is", operand: "resolved"}];
     filter = new Filter(operators);
@@ -638,6 +644,11 @@ test("canonicalization", () => {
     assert.equal(term.operator, "dm");
     assert.equal(term.operand, "me@example.com");
 
+    // "group-pm-with" was replaced with "dm-including"
+    term = Filter.canonicalize_term({operator: "group-pm-with", operand: "joe@example.com"});
+    assert.equal(term.operator, "dm-including");
+    assert.equal(term.operand, "joe@example.com");
+
     term = Filter.canonicalize_term({operator: "search", operand: "foo"});
     assert.equal(term.operator, "search");
     assert.equal(term.operand, "foo");
@@ -829,36 +840,6 @@ test("predicate_basics", () => {
         predicate({
             type: "private",
             display_recipient: [{id: joe.user_id}, {id: me.user_id}],
-        }),
-    );
-    assert.ok(
-        !predicate({
-            type: "private",
-            display_recipient: [{id: steve.user_id}, {id: me.user_id}],
-        }),
-    );
-    assert.ok(!predicate({type: "stream"}));
-
-    predicate = get_predicate([["group-pm-with", "nobody@example.com"]]);
-    assert.ok(
-        !predicate({
-            type: "private",
-            display_recipient: [{id: joe.user_id}],
-        }),
-    );
-
-    predicate = get_predicate([["group-pm-with", "Joe@example.com"]]);
-    assert.ok(
-        predicate({
-            type: "private",
-            display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
-        }),
-    );
-    assert.ok(
-        !predicate({
-            // you must be a part of the group direct message
-            type: "private",
-            display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
     );
     assert.ok(
@@ -1815,9 +1796,6 @@ run_test("is_spectator_compatible", () => {
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "dm-including", operand: "hamlet@zulip.com"}]),
     );
-    assert.ok(
-        !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
-    );
     assert.ok(Filter.is_spectator_compatible([{operator: "stream", operand: "Denmark"}]));
     assert.ok(
         Filter.is_spectator_compatible([
@@ -1837,5 +1815,9 @@ run_test("is_spectator_compatible", () => {
     // "pm-with" was renamed to "dm"
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "pm-with", operand: "hamlet@zulip.com"}]),
+    );
+    // "group-pm-with:" was replaced with "dm-including:"
+    assert.ok(
+        !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
     );
 });

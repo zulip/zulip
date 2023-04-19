@@ -103,7 +103,6 @@ function get_stream_suggestions(last, operators) {
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
-        {operator: "group-pm-with"},
     ];
     if (!check_validity(last, operators, valid, invalid)) {
         return [];
@@ -239,7 +238,7 @@ function make_people_getter(last) {
     };
 }
 
-// Possible args for autocomplete_operator: dm, pm-with, sender, from, dm-including, group-pm-with
+// Possible args for autocomplete_operator: dm, pm-with, sender, from, dm-including
 function get_person_suggestions(people_getter, last, operators, autocomplete_operator) {
     if ((last.operator === "is" && last.operand === "dm") || last.operator === "pm-with") {
         // Interpret "is:dm" or "pm-with:" operator as equivalent to "dm:".
@@ -258,7 +257,6 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     switch (autocomplete_operator) {
         case "dm-including":
-        case "group-pm-with":
             invalid = [{operator: "stream"}, {operator: "is", operand: "resolved"}];
             break;
         case "dm":
@@ -362,7 +360,6 @@ function get_topic_suggestions(last, operators) {
         {operator: "dm"},
         {operator: "is", operand: "dm"},
         {operator: "dm-including"},
-        {operator: "group-pm-with"},
         {operator: "topic"},
     ];
     if (!check_validity(last, operators, ["stream", "topic", "search"], invalid)) {
@@ -518,7 +515,6 @@ function get_streams_filter_suggestions(last, operators) {
             invalid: [
                 {operator: "is", operand: "dm"},
                 {operator: "stream"},
-                {operator: "group-pm-with"},
                 {operator: "dm-including"},
                 {operator: "dm"},
                 {operator: "in"},
@@ -569,7 +565,6 @@ function get_is_filter_suggestions(last, operators) {
                 {operator: "is", operand: "dm"},
                 {operator: "dm"},
                 {operator: "dm-including"},
-                {operator: "group-pm-with"},
             ],
         },
     ];
@@ -659,17 +654,7 @@ function get_operator_suggestions(last) {
         last_operand = last_operand.slice(1);
     }
 
-    let choices = [
-        "stream",
-        "topic",
-        "dm",
-        "dm-including",
-        "sender",
-        "near",
-        "from",
-        "group-pm-with",
-        "pm-with",
-    ];
+    let choices = ["stream", "topic", "dm", "dm-including", "sender", "near", "from", "pm-with"];
     choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
 
     return choices.map((choice) => {
@@ -746,14 +731,7 @@ export function get_search_result(base_query, query) {
         search_operators.push(last);
     }
 
-    const person_suggestion_ops = [
-        "sender",
-        "dm",
-        "dm-including",
-        "from",
-        "group-pm-with",
-        "pm-with",
-    ];
+    const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_operators is one out of person_suggestion_ops.
@@ -813,7 +791,6 @@ export function get_search_result(base_query, query) {
         get_people("dm"),
         get_people("dm-including"),
         get_people("from"),
-        get_people("group-pm-with"),
         get_group_suggestions,
         get_topic_suggestions,
         get_operator_suggestions,
