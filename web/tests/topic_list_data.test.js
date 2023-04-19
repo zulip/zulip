@@ -250,6 +250,15 @@ test("get_list_info unreads", ({override}) => {
         return topic_name === "topic 4";
     });
 
+    // muting the stream and unmuting the topic 5
+    // this should make topic 5 at top in items array
+    general.is_muted = true;
+    add_unreads("topic 5", 1);
+    override(user_topics, "is_topic_unmuted", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name === "topic 5";
+    });
+
     list_info = get_list_info();
     assert.equal(list_info.items.length, 12);
     assert.equal(list_info.more_topics_unreads, 3);
@@ -259,11 +268,11 @@ test("get_list_info unreads", ({override}) => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
+            "topic 5",
             "topic 0",
             "topic 1",
             "topic 2",
             "topic 3",
-            "topic 5",
             "topic 6",
             "topic 7",
             "topic 8",
