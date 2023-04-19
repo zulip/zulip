@@ -5,7 +5,7 @@ type GroupPermissionSetting = {
     allow_nobody_group: boolean;
 };
 
-const group_permission_config_dict: Map<string, GroupPermissionSetting> = new Map([
+const group_permission_config_dict = new Map<string, GroupPermissionSetting>([
     [
         "can_remove_subscribers_group",
         {

@@ -15,7 +15,7 @@
 type KeyValue<V> = {k: string; v: V};
 
 export class FoldDict<V> {
-    private _items: Map<string, KeyValue<V>> = new Map();
+    private _items = new Map<string, KeyValue<V>>();
 
     get size(): number {
         return this._items.size;
