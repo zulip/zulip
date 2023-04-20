@@ -128,8 +128,8 @@
 ## Notifications
 * [Stream notifications](/help/stream-notifications)
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
-* [Mute a stream](/help/mute-a-stream)
-* [Mute a topic](/help/mute-a-topic)
+* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a topic](/help/mute-a-topic)
 * [Mute a user](/help/mute-a-user)
 * [Email notifications](/help/email-notifications)
 * [Desktop notifications](/help/desktop-notifications)
