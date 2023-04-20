@@ -654,7 +654,7 @@ export function initialize() {
                 return false;
             }
 
-            const send_at_time = popover_menus.get_selected_send_later_time();
+            const send_at_time = popover_menus.get_formatted_selected_send_later_time();
             instance.setContent(
                 parse_html(
                     $t(

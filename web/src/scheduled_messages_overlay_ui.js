@@ -38,7 +38,7 @@ function format(scheduled_messages) {
             msg_render_context.is_stream = false;
             msg_render_context.recipients = people.get_recipients(msg.to.join(","));
         }
-        const time = new Date(msg.deliver_at);
+        const time = new Date(msg.scheduled_delivery_timestamp * 1000);
         msg_render_context.full_date_time = timerender.get_full_datetime(time);
         msg_render_context.formatted_send_at_time = date_fns.format(time, "MMM d yyyy h:mm a");
         formatted_msgs.push(msg_render_context);
