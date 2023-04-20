@@ -74,7 +74,6 @@ def scheduled_messages_backend(
         topic_name,
         message_content,
         scheduled_message_id,
-        "send_later",
         deliver_at,
         realm=user_profile.realm,
         forwarder_user_profile=user_profile,

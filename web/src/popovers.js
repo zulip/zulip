@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {add, formatISO, parseISO, set} from "date-fns";
+import {parseISO} from "date-fns";
 import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
 
@@ -32,7 +32,6 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
-import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_bots from "./settings_bots";
@@ -987,59 +986,9 @@ export function register_click_handlers() {
         current_user_sidebar_popover = $target.data("popover");
     });
 
-    $("body").on("click", ".remind.custom", (e) => {
-        $(e.currentTarget)[0]._flatpickr.toggle();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    function reminder_click_handler(datestr, e) {
-        const message_id = $(".remind.custom").data("message-id");
-        reminder.do_set_reminder_for_message(message_id, datestr);
-        hide_all();
-        e.stopPropagation();
-        e.preventDefault();
-    }
-
-    $("body").on("click", ".remind.in_20m", (e) => {
-        const datestr = formatISO(add(new Date(), {minutes: 20}));
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.in_1h", (e) => {
-        const datestr = formatISO(add(new Date(), {hours: 1}));
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.in_3h", (e) => {
-        const datestr = formatISO(add(new Date(), {hours: 3}));
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.tomo", (e) => {
-        const datestr = formatISO(
-            set(add(new Date(), {days: 1}), {hours: 9, minutes: 0, seconds: 0}),
-        );
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.nxtw", (e) => {
-        const datestr = formatISO(
-            set(add(new Date(), {weeks: 1}), {hours: 9, minutes: 0, seconds: 0}),
-        );
-        reminder_click_handler(datestr, e);
-    });
-
     $("body").on("click", ".flatpickr-calendar", (e) => {
         e.stopPropagation();
         e.preventDefault();
-    });
-
-    $("body").on("click", ".flatpickr-confirm", (e) => {
-        if ($(".remind.custom")[0]) {
-            const datestr = $(".remind.custom")[0].value;
-            reminder_click_handler(datestr, e);
-        }
     });
 
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {

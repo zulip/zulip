@@ -41,7 +41,6 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
 const narrow_state = mock_esm("../src/narrow_state");
-const reminder = mock_esm("../src/reminder");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
 const sent_messages = mock_esm("../src/sent_messages");
@@ -321,7 +320,6 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     };
 
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
-    override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -369,11 +367,8 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
     mock_stream_header_colorblock();
-    override_rewire(stream_bar, "decorate", noop);
 
-    override_rewire(compose_recipient, "update_on_recipient_change", noop);
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
-    override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -425,29 +420,6 @@ test_ui("finish", ({override, override_rewire}) => {
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
         assert.ok(send_message_called);
-        assert.ok(compose_finished_event_checked);
-
-        // Testing successful scheduling of message.
-        $("#compose .undo_markdown_preview").show();
-        $("#compose .preview_message_area").show();
-        $("#compose .markdown_preview").hide();
-        $("#compose-textarea").val("foobarfoobar");
-        compose_ui.compose_spinner_visible = false;
-        compose_state.set_message_type("stream");
-        compose_state.set_stream_name("social");
-        override_rewire(people, "get_by_user_id", () => []);
-        compose_finished_event_checked = false;
-        let schedule_message = false;
-        override(reminder, "schedule_message", () => {
-            schedule_message = true;
-        });
-        reminder.is_deferred_delivery = () => true;
-        assert.ok(compose.finish());
-        assert.ok($("#compose-textarea").visible());
-        assert.ok(!$("#compose .undo_markdown_preview").visible());
-        assert.ok(!$("#compose .preview_message_area").visible());
-        assert.ok($("#compose .markdown_preview").visible());
-        assert.ok(schedule_message);
         assert.ok(compose_finished_event_checked);
     })();
 });
