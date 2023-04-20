@@ -225,7 +225,7 @@ export function initialize() {
         const compose_click_target = compose_ui.get_compose_click_target(e);
         if ($active_popover_element && $active_popover_element.get()[0] === compose_click_target) {
             // Hide giphy popover if already active.
-            hide_giphy_popover();
+            popovers.hide_giphy_popovers(hide_giphy_popover());
             return;
         }
         popovers.hide_all();

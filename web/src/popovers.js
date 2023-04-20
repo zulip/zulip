@@ -19,7 +19,6 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
-import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -1121,18 +1120,25 @@ export function any_active() {
         $("[class^='column-'].expanded").length
     );
 }
+// this function is used to remove cyclic dependencies between giphy js and popover js by using a callback function instead of directly calling it from  giphy js
+export function hide_giphy_popovers(callback) {
+    return callback;
+}
 
 // This function will hide all true popovers (the streamlist and
 // userlist sidebars use the popover infrastructure, but doesn't work
 // like a popover structurally).
+
 export function hide_all_except_sidebars(opts) {
     $(".has_popover").removeClass("has_popover has_actions_popover has_emoji_popover");
     if (!opts || !opts.not_hide_tippy_instances) {
         // hideAll hides all tippy instances (tooltips and popovers).
         hideAll();
     }
+
     emoji_picker.hide_emoji_popover();
-    giphy.hide_giphy_popover();
+    // giphy.hide_giphy_popover();
+    hide_giphy_popovers();
     stream_popover.hide_stream_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
