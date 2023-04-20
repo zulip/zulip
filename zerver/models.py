@@ -4288,7 +4288,7 @@ class StreamScheduledMessageAPI(TypedDict):
     content: str
     rendered_content: str
     topic: str
-    deliver_at: int
+    scheduled_delivery_timestamp: int
 
 
 class DirectScheduledMessageAPI(TypedDict):
@@ -4297,7 +4297,7 @@ class DirectScheduledMessageAPI(TypedDict):
     type: str
     content: str
     rendered_content: str
-    deliver_at: int
+    scheduled_delivery_timestamp: int
 
 
 class ScheduledMessage(models.Model):
@@ -4348,7 +4348,7 @@ class ScheduledMessage(models.Model):
                 type=recipient_type_str,
                 content=self.content,
                 rendered_content=self.rendered_content,
-                deliver_at=int(self.scheduled_timestamp.timestamp() * 1000),
+                scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
             )
 
         # The recipient for stream messages should always just be the unique stream ID.
@@ -4361,7 +4361,7 @@ class ScheduledMessage(models.Model):
             content=self.content,
             rendered_content=self.rendered_content,
             topic=self.topic_name(),
-            deliver_at=int(self.scheduled_timestamp.timestamp() * 1000),
+            scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
         )
 
 
