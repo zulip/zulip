@@ -4281,6 +4281,16 @@ class ScheduledMessageNotificationEmail(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)
 
 
+class ScheduledMessageDict(TypedDict):
+    scheduled_message_id: int
+    to: List[int]
+    type: str
+    content: str
+    rendered_content: str
+    topic: str
+    deliver_at: int
+
+
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
@@ -4315,6 +4325,19 @@ class ScheduledMessage(models.Model):
 
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
+
+    def to_dict(self) -> ScheduledMessageDict:
+        recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
+
+        return ScheduledMessageDict(
+            scheduled_message_id=self.id,
+            to=recipient,
+            type=recipient_type_str,
+            content=self.content,
+            rendered_content=self.rendered_content,
+            topic=self.topic_name(),
+            deliver_at=int(self.scheduled_timestamp.timestamp() * 1000),
+        )
 
 
 EMAIL_TYPES = {
