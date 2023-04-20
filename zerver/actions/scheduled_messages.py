@@ -39,10 +39,12 @@ def check_schedule_message(
     if scheduled_message_id is not None:
         return edit_scheduled_message(scheduled_message_id, send_request, sender)
 
-    return do_schedule_messages([send_request])[0]
+    return do_schedule_messages([send_request], sender)[0]
 
 
-def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) -> List[int]:
+def do_schedule_messages(
+    send_message_requests: Sequence[SendMessageRequest], sender: UserProfile
+) -> List[int]:
     scheduled_messages: List[ScheduledMessage] = []
 
     for send_request in send_message_requests:
@@ -66,6 +68,14 @@ def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) ->
         scheduled_messages.append(scheduled_message)
 
     ScheduledMessage.objects.bulk_create(scheduled_messages)
+    event = {
+        "type": "scheduled_messages",
+        "op": "add",
+        "scheduled_messages": [
+            scheduled_message.to_dict() for scheduled_message in scheduled_messages
+        ],
+    }
+    send_event(sender.realm, event, [sender.id])
     return [scheduled_message.id for scheduled_message in scheduled_messages]
 
 
@@ -93,6 +103,13 @@ def edit_scheduled_message(
         assert send_request.deliver_at is not None
         scheduled_message_object.scheduled_timestamp = send_request.deliver_at
         scheduled_message_object.save()
+
+    event = {
+        "type": "scheduled_messages",
+        "op": "update",
+        "scheduled_message": scheduled_message_object.to_dict(),
+    }
+    send_event(sender.realm, event, [sender.id])
     return scheduled_message_id
 
 
@@ -102,7 +119,7 @@ def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: in
     scheduled_message_object.delete()
 
     event = {
-        "type": "scheduled_message",
+        "type": "scheduled_messages",
         "op": "remove",
         "scheduled_message_id": scheduled_message_id,
     }
