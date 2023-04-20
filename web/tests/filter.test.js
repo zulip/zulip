@@ -195,6 +195,15 @@ test("basics", () => {
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
 
+    operators = [{operator: "is", operand: "private", negated: true}];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+
     operators = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(operators);
     assert.ok(!filter.contains_only_private_messages());

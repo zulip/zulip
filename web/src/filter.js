@@ -502,6 +502,22 @@ export class Filter {
         if (_.isEqual(term_types, ["is-private"])) {
             return true;
         }
+        // -is:private excludes private messages from all messages
+        if (_.isEqual(term_types, ["not-is-private"])) {
+            return true;
+        }
+
+        // Excluding private messages from stream and topic does not
+        // accomplish anything, but we are still letting them mark
+        // mark messages as read to be consistent with our design.
+
+        if (_.isEqual(term_types, ["stream", "not-is-private"])) {
+            return true;
+        }
+
+        if (_.isEqual(term_types, ["topic", "not-is-private"])) {
+            return true;
+        }
 
         if (_.isEqual(term_types, ["is-mentioned"])) {
             return true;
@@ -543,8 +559,10 @@ export class Filter {
     is_common_narrow() {
         // can_mark_messages_read tests the following filters:
         // stream, stream + topic,
-        // is: private, pm-with:,
-        // is: mentioned, is: resolved
+        // is: private, -is: private,
+        // stream + -is:private, topic + -is:private
+        // pm-with:, is: mentioned,
+        // is: resolved
         if (this.can_mark_messages_read()) {
             return true;
         }
