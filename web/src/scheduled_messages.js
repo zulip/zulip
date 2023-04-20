@@ -3,9 +3,12 @@ import $ from "jquery";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_ui from "./compose_ui";
+import {$t} from "./i18n";
 import * as narrow from "./narrow";
+import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
@@ -66,6 +69,37 @@ export function edit_scheduled_message(scheduled_msg_id) {
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").attr("data-scheduled-message-id", scheduled_msg_id);
     popover_menus.show_schedule_confirm_button(scheduled_msg.formatted_send_at_time, true);
+}
+
+export function send_request_to_schedule_message(scheduled_message_data) {
+    const deliver_at = scheduled_message_data.deliver_at;
+    const success = function () {
+        compose.clear_compose_box();
+        notifications.notify_above_composebox(
+            $t({defaultMessage: `Your message has been scheduled for {deliver_at}.`}, {deliver_at}),
+            "scheduled_message_banner",
+            "/#scheduled",
+            "",
+            $t({defaultMessage: "View scheduled messages"}),
+        );
+    };
+
+    const error = function (xhr) {
+        const response = channel.xhr_error_message("Error sending message", xhr);
+        compose_ui.hide_compose_spinner();
+        compose_banner.show_error_message(
+            response,
+            compose_banner.CLASSNAMES.generic_compose_error,
+            $("#compose-textarea"),
+        );
+    };
+
+    channel.post({
+        url: "/json/scheduled_messages",
+        data: scheduled_message_data,
+        success,
+        error,
+    });
 }
 
 export function delete_scheduled_message(scheduled_msg_id) {
