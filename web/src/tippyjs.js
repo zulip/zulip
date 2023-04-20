@@ -623,9 +623,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".view_user_card_tooltip",
-        content: $t({
-            defaultMessage: "View user card (u)",
-        }),
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             if (!document.body.contains(instance.reference)) {
