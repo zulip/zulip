@@ -27,7 +27,11 @@
 {% endif %}
 
 <p>
-    {% trans support_email=macros.email_tag(support_email) %}Questions? Contact us any time at {{ support_email }}.{% endtrans %}
+    {% if corporate_enabled %}
+        {{macros.contact_us_zulip_cloud(support_email)}}
+    {% else %}
+        {{macros.contact_us_self_hosted(support_email)}}
+    {% endif %}
 </p>
 
 {% endblock %}
