@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, List, Optional, Set
 from unittest import mock
 
 import orjson
+from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
@@ -74,6 +75,10 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
+)
+from zerver.actions.scheduled_messages import (
+    check_schedule_message,
+    delete_scheduled_message,
 )
 from zerver.actions.streams import (
     bulk_add_subscriptions,
@@ -197,6 +202,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
+from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.models import (
@@ -3175,4 +3181,104 @@ class DraftActionTest(BaseAction):
         }
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
         action = lambda: do_delete_draft(draft_id, self.user_profile)
+        self.verify_action(action)
+
+
+class ScheduledMessagesEventsTest(BaseAction):
+    def test_stream_scheduled_message_create_event(self) -> None:
+        # Create stream scheduled message
+        action = lambda: check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message",
+            None,
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_create_event_with_existing_scheduled_messages(self) -> None:
+        # Create stream scheduled message
+        check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message 1",
+            None,
+            convert_to_UTC(dateparser("2023-04-19 17:24:56")),
+            self.user_profile.realm,
+        )
+
+        # Check that the new scheduled message gets appended correctly.
+        action = lambda: check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message 2",
+            None,
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_private_scheduled_message_create_event(self) -> None:
+        # Create private scheduled message
+        action = lambda: check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "private",
+            [self.example_user("hamlet").id],
+            None,
+            "Private message",
+            None,
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_scheduled_message_edit_event(self) -> None:
+        scheduled_message_id = check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message",
+            None,
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        action = lambda: check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Edited test topic",
+            "Edited stream message",
+            scheduled_message_id,
+            convert_to_UTC(dateparser("2023-04-20 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_scheduled_message_delete_event(self) -> None:
+        scheduled_message_id = check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message",
+            None,
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        action = lambda: delete_scheduled_message(self.user_profile, scheduled_message_id)
         self.verify_action(action)

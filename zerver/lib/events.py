@@ -40,6 +40,7 @@ from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
+from zerver.lib.scheduled_messages import get_all_scheduled_messages
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
@@ -203,6 +204,11 @@ def fetch_initial_state_data(
             )[: settings.MAX_DRAFTS_IN_REGISTER_RESPONSE]
             user_draft_dicts = [draft.to_dict() for draft in user_draft_objects]
             state["drafts"] = user_draft_dicts
+
+    if want("scheduled_messages"):
+        state["scheduled_messages"] = (
+            [] if user_profile is None else get_all_scheduled_messages(user_profile)
+        )
 
     if want("muted_topics") and (
         # Suppress muted_topics data for clients that explicitly
@@ -767,6 +773,36 @@ def apply_event(
                     break
             assert state_draft_idx is not None
             _draft_update_action(state_draft_idx)
+
+    elif event["type"] == "scheduled_messages":
+        if event["op"] == "add":
+            # Since bulk addition of scheduled messages will not be used by a normal user.
+            assert len(event["scheduled_messages"]) == 1
+
+            state["scheduled_messages"].append(event["scheduled_messages"][0])
+            # Sort in ascending order of deliver_at.
+            state["scheduled_messages"].sort(
+                key=lambda scheduled_message: scheduled_message["deliver_at"]
+            )
+
+        if event["op"] == "update":
+            for idx, scheduled_message in enumerate(state["scheduled_messages"]):
+                if (
+                    scheduled_message["scheduled_message_id"]
+                    == event["scheduled_message"]["scheduled_message_id"]
+                ):
+                    state["scheduled_messages"][idx] = event["scheduled_message"]
+                    # If deliver_at was changed, we need to sort it again.
+                    if scheduled_message["deliver_at"] != event["scheduled_message"]["deliver_at"]:
+                        state["scheduled_messages"].sort(
+                            key=lambda scheduled_message: scheduled_message["deliver_at"]
+                        )
+                    break
+
+        if event["op"] == "remove":
+            for idx, scheduled_message in enumerate(state["scheduled_messages"]):
+                if scheduled_message["scheduled_message_id"] == event["scheduled_message_id"]:
+                    del state["scheduled_messages"][idx]
 
     elif event["type"] == "hotspots":
         state["hotspots"] = event["hotspots"]
