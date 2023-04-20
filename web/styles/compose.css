@@ -773,10 +773,6 @@ a.compose_control_button.hide {
 
     #compose_select_stream_name {
         flex-grow: 1;
-
-        &.lock-padding {
-            padding-left: 3px;
-        }
     }
 
     .dropdown-list-body .list_item a {
