@@ -20,6 +20,20 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 177**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /message/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for three [search/narrow filters](/api/construct-narrow)
+  related to direct messages: `is:dm`, `dm` and `dm-including`.
+  The `dm` operator replaces and deprecates the `pm-with` operator.
+  The `is:dm` filter replaces and deprecates the `is:private` filter.
+  The `dm-including` operator replaces and deprecates the `group-pm-with`
+  operator. Because existing Zulip messages may have links with these
+  legacy filters, they are still supported for backwards-compatibility.
+
 **Feature level 176**
 
 * [`POST /realm/filters`](/api/add-linkifier), [`realm/filters/<int:filter_id>`](/api/update-linkifier):
