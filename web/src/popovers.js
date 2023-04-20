@@ -810,6 +810,9 @@ export function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const email = people.get_by_user_id(user_id).email;
         hide_all();
+        if (overlays.is_modal_open()) {
+            overlays.close_active_modal();
+        }
         if (overlays.is_active()) {
             overlays.close_active();
         }
@@ -999,6 +1002,9 @@ export function register_click_handlers() {
             private_message_recipient: email,
         });
         hide_all();
+        if (overlays.is_modal_open()) {
+            overlays.close_active_modal();
+        }
         if (overlays.is_active()) {
             overlays.close_active();
         }

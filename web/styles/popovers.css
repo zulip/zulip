@@ -432,6 +432,17 @@ ul {
         }
     }
 
+    .compose_private_message,
+    .narrow_to_private_messages {
+        padding: 3px 0;
+        width: 180px;
+
+        &:hover {
+            text-decoration: underline;
+            background: none;
+        }
+    }
+
     .user_profile_edit_button {
         width: 25px;
         text-align: center;

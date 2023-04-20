@@ -83,6 +83,27 @@
                                 <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
                                   style="background-image: url('{{user_avatar}}');">
                                 </div>
+                                <ul class="nav info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
+                                    {{#unless spectator_view}}
+                                        {{#if can_send_private_message}}
+                                            <li>
+                                                <a tabindex="0" class="compose_private_message">
+                                                    <i class="fa fa-comment" aria-hidden="true"></i> {{t "Send direct message" }}
+                                                </a>
+                                            </li>
+                                        {{/if}}
+                                        <li>
+                                            <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
+                                                <i class="fa fa-envelope" aria-hidden="true"></i>
+                                                {{#if is_me}}
+                                                {{t "View messages with yourself" }}
+                                                {{else}}
+                                                {{t "View direct messages" }}
+                                                {{/if}}
+                                            </a>
+                                        </li>
+                                    {{/unless}}
+                                </ul>
                             </div>
                         </div>
                     </div>

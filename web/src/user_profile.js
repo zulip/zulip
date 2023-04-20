@@ -18,6 +18,7 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -189,6 +190,9 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+    const spectator_view = page_params.is_spectator;
+    const is_active = people.is_active_user_for_popover(user.user_id);
+    const is_me = people.is_my_user_id(user.user_id);
     const args = {
         user_id: user.user_id,
         full_name: user.full_name,
@@ -203,6 +207,13 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         ),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
+        spectator_view,
+        can_send_private_message:
+            is_active &&
+            !is_me &&
+            page_params.realm_private_message_policy !==
+                settings_config.private_message_policy_values.disabled.code,
+        pm_with_url: hash_util.pm_with_url(user.email),
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
