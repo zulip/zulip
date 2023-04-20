@@ -158,9 +158,9 @@ function pick_empty_narrow_banner() {
         case "is":
             switch (first_operand) {
                 case "starred":
-                    // You have no starred messages.
+                    // You currently have no starred messages.
                     return {
-                        title: $t({defaultMessage: "You haven't starred anything yet!"}),
+                        title: $t({defaultMessage: "You have no starred messages."}),
                         html: $t_html(
                             {
                                 defaultMessage:

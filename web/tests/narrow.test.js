@@ -260,7 +260,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You haven't starred anything yet!",
+            "translated: You have no starred messages.",
             'translated HTML: Learn more about starring messages <a href="/help/star-a-message">here</a>.',
         ),
     );
