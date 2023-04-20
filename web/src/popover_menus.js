@@ -85,6 +85,13 @@ export function get_selected_send_later_time() {
     if (!selected_send_later_time) {
         return undefined;
     }
+    return selected_send_later_time;
+}
+
+export function get_formatted_selected_send_later_time() {
+    if (!selected_send_later_time) {
+        return undefined;
+    }
     return format(new Date(selected_send_later_time), "MMM d yyyy 'at' h:mm a");
 }
 
@@ -863,7 +870,7 @@ export function initialize() {
                 possible_send_later_today = false;
             }
 
-            const formatted_send_later_time = get_selected_send_later_time();
+            const formatted_send_later_time = get_formatted_selected_send_later_time();
 
             instance.setContent(
                 parse_html(
