@@ -6,6 +6,7 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -580,6 +581,11 @@ export function process_shift_tab_key() {
     // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
     if (emoji_picker.reactions_popped()) {
         return emoji_picker.navigate("shift_tab");
+    }
+
+    if ($("#stream_message_recipient_topic").is(":focus")) {
+        compose_recipient.open_compose_stream_dropup();
+        return true;
     }
 
     return false;
