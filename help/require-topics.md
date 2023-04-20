@@ -1,6 +1,7 @@
 # Require topics in stream messages
 
-Administrators can configure whether stream messages must have a
+If a user sends a message without a topic, the message's topic is displayed as
+**(no topic)**. Administrators can configure whether stream messages must have a
 specified topic.
 
 ## Require topics in stream messages
@@ -18,11 +19,6 @@ specified topic.
 
 {end_tabs}
 
-## Stream messages without a topic
+## Related articles
 
-If a user sends a message without a topic, the message's topic is
-displayed as **(no topic)**.
-
-Any user can [add a topic](/help/rename-a-topic) to messages without a topic.
-They can do so regardless of whether they can [edit topics in
-general](/help/restrict-moving-messages).
+* [Streams and topics](/help/streams-and-topics)
