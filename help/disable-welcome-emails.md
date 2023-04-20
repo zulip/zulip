@@ -2,13 +2,12 @@
 
 {!admin-only.md!}
 
-By default, Zulip sends two emails to new users when they join, telling them
-their Zulip account details, encouraging them to download the apps, pointing
-them at our new user guide, and teaching them about topics.
+Zulip sends a handful of emails to new users when they join, telling them their
+Zulip account details, and introducing them to the Zulip app. You can disable
+these emails if they don't make sense for your organization. If you do so, you
+will need to inform users how to log in to their Zulip accounts.
 
-You can disable these emails if they don't make sense for your organization.
-
-### Disable welcome emails
+## Disable welcome emails
 
 {start_tabs}
 
