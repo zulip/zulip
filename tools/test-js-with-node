@@ -87,7 +87,6 @@ EXEMPT_FILES = make_set(
         "web/src/emoji_picker.js",
         "web/src/emojisets.js",
         "web/src/favicon.ts",
-        "web/src/feature_flags.ts",
         "web/src/feedback_widget.js",
         "web/src/flatpickr.js",
         "web/src/gear_menu.ts",

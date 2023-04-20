@@ -9,7 +9,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import SendMessageRequest, render_markdown
 from zerver.lib.scheduled_messages import access_scheduled_message
-from zerver.models import Client, Realm, Recipient, ScheduledMessage, UserProfile
+from zerver.models import Client, Realm, ScheduledMessage, UserProfile
 from zerver.tornado.django_api import send_event
 
 
@@ -21,13 +21,11 @@ def check_schedule_message(
     topic_name: Optional[str],
     message_content: str,
     scheduled_message_id: Optional[int],
-    delivery_type: str,
     deliver_at: datetime.datetime,
     realm: Optional[Realm] = None,
     forwarder_user_profile: Optional[UserProfile] = None,
 ) -> int:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
-
     send_request = check_message(
         sender,
         client,
@@ -37,13 +35,6 @@ def check_schedule_message(
         forwarder_user_profile=forwarder_user_profile,
     )
     send_request.deliver_at = deliver_at
-    send_request.delivery_type = delivery_type
-
-    recipient = send_request.message.recipient
-    if delivery_type == "remind" and (
-        recipient.type != Recipient.STREAM and recipient.type_id != sender.id
-    ):
-        raise JsonableError(_("Reminders can only be set for streams."))
 
     if scheduled_message_id is not None:
         return edit_scheduled_message(scheduled_message_id, send_request, sender)
@@ -70,10 +61,7 @@ def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) ->
         scheduled_message.realm = send_request.realm
         assert send_request.deliver_at is not None
         scheduled_message.scheduled_timestamp = send_request.deliver_at
-        if send_request.delivery_type == "send_later":
-            scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
-        elif send_request.delivery_type == "remind":
-            scheduled_message.delivery_type = ScheduledMessage.REMIND
+        scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
 
         scheduled_messages.append(scheduled_message)
 

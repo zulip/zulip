@@ -6,7 +6,7 @@ import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 
-export function send_message(request, on_success, error, future_message) {
+export function send_message(request, on_success, error) {
     channel.post({
         url: "/json/messages",
         data: request,
@@ -14,12 +14,8 @@ export function send_message(request, on_success, error, future_message) {
             // Call back to our callers to do things like closing the compose
             // box and turning off spinners and reifying locally echoed messages.
             on_success(data);
-
-            // For /schedule or /reminder messages don't ack.
-            if (!future_message) {
-                // Once everything is done, get ready to report times to the server.
-                sent_messages.report_server_ack(request.local_id);
-            }
+            // Once everything is done, get ready to report times to the server.
+            sent_messages.report_server_ack(request.local_id);
         },
         error(xhr, error_type) {
             if (error_type !== "timeout" && reload_state.is_pending()) {
