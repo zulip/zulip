@@ -3,7 +3,6 @@
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 
-import * as feature_flags from "./feature_flags";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
@@ -120,7 +119,6 @@ export function get_actions_popover_content_context(message_id) {
         narrowed: narrow_state.active(),
         should_display_delete_option,
         should_display_read_receipts_option,
-        should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
         should_display_quote_and_reply,
     };
 }

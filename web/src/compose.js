@@ -23,7 +23,6 @@ import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -331,8 +330,6 @@ export function finish() {
 
     if (popover_menus.is_time_selected_for_schedule()) {
         schedule_message_to_custom_date();
-    } else if (reminder.is_deferred_delivery(message_content)) {
-        reminder.schedule_message();
     } else {
         send_message();
     }
