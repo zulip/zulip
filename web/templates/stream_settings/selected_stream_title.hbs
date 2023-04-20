@@ -1,5 +1,9 @@
-{{> stream_privacy_icon
-  invite_only=sub.invite_only
-  is_web_public=sub.is_web_public
-  color=title_icon_color }}
+{{#if can_preview}}
+<a href="{{preview_url}}" class="tippy-zulip-tooltip" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom">
+    {{{stream_privacy_icon}}}
+    <span class="stream-name-title">{{sub.name}}</span>
+</a>
+{{else}}
+{{{stream_privacy_icon}}}
 <span class="stream-name-title">{{sub.name}}</span>
+{{/if}}

@@ -6,6 +6,7 @@ import render_inline_decorated_stream_name from "../templates/inline_decorated_s
 import render_browse_streams_list from "../templates/stream_settings/browse_streams_list.hbs";
 import render_browse_streams_list_item from "../templates/stream_settings/browse_streams_list_item.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
+import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_settings_overlay from "../templates/stream_settings/stream_settings_overlay.hbs";
 
@@ -49,8 +50,22 @@ export function set_right_panel_title(sub) {
     if (settings_data.using_dark_theme()) {
         title_icon_color = "#dddeee";
     }
+    const can_preview = stream_data.can_preview(sub);
+    const preview_url = hash_util.by_stream_url(sub.stream_id);
+    const stream_privacy_icon = render_stream_privacy_icon({
+        invite_only: sub.invite_only,
+        is_web_public: sub.is_web_public,
+        color: title_icon_color,
+    });
+
     $("#subscription_overlay .stream-info-title").html(
-        render_selected_stream_title({sub, title_icon_color}),
+        render_selected_stream_title({
+            sub,
+            title_icon_color,
+            can_preview,
+            preview_url,
+            stream_privacy_icon,
+        }),
     );
 }
 
@@ -331,6 +346,7 @@ export function update_settings_for_subscribed(slim_sub) {
         stream_ui_updates.update_stream_row_in_settings_tab(sub);
         stream_ui_updates.update_settings_button_for_sub(sub);
         stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
+        set_right_panel_title(sub);
     } else {
         add_sub_to_table(sub);
     }

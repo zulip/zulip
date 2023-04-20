@@ -405,6 +405,15 @@ h4.user_group_setting_subsection_title {
                 content: "Preferences";
             }
 
+            & a {
+                color: inherit;
+
+                &:hover {
+                    text-decoration: none;
+                    color: inherit;
+                }
+            }
+
             .stream-info-title,
             .user-group-info-title {
                 display: none;
