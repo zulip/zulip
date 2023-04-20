@@ -5037,6 +5037,129 @@ paths:
                             },
                           ],
                       }
+    post:
+      operationId: create-or-update-scheduled-messages
+      tags: ["scheduled_messages"]
+      summary: Create or edit scheduled messages
+      description: |
+        Create a new scheduled message or edit existing scheduled message.
+        If `scheduled_message_id` is specified by the user, we update the existing
+        scheduled message with passed values of the message.
+      parameters:
+        - name: type
+          in: query
+          description: |
+            The type of scheduled message to be sent. `private` for a private message and
+            `stream` for a stream message.
+          schema:
+            type: string
+            enum:
+              - private
+              - stream
+          example: private
+          required: true
+        - name: to
+          in: query
+          description: |
+            For stream messages, integer ID of the stream. For private messages, either a
+            list containing integer user IDs or a list containing string email addresses.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: integer
+                  - type: array
+                    items:
+                      type: string
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
+              example: [9, 10]
+          required: true
+        - $ref: "#/components/parameters/RequiredContent"
+        - name: topic
+          in: query
+          description: |
+            The topic of the message. Only required for stream messages
+            (`type="stream"`), ignored otherwise.
+
+            Maximum length of 60 characters.
+          schema:
+            type: string
+          example: Castle
+          allowEmptyValue: true
+        - name: scheduled_message_id
+          in: query
+          schema:
+            type: integer
+          description: |
+            The ID of the scheduled message that will be updated. This is an importatant parameter
+            which determine if the user wants to create a new scheduled message or update an existing
+            scheduled message having `scheduled_message_id` as its ID.
+          example: 1
+        - name: deliver_at
+          in: query
+          schema:
+            type: string
+          description: The date and time at the which the message will be sent.
+          required: true
+          example: "2023-04-19 18:24:56"
+        - name: tz_guess
+          in: query
+          schema:
+            type: string
+          description: The current timezone of the user. If a timezone is not specified, user's default timezone will be used.
+          required: false
+          example: Asia/Kolkata
+          allowEmptyValue: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      scheduled_message_id:
+                        type: integer
+                        description: |
+                          The unique ID of the scheduled message. This is different from the ID of the
+                          message which will be assigned to the message which will actually be sent.
+                    example:
+                      {
+                        "msg": "",
+                        "scheduled_message_id": 42,
+                        "result": "success",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/NonExistingStreamError"
+                      - description: |
+                          A typical failed JSON response for when a stream message is sent to a stream
+                          that does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid email 'eeshan@zulip.com'",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when a private message is sent to a user
+                          that does not exist:
   /scheduled_messages/{scheduled_message_id}:
     delete:
       operationId: delete-scheduled-message
@@ -17322,28 +17445,25 @@ components:
         type:
           type: string
           description: |
-            The type of the scheduled message. Either unaddressed (empty string), "stream",
+            The type of the scheduled message. Either "stream",
             or "private" (for PMs and private group messages).
           enum:
-            - ""
             - stream
             - private
         to:
           type: array
-          description: |
-            An array of the tentative target audience IDs. For "stream"
-            messages, this should contain exactly 1 ID, the ID of the
-            target stream. For private messages, this should be an array
-            of target user IDs. This cannot be an empty array since
-            scheduled messages are always addressed.
           items:
             type: integer
+            minLength: 1
+          description: |
+            An array of the tentative target audience IDs. For "stream"
+            messages, this contains the ID of the target stream in an array. For private messages,
+            this should be an array of target user IDs. This cannot be an empty array since
+            scheduled messages are always addressed.
         topic:
           type: string
           description: |
-            For stream scheduled message, the tentative topic name. For private messages,
-            this will be ignored and should ideally
-            be the empty string. Should not contain null bytes.
+            Topic name for stream messages. It is ignored for private messages.
         content:
           type: string
           description: |
