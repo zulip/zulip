@@ -1577,4 +1577,14 @@ export class MessageListView {
             stream_color.update_stream_recipient_color($stream_header);
         }
     }
+
+    show_message_as_read(message, options) {
+        const $row = this.get_row(message.id);
+        if (options.from === "pointer" || options.from === "server") {
+            $row.find(".unread_marker").addClass("fast_fade");
+        } else {
+            $row.find(".unread_marker").addClass("slow_fade");
+        }
+        $row.removeClass("unread");
+    }
 }

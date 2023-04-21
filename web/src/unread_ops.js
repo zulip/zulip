@@ -150,7 +150,7 @@ export function mark_all_as_read(args = {}) {
 
 function process_newly_read_message(message, options) {
     for (const msg_list of message_lists.all_rendered_message_lists()) {
-        msg_list.show_message_as_read(message, options);
+        msg_list.view.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
     recent_topics_ui.update_topic_unread_count(message);
