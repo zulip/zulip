@@ -597,7 +597,7 @@ def do_update_message(
         ]
         losing_access_user_ids = [sub.user_profile_id for sub in subs_losing_access]
 
-        ums = ums.exclude(
+        unmodified_user_messages = ums.exclude(
             user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
         )
 
@@ -610,6 +610,10 @@ def do_update_message(
             gaining_usermessage_user_ids += [
                 user_id for user_id in new_stream_user_ids if user_id not in old_stream_user_ids
             ]
+    else:
+        # If we're not moving the topic to another stream, we don't
+        # modify the original set of UserMessage objects queried.
+        unmodified_user_messages = ums
 
     # We save the full topic name so that checks that require comparison
     # between the original topic and the topic name passed into this function
@@ -760,7 +764,7 @@ def do_update_message(
     # in the organization (too expansive, and also not what we do for
     # newly sent messages anyway) and having magical live-updates
     # where possible.
-    users_to_be_notified = list(map(user_info, ums))
+    users_to_be_notified = list(map(user_info, unmodified_user_messages))
     if stream_being_edited is not None and stream_being_edited.is_history_public_to_subscribers():
         subscriptions = get_active_subscriptions_for_stream_id(
             stream_id, include_deactivated_users=False
@@ -773,7 +777,7 @@ def do_update_message(
         # user both has a UserMessage row and is a current
         # Subscriber
         subscriptions = subscriptions.exclude(
-            user_profile_id__in=[um.user_profile_id for um in ums]
+            user_profile_id__in=[um.user_profile_id for um in unmodified_user_messages]
         )
 
         if new_stream is not None:
