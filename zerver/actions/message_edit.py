@@ -524,12 +524,12 @@ def do_update_message(
             ).select_related("user_profile")
         )
 
-        old_stream_sub_ids = [user.user_profile_id for user in subs_to_old_stream]
-        new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
+        old_stream_user_ids = {user.user_profile_id for user in subs_to_old_stream}
+        new_stream_user_ids = {user.user_profile_id for user in subs_to_new_stream}
 
         # Get users who aren't subscribed to the new_stream.
         subs_losing_usermessages = [
-            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_sub_ids
+            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_user_ids
         ]
         # Users who can longer access the message without some action
         # from administrators.
@@ -549,7 +549,7 @@ def do_update_message(
             # and create new UserMessage for these users so that they can
             # access this message.
             subs_gaining_usermessages += [
-                user_id for user_id in new_stream_sub_ids if user_id not in old_stream_sub_ids
+                user_id for user_id in new_stream_user_ids if user_id not in old_stream_user_ids
             ]
 
     # We save the full topic name so that checks that require comparison
