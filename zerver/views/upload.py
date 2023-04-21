@@ -129,7 +129,7 @@ def serve_local(
     local_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
     assert_is_local_storage_path("files", local_path)
     if not os.path.isfile(local_path):
-        return HttpResponseNotFound("<p>File not found</p>")
+        return HttpResponseNotFound("<p>This file does not exist or has been deleted.</p>")
 
     mimetype, encoding = guess_type(path_id)
     download = force_download or mimetype not in INLINE_MIME_TYPES
@@ -199,7 +199,7 @@ def serve_file(
     is_authorized = validate_attachment_request(maybe_user_profile, path_id, realm)
 
     if is_authorized is None:
-        return HttpResponseNotFound(_("<p>File not found.</p>"))
+        return HttpResponseNotFound("<p>This file does not exist or has been deleted.</p>")
     if not is_authorized:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if url_only:
@@ -268,7 +268,7 @@ def serve_local_avatar_unauthed(request: HttpRequest, path: str) -> HttpResponse
     local_path = os.path.join(settings.LOCAL_AVATARS_DIR, path)
     assert_is_local_storage_path("avatars", local_path)
     if not os.path.isfile(local_path):
-        return HttpResponseNotFound("<p>File not found</p>")
+        return HttpResponseNotFound("<p>This file does not exist or has been deleted.</p>")
 
     if settings.DEVELOPMENT:
         response: HttpResponseBase = FileResponse(open(local_path, "rb"))  # noqa: SIM115
