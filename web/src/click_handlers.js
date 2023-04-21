@@ -438,6 +438,11 @@ export function initialize() {
         const rendered_date = $(e.target).attr("data-tippy-content");
         const date = new Date(rendered_date);
         flatpickr.show_flatpickr(e.target, on_message_timestamp_selection, date, {
+            disable: [
+                function (date) {
+                    return date > new Date();
+                },
+            ],
             plugins: [
                 new ShortcutButtonsPlugin({
                     button: [
