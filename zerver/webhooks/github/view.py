@@ -160,7 +160,7 @@ def get_issue_body(helper: Helper) -> str:
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
     has_assignee = "assignee" in payload
-    return get_issue_event_message(
+    base_message = get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
         url=issue["html_url"].tame(check_string),
@@ -168,9 +168,17 @@ def get_issue_body(helper: Helper) -> str:
         message=None
         if action in ("assigned", "unassigned")
         else issue["body"].tame(check_none_or(check_string)),
-        assignee=payload["assignee"]["login"].tame(check_string) if has_assignee else None,
         title=issue["title"].tame(check_string) if include_title else None,
     )
+
+    if has_assignee:
+        stringified_assignee = payload["assignee"]["login"].tame(check_string)
+        if action == "assigned":
+            return f"{base_message[:-1]} to {stringified_assignee}."
+        elif action == "unassigned":
+            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from")
+
+    return base_message
 
 
 def get_issue_comment_body(helper: Helper) -> str:
