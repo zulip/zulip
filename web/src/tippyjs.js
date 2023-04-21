@@ -393,11 +393,9 @@ export function initialize() {
         appendTo: () => document.body,
         onShow(instance) {
             const $time_elem = $(instance.reference);
-            const message =
-                $time_elem.attr("data-tippy-content") +
-                " " +
-                $t({defaultMessage: "(Click to jump dates)"});
-            instance.setContent(message);
+            const $message = $("<span>").text($time_elem.attr("data-tippy-content"));
+            $message.append($("<br>"), $("<span>").text("(Jump to any date)"));
+            instance.setContent($message[0]);
         },
         onHidden(instance) {
             instance.destroy();
