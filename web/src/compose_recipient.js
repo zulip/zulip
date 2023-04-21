@@ -94,7 +94,10 @@ export function open_compose_stream_dropup() {
     if ($("#id_compose_select_stream").hasClass("open")) {
         return;
     }
-    $("#id_compose_select_stream > .dropdown-toggle").dropdown("toggle");
+    // We trigger a click rather than directly toggling the element;
+    // this is important to ensure the filter text gets cleared when
+    // reopening the widget after previous use.
+    $("#id_compose_select_stream > .dropdown-toggle").trigger("click");
 }
 
 export function on_compose_select_stream_update(new_value) {
