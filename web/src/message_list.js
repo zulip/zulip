@@ -1,6 +1,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
@@ -426,6 +427,20 @@ export class MessageList {
     }
 
     update_muting_and_rerender() {
+        // For the home message list, we need to re-initialize
+        // _all_items for stream muting/topic unmuting from
+        // all_messages_data, since otherwise unmuting a previously
+        // muted stream won't work.
+        //
+        // TODO: The zhome conditional is a bit awkward, but a check
+        // for whether the filter excludes muted streams wouldn't be
+        // correct, because other narrows can't pull from
+        // all_messages.
+        if (this.table_name === "zhome") {
+            this.data.clear();
+            this.data.add_messages(all_messages_data.all_messages());
+        }
+
         this.data.update_items_for_muting();
         // We need to rerender whether or not the narrow hides muted
         // topics, because we need to update recipient bars for topics
