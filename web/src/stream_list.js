@@ -374,7 +374,7 @@ class StreamSidebarRow {
     }
 
     update_whether_active() {
-        if (stream_data.is_active(this.sub) || this.sub.pin_to_top === true) {
+        if (stream_sort.has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
             this.$list_item.removeClass("inactive_stream");
         } else {
             this.$list_item.addClass("inactive_stream");

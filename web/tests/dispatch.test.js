@@ -63,6 +63,7 @@ const stream_data = mock_esm("../src/stream_data");
 const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
+const stream_sort = mock_esm("../src/stream_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 const submessage = mock_esm("../src/submessage");
 mock_esm("../src/top_left_corner", {
@@ -917,7 +918,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__demote_inactive_streams;
-        override(stream_data, "set_filter_out_inactives", noop);
+        override(stream_sort, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
         user_settings.demote_inactive_streams = 1;
         dispatch(event);
