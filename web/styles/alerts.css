@@ -77,6 +77,16 @@ $alert-error-red: hsl(0deg 80% 40%);
             }
         }
 
+        .stacktrace-more-info {
+            font-size: 0.85rem;
+            white-space: pre;
+            font-family: "Source Code Pro", monospace;
+            margin-left: 3.3rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: hsl(0deg 7% 98%);
+        }
+
         .stacktrace-content {
             font-family: "Source Code Pro", monospace;
             font-size: 0.85rem;

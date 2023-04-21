@@ -8,6 +8,9 @@
             <div class="exit"></div>
         {{/if}}
     </div>
+    {{#if more_info}}
+        <div class="stacktrace-more-info">{{more_info}}</div>
+    {{/if}}
     <div class="stacktrace-content">
         {{#each stackframes}}
             <div data-full-path="{{ full_path }}" data-line-no="{{ line_number }}">
