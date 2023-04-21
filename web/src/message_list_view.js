@@ -1250,8 +1250,9 @@ export class MessageListView {
         this._post_process($rendered_msg);
         $row.replaceWith($rendered_msg);
 
-        if (was_selected) {
-            this.list.select_id(message_container.msg.id);
+        // If this list not currently displayed, we don't need to select the message.
+        if (was_selected && this.list === message_lists.current) {
+            this.list.reselect_selected_id(message_container.msg.id);
         }
     }
 
