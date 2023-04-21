@@ -9,7 +9,7 @@ from zerver.models import ScheduledMessage, UserProfile, get_recipient_ids
 
 
 class ScheduledMessageDict(TypedDict):
-    message_id: int
+    scheduled_message_id: int
     to: List[int]
     type: str
     content: str
@@ -31,7 +31,7 @@ def fetch_scheduled_messages(request: HttpRequest, user_profile: UserProfile) ->
         )
 
         msg_to_dict: ScheduledMessageDict = {
-            "message_id": scheduled_message.id,
+            "scheduled_message_id": scheduled_message.id,
             "to": recipient,
             "type": recipient_type_str,
             "content": scheduled_message.content,
