@@ -394,16 +394,6 @@ export class MessageList {
         $recipient_row.find(".always_visible_topic_edit").show();
     }
 
-    show_message_as_read(message, options) {
-        const $row = this.get_row(message.id);
-        if (options.from === "pointer" || options.from === "server") {
-            $row.find(".unread_marker").addClass("fast_fade");
-        } else {
-            $row.find(".unread_marker").addClass("slow_fade");
-        }
-        $row.removeClass("unread");
-    }
-
     reselect_selected_id() {
         const selected_id = this.data.selected_id();
 

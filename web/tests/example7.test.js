@@ -55,8 +55,8 @@ const message_viewport = mock_esm("../src/message_viewport");
 const notifications = mock_esm("../src/notifications");
 const unread_ui = mock_esm("../src/unread_ui");
 
-message_lists.current = {};
-message_lists.home = {};
+message_lists.current = {view: {}};
+message_lists.home = {view: {}};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 const message_store = zrequire("message_store");
@@ -107,8 +107,8 @@ run_test("unread_ops", ({override}) => {
     override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
-    override(message_lists.current, "show_message_as_read", () => {});
-    override(message_lists.home, "show_message_as_read", () => {});
+    override(message_lists.current.view, "show_message_as_read", () => {});
+    override(message_lists.home.view, "show_message_as_read", () => {});
     override(notifications, "close_notification", () => {});
     override(unread_ui, "update_unread_counts", () => {});
     override(unread_ui, "notify_messages_remain_unread", () => {});
