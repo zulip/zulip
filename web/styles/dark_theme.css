@@ -1218,6 +1218,10 @@
                 color: hsl(314deg 19% 63%);
             }
 
+            .stacktrace-more-info {
+                background-color: hsl(312deg 7% 14%);
+            }
+
             .code-context {
                 color: hsl(314deg 27% 82%);
                 background-color: hsl(312deg 7% 14%);

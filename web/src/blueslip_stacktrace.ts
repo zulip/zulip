@@ -128,8 +128,13 @@ export async function display_stacktrace(ex: Error): Promise<void> {
                 };
             }),
         );
+        let more_info: string | undefined;
+        if (ex instanceof BlueslipError) {
+            more_info = JSON.stringify(ex.more_info, null, 4);
+        }
         errors.push({
             message: exception_msg(ex),
+            more_info,
             stackframes,
         });
 
