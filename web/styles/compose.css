@@ -66,6 +66,11 @@
 .message_comp {
     display: none;
     padding: 5px 10px 0 5px;
+
+    #compose_banners {
+        max-height: min(25vh, 240px);
+        overflow-y: auto;
+    }
 }
 
 .autocomplete_secondary {
