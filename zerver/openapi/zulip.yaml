@@ -5572,7 +5572,9 @@ paths:
             The topic of the message. Only required for stream messages
             (`type="stream"`), ignored otherwise.
 
-            Maximum length of 60 characters.
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length
 
             **Changes**: New in Zulip 2.0.0. Previous Zulip releases encoded
             this as `subject`, which is currently a deprecated alias.
@@ -6655,7 +6657,10 @@ paths:
           in: query
           description: |
             The topic to move the message(s) to, to request changing the topic.
-            Maximum length of 60 characters.
+
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length
 
             Should only be sent when changing the topic, and will throw an error
             if the target message is not a stream message.
@@ -8029,11 +8034,19 @@ paths:
                       type: string
                       description: |
                         The name of the stream.
+
+                        Clients should use the `max_stream_name_length` returned by the
+                        [`POST /register`](/api/register-queue) endpoint to determine
+                        the maximum stream name length.
                     description:
                       type: string
                       description: |
                         The [description](/help/change-the-stream-description)
                         to use for a new stream being created, in text/markdown format.
+
+                        Clients should use the `max_stream_description_length` returned
+                        by the [`POST /register`](/api/register-queue) endpoint to
+                        determine the maximum stream description length.
                   required:
                     - name
                   example:
@@ -10503,36 +10516,36 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a stream name. Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
+                          The maximum allowed length for a stream name, in Unicode code
+                          points. Clients should use this property rather than hardcoding
+                          field sizes.
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
                           this required `stream` in `fetch_event_types`, was called
-                          `stream_name_max_length`, and always had value 60.
+                          `stream_name_max_length`, and always had a value of 60.
                       max_stream_description_length:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a stream description. Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
+                          The maximum allowed length for a stream description, in Unicode
+                          code points. Clients should use this property rather than hardcoding
+                          field sizes.
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
                           this required `stream` in `fetch_event_types`, was called
-                          `stream_description_max_length`, and always had value 1024.
+                          `stream_description_max_length`, and always had a value of 1024.
                       max_topic_length:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a topic. Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
+                          The maximum allowed length for a topic, in Unicode code points.
+                          Clients should use this property rather than hardcoding field
+                          sizes.
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
-                          this always had value 60.
+                          this property always had a value of 60.
                       max_message_length:
                         type: integer
                         description: |
@@ -14986,8 +14999,12 @@ paths:
         - name: description
           in: query
           description: |
-            The new description for the stream. Limited Zulip markdown is allowed in this
-            field.
+            The new [description](/help/change-the-stream-description) for
+            the stream, in text/markdown format.
+
+            Clients should use the `max_stream_description_length` returned
+            by the [`POST /register`](/api/register-queue) endpoint to
+            determine the maximum stream description length.
 
             **Changes**: Removed unnecessary JSON-encoding of this parameter in
             Zulip 4.0 (feature level 64).
@@ -15000,6 +15017,10 @@ paths:
           in: query
           description: |
             The new name for the stream.
+
+            Clients should use the `max_stream_name_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum stream name length.
 
             **Changes**: Removed unnecessary JSON-encoding of this parameter in
             Zulip 4.0 (feature level 64).
