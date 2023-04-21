@@ -63,6 +63,7 @@ import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_sort from "./stream_sort";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
@@ -668,7 +669,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();
-                stream_data.set_filter_out_inactives();
+                stream_sort.set_filter_out_inactives();
             }
             if (event.property === "user_list_style") {
                 settings_display.report_user_list_style_change(

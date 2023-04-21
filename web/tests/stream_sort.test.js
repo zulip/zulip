@@ -2,11 +2,27 @@
 
 const {strict: assert} = require("assert");
 
+const _ = require("lodash");
+
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const {user_settings} = require("./lib/zpage_params");
 
+const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
 const stream_sort = zrequire("stream_sort");
+const settings_config = zrequire("settings_config");
+
+function contains_sub(subs, sub) {
+    return subs.some((s) => s.name === sub.name);
+}
+
+const me = {
+    email: "me@zulip.com",
+    full_name: "Current User",
+    user_id: 100,
+};
 
 const scalene = {
     subscribed: true,
@@ -94,7 +110,7 @@ test("basics", ({override_rewire}) => {
     stream_data.add_sub(muted_active);
     stream_data.add_sub(muted_pinned);
 
-    override_rewire(stream_data, "is_active", (sub) => sub.name !== "pneumonia");
+    override_rewire(stream_sort, "has_recent_activity", (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");
@@ -174,4 +190,132 @@ test("basics", ({override_rewire}) => {
     assert.deepEqual(sorted.pinned_streams, []);
     assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
+});
+
+test("has_recent_activity", () => {
+    people.init();
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+
+    let sub;
+
+    user_settings.demote_inactive_streams =
+        settings_config.demote_inactive_streams_values.automatic.code;
+
+    stream_sort.set_filter_out_inactives();
+
+    sub = {name: "pets", subscribed: false, stream_id: 111};
+    stream_data.add_sub(sub);
+
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    stream_data.subscribe_myself(sub);
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    assert.ok(contains_sub(stream_data.subscribed_subs(), sub));
+    assert.ok(!contains_sub(stream_data.unsubscribed_subs(), sub));
+
+    stream_data.unsubscribe_myself(sub);
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    sub.pin_to_top = true;
+    assert.ok(stream_sort.has_recent_activity(sub));
+    sub.pin_to_top = false;
+
+    const opts = {
+        stream_id: 222,
+        message_id: 108,
+        topic_name: "topic2",
+    };
+    stream_topic_history.add_message(opts);
+
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    user_settings.demote_inactive_streams =
+        settings_config.demote_inactive_streams_values.always.code;
+
+    stream_sort.set_filter_out_inactives();
+
+    sub = {name: "pets", subscribed: false, stream_id: 111};
+    stream_data.add_sub(sub);
+
+    assert.ok(!stream_sort.has_recent_activity(sub));
+
+    sub.pin_to_top = true;
+    assert.ok(stream_sort.has_recent_activity(sub));
+    sub.pin_to_top = false;
+
+    stream_data.subscribe_myself(sub);
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    stream_data.unsubscribe_myself(sub);
+    assert.ok(!stream_sort.has_recent_activity(sub));
+
+    sub = {name: "lunch", subscribed: false, stream_id: 222};
+    stream_data.add_sub(sub);
+
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    stream_topic_history.add_message(opts);
+
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    user_settings.demote_inactive_streams =
+        settings_config.demote_inactive_streams_values.never.code;
+
+    stream_sort.set_filter_out_inactives();
+
+    sub = {name: "pets", subscribed: false, stream_id: 111};
+    stream_data.add_sub(sub);
+
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    stream_data.subscribe_myself(sub);
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    stream_data.unsubscribe_myself(sub);
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    sub.pin_to_top = true;
+    assert.ok(stream_sort.has_recent_activity(sub));
+
+    stream_topic_history.add_message(opts);
+
+    assert.ok(stream_sort.has_recent_activity(sub));
+});
+
+test("has_recent_activity_but_muted", () => {
+    const sub = {name: "cats", subscribed: true, stream_id: 111, is_muted: true};
+    stream_data.add_sub(sub);
+    assert.ok(stream_sort.has_recent_activity_but_muted(sub));
+});
+
+test("filter inactives", () => {
+    user_settings.demote_inactive_streams =
+        settings_config.demote_inactive_streams_values.automatic.code;
+
+    assert.ok(!stream_sort.is_filtering_inactives());
+
+    _.times(30, (i) => {
+        const name = "random" + i.toString();
+        const stream_id = 100 + i;
+
+        const sub = {
+            name,
+            subscribed: true,
+            newly_subscribed: false,
+            stream_id,
+        };
+        stream_data.add_sub(sub);
+    });
+    stream_sort.set_filter_out_inactives();
+
+    assert.ok(stream_sort.is_filtering_inactives());
+});
+
+test("initialize", () => {
+    user_settings.demote_inactive_streams = 1;
+    stream_sort.initialize();
+
+    assert.ok(!stream_sort.is_filtering_inactives());
 });

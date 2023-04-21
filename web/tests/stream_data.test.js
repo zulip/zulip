@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const _ = require("lodash");
-
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
@@ -14,13 +12,11 @@ const {page_params, user_settings} = require("./lib/zpage_params");
 page_params.development_environment = true;
 
 const color_data = zrequire("color_data");
-const stream_topic_history = zrequire("stream_topic_history");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
-const settings_config = zrequire("settings_config");
 const user_groups = zrequire("user_groups");
 
 const me = {
@@ -36,10 +32,6 @@ const test_user = {
 };
 
 // set up user data
-function contains_sub(subs, sub) {
-    return subs.some((s) => s.name === sub.name);
-}
-
 const admins_group = {
     name: "Admins",
     id: 1,
@@ -249,97 +241,6 @@ test("renames", () => {
 
     const actual_id = stream_data.get_stream_id("Denmark");
     assert.equal(actual_id, 42);
-});
-
-test("is_active", () => {
-    let sub;
-
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.automatic.code;
-    stream_data.set_filter_out_inactives();
-
-    sub = {name: "pets", subscribed: false, stream_id: 111};
-    stream_data.add_sub(sub);
-
-    assert.ok(stream_data.is_active(sub));
-
-    stream_data.subscribe_myself(sub);
-    assert.ok(stream_data.is_active(sub));
-
-    assert.ok(contains_sub(stream_data.subscribed_subs(), sub));
-    assert.ok(!contains_sub(stream_data.unsubscribed_subs(), sub));
-
-    stream_data.unsubscribe_myself(sub);
-    assert.ok(stream_data.is_active(sub));
-
-    sub.pin_to_top = true;
-    assert.ok(stream_data.is_active(sub));
-    sub.pin_to_top = false;
-
-    const opts = {
-        stream_id: 222,
-        message_id: 108,
-        topic_name: "topic2",
-    };
-    stream_topic_history.add_message(opts);
-
-    assert.ok(stream_data.is_active(sub));
-
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.always.code;
-    stream_data.set_filter_out_inactives();
-
-    sub = {name: "pets", subscribed: false, stream_id: 111};
-    stream_data.add_sub(sub);
-
-    assert.ok(!stream_data.is_active(sub));
-
-    sub.pin_to_top = true;
-    assert.ok(stream_data.is_active(sub));
-    sub.pin_to_top = false;
-
-    stream_data.subscribe_myself(sub);
-    assert.ok(stream_data.is_active(sub));
-
-    stream_data.unsubscribe_myself(sub);
-    assert.ok(!stream_data.is_active(sub));
-
-    sub = {name: "lunch", subscribed: false, stream_id: 222};
-    stream_data.add_sub(sub);
-
-    assert.ok(stream_data.is_active(sub));
-
-    stream_topic_history.add_message(opts);
-
-    assert.ok(stream_data.is_active(sub));
-
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.never.code;
-    stream_data.set_filter_out_inactives();
-
-    sub = {name: "pets", subscribed: false, stream_id: 111};
-    stream_data.add_sub(sub);
-
-    assert.ok(stream_data.is_active(sub));
-
-    stream_data.subscribe_myself(sub);
-    assert.ok(stream_data.is_active(sub));
-
-    stream_data.unsubscribe_myself(sub);
-    assert.ok(stream_data.is_active(sub));
-
-    sub.pin_to_top = true;
-    assert.ok(stream_data.is_active(sub));
-
-    stream_topic_history.add_message(opts);
-
-    assert.ok(stream_data.is_active(sub));
-});
-
-test("is_muted_active", () => {
-    const sub = {name: "cats", subscribed: true, stream_id: 111, is_muted: true};
-    stream_data.add_sub(sub);
-    assert.ok(stream_data.is_muted_active(sub));
 });
 
 test("admin_options", () => {
@@ -870,11 +771,9 @@ test("initialize", () => {
         stream_data.initialize(get_params());
     }
 
-    user_settings.demote_inactive_streams = 1;
     page_params.realm_notifications_stream_id = -1;
 
     initialize();
-    assert.ok(!stream_data.is_filtering_inactives());
 
     const stream_names = new Set(stream_data.get_streams_for_admin().map((elem) => elem.name));
     assert.ok(stream_names.has("subscriptions"));
@@ -897,35 +796,6 @@ test("initialize", () => {
     stream_data.add_sub(foo);
     initialize();
     assert.equal(stream_data.get_notifications_stream(), "foo");
-});
-
-test("filter inactives", () => {
-    user_settings.demote_inactive_streams =
-        settings_config.demote_inactive_streams_values.automatic.code;
-
-    const params = {};
-    params.unsubscribed = [];
-    params.never_subscribed = [];
-    params.subscriptions = [];
-    params.realm_default_streams = [];
-
-    stream_data.initialize(params);
-    assert.ok(!stream_data.is_filtering_inactives());
-
-    _.times(30, (i) => {
-        const name = "random" + i.toString();
-        const stream_id = 100 + i;
-
-        const sub = {
-            name,
-            subscribed: true,
-            newly_subscribed: false,
-            stream_id,
-        };
-        stream_data.add_sub(sub);
-    });
-    stream_data.initialize(params);
-    assert.ok(stream_data.is_filtering_inactives());
 });
 
 test("edge_cases", () => {
