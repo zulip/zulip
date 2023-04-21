@@ -448,6 +448,9 @@ export function initialize() {
                     button: [
                         {
                             label: $t({defaultMessage: "Scroll to top"}),
+                            attributes: {
+                                class: "animated-purple-button",
+                            },
                         },
                     ],
                     label: "or",
