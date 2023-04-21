@@ -5027,7 +5027,7 @@ paths:
                         "scheduled_messages":
                           [
                             {
-                              "message_id": 27,
+                              "scheduled_message_id": 27,
                               "to": [14],
                               "type": "stream",
                               "content": "Hi",
@@ -17313,11 +17313,12 @@ components:
       description: |
         A dictionary for representing a scheduled message.
       properties:
-        message_id:
+        scheduled_message_id:
           type: integer
           description: |
             The unique ID of the scheduled message. It can be used to modify and
-            delete the scheduled message.
+            delete the scheduled message. This ID is different than the ID of the
+            message that will actually be sent.
         type:
           type: string
           description: |
@@ -17359,7 +17360,7 @@ components:
           example: 1595479019
       additionalProperties: false
       required:
-        - message_id
+        - scheduled_message_id
         - type
         - to
         - topic

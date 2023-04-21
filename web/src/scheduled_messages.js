@@ -19,7 +19,7 @@ export function override_scheduled_messages_data(data) {
 
 export function edit_scheduled_message(scheduled_msg_id) {
     const scheduled_msg = scheduled_messages_data.find(
-        (msg) => msg.message_id === scheduled_msg_id,
+        (msg) => msg.scheduled_message_id === scheduled_msg_id,
     );
 
     let compose_args;
