@@ -614,6 +614,7 @@ def do_update_message(
         # If we're not moving the topic to another stream, we don't
         # modify the original set of UserMessage objects queried.
         unmodified_user_messages = ums
+        gaining_usermessage_user_ids = []
 
     # We save the full topic name so that checks that require comparison
     # between the original topic and the topic name passed into this function
