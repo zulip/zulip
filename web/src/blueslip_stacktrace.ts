@@ -110,31 +110,37 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
 }
 
 export async function display_stacktrace(ex: Error): Promise<void> {
-    const stackframes: CleanStackFrame[] = await Promise.all(
-        ErrorStackParser.parse(ex).map(async (location: StackFrame) => {
-            try {
-                location = await stack_trace_gps.getMappedLocation(location);
-            } catch {
-                // Use unmapped location
-            }
-            return {
-                full_path: location.getFileName(),
-                show_path: clean_path(location.getFileName()),
-                line_number: location.getLineNumber(),
-                function_name: clean_function_name(location.getFunctionName()),
-                context: await get_context(location),
-            };
-        }),
-    );
-
-    const $alert = $("<div>")
-        .addClass("stacktrace")
-        .html(
-            render_blueslip_stacktrace({
-                error: exception_msg(ex),
-                stackframes,
+    const errors = [];
+    while (true) {
+        const stackframes: CleanStackFrame[] = await Promise.all(
+            ErrorStackParser.parse(ex).map(async (location: StackFrame) => {
+                try {
+                    location = await stack_trace_gps.getMappedLocation(location);
+                } catch {
+                    // Use unmapped location
+                }
+                return {
+                    full_path: location.getFileName(),
+                    show_path: clean_path(location.getFileName()),
+                    line_number: location.getLineNumber(),
+                    function_name: clean_function_name(location.getFunctionName()),
+                    context: await get_context(location),
+                };
             }),
         );
+        errors.push({
+            message: exception_msg(ex),
+            stackframes,
+        });
+
+        if (ex.cause !== undefined && ex.cause instanceof Error) {
+            ex = ex.cause;
+        } else {
+            break;
+        }
+    }
+
+    const $alert = $("<div>").addClass("stacktrace").html(render_blueslip_stacktrace({errors}));
     $(".alert-box").append($alert);
     $alert.addClass("show");
 }

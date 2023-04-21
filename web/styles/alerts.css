@@ -56,6 +56,7 @@ $alert-error-red: hsl(0deg 80% 40%);
         .stacktrace-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
 
             .message {
                 flex: 1 1 auto;
@@ -72,6 +73,7 @@ $alert-error-red: hsl(0deg 80% 40%);
                 cursor: pointer;
                 font-size: 2.3rem;
                 content: "\d7";
+                line-height: 0.5;
             }
         }
 
@@ -79,7 +81,7 @@ $alert-error-red: hsl(0deg 80% 40%);
             font-family: "Source Code Pro", monospace;
             font-size: 0.85rem;
 
-            margin-top: 1rem;
+            margin-bottom: 0.5rem;
 
             .stackframe {
                 padding-left: calc(3.3rem - 14px);
