@@ -919,13 +919,13 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         "1:topic-7,1:topic-3,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
     );
 
-    // update_topic_is_muted now relies on external libraries completely
+    // update_topic_visibility_policy now relies on external libraries completely
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, false]]);
     $(".home-page-input").trigger("focus");
-    assert.equal(rt.update_topic_is_muted(stream1, topic1), true);
+    assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
     // a topic gets muted which we are not tracking
-    assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
+    assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);
 });
 
 test("test_reify_local_echo_message", ({mock_template}) => {

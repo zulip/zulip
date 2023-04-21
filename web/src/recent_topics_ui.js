@@ -618,7 +618,7 @@ export function inplace_rerender(topic_key) {
     return true;
 }
 
-export function update_topic_is_muted(stream_id, topic) {
+export function update_topic_visibility_policy(stream_id, topic) {
     const key = get_topic_key(stream_id, topic);
     if (!topics.has(key)) {
         // we receive mute request for a topic we are
