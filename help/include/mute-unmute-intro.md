@@ -1,5 +1,5 @@
-To avoid receiving notifications messages you are not interested in, Zulip lets
-you mute topics and streams. Muting a stream effectively mutes all topics in
+Zulip lets you mute topics and streams to avoid receiving notifications messages
+you are not interested in. Muting a stream effectively mutes all topics in
 that stream. You can also manually **mute** a topic in an unmuted stream, or
 **unmute** a topic in a muted stream.
 
