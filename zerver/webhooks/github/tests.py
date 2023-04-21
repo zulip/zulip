@@ -154,14 +154,14 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issues__assigned", expected_topic, expected_message)
 
     def test_issue_unassigned(self) -> None:
-        expected_message = "sbansal1999 unassigned [issue #9](https://github.com/sbansal1999/testing-gh/issues/9) (assigned to tester987654)."
+        expected_message = "sbansal1999 unassigned [issue #9](https://github.com/sbansal1999/testing-gh/issues/9) (assigned to sbansal1999)."
         expected_topic = "testing-gh / issue #9 idk man"
         self.check_webhook("issues__unassigned", expected_topic, expected_message)
 
     def test_issue_unassigned_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "sbansal1999 unassigned [issue #9 idk man](https://github.com/sbansal1999/testing-gh/issues/9) (assigned to tester987654)."
+        expected_message = "sbansal1999 unassigned [issue #9 idk man](https://github.com/sbansal1999/testing-gh/issues/9) (assigned to sbansal1999)."
         self.check_webhook("issues__unassigned", expected_topic, expected_message)
 
     def test_membership_msg(self) -> None:

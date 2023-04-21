@@ -159,7 +159,7 @@ def get_issue_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
-    assignee = issue["assignee"]
+    has_assignee = "assignee" in payload
     return get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
@@ -168,7 +168,7 @@ def get_issue_body(helper: Helper) -> str:
         message=None
         if action in ("assigned", "unassigned")
         else issue["body"].tame(check_none_or(check_string)),
-        assignee=assignee["login"].tame(check_string) if assignee else None,
+        assignee=payload["assignee"]["login"].tame(check_string) if has_assignee else None,
         title=issue["title"].tame(check_string) if include_title else None,
     )
 
