@@ -10,7 +10,6 @@ import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
-import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
@@ -331,22 +330,11 @@ export function process_unread_messages_event({message_ids, message_details}) {
         });
     }
 
-    /*
-        A batch of messages marked as unread can be 1000+ messages, so
-        we do want to do a bulk operation for these UI updates.
+    // Update UI for the messages marked as unread.
+    for (const list of message_lists.all_rendered_message_lists()) {
+        list.view.show_messages_as_unread(message_ids);
+    }
 
-        We use a big-hammer approach now to updating the message view.
-        This is relatively harmless, since the only time we are called is
-        when the user herself marks her message as unread.  But we
-        do eventually want to be more surgical here, especially once we
-        have a final scheme for how best to structure the HTML within
-        the message to indicate read-vs.-unread.  Currently we use a
-        green border, but that may change.
-
-        The main downside of doing a full rerender is that it can be
-        user-visible in the form of users' avatars flickering.
-    */
-    message_live_update.rerender_messages_view_by_message_ids(message_ids);
     recent_topics_ui.complete_rerender();
 
     if (
