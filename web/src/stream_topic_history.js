@@ -1,3 +1,5 @@
+import * as resolved_topics from "../shared/src/resolved_topic";
+
 import {all_messages_data} from "./all_messages_data";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
@@ -72,6 +74,16 @@ export function stream_has_topics(stream_id) {
     return history.has_topics();
 }
 
+export function stream_has_resolved_topics(stream_id) {
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(stream_id);
+
+    return history.has_resolved_topics();
+}
+
 export class PerStreamHistory {
     /*
         For a given stream, this structure has a dictionary of topics.
@@ -108,6 +120,10 @@ export class PerStreamHistory {
 
     constructor(stream_id) {
         this.stream_id = stream_id;
+    }
+
+    has_resolved_topics() {
+        return [...this.topics._items.keys()].some((topic) => resolved_topics.is_resolved(topic));
     }
 
     has_topics() {

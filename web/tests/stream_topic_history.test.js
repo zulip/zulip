@@ -297,6 +297,26 @@ test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
 });
 
+test("test_stream_has_resolved_topics", () => {
+    const stream_id = 89;
+
+    assert.equal(stream_topic_history.stream_has_resolved_topics(stream_id), false);
+
+    stream_topic_history.find_or_create(stream_id);
+
+    // This was a bug before--just creating a bucket does not
+    // mean we have actual topics.
+    assert.equal(stream_topic_history.stream_has_resolved_topics(stream_id), false);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 889,
+        topic_name: "✔ whatever",
+    });
+
+    assert.equal(stream_topic_history.stream_has_resolved_topics(stream_id), true);
+});
+
 test("server_history_end_to_end", () => {
     stream_topic_history.reset();
 
