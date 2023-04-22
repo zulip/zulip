@@ -355,6 +355,7 @@ function generate_topic_data(topic_info_array) {
             stream: "stream" + stream_id,
             stream_color: "",
             stream_id,
+            stream_muted: undefined,
             stream_url: "https://www.example.com",
             topic,
             conversation_key: get_topic_key(stream_id, topic),
@@ -362,6 +363,7 @@ function generate_topic_data(topic_info_array) {
             unread_count,
             mention_in_unread: false,
             topic_muted: muted,
+            topic_unmuted: false,
         });
     }
     return data;
