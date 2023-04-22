@@ -227,9 +227,9 @@ test("muting", () => {
 
     unread.process_loaded_messages([message]);
     let counts = unread.get_counts();
-    assert.equal(counts.stream_count.get(stream_id), 1);
+    assert.equal(counts.stream_count.get(stream_id).unmuted_count, 1);
     assert.equal(counts.home_unread_messages, 1);
-    assert.equal(unread.num_unread_for_stream(stream_id), 1);
+    assert.equal(unread.num_unread_for_stream(stream_id).unmuted_count, 1);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), [message.id]);
     test_notifiable_count(counts.home_unread_messages, 0);
 
@@ -239,9 +239,9 @@ test("muting", () => {
         user_topics.all_visibility_policies.MUTED,
     );
     counts = unread.get_counts();
-    assert.equal(counts.stream_count.get(stream_id), 0);
+    assert.equal(counts.stream_count.get(stream_id).unmuted_count, 0);
     assert.equal(counts.home_unread_messages, 0);
-    assert.equal(unread.num_unread_for_stream(stream_id), 0);
+    assert.equal(unread.num_unread_for_stream(stream_id).unmuted_count, 0);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), []);
     test_notifiable_count(counts.home_unread_messages, 0);
 
@@ -345,7 +345,7 @@ test("home_messages", () => {
 
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 1);
-    assert.equal(counts.stream_count.get(stream_id), 1);
+    assert.equal(counts.stream_count.get(stream_id).unmuted_count, 1);
     test_notifiable_count(counts.home_unread_messages, 0);
     unread.mark_as_read(message.id);
     counts = unread.get_counts();

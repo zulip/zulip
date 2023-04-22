@@ -274,17 +274,29 @@ class UnreadTopicCounter {
                 continue;
             }
 
-            let stream_count = 0;
+            let unmuted_count = 0;
+            let muted_count = 0;
             for (const [topic, msgs] of per_stream_bucketer) {
                 const topic_count = msgs.size;
-                if (!user_topics.is_topic_muted(stream_id, topic)) {
-                    stream_count += topic_count;
+
+                if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                    unmuted_count += topic_count;
+                } else if (user_topics.is_topic_muted(stream_id, topic)) {
+                    muted_count += topic_count;
+                } else if (sub.is_muted) {
+                    muted_count += topic_count;
+                } else {
+                    unmuted_count += topic_count;
                 }
             }
-            res.stream_count.set(stream_id, stream_count);
-            if (!stream_data.is_muted(stream_id)) {
-                res.stream_unread_messages += stream_count;
-            }
+
+            res.stream_count.set(stream_id, {
+                unmuted_count,
+                muted_count,
+                stream_is_muted: sub.is_muted,
+            });
+
+            res.stream_unread_messages += unmuted_count;
         }
 
         return res;
@@ -332,8 +344,6 @@ class UnreadTopicCounter {
     }
 
     get_stream_count(stream_id) {
-        let stream_count = 0;
-
         const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
@@ -341,12 +351,26 @@ class UnreadTopicCounter {
         }
 
         const sub = sub_store.get(stream_id);
+        let unmuted_count = 0;
+        let muted_count = 0;
         for (const [topic, msgs] of per_stream_bucketer) {
-            if (sub && !user_topics.is_topic_muted(stream_id, topic)) {
-                stream_count += msgs.size;
+            const topic_count = msgs.size;
+
+            if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                unmuted_count += topic_count;
+            } else if (user_topics.is_topic_muted(stream_id, topic)) {
+                muted_count += topic_count;
+            } else if (sub.is_muted) {
+                muted_count += topic_count;
+            } else {
+                unmuted_count += topic_count;
             }
         }
-
+        const stream_count = {
+            unmuted_count,
+            muted_count,
+            stream_is_muted: sub.is_muted,
+        };
         return stream_count;
     }
 

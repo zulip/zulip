@@ -346,6 +346,12 @@ ul.filters {
             opacity: 0.5;
         }
 
+        .has-unmuted-unreads {
+            .unread_count {
+                opacity: 1;
+            }
+        }
+
         & li.unmuted_topic {
             color: hsl(0deg 0% 20%);
 
@@ -365,6 +371,12 @@ ul.filters {
 
             .unread_count {
                 opacity: 0.75;
+            }
+
+            .has-unmuted-unreads {
+                .unread_count {
+                    opacity: 1;
+                }
             }
         }
 

@@ -33,7 +33,11 @@ export let stream_cursor;
 
 let has_scrolled = false;
 
-export function update_count_in_dom($stream_li, count, stream_has_any_unread_mention_messages) {
+export function update_count_in_dom(
+    $stream_li,
+    stream_counts,
+    stream_has_any_unread_mention_messages,
+) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
@@ -45,10 +49,38 @@ export function update_count_in_dom($stream_li, count, stream_has_any_unread_men
         stream_has_any_unread_mention_messages,
     );
 
-    if (count === 0) {
+    // Here we set the count and compute the values of two classes:
+    // .stream-with-count is used for the layout CSS to know whether
+    // to leave space for the unread count, and has-unmuted-unreads is
+    // used in muted streams to set the fading correctly to indicate
+    // those are unread
+    if (stream_counts.unmuted_count > 0 && !stream_counts.stream_is_muted) {
+        // Normal stream, has unmuted unreads; display normally.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.removeClass("has-unmuted-unreads");
+    } else if (stream_counts.unmuted_count > 0 && stream_counts.stream_is_muted) {
+        // Muted stream, has unmuted unreads.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.addClass("has-unmuted-unreads");
+    } else if (stream_counts.muted_count > 0 && stream_counts.stream_is_muted) {
+        // Muted stream, only muted unreads.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.muted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.removeClass("has-unmuted-unreads");
+    } else if (stream_counts.muted_count > 0 && !stream_counts.stream_is_muted) {
+        // Normal stream, only muted unreads: display nothing. The
+        // current thinking is displaying those counts with muted
+        // styling would be more distracting than helpful.
+        ui_util.update_unread_count_in_dom($subscription_block, 0);
+        $subscription_block.removeClass("has-unmuted-unreads");
         $subscription_block.removeClass("stream-with-count");
     } else {
-        $subscription_block.addClass("stream-with-count");
+        // No unreads: display nothing.
+        ui_util.update_unread_count_in_dom($subscription_block, 0);
+        $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("stream-with-count");
     }
 }
 

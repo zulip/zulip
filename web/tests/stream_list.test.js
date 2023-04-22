@@ -29,7 +29,11 @@ const scroll_util = mock_esm("../src/scroll_util", {
 });
 mock_esm("../src/ui", {get_scroll_element: ($element) => $element});
 mock_esm("../src/unread", {
-    num_unread_for_stream: () => num_unread_for_stream,
+    num_unread_for_stream: () => ({
+        unmuted_count: num_unread_for_stream,
+        stream_is_muted: false,
+        muted_count: 0,
+    }),
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
 });
 
