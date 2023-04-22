@@ -376,6 +376,7 @@ function format_conversation(conversation_data) {
         // Stream info
         context.stream_id = last_msg.stream_id;
         context.stream = last_msg.stream;
+        context.stream_muted = stream_info.is_muted;
         context.stream_color = stream_info.color;
         context.stream_url = hash_util.by_stream_url(context.stream_id);
         context.invite_only = stream_info.invite_only;
@@ -389,6 +390,9 @@ function format_conversation(conversation_data) {
         // display / hide them according to filters instead of
         // doing complete re-render.
         context.topic_muted = Boolean(user_topics.is_topic_muted(context.stream_id, context.topic));
+        context.topic_unmuted = Boolean(
+            user_topics.is_topic_unmuted(context.stream_id, context.topic),
+        );
         context.mention_in_unread = unread.topic_has_any_unread_mentions(
             context.stream_id,
             context.topic,
@@ -1253,24 +1257,46 @@ export function initialize() {
         popovers.show_user_info_popover(this, user);
     });
 
-    $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
+    $("body").on(
+        "keydown",
+        ".on_hover_topic_mute, .on_hover_topic_unmute",
+        ui_util.convert_enter_to_click,
+    );
 
-    $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
+    // Mute topic in a unmuted stream
+    $("body").on("click", "#recent_topics_table .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, false);
+        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.MUTED);
     });
 
-    $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
-
-    $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
+    // Unmute topic in a unmuted stream
+    $("body").on("click", "#recent_topics_table .stream_unmuted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, true);
+        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
+    });
+
+    // Unmute topic in a muted stream
+    $("body").on("click", "#recent_topics_table .stream_muted.on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.target);
+        const topic_row_index = $elt.closest("tr").index();
+        focus_clicked_element(topic_row_index, COLUMNS.mute);
+        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.UNMUTED);
+    });
+
+    // Mute topic in a muted stream
+    $("body").on("click", "#recent_topics_table .stream_muted.on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.target);
+        const topic_row_index = $elt.closest("tr").index();
+        focus_clicked_element(topic_row_index, COLUMNS.mute);
+        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {
