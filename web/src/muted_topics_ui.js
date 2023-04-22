@@ -55,20 +55,8 @@ export function toggle_topic_visibility_policy(message) {
     }
 }
 
-export function mute_or_unmute_topic($elt, mute) {
+export function mute_or_unmute_topic($elt, visibility_policy) {
     const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
     const topic = $elt.attr("data-topic-name");
-    if (mute) {
-        user_topics.set_user_topic_visibility_policy(
-            stream_id,
-            topic,
-            user_topics.all_visibility_policies.MUTED,
-        );
-    } else {
-        user_topics.set_user_topic_visibility_policy(
-            stream_id,
-            topic,
-            user_topics.all_visibility_policies.INHERIT,
-        );
-    }
+    user_topics.set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
 }

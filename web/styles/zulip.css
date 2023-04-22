@@ -1494,7 +1494,8 @@ td.pointer {
 
 .always_visible_topic_edit,
 .on_hover_topic_read,
-.on_hover_topic_unmute {
+.stream_unmuted.on_hover_topic_unmute,
+.stream_muted.on_hover_topic_mute {
     opacity: 0.7;
 
     &:hover {
@@ -1506,7 +1507,8 @@ td.pointer {
 .on_hover_topic_edit,
 .on_hover_topic_unresolve,
 .on_hover_topic_resolve,
-.on_hover_topic_mute {
+.stream_unmuted.on_hover_topic_mute,
+.stream_muted.on_hover_topic_unmute {
     opacity: 0.2;
 
     &:hover {
