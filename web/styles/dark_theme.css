@@ -32,6 +32,10 @@
             color: inherit;
         }
 
+        .has-unmuted-mentions .unread_mention_info {
+            color: hsl(236deg 33% 90%);
+        }
+
         & li.muted_topic,
         li.out_of_home_view {
             color: hsl(236deg 33% 90%/50%);

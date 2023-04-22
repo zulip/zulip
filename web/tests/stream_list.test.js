@@ -15,6 +15,7 @@ page_params.realm_users = [];
 // We use this with override.
 let num_unread_for_stream;
 let stream_has_any_unread_mentions;
+let stream_has_any_unmuted_mentions;
 const noop = () => {};
 
 mock_esm("../src/narrow_state", {
@@ -35,6 +36,7 @@ mock_esm("../src/unread", {
         muted_count: 0,
     }),
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
+    stream_has_any_unmuted_mentions: () => stream_has_any_unmuted_mentions,
 });
 
 const {Filter} = zrequire("../src/filter");

@@ -37,17 +37,23 @@ export function update_count_in_dom(
     $stream_li,
     stream_counts,
     stream_has_any_unread_mention_messages,
+    stream_has_any_unmuted_unread_mention,
 ) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
     const $subscription_block = $stream_li.find(".subscription_block");
 
-    ui_util.update_unread_count_in_dom($subscription_block, count);
     ui_util.update_unread_mention_info_in_dom(
         $subscription_block,
         stream_has_any_unread_mention_messages,
     );
+
+    if (stream_has_any_unmuted_unread_mention) {
+        $subscription_block.addClass("has-unmuted-mentions");
+    } else {
+        $subscription_block.removeClass("has-unmuted-mentions");
+    }
 
     // Here we set the count and compute the values of two classes:
     // .stream-with-count is used for the layout CSS to know whether
@@ -388,7 +394,15 @@ class StreamSidebarRow {
         const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
             this.sub.stream_id,
         );
-        update_count_in_dom(this.$list_item, count, stream_has_any_unread_mention_messages);
+        const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
+            this.sub.stream_id,
+        );
+        update_count_in_dom(
+            this.$list_item,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+        );
     }
 }
 
@@ -425,7 +439,12 @@ export function redraw_stream_privacy(sub) {
     $div.html(html);
 }
 
-function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages) {
+function set_stream_unread_count(
+    stream_id,
+    count,
+    stream_has_any_unread_mention_messages,
+    stream_has_any_unmuted_unread_mention,
+) {
     const $stream_li = get_stream_li(stream_id);
     if (!$stream_li) {
         // This can happen for legitimate reasons, but we warn
@@ -433,7 +452,12 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
         blueslip.warn("stream id no longer in sidebar: " + stream_id);
         return;
     }
-    update_count_in_dom($stream_li, count, stream_has_any_unread_mention_messages);
+    update_count_in_dom(
+        $stream_li,
+        count,
+        stream_has_any_unread_mention_messages,
+        stream_has_any_unmuted_unread_mention,
+    );
 }
 
 export function update_streams_sidebar(force_rerender) {
@@ -467,7 +491,14 @@ export function update_dom_with_unread_counts(counts) {
     for (const [stream_id, count] of counts.stream_count) {
         const stream_has_any_unread_mention_messages =
             counts.streams_with_mentions.includes(stream_id);
-        set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages);
+        const stream_has_any_unmuted_unread_mention =
+            counts.streams_with_unmuted_mentions.includes(stream_id);
+        set_stream_unread_count(
+            stream_id,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+        );
     }
 }
 

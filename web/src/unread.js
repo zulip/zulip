@@ -438,6 +438,21 @@ class UnreadTopicCounter {
         return streams_with_mentions;
     }
 
+    get_streams_with_unmuted_mentions() {
+        const streams_with_unmuted_mentions = new Set();
+        // Collect the set of streams containing at least one mention
+        // in an unmuted topic within a muted stream.
+        for (const message_id of unread_mentions_counter) {
+            const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            const stream_bucketer = this.bucketer.get_bucket(stream_id);
+            const topic = stream_bucketer.reverse_lookup.get(message_id);
+            if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                streams_with_unmuted_mentions.add(stream_id);
+            }
+        }
+        return streams_with_unmuted_mentions;
+    }
+
     topic_has_any_unread(stream_id, topic) {
         const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
@@ -730,9 +745,11 @@ export function get_counts() {
     // This sets stream_count, topic_count, and home_unread_messages
     const topic_res = unread_topic_counter.get_counts();
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
+    const streams_with_unmuted_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
     res.streams_with_mentions = [...streams_with_mentions];
+    res.streams_with_unmuted_mentions = [...streams_with_unmuted_mentions];
 
     const pm_res = unread_pm_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
@@ -783,6 +800,13 @@ export function stream_has_any_unread_mentions(stream_id) {
     // This function is somewhat inefficient and thus should not be
     // called in loops, since runs in O(total unread mentions) time.
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
+    return streams_with_mentions.has(stream_id);
+}
+
+export function stream_has_any_unmuted_mentions(stream_id) {
+    // This function is somewhat inefficient and thus should not be
+    // called in loops, since runs in O(total unread mentions) time.
+    const streams_with_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     return streams_with_mentions.has(stream_id);
 }
 
