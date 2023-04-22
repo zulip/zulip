@@ -19,6 +19,9 @@ const user_topics = mock_esm("../src/user_topics", {
     is_topic_muted() {
         return false;
     },
+    is_topic_unmuted() {
+        return false;
+    },
 });
 const narrow_state = mock_esm("../src/narrow_state", {
     topic() {},
@@ -91,6 +94,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         contains_unread_mention: false,
         is_active_topic: false,
         is_muted: false,
+        is_unmuted: false,
         is_zero: true,
         topic_display_name: "topic 9",
         topic_name: "✔ topic 9",
@@ -103,6 +107,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         contains_unread_mention: false,
         is_active_topic: false,
         is_muted: false,
+        is_unmuted: false,
         is_zero: true,
         topic_display_name: "topic 8",
         topic_name: "topic 8",

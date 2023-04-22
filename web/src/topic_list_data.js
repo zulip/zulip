@@ -16,6 +16,7 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
         const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
+        const is_topic_unmuted = user_topics.is_topic_unmuted(stream_id, topic_name);
         const [topic_resolved_prefix, topic_display_name] =
             resolved_topic.display_parts(topic_name);
         // Important: Topics are lower-case in this set.
@@ -90,6 +91,7 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
             unread: num_unread,
             is_zero: num_unread === 0,
             is_muted: is_topic_muted,
+            is_unmuted: is_topic_unmuted,
             is_active_topic,
             url: hash_util.by_stream_topic_url(stream_id, topic_name),
             contains_unread_mention,

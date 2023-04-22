@@ -37,6 +37,10 @@
             color: hsl(236deg 33% 90%/50%);
         }
 
+        & li.unmuted_topic {
+            color: hsl(236deg 33% 90%);
+        }
+
         & li.out_of_home_view {
             &:hover {
                 color: hsl(236deg 33% 90%/ 75%);

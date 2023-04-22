@@ -346,6 +346,13 @@ ul.filters {
             opacity: 0.5;
         }
 
+        & li.unmuted_topic {
+            color: hsl(0deg 0% 20%);
+
+            .unread_count {
+                opacity: 1;
+            }
+        }
     }
 
     & li.out_of_home_view {
