@@ -25,8 +25,23 @@
         }
     }
 
-    & ul.filters a:hover {
-        color: inherit;
+    & ul.filters {
+        color: hsl(236deg 33% 90%);
+
+        & a:hover {
+            color: inherit;
+        }
+
+        & li.muted_topic,
+        li.out_of_home_view {
+            color: hsl(236deg 33% 90%/50%);
+        }
+
+        & li.out_of_home_view {
+            &:hover {
+                color: hsl(236deg 33% 90%/ 75%);
+            }
+        }
     }
 
     /************************* MODAL DARK THEME *******************/
