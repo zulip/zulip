@@ -89,6 +89,9 @@ function append_and_display_title_area(message_view_header_data) {
 
 function bind_title_area_handlers() {
     $(".search_closed").on("click", (e) => {
+
+        popovers.hide_all();
+
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
@@ -166,6 +169,9 @@ export function initialize() {
 
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
+        
+        popovers.hide_all();
+
         exit_search();
         e.preventDefault();
         e.stopPropagation();
