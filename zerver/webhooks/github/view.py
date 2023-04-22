@@ -165,7 +165,7 @@ def get_issue_body(helper: Helper) -> str:
         action=action,
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
-        message=issue["body"].tame(check_none_or(check_string)),
+        message=None if action == "assigned" else issue["body"].tame(check_none_or(check_string)),
         assignee=assignee["login"].tame(check_string) if assignee else None,
         title=issue["title"].tame(check_string) if include_title else None,
     )
