@@ -12,6 +12,8 @@ import * as compose_validate from "./compose_validate";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
+import * as settings_config from "./settings_config";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
@@ -201,7 +203,14 @@ function get_options_for_recipient_widget() {
         name: $t({defaultMessage: "Direct message"}),
         value: DIRECT_MESSAGE,
     };
-    options.unshift(direct_messages_option);
+    if (
+        page_params.realm_private_message_policy ===
+        settings_config.private_message_policy_values.by_anyone.code
+    ) {
+        options.unshift(direct_messages_option);
+    } else {
+        options.push(direct_messages_option);
+    }
     return options;
 }
 
