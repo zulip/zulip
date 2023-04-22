@@ -133,23 +133,7 @@ export function on_compose_select_recipient_update(new_value) {
 }
 
 export function update_stream_dropdown_options() {
-    const streams_list = stream_data
-        .subscribed_subs()
-        .map((stream) => ({
-            name: stream.name,
-            value: stream.name,
-            stream,
-        }))
-        .sort((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
-    compose_recipient_widget.replace_data(streams_list);
+    compose_recipient_widget.replace_data(get_options_for_recipient_widget());
 }
 
 export function possibly_update_dropdown_selection(old_stream_name, new_stream_name) {
@@ -159,8 +143,8 @@ export function possibly_update_dropdown_selection(old_stream_name, new_stream_n
     }
 }
 
-export function initialize() {
-    const streams_list = stream_data
+function get_options_for_recipient_widget() {
+    return stream_data
         .subscribed_subs()
         .map((stream) => ({
             name: stream.name,
@@ -176,9 +160,12 @@ export function initialize() {
             }
             return 0;
         });
+}
+
+export function initialize() {
     const opts = {
         widget_name: "compose_select_recipient",
-        data: streams_list,
+        data: get_options_for_recipient_widget(),
         default_text: $t({defaultMessage: "Select a stream"}),
         value: null,
         on_update: on_compose_select_recipient_update,
