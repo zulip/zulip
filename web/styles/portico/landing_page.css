@@ -1741,6 +1741,7 @@ button {
 .portico-landing.hello .integrations .integration-logo {
     margin-top: 20px;
     width: 80px;
+    height: 80px;
 }
 
 .portico-landing.hello .integrations .integration-name {
