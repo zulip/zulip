@@ -4,7 +4,6 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
-import * as compose_fade from "./compose_fade";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
@@ -63,8 +62,7 @@ export function edit_scheduled_message(scheduled_msg_id) {
     }
 
     overlays.close_overlay("scheduled");
-    compose_fade.clear_compose();
-    compose.clear_preview_area();
+    compose.clear_compose_box();
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").attr("data-scheduled-message-id", scheduled_msg_id);
