@@ -1064,6 +1064,7 @@ export function deactivate(coming_from_recent_topics = false) {
     $("#zfilt").removeClass("focused_table");
     $("#zhome").addClass("focused_table");
     message_lists.set_current(message_lists.home);
+    message_lists.current.resume_reading();
     condense.condense_and_collapse($("#zhome div.message_row"));
 
     reset_ui_state();
