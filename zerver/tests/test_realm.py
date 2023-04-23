@@ -1200,6 +1200,7 @@ class RealmAPITest(ZulipTestCase):
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
+            print(prop)
             with self.subTest(property=prop):
                 self.do_test_realm_update_api(prop)
 

@@ -12483,7 +12483,7 @@ paths:
 
                           **Changes**: New in Zulip 6.0 (feature level 129).
                       realm_video_chat_provider:
-                        type: integer
+                        type: array
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 

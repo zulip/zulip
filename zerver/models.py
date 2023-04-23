@@ -19,6 +19,7 @@ from typing import (
     TypedDict,
     TypeVar,
     Union,
+    cast,
 )
 from uuid import uuid4
 
@@ -681,9 +682,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         VIDEO_CHAT_PROVIDERS["big_blue_button"] = {"name": "BigBlueButton", "id": 4}
 
     def get_video_chat_provider_default() -> List[int]:
-        return [Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]]
+        return [cast(int, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"])]
 
-    video_chat_provider: List[int] = ArrayField(
+    video_chat_provider = ArrayField(
         models.PositiveSmallIntegerField(),
         default=get_video_chat_provider_default,
     )
