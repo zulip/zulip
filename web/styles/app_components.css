@@ -529,7 +529,8 @@ div.overlay {
 
 .upgrade-tip,
 .upgrade-or-sponsorship-tip,
-.tip {
+.tip,
+.invite-stream-notice {
     position: relative;
     display: block;
     background-color: hsl(46deg 63% 95%);

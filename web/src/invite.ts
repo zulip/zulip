@@ -340,6 +340,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         new_stream_announcements_stream: stream_data.get_new_stream_announcements_stream(),
         show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
+        can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
     });
 
     function invite_user_modal_post_render(): void {
