@@ -3,14 +3,20 @@
     {{#if development_environment}}
     <div class="alert" id="dev_env_msg"></div>
     {{/if}}
-    {{#unless user_has_email_set }}
+    {{#if (not user_has_email_set) }}
     <div class="tip">
         {{#tr}}
             You must <z-link>configure your email</z-link> to access this feature.
             {{#*inline "z-link"}}<a href="/help/demo-organizations#configure-email-for-demo-organization-owner" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
         {{/tr}}
     </div>
-    {{/unless}}
+    {{else if (not can_subscribe_other_users)}}
+    <div class="invite-stream-notice">
+        {{#tr}}The users you invite will be automatically added to <z-link>default streams</z-link> for this organization, as you do not have permission to configure which streams new users join.
+        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="#organization/default-streams-list">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
+    {{/if}}
     <div class="input-group">
         <div id="invite_users_option_tabs_container" class="new-style"></div>
         <div id="invitee_emails_container">
@@ -55,6 +61,7 @@
             {{/if}}
         </select>
     </div>
+    {{#if can_subscribe_other_users}}
     <div>
         <label>{{t "Channels they should join" }}</label>
         <div id="streams_to_add">
@@ -90,4 +97,5 @@
             </div>
         </div>
     </div>
+    {{/if}}
 </form>

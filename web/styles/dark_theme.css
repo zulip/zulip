@@ -825,7 +825,8 @@
 
     .upgrade-tip,
     .upgrade-or-sponsorship-tip,
-    .tip {
+    .tip,
+    .invite-stream-notice {
         color: inherit;
         background-color: hsl(46deg 28% 38% / 27%);
         border: 1px solid hsl(49deg 38% 46%);
