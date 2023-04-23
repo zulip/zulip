@@ -138,7 +138,7 @@ test_ui("send_message_success", ({override_rewire}) => {
         reify_message_id_checked = true;
     });
 
-    compose.send_message_success("1001", 12, false);
+    echo.resend_message.send_message_success("1001", 12, false);
 
     assert.equal($("#compose-textarea").val(), "");
     assert.ok($("#compose-textarea").is_focused());
@@ -225,7 +225,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         $("#compose-textarea").trigger("blur");
         $("#compose-send-button .loader").show();
 
-        compose.send_message();
+        echo.send_message();
 
         const state = {
             get_events_running_called: 1,
@@ -256,7 +256,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     (function test_param_error_function_passed_from_send_message() {
         stub_state = initialize_state_stub_dict();
 
-        compose.send_message();
+        echo.send_message();
 
         const state = {
             get_events_running_called: 1,
@@ -284,7 +284,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         override(sent_messages, "get_new_local_id", () => "loc-55");
 
-        compose.send_message();
+        echo.send_message();
 
         const state = {
             get_events_running_called: 1,

@@ -210,17 +210,6 @@ export function clear_compose_box() {
     reset_compose_scheduling_state();
 }
 
-export function send_message_success(local_id, message_id, locally_echoed) {
-    if (!locally_echoed) {
-        if ($("#compose-textarea").data("draft-id")) {
-            drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
-        }
-        clear_compose_box();
-    }
-
-    echo.reify_message_id(local_id, message_id);
-}
-
 export function send_message(request = create_message_object()) {
     compose_state.set_recipient_edited_manually(false);
     if (request.type === "private") {
@@ -258,7 +247,14 @@ export function send_message(request = create_message_object()) {
     request.locally_echoed = locally_echoed;
 
     function success(data) {
-        send_message_success(local_id, data.id, locally_echoed);
+        echo.send_message_success_callback(
+            echo.resend_message.send_message_success(
+                local_id,
+                data.id,
+                locally_echoed,
+                clear_compose_box(),
+            ),
+        );
     }
 
     function error(response) {
