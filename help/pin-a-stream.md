@@ -73,4 +73,4 @@ which is especially handy if you are subscribed to a large number of streams.
 ## Related articles
 
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
-* [Mute a stream](/help/mute-a-stream)
+* [Mute or unmute a stream](/help/mute-a-stream)

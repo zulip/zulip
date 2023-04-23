@@ -71,6 +71,6 @@
 
 ## Related articles
 
-* [Mute a topic](/help/mute-a-topic)
+* [Mute or unmute a topic](/help/mute-a-topic)
 
 * [Mute a user](/help/mute-a-user)
