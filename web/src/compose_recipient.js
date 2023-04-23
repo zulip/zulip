@@ -3,6 +3,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
@@ -100,6 +101,26 @@ export function open_compose_stream_dropup() {
     $("#id_compose_select_stream > .dropdown-toggle").trigger("click");
 }
 
+export function check_stream_posting_policy_for_compose_box(stream_name) {
+    const stream = stream_data.get_sub_by_name(stream_name);
+    if (!stream) {
+        return;
+    }
+    const can_post_messages_in_stream = stream_data.can_post_messages_in_stream(stream);
+    if (!can_post_messages_in_stream) {
+        $(".compose_right_float_container").addClass("disabled-compose-send-button-container");
+        compose_banner.show_error_message(
+            $t({
+                defaultMessage: "You do not have permission to post in this stream.",
+            }),
+            compose_banner.CLASSNAMES.no_post_permissions,
+        );
+    } else {
+        $(".compose_right_float_container").removeClass("disabled-compose-send-button-container");
+        compose_banner.clear_errors();
+    }
+}
+
 export function on_compose_select_stream_update(new_value) {
     const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
         ".stream_header_colorblock",
@@ -107,6 +128,8 @@ export function on_compose_select_stream_update(new_value) {
     stream_bar.decorate(new_value, $stream_header_colorblock);
     update_on_recipient_change();
     $("#stream_message_recipient_topic").trigger("focus").trigger("select");
+
+    check_stream_posting_policy_for_compose_box(new_value);
 }
 
 export function update_stream_dropdown_options() {

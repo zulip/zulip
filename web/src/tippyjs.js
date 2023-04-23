@@ -639,6 +639,17 @@ export function initialize() {
         placement: "top",
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: [".disabled-compose-send-button-container"],
+        content: $t({
+            defaultMessage: "You do not have permission to post in this stream.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
 
 export function show_copied_confirmation($copy_button) {
