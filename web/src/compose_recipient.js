@@ -112,7 +112,6 @@ export function on_compose_select_stream_update(new_value) {
 export function update_stream_dropdown_options() {
     const streams_list = stream_data
         .subscribed_subs()
-        .filter((stream) => stream_data.can_post_messages_in_stream(stream))
         .map((stream) => ({
             name: stream.name,
             value: stream.name,
@@ -140,7 +139,6 @@ export function possibly_update_dropdown_selection(old_stream_name, new_stream_n
 export function initialize() {
     const streams_list = stream_data
         .subscribed_subs()
-        .filter((stream) => stream_data.can_post_messages_in_stream(stream))
         .map((stream) => ({
             name: stream.name,
             value: stream.name,
