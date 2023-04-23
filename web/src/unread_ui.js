@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import render_mark_as_read_disabled_banner from "../templates/mark_as_read_disabled_banner.hbs";
-import render_mark_as_read_only_in_conversation_view from "../templates/mark_as_read_only_in_conversation_view.hbs";
-import render_mark_as_read_turned_off_banner from "../templates/mark_as_read_turned_off_banner.hbs";
+import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark_as_read_disabled_banner.hbs";
+import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
+import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
 
 import * as activity from "./activity";
 import * as message_lists from "./message_lists";
