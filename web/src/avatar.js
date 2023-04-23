@@ -6,6 +6,7 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as upload_widget from "./upload_widget";
 
@@ -38,6 +39,23 @@ export function build_bot_edit_widget($target) {
     const get_file_input = function () {
         return $target.find(".edit_bot_avatar_file_input");
     };
+
+    if ($("#current_bot_avatar_source").val() === "G") {
+        $("#edit-bot-avatar-upload-widget .image-hover-background").hide();
+        $("#edit-bot-avatar-upload-widget .image-delete-button").hide();
+    }
+
+    $("#edit-bot-avatar-upload-widget .image-delete-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#edit-bot-avatar-upload-widget .image-hover-background").hide();
+        $("#edit-bot-avatar-upload-widget .image-delete-button").hide();
+        $("#current_bot_avatar_source").val("G");
+        $("#current_bot_avatar_source").trigger("input");
+        const avatar_url = people.medium_gravatar_url_for_email($("#bot_email").val());
+        get_file_input().val("");
+        $("#edit-bot-avatar-upload-widget #current_bot_avatar_image").attr("src", avatar_url);
+    });
 
     const $file_name_field = $target.find(".edit_bot_avatar_file");
     const $input_error = $target.find(".edit_bot_avatar_error");

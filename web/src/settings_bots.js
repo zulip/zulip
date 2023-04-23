@@ -354,6 +354,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
         bot_avatar_url: bot.avatar_url || people.medium_avatar_url_for_person(bot),
+        bot_avatar_source: bot.avatar_source,
     });
 
     let owner_widget;
@@ -398,6 +399,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             formData.append("file-" + i, file);
         }
 
+        formData.append("avatar_source", $("#current_bot_avatar_source").val());
         channel.patch({
             url,
             data: formData,

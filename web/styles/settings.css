@@ -883,8 +883,13 @@ input[type="checkbox"] {
         margin: 10px 0 5px;
     }
 
+    #edit-bot-avatar-upload-widget {
+        width: fit-content;
+        margin-bottom: 10px;
+    }
+
     #current_bot_avatar_image {
-        margin: 5px 0 8px;
+        width: 100px;
     }
 
     .edit_bot_avatar_preview_text {

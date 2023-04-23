@@ -109,6 +109,7 @@ export const update_person = function update(person) {
         const url = person.avatar_url;
         person_obj.avatar_url = url;
         person_obj.avatar_version = person.avatar_version;
+        person_obj.avatar_source = person.avatar_source;
 
         if (people.is_my_user_id(person.user_id)) {
             page_params.avatar_source = person.avatar_source;

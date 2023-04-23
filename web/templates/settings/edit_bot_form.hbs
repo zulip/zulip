@@ -7,7 +7,7 @@
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
             <label for="email">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+            <input type="text" autocomplete="off" id="bot_email" class="modal_text_input" name="email" value="{{ email }}" readonly/>
         </div>
         <div class="input-group user_id_container">
             <label for="user_id">{{t "User ID" }}</label>
@@ -32,9 +32,22 @@
         <div class="input-group edit-avatar-section">
             <label>Avatar</label>
             {{!-- Shows the current avatar --}}
-            <img src="{{bot_avatar_url}}" id="current_bot_avatar_image" />
             <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
             <div class="edit_bot_avatar_file"></div>
+
+            <div class="image_upload_widget" id="edit-bot-avatar-upload-widget">
+                <div class="image-hover-background"></div>
+                <button class="image-delete-button"  aria-label="{{t 'Delete avatar' }}" role="button" tabindex="0">
+                    &times;
+                </button>
+                <span class="upload-spinner-background">
+                    <img class="image_upload_spinner" src="../../images/loading/tail-spin.svg" alt="" />
+                </span>
+                <img class="image-block" id="current_bot_avatar_image"  src="{{ bot_avatar_url }}"/>
+                <input type="hidden" id="current_bot_avatar_source"  value="{{ bot_avatar_source }}"/>
+                <div class="image_file_input_error text-error"></div>
+            </div>
+
             <div class="edit_bot_avatar_preview_text">
                 <img class="edit_bot_avatar_preview_image" />
             </div>

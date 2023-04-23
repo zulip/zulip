@@ -741,7 +741,7 @@ export function small_avatar_url_for_person(person) {
     return format_small_avatar_url("/avatar/" + person.user_id);
 }
 
-function medium_gravatar_url_for_email(email) {
+export function medium_gravatar_url_for_email(email) {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
     const url = new URL(avatar_url, location);
