@@ -177,12 +177,12 @@ export function initialize() {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
 
+        message_lists.current.select_id(id);
+
         if (message_edit.is_editing(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
-
-        message_lists.current.select_id(id);
 
         if (page_params.is_spectator) {
             return;
