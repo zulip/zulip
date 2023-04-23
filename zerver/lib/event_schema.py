@@ -1051,6 +1051,7 @@ realm_user_type = DictType(
         ("user_id", int),
         ("email", str),
         ("avatar_url", OptionalType(str)),
+        ("avatar_source", str),
         ("avatar_version", int),
         ("full_name", str),
         ("is_admin", bool),
@@ -1109,6 +1110,13 @@ custom_profile_field_type = DictType(
 # possible to validate the type of all the realm_user update events.
 realm_user_person_types = dict(
     # Note that all flavors of person include user_id.
+    avatar_source=DictType(
+        required_keys=[
+            # vertical formatting
+            ("user_id", int),
+            ("avatar_source", str),
+        ],
+    ),
     avatar_fields=DictType(
         required_keys=[
             ("user_id", int),

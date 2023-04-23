@@ -407,6 +407,21 @@ paths:
                                             The new full name for the user.
                                       additionalProperties: false
                                     - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        When the avatar source of a bot changes.
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user/bot whose avatar source has changed.
+                                        avatar_source:
+                                          type: string
+                                          description: |
+                                            The new avatar data source type for the user.
+
+                                            Value values are `G` (gravatar) and `U` (uploaded by user).
+                                    - type: object
                                       description: |
                                         When a user changes their avatar.
                                       properties:
@@ -7321,6 +7336,13 @@ paths:
 
                           **Changes**: New in Zulip 2.1.0.
                         example: "x"
+                      avatar_source:
+                        type: string
+                        description: |
+                          The avatar data source type for the user.
+
+                          Value values are `G` (gravatar) and `U` (uploaded by user).
+                        example: "G"
                       avatar_version:
                         type: integer
                         description: |
@@ -7447,6 +7469,7 @@ paths:
                         $ref: "#/components/schemas/profile_data"
                     example:
                       {
+                        "avatar_source": "G",
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
                         "avatar_version": 1,
                         "email": "iago@zulip.com",
@@ -13670,6 +13693,7 @@ paths:
                               properties:
                                 user_id: {}
                                 delivery_email: {}
+                                avatar_source: {}
                                 email: {}
                                 full_name: {}
                                 date_joined: {}
@@ -17392,6 +17416,7 @@ components:
             avatar_url:
               nullable: true
             avatar_version: {}
+            avatar_source: {}
             profile_data: {}
     UserBase:
       type: object
@@ -17402,6 +17427,12 @@ components:
           type: integer
           description: |
             The unique ID of the user.
+        avatar_source:
+          type: string
+          description: |
+            The avatar data source type for the user.
+
+            Value values are `G` (gravatar) and `U` (uploaded by user).
         delivery_email:
           type: string
           nullable: true
