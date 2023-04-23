@@ -769,8 +769,6 @@ a.compose_control_button.hide {
 #compose_recipient_selection_dropdown {
     display: flex;
     justify-content: flex-start;
-    flex: 0 1 200px;
-    min-width: 0;
 
     .stream_header_colorblock {
         margin: 0;
