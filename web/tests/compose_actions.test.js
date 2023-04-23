@@ -131,6 +131,7 @@ test("start", ({override, override_rewire}) => {
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_rewire(compose_recipient, "update_on_recipient_change", () => {});
+    override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", () => {});
     stream_bar.decorate = () => {};
     mock_stream_header_colorblock();
 

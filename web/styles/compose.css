@@ -703,6 +703,15 @@ input.recipient_box {
     white-space: nowrap;
     margin-top: 2px;
     height: 24px;
+
+    &.disabled-compose-send-button-container {
+        cursor: not-allowed;
+
+        & button {
+            pointer-events: none;
+            background-color: hsl(0deg 0% 65%);
+        }
+    }
 }
 
 a.compose_control_button {

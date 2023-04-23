@@ -305,6 +305,10 @@ export function start(msg_type, opts) {
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
 
+    if (msg_type === "stream") {
+        compose_recipient.check_stream_posting_policy_for_compose_box(opts.stream);
+    }
+
     // Reset the `max-height` property of `compose-textarea` so that the
     // compose-box do not cover the last messages of the current stream
     // while writing a long message.

@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_stream_header_colorblock} = require("./lib/compose");
+const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -677,6 +678,7 @@ function sorted_names_from(subs) {
 
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
+    mock_banners();
     override_rewire(compose_recipient, "update_on_recipient_change", noop);
     override_rewire(stream_bar, "decorate", noop);
 
@@ -1727,6 +1729,7 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
             stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
     );
     mock_stream_header_colorblock();
+    mock_banners();
     override_rewire(stream_bar, "decorate", noop);
     override_rewire(compose_recipient, "update_on_recipient_change", noop);
 

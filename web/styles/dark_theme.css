@@ -59,11 +59,6 @@
         border: 1px solid hsl(0deg 0% 0% / 60%);
     }
 
-    .modal__btn:disabled {
-        opacity: 1;
-        background-color: hsl(0deg 0% 83% / 50%);
-    }
-
     .modal__content.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 100% / 20%);
     }
@@ -102,6 +97,12 @@
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
         }
+    }
+
+    .modal__btn:disabled,
+    .disabled-compose-send-button-container button {
+        opacity: 1;
+        background-color: hsl(0deg 0% 83% / 50%);
     }
 
     & table.table-striped thead.table-sticky-headers th {

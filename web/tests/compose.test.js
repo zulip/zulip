@@ -765,6 +765,7 @@ test_ui("on_events", ({override}) => {
 
 test_ui("create_message_object", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
+    mock_banners();
     override_rewire(stream_bar, "decorate", noop);
     override_rewire(compose_recipient, "update_on_recipient_change", noop);
 
