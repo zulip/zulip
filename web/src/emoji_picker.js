@@ -285,7 +285,7 @@ function toggle_reaction(emoji_name, event) {
     const message_id = message_lists.current.selected_id();
     const message = message_store.get(message_id);
     if (!message) {
-        blueslip.error("reactions: Bad message id: " + message_id);
+        blueslip.error("reactions: Bad message id", {message_id});
         return;
     }
 
@@ -348,7 +348,7 @@ function update_emoji_showcase($focused_emoji) {
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
 
     if (!canonical_name) {
-        blueslip.error("Invalid focused_emoji_name: " + focused_emoji_name);
+        blueslip.error("Invalid focused_emoji_name", {focused_emoji_name});
         return;
     }
 

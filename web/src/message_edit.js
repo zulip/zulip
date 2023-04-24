@@ -585,7 +585,7 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
 export function start($row, edit_box_open_callback) {
     const message = message_lists.current.get(rows.id($row));
     if (message === undefined) {
-        blueslip.error("Couldn't find message ID for edit " + rows.id($row));
+        blueslip.error("Couldn't find message ID for edit", {row_id: rows.id($row)});
         return;
     }
 
@@ -1037,7 +1037,7 @@ export function edit_last_sent_message() {
     if (!$msg_row) {
         // This should never happen, since we got the message above
         // from message_lists.current.
-        blueslip.error("Could not find row for id " + msg.id);
+        blueslip.error("Could not find row for id", {msg_id: msg.id});
         return;
     }
 

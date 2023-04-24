@@ -95,7 +95,7 @@ test("unknown user", ({override}) => {
     const presences = {};
     presences[unknown_user_id.toString()] = "does-not-matter";
 
-    blueslip.expect("error", "Unknown user ID in presence data: 999");
+    blueslip.expect("error", "Unknown user ID in presence data");
     presence.set_info(presences, now);
 
     // If the server is suspected to be offline or reloading,

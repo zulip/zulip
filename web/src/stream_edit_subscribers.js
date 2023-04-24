@@ -39,7 +39,7 @@ function format_member_list_elem(person, user_can_remove_subscribers) {
 function get_sub(stream_id) {
     const sub = sub_store.get(stream_id);
     if (!sub) {
-        blueslip.error("get_sub() failed id lookup: " + stream_id);
+        blueslip.error("get_sub() failed id lookup", {stream_id});
         return undefined;
     }
     return sub;

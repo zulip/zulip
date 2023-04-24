@@ -180,7 +180,7 @@ export function set_info(presences, server_timestamp) {
             if (!(watchdog.suspects_user_is_offline() || reload_state.is_in_progress())) {
                 // If we're online, and we get a user who we don't
                 // know about in the presence data, throw an error.
-                blueslip.error("Unknown user ID in presence data: " + user_id);
+                blueslip.error("Unknown user ID in presence data", {user_id});
             }
             // Either way, we deal by skipping this user and
             // continuing with processing everyone else.

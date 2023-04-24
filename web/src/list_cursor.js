@@ -99,7 +99,7 @@ export class ListCursor {
         this.clear();
         const row = this.get_row(key);
         if (row === undefined) {
-            blueslip.error("Cannot highlight key for ListCursor: " + key);
+            blueslip.error("Cannot highlight key for ListCursor", {key});
             return;
         }
         this.curr_key = key;

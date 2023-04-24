@@ -44,10 +44,7 @@ run_test("python_to_js_linkifier", () => {
     expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
-    blueslip.expect(
-        "error",
-        "python_to_js_linkifier: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
-    );
+    blueslip.expect("error", "python_to_js_linkifier failure!");
     linkifiers.update_linkifier_rules([
         {
             pattern: "!@#@(!#&((!&(@#(",

@@ -66,7 +66,10 @@ export function post_hotspot_as_read(hotspot_name) {
         url: "/json/users/me/hotspots",
         data: {hotspot: hotspot_name},
         error(err) {
-            blueslip.error(err.responseText);
+            blueslip.error("Failed to fetch hotspots", {
+                status: err.status,
+                body: err.responseText,
+            });
         },
     });
 }
@@ -175,7 +178,7 @@ function place_popover(hotspot) {
             break;
 
         default:
-            blueslip.error("Invalid popover placement value for hotspot '" + hotspot.name + "'");
+            blueslip.error("Invalid popover placement value for hotspot", {name: hotspot.name});
             break;
     }
 

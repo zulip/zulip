@@ -60,7 +60,7 @@ export function get_users_from_ids(user_ids) {
 
 export function get_by_user_id(user_id, ignore_missing) {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
-        blueslip.error("Unknown user_id in get_by_user_id: " + user_id);
+        blueslip.error("Unknown user_id in get_by_user_id", {user_id});
         return undefined;
     }
     return people_by_user_id_dict.get(user_id);
@@ -152,13 +152,12 @@ export function get_visible_email(user) {
 export function get_user_id(email) {
     const person = get_by_email(email);
     if (person === undefined) {
-        const error_msg = "Unknown email for get_user_id: " + email;
-        blueslip.error(error_msg);
+        blueslip.error("Unknown email for get_user_id", {email});
         return undefined;
     }
     const user_id = person.user_id;
     if (!user_id) {
-        blueslip.error("No user_id found for " + email);
+        blueslip.error("No user_id found for email", {email});
         return undefined;
     }
 
@@ -306,7 +305,7 @@ export function get_user_time(user_id) {
         const current_date = utcToZonedTime(new Date(), user_pref.timezone);
         // This could happen if the timezone is invalid.
         if (Number.isNaN(current_date.getTime())) {
-            blueslip.error(`Got invalid date for timezone: ${user_pref.timezone}`);
+            blueslip.error("Got invalid date for timezone", {timezone: user_pref.timezone});
             return undefined;
         }
         return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
@@ -350,7 +349,7 @@ export function get_full_names_for_poll_option(user_ids) {
 export function get_display_full_name(user_id) {
     const person = get_by_user_id(user_id);
     if (!person) {
-        blueslip.error("Unknown user id " + user_id);
+        blueslip.error("Unknown user id", {user_id});
         return "?";
     }
 
@@ -409,7 +408,7 @@ export function pm_reply_to(message) {
     const emails = user_ids.map((user_id) => {
         const person = people_by_user_id_dict.get(user_id);
         if (!person) {
-            blueslip.error("Unknown user id in message: " + user_id);
+            blueslip.error("Unknown user id in message", {user_id});
             return "?";
         }
         return person.email;
@@ -1119,7 +1118,7 @@ export const get_actual_name_from_user_id = (user_id) => {
     const person = people_by_user_id_dict.get(user_id);
 
     if (!person) {
-        blueslip.error("Unknown user_id: " + user_id);
+        blueslip.error("Unknown user_id", {user_id});
         return undefined;
     }
 
@@ -1221,7 +1220,7 @@ export function _add_user(person) {
         // with cross-realm bots, zephyr users, etc., deactivated
         // users, where we are probably fine for now not to
         // find them via user_id lookups.
-        blueslip.warn("No user_id provided for " + person.email);
+        blueslip.warn("No user_id provided", {email: person.email});
     }
 
     track_duplicate_full_name(person.full_name, person.user_id);
@@ -1237,7 +1236,7 @@ export function add_active_user(person) {
 
 export const is_person_active = (user_id) => {
     if (!people_by_user_id_dict.has(user_id)) {
-        blueslip.error(`No user ${user_id} found.`);
+        blueslip.error("No user found", {user_id});
     }
 
     if (cross_realm_dict.has(user_id)) {
@@ -1263,15 +1262,10 @@ export function deactivate(person) {
 }
 
 export function report_late_add(user_id, email) {
-    // This function is extracted to make unit testing easier,
-    // plus we may fine-tune our reporting here for different
-    // types of realms.
-    const msg = "Added user late: user_id=" + user_id + " email=" + email;
-
     if (reload_state.is_in_progress()) {
-        blueslip.log(msg);
+        blueslip.log("Added user late", {user_id, email});
     } else {
-        blueslip.error(msg);
+        blueslip.error("Added user late", {user_id, email});
     }
 }
 
@@ -1434,7 +1428,7 @@ export function is_my_user_id(user_id) {
     }
 
     if (typeof user_id !== "number") {
-        blueslip.error("user_id is a string in my_user_id: " + user_id);
+        blueslip.error("user_id is a string in my_user_id", {user_id});
         user_id = Number.parseInt(user_id, 10);
     }
 

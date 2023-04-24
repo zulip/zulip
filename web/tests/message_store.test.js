@@ -120,7 +120,7 @@ test("process_new_message", () => {
     let retrieved_message = message_store.get(2067);
     assert.equal(retrieved_message, message);
 
-    blueslip.expect("error", "message_store got non-number: 2067");
+    blueslip.expect("error", "message_store got non-number");
     retrieved_message = message_store.get("2067");
     assert.equal(retrieved_message, message);
 
@@ -209,8 +209,8 @@ test("errors", ({disallow_rewire}) => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 92714", 2);
-    blueslip.expect("error", "Unknown user id 92714", 2); // From person.js
+    blueslip.expect("error", "Unknown user_id in get_by_user_id", 2);
+    blueslip.expect("error", "Unknown user id", 2); // From person.js
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
@@ -327,6 +327,6 @@ test("update_property", () => {
 });
 
 test("errors", () => {
-    blueslip.expect("error", "message_store.get got bad value: undefined");
+    blueslip.expect("error", "message_store.get got bad value");
     message_store.get(undefined);
 });

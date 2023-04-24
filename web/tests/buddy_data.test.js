@@ -549,7 +549,7 @@ test("get_items_for_users", () => {
 
 test("error handling", () => {
     presence.presence_info.set(42, {status: "active"});
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
+    blueslip.expect("error", "Unknown user_id in get_by_user_id");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();
 });

@@ -108,7 +108,7 @@ export const update_elements = ($content) => {
             // This is a user group the current user doesn't have
             // data on.  This can happen when user groups are
             // deleted.
-            blueslip.info("Rendered unexpected user group " + user_group_id);
+            blueslip.info("Rendered unexpected user group", {user_group_id});
             return;
         }
 
@@ -172,7 +172,7 @@ export const update_elements = ($content) => {
             $(this).html(rendered_timestamp);
         } else {
             // This shouldn't happen. If it does, we're very interested in debugging it.
-            blueslip.error(`Could not parse datetime supplied by backend: ${time_str}`);
+            blueslip.error("Could not parse datetime supplied by backend", {time_str});
         }
     });
 

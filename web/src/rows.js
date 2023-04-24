@@ -110,7 +110,7 @@ export function local_echo_id($message_row) {
     }
 
     if (!zid.includes(".0")) {
-        blueslip.error("Trying to get local_id from row that has reified message id: " + zid);
+        blueslip.error("Trying to get local_id from row that has reified message id", {zid});
     }
 
     return zid;

@@ -312,10 +312,7 @@ function test_sync_realm_settings() {
         $property_elem.attr("id", "id_realm_invalid_settings_property");
         $property_elem.length = 1;
 
-        blueslip.expect(
-            "error",
-            "Element refers to unknown property realm_invalid_settings_property",
-        );
+        blueslip.expect("error", "Element refers to unknown property");
         settings_org.sync_realm_settings("invalid_settings_property");
     }
 

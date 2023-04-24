@@ -136,7 +136,7 @@ test("add error handling", () => {
     // test blueslip errors/warns
     const event = event_fixtures.subscription__add;
 
-    blueslip.expect("error", "Subscribing to unknown stream with ID 101");
+    blueslip.expect("error", "Subscribing to unknown stream");
     dispatch(event);
     blueslip.reset();
 });

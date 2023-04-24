@@ -108,12 +108,10 @@ export function open_overlay(opts: OverlayOptions): void {
     }
 
     if (active_overlay || open_overlay_name) {
-        blueslip.error(
-            `Programming error - trying to open ${opts.name} before closing ${
-                open_overlay_name ?? "undefined"
-            }`,
-        );
-
+        blueslip.error("Programming error - trying to open overlay before closing other", {
+            name: opts.name,
+            open_overlay_name,
+        });
         return;
     }
 
@@ -161,7 +159,7 @@ export function open_modal(
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
     if (modal_id.startsWith("#")) {
-        blueslip.error("hash-based selector passed in to open_modal: " + modal_id);
+        blueslip.error("hash-based selector passed in to open_modal", {modal_id});
         return;
     }
 
@@ -183,7 +181,7 @@ export function open_modal(
             conf.recursive_call_count += 1;
         }
         if (conf.recursive_call_count > 50) {
-            blueslip.error("Modal incorrectly is still open: " + modal_id);
+            blueslip.error("Modal incorrectly is still open", {modal_id});
             return;
         }
 
@@ -255,7 +253,7 @@ export function close_overlay(name: string): void {
     call_hooks(pre_close_hooks);
 
     if (name !== open_overlay_name) {
-        blueslip.error(`Trying to close ${name} when ${open_overlay_name ?? "undefined"} is open.`);
+        blueslip.error("Trying to close overlay with another open", {name, open_overlay_name});
         return;
     }
 
@@ -270,7 +268,6 @@ export function close_overlay(name: string): void {
     }
 
     blueslip.debug("close overlay: " + name);
-
     active_overlay.$element.removeClass("show");
 
     active_overlay.$element.attr("aria-hidden", "true");
@@ -303,9 +300,7 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
     }
 
     if (active_modal() !== `#${CSS.escape(modal_id)}`) {
-        blueslip.error(
-            `Trying to close ${modal_id} modal when ${active_modal() ?? "undefined"} is open.`,
-        );
+        blueslip.error("Trying to close modal when other is open", {modal_id, active_modal});
         return;
     }
 

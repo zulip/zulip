@@ -130,9 +130,7 @@ function get_popover_items_for_instance(instance) {
     const class_name = $current_elem.attr("class");
 
     if (!$current_elem) {
-        blueslip.error(
-            `Trying to get menu items when popover with class "${class_name}" is closed.`,
-        );
+        blueslip.error("Trying to get menu items when popover is closed.", {class_name});
         return undefined;
     }
 

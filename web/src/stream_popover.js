@@ -94,7 +94,7 @@ function stream_popover_sub(e) {
     const stream_id = elem_to_stream_id($elem);
     const sub = sub_store.get(stream_id);
     if (!sub) {
-        blueslip.error("Unknown stream: " + stream_id);
+        blueslip.error("Unknown stream", {stream_id});
         return undefined;
     }
     return sub;

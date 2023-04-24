@@ -254,12 +254,12 @@ export function get_stream_li(stream_id) {
 
     const $li = row.get_li();
     if (!$li) {
-        blueslip.error("Cannot find li for id " + stream_id);
+        blueslip.error("Cannot find li", {stream_id});
         return undefined;
     }
 
     if ($li.length > 1) {
-        blueslip.error("stream_li has too many elements for " + stream_id);
+        blueslip.error("stream_li has too many elements", {stream_id});
         return undefined;
     }
 
@@ -338,7 +338,7 @@ export function zoom_out_topics() {
 export function set_in_home_view(stream_id, in_home) {
     const $li = get_stream_li(stream_id);
     if (!$li) {
-        blueslip.error("passed in bad stream id " + stream_id);
+        blueslip.error("passed in bad stream id", {stream_id});
         return;
     }
 
@@ -412,7 +412,7 @@ function build_stream_sidebar_row(sub) {
 export function create_sidebar_row(sub) {
     if (stream_sidebar.has_row_for(sub.stream_id)) {
         // already exists
-        blueslip.warn("Dup try to build sidebar row for stream " + sub.stream_id);
+        blueslip.warn("Dup try to build sidebar row for stream", {stream_id: sub.stream_id});
         return;
     }
     build_stream_sidebar_row(sub);
@@ -519,7 +519,7 @@ export function refresh_pinned_or_unpinned_stream(sub) {
     if (sub.pin_to_top) {
         const $stream_li = get_stream_li(sub.stream_id);
         if (!$stream_li) {
-            blueslip.error("passed in bad stream id " + sub.stream_id);
+            blueslip.error("passed in bad stream id", {stream_id: sub.stream_id});
             return;
         }
         scroll_stream_into_view($stream_li);
@@ -585,7 +585,7 @@ export function update_stream_sidebar_for_narrow(filter) {
         // corresponding to that stream in our sidebar.  This error
         // stopped appearing from March 2018 until at least
         // April 2020, so if it appears again, something regressed.
-        blueslip.error("No stream_li for subscribed stream " + stream_id);
+        blueslip.error("No stream_li for subscribed stream", {stream_id});
         topic_zoom.clear_topics();
         return undefined;
     }
@@ -631,7 +631,7 @@ function keydown_enter_key() {
     const sub = sub_store.get(stream_id);
 
     if (sub === undefined) {
-        blueslip.error("Unknown stream_id for search/enter: " + stream_id);
+        blueslip.error("Unknown stream_id for search/enter", {stream_id});
         return;
     }
 

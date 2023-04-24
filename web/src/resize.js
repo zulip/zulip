@@ -50,7 +50,7 @@ export function watch_manual_resize(element) {
     const box = document.querySelector(element);
 
     if (!box) {
-        blueslip.error("Bad selector in watch_manual_resize: " + element);
+        blueslip.error("Bad selector in watch_manual_resize", {element});
         return undefined;
     }
 
