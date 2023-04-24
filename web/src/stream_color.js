@@ -48,7 +48,7 @@ export function get_recipient_bar_color(color) {
     const using_dark_theme = settings_data.using_dark_theme();
     color = get_stream_privacy_icon_color(color);
     return colord(using_dark_theme ? "#000000" : "#ffffff")
-        .mix(color, using_dark_theme ? 0.5 : 0.4)
+        .mix(color, using_dark_theme ? 0.43 : 0.35)
         .toHex();
 }
 
