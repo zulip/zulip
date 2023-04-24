@@ -886,9 +886,10 @@
         color: inherit;
     }
 
-    .send_later_popover_header,
-    .selected_send_later_time {
-        color: hsl(236deg 33% 90%);
+    #send_later_modal .send_later_input_group .send_later_date_input {
+        opacity: 0.8;
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     .nav-list > li > a,
