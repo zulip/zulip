@@ -20,8 +20,8 @@ import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_popover from "./stream_popover";
-import * as stream_sort from "./stream_sort";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
@@ -160,9 +160,9 @@ export function build_stream_list(force_rerender) {
         return;
     }
 
-    // The main logic to build the list is in stream_sort.js, and
+    // The main logic to build the list is in stream_list_sort.js, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
-    const stream_groups = stream_sort.sort_groups(streams, get_search_term());
+    const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -374,7 +374,7 @@ class StreamSidebarRow {
     }
 
     update_whether_active() {
-        if (stream_sort.has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
+        if (stream_list_sort.has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
             this.$list_item.removeClass("inactive_stream");
         } else {
             this.$list_item.addClass("inactive_stream");
@@ -718,9 +718,9 @@ export function set_event_handlers() {
                 const li = get_stream_li(stream_id);
                 return li;
             },
-            first_key: stream_sort.first_stream_id,
-            prev_key: stream_sort.prev_stream_id,
-            next_key: stream_sort.next_stream_id,
+            first_key: stream_list_sort.first_stream_id,
+            prev_key: stream_list_sort.prev_stream_id,
+            next_key: stream_list_sort.next_stream_id,
         },
         highlight_class: "highlighted_stream",
     });

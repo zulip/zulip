@@ -93,8 +93,8 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_sort from "./stream_sort";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -640,7 +640,7 @@ export function initialize_everything() {
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
     stream_list.initialize();
-    stream_sort.initialize();
+    stream_list_sort.initialize();
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();

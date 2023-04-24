@@ -11,7 +11,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
-import * as stream_sort from "./stream_sort";
+import * as stream_list_sort from "./stream_list_sort";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as util from "./util";
@@ -432,7 +432,7 @@ function activity_score(sub) {
             stream_score += 2;
         }
         // Note: A pinned stream may accumulate a 3rd point if it has recent activity.
-        if (stream_sort.has_recent_activity(sub)) {
+        if (stream_list_sort.has_recent_activity(sub)) {
             stream_score += 1;
         }
     }

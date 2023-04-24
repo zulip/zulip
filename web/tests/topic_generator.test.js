@@ -13,7 +13,7 @@ const unread = mock_esm("../src/unread");
 const pm_conversations = zrequire("pm_conversations");
 pm_conversations.recent = {};
 
-const stream_sort = zrequire("stream_sort");
+const stream_list_sort = zrequire("stream_list_sort");
 const tg = zrequire("topic_generator");
 
 run_test("streams", () => {
@@ -22,7 +22,7 @@ run_test("streams", () => {
         assert.equal(actual, expected);
     }
 
-    stream_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
+    stream_list_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
 
     assert_next_stream(undefined, "announce");
     assert_next_stream("NOT THERE", "announce");
@@ -74,9 +74,9 @@ run_test("topics", ({override}) => {
     );
 
     // Now test the deeper function that is wired up to
-    // real functions stream_data/stream_sort/unread.
+    // real functions stream_data/stream_list_sort/unread.
 
-    stream_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
+    stream_list_sort.get_streams = () => ["announce", "muted", "devel", "test here"];
 
     const muted_stream_id = 400;
     const devel_stream_id = 401;

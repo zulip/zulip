@@ -11,7 +11,7 @@ const {user_settings} = require("./lib/zpage_params");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
-const stream_sort = zrequire("stream_sort");
+const stream_list_sort = zrequire("stream_list_sort");
 const settings_config = zrequire("settings_config");
 
 function contains_sub(subs, sub) {
@@ -77,7 +77,7 @@ const muted_pinned = {
 
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();
-    return stream_sort.sort_groups(streams, query);
+    return stream_list_sort.sort_groups(streams, query);
 }
 
 function test(label, f) {
@@ -97,7 +97,7 @@ test("no_subscribed_streams", () => {
         pinned_streams: [],
         same_as_before: sorted.same_as_before,
     });
-    assert.equal(stream_sort.first_stream_id(), undefined);
+    assert.equal(stream_list_sort.first_stream_id(), undefined);
 });
 
 test("basics", ({override_rewire}) => {
@@ -110,7 +110,7 @@ test("basics", ({override_rewire}) => {
     stream_data.add_sub(muted_active);
     stream_data.add_sub(muted_pinned);
 
-    override_rewire(stream_sort, "has_recent_activity", (sub) => sub.name !== "pneumonia");
+    override_rewire(stream_list_sort, "has_recent_activity", (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");
@@ -125,26 +125,26 @@ test("basics", ({override_rewire}) => {
     assert.deepEqual(sorted.dormant_streams, [pneumonia.stream_id]);
 
     // Test cursor helpers.
-    assert.equal(stream_sort.first_stream_id(), scalene.stream_id);
+    assert.equal(stream_list_sort.first_stream_id(), scalene.stream_id);
 
-    assert.equal(stream_sort.prev_stream_id(scalene.stream_id), undefined);
-    assert.equal(stream_sort.prev_stream_id(muted_pinned.stream_id), scalene.stream_id);
-    assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), muted_pinned.stream_id);
+    assert.equal(stream_list_sort.prev_stream_id(scalene.stream_id), undefined);
+    assert.equal(stream_list_sort.prev_stream_id(muted_pinned.stream_id), scalene.stream_id);
+    assert.equal(stream_list_sort.prev_stream_id(clarinet.stream_id), muted_pinned.stream_id);
 
     assert.equal(
-        stream_sort.next_stream_id(fast_tortoise.stream_id),
+        stream_list_sort.next_stream_id(fast_tortoise.stream_id),
         stream_hyphen_underscore_slash.stream_id,
     );
     assert.equal(
-        stream_sort.next_stream_id(stream_hyphen_underscore_slash.stream_id),
+        stream_list_sort.next_stream_id(stream_hyphen_underscore_slash.stream_id),
         muted_active.stream_id,
     );
     assert.equal(
-        stream_sort.next_stream_id(fast_tortoise.stream_id),
+        stream_list_sort.next_stream_id(fast_tortoise.stream_id),
         stream_hyphen_underscore_slash.stream_id,
     );
-    assert.equal(stream_sort.next_stream_id(muted_active.stream_id), pneumonia.stream_id);
-    assert.equal(stream_sort.next_stream_id(pneumonia.stream_id), undefined);
+    assert.equal(stream_list_sort.next_stream_id(muted_active.stream_id), pneumonia.stream_id);
+    assert.equal(stream_list_sort.next_stream_id(pneumonia.stream_id), undefined);
 
     // Test filtering
     sorted = sort_groups("s");
@@ -152,9 +152,9 @@ test("basics", ({override_rewire}) => {
     assert.deepEqual(sorted.normal_streams, [stream_hyphen_underscore_slash.stream_id]);
     assert.deepEqual(sorted.dormant_streams, []);
 
-    assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), undefined);
+    assert.equal(stream_list_sort.prev_stream_id(clarinet.stream_id), undefined);
 
-    assert.equal(stream_sort.next_stream_id(clarinet.stream_id), undefined);
+    assert.equal(stream_list_sort.next_stream_id(clarinet.stream_id), undefined);
 
     // Test searching entire word, case-insensitive
     sorted = sort_groups("PnEuMoNiA");
@@ -202,24 +202,24 @@ test("has_recent_activity", () => {
     user_settings.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.automatic.code;
 
-    stream_sort.set_filter_out_inactives();
+    stream_list_sort.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     stream_data.subscribe_myself(sub);
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     assert.ok(contains_sub(stream_data.subscribed_subs(), sub));
     assert.ok(!contains_sub(stream_data.unsubscribed_subs(), sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     sub.pin_to_top = true;
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
     sub.pin_to_top = false;
 
     const opts = {
@@ -229,72 +229,72 @@ test("has_recent_activity", () => {
     };
     stream_topic_history.add_message(opts);
 
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     user_settings.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.always.code;
 
-    stream_sort.set_filter_out_inactives();
+    stream_list_sort.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert.ok(!stream_sort.has_recent_activity(sub));
+    assert.ok(!stream_list_sort.has_recent_activity(sub));
 
     sub.pin_to_top = true;
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
     sub.pin_to_top = false;
 
     stream_data.subscribe_myself(sub);
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert.ok(!stream_sort.has_recent_activity(sub));
+    assert.ok(!stream_list_sort.has_recent_activity(sub));
 
     sub = {name: "lunch", subscribed: false, stream_id: 222};
     stream_data.add_sub(sub);
 
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     stream_topic_history.add_message(opts);
 
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     user_settings.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.never.code;
 
-    stream_sort.set_filter_out_inactives();
+    stream_list_sort.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     stream_data.subscribe_myself(sub);
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     sub.pin_to_top = true;
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 
     stream_topic_history.add_message(opts);
 
-    assert.ok(stream_sort.has_recent_activity(sub));
+    assert.ok(stream_list_sort.has_recent_activity(sub));
 });
 
 test("has_recent_activity_but_muted", () => {
     const sub = {name: "cats", subscribed: true, stream_id: 111, is_muted: true};
     stream_data.add_sub(sub);
-    assert.ok(stream_sort.has_recent_activity_but_muted(sub));
+    assert.ok(stream_list_sort.has_recent_activity_but_muted(sub));
 });
 
 test("filter inactives", () => {
     user_settings.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.automatic.code;
 
-    assert.ok(!stream_sort.is_filtering_inactives());
+    assert.ok(!stream_list_sort.is_filtering_inactives());
 
     _.times(30, (i) => {
         const name = "random" + i.toString();
@@ -308,14 +308,14 @@ test("filter inactives", () => {
         };
         stream_data.add_sub(sub);
     });
-    stream_sort.set_filter_out_inactives();
+    stream_list_sort.set_filter_out_inactives();
 
-    assert.ok(stream_sort.is_filtering_inactives());
+    assert.ok(stream_list_sort.is_filtering_inactives());
 });
 
 test("initialize", () => {
     user_settings.demote_inactive_streams = 1;
-    stream_sort.initialize();
+    stream_list_sort.initialize();
 
-    assert.ok(!stream_sort.is_filtering_inactives());
+    assert.ok(!stream_list_sort.is_filtering_inactives());
 });

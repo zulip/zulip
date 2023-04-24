@@ -15,7 +15,7 @@ const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const stream_sort = zrequire("stream_sort");
+const stream_list_sort = zrequire("stream_list_sort");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -158,7 +158,7 @@ test("sort_streams", ({override}) => {
         settings_config.demote_inactive_streams_values.always.code,
     );
 
-    stream_sort.set_filter_out_inactives();
+    stream_list_sort.set_filter_out_inactives();
     override(
         stream_topic_history,
         "stream_has_topics",
