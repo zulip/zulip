@@ -184,6 +184,7 @@ NON_EXPORTED_TABLES = {
     "zerver_emailchangestatus",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
+    "zerver_preregistrationrealm",
     "zerver_preregistrationuser",
     "zerver_preregistrationuser_streams",
     "zerver_realmreactivationstatus",
