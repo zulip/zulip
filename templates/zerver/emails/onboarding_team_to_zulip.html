@@ -1,0 +1,37 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+
+<p>
+    {% trans %}If you have already decided to use Zulip for your organization, welcome! You can use our <a href="{{ get_organization_started }}">guide for setting up your organization</a> to get started.{% endtrans %}
+</p>
+<p>
+    {% trans %}If you are still deciding between a few different options, here are some tips for successfully evaluating any team chat product:{% endtrans %}
+    <ul>
+        <li>{% trans %}<a href="{{ invite_users }}">Invite others</a> to explore it with you.{% endtrans %} {% trans %}You'll learn how the tool might (or might not) fit your organization when everyone brings their unique perspective. Besides, most of the time using a chat app is spent reading messages, and there's not much to read when you are alone.{% endtrans %} &#128521;</li>
+        <li>{% trans %}Run a week-long trial with your team. Stop using any other chat tools, and fully commit to trying something different. This is the only way to truly get a feel for how a new chat app will impact your team's communication and workflows in the coming months.{% endtrans %}</li>
+    </ul>
+</p>
+<p>
+    {% trans %}Choosing a tool that <a href="{{ why_zulip }}">enables efficient communication</a> is one of the most impactful ways to improve productivity in your organization, and we hope this advice helps you find the best chat app for your team.{% endtrans %}
+</p>
+
+<p>
+    {% if corporate_enabled %}
+        {{macros.contact_us_zulip_cloud(support_email)}}
+    {% else %}
+        {{macros.contact_us_self_hosted(support_email)}}
+    {% endif %}
+</p>
+
+{% endblock %}
+
+{% block manage_preferences %}
+
+<p><a href="{{ unsubscribe_link }}">{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}</a></p>
+
+{% endblock %}

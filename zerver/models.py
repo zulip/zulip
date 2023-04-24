@@ -4622,6 +4622,7 @@ EMAIL_TYPES = {
     "account_registered": ScheduledEmail.WELCOME,
     "onboarding_zulip_topics": ScheduledEmail.WELCOME,
     "onboarding_zulip_guide": ScheduledEmail.WELCOME,
+    "onboarding_team_to_zulip": ScheduledEmail.WELCOME,
     "digest": ScheduledEmail.DIGEST,
     "invitation_reminder": ScheduledEmail.INVITATION_REMINDER,
 }
