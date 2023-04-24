@@ -61,13 +61,13 @@
                 <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tooltip-template-id="topic-unmute-tooltip-template" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
                 <template id="topic-unmute-tooltip-template">
                     {{t "Unmute topic" }}
-                    {{tooltip_hotkey_hints "M"}}
+                    {{tooltip_hotkey_hints "Shift" "M"}}
                 </template>
             {{else}}
                 <i class="zulip-icon zulip-icon-mute on_hover_topic_mute recipient_bar_icon hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tooltip-template-id="topic-mute-tooltip-template" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
                 <template id="topic-mute-tooltip-template">
                     {{t "Mute topic" }}
-                    {{tooltip_hotkey_hints "M"}}
+                    {{tooltip_hotkey_hints "Shift" "M"}}
                 </template>
             {{/if}}
         </span>
