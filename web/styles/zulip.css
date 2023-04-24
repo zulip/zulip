@@ -72,9 +72,9 @@ body,
 %dark-theme {
     --color-default-text: hsl(0deg 0% 100%);
     --color-date: hsl(0deg 0% 100% / 75%);
-    --color-background-private-message-header: hsl(46deg 25% 20%);
+    --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
-    --color-background-private-message-content: hsl(46deg 25% 14%);
+    --color-background-private-message-content: hsl(46deg 10% 15%);
     --color-text-message-header: hsl(0deg 0% 100%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
