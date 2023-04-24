@@ -23,9 +23,10 @@ the registration flow has its own (nearly identical) copy of the fields below in
                 {{ csrf_input }}
                 <div id="registration-email">
                     <label for="id_email">{{ _("Email") }}</label>
-                    <div class="controls fakecontrol">
-                        <p>{{ email }}</p>
-                    </div>
+                    <div class="controls fakecontrol">{{ email }}</div>
+                    {% if first_time_login %}
+                    {% include 'zerver/new_user_email_address_visibility.html' %}
+                    {% endif %}
                 </div>
 
                 {% if first_time_terms_of_service_message_template %}
@@ -36,6 +37,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
                 </div>
                 {% endif %}
 
+                {% if terms_of_service %}
                 <div class="input-group terms-of-service">
                     {#
                     This is somewhat subtle.
@@ -57,6 +59,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
                         {% endfor %}
                     {% endif %}
                 </div>
+                {% endif %}
                 <div class="controls">
                     <button id="accept_tos_button" type="submit">{{ _('Continue') }}</button>
                     <input type="hidden" name="next" value="{{ next }}" />
@@ -65,4 +68,9 @@ the registration flow has its own (nearly identical) copy of the fields below in
         </div>
     </div>
 </div>
+
+{% if first_time_login %}
+{% include 'zerver/change_email_address_visibility_modal.html' %}
+{% endif %}
+
 {% endblock %}

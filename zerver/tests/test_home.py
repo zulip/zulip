@@ -558,6 +558,61 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/")
 
+        user = self.example_user("hamlet")
+        user.tos_version = "-1"
+        user.save()
+
+        result = self.client_post("/accounts/accept_terms/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("I agree to the", result)
+        self.assert_in_response(
+            "Administrators of this Zulip organization will be able to see this email address.",
+            result,
+        )
+
+        result = self.client_post(
+            "/accounts/accept_terms/",
+            {
+                "terms": True,
+                "email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        self.assertEqual(
+            user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+        )
+
+    def test_set_email_address_visibility_without_terms_of_service(self) -> None:
+        self.login("hamlet")
+        user = self.example_user("hamlet")
+        user.tos_version = "-1"
+        user.save()
+
+        with self.settings(TERMS_OF_SERVICE_VERSION=None):
+            result = self.client_get("/", dict(stream="Denmark"))
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response(
+                "Administrators of this Zulip organization will be able to see this email address.",
+                result,
+            )
+
+            result = self.client_post(
+                "/accounts/accept_terms/",
+                {
+                    "email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+                },
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "/")
+
+            user = self.example_user("hamlet")
+            self.assertEqual(
+                user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+            )
+
     def test_bad_narrow(self) -> None:
         self.login("hamlet")
         with self.assertLogs(level="WARNING") as m:

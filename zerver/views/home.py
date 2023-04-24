@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.cache import patch_cache_control
 
-from zerver.actions.user_settings import do_change_tos_version
+from zerver.actions.user_settings import do_change_tos_version, do_change_user_setting
 from zerver.context_processors import get_realm_from_request, get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
@@ -17,12 +17,15 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_counts import realm_user_count
-from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
+from zerver.models import PreregistrationUser, Realm, RealmUserDefault, Stream, UserProfile
 
 
 def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
     if user_profile is None:
         return False
+
+    if user_profile.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN:
+        return True
 
     if settings.TERMS_OF_SERVICE_VERSION is None:
         return False
@@ -37,20 +40,48 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
-            assert settings.TERMS_OF_SERVICE_VERSION is not None
+            assert (
+                settings.TERMS_OF_SERVICE_VERSION is not None
+                or request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+            )
             do_change_tos_version(request.user, settings.TERMS_OF_SERVICE_VERSION)
+
+            email_address_visibility = form.cleaned_data["email_address_visibility"]
+            if (
+                email_address_visibility is not None
+                and email_address_visibility != request.user.email_address_visibility
+            ):
+                do_change_user_setting(
+                    request.user,
+                    "email_address_visibility",
+                    email_address_visibility,
+                    acting_user=request.user,
+                )
             return redirect(home)
     else:
         form = ToSForm()
+
+    default_email_address_visibility = None
+    first_time_login = request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+    if first_time_login:
+        realm_user_default = RealmUserDefault.objects.get(realm=request.user.realm)
+        default_email_address_visibility = realm_user_default.email_address_visibility
 
     context = {
         "form": form,
         "email": request.user.delivery_email,
         # Text displayed when updating TERMS_OF_SERVICE_VERSION.
         "terms_of_service_message": settings.TERMS_OF_SERVICE_MESSAGE,
+        "terms_of_service_version": settings.TERMS_OF_SERVICE_VERSION,
         # HTML template used when agreeing to terms of service the
         # first time, e.g. after data import.
         "first_time_terms_of_service_message_template": None,
+        "first_time_login": first_time_login,
+        "default_email_address_visibility": default_email_address_visibility,
+        "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
+        "email_address_visibility_admins_only": UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        "email_address_visibility_moderators": UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        "email_address_visibility_nobody": UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
     }
 
     if (
