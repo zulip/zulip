@@ -429,7 +429,7 @@ export function parse_image_data(image) {
         const zid = rows.id($message);
         const message = message_store.get(zid);
         if (message === undefined) {
-            blueslip.error("Lightbox for unknown message " + zid);
+            blueslip.error("Lightbox for unknown message", {zid});
         } else {
             sender_full_name = message.sender_full_name;
         }

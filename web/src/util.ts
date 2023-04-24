@@ -46,10 +46,7 @@ export function lower_bound<T>(
 
 export const lower_same = function lower_same(a?: string, b?: string): boolean {
     if (a === undefined || b === undefined) {
-        blueslip.error(
-            `Cannot compare strings; at least one value is undefined: \
-${a ?? "(undefined)"}, ${b ?? "(undefined)"}`,
-        );
+        blueslip.error("Cannot compare strings; at least one value is undefined", {a, b});
         return false;
     }
     return a.toLowerCase() === b.toLowerCase();

@@ -117,5 +117,5 @@ export function reply_message(opts) {
         return;
     }
 
-    blueslip.error("unknown message type: " + message.type);
+    blueslip.error("unknown message type", {message, content});
 }

@@ -150,7 +150,7 @@ run_test("force_render", ({override}) => {
     assert.equal(num_rendered, 60 - 50 + 3);
 
     // Force a contrived error case for line coverage.
-    blueslip.expect("error", "cannot show key at this position: 10");
+    blueslip.expect("error", "cannot show key at this position");
     buddy_list.force_render({
         pos: 10,
     });

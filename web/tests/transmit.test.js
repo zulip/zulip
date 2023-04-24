@@ -178,7 +178,7 @@ run_test("reply_message_errors", () => {
         type: "bogus",
     };
 
-    blueslip.expect("error", "unknown message type: bogus");
+    blueslip.expect("error", "unknown message type");
 
     transmit.reply_message({
         message: bogus_message,

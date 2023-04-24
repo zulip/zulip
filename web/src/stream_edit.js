@@ -86,7 +86,7 @@ function get_sub_for_target(target) {
 
     const sub = sub_store.get(stream_id);
     if (!sub) {
-        blueslip.error("get_sub_for_target() failed id lookup: " + stream_id);
+        blueslip.error("get_sub_for_target() failed id lookup", {stream_id});
         return undefined;
     }
     return sub;

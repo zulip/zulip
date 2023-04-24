@@ -140,7 +140,10 @@ export function mark_all_as_read(args = {}) {
             } else {
                 // TODO: Ideally this would be a ui_report.error();
                 // the user needs to know that our operation failed.
-                blueslip.error("Failed to mark messages as read: " + xhr.responseText);
+                blueslip.error("Failed to mark messages as read", {
+                    status: xhr.status,
+                    body: xhr.responseText,
+                });
             }
             dialog_widget.hide_dialog_spinner();
         },
@@ -246,7 +249,10 @@ export function mark_as_unread_from_here(
                 // TODO: Ideally, this case would communicate the
                 // failure to the user, with some manual retry
                 // offered, since the most likely cause is a 502.
-                blueslip.error("Unexpected error marking messages as unread: " + xhr.responseText);
+                blueslip.error("Unexpected error marking messages as unread", {
+                    status: xhr.status,
+                    body: xhr.responseText,
+                });
             }
         },
     });

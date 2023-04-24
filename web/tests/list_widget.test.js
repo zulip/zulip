@@ -598,7 +598,7 @@ run_test("errors", () => {
     });
     blueslip.reset();
 
-    blueslip.expect("error", "List item is not a string: 999");
+    blueslip.expect("error", "List item is not a string");
     ListWidget.create($container, list, {
         modifier: () => 999,
         $simplebar_container: $scroll_container,
@@ -808,7 +808,7 @@ run_test("render item", () => {
     // Once we have initially rendered the widget, change the
     // behavior of the modifier function.
     rendering_item = true;
-    blueslip.expect("error", "List item is not a string: undefined");
+    blueslip.expect("error", "List item is not a string");
     widget_3.render_item(item);
     blueslip.reset();
 });

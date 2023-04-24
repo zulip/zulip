@@ -52,7 +52,7 @@ export function update(new_hash) {
     const old_hash = window.location.hash;
 
     if (!new_hash.startsWith("#")) {
-        blueslip.error("programming error: prefix hashes with #: " + new_hash);
+        blueslip.error("programming error: prefix hashes with #", {new_hash});
         return;
     }
 

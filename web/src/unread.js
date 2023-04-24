@@ -506,7 +506,7 @@ function remove_message_from_unread_mention_topics(message_id) {
 
     const per_stream_bucketer = unread_topic_counter.bucketer.get_bucket(stream_id);
     if (!per_stream_bucketer) {
-        blueslip.error(`Could not find per_stream_bucketer for ${message_id}.`);
+        blueslip.error("Could not find per_stream_bucketer", {message_id});
         return;
     }
 

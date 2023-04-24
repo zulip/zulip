@@ -229,7 +229,7 @@ export function create($container, list, opts) {
             const s = opts.modifier(item);
 
             if (typeof s !== "string") {
-                blueslip.error("List item is not a string: " + s);
+                blueslip.error("List item is not a string", {item: s});
                 continue;
             }
 
@@ -268,7 +268,7 @@ export function create($container, list, opts) {
         }
         const html = opts.modifier(item);
         if (typeof html !== "string") {
-            blueslip.error("List item is not a string: " + html);
+            blueslip.error("List item is not a string", {item: html});
             return;
         }
 

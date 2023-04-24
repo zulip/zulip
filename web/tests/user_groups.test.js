@@ -121,10 +121,8 @@ run_test("user_groups", () => {
     user_groups.init();
     assert.equal(user_groups.get_realm_user_groups().length, 0);
 
-    blueslip.expect("error", "Could not find user group with ID -1");
+    blueslip.expect("error", "Could not find user group", 5);
     assert.equal(user_groups.is_direct_member_of(15, -1), false);
-
-    blueslip.expect("error", "Could not find user group with ID -9999", 4);
     user_groups.add_members(-9999);
     user_groups.remove_members(-9999);
     user_groups.add_subgroups(-9999);
@@ -180,7 +178,7 @@ run_test("get_recursive_subgroups", () => {
 
     user_groups.add_subgroups(foo.id, [9999]);
     const foo_group = user_groups.get_user_group_from_id(foo.id);
-    blueslip.expect("error", "Could not find subgroup with ID 9999", 2);
+    blueslip.expect("error", "Could not find subgroup", 2);
     assert.deepEqual(user_groups.get_recursive_subgroups(foo_group), undefined);
     assert.deepEqual(user_groups.get_recursive_subgroups(test), undefined);
 });
@@ -235,11 +233,11 @@ run_test("is_user_in_group", () => {
     assert.equal(user_groups.is_user_in_group(foo.id, 6), true);
     assert.equal(user_groups.is_user_in_group(foo.id, 3), false);
 
-    blueslip.expect("error", "Could not find user group with ID 1111");
+    blueslip.expect("error", "Could not find user group");
     assert.equal(user_groups.is_user_in_group(1111, 3), false);
 
     user_groups.add_subgroups(foo.id, [9999]);
-    blueslip.expect("error", "Could not find subgroup with ID 9999");
+    blueslip.expect("error", "Could not find subgroup");
     assert.equal(user_groups.is_user_in_group(admins.id, 6), false);
 });
 

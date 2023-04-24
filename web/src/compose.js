@@ -163,7 +163,7 @@ export function create_message_object() {
             // user started composing to the old stream name and
             // manually entered the stream name, and it got past
             // validation. We should try to kill this code off eventually.
-            blueslip.error("Trying to send message with bad stream name: " + stream_name);
+            blueslip.error("Trying to send message with bad stream name", {stream_name});
             message.to = stream_name;
         }
         message.topic = topic;

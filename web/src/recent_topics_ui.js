@@ -777,7 +777,7 @@ function recenter_focus_if_off_screen() {
     const topic_offset = topic_offset_to_visible_area($topic_row);
     if (topic_offset === undefined) {
         // We don't need to return here since technically topic_offset is not visible.
-        blueslip.error(`Unable to get topic from row number ${row_focus}.`);
+        blueslip.error("Unable to get topic from row", {row_focus});
     }
 
     if (topic_offset !== "visible") {

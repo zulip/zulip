@@ -603,7 +603,7 @@ export function get_widget_for_dropdown_list_settings(property_name) {
         case "can_remove_subscribers_group_id":
             return stream_edit.can_remove_subscribers_group_widget;
         default:
-            blueslip.error("No dropdown list widget for property: " + property_name);
+            blueslip.error("No dropdown list widget for property", {property_name});
             return null;
     }
 }
@@ -695,7 +695,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             if (property_value !== undefined) {
                 set_input_element_value($elem, property_value);
             } else {
-                blueslip.error("Element refers to unknown property " + property_name);
+                blueslip.error("Element refers to unknown property", {property_name});
             }
     }
 
@@ -878,7 +878,9 @@ export function set_input_element_value($input_elem, value) {
             return $input_elem.val(value);
         }
     }
-    blueslip.error(`Failed to set value of property ${extract_property_name($input_elem)}`);
+    blueslip.error("Failed to set value of property", {
+        property: extract_property_name($input_elem),
+    });
     return undefined;
 }
 
@@ -986,7 +988,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value($elem, typeof current_val);
             } else {
-                blueslip.error("Element refers to unknown property " + property_name);
+                blueslip.error("Element refers to unknown property", {property_name});
             }
     }
     return current_val !== proposed_val;

@@ -169,7 +169,11 @@ export class BuddyList extends BuddyListConf {
         const chunk_size = pos + cushion_size - this.render_count;
 
         if (chunk_size <= 0) {
-            blueslip.error("cannot show key at this position: " + pos);
+            blueslip.error("cannot show key at this position", {
+                pos,
+                render_count: this.render_count,
+                chunk_size,
+            });
         }
 
         this.render_more({

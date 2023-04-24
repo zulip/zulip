@@ -45,7 +45,7 @@ test("update with same hash", () => {
 
 test("error for bad hashes", () => {
     const hash = "bogus";
-    blueslip.expect("error", "programming error: prefix hashes with #: bogus");
+    blueslip.expect("error", "programming error: prefix hashes with #");
     browser_history.update(hash);
 });
 

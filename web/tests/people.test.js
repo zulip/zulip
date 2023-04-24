@@ -411,7 +411,7 @@ test_people("check_active_non_active_users", () => {
     active_users = people.get_realm_users();
     assert.equal(active_users.length, 5);
     // Invalid ID
-    blueslip.expect("error", "No user 1000001 found.");
+    blueslip.expect("error", "No user found");
     people.is_person_active(1000001);
     assert.equal(people.is_person_active(maria.user_id), true);
     assert.equal(people.is_person_active(linus.user_id), true);
@@ -522,7 +522,7 @@ test_people("utcToZonedTime", ({override}) => {
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
     override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
-    blueslip.expect("error", "Got invalid date for timezone: Eriador/Rivendell");
+    blueslip.expect("error", "Got invalid date for timezone");
     people.get_user_time(me.user_id);
 });
 
@@ -795,7 +795,7 @@ test_people("message_methods", () => {
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 9999999");
+    blueslip.expect("error", "Unknown user_id in get_by_user_id");
     message = {
         avatar_url: undefined,
         sender_email: "foo@example.com",
@@ -868,7 +868,7 @@ test_people("extract_people_from_message", () => {
     };
     assert.ok(!people.is_known_user_id(maria.user_id));
 
-    blueslip.expect("error", `Added user late: user_id=${maria.user_id} email=${maria.email}`);
+    blueslip.expect("error", "Added user late");
     people.extract_people_from_message(message);
     assert.ok(people.is_known_user_id(maria.user_id));
     blueslip.reset();

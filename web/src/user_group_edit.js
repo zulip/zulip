@@ -46,7 +46,7 @@ function get_user_group_for_target(target) {
 
     const group = user_groups.get_user_group_from_id(user_group_id);
     if (!group) {
-        blueslip.error("get_user_group_for_target() failed id lookup: " + user_group_id);
+        blueslip.error("get_user_group_for_target() failed id lookup", {user_group_id});
         return undefined;
     }
     return group;

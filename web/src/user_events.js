@@ -25,7 +25,7 @@ export const update_person = function update(person) {
     const person_obj = people.get_by_user_id(person.user_id);
 
     if (!person_obj) {
-        blueslip.error("Got update_person event for unexpected user " + person.user_id);
+        blueslip.error("Got update_person event for unexpected user", {user_id: person.user_id});
         return;
     }
 
