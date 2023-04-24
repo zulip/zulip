@@ -67,6 +67,7 @@ export function get_user_topics_for_visibility_policy(visibility_policy) {
                     topic,
                     date_updated,
                     date_updated_str,
+                    visibility_policy,
                 });
             }
         }

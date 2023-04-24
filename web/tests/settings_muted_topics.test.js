@@ -36,6 +36,7 @@ run_test("settings", ({override}) => {
                 stream: frontend.name,
                 stream_id: frontend.stream_id,
                 topic: "js",
+                visibility_policy: user_topics.all_visibility_policies.MUTED,
             },
         ]);
         populate_list_called = true;
