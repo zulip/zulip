@@ -65,6 +65,10 @@ export function clear_warnings(): void {
     $(`#compose_banners .${CSS.escape(WARNING)}`).remove();
 }
 
+export function clear_all(): void {
+    $(`#compose_banners`).empty();
+}
+
 export function show_error_message(message: string, classname: string, $bad_input?: JQuery): void {
     $(`#compose_banners .${CSS.escape(classname)}`).remove();
 

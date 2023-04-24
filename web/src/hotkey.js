@@ -310,9 +310,7 @@ export function process_escape_key(e) {
 
             // Check for errors in compose box; close errors if they exist
             if ($(".compose_banner").length) {
-                compose_banner.clear_message_sent_banners();
-                compose_banner.clear_errors();
-                compose_banner.clear_warnings();
+                compose_banner.clear_all();
                 return true;
             }
 
