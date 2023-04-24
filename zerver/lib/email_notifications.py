@@ -682,6 +682,7 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
         # or comes in while they are dealing with their inbox.
         "onboarding_zulip_topics": timedelta(days=2, hours=-1),
         "onboarding_zulip_guide": timedelta(days=4, hours=-1),
+        "onboarding_team_to_zulip": timedelta(days=6, hours=-1),
     }
 
     user_tz = user.timezone
@@ -693,17 +694,24 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
     # -Do not send emails on Saturday or Sunday
     # -Have at least one weekday between each (potential) email
 
+    # User signed up on Monday
+    if signup_day == 1:
+        # Send onboarding_team_to_zulip on Tuesday
+        onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
+
     # User signed up on Tuesday
     if signup_day == 2:
-        # Send onboarding_zulip_topics on Thursday
         # Send onboarding_zulip_guide on Monday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
+        # Send onboarding_team_to_zulip on Wednesday
+        onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
     # User signed up on Wednesday
     if signup_day == 3:
-        # Send onboarding_zulip_topics on Friday
         # Send onboarding_zulip_guide on Tuesday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
+        # Send onboarding_team_to_zulip on Thursday
+        onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
     # User signed up on Thursday
     if signup_day == 4:
@@ -711,6 +719,8 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
         onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Wednesday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
+        # Send onboarding_team_to_zulip on Friday
+        onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
     # User signed up on Friday
     if signup_day == 5:
@@ -718,6 +728,15 @@ def get_onboarding_email_schedule(user: UserProfile) -> Dict[str, timedelta]:
         onboarding_emails["onboarding_zulip_topics"] = timedelta(days=4, hours=-1)
         # Send onboarding_zulip_guide on Thursday
         onboarding_emails["onboarding_zulip_guide"] = timedelta(days=6, hours=-1)
+        # Send onboarding_team_to_zulip on Monday
+        onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=10, hours=-1)
+
+    # User signed up on Saturday; no adjustments needed
+
+    # User signed up on Sunday
+    if signup_day == 7:
+        # Send onboarding_team_to_zulip on Monday
+        onboarding_emails["onboarding_team_to_zulip"] = timedelta(days=8, hours=-1)
 
     return onboarding_emails
 
@@ -879,6 +898,28 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
             from_address=from_address,
             context=onboarding_zulip_guide_context,
             delay=onboarding_email_schedule["onboarding_zulip_guide"],
+        )
+
+    # We only send the onboarding_team_to_zulip email to user who created the organization.
+    if realm_creation:
+        onboarding_team_to_zulip_context = common_context(user)
+        onboarding_team_to_zulip_context.update(
+            unsubscribe_link=unsubscribe_link,
+            get_organization_started=realm_url
+            + "/help/getting-your-organization-started-with-zulip",
+            invite_users=realm_url + "/help/invite-users-to-join",
+            trying_out_zulip=realm_url + "/help/trying-out-zulip",
+            why_zulip="https://zulip.com/why-zulip/",
+        )
+
+        send_future_email(
+            "zerver/emails/onboarding_team_to_zulip",
+            user.realm,
+            to_user_ids=[user.id],
+            from_name=from_name,
+            from_address=from_address,
+            context=onboarding_team_to_zulip_context,
+            delay=onboarding_email_schedule["onboarding_team_to_zulip"],
         )
 
 
