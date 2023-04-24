@@ -16,6 +16,7 @@ from scripts.lib.zulip_tools import (
     get_config,
     get_config_file,
     get_deploy_options,
+    get_deploy_root,
     get_deployment_lock,
     make_deploy_path,
     overwrite_symlink,
@@ -133,7 +134,9 @@ try:
             preexec_fn=su_to_zulip,
         )
 
-    subprocess.check_call(["./scripts/lib/update-git-upstream"], preexec_fn=su_to_zulip)
+    subprocess.check_call(
+        [os.path.join(get_deploy_root(), "scripts/lib/update-git-upstream")], preexec_fn=su_to_zulip
+    )
 
     # Generate the deployment directory via git worktree from our local repository.
     try:
