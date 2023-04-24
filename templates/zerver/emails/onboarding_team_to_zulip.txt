@@ -1,0 +1,26 @@
+{% trans %}If you have already decided to use Zulip for your organization, welcome! You can use our guide for setting up your organization to get started.{% endtrans %}
+
+<{{ get_organization_started }}>
+
+{% trans %}If you are still deciding between a few different options, here are some tips for successfully evaluating any team chat product:{% endtrans %}
+
+
+- {% trans %}Invite others to explore it with you: {{ invite_users }}.{% endtrans %} {% trans %}You'll learn how the tool might (or might not) fit your organization when everyone brings their unique perspective. Besides, most of the time using a chat app is spent reading messages, and there's not much to read when you are alone.{% endtrans %} ;)
+
+
+- {% trans %}Run a week-long trial with your team. Stop using any other chat tools, and fully commit to trying something different. This is the only way to truly get a feel for how a new chat app will impact your team's communication and workflows in the coming months.{% endtrans %}
+
+
+{% trans %}Choosing a tool that enables efficient communication is one of the most impactful ways to improve productivity in your organization, and we hope this advice helps you find the best chat app for your team.{% endtrans %}
+
+<{{ why_zulip }}>
+
+{% if corporate_enabled %}
+    {% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
+{% else %}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at {{ support_email }}.{% endtrans %}
+{% endif %}
+
+----
+{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}:
+{{ unsubscribe_link }}
