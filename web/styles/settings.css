@@ -1532,7 +1532,9 @@ $option_title_width: 180px;
             display: none;
         }
     }
+}
 
+.dropdown-list-widget, #dropdown_overlay {
     .dropdown-search > input[type="text"] {
         margin: 9px;
         /* 100% - 2* (9px (margin) + 1px (border) + 6px (padding)) */

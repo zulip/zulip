@@ -1273,7 +1273,7 @@ input.search-query {
   background-image: none;
   cursor: default;
 }
-.open > .dropdown-menu {
+.open .dropdown-menu {
   display: block;
 }
 .dropdown-backdrop {

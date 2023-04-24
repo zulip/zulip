@@ -745,7 +745,7 @@ a.compose_control_button.hide {
     margin: auto;
 }
 
-#compose_recipient_selection_dropdown {
+#compose_recipient_selection_dropdown, #dropdown_overlay {
     display: flex;
     justify-content: flex-start;
 
@@ -764,6 +764,10 @@ a.compose_control_button.hide {
         bottom: 100%;
         left: -10px;
         margin-bottom: 17px;
+
+        @media (height < 530px) {
+            display: none;
+        }
     }
 
     .dropdown .dropdown-menu {

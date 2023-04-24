@@ -252,6 +252,11 @@ export function open_modal(
 }
 
 export function close_overlay(name: string): void {
+    if (name === "dropdown") {
+        $("#id_compose_select_recipient > .dropdown-toggle").dropdown("toggle");
+        return;
+    }
+
     call_hooks(pre_close_hooks);
 
     if (name !== open_overlay_name) {

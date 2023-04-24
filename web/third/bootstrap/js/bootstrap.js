@@ -365,6 +365,8 @@
           $('<div class="dropdown-backdrop"/>').insertBefore($(this)).on('click', clearMenus)
         }
         $parent.toggleClass('open')
+        $("#dropdown_overlay").addClass('open')
+        $("#dropdown_overlay .overlay-content").append($parent.find(".dropdown-menu").clone());
       }
 
       $this.focus()
@@ -420,6 +422,8 @@
     $(toggle).each(function () {
       getParent($(this)).removeClass('open')
     })
+    $("#dropdown_overlay .overlay-content").empty();
+    $("#dropdown_overlay").removeClass('open')
   }
 
   function getParent($this) {
@@ -467,9 +471,15 @@
 
   /* APPLY TO STANDARD DROPDOWN ELEMENTS
    * =================================== */
+  function maybeClearMenus(e) {
+    if ($(e.target).parents(".dropdown-menu").length > 0) {
+      return
+    }
+    clearMenus();
+  }
 
   $(document)
-    .on('click.dropdown.data-api', clearMenus)
+    .on('click.dropdown.data-api', maybeClearMenus)
     .on('click.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
     .on('click.dropdown.data-api'  , toggle, Dropdown.prototype.toggle)
     .on('keydown.dropdown.data-api', toggle + ', [role=menu]' , Dropdown.prototype.keydown)
