@@ -555,10 +555,15 @@ class TestFollowupEmails(ZulipTestCase):
         )
 
 
-class TestFollowupEmailDelay(ZulipTestCase):
-    def test_get_onboarding_email_schedule(self) -> None:
-        user_profile = self.example_user("hamlet")
-        dates_joined = {
+class TestOnboardingEmailDelay(ZulipTestCase):
+    def verify_onboarding_email_schedule(
+        self,
+        user: UserProfile,
+        date_joined: str,
+        onboarding_zulip_topics: int,
+        onboarding_zulip_guide: int,
+    ) -> None:
+        DAY_OF_WEEK = {
             "Monday": datetime(2018, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
             "Tuesday": datetime(2018, 1, 2, 1, 0, 0, 0, tzinfo=timezone.utc),
             "Wednesday": datetime(2018, 1, 3, 1, 0, 0, 0, tzinfo=timezone.utc),
@@ -567,137 +572,55 @@ class TestFollowupEmailDelay(ZulipTestCase):
             "Saturday": datetime(2018, 1, 6, 1, 0, 0, 0, tzinfo=timezone.utc),
             "Sunday": datetime(2018, 1, 7, 1, 0, 0, 0, tzinfo=timezone.utc),
         }
+        WEEKEND = [6, 7]
+
+        user.date_joined = DAY_OF_WEEK[date_joined]
+        onboarding_email_schedule = get_onboarding_email_schedule(user)
+
+        # onboarding_zulip_topics
+        day_sent = (
+            DAY_OF_WEEK[date_joined] + onboarding_email_schedule["onboarding_zulip_topics"]
+        ).isoweekday()
+        self.assertEqual(day_sent, onboarding_zulip_topics)
+        self.assertNotIn(day_sent, WEEKEND)
+
+        # onboarding_zulip_guide
+        day_sent = (
+            DAY_OF_WEEK[date_joined] + onboarding_email_schedule["onboarding_zulip_guide"]
+        ).isoweekday()
+        self.assertEqual(day_sent, onboarding_zulip_guide)
+        self.assertNotIn(day_sent, WEEKEND)
+
+    def test_get_onboarding_email_schedule(self) -> None:
+        user_profile = self.example_user("hamlet")
+
+        # joined Monday: schedule = Wednesday:3, Friday:5,
+        self.verify_onboarding_email_schedule(user_profile, "Monday", 3, 5)
+
+        # joined Tuesday: schedule = Thursday:4, Monday:1
+        self.verify_onboarding_email_schedule(user_profile, "Tuesday", 4, 1)
+
+        # joined Wednesday: schedule = Friday:5, Tuesday:2
+        self.verify_onboarding_email_schedule(user_profile, "Wednesday", 5, 2)
+
+        # joined Thursday: schedule = Monday:1, Wednesday:3
+        self.verify_onboarding_email_schedule(user_profile, "Thursday", 1, 3)
+
+        # joined Friday: schedule = Tuesday:2, Thursday:4
+        self.verify_onboarding_email_schedule(user_profile, "Friday", 2, 4)
+
+        # joined Saturday: schedule = Monday:1, Wednesday:3
+        self.verify_onboarding_email_schedule(user_profile, "Saturday", 1, 3)
+
+        # joined Sunday: schedule = Tuesday:2, Thursday:4
+        self.verify_onboarding_email_schedule(user_profile, "Sunday", 2, 4)
+
+    def test_time_offset_for_onboarding_email_schedule(self) -> None:
+        user_profile = self.example_user("hamlet")
         days_delayed = {
-            "2": timedelta(days=2, hours=-1),
             "4": timedelta(days=4, hours=-1),
             "6": timedelta(days=6, hours=-1),
         }
-
-        # joined Monday
-        user_profile.date_joined = dates_joined["Monday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-
-        # onboarding_zulip_topics email sent on Wednesday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_topics"],
-            days_delayed["2"],
-        )
-        self.assertEqual((dates_joined["Monday"] + days_delayed["2"]).isoweekday(), 3)
-
-        # onboarding_zulip_guide sent on Friday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_guide"],
-            days_delayed["4"],
-        )
-        self.assertEqual((dates_joined["Monday"] + days_delayed["4"]).isoweekday(), 5)
-
-        # joined Tuesday
-        user_profile.date_joined = dates_joined["Tuesday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-
-        # onboarding_zulip_topics email sent on Thursday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_topics"],
-            days_delayed["2"],
-        )
-        self.assertEqual((dates_joined["Tuesday"] + days_delayed["2"]).isoweekday(), 4)
-
-        # onboarding_zulip_guide sent on Monday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_guide"],
-            days_delayed["6"],
-        )
-        self.assertEqual((dates_joined["Tuesday"] + days_delayed["6"]).isoweekday(), 1)
-
-        # joined Wednesday
-        user_profile.date_joined = dates_joined["Wednesday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-
-        # onboarding_zulip_topics email sent on Friday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_topics"],
-            days_delayed["2"],
-        )
-        self.assertEqual((dates_joined["Wednesday"] + days_delayed["2"]).isoweekday(), 5)
-
-        # onboarding_zulip_guide sent on Tuesday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_guide"],
-            days_delayed["6"],
-        )
-        self.assertEqual((dates_joined["Wednesday"] + days_delayed["6"]).isoweekday(), 2)
-
-        # joined Thursday
-        user_profile.date_joined = dates_joined["Thursday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-
-        # onboarding_zulip_topics email sent on Monday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_topics"],
-            days_delayed["4"],
-        )
-        self.assertEqual((dates_joined["Thursday"] + days_delayed["4"]).isoweekday(), 1)
-
-        # onboarding_zulip_guide sent on Wednesday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_guide"],
-            days_delayed["6"],
-        )
-        self.assertEqual((dates_joined["Thursday"] + days_delayed["6"]).isoweekday(), 3)
-
-        # joined Friday
-        user_profile.date_joined = dates_joined["Friday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-
-        # onboarding_zulip_topics email sent on Tuesday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_topics"],
-            days_delayed["4"],
-        )
-        self.assertEqual((dates_joined["Friday"] + days_delayed["4"]).isoweekday(), 2)
-
-        # onboarding_zulip_guide sent on Thursday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_guide"],
-            days_delayed["6"],
-        )
-        self.assertEqual((dates_joined["Friday"] + days_delayed["6"]).isoweekday(), 4)
-
-        # joined Saturday
-        user_profile.date_joined = dates_joined["Saturday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-
-        # onboarding_zulip_topics email sent on Monday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_topics"],
-            days_delayed["2"],
-        )
-        self.assertEqual((dates_joined["Saturday"] + days_delayed["2"]).isoweekday(), 1)
-
-        # onboarding_zulip_guide sent on Wednesday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_guide"],
-            days_delayed["4"],
-        )
-        self.assertEqual((dates_joined["Saturday"] + days_delayed["4"]).isoweekday(), 3)
-
-        # joined Sunday
-        user_profile.date_joined = dates_joined["Sunday"]
-        onboarding_email_schedule = get_onboarding_email_schedule(user_profile)
-
-        # onboarding_zulip_topics email sent on Tuesday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_topics"],
-            days_delayed["2"],
-        )
-        self.assertEqual((dates_joined["Sunday"] + days_delayed["2"]).isoweekday(), 2)
-
-        # onboarding_zulip_guide sent on Thursday
-        self.assertEqual(
-            onboarding_email_schedule["onboarding_zulip_guide"],
-            days_delayed["4"],
-        )
-        self.assertEqual((dates_joined["Sunday"] + days_delayed["4"]).isoweekday(), 4)
 
         # Time offset of America/Phoenix is -07:00
         user_profile.timezone = "America/Phoenix"
