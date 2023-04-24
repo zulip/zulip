@@ -140,7 +140,7 @@ const ls = {
         const old = this.getData(v1, name);
         this.removeData(v1, name);
 
-        if (old && old.__valid) {
+        if (old?.__valid) {
             const data = callback(old.data);
             this.setData(v2, name, data, Number.POSITIVE_INFINITY);
 
