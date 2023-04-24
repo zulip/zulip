@@ -96,7 +96,10 @@ export function show_compose_box(msg_type, opts) {
         // button. It would be nice if the dropdown supported a way to attach
         // the "DM" button display string so we wouldn't have to manually change
         // it here.
-        $("#compose_select_recipient_name").text($t({defaultMessage: "DM"}));
+        const direct_message_label = $t({defaultMessage: "DM"});
+        $("#compose_select_recipient_name").html(
+            `<i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> ${direct_message_label}`,
+        );
     }
     compose_banner.clear_errors();
     compose_banner.clear_warnings();

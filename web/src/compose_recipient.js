@@ -202,6 +202,7 @@ function get_options_for_recipient_widget() {
     const direct_messages_option = {
         name: $t({defaultMessage: "Direct message"}),
         value: DIRECT_MESSAGE,
+        is_direct_message: true,
     };
     if (
         page_params.realm_private_message_policy ===
