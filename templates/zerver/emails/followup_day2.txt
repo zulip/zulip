@@ -7,7 +7,7 @@
 {% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to move messages ({{ move_messages_link }}), rename topics ({{ rename_topics_link }}), or even move a topic to a different stream ({{ move_topic_to_different_stream_link }}).{% endtrans %}
 
 
-{{ _("It's time to chat.") }}
+{{ _("Go to Zulip") }}:
 <{{ realm_uri }}>
 
 ----
