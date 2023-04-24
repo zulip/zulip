@@ -2639,6 +2639,10 @@ select.invite-as {
         display: none;
     }
 
+    .flatpickr-month {
+        border-radius: 5px 5px 0 0;
+    }
+
     .flatpickr-time-separator {
         position: relative;
         left: 5px;
