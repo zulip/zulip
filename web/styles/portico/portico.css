@@ -934,13 +934,22 @@ input.new-organization-button {
 }
 
 #registration-email {
+    margin-bottom: 18px;
+
     & label {
         float: left;
-        padding-top: 5px;
         width: 100%;
         display: block;
-        margin: 0;
+        margin-left: 2px;
+        margin-bottom: 0;
         text-align: left;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .controls {
+        padding-top: 25px;
+        margin: 2px;
     }
 }
 

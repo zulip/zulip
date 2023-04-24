@@ -330,6 +330,11 @@ html {
         margin-bottom: 20px;
         font-size: 16px;
         font-weight: 400;
+        max-width: 400px;
+    }
+
+    #new-user-email-address-visibility {
+        max-width: 400px;
     }
 
     .center-block {
