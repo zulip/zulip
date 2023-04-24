@@ -126,6 +126,7 @@ test("get_mutes", () => {
             stream: devel.name,
             stream_id: devel.stream_id,
             topic: "java",
+            visibility_policy: all_visibility_policies.MUTED,
         },
         {
             date_updated: 1577836800000,
@@ -133,6 +134,7 @@ test("get_mutes", () => {
             stream: office.name,
             stream_id: office.stream_id,
             topic: "gossip",
+            visibility_policy: all_visibility_policies.MUTED,
         },
     ]);
 });
@@ -178,6 +180,7 @@ test("set_user_topics", () => {
                 stream: social.name,
                 stream_id: social.stream_id,
                 topic: "breakfast",
+                visibility_policy: all_visibility_policies.MUTED,
             },
             {
                 date_updated: 1577836800000,
@@ -185,6 +188,7 @@ test("set_user_topics", () => {
                 stream: design.name,
                 stream_id: design.stream_id,
                 topic: "typography",
+                visibility_policy: all_visibility_policies.MUTED,
             },
         ],
     );
