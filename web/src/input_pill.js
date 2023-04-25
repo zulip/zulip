@@ -385,8 +385,8 @@ export function create(opts) {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
-        getByElement: funcs.getByElement,
-        items: funcs.items,
+        getByElement: funcs.getByElement.bind(funcs),
+        items: funcs.items.bind(funcs),
 
         onPillCreate(callback) {
             store.onPillCreate = callback;
@@ -401,9 +401,9 @@ export function create(opts) {
         },
 
         clear: funcs.removeAllPills.bind(funcs),
-        clear_text: funcs.clear_text,
-        is_pending: funcs.is_pending,
-        _get_pills_for_testing: funcs._get_pills_for_testing,
+        clear_text: funcs.clear_text.bind(funcs),
+        is_pending: funcs.is_pending.bind(funcs),
+        _get_pills_for_testing: funcs._get_pills_for_testing.bind(funcs),
     };
 
     return prototype;
