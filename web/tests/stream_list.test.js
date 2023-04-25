@@ -27,8 +27,8 @@ mock_esm("../src/keydown_util", {
 });
 const scroll_util = mock_esm("../src/scroll_util", {
     scroll_element_into_container() {},
+    get_scroll_element: ($element) => $element,
 });
-mock_esm("../src/ui", {get_scroll_element: ($element) => $element});
 mock_esm("../src/unread", {
     num_unread_for_stream: () => ({
         unmuted_count: num_unread_for_stream,

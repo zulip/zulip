@@ -10,8 +10,8 @@ import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as settings_ui from "./settings_ui";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -155,7 +155,7 @@ export function populate_linkifiers(linkifiers_data) {
                 );
             },
             onupdate() {
-                ui.reset_scrollbar($linkifiers_table);
+                scroll_util.reset_scrollbar($linkifiers_table);
             },
         },
         $parent_container: $("#linkifier-settings").expectOne(),

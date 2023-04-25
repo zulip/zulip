@@ -25,7 +25,6 @@ import * as stream_popover from "./stream_popover";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 
@@ -705,7 +704,7 @@ export function set_event_handlers() {
     }
 
     // check for user scrolls on streams list for first time
-    ui.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
+    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
         has_scrolled = true;
         toggle_pm_header_icon();
     });

@@ -40,7 +40,6 @@ import * as stream_muting from "./stream_muting";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
@@ -280,16 +279,18 @@ export function add_sub_to_table(sub) {
     const $new_row = $(html);
 
     if (stream_create.get_name() === sub.name) {
-        ui.get_content_element($(".streams-list")).prepend($new_row);
-        ui.reset_scrollbar($(".streams-list"));
+        scroll_util.get_content_element($(".streams-list")).prepend($new_row);
+        scroll_util.reset_scrollbar($(".streams-list"));
     } else {
-        ui.get_content_element($(".streams-list")).append($new_row);
+        scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
 
     const settings_html = render_stream_settings({
         sub: stream_settings_data.get_sub_for_settings(sub),
     });
-    ui.get_content_element($("#streams_overlay_container .settings")).append($(settings_html));
+    scroll_util
+        .get_content_element($("#streams_overlay_container .settings"))
+        .append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -443,7 +444,7 @@ export function render_left_panel_superset() {
         subscriptions: stream_settings_data.get_updated_unsorted_subs(),
     });
 
-    ui.get_content_element($("#streams_overlay_container .streams-list")).html(html);
+    scroll_util.get_content_element($("#streams_overlay_container .streams-list")).html(html);
 }
 
 export function update_empty_left_panel_message() {
@@ -516,14 +517,14 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         widgets.set(stream_id, $(row).detach());
     }
 
-    ui.reset_scrollbar($("#subscription_overlay .streams-list"));
+    scroll_util.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
 
     for (const stream_id of all_stream_ids) {
-        ui.get_content_element($("#streams_overlay_container .streams-list")).append(
-            widgets.get(stream_id),
-        );
+        scroll_util
+            .get_content_element($("#streams_overlay_container .streams-list"))
+            .append(widgets.get(stream_id));
     }
     maybe_reset_right_panel();
     update_empty_left_panel_message();

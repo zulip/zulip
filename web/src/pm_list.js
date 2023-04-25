@@ -6,7 +6,6 @@ import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
 
@@ -60,7 +59,7 @@ export function _build_private_messages_list() {
 }
 
 function set_dom_to(new_dom) {
-    const $container = ui.get_content_element($("#private_messages_list"));
+    const $container = scroll_util.get_content_element($("#private_messages_list"));
 
     function replace_content(html) {
         $container.html(html);
@@ -140,7 +139,7 @@ function scroll_pm_into_view($target_li) {
 
 function scroll_all_private_into_view() {
     const $container = $("#left_sidebar_scroll_container");
-    const $scroll_element = ui.get_scroll_element($container);
+    const $scroll_element = scroll_util.get_scroll_element($container);
     $scroll_element.scrollTop(0);
 }
 

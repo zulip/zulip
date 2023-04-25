@@ -10,7 +10,7 @@ import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as realm_playground from "./realm_playground";
-import * as ui from "./ui";
+import * as scroll_util from "./scroll_util";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -72,7 +72,7 @@ export function populate_playgrounds(playgrounds_data) {
                 );
             },
             onupdate() {
-                ui.reset_scrollbar($playgrounds_table);
+                scroll_util.reset_scrollbar($playgrounds_table);
             },
         },
         $parent_container: $("#playground-settings").expectOne(),
