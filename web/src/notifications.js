@@ -23,7 +23,6 @@ import * as settings_config from "./settings_config";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
 import * as stream_ui_updates from "./stream_ui_updates";
-import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -258,7 +257,7 @@ export function process_notification(notification) {
     let notification_source;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
-    ui.replace_emoji_with_text($content);
+    ui_util.replace_emoji_with_text($content);
     spoilers.hide_spoilers_in_notification($content);
 
     if (
