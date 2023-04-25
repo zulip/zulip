@@ -89,12 +89,6 @@ export function create(opts) {
                 return;
             }
 
-            const payload = {
-                item,
-            };
-
-            store.pills.push(payload);
-
             const has_image = item.img_src !== undefined;
 
             const opts = {
@@ -120,7 +114,12 @@ export function create(opts) {
             }
 
             const pill_html = render_input_pill(opts);
-            payload.$element = $(pill_html);
+            const payload = {
+                item,
+                $element: $(pill_html),
+            };
+
+            store.pills.push(payload);
             store.$input.before(payload.$element);
         },
 
