@@ -128,7 +128,7 @@ def build_email(
         # Emails use unhashed image URLs so that those continue to
         # work over time, even if the prod-static directory is cleaned
         # out; as such, they just use a STATIC_URL prefix.
-        "email_images_base_uri": settings.STATIC_URL + "images/emails",
+        "email_images_base_url": settings.STATIC_URL + "images/emails",
         "physical_address": settings.PHYSICAL_ADDRESS,
     }
 
