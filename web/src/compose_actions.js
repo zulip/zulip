@@ -283,8 +283,8 @@ export function start(msg_type, opts) {
     }
 
     compose_recipient.compose_recipient_widget.render(opts.stream);
-    const $stream_header_colorblock = $("#compose_recipient_selection_dropdown").find(
-        ".stream_header_colorblock",
+    const $stream_header_colorblock = $(
+        "#compose_recipient_selection_dropdown .stream_header_colorblock",
     );
     stream_bar.decorate(opts.stream, $stream_header_colorblock);
 
