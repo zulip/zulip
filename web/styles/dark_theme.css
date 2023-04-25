@@ -896,6 +896,10 @@
         text-shadow: none;
     }
 
+    .unread_marker {
+        left: 0;
+    }
+
     .selected_message .messagebox-content {
         border-color: hsl(217deg 64% 59% / 70%);
     }
@@ -1337,7 +1341,7 @@
     .sub-unsub-message span::after,
     .date_row span::before,
     .date_row span::after {
-        opacity: 0.5;
+        opacity: 0.15;
         border-bottom: 1px solid hsl(0deg 0% 100%);
     }
 

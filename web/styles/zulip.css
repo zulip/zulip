@@ -67,7 +67,8 @@ body,
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-background-stream-message-content: hsl(0deg 0% 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
-    --color-message-list-border: hsl(0deg 0% 80%);
+    --color-message-list-border: hsl(0deg 0% 0% / 10%);
+    --color-message-header-contents-border: hsl(0deg 0% 0% / 5%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 94%);
@@ -75,6 +76,7 @@ body,
     --color-background-navbar: hsl(0deg 0% 96%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
+    --color-unread-marker: hsl(217deg 100% 50%);
 }
 
 %dark-theme {
@@ -87,12 +89,13 @@ body,
     --color-text-message-header: hsl(0deg 0% 100%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
-    --color-message-list-border: hsl(0deg 0% 7%);
+    --color-message-header-contents-border: hsl(0deg 0% 0% / 60%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-mention: hsl(8deg 78% 43% / 15%);
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
+    --color-unread-marker: hsl(217deg 100% 60%);
 }
 
 :root.dark-theme {
@@ -1144,7 +1147,7 @@ td.pointer {
         align-items: center;
         justify-content: space-between;
         height: 28px;
-        border: 1px solid var(--color-message-list-border);
+        border: 1px solid var(--color-message-header-contents-border);
         border-radius: 7px 7px 0 0;
     }
 
@@ -1450,6 +1453,7 @@ td.pointer {
     z-index: 2;
     bottom: 1px;
     transition: all 0.3s ease-out;
+    left: -1px;
 
     &.slow_fade {
         transition: all 2s ease-out;
@@ -1461,7 +1465,7 @@ td.pointer {
 }
 
 .unread-marker-fill {
-    border-left: 2px solid hsl(107deg 74% 29%);
+    border-left: 2px solid var(--color-unread-marker);
     height: 100%;
 }
 
