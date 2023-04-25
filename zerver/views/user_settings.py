@@ -197,6 +197,10 @@ def json_change_settings(
     demote_inactive_streams: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
     ),
+    web_stream_unreads_count_display_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+        default=None,
+    ),
     timezone: Optional[str] = REQ(str_validator=check_timezone, default=None),
     email_notifications_batching_period_seconds: Optional[int] = REQ(
         json_validator=check_int, default=None
