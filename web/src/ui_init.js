@@ -24,6 +24,7 @@ import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_textarea from "./compose_textarea";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -668,6 +669,7 @@ export function initialize_everything() {
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
+    compose_textarea.initialize();
     search.initialize();
     tutorial.initialize();
     notifications.initialize();
@@ -694,7 +696,6 @@ export function initialize_everything() {
     drafts.initialize();
     sent_messages.initialize();
     hotspots.initialize();
-    ui.initialize();
     typing.initialize();
     starred_messages.initialize();
     user_status_ui.initialize();
