@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 177**:
+
+* [`POST /register`](/api/register-queue),
+  [`GET /users/me`](/api/get-own-user): The `avatar_url`
+  included in return values of these endpoints will now be `null`
+  when client can compute the url.
+
 **Feature level 176**
 
 * [`POST /realm/filters`](/api/add-linkifier), [`realm/filters/<int:filter_id>`](/api/update-linkifier):

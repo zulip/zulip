@@ -343,7 +343,10 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
         default_sending_stream=default_sending_stream_name,
         default_events_register_stream=default_events_register_stream_name,
         default_all_public_streams=user_profile.default_all_public_streams,
-        avatar_url=avatar_url(user_profile),
+        # Since we don't know what the client
+        # supports at this point in the code, we
+        # just assume client_gravatar = False
+        avatar_url=avatar_url(user_profile, client_gravatar=False),
         services=get_service_dicts_for_bot(user_profile.id),
     )
 

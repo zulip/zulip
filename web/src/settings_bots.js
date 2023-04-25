@@ -73,7 +73,7 @@ export function render_bots() {
             email: elem.email,
             user_id: elem.user_id,
             type: type_id_to_string(elem.bot_type),
-            avatar_url: elem.avatar_url,
+            avatar_url: elem.avatar_url || people.medium_avatar_url_for_person(elem),
             api_key: elem.api_key,
             is_active: elem.is_active,
             zuliprc: "zuliprc", // Most browsers do not allow filename starting with `.`
