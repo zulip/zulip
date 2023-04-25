@@ -103,8 +103,8 @@ class LinkifierURLFormatString(MigrationsTestCase):
             "https://example.com/%(foo",
             "https://example.com/%(foo)",
             "https://example.com/%(foo)s",
-            "https://example.com/{foo}",
-            "https://example.com/{foo}{bar}",
+            "https://example.com/{+foo}",
+            "https://example.com/{+foo}{+bar}",
         ]
 
         for linkifier_id, expected in zip(self.linkifier_ids, expected_urls):
