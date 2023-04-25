@@ -1,7 +1,7 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
 {% block illustration %}
-<img src="{{ email_images_base_uri }}/day2_1.png" alt=""/>
+<img src="{{ email_images_base_url }}/day2_1.png" alt=""/>
 {% endblock %}
 
 {% block content %}
@@ -19,7 +19,7 @@
     {{ _("To kick off a new conversation, just pick a stream and start a new topic. This way, the new conversation thread won't interrupt ongoing discussions. For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”") }}
 </p>
 
-<img src="{{ email_images_base_uri }}/day2_2.png" alt="{{ _('Examples of short topics') }}"/>
+<img src="{{ email_images_base_url }}/day2_2.png" alt="{{ _('Examples of short topics') }}"/>
 
 <p>
     {% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to <a href="{{ move_messages_link }}">move messages</a>, <a href="{{ rename_topics_link }}">rename topics</a>, or even <a href="{{ move_topic_to_different_stream_link }}">move a topic to a different stream</a>.{% endtrans %}

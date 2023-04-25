@@ -66,8 +66,8 @@ class EmailLogBackEnd(EmailBackend):
 
     @staticmethod
     def prepare_email_messages_for_forwarding(email_messages: Sequence[EmailMessage]) -> None:
-        localhost_email_images_base_uri = settings.ROOT_DOMAIN_URI + "/static/images/emails"
-        czo_email_images_base_uri = "https://chat.zulip.org/static/images/emails"
+        localhost_email_images_base_url = settings.ROOT_DOMAIN_URI + "/static/images/emails"
+        czo_email_images_base_url = "https://chat.zulip.org/static/images/emails"
 
         for email_message in email_messages:
             assert isinstance(email_message, EmailMultiAlternatives)
@@ -77,7 +77,7 @@ class EmailLogBackEnd(EmailBackend):
             # will be able to fetch the illustrations used in the emails.
             html_alternative = (
                 email_message.alternatives[0][0].replace(
-                    localhost_email_images_base_uri, czo_email_images_base_uri
+                    localhost_email_images_base_url, czo_email_images_base_url
                 ),
                 email_message.alternatives[0][1],
             )
