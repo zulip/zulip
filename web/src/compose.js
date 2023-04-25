@@ -332,7 +332,8 @@ export function finish() {
     if (popover_menus.is_time_selected_for_schedule()) {
         schedule_message_to_custom_date();
     } else if (reminder.is_deferred_delivery(message_content)) {
-        reminder.schedule_message();
+        const request = create_message_object();
+        reminder.schedule_message(request, clear_compose_box);
     } else {
         send_message();
     }
