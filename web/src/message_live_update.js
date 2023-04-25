@@ -31,6 +31,40 @@ function rerender_messages_view_for_user(user_id) {
     }
 }
 
+export function update_message_in_all_views(message_id, callback) {
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        const $row = msg_list.get_row(message_id);
+        if ($row === undefined) {
+            // The row may not exist, e.g. if you do an action on a message in
+            // a narrowed view
+            continue;
+        }
+        callback($row);
+    }
+}
+
+export function update_starred_view(message_id, new_value) {
+    const starred = new_value;
+
+    // Avoid a full re-render, but update the star in each message
+    // table in which it is visible.
+    update_message_in_all_views(message_id, ($row) => {
+        const $elt = $row.find(".star");
+        const $star_container = $row.find(".star_container");
+        if (starred) {
+            $elt.addClass("fa-star").removeClass("fa-star-o");
+            $star_container.removeClass("empty-star");
+        } else {
+            $elt.removeClass("fa-star").addClass("fa-star-o");
+            $star_container.addClass("empty-star");
+        }
+        const data_template_id = starred
+            ? "unstar-message-tooltip-template"
+            : "star-message-tooltip-template";
+        $star_container.attr("data-tooltip-template-id", data_template_id);
+    });
+}
+
 export function update_stream_name(stream_id, new_name) {
     message_store.update_property("stream_name", new_name, {stream_id});
     rerender_messages_view();
