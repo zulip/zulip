@@ -3092,6 +3092,7 @@ class RealmPropertyActionTest(BaseAction):
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
             web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
+            web_stream_unreads_count_display_policy=UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES,
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
             email_notifications_batching_period_seconds=[120, 300],
@@ -3171,6 +3172,7 @@ class UserDisplayActionTest(BaseAction):
             demote_inactive_streams=[2, 3, 1],
             web_mark_read_on_scroll_policy=[2, 3, 1],
             user_list_style=[1, 2, 3],
+            web_stream_unreads_count_display_policy=[1, 2, 3],
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
         )

@@ -9868,6 +9868,25 @@ paths:
               - 2
               - 3
           example: 1
+        - name: web_stream_unreads_count_display_policy
+          in: query
+          description: |
+            Configuration for which streams should be displayed with a numeric unread count in the left sidebar.
+            Streams that do not have an unread count will have a simple dot indicator for whether there are any
+            unread messages.
+
+            - 1 - All streams
+            - 2 - Unmuted streams
+            - 3 - No streams
+
+            **Changes**: New in Zulip 8.0 (feature level 210).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 2
         - name: enable_stream_desktop_notifications
           in: query
           description: |
@@ -12116,6 +12135,18 @@ paths:
                               - 3 - With avatar and status
 
                               **Changes**: New in Zulip 6.0 (feature level 141).
+                          web_stream_unreads_count_display_policy:
+                            type: integer
+                            description: |
+                              Configuration for which streams should be displayed with a numeric unread count in the left sidebar.
+                              Streams that do not have an unread count will have a simple dot indicator for whether there are any
+                              unread messages.
+
+                              - 1 - All streams
+                              - 2 - Unmuted streams
+                              - 3 - No streams
+
+                              **Changes**: New in Zulip 8.0 (feature level 210).
                           timezone:
                             type: string
                             description: |
@@ -14229,6 +14260,18 @@ paths:
                               - 3 - With avatar and status
 
                               **Changes**: New in Zulip 6.0 (feature level 141).
+                          web_stream_unreads_count_display_policy:
+                            type: integer
+                            description: |
+                              Configuration for which streams should be displayed with a numeric unread count in the left sidebar.
+                              Streams that do not have an unread count will have a simple dot indicator for whether there are any
+                              unread messages.
+
+                              - 1 - All streams
+                              - 2 - Unmuted streams
+                              - 3 - No streams
+
+                              **Changes**: New in Zulip 8.0 (feature level 210).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -15301,6 +15344,25 @@ paths:
               - 2
               - 3
           example: 1
+        - name: web_stream_unreads_count_display_policy
+          in: query
+          description: |
+            Configuration for which streams should be displayed with a numeric unread count in the left sidebar.
+            Streams that do not have an unread count will have a simple dot indicator for whether there are any
+            unread messages.
+
+            - 1 - All streams
+            - 2 - Unmuted streams
+            - 3 - No streams
+
+            **Changes**: New in Zulip 8.0 (feature level 210).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 2
         - name: timezone
           in: query
           description: |

@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 210**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `web_stream_unreads_count_display_policy` display setting, which controls in
+  which streams (all/unmuted/none) unread messages count shows up
+  in left sidebar.
+
 **Feature level 209**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),

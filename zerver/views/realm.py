@@ -438,6 +438,10 @@ def update_realm_user_settings_defaults(
         default=None,
     ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_stream_unreads_count_display_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+        default=None,
+    ),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     color_scheme: Optional[int] = REQ(

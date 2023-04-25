@@ -355,6 +355,7 @@ class ChangeSettingsTest(ZulipTestCase):
             demote_inactive_streams=2,
             web_mark_read_on_scroll_policy=2,
             user_list_style=2,
+            web_stream_unreads_count_display_policy=2,
             color_scheme=2,
             email_notifications_batching_period_seconds=100,
             notification_sound="ding",
@@ -374,6 +375,7 @@ class ChangeSettingsTest(ZulipTestCase):
             "user_list_style",
             "color_scheme",
             "web_mark_read_on_scroll_policy",
+            "web_stream_unreads_count_display_policy",
         ]:
             data = {setting_name: test_value}
         else:
@@ -402,6 +404,7 @@ class ChangeSettingsTest(ZulipTestCase):
             demote_inactive_streams=10,
             web_mark_read_on_scroll_policy=10,
             user_list_style=10,
+            web_stream_unreads_count_display_policy=10,
             color_scheme=10,
             notification_sound="invalid_sound",
             desktop_icon_count_display=10,
