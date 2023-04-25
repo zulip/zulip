@@ -141,10 +141,6 @@ li.show-more-topics {
         }
     }
 
-    .subscription_block .unread_count {
-        margin-right: 15px;
-    }
-
     .subscription_block {
         margin-right: 25px;
         margin-left: $far_left_gutter_size;
@@ -152,8 +148,64 @@ li.show-more-topics {
         align-items: center;
         white-space: nowrap;
 
+        & .unread_count {
+            margin-right: 15px;
+        }
+
+        & .masked_unread_count {
+            /* TODO: In theory this should be 19, to make it center aligned with
+               unread_count span which has a padding of 4px
+               horizontally in addition to 15px margin. But 18px looks
+               better centered. */
+            margin-right: 18px;
+        }
+
         &.stream-with-count {
             margin-right: 15px;
+        }
+    }
+
+    .stream-with-count.hide_unread_counts {
+        .masked_unread_count {
+            display: inline;
+        }
+
+        .unread_count {
+            display: none;
+        }
+    }
+
+    .narrow-filter
+        > .bottom_left_row:hover
+        > .stream-with-count.hide_unread_counts {
+        .masked_unread_count {
+            display: none;
+        }
+
+        .unread_count {
+            display: inline;
+        }
+    }
+
+    .stream-expanded {
+        .stream-with-count.hide_unread_counts {
+            .masked_unread_count {
+                display: none;
+            }
+
+            .unread_count {
+                display: inline;
+            }
+        }
+    }
+
+    .has-unmuted-unreads.hide_unread_counts {
+        .masked_unread_count {
+            display: none;
+        }
+
+        .unread_count {
+            display: inline;
         }
     }
 
@@ -390,6 +442,10 @@ ul.filters {
             opacity: 0.5;
         }
 
+        & .masked_unread_count {
+            opacity: 0.5;
+        }
+
         .has-unmuted-unreads {
             .unread_count {
                 opacity: 1;
@@ -473,7 +529,6 @@ li.active-sub-filter {
 
     .top_left_row .unread_count {
         margin-top: 2px;
-        display: none;
     }
 
     .top_left_starred_messages .unread_count,

@@ -373,15 +373,17 @@ export function set_in_home_view(stream_id, in_home) {
 
 function build_stream_sidebar_li(sub) {
     const name = sub.name;
+    const is_muted = stream_data.is_muted(sub.stream_id);
     const args = {
         name,
         id: sub.stream_id,
         url: hash_util.by_stream_url(sub.stream_id),
-        is_muted: stream_data.is_muted(sub.stream_id) === true,
+        is_muted,
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,
         color: sub.color,
         pin_to_top: sub.pin_to_top,
+        hide_unread_count: settings_data.should_mask_unread_count(is_muted),
     };
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
@@ -532,6 +534,21 @@ export function update_dom_with_unread_counts(counts) {
             stream_has_any_unmuted_unread_mention,
             stream_has_only_muted_unread_mentions,
         );
+    }
+}
+
+export function update_dom_unread_counts_visibility() {
+    for (const stream of stream_sidebar.rows.values()) {
+        const $subscription_block = stream.get_li().find(".subscription_block");
+
+        const is_muted = stream_data.is_muted(stream.sub.stream_id);
+        const hide_count = settings_data.should_mask_unread_count(is_muted);
+
+        if (hide_count) {
+            $subscription_block.addClass("hide_unread_counts");
+        } else {
+            $subscription_block.removeClass("hide_unread_counts");
+        }
     }
 }
 

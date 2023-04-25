@@ -48,6 +48,7 @@ export type UserSettings = (StreamNotificationSettings &
     presence_enabled: boolean;
     realm_name_in_email_notifications_policy: number;
     user_list_style: number;
+    web_stream_unreads_count_display_policy: number;
     starred_message_counts: boolean;
     translate_emoticons: boolean;
     display_emoji_reaction_users: boolean;

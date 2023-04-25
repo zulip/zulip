@@ -39,6 +39,7 @@ export type RealmDefaultSettings = {
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;
     user_list_style: boolean;
+    web_stream_unreads_count_display_policy: number;
     web_mark_read_on_scroll_policy: number;
     wildcard_mentions_notify: boolean;
 };

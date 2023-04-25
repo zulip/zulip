@@ -71,6 +71,21 @@ export const user_list_style_values = {
     // },
 };
 
+export const web_stream_unreads_count_display_policy_values = {
+    all_streams: {
+        code: 1,
+        description: $t({defaultMessage: "All streams"}),
+    },
+    unmuted_streams: {
+        code: 2,
+        description: $t({defaultMessage: "Unmuted streams"}),
+    },
+    no_streams: {
+        code: 3,
+        description: $t({defaultMessage: "No streams"}),
+    },
+};
+
 export const default_view_values = {
     recent_topics: {
         code: "recent_topics",

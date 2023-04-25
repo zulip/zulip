@@ -141,6 +141,13 @@
             </select>
         </div>
 
+        <div class="input-group">
+            <label for="web_stream_unreads_count_display_policy" class="dropdown-title">{{t "Show unread counts for" }}</label>
+            <select name="web_stream_unreads_count_display_policy" class="setting_web_stream_unreads_count_display_policy prop-element bootstrap-focus-style settings_select" id="{{prefix}}web_stream_unreads_count_display_policy"  data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=web_stream_unreads_count_display_policy_values}}
+            </select>
+        </div>
+
         {{#each display_settings.settings.user_display_settings}}
             {{> settings_checkbox
               setting_name=this
