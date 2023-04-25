@@ -154,8 +154,8 @@ export function on_compose_select_recipient_update(new_value) {
             $("#private_message_recipient").trigger("focus").trigger("select");
         }
     } else {
-        const $stream_header_colorblock = $("#compose_recipient_selection_dropdown").find(
-            ".stream_header_colorblock",
+        const $stream_header_colorblock = $(
+            "#compose_recipient_selection_dropdown .stream_header_colorblock",
         );
         stream_bar.decorate(new_value, $stream_header_colorblock);
         if (message_type === "private") {
