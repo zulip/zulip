@@ -1031,6 +1031,13 @@ exports.fixtures = {
         value: 1,
     },
 
+    user_settings__web_stream_unreads_count_display_policy: {
+        type: "user_settings",
+        op: "update",
+        property: "web_stream_unreads_count_display_policy",
+        value: 2,
+    },
+
     user_status__set_status_emoji: {
         type: "user_status",
         user_id: test_user.user_id,

@@ -648,6 +648,8 @@ test_ui("separators_only_pinned", () => {
 });
 
 test_ui("rename_stream", ({mock_template}) => {
+    user_settings.web_stream_unreads_count_display_policy = 3;
+
     create_stream_subheader({mock_template});
     initialize_stream_data();
 
@@ -664,11 +666,12 @@ test_ui("rename_stream", ({mock_template}) => {
             name: "Development",
             id: 1000,
             url: "#narrow/stream/1000-Development",
-            is_muted: false,
+            is_muted: undefined,
             invite_only: undefined,
             is_web_public: undefined,
             color: payload.color,
             pin_to_top: true,
+            hide_unread_count: true,
         });
         return {to_$: () => $li_stub};
     });
@@ -722,6 +725,7 @@ test_ui("refresh_pin", ({override, override_rewire, mock_template}) => {
 });
 
 test_ui("create_initial_sidebar_rows", ({override, override_rewire, mock_template}) => {
+    user_settings.web_stream_unreads_count_display_policy = 2; // Test coverage for this setting.
     initialize_stream_data();
 
     const html_dict = new Map();

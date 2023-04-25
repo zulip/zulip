@@ -195,6 +195,24 @@ export function user_can_delete_own_message(): boolean {
     return user_has_permission(page_params.realm_delete_own_message_policy);
 }
 
+export function should_mask_unread_count(sub_muted: boolean): boolean {
+    if (
+        user_settings.web_stream_unreads_count_display_policy ===
+        settings_config.web_stream_unreads_count_display_policy_values.no_streams.code
+    ) {
+        return true;
+    }
+
+    if (
+        user_settings.web_stream_unreads_count_display_policy ===
+        settings_config.web_stream_unreads_count_display_policy_values.unmuted_streams.code
+    ) {
+        return sub_muted;
+    }
+
+    return false;
+}
+
 export function using_dark_theme(): boolean {
     if (user_settings.color_scheme === settings_config.color_scheme_values.night.code) {
         return true;
