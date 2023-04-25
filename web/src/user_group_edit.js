@@ -15,9 +15,9 @@ import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_ui_updates from "./user_group_ui_updates";
@@ -135,7 +135,7 @@ export function show_settings_for(node) {
         can_edit: can_edit(group.id),
     });
 
-    ui.get_content_element($("#user_group_settings")).html(html);
+    scroll_util.get_content_element($("#user_group_settings")).html(html);
     user_group_ui_updates.update_toggler_for_group_setting(group);
 
     $("#user_group_settings .tab-container").prepend(toggler.get());

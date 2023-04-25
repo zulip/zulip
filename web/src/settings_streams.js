@@ -9,10 +9,10 @@ import * as keydown_util from "./keydown_util";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as typeahead_helper from "./typeahead_helper";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -53,7 +53,7 @@ export function build_default_stream_table() {
                 return item.name.toLowerCase().includes(query.toLowerCase());
             },
             onupdate() {
-                ui.reset_scrollbar($table);
+                scroll_util.reset_scrollbar($table);
             },
         },
         $parent_container: $("#admin-default-streams-list").expectOne(),

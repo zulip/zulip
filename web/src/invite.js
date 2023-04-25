@@ -15,10 +15,10 @@ import * as dialog_widget from "./dialog_widget";
 import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
@@ -147,7 +147,7 @@ function submit_invitation_form() {
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
             $("#invitee_emails").trigger("focus");
-            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
@@ -173,7 +173,7 @@ function generate_multiuse_invite() {
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
-            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
