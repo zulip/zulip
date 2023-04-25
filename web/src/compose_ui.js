@@ -481,17 +481,17 @@ export function format_text($textarea, type) {
  * nothing to do with the compose textarea. */
 export function hide_compose_spinner() {
     compose_spinner_visible = false;
-    $("#compose-send-button .loader").hide();
-    $("#compose-send-button span").show();
-    $("#compose-send-button").removeClass("disable-btn");
+    $(".compose-submit-button .loader").hide();
+    $(".compose-submit-button span").show();
+    $(".compose-submit-button").removeClass("disable-btn");
 }
 
 export function show_compose_spinner() {
     compose_spinner_visible = true;
     // Always use white spinner.
-    loading.show_button_spinner($("#compose-send-button .loader"), true);
-    $("#compose-send-button span").hide();
-    $("#compose-send-button").addClass("disable-btn");
+    loading.show_button_spinner($(".compose-submit-button .loader"), true);
+    $(".compose-submit-button span").hide();
+    $(".compose-submit-button").addClass("disable-btn");
 }
 
 export function get_compose_click_target(e) {
