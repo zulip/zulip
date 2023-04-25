@@ -1107,6 +1107,17 @@ td.pointer {
     }
 }
 
+.messagebox-hover-overlay {
+    background-color: transparent;
+    transition: background-color 400ms;
+
+    &:hover {
+        /* Overlay a dark filter over messages on hover, by changing the background of the div over it. */
+        background-color: hsl(0deg 0% 0% / 3%);
+        transition: background-color 200ms;
+    }
+}
+
 .messagebox {
     position: relative;
     word-wrap: break-word;
@@ -1216,6 +1227,11 @@ td.pointer {
             .unread-marker-fill {
                 border-radius: 0 0 0 7px;
                 height: calc(100% - 2px);
+            }
+
+            .messagebox-background,
+            .messagebox-hover-overlay {
+                border-radius: 0 0 7px 7px;
             }
 
             .messagebox {
@@ -1431,7 +1447,9 @@ td.pointer {
 }
 
 .message_row.private-message {
-    background-color: var(--color-background-private-message-content);
+    .messagebox-background {
+        background-color: var(--color-background-private-message-content);
+    }
 
     .alert-msg {
         background-color: hsl(192deg 20% 95%);
@@ -1583,13 +1601,15 @@ div.message_table {
     border-left: 1px solid var(--color-message-list-border);
     border-right: 1px solid var(--color-message-list-border);
 
-    background-color: var(--color-background-stream-message-content);
+    .messagebox-background {
+        background-color: var(--color-background-stream-message-content);
+    }
 
-    &.group_mention {
+    &.group_mention .messagebox-background {
         background-color: var(--color-background-group-mention);
     }
 
-    &.direct_mention {
+    &.direct_mention .messagebox-background {
         background-color: var(--color-background-direct-mention);
     }
 

@@ -5,9 +5,13 @@
     {{#if want_date_divider}}
     <div class="date_row no-select">{{{date_divider_html}}}</div>
     {{/if}}
-    <div class="messagebox">
-        <div class="messagebox-content">
-            {{> message_body}}
+    <div class="messagebox-background">
+        <div class="messagebox-hover-overlay">
+            <div class="messagebox">
+                <div class="messagebox-content">
+                    {{> message_body}}
+                </div>
+            </div>
         </div>
     </div>
 </div>

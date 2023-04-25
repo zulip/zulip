@@ -88,6 +88,10 @@
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
+    .messagebox-hover-overlay:hover {
+        background-color: hsl(0deg 0% 100% / 2%);
+    }
+
     .open_enter_sends_dialog,
     .enter_sends_choices {
         color: hsl(236deg 33% 90%);
