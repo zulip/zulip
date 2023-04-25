@@ -74,6 +74,7 @@ export function schedule_message(
     } else if (message.trim() === "") {
         $("#compose-textarea").toggleClass("invalid", false);
         $("#compose-textarea").prop("disabled", false);
+        compose_ui.hide_compose_spinner();
         return;
     }
 
@@ -84,6 +85,7 @@ export function schedule_message(
             $("#compose-textarea"),
         );
         $("#compose-textarea").prop("disabled", false);
+        compose_ui.hide_compose_spinner();
         return;
     }
 
