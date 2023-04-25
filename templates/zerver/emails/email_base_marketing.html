@@ -7,7 +7,7 @@
         <title>Zulip</title>
     </head>
     <body>
-        <table border="0" cellpadding="0" cellspacing="0" class="body">
+        <table border="0" cellpadding="0" cellspacing="0" class="body layout">
             <tr>
                 <td>&nbsp;</td>
                 <td class="container wide-container">
@@ -18,10 +18,10 @@
                         <span class="preheader">
                             {% block preheader %}{% endblock %}
                         </span>
-                        <table class="main">
+                        <table class="main layout">
                             <tr>
                                 <td class="wrapper">
-                                    <table border="0" cellpadding="0" cellspacing="0">
+                                    <table border="0" cellpadding="0" cellspacing="0" class="layout">
                                         <tr>
                                             <td>
                                                 {% block content %}{% endblock %}
@@ -33,10 +33,10 @@
                             </tr>
                         </table>
                         <div class="footer">
-                            <table border="0" cellpadding="0" cellspacing="0">
+                            <table border="0" cellpadding="0" cellspacing="0" class="layout">
                                 <tr>
-                                    <td class="content-block">
-                                        <span class="apple-link">{{physical_address}}</span>
+                                    <td class="footer-content-block">
+                                        <span class="physical-address">{{physical_address}}</span>
                                         {% block manage_preferences %}{% endblock %}
                                     </td>
                                 </tr>
