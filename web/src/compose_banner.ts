@@ -52,9 +52,9 @@ export function clear_message_sent_banners(): void {
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
 function hide_compose_spinner(): void {
-    $("#compose-send-button .loader").hide();
-    $("#compose-send-button span").show();
-    $("#compose-send-button").removeClass("disable-btn");
+    $(".compose-submit-button .loader").hide();
+    $(".compose-submit-button span").show();
+    $(".compose-submit-button").removeClass("disable-btn");
 }
 
 export function clear_errors(): void {
