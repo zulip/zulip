@@ -51,12 +51,12 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
     const $unread_count_span = $unread_count_elem.find(".unread_count");
 
     if (count === 0) {
-        $unread_count_span.hide();
+        $unread_count_span.addClass("hide");
         $unread_count_span.text("");
         return;
     }
 
-    $unread_count_span.show();
+    $unread_count_span.removeClass("hide");
     $unread_count_span.text(count);
 }
 
