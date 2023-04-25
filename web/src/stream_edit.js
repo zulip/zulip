@@ -20,6 +20,7 @@ import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
@@ -31,7 +32,6 @@ import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
@@ -241,7 +241,7 @@ export function show_settings_for(node) {
         is_admin: page_params.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
     });
-    ui.get_content_element($("#stream_settings")).html(html);
+    scroll_util.get_content_element($("#stream_settings")).html(html);
 
     $("#stream_settings .tab-container").prepend(toggler.get());
     stream_ui_updates.update_toggler_for_sub(sub);

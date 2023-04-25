@@ -12,7 +12,7 @@ import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
 import * as rendered_markdown from "./rendered_markdown";
-import * as ui from "./ui";
+import * as scroll_util from "./scroll_util";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -219,7 +219,9 @@ export function set_up_toggler() {
         callback(name, key) {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
-            ui.get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body")).trigger("focus");
+            scroll_util
+                .get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body"))
+                .trigger("focus");
         },
     };
 
@@ -234,7 +236,7 @@ export function set_up_toggler() {
     });
 
     for (const $modal of modals) {
-        ui.get_scroll_element($modal).prop("tabindex", 0);
+        scroll_util.get_scroll_element($modal).prop("tabindex", 0);
         keydown_util.handle({
             $elem: $modal,
             handlers: {

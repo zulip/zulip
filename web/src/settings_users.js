@@ -18,12 +18,12 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
+import * as scroll_util from "./scroll_util";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
-import * as ui from "./ui";
 import * as user_pill from "./user_pill";
 
 const section = {
@@ -182,7 +182,7 @@ function populate_users() {
 
 function reset_scrollbar($sel) {
     return function () {
-        ui.reset_scrollbar($sel);
+        scroll_util.reset_scrollbar($sel);
     };
 }
 

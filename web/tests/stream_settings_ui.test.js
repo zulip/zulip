@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 
 const denmark_stream_id = 101;
 
-const ui = mock_esm("../src/ui", {
+const scroll_util = mock_esm("../src/scroll_util", {
     get_content_element: ($element) => $element,
 });
 
@@ -117,7 +117,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     $.create("#streams_overlay_container .stream-row", {children: sub_stubs});
 
     let ui_called = false;
-    ui.reset_scrollbar = ($elem) => {
+    scroll_util.reset_scrollbar = ($elem) => {
         ui_called = true;
         assert.equal($elem, $("#subscription_overlay .streams-list"));
     };

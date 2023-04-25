@@ -3,8 +3,8 @@ import $ from "jquery";
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
-import * as ui from "./ui";
 import * as user_topics from "./user_topics";
 
 export let loaded = false;
@@ -39,7 +39,9 @@ export function populate_list() {
                 return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar($user_topics_table.closest(".progressive-table-wrapper"));
+                scroll_util.reset_scrollbar(
+                    $user_topics_table.closest(".progressive-table-wrapper"),
+                );
             },
         },
         init_sort: ["numeric", "date_updated"],
