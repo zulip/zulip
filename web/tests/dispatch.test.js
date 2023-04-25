@@ -968,6 +968,16 @@ run_test("user_settings", ({override}) => {
 
     {
         const stub = make_stub();
+        event = event_fixtures.user_settings__web_stream_unreads_count_display_policy;
+        override(stream_list, "update_dom_unread_counts_visibility", stub.f);
+        user_settings.web_stream_unreads_count_display_policy = 1;
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(user_settings.web_stream_unreads_count_display_policy, 2);
+    }
+
+    {
+        const stub = make_stub();
         event = event_fixtures.user_settings__user_list_style;
         override(settings_display, "report_user_list_style_change", stub.f);
         user_settings.user_list_style = 1;

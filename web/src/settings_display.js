@@ -180,6 +180,10 @@ export function set_up(settings_panel) {
         .find(`.setting_user_list_style_choice[value=${settings_object.user_list_style}]`)
         .prop("checked", true);
 
+    $container
+        .find(".setting_web_stream_unreads_count_display_policy")
+        .val(settings_object.web_stream_unreads_count_display_policy);
+
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
         // settings_org.js handlers, so we can return early here.
