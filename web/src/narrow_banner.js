@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as compose_actions from "./compose_actions";
 import {$t, $t_html} from "./i18n";
 import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
@@ -333,6 +334,24 @@ function pick_empty_narrow_banner() {
                         ),
                     };
                 }
+                if (people.verify_non_active_human_id(user_ids[0])) {
+                    return {
+                        title: $t(
+                            {
+                                defaultMessage: "You have no direct messages with {person}.",
+                            },
+                            {person: people.get_by_user_id(user_ids[0]).full_name},
+                        ),
+                        html: $t_html(
+                            {
+                                defaultMessage:
+                                    "{person} is no longer active in this organization.",
+                            },
+                            {person: people.get_by_user_id(user_ids[0]).full_name},
+                        ),
+                    };
+                }
+
                 return {
                     title: $t(
                         {
@@ -350,6 +369,19 @@ function pick_empty_narrow_banner() {
                                     "",
                                 )}</a>`,
                         },
+                    ),
+                };
+            }
+            if (compose_actions.check_pm_deactivated(false, user_ids).is_user_id_deactivated) {
+                return {
+                    title: $t({
+                        defaultMessage: "You have no direct messages with these users.",
+                    }),
+                    html: $t_html(
+                        {
+                            defaultMessage: "{person} is no longer active in this organization.",
+                        },
+                        {person: people.get_names_for_deactivated_users(user_ids)[0]},
                     ),
                 };
             }
@@ -411,6 +443,23 @@ function pick_empty_narrow_banner() {
                     }),
                 };
             }
+            if (people.verify_non_active_human_id(person_in_dms.user_id)) {
+                return {
+                    title: $t(
+                        {
+                            defaultMessage: "You have no direct messages including {person}.",
+                        },
+                        {person: person_in_dms.full_name},
+                    ),
+                    html: $t_html(
+                        {
+                            defaultMessage: "{person} is no longer active in this organization.",
+                        },
+                        {person: person_in_dms.full_name},
+                    ),
+                };
+            }
+
             return {
                 title: $t(
                     {
