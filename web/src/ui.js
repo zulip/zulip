@@ -3,15 +3,6 @@ import SimpleBar from "simplebar";
 
 // What, if anything, obscures the home tab?
 
-export function replace_emoji_with_text($element) {
-    $element.find(".emoji").replaceWith(function () {
-        if ($(this).is("img")) {
-            return $(this).attr("alt");
-        }
-        return $(this).text();
-    });
-}
-
 export function get_content_element($element) {
     const element = $element.expectOne()[0];
     const sb = SimpleBar.instances.get(element);
