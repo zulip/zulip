@@ -28,7 +28,7 @@ run_test("update_dom_with_unread_counts", () => {
 
     pm_list.set_count(counts.private_message_count);
     assert.equal($total_count.text(), "10");
-    assert.ok($total_count.visible());
+    assert.equal($total_count.hasClass("hide"), false);
 
     counts = {
         private_message_count: 0,
@@ -36,5 +36,5 @@ run_test("update_dom_with_unread_counts", () => {
 
     pm_list.set_count(counts.private_message_count);
     assert.equal($total_count.text(), "");
-    assert.ok(!$total_count.visible());
+    assert.equal($total_count.hasClass("hide"), true);
 });
