@@ -1568,6 +1568,19 @@ class UserBaseSettings(models.Model):
     ]
     user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_STATUS)
 
+    # Show unread counts for
+    WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_ALL_STREAMS = 1
+    WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS = 2
+    WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_NO_STREAMS = 3
+    WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES = [
+        WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_ALL_STREAMS,
+        WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS,
+        WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_NO_STREAMS,
+    ]
+    web_stream_unreads_count_display_policy = models.PositiveSmallIntegerField(
+        default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
+    )
+
     ### Notifications settings. ###
 
     email_notifications_batching_period_seconds = models.IntegerField(default=120)
@@ -1710,6 +1723,7 @@ class UserBaseSettings(models.Model):
         send_stream_typing_notifications=bool,
         web_mark_read_on_scroll_policy=int,
         user_list_style=int,
+        web_stream_unreads_count_display_policy=int,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(
