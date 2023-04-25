@@ -1,17 +1,17 @@
 # Edit or delete a message
 
-!!! warn ""
+Zulip makes it possible to edit the content of your messages, letting you fix
+typos, clarify your thoughts, etc. You can also delete your messages if this is
+allowed in your organization.
 
-    **Note:** Editing message topic is discussed in a
-    [separate guide](/help/rename-a-topic).
+Organization administrators can
+[configure](/help/restrict-message-editing-and-deletion) who can edit and delete
+messages, and set time limits for these actions. Administrators can delete other
+users' messages, but can never edit the content.
 
-By default, Zulip allows you to edit the content of your messages within 10
-minutes of when you send them. Organization administrators can
-[change the time limit](/help/restrict-message-editing-and-deletion),
-remove the time limit, or remove the ability to edit messages entirely.
+!!! tip ""
 
-Administrators can delete other users' messages, but can never edit the
-content.
+    You can also [edit message topics](/help/rename-a-topic).
 
 ## Edit a message
 
@@ -21,21 +21,20 @@ content.
 
 {!message-actions.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon.  If you do not see
+   the **pencil** (<i class="fa fa-pencil"></i>) icon, you do not have
+   permission to edit this message.
 
 1. Edit the content of the message.
 
 1. Click **Save**.
 
-!!! warn ""
-    **Note:** If you don't see the **pencil** (<i class="fa fa-pencil"></i>) icon,
-    you are not permitted to edit this message.
-
 {tab|mobile}
 
 {!message-long-press-menu.md!}
 
-1. Tap **Edit message**.
+1. Tap **Edit message**.  If you do not see the **Edit message** option, you do
+   not have permission to edit this message.
 
 1. Edit the content of the message.
 
@@ -52,14 +51,14 @@ content.
     [view a message's edit history](/help/view-a-messages-edit-history)
     if it is [enabled](/help/disable-message-edit-history) in your organization.
 
-## Delete a message
+## Delete message content
 
-Editing a message to delete its content will cause the message to be
-displayed as **(deleted)**.  The original sender and timestamp of the
-message will still be displayed, and the original content of the
-message is still accessible via Zulip's [edit
-history](/help/view-a-messages-edit-history) feature.  This can be the
-least confusing option for other users.
+Editing a message to delete its content will cause the message to be displayed
+as **(deleted)**.  The original sender and timestamp of the message will still
+be displayed, and the original content of the message is still accessible via
+Zulip's [edit history](/help/view-a-messages-edit-history) feature.  This can be
+the best option for avoiding confusion if other users have already responded to
+your message.
 
 {start_tabs}
 
@@ -67,69 +66,64 @@ least confusing option for other users.
 
 {!message-actions.md!}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon. If you do not see
+   the **pencil** (<i class="fa fa-pencil"></i>) icon, you do not have
+   permission to delete the content of this message.
 
 1. Delete the content of the message.
 
 1. Click **Save**.
 
-!!! warn ""
-    **Note:** If you don't see the **pencil** (<i class="fa fa-pencil"></i>) icon,
-    you are not permitted to edit this message.
-
 {tab|mobile}
 
 {!message-long-press-menu.md!}
 
-1. Tap **Delete message** to delete the content of the message.
+1. Tap **Delete message** to delete the content of the message.  If you do not
+   see the **Delete message** option, you do not have permission to delete the
+   content of this message.
 
 {end_tabs}
 
-### Delete a message completely
+## Delete a message completely
 
-For cases where someone accidentally shared secret information publicly
-(e.g. you posted an employee's salary), it can make sense to delete a
-message completely.
+In some cases, such as when a message accidentally shares secret information, or
+contains spam or abuse, it makes sense to delete a message completely. Deleted
+messages will immediately disappear from the UI in all official Zulip clients.
 
-By default, only administrators can delete messages, though this can be
-[configured](/help/restrict-message-editing-and-deletion) by an organization
-administrator.
+Any uploaded files referenced only by deleted messages will be immediately
+inaccessible. Note that an uploaded file shared in multiple messages will be
+deleted only when *all* of those messages are deleted.
+
+It's important to understand that anyone who received the message
+before you deleted it could have made a copy of its content. Even if
+no one is online when you send the message, users may have received
+the message via email or mobile notifications. So if you
+accidentally shared secret information that you can change, like a
+password, you may want to change that password regardless of whether
+you also delete the message.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!message-actions-menu.md!}
 
-1. Select **Delete message**.
+1. Select **Delete message**. If you do not see the **Delete message** option,
+   you do not have permission to delete this message completely.
 
-1. Approve by clicking **Confirm**.
+2. Approve by clicking **Confirm**.
 
 {end_tabs}
 
-If you don't see the **Delete message** option, it means you don't have
-permissions to delete that message.
+## Restoring deleted messages
 
-## How deletion works
-
-* Deleted messages will immediately disappear from the UI in all
-  official Zulip clients.
-* Any uploaded files referenced only by deleted messages will also be
-  immediately inaccessible (An uploaded file shared in multiple
-  messages will not be deleted until all of those messages are
-  deleted).
-* It's important to understand that anyone who received the message
-  before you deleted it could have made a copy of its content. Even if
-  no one is online when you send the message, users may have received
-  the message via email or mobile notifications. So if you
-  accidentally shared secret information that you can change, like a
-  password, you may want to change that password regardless of whether
-  you also delete the message.
-* For protection against accidental or immediately regretted
-  deletions, messages deleted directly or via a [message retention
-  policy](/help/message-retention-policy) are archived for 30 days in a
-  format that can be restored by a server administrator.  After that
-  time, they are permanently and irrecoverably deleted from the Zulip
-  server.  Server administrators can adjust the archival time using
-  the `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
+For protection against accidental or immediately regretted
+deletions, messages deleted directly or via a [message retention
+policy](/help/message-retention-policy) are archived for 30 days in a
+format that can be restored by a server administrator.  After that
+time, they are permanently and irrecoverably deleted from the Zulip
+server.  Server administrators can adjust the archival time using
+the `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
 
 ## Related articles
 
