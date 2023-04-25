@@ -1,9 +1,9 @@
 import _ from "lodash";
 
 import * as channel from "./channel";
+import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as starred_messages from "./starred_messages";
-import * as ui from "./ui";
 import * as unread_ops from "./unread_ops";
 
 function send_flag_update_for_messages(msg_ids, flag, op) {
@@ -86,7 +86,7 @@ export function update_starred_flag(message_id, new_value) {
         return;
     }
     message.starred = new_value;
-    ui.update_starred_view(message_id, new_value);
+    message_live_update.update_starred_view(message_id, new_value);
 }
 
 export function toggle_starred_and_update_server(message) {
@@ -105,7 +105,7 @@ export function toggle_starred_and_update_server(message) {
     // explicit interaction and we'd like to preserve the user
     // expectation invariant that all starred messages are read.
     unread_ops.notify_server_message_read(message);
-    ui.update_starred_view(message.id, message.starred);
+    message_live_update.update_starred_view(message.id, message.starred);
 
     if (message.starred) {
         send_flag_update_for_messages([message.id], "starred", "add");

@@ -6,7 +6,7 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {run_test} = require("./lib/test");
 
 const channel = mock_esm("../src/channel");
-const ui = mock_esm("../src/ui");
+const message_live_update = mock_esm("../src/message_live_update");
 
 mock_esm("../src/starred_messages", {
     add() {},
@@ -22,7 +22,7 @@ run_test("starred", ({override}) => {
     };
     let ui_updated;
 
-    override(ui, "update_starred_view", () => {
+    override(message_live_update, "update_starred_view", () => {
         ui_updated = true;
     });
 
@@ -76,7 +76,7 @@ run_test("starring local echo", () => {
 
     message_flags.toggle_starred_and_update_server(locally_echoed_message);
 
-    // ui.update_starred_view not called
+    // message_live_update.update_starred_view not called
 
     // channel post request not made
 
