@@ -105,7 +105,7 @@ email_password = gmail_password
 ### Notes
 
 - Images won't be displayed in a real email client unless you change
-  the `base_image_uri` used for emails to a public URL such as
+  the `images_base_url` used for emails to a public URL such as
   `https://chat.zulip.org/static/images/emails` (image links to
   `localhost:9991` aren't allowed by modern email providers). See
   `zproject/email_backends.py` for more details.
