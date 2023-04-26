@@ -264,6 +264,15 @@ test_people("basics", () => {
     assert.equal(realm_persons.length, 1);
     assert.equal(people.get_active_human_ids().length, 1);
 
+    assert.deepEqual(people.get_realm_humans(), [me]);
+
+    let realm_humans = people.get_realm_humans();
+    assert.equal(realm_humans[0].full_name, "Me Myself");
+
+    realm_humans = people.get_realm_humans();
+    assert.equal(realm_humans.length, 1);
+    assert.equal(people.get_active_human_ids().length, 1);
+
     const full_name = "Isaac Newton";
     const email = "isaac@example.com";
 
@@ -289,6 +298,9 @@ test_people("basics", () => {
 
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 2);
+
+    realm_humans = people.get_realm_humans();
+    assert.equal(realm_humans.length, 2);
 
     const active_user_ids = people.get_active_user_ids().sort();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
@@ -330,6 +342,15 @@ test_people("basics", () => {
             .map((u) => u.user_id)
             .sort(),
         [me.user_id, bot_botson.user_id],
+    );
+
+    // get_realm_humans() will EXCLUDE our active bot
+    assert.deepEqual(
+        people
+            .get_realm_humans()
+            .map((u) => u.user_id)
+            .sort(),
+        [me.user_id],
     );
 
     // get_bot_ids() includes all bot users.
@@ -406,6 +427,9 @@ test_people("check_active_non_active_users", () => {
     assert.equal(active_users.length, 3);
     assert.equal(non_active_users.length, 0);
 
+    let active_humans = people.get_realm_humans();
+    assert.equal(active_humans.length, 2);
+
     people.add_active_user(maria);
     people.add_active_user(linus);
     active_users = people.get_realm_users();
@@ -416,12 +440,18 @@ test_people("check_active_non_active_users", () => {
     assert.equal(people.is_person_active(maria.user_id), true);
     assert.equal(people.is_person_active(linus.user_id), true);
 
+    active_humans = people.get_realm_humans();
+    assert.equal(active_humans.length, 4);
+
     people.deactivate(maria);
     non_active_users = people.get_non_active_realm_users();
     active_users = people.get_realm_users();
     assert.equal(non_active_users.length, 1);
     assert.equal(active_users.length, 4);
     assert.equal(people.is_person_active(maria.user_id), false);
+
+    active_humans = people.get_realm_humans();
+    assert.equal(active_humans.length, 3);
 
     people.deactivate(linus);
     people.add_active_user(maria);
@@ -431,6 +461,9 @@ test_people("check_active_non_active_users", () => {
     assert.equal(active_users.length, 4);
     assert.equal(people.is_person_active(maria.user_id), true);
     assert.equal(people.is_person_active(linus.user_id), false);
+
+    active_humans = people.get_realm_humans();
+    assert.equal(active_humans.length, 3);
 });
 
 test_people("pm_lookup_key", () => {
@@ -660,6 +693,19 @@ test_people("filtered_users", () => {
     filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(linus.user_id));
+});
+
+test_people("filtered_humans", () => {
+    people.add_active_user(bot_botson);
+    people.add_active_user(bob);
+
+    const humans = people.get_realm_humans();
+    const search_term = "b";
+    const filtered_people = people.filter_people_by_search_terms(humans, [search_term]);
+
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(bob.user_id));
+    assert.ok(!filtered_people.has(bot_botson.user_id));
 });
 
 test_people("multi_user_methods", () => {
