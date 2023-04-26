@@ -1513,7 +1513,7 @@ $option_title_width: 180px;
             }
         }
 
-        &:disabled i {
+        &:disabled i.fa-chevron-down {
             display: none;
         }
     }
