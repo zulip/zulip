@@ -2,12 +2,11 @@
 import glob
 import logging
 import os
-import shlex
 import subprocess
 import sys
 import time
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List
+from typing import Dict
 
 import dateutil.parser
 
@@ -16,16 +15,9 @@ logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def run(args: List[str], dry_run: bool = False) -> str:
-    if dry_run:
-        print(f"Would have run: {shlex.join(args)}")
-        return ""
-
-    return subprocess.check_output(args, stdin=subprocess.DEVNULL, text=True)
-
-
-recovery_val = run(
-    ["psql", "-v", "ON_ERROR_STOP=1", "-t", "-c", "SELECT pg_is_in_recovery()"]
+recovery_val = subprocess.check_output(
+    ["psql", "-v", "ON_ERROR_STOP=1", "-t", "-c", "SELECT pg_is_in_recovery()"],
+    text=True,
 ).strip()
 # Assertion to check that we're extracting the value correctly.
 assert recovery_val in ["t", "f"]
@@ -42,7 +34,7 @@ if len(pg_data_paths) != 1:
     print(f"PostgreSQL installation is not unique: {pg_data_paths}")
     sys.exit(1)
 pg_data_path = pg_data_paths[0]
-run(["env-wal-g", "backup-push", pg_data_path])
+subprocess.check_call(["env-wal-g", "backup-push", pg_data_path])
 
 now = datetime.now(tz=timezone.utc)
 with open("/var/lib/nagios_state/last_postgresql_backup", "w") as f:
@@ -50,7 +42,7 @@ with open("/var/lib/nagios_state/last_postgresql_backup", "w") as f:
     f.write("\n")
 
 backups: Dict[datetime, str] = {}
-lines = run(["env-wal-g", "backup-list"]).split("\n")
+lines = subprocess.check_output(["env-wal-g", "backup-list"], text=True).split("\n")
 for line in lines[1:]:
     if line:
         backup_name, date_str, _ = line.split()
@@ -59,7 +51,7 @@ for line in lines[1:]:
 one_month_ago = now - timedelta(days=30)
 for date in sorted(backups.keys(), reverse=True):
     if date < one_month_ago:
-        run(["env-wal-g", "delete", "--confirm", "before", backups[date]])
+        subprocess.check_call(["env-wal-g", "delete", "--confirm", "before", backups[date]])
         # Because we're going from most recent to least recent, we
         # only have to do one delete operation
         break
