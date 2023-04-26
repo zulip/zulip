@@ -65,7 +65,6 @@ module = [
     "django_cte.*",
     "django_otp.*",
     "django_scim.*",
-    "django_statsd.*",
     "DNS.*",
     "fakeldap.*",
     "gcm.*",

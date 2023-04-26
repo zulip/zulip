@@ -103,7 +103,6 @@ not_yet_fully_covered = [
     "zerver/lib/queue.py",
     "zerver/lib/sqlalchemy_utils.py",
     "zerver/lib/storage.py",
-    "zerver/lib/utils.py",
     "zerver/lib/zephyr.py",
     "zerver/lib/templates.py",
     "zerver/templatetags/minified_js.py",

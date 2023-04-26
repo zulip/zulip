@@ -18,7 +18,6 @@ from zerver.lib.message import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
-from zerver.lib.utils import log_statsd_event
 from zerver.models import Message, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event
 
@@ -34,8 +33,6 @@ class ReadMessagesEvent:
 
 
 def do_mark_all_as_read(user_profile: UserProfile) -> int:
-    log_statsd_event("bankruptcy")
-
     # First, we clear mobile push notifications.  This is safer in the
     # event that the below logic times out and we're killed.
     all_push_message_ids = (
@@ -101,8 +98,6 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
 def do_mark_stream_messages_as_read(
     user_profile: UserProfile, stream_recipient_id: int, topic_name: Optional[str] = None
 ) -> int:
-    log_statsd_event("mark_stream_as_read")
-
     with transaction.atomic(savepoint=False):
         query = (
             UserMessage.select_for_update_query()

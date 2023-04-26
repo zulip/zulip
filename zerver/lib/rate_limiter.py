@@ -13,7 +13,6 @@ from django.http import HttpRequest
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.utils import statsd
 from zerver.models import UserProfile
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
@@ -322,7 +321,6 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
 
             if ratelimited:
-                statsd.incr(f"ratelimiter.limited.{entity_key}")
                 break
 
         return ratelimited, time_till_free
@@ -491,10 +489,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     ) -> Tuple[bool, float]:
         ratelimited, time = cls.is_ratelimited(entity_key, rules)
 
-        if ratelimited:
-            statsd.incr(f"ratelimiter.limited.{entity_key}")
-
-        else:
+        if not ratelimited:
             try:
                 cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
             except RateLimiterLockingError:

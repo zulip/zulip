@@ -42,7 +42,6 @@ from zerver.lib.response import (
 )
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
 ParamT = ParamSpec("ParamT")
@@ -120,29 +119,6 @@ def is_slow_query(time_delta: float, path: str) -> bool:
     return True
 
 
-statsd_blacklisted_requests = [
-    "do_confirm",
-    "signup_send_confirm",
-    "new_realm_send_confirm",
-    "eventslast_event_id",
-    "webreq.content",
-    "avatar",
-    "user_uploads",
-    "password.reset",
-    "static",
-    "json.bots",
-    "json.users",
-    "json.streams",
-    "accounts.unsubscribe",
-    "apple-touch-icon",
-    "emoji",
-    "json.bots",
-    "upload_file",
-    "realm_activity",
-    "user_activity",
-]
-
-
 def write_log_line(
     log_data: MutableMapping[str, Any],
     path: str,
@@ -158,24 +134,6 @@ def write_log_line(
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
-
-    if settings.STATSD_HOST != "":
-        # For statsd timer name
-        if path == "/":
-            statsd_path = "webreq"
-        else:
-            statsd_path = "webreq.{}".format(path[1:].replace("/", "."))
-            # Remove non-ascii chars from path (there should be none; if there are, it's
-            # because someone manually entered a nonexistent path), as UTF-8 chars make
-            # statsd sad when it sends the key name over the socket
-            statsd_path = statsd_path.encode("ascii", errors="ignore").decode("ascii")
-        # TODO: This could probably be optimized to use a regular expression rather than a loop.
-        suppress_statsd = any(
-            blacklisted in statsd_path for blacklisted in statsd_blacklisted_requests
-        )
-    else:
-        suppress_statsd = True
-        statsd_path = ""
 
     time_delta = -1
     # A time duration of -1 means the StartLogRequests middleware
@@ -210,10 +168,6 @@ def write_log_line(
                 f" (mem: {format_timedelta(remote_cache_time_delta)}/{remote_cache_count_delta})"
             )
 
-        if not suppress_statsd:
-            statsd.timing(f"{statsd_path}.remote_cache.time", timedelta_ms(remote_cache_time_delta))
-            statsd.incr(f"{statsd_path}.remote_cache.querycount", remote_cache_count_delta)
-
     startup_output = ""
     if "startup_time_delta" in log_data and log_data["startup_time_delta"] > 0.005:
         startup_output = " (+start: {})".format(format_timedelta(log_data["startup_time_delta"]))
@@ -236,22 +190,12 @@ def write_log_line(
                 f" (md: {format_timedelta(markdown_time_delta)}/{markdown_count_delta})"
             )
 
-            if not suppress_statsd:
-                statsd.timing(f"{statsd_path}.markdown.time", timedelta_ms(markdown_time_delta))
-                statsd.incr(f"{statsd_path}.markdown.count", markdown_count_delta)
-
     # Get the amount of time spent doing database queries
     db_time_output = ""
     queries = connection.connection.queries if connection.connection is not None else []
     if len(queries) > 0:
         query_time = sum(float(query.get("time", 0)) for query in queries)
         db_time_output = f" (db: {format_timedelta(query_time)}/{len(queries)}q)"
-
-        if not suppress_statsd:
-            # Log ms, db ms, and num queries to statsd
-            statsd.timing(f"{statsd_path}.dbtime", timedelta_ms(query_time))
-            statsd.incr(f"{statsd_path}.dbq", len(queries))
-            statsd.timing(f"{statsd_path}.total", timedelta_ms(time_delta))
 
     if "extra" in log_data:
         extra_request_data = " {}".format(log_data["extra"])
