@@ -1543,7 +1543,7 @@ class RealmCreationTest(ZulipTestCase):
         password = "test"
         string_id = "zuliptest"
         email = "user1@test.com"
-        realm_name = "Test"
+        realm_name = "Zulip test"
 
         # Make sure the realm does not exist
         with self.assertRaises(Realm.DoesNotExist):
@@ -1551,7 +1551,7 @@ class RealmCreationTest(ZulipTestCase):
 
         # Create new realm with the email
         result = self.submit_realm_creation_form(
-            email, realm_subdomain=string_id, realm_name="Zulip test"
+            email, realm_subdomain=string_id, realm_name=realm_name
         )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
