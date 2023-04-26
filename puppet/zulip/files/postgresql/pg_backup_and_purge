@@ -52,7 +52,11 @@ if len(pg_data_paths) != 1:
     print(f"PostgreSQL installation is not unique: {pg_data_paths}")
     sys.exit(1)
 pg_data_path = pg_data_paths[0]
-subprocess.check_call(["env-wal-g", "backup-push", pg_data_path])
+
+disk_concurrency = get_config("postgresql", "backups_disk_concurrency", "1")
+env = os.environ.copy()
+env["WALG_UPLOAD_DISK_CONCURRENCY"] = disk_concurrency
+subprocess.check_call(["env-wal-g", "backup-push", pg_data_path], env=env)
 
 now = datetime.now(tz=timezone.utc)
 with open("/var/lib/nagios_state/last_postgresql_backup", "w") as f:
