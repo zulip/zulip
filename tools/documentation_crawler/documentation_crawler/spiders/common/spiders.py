@@ -50,7 +50,7 @@ VNU_IGNORE = [
         r" \(Suppressing further errors from this subtree\.\)"
     ),
     # Opinionated informational messages.
-    r"Self-closing tag syntax in text/html documents is widely discouraged; it’s unnecessary and interacts badly with other HTML features \(e\.g\., unquoted attribute values\)\. If you’re using a tool that injects self-closing tag syntax into all void elements, without any option to prevent it from doing so, then consider switching to a different tool\.",
+    r"Trailing slash on void elements has no effect and interacts badly with unquoted attribute values\.",
 ]
 VNU_IGNORE_REGEX = re.compile(r"|".join(VNU_IGNORE))
 
