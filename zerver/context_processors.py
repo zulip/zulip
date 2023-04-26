@@ -44,7 +44,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         "realm_uri": user.realm.uri,
         "realm_name": user.realm.name,
         "root_domain_url": settings.ROOT_DOMAIN_URI,
-        "external_uri_scheme": settings.EXTERNAL_URI_SCHEME,
+        "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
         "external_host": settings.EXTERNAL_HOST,
         "user_name": user.full_name,
     }
@@ -163,7 +163,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "login_url": settings.HOME_NOT_LOGGED_IN,
         "only_sso": settings.ONLY_SSO,
         "external_host": settings.EXTERNAL_HOST,
-        "external_uri_scheme": settings.EXTERNAL_URI_SCHEME,
+        "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
         "realm_uri": realm_uri,
         "realm_name": realm_name,
         "realm_icon": realm_icon,
