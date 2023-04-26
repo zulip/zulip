@@ -15,7 +15,7 @@ from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.models import Realm, get_realm
-from zerver.views.documentation import add_api_uri_context
+from zerver.views.documentation import add_api_url_context
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -356,7 +356,7 @@ class IntegrationTest(ZulipTestCase):
 
     def test_api_url_view_subdomains_base(self) -> None:
         context: Dict[str, Any] = {}
-        add_api_uri_context(context, HostRequestMock())
+        add_api_url_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "testserver/api")
         self.assertEqual(context["api_url"], "http://testserver/api")
         self.assertTrue(context["html_settings_links"])
@@ -364,7 +364,7 @@ class IntegrationTest(ZulipTestCase):
     @override_settings(ROOT_DOMAIN_LANDING_PAGE=True)
     def test_api_url_view_subdomains_homepage_base(self) -> None:
         context: Dict[str, Any] = {}
-        add_api_uri_context(context, HostRequestMock())
+        add_api_url_context(context, HostRequestMock())
         self.assertEqual(context["api_url_scheme_relative"], "yourZulipDomain.testserver/api")
         self.assertEqual(context["api_url"], "http://yourZulipDomain.testserver/api")
         self.assertFalse(context["html_settings_links"])
@@ -372,7 +372,7 @@ class IntegrationTest(ZulipTestCase):
     def test_api_url_view_subdomains_full(self) -> None:
         context: Dict[str, Any] = {}
         request = HostRequestMock(host="mysubdomain.testserver")
-        add_api_uri_context(context, request)
+        add_api_url_context(context, request)
         self.assertEqual(context["api_url_scheme_relative"], "mysubdomain.testserver/api")
         self.assertEqual(context["api_url"], "http://mysubdomain.testserver/api")
         self.assertTrue(context["html_settings_links"])
