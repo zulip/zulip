@@ -97,7 +97,7 @@ def assert_is_not_none(value: Optional[T]) -> T:
 
 
 def process_list_in_batches(
-    lst: List[Any], chunk_size: int, process_batch: Callable[[List[Any]], None]
+    lst: List[T], chunk_size: int, process_batch: Callable[[List[T]], None]
 ) -> None:
     offset = 0
 
