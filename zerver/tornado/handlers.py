@@ -19,6 +19,7 @@ from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
 current_handler_id = 0
 handlers: Dict[int, "AsyncDjangoHandler"] = {}
+fake_wsgi_container = WSGIContainer(lambda environ, start_response: [])
 
 
 def get_handler_by_id(handler_id: int) -> "AsyncDjangoHandler":
@@ -102,7 +103,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # and pass it to Django's WSGIRequest to generate a Django
         # HttpRequest object with the original Tornado request's HTTP
         # headers, parameters, etc.
-        environ = WSGIContainer.environ(self.request)
+        environ = fake_wsgi_container.environ(self.request)
         environ["PATH_INFO"] = urllib.parse.unquote(environ["PATH_INFO"])
 
         # Django WSGIRequest setup code that should match logic from

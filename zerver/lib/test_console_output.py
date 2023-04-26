@@ -4,7 +4,10 @@ import sys
 from contextlib import contextmanager
 from io import SEEK_SET, TextIOWrapper
 from types import TracebackType
-from typing import IO, Iterable, Iterator, List, Optional, Type
+from typing import IO, TYPE_CHECKING, Iterable, Iterator, List, Optional, Type
+
+if TYPE_CHECKING:
+    from _typeshed import ReadableBuffer
 
 
 class ExtraConsoleOutputInTestError(Exception):
@@ -100,12 +103,12 @@ class WrappedIO(IO[bytes]):
     def writable(self) -> bool:
         return self.stream.writable()
 
-    def write(self, data: bytes) -> int:
+    def write(self, data: "ReadableBuffer") -> int:
         num_chars = self.stream.write(data)
-        self.extra_output_finder.find_extra_output(data)
+        self.extra_output_finder.find_extra_output(bytes(data))
         return num_chars
 
-    def writelines(self, data: Iterable[bytes]) -> None:
+    def writelines(self, data: "Iterable[ReadableBuffer]") -> None:
         self.stream.writelines(data)
         lines = b"".join(data)
         self.extra_output_finder.find_extra_output(lines)

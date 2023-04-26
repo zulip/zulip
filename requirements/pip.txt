@@ -17,7 +17,7 @@ pip==20.3.4 \
     --hash=sha256:217ae5161a0e08c0fb873858806e3478c9775caffce5168b50ec885e358c199d \
     --hash=sha256:6773934e5f5fc3eaa8c5a44949b5b924fc122daa0a8aa9f80c835b4ca2a543fc
     # via -r requirements/pip.in
-setuptools==67.6.1 \
-    --hash=sha256:257de92a9d50a60b8e22abfcbb771571fde0dbf3ec234463212027a4eeecbe9a \
-    --hash=sha256:e728ca814a823bf7bf60162daf9db95b93d532948c4c0bea762ce62f60189078
+setuptools==67.7.2 \
+    --hash=sha256:23aaf86b85ca52ceb801d32703f12d77517b2556af839621c641fca11287952b \
+    --hash=sha256:f104fa03692a2602fa0fec6c6a9e63b6c8a968de13e17c026957dd1f53d80990
     # via -r requirements/pip.in

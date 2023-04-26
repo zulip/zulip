@@ -8,10 +8,11 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union, cast
 
 import orjson
 from openapi_core import Spec, openapi_request_validator, openapi_response_validator
+from openapi_core.protocols import Response
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 
@@ -435,7 +436,9 @@ def validate_against_openapi_schema(
         orjson.dumps(content).decode(),
         status_code=int(status_code),
     )
-    result = openapi_response_validator.validate(openapi_spec.spec(), mock_request, mock_response)
+    result = openapi_response_validator.validate(
+        openapi_spec.spec(), mock_request, cast(Response, mock_response)
+    )
     try:
         result.raise_for_errors()
     except OpenAPIValidationError as error:
