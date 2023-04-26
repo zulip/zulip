@@ -393,10 +393,6 @@ django-scim2==0.19.0 \
     --hash=sha256:0571c9798e3af1a199bc05d6726185675bdd960627c3f4406a0c125e3e12e025 \
     --hash=sha256:531e8ae3d7dadb225e1b5addaa8c685f307de7eda5f23796ad0f4c7a96e06479
     # via -r requirements/common.in
-django-statsd-mozilla==0.4.0 \
-    --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
-    --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
-    # via -r requirements/common.in
 django-stubs-ext==0.8.0 \
     --hash=sha256:9a9ba9e2808737949de96a0fce8b054f12d38e461011d77ebc074ffe8c43dfcb \
     --hash=sha256:a454d349d19c26d6c50c4c6dbc1e8af4a9cda4ce1dc4104e3dd4c0330510cc56
@@ -1518,10 +1514,6 @@ stack-data==0.6.2 \
     --hash=sha256:32d2dd0376772d01b6cb9fc996f3c8b57a357089dec328ed4b6553d037eaf815 \
     --hash=sha256:cbb2a53eb64e5785878201a97ed7c7b94883f48b87bfb0bbe8b623c74679e4a8
     # via ipython
-statsd==4.0.0 \
-    --hash=sha256:52cd0e3843c07149538948ec803414e3ee356c2da7fa3ace656c1e216a00f70c \
-    --hash=sha256:e767eb2b8c705ca4c0a55b96fe47f80ce15ba98c7a851dd2ad00504d29cb2e3c
-    # via django-statsd-mozilla
 stripe==5.4.0 \
     --hash=sha256:57c0da7e3b889b69ff1dbf23ac1ec5e00f665cfba069fdf0f328b83ddf4225df \
     --hash=sha256:72bda7bf9be7528e1b97a5bbacb0716cdf6a0c9597b13fdbfa364cec3c130713

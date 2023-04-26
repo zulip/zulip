@@ -17,7 +17,6 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_counts import realm_user_count
-from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
 
 
@@ -171,8 +170,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         user_profile = None
 
     update_last_reminder(user_profile)
-
-    statsd.incr("views.home")
 
     # If a user hasn't signed the current Terms of Service, send them there
     if need_accept_tos(user_profile):

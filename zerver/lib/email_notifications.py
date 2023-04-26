@@ -20,7 +20,6 @@ from django.utils.translation import override as override_language
 from lxml.html import builder as e
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.decorator import statsd_increment
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group_name
@@ -408,7 +407,6 @@ def include_realm_name_in_missedmessage_emails_subject(user_profile: UserProfile
     )
 
 
-@statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: List[Dict[str, Any]], message_count: int
 ) -> None:

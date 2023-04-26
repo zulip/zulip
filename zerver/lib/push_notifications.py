@@ -18,7 +18,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, huddle_users
@@ -180,7 +179,6 @@ def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
 APNS_MAX_RETRIES = 3
 
 
-@statsd_increment("apple_push_notification")
 def send_apple_push_notification(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
@@ -357,7 +355,6 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     return priority  # when this grows a second option, can make it a tuple
 
 
-@statsd_increment("android_push_notification")
 def send_android_push_notification(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
@@ -1036,7 +1033,6 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
 
 
-@statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the

@@ -7,11 +7,9 @@ from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import human_users_only
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import (
     WildValue,
     check_bool,
@@ -46,16 +44,6 @@ def report_send_times(
         "extra"
     ] = f"[{time}ms/{received_str}ms/{displayed_str}ms/echo:{locally_echoed}/diff:{rendered_content_disparity}]"
 
-    base_key = statsd_key(user_profile.realm.string_id, clean_periods=True)
-    statsd.timing(f"endtoend.send_time.{base_key}", time)
-    if received > 0:
-        statsd.timing(f"endtoend.receive_time.{base_key}", received)
-    if displayed > 0:
-        statsd.timing(f"endtoend.displayed_time.{base_key}", displayed)
-    if locally_echoed:
-        statsd.incr("locally_echoed")
-    if rendered_content_disparity:
-        statsd.incr("render_disparity")
     return json_success(request)
 
 
@@ -70,11 +58,6 @@ def report_narrow_times(
     log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{initial_core}ms/{initial_free}ms/{network}ms]"
-    realm = get_valid_realm_from_request(request)
-    base_key = statsd_key(realm.string_id, clean_periods=True)
-    statsd.timing(f"narrow.initial_core.{base_key}", initial_core)
-    statsd.timing(f"narrow.initial_free.{base_key}", initial_free)
-    statsd.timing(f"narrow.network.{base_key}", network)
     return json_success(request)
 
 
@@ -88,10 +71,6 @@ def report_unnarrow_times(
     log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{initial_core}ms/{initial_free}ms]"
-    realm = get_valid_realm_from_request(request)
-    base_key = statsd_key(realm.string_id, clean_periods=True)
-    statsd.timing(f"unnarrow.initial_core.{base_key}", initial_core)
-    statsd.timing(f"unnarrow.initial_free.{base_key}", initial_free)
     return json_success(request)
 
 

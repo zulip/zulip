@@ -449,9 +449,6 @@ FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE: Optional[str] = None
 # written.
 TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 
-# Hostname used for Zulip's statsd logging integration.
-STATSD_HOST = ""
-
 # Configuration for JWT auth (sign in and API key fetch)
 JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {}
 

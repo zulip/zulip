@@ -30,7 +30,7 @@ from django.http import HttpRequest
 from django_stubs_ext import QuerySetAny
 from typing_extensions import ParamSpec
 
-from zerver.lib.utils import make_safe_digest, statsd, statsd_key
+from zerver.lib.utils import make_safe_digest
 
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
@@ -129,7 +129,6 @@ def cache_with_key(
     keyfunc: Callable[ParamT, str],
     cache_name: Optional[str] = None,
     timeout: Optional[int] = None,
-    with_statsd_key: Optional[str] = None,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
@@ -149,18 +148,6 @@ def cache_with_key(
                 stack_trace = traceback.format_exc()
                 log_invalid_cache_keys(stack_trace, [key])
                 return func(*args, **kwargs)
-
-            extra = ""
-            if cache_name == "database":
-                extra = ".dbcache"
-
-            if with_statsd_key is not None:
-                metric_key = with_statsd_key
-            else:
-                metric_key = statsd_key(key)
-
-            status = "hit" if val is not None else "miss"
-            statsd.incr(f"cache{extra}.{metric_key}.{status}")
 
             # Values are singleton tuples so that we can distinguish
             # a result of None from a missing key.

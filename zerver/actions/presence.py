@@ -5,7 +5,6 @@ from django.conf import settings
 from django.db import transaction
 
 from zerver.actions.user_activity import update_user_activity_interval
-from zerver.decorator import statsd_increment
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Client, UserPresence, UserProfile, active_user_ids, get_client
@@ -66,7 +65,6 @@ def consolidate_client(client: Client) -> Client:
         return client
 
 
-@statsd_increment("user_presence")
 def do_update_user_presence(
     user_profile: UserProfile,
     client: Client,

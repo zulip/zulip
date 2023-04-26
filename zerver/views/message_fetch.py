@@ -23,7 +23,6 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa
-from zerver.lib.utils import statsd
 from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
 from zerver.models import UserMessage, UserProfile
 
@@ -221,8 +220,6 @@ def get_messages_backend(
         client_gravatar=client_gravatar,
         allow_edit_history=realm.allow_edit_history,
     )
-
-    statsd.incr("loaded_old_messages", len(message_list))
 
     ret = dict(
         messages=message_list,
