@@ -19,7 +19,7 @@
         {{else}}
             <li class="hidden-for-spectators">
                 <a tabindex="0" class="sidebar-popover-remove-unmute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                    <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
+                    <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
                     {{t "Mute topic"}}
                 </a>
             </li>
@@ -35,7 +35,7 @@
         {{else}}
         <li class="hidden-for-spectators">
             <a tabindex="0" class="sidebar-popover-remove-mute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
+                <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
                 {{t "Unmute topic"}}
             </a>
         </li>
