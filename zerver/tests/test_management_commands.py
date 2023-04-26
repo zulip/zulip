@@ -338,7 +338,8 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
-            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}", result["Location"]
+            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}",
+            result["Location"],
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email", result)
