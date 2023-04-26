@@ -39,7 +39,7 @@
 
 !!! tip ""
 
-    You can also click the **unmute** (<i class="zulip-icon zulip-icon-mute"></i>) icon
+    You can also click the **unmute** (<i class="zulip-icon zulip-icon-unmute"></i>) icon
     in the message recipient bar or in **Recent conversations**.
 
 {tab|mobile}
