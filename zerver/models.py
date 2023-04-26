@@ -623,6 +623,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         },
     }
 
+    ORG_TYPE_IDS: List[int] = [t["id"] for t in ORG_TYPES.values()]
+
     org_type = models.PositiveSmallIntegerField(
         default=ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in ORG_TYPES.values()],
