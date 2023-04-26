@@ -260,9 +260,8 @@ function open_invite_user_modal(e) {
         function toggle_invite_submit_button() {
             $("#invite-user-modal .dialog_submit_button").prop(
                 "disabled",
-                ($("#invitee_emails").val().trim() === "" &&
-                    !$("#generate_multiuse_invite_radio").is(":checked")) ||
-                    $("#streams_to_add input:checked").length === 0,
+                $("#invitee_emails").val().trim() === "" &&
+                    !$("#generate_multiuse_invite_radio").is(":checked"),
             );
         }
 
@@ -326,10 +325,6 @@ function open_invite_user_modal(e) {
 
         $("#invite_uncheck_all_button").on("click", () => {
             $("#streams_to_add input[type=checkbox]").prop("checked", false);
-            $("#invite-user-modal .dialog_submit_button").prop(
-                "disabled",
-                !$("#generate_multiuse_invite_radio").is(":checked"),
-            );
         });
     }
 

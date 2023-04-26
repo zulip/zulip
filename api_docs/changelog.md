@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 180**
+
+* `POST /invites`: Added support for invitations specifying the empty
+  list as the user's initial stream subscriptions. Previously, this
+  returned an error.
+
 **Feature level 179**:
 
 * [`POST /scheduled_messages`](/api/create-or-update-scheduled-message):

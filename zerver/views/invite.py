@@ -70,8 +70,6 @@ def invite_users_backend(
         raise JsonableError(_("Must be an organization administrator"))
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
-    if not stream_ids:
-        raise JsonableError(_("You must specify at least one stream for invitees to join."))
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 

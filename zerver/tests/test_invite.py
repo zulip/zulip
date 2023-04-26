@@ -704,6 +704,18 @@ class InviteUserTest(InviteUserBase):
         self.submit_reg_form_for_user(invitee, "password")
         self.check_user_subscribed_only_to_streams("alice", streams)
 
+        invitee = self.nonreg_email("bob")
+        self.assert_json_success(self.invite(invitee, []))
+        self.assertTrue(find_key_by_email(invitee))
+
+        default_streams = get_default_streams_for_realm(realm.id)
+        self.assert_length(default_streams, 1)
+
+        self.submit_reg_form_for_user(invitee, "password")
+        # If no streams are provided, user is not subscribed to
+        # default streams as well.
+        self.check_user_subscribed_only_to_streams("bob", [])
+
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
             user_profile.refresh_from_db()
@@ -921,11 +933,6 @@ earl-test@zulip.com""",
         do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
 
         self.login("hamlet")
-        invitee_emails = "foo@zulip.com"
-        self.assert_json_error(
-            self.invite(invitee_emails, []),
-            "You must specify at least one stream for invitees to join.",
-        )
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
             self.assert_json_error(
