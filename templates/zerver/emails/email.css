@@ -166,10 +166,6 @@ p.digest_paragraph,
     color: #434388 !important;
 }
 
-.important {
-    border-bottom: 3px solid #d4e3e8;
-}
-
 .body .button {
     display: block;
     padding: 10px 0;
@@ -261,11 +257,6 @@ p.digest_paragraph,
     padding-bottom: 10px;
 }
 
-.missed_message_sender {
-    text-decoration: underline;
-    font-weight: bold;
-}
-
 .content_disabled_help_link {
     color: #15c;
 }
@@ -300,10 +291,6 @@ p.digest_paragraph,
         padding: 0 10px 10px;
     }
 
-    table[class="body"] .article {
-        padding: 10px !important;
-    }
-
     table[class="body"] .content {
         padding: 0 !important;
     }
@@ -317,20 +304,6 @@ p.digest_paragraph,
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
-    }
-
-    table[class="body"] .btn table {
-        width: 100% !important;
-    }
-
-    table[class="body"] .btn a {
-        width: 100% !important;
-    }
-
-    table[class="body"] .img-responsive {
-        height: auto !important;
-        max-width: 100% !important;
-        width: auto !important;
     }
 }
 
