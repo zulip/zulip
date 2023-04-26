@@ -1069,6 +1069,11 @@ paths:
                                       `{client_name}`: Object containing the details of the user's
                                       presence on a particular platform. The object key is the client's
                                       platform name, for example `website` or `ZulipDesktop`.
+
+                                      **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                                      will always contain two keys, `website` and `aggregated`, with
+                                      identical data. The server no longer stores which client submitted
+                                      presence updates.
                                     additionalProperties: false
                                     properties:
                                       client:
@@ -7292,8 +7297,12 @@ paths:
                             There is also an `aggregated` key, which matches the contents of the object
                             that has been updated most recently.
 
-                            For most applications, you'll just want to look at the
-                            `aggregated` key.
+                            For most applications, you'll just want to look at the `aggregated` key.
+
+                            **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                            will always contain two keys, `website` and `aggregated`, with
+                            identical data. The server no longer stores which client submitted
+                            presence updates.
                     example:
                       {
                         "presence":
@@ -17244,6 +17253,11 @@ components:
         There is also an `aggregated` key, which matches the contents of the object
         that has been updated most recently (except for the `pushable` value which is
         not present).
+
+        **Changes**: Starting with Zulip 7.0 (feature level 178), this
+        will always contain two keys, `website` and `aggregated`, with
+        identical data. The server no longer stores which client submitted
+        presence updates.
       additionalProperties: false
       properties:
         client:

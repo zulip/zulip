@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 178**
+
+* `POST users/me/presence`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events), `GET /realm/presence`, `GET
+  /users/<user_id_or_email>/presence`: The server no longer stores
+  which client submitted presence data, and presence responses from
+  the server will always contain the `aggregated` and `website` keys.
+
 **Feature level 177**
 
 * [`GET /messages`](/api/get-messages),
