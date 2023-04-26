@@ -140,5 +140,6 @@ chat apps. We love it."
 
 ---
 
-Check out our guide on [using Zulip for business](/for/business/), and learn how
-Zulip is being used at the [iDrift AS](/case-studies/idrift/) company.
+Check out our guide on [using Zulip for business](/for/business/). You can also
+learn how Zulip is being used at the [iDrift AS](/case-studies/idrift/) company,
+and the startup [Atolio](/case-studies/atolio/).
