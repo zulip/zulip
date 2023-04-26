@@ -282,7 +282,7 @@ class ReactionMessageIDTest(ZulipTestCase):
             pm_sender,
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([pm_recipient.email]).decode(),
             },
@@ -311,7 +311,7 @@ class ReactionTest(ZulipTestCase):
             pm_sender,
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([pm_recipient.email]).decode(),
             },
@@ -345,7 +345,7 @@ class ReactionTest(ZulipTestCase):
             pm_sender,
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([pm_recipient.email]).decode(),
             },
@@ -430,7 +430,7 @@ class ReactionEventTest(ZulipTestCase):
             pm_sender,
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([pm_recipient.email]).decode(),
             },
@@ -472,7 +472,7 @@ class ReactionEventTest(ZulipTestCase):
             pm_sender,
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([pm_recipient.email]).decode(),
             },

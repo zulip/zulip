@@ -157,9 +157,9 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
             elif operator == "sender":
                 if operand.lower() != message["sender_email"].lower():
                     return False
-            elif operator == "is" and operand in ["dm", "private"]:
+            elif operator == "is" and operand in ["dm", "direct"]:
                 # "is:private" is a legacy alias for "is:dm"
-                if message["type"] != "private":
+                if message["type"] != "direct":
                     return False
             elif operator == "is" and operand in ["starred"]:
                 if operand not in flags:
@@ -342,7 +342,7 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        if operand in ["dm", "private"]:
+        if operand in ["dm", "direct"]:
             # "is:private" is a legacy alias for "is:dm"
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))

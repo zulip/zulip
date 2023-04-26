@@ -670,7 +670,7 @@ export function initialize() {
         e.preventDefault();
     });
     $("body").on("click", ".empty_feed_compose_private", (e) => {
-        compose_actions.start("private", {trigger: "empty feed message"});
+        compose_actions.start("direct", {trigger: "empty feed message"});
         e.preventDefault();
     });
 

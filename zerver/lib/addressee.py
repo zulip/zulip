@@ -56,7 +56,7 @@ class Addressee:
         stream_id: Optional[int] = None,
         topic: Optional[str] = None,
     ) -> None:
-        assert msg_type in ["stream", "private"]
+        assert msg_type in ["stream", "direct"]
         if msg_type == "stream" and topic is None:
             raise JsonableError(_("Missing topic"))
         self._msg_type = msg_type
@@ -70,7 +70,7 @@ class Addressee:
         return self._msg_type == "stream"
 
     def is_private(self) -> bool:
-        return self._msg_type == "private"
+        return self._msg_type == "direct"
 
     def user_profiles(self) -> Sequence[UserProfile]:
         assert self.is_private()
@@ -131,7 +131,7 @@ class Addressee:
                 return Addressee.for_stream_id(stream_name_or_id, topic_name)
 
             return Addressee.for_stream_name(stream_name_or_id, topic_name)
-        elif recipient_type_name == "private":
+        elif recipient_type_name == "direct":
             if not message_to:
                 raise JsonableError(_("Message must have recipients"))
 
@@ -179,7 +179,7 @@ class Addressee:
         assert len(emails) > 0
         user_profiles = get_user_profiles(emails, realm)
         return Addressee(
-            msg_type="private",
+            msg_type="direct",
             user_profiles=user_profiles,
         )
 
@@ -188,7 +188,7 @@ class Addressee:
         assert len(user_ids) > 0
         user_profiles = get_user_profiles_by_ids(user_ids, realm)
         return Addressee(
-            msg_type="private",
+            msg_type="direct",
             user_profiles=user_profiles,
         )
 
@@ -196,6 +196,6 @@ class Addressee:
     def for_user_profile(user_profile: UserProfile) -> "Addressee":
         user_profiles = [user_profile]
         return Addressee(
-            msg_type="private",
+            msg_type="direct",
             user_profiles=user_profiles,
         )

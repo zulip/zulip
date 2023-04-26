@@ -1011,7 +1011,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "test_receive_missed_message_email_messages",
                 "to": orjson.dumps([othello.id]).decode(),
             },
@@ -1054,7 +1054,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "test_receive_missed_message_email_messages",
                 "to": orjson.dumps([cordelia.id, iago.id]).decode(),
             },
@@ -1339,7 +1339,7 @@ class TestEmptyGatewaySetting(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")
         payload = dict(
-            type="private",
+            type="direct",
             content="test_receive_missed_message_email_messages",
             to=orjson.dumps([cordelia.id, iago.id]).decode(),
         )
@@ -1506,7 +1506,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "test_receive_missed_message_email_messages",
                 "to": orjson.dumps([cordelia.id, iago.id]).decode(),
             },
@@ -1763,7 +1763,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "test_redact_email_message",
                 "to": orjson.dumps([cordelia.email, iago.email]).decode(),
             },

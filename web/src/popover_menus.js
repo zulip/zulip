@@ -317,7 +317,7 @@ export function initialize() {
                 instance.hide();
             });
             $popper.one("click", ".compose_mobile_private_button", (e) => {
-                compose_actions.start("private");
+                compose_actions.start("direct");
                 e.stopPropagation();
                 instance.hide();
             });

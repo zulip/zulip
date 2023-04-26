@@ -110,7 +110,7 @@ Requester Bob <requester-bob@example.com> added a {} note to \
         )
 
     def test_private_note_change(self) -> None:
-        self.note_change("private_note", "private")
+        self.note_change("private_note", "direct")
 
     def test_public_note_change(self) -> None:
         self.note_change("public_note", "public")

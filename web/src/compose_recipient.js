@@ -55,7 +55,7 @@ export function update_narrow_to_recipient_visibility() {
             $(".narrow_to_compose_recipients").toggleClass("invisible", false);
             return;
         }
-    } else if (message_type === "private") {
+    } else if (message_type === "direct") {
         const recipients = compose_state.private_message_recipient();
         if (
             recipients &&

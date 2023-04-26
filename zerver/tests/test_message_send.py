@@ -632,7 +632,7 @@ class MessagePOSTTest(ZulipTestCase):
         for both valid strings for `type` parameter.
         """
         self.login("hamlet")
-        recipient_type_name = ["direct", "private"]
+        recipient_type_name = ["direct", "direct"]
 
         for type in recipient_type_name:
             result = self.client_post(
@@ -655,7 +655,7 @@ class MessagePOSTTest(ZulipTestCase):
         for both valid strings for `type` parameter.
         """
         self.login("hamlet")
-        recipient_type_name = ["direct", "private"]
+        recipient_type_name = ["direct", "direct"]
 
         for type in recipient_type_name:
             result = self.client_post(
@@ -834,7 +834,7 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_invalid_recipient_type(self) -> None:
         """
-        Messages other than the type of "direct", "private" or "stream" are invalid.
+        Messages other than the type of "direct", "direct" or "stream" are invalid.
         """
         self.login("hamlet")
         result = self.client_post(
@@ -1417,7 +1417,7 @@ class ScheduledMessageTest(ZulipTestCase):
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
         result = self.do_schedule_message(
-            "private", [othello.email], content + " 3", defer_until_str
+            "direct", [othello.email], content + " 3", defer_until_str
         )
         message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -1428,14 +1428,14 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Setting a reminder in PM's to other users causes a error.
         result = self.do_schedule_message(
-            "private", [othello.email], content + " 4", defer_until_str, delivery_type="remind"
+            "direct", [othello.email], content + " 4", defer_until_str, delivery_type="remind"
         )
         self.assert_json_error(result, "Reminders can only be set for streams.")
 
         # Setting a reminder in PM's to ourself is successful.
         # Required by reminders from message actions popover caret feature.
         result = self.do_schedule_message(
-            "private", [hamlet.email], content + " 5", defer_until_str, delivery_type="remind"
+            "direct", [hamlet.email], content + " 5", defer_until_str, delivery_type="remind"
         )
         message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -1557,7 +1557,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         othello = self.example_user("othello")
         result = self.do_schedule_message(
-            "private", [othello.email], content + " 3", defer_until_str
+            "direct", [othello.email], content + " 3", defer_until_str
         )
 
         # Multiple scheduled messages
@@ -2565,7 +2565,7 @@ class TestAddressee(ZulipTestCase):
 
         result = Addressee.legacy_build(
             sender=self.example_user("hamlet"),
-            recipient_type_name="private",
+            recipient_type_name="direct",
             message_to=user_ids,
             topic_name="random_topic",
             realm=realm,

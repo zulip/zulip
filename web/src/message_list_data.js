@@ -235,7 +235,7 @@ export class MessageListData {
         }
 
         return messages.filter((message) => {
-            if (message.type !== "private") {
+            if (message.type !== "direct") {
                 return true;
             }
             const recipients = util.extract_pm_recipients(message.to_user_ids);

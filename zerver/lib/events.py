@@ -1206,7 +1206,7 @@ def apply_event(
                 remove_message_id_from_unread_mgs(state["raw_unread_msgs"], remove_id)
 
         # The remainder of this block is about maintaining recent_private_conversations
-        if "raw_recent_private_conversations" not in state or event["message_type"] != "private":
+        if "raw_recent_private_conversations" not in state or event["message_type"] != "direct":
             return
 
         # OK, we just deleted what had been the max_message_id for

@@ -71,7 +71,7 @@ run_test("blueslip", () => {
     people.email_list_to_user_ids_string([unknown_email]);
 
     let message = {
-        type: "private",
+        type: "direct",
         display_recipient: [],
         sender_id: me.user_id,
     };
@@ -95,7 +95,7 @@ run_test("blueslip", () => {
     people.add_active_user(maria);
 
     message = {
-        type: "private",
+        type: "direct",
         display_recipient: [{id: maria.user_id}, {id: 42}, {id: charles.user_id}],
         sender_id: charles.user_id,
     };
@@ -105,7 +105,7 @@ run_test("blueslip", () => {
 
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("error", "Unknown people in message");
-    const url = people.pm_with_url({type: "private", display_recipient: [{id: 42}]});
+    const url = people.pm_with_url({type: "direct", display_recipient: [{id: 42}]});
     assert.equal(url.indexOf("unk"), url.length - 3);
 
     blueslip.expect("error", "Undefined field id");

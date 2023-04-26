@@ -913,7 +913,7 @@ def do_send_messages(
             UserMessageNotificationsData.from_user_id_sets(
                 user_id=user_id,
                 flags=user_flags.get(user_id, []),
-                private_message=(message_type == "private"),
+                private_message=(message_type == "direct"),
                 disable_external_notifications=send_request.disable_external_notifications,
                 online_push_user_ids=send_request.online_push_user_ids,
                 pm_mention_push_disabled_user_ids=send_request.pm_mention_push_disabled_user_ids,

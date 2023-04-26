@@ -173,16 +173,16 @@ run_test("near with no unreads", () => {
 
 run_test("is private with no target", () => {
     const fixture = {
-        filter_terms: [{operator: "is", operand: "private"}],
+        filter_terms: [{operator: "is", operand: "direct"}],
         unread_info: {
             flavor: "found",
             msg_id: 550,
         },
         has_found_newest: true,
         all_messages: [
-            {id: 450, type: "private", to_user_ids: "1,2"},
-            {id: 500, type: "private", to_user_ids: "1,2"},
-            {id: 550, type: "private", to_user_ids: "1,2"},
+            {id: 450, type: "direct", to_user_ids: "1,2"},
+            {id: 500, type: "direct", to_user_ids: "1,2"},
+            {id: 550, type: "direct", to_user_ids: "1,2"},
         ],
         expected_id_info: {
             target_id: undefined,
@@ -217,7 +217,7 @@ run_test("dm with target outside of range", () => {
 
 run_test("is:private with no unreads before fetch", () => {
     const fixture = {
-        filter_terms: [{operator: "is", operand: "private"}],
+        filter_terms: [{operator: "is", operand: "direct"}],
         unread_info: {
             flavor: "not_found",
         },
@@ -236,7 +236,7 @@ run_test("is:private with no unreads before fetch", () => {
 
 run_test("is:private with target and no unreads", () => {
     const fixture = {
-        filter_terms: [{operator: "is", operand: "private"}],
+        filter_terms: [{operator: "is", operand: "direct"}],
         target_id: 450,
         unread_info: {
             flavor: "not_found",
@@ -245,9 +245,9 @@ run_test("is:private with target and no unreads", () => {
         empty: false,
         all_messages: [
             {id: 350},
-            {id: 400, type: "private", to_user_ids: "1,2"},
-            {id: 450, type: "private", to_user_ids: "1,2"},
-            {id: 500, type: "private", to_user_ids: "1,2"},
+            {id: 400, type: "direct", to_user_ids: "1,2"},
+            {id: 450, type: "direct", to_user_ids: "1,2"},
+            {id: 500, type: "direct", to_user_ids: "1,2"},
         ],
         expected_id_info: {
             target_id: 450,

@@ -87,15 +87,15 @@ run_test("basics", () => {
     assert_contents(mld, []);
     const msgs_sent_by_6 = [
         {id: 2, sender_id: 6, type: "stream", stream_id: 1, topic: "whatever"},
-        {id: 4, sender_id: 6, type: "private", to_user_ids: "6,9,10"},
-        {id: 6, sender_id: 6, type: "private", to_user_ids: "6, 11"},
+        {id: 4, sender_id: 6, type: "direct", to_user_ids: "6,9,10"},
+        {id: 6, sender_id: 6, type: "direct", to_user_ids: "6, 11"},
     ];
     const msgs_with_sender_ids = [
         {id: 1, sender_id: 1, type: "stream", stream_id: 1, topic: "random1"},
         {id: 3, sender_id: 4, type: "stream", stream_id: 1, topic: "random2"},
-        {id: 5, sender_id: 2, type: "private", to_user_ids: "2,10,11"},
-        {id: 8, sender_id: 11, type: "private", to_user_ids: "10"},
-        {id: 9, sender_id: 11, type: "private", to_user_ids: "9"},
+        {id: 5, sender_id: 2, type: "direct", to_user_ids: "2,10,11"},
+        {id: 8, sender_id: 11, type: "direct", to_user_ids: "10"},
+        {id: 9, sender_id: 11, type: "direct", to_user_ids: "9"},
         ...msgs_sent_by_6,
     ];
     mld.add_messages(msgs_with_sender_ids);
@@ -135,12 +135,12 @@ run_test("muting", () => {
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
 
         // 10 = muted user, 9 = non-muted user, 11 = you
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
-        {id: 6, type: "private", to_user_ids: "11", sender_id: 10}, // muted to 1:1 PM
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
-        {id: 8, type: "private", to_user_ids: "10", sender_id: 11}, // 1:1 PM to muted
-        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
+        {id: 4, type: "direct", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
+        {id: 5, type: "direct", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
+        {id: 6, type: "direct", to_user_ids: "11", sender_id: 10}, // muted to 1:1 PM
+        {id: 7, type: "direct", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
+        {id: 8, type: "direct", to_user_ids: "10", sender_id: 11}, // 1:1 PM to muted
+        {id: 9, type: "direct", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
     ];
 
     user_topics.update_user_topics(1, "muted", user_topics.all_visibility_policies.MUTED);
@@ -163,12 +163,12 @@ run_test("muting", () => {
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
 
         // `messages_filtered_for_topic_mutes` does not affect private messages
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
-        {id: 6, type: "private", to_user_ids: "11", sender_id: 10},
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
-        {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
-        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        {id: 4, type: "direct", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 5, type: "direct", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 6, type: "direct", to_user_ids: "11", sender_id: 10},
+        {id: 7, type: "direct", to_user_ids: "11", sender_id: 9},
+        {id: 8, type: "direct", to_user_ids: "10", sender_id: 11},
+        {id: 9, type: "direct", to_user_ids: "9", sender_id: 11},
     ]);
 
     const res_user = mld.messages_filtered_for_user_mutes(msgs);
@@ -178,10 +178,10 @@ run_test("muting", () => {
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
 
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
-        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
+        {id: 4, type: "direct", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
+        {id: 5, type: "direct", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
+        {id: 7, type: "direct", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
+        {id: 9, type: "direct", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
     ]);
 
     // Output filtered based on both topic and user muting.
@@ -190,10 +190,10 @@ run_test("muting", () => {
     assert.deepEqual(filtered_messages, [
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
-        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        {id: 4, type: "direct", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 5, type: "direct", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 7, type: "direct", to_user_ids: "11", sender_id: 9},
+        {id: 9, type: "direct", to_user_ids: "9", sender_id: 11},
     ]);
 
     // Also verify that, the correct set of messages is stored in `_items`

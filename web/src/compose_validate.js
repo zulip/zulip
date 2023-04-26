@@ -631,7 +631,7 @@ export function validate() {
         return false;
     }
 
-    if (compose_state.get_message_type() === "private") {
+    if (compose_state.get_message_type() === "direct") {
         return validate_private_message();
     }
     return validate_stream_message();

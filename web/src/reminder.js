@@ -33,7 +33,7 @@ export function is_deferred_delivery(message_content) {
 }
 
 export function patch_request_for_scheduling(request, message_content, deliver_at, delivery_type) {
-    if (request.type === "private") {
+    if (request.type === "direct") {
         request.to = JSON.stringify(request.to);
     } else {
         request.to = JSON.stringify([request.to]);
@@ -166,7 +166,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
     const reminder_msg_content =
         message.raw_content + "\n\n[Link to conversation](" + link_to_msg + ")";
     let reminder_message = {
-        type: "private",
+        type: "direct",
         sender_id: page_params.user_id,
         stream: "",
     };

@@ -562,7 +562,7 @@ class UserDraftSettingsTests(ZulipTestCase):
                 "timestamp": 15954790199,
             },
             {
-                "type": "private",
+                "type": "direct",
                 "to": [],
                 "topic": "",
                 "content": "What if made it possible to sync drafts in Zulip?",

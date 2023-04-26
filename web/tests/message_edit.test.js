@@ -72,7 +72,7 @@ run_test("is_content_editable", () => {
     message.submessages = ["/poll"];
     assert.equal(is_content_editable(message, 55), false);
     delete message.submessages;
-    message.type = "private";
+    message.type = "direct";
     assert.equal(is_content_editable(message, 45), false);
 
     assert.equal(is_content_editable(message, 55), true);

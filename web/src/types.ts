@@ -5,7 +5,7 @@ export type MatchedMessage = {
 };
 
 // TODO/typescript: Move this to message_store
-export type MessageType = "private" | "stream";
+export type MessageType = "direct" | "stream";
 
 // TODO/typescript: Move this to message_store
 export type RawMessage = {

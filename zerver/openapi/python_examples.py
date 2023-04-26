@@ -980,7 +980,7 @@ def send_message(client: Client) -> int:
     # Send a direct message
     user_id = 10
     request = {
-        "type": "private",
+        "type": "direct",
         "to": [user_id],
         "content": "With mirth and laughter let old wrinkles come.",
     }
@@ -1056,7 +1056,7 @@ def test_nonexistent_stream_error(client: Client) -> None:
 
 def test_private_message_invalid_recipient(client: Client) -> None:
     request = {
-        "type": "private",
+        "type": "direct",
         "to": "eeshan@zulip.com",
         "content": "With mirth and laughter let old wrinkles come.",
     }

@@ -61,5 +61,5 @@ export function want_normal_display() {
         }
     }
 
-    return focused_recipient.type === "private" && focused_recipient.reply_to === "";
+    return focused_recipient.type === "direct" && focused_recipient.reply_to === "";
 }

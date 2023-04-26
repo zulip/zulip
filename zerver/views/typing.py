@@ -31,7 +31,7 @@ def send_notification_backend(
         raise JsonableError(_("Empty 'to' list"))
 
     recipient_type_name = req_type
-    if recipient_type_name == "private":
+    if recipient_type_name == "direct":
         # TODO: Use "direct" in typing notification events.
         recipient_type_name = "direct"
 

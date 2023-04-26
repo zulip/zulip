@@ -193,7 +193,7 @@ export function snapshot_message() {
         type: compose_state.get_message_type(),
         content: compose_state.message_content(),
     };
-    if (message.type === "private") {
+    if (message.type === "direct") {
         const recipient = compose_state.private_message_recipient();
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
@@ -503,7 +503,7 @@ function current_recipient_data() {
             topic: compose_state.topic(),
             private_recipients: undefined,
         };
-    } else if (compose_state.get_message_type() === "private") {
+    } else if (compose_state.get_message_type() === "direct") {
         return {
             stream_name: undefined,
             topic: undefined,
@@ -537,7 +537,7 @@ function filter_drafts_by_compose_box_and_recipient(drafts) {
         }
         // Match by private message recipient.
         else if (
-            draft.type === "private" &&
+            draft.type === "direct" &&
             private_recipients &&
             _.isEqual(
                 draft.private_message_recipient

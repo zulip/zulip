@@ -75,7 +75,7 @@ class DraftCreationTests(ZulipTestCase):
         zoe = self.example_user("ZOE")
         draft_dicts = [
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id],
                 "topic": "This topic should be ignored.",
                 "content": "What if we made it possible to sync drafts in Zulip?",
@@ -84,7 +84,7 @@ class DraftCreationTests(ZulipTestCase):
         ]
         expected_draft_dicts = [
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id],
                 "topic": "",  # For private messages the topic should be ignored.
                 "content": "What if we made it possible to sync drafts in Zulip?",
@@ -98,7 +98,7 @@ class DraftCreationTests(ZulipTestCase):
         othello = self.example_user("othello")
         draft_dicts = [
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id, othello.id],
                 "topic": "This topic should be ignored.",
                 "content": "What if we made it possible to sync drafts in Zulip?",
@@ -107,7 +107,7 @@ class DraftCreationTests(ZulipTestCase):
         ]
         expected_draft_dicts = [
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id, othello.id],
                 "topic": "",  # For private messages the topic should be ignored.
                 "content": "What if we made it possible to sync drafts in Zulip?",
@@ -131,14 +131,14 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 1595479019,
             },  # Stream message draft
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id],
                 "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
                 "timestamp": 1595479020,
             },  # Private message draft
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id, othello.id],
                 "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
@@ -195,7 +195,7 @@ class DraftCreationTests(ZulipTestCase):
         """When "to" is an empty list, the type should become "" as well."""
         draft_dicts = [
             {
-                "type": "private",
+                "type": "direct",
                 "to": [],
                 "topic": "sync drafts",
                 "content": "Let's add backend support for syncing drafts.",
@@ -270,7 +270,7 @@ class DraftCreationTests(ZulipTestCase):
     def test_create_personal_message_draft_for_non_existing_user(self) -> None:
         draft_dicts = [
             {
-                "type": "private",
+                "type": "direct",
                 "to": [99999999999999],  # Hopefully, this doesn't exist either.
                 "topic": "This topic should be ignored.",
                 "content": "What if we made it possible to sync drafts in Zulip?",
@@ -521,14 +521,14 @@ class DraftFetchTest(ZulipTestCase):
                 "timestamp": 15954790197,
             },
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id, othello.id],
                 "topic": "",
                 "content": "What if made it possible to sync drafts in Zulip?",
                 "timestamp": 15954790198,
             },
             {
-                "type": "private",
+                "type": "direct",
                 "to": [zoe.id],
                 "topic": "",
                 "content": "What if made it possible to sync drafts in Zulip?",
@@ -543,7 +543,7 @@ class DraftFetchTest(ZulipTestCase):
 
         zoe_draft_dicts = [
             {
-                "type": "private",
+                "type": "direct",
                 "to": [hamlet.id],
                 "topic": "",
                 "content": "Hello there!",

@@ -525,7 +525,7 @@ test("sort_recipients dup alls", () => {
 });
 
 test("sort_recipients dup alls private", () => {
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
     const all_obj = ct.broadcast_mentions()[0];
 
     // full_name starts with same character but emails are 'all'
@@ -598,7 +598,7 @@ test("sort broadcast mentions for stream message type", () => {
 });
 
 test("sort broadcast mentions for private message type", () => {
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
     const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
 
     assert.deepEqual(
@@ -631,7 +631,7 @@ test("test compare directly for stream message type", () => {
 });
 
 test("test compare directly for private message", () => {
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
     const all_obj = ct.broadcast_mentions()[0];
 
     assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);

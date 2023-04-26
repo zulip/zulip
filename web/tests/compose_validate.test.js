@@ -178,7 +178,7 @@ test_ui("validate", ({mock_template}) => {
     }
 
     // test validating private messages
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
 
     initialize_pm_pill();
     add_content_to_compose_box();
@@ -684,7 +684,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
         new_banner_rendered = false;
-        const msg_type = is_private ? "private" : "stream";
+        const msg_type = is_private ? "direct" : "stream";
         compose_state.set_message_type(msg_type);
         page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
         mentioned_details.is_broadcast = is_broadcast;

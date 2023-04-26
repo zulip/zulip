@@ -187,7 +187,7 @@ function sort_numerically(user_ids) {
 }
 
 export function huddle_string(message) {
-    if (message.type !== "private") {
+    if (message.type !== "direct") {
         return undefined;
     }
 
@@ -467,7 +467,7 @@ export function pm_lookup_key(user_ids_string) {
 }
 
 export function all_user_ids_in_pm(message) {
-    if (message.type !== "private") {
+    if (message.type !== "direct") {
         return undefined;
     }
 
@@ -483,7 +483,7 @@ export function all_user_ids_in_pm(message) {
 }
 
 export function pm_with_user_ids(message) {
-    if (message.type !== "private") {
+    if (message.type !== "direct") {
         return undefined;
     }
 
@@ -1289,7 +1289,7 @@ export function extract_people_from_message(message) {
             ];
             break;
 
-        case "private":
+        case "direct":
             involved_people = message.display_recipient;
             break;
 
@@ -1347,7 +1347,7 @@ export function filter_for_user_settings_search(persons, query) {
 }
 
 export function maybe_incr_recipient_count(message) {
-    if (message.type !== "private") {
+    if (message.type !== "direct") {
         return;
     }
 

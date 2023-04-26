@@ -281,7 +281,7 @@ class TestStreamHelpers(ZulipTestCase):
         realm = cordelia.realm
         stream_name = "Some private stream"
 
-        # Use the invite_only flag in make_stream to make a stream "private".
+        # Use the invite_only flag in make_stream to make a stream "direct".
         stream = self.make_stream(stream_name=stream_name, invite_only=True)
         self.subscribe(cordelia, stream_name)
 

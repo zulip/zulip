@@ -129,14 +129,14 @@ function is_table_focused() {
 }
 
 function get_row_type(row) {
-    // Return "private" or "stream"
+    // Return "direct" or "stream"
     // We use CSS method for finding row type until topics_widget gets initialized.
     if (!topics_widget) {
         const $topic_rows = $("#recent_topics_table table tbody tr");
         const $topic_row = $topic_rows.eq(row);
         const is_private = $topic_row.attr("data-private");
         if (is_private) {
-            return "private";
+            return "direct";
         }
         return "stream";
     }
@@ -149,7 +149,7 @@ function get_row_type(row) {
 function get_max_selectable_cols(row) {
     // returns maximum number of columns in stream message or private message row.
     const type = get_row_type(row);
-    if (type === "private") {
+    if (type === "direct") {
         return MAX_SELECTABLE_PM_COLS;
     }
     return MAX_SELECTABLE_TOPIC_COLS;
@@ -170,7 +170,7 @@ function set_table_focus(row, col, using_keyboard) {
         col_focus = 1;
     }
     const type = get_row_type(row);
-    if (col === 3 && type === "private") {
+    if (col === 3 && type === "direct") {
         col = unread ? 2 : 1;
         col_focus = col;
     }
@@ -201,7 +201,7 @@ function set_table_focus(row, col, using_keyboard) {
     // get_recipient_label helper inside compose_closed_ui. Surely
     // there's a more readable way to write this code.
     let message;
-    if (type === "private") {
+    if (type === "direct") {
         message = {
             display_reply_to: $topic_row.find(".recent_topic_name a").text(),
         };
@@ -312,7 +312,7 @@ export function process_messages(messages) {
 }
 
 function message_to_conversation_unread_count(msg) {
-    if (msg.type === "private") {
+    if (msg.type === "direct") {
         return unread.num_unread_for_user_ids_string(msg.to_user_ids);
     }
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
@@ -364,7 +364,7 @@ function format_conversation(conversation_data) {
     context.conversation_key = get_key_from_message(last_msg);
     context.unread_count = message_to_conversation_unread_count(last_msg);
     context.last_msg_time = timerender.relative_time_string_from_date(time);
-    context.is_private = last_msg.type === "private";
+    context.is_private = last_msg.type === "direct";
     let all_senders;
     let senders;
     let displayed_other_senders;
@@ -409,7 +409,7 @@ function format_conversation(conversation_data) {
         // Collect extra sender fullname for tooltip
         extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
-    } else if (type === "private") {
+    } else if (type === "direct") {
         // Private message info
         context.user_ids_string = last_msg.to_user_ids;
         context.rendered_pm_with = last_msg.display_recipient
@@ -554,11 +554,11 @@ export function filters_should_hide_topic(topic_data) {
         }
     }
 
-    if (!filters.has("include_private") && topic_data.type === "private") {
+    if (!filters.has("include_private") && topic_data.type === "direct") {
         return true;
     }
 
-    if (filters.has("include_private") && topic_data.type === "private") {
+    if (filters.has("include_private") && topic_data.type === "direct") {
         const recipients = people.split_to_ints(msg.to_user_ids);
 
         if (recipients.every((id) => muted_users.is_user_muted(id))) {
@@ -716,13 +716,13 @@ function stream_sort(a, b) {
         }
         return sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
     }
-    // if type is not same sort between "private" and "stream"
+    // if type is not same sort between "direct" and "stream"
     return sort_comparator(a.type, b.type);
 }
 
 function topic_sort_key(conversation_data) {
     const message = message_store.get(conversation_data.last_msg_id);
-    if (message.type === "private") {
+    if (message.type === "direct") {
         return message.display_reply_to;
     }
     return message.topic;

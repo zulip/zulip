@@ -350,7 +350,7 @@ test("group_suggestions", () => {
 
     function message(user_ids, timestamp) {
         return {
-            type: "private",
+            type: "direct",
             display_recipient: user_ids.map((id) => ({
                 id,
             })),

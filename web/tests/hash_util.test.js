@@ -151,7 +151,7 @@ run_test("test_by_conversation_and_time_url", () => {
     );
 
     message = {
-        type: "private",
+        type: "direct",
         display_recipient: [
             {
                 id: hamlet.user_id,

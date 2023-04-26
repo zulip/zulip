@@ -28,7 +28,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
     def test_process_success_response(self) -> None:
         event = dict(
             user_profile_id=99,
-            message=dict(type="private"),
+            message=dict(type="direct"),
         )
         service_handler = self.handler
 
@@ -180,7 +180,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                 "sender_realm_str": "zulip",
                 "timestamp": 1529821610,
                 "sender_email": "cordelia@zulip.com",
-                "type": "private",
+                "type": "direct",
                 "sender_realm_id": 1,
                 "id": 219,
                 TOPIC_NAME: "test",

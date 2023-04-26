@@ -63,25 +63,25 @@ run_test("same_recipient", () => {
 
     assert.ok(
         util.same_recipient(
-            {type: "private", to_user_ids: "101,102"},
-            {type: "private", to_user_ids: "101,102"},
+            {type: "direct", to_user_ids: "101,102"},
+            {type: "direct", to_user_ids: "101,102"},
         ),
     );
 
     assert.ok(
         !util.same_recipient(
-            {type: "private", to_user_ids: "101,102"},
-            {type: "private", to_user_ids: "103"},
+            {type: "direct", to_user_ids: "101,102"},
+            {type: "direct", to_user_ids: "103"},
         ),
     );
 
     assert.ok(
-        !util.same_recipient({type: "stream", stream_id: 101, topic: "Bar"}, {type: "private"}),
+        !util.same_recipient({type: "stream", stream_id: 101, topic: "Bar"}, {type: "direct"}),
     );
 
-    assert.ok(!util.same_recipient({type: "private", to_user_ids: undefined}, {type: "private"}));
+    assert.ok(!util.same_recipient({type: "direct", to_user_ids: undefined}, {type: "direct"}));
 
-    assert.ok(!util.same_recipient(undefined, {type: "private"}));
+    assert.ok(!util.same_recipient(undefined, {type: "direct"}));
 
     assert.ok(!util.same_recipient(undefined, undefined));
 });

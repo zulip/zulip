@@ -1006,7 +1006,7 @@ Output:
         return check_send_message(
             from_user,
             sending_client,
-            "private",
+            "direct",
             recipient_list,
             None,
             content,
@@ -1027,7 +1027,7 @@ Output:
         return check_send_message(
             from_user,
             sending_client,
-            "private",
+            "direct",
             to_user_ids,
             None,
             content,

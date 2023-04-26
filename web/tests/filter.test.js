@@ -205,10 +205,10 @@ test("basics", () => {
     assert.ok(!filter.is_conversation_view());
 
     // "is:private" was renamed to "is:dm"
-    operators = [{operator: "is", operand: "private"}];
+    operators = [{operator: "is", operand: "direct"}];
     filter = new Filter(operators);
     assert.ok(filter.has_operand("is", "dm"));
-    assert.ok(!filter.has_operand("is", "private"));
+    assert.ok(!filter.has_operand("is", "direct"));
 
     operators = [{operator: "is", operand: "mentioned"}];
     filter = new Filter(operators);
@@ -697,7 +697,7 @@ test("predicate_basics", () => {
     assert.ok(predicate({type: "stream", stream_id, topic: "bar"}));
     assert.ok(!predicate({type: "stream", stream_id, topic: "whatever"}));
     assert.ok(!predicate({type: "stream", stream_id: 9999999}));
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: "direct"}));
 
     // For old streams that we are no longer subscribed to, we may not have
     // a sub, but these should still match by stream name.
@@ -712,10 +712,10 @@ test("predicate_basics", () => {
     assert.ok(predicate({}));
 
     predicate = get_predicate([["topic", "Bar"]]);
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: "direct"}));
 
     predicate = get_predicate([["is", "dm"]]);
-    assert.ok(predicate({type: "private"}));
+    assert.ok(predicate({type: "direct"}));
     assert.ok(!predicate({type: "stream"}));
 
     predicate = get_predicate([["streams", "public"]]);
@@ -750,7 +750,7 @@ test("predicate_basics", () => {
     const unknown_stream_id = 999;
     predicate = get_predicate([["in", "home"]]);
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
-    assert.ok(predicate({type: "private"}));
+    assert.ok(predicate({type: "direct"}));
 
     with_overrides(({override}) => {
         override(page_params, "narrow_stream", "kiosk");
@@ -778,19 +778,19 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "Joe@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: joe.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: steve.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: 999999}],
         }),
     );
@@ -799,7 +799,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "Joe@example.com,steve@foo.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
     );
@@ -808,7 +808,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "Joe@example.com,steve@foo.com,me@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
         }),
     );
@@ -816,7 +816,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm", "nobody@example.com"]]);
     assert.ok(
         !predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: joe.user_id}],
         }),
     );
@@ -824,7 +824,7 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm-including", "nobody@example.com"]]);
     assert.ok(
         !predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: joe.user_id}, {id: me.user_id}],
         }),
     );
@@ -832,19 +832,19 @@ test("predicate_basics", () => {
     predicate = get_predicate([["dm-including", "Joe@example.com"]]);
     assert.ok(
         predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}, {id: me.user_id}],
         }),
     );
     assert.ok(
         predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: joe.user_id}, {id: me.user_id}],
         }),
     );
     assert.ok(
         !predicate({
-            type: "private",
+            type: "direct",
             display_recipient: [{id: steve.user_id}, {id: me.user_id}],
         }),
     );
@@ -938,7 +938,7 @@ function test_mit_exceptions() {
     assert.ok(predicate({type: "stream", stream: "foo.d", topic: ""}));
     assert.ok(!predicate({type: "stream", stream: "wrong"}));
     assert.ok(!predicate({type: "stream", stream: "foo", topic: "whatever"}));
-    assert.ok(!predicate({type: "private"}));
+    assert.ok(!predicate({type: "direct"}));
 
     predicate = get_predicate([
         ["stream", "Foo"],
@@ -1367,7 +1367,7 @@ test("term_type", () => {
     assert_term_type(term("dm", "whomever"), "dm");
     assert_term_type(term("dm", "whomever", true), "not-dm");
     assert_term_type(term("is", "dm"), "is-dm");
-    assert_term_type(term("is", "private"), "is-private");
+    assert_term_type(term("is", "direct"), "is-private");
     assert_term_type(term("has", "link"), "has-link");
     assert_term_type(term("has", "attachment", true), "not-has-attachment");
 
@@ -1775,7 +1775,7 @@ test("error_cases", () => {
 
     const predicate = get_predicate([["dm", "Joe@example.com"]]);
     blueslip.expect("error", "Empty recipient list in message");
-    assert.ok(!predicate({type: "private", display_recipient: []}));
+    assert.ok(!predicate({type: "direct", display_recipient: []}));
 });
 
 run_test("is_spectator_compatible", () => {
@@ -1811,7 +1811,7 @@ run_test("is_spectator_compatible", () => {
     assert.ok(!Filter.is_spectator_compatible([{operator: "has"}]));
 
     // "is:private" was renamed to "is:dm"
-    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "private"}]));
+    assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "direct"}]));
     // "pm-with" was renamed to "dm"
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "pm-with", operand: "hamlet@zulip.com"}]),

@@ -55,7 +55,7 @@ def create_mirrored_message_users(
 ) -> UserProfile:
     sender_email = sender.strip().lower()
     referenced_users = {sender_email}
-    if recipient_type_name == "private":
+    if recipient_type_name == "direct":
         for email in recipients:
             referenced_users.add(email.lower())
 
@@ -212,10 +212,10 @@ def send_message_backend(
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
-        # For now, use "private" from Message.API_RECIPIENT_TYPES.
+        # For now, use "direct" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "direct" here, as well as in events and
         # message (created, schdeduled, drafts) objects/dicts.
-        recipient_type_name = "private"
+        recipient_type_name = "direct"
 
     # If req_to is None, then we default to an
     # empty list of recipients.
@@ -266,7 +266,7 @@ def send_message_backend(
         # same-realm constraint.
         if req_sender is None:
             raise JsonableError(_("Missing sender"))
-        if recipient_type_name != "private" and not can_forge_sender:
+        if recipient_type_name != "direct" and not can_forge_sender:
             raise JsonableError(_("User not authorized for this query"))
 
         # For now, mirroring only works with recipient emails, not for

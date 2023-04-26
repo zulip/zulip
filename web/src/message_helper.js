@@ -56,7 +56,7 @@ export function process_new_message(message) {
             message_user_ids.add_user_id(message.sender_id);
             break;
 
-        case "private":
+        case "direct":
             message.is_private = true;
             message.reply_to = util.normalize_recipients(message_store.get_pm_emails(message));
             message.display_reply_to = message_store.get_pm_full_names(message);

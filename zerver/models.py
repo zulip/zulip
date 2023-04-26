@@ -230,7 +230,7 @@ def get_recipient_ids(
         recipient_type_str = "stream"
         to = [recipient.type_id]
     else:
-        recipient_type_str = "private"
+        recipient_type_str = "direct"
         if recipient.type == Recipient.PERSONAL:
             to = [recipient.type_id]
         else:
@@ -3005,10 +3005,10 @@ class Message(AbstractMessage):
     #
     # A detail worth noting:
     # * "direct" was introduced in 2023 with the goal of
-    #   deprecating the original "private" and becoming the
+    #   deprecating the original "direct" and becoming the
     #   preferred way to indicate a personal or huddle
     #   Recipient type via the API.
-    API_RECIPIENT_TYPES = ["direct", "private", "stream"]
+    API_RECIPIENT_TYPES = ["direct", "direct", "stream"]
 
     search_tsvector = SearchVectorField(null=True)
 

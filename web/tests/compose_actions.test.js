@@ -205,14 +205,14 @@ test("start", ({override, override_rewire}) => {
         content: "hello",
     };
 
-    start("private", opts);
+    start("direct", opts);
 
     assert_hidden("#compose-stream-recipient");
     assert_visible("#compose-private-recipient");
 
     assert.equal(compose_state.private_message_recipient(), "foo@example.com");
     assert.equal($("#compose-textarea").val(), "hello");
-    assert.equal(compose_state.get_message_type(), "private");
+    assert.equal(compose_state.get_message_type(), "direct");
     assert.ok(compose_state.composing());
 
     // Triggered by new private message
@@ -220,10 +220,10 @@ test("start", ({override, override_rewire}) => {
         trigger: "new private message",
     };
 
-    start("private", opts);
+    start("direct", opts);
 
     assert.equal(compose_state.private_message_recipient(), "");
-    assert.equal(compose_state.get_message_type(), "private");
+    assert.equal(compose_state.get_message_type(), "direct");
     assert.ok(compose_state.composing());
 
     // Cancel compose.
@@ -266,7 +266,7 @@ test("respond_to_message", ({override, override_rewire}) => {
     people.add_active_user(person);
 
     let msg = {
-        type: "private",
+        type: "direct",
         sender_id: person.user_id,
     };
     override(message_lists.current, "selected_message", () => msg);
@@ -436,9 +436,9 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 });
 
 test("get_focus_area", () => {
-    assert.equal(get_focus_area("private", {}), "#private_message_recipient");
+    assert.equal(get_focus_area("direct", {}), "#private_message_recipient");
     assert.equal(
-        get_focus_area("private", {
+        get_focus_area("direct", {
             private_message_recipient: "bob@example.com",
         }),
         "#compose-textarea",

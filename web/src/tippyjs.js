@@ -401,7 +401,7 @@ export function initialize() {
                     });
                 } else if (
                     _.isEqual(narrow_filter.sorted_term_types(), ["is-dm"]) &&
-                    compose_state.get_message_type() === "private"
+                    compose_state.get_message_type() === "direct"
                 ) {
                     display_current_view = $t({
                         defaultMessage: "Currently viewing all direct messages.",

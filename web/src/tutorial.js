@@ -13,6 +13,6 @@ function set_tutorial_status(status, callback) {
 export function initialize() {
     if (page_params.needs_tutorial) {
         set_tutorial_status("started");
-        narrow.by("is", "private", {trigger: "sidebar"});
+        narrow.by("is", "direct", {trigger: "sidebar"});
     }
 }

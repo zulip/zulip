@@ -310,7 +310,7 @@ private_messages[0] = {
     id: (id += 1),
     sender_id: sender1,
     to_user_ids: "2,3",
-    type: "private",
+    type: "direct",
     display_recipient: [{id: 1}, {id: 2}, {id: 3}],
     pm_with_url: test_url(),
 };
@@ -318,7 +318,7 @@ private_messages[1] = {
     id: (id += 1),
     sender_id: sender1,
     to_user_ids: "2,4",
-    type: "private",
+    type: "direct",
     display_recipient: [{id: 1}, {id: 2}, {id: 4}],
     pm_with_url: test_url(),
 };
@@ -326,7 +326,7 @@ private_messages[2] = {
     id: (id += 1),
     sender_id: sender1,
     to_user_ids: "3",
-    type: "private",
+    type: "direct",
     display_recipient: [{id: 1}, {id: 3}],
     pm_with_url: test_url(),
 };
@@ -529,14 +529,14 @@ test("test_filter_pm", ({mock_template}) => {
     rt.set_filter("include_private");
 
     expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 12, participated: true, type: "private"},
+        {last_msg_id: 12, participated: true, type: "direct"},
     ];
 
     rt.process_messages([private_messages[0]]);
 
-    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 12}), false);
-    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 13}), true);
-    assert.deepEqual(rt.filters_should_hide_topic({type: "private", last_msg_id: 14}), false);
+    assert.deepEqual(rt.filters_should_hide_topic({type: "direct", last_msg_id: 12}), false);
+    assert.deepEqual(rt.filters_should_hide_topic({type: "direct", last_msg_id: 13}), true);
+    assert.deepEqual(rt.filters_should_hide_topic({type: "direct", last_msg_id: 14}), false);
 });
 
 test("test_filter_unread", ({mock_template}) => {
@@ -870,7 +870,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 
     // Process private message
     rt_data.process_message({
-        type: "private",
+        type: "direct",
         to_user_ids: "6,7,8",
     });
     all_topics = rt_data.get();

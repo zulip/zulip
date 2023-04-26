@@ -1619,7 +1619,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assertEqual(
             message_details,
             {
-                str(message_id): dict(type="private", user_ids=[]),
+                str(message_id): dict(type="direct", user_ids=[]),
             },
         )
 
@@ -1638,7 +1638,7 @@ class MarkUnreadTest(ZulipTestCase):
         )
 
         # message to self
-        message_details = MessageDetailsDict(type="private", user_ids=[])
+        message_details = MessageDetailsDict(type="direct", user_ids=[])
         add_message_to_unread_msgs(user.id, raw_unread_data, message_id, message_details)
         self.assertEqual(
             raw_unread_data["pm_dict"],
@@ -2091,7 +2091,7 @@ class MarkUnreadTest(ZulipTestCase):
             self.assertEqual(
                 event["message_details"][message_id],
                 dict(
-                    type="private",
+                    type="direct",
                     user_ids=[sender.id],
                 ),
             )
@@ -2158,7 +2158,7 @@ class MarkUnreadTest(ZulipTestCase):
             self.assertEqual(
                 event["message_details"][message_id],
                 dict(
-                    type="private",
+                    type="direct",
                     user_ids=[sender.id],
                     mentioned=True,
                 ),

@@ -95,10 +95,10 @@ export function reply_message(opts) {
         return;
     }
 
-    if (message.type === "private") {
+    if (message.type === "direct") {
         const pm_recipient = people.pm_reply_to(message);
 
-        reply.type = "private";
+        reply.type = "direct";
         reply.to = JSON.stringify(pm_recipient.split(","));
         reply.content = content;
 

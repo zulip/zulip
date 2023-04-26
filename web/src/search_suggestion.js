@@ -636,7 +636,7 @@ function get_sent_by_me_suggestions(last, operators) {
 
 function get_operator_suggestions(last) {
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
-    if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
+    if (last.operator === "is" && common.phrase_match(last.operand, "direct")) {
         const is_dm = format_as_suggestion([
             {operator: last.operator, operand: "dm", negated: last.negated},
         ]);

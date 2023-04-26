@@ -12,7 +12,7 @@
         "reject_events":[
             {
                 "message":{
-                    "type":"private"
+                    "type":"direct"
                 },
                 "flags":null
             },
@@ -51,7 +51,7 @@
         "reject_events":[
             {
                 "message":{
-                    "type":"private"
+                    "type":"direct"
                 },
                 "flags":null
             },
@@ -91,7 +91,7 @@
         "reject_events":[
             {
                 "message":{
-                    "type":"private"
+                    "type":"direct"
                 },
                 "flags":null
             },
@@ -150,7 +150,7 @@
         "accept_events":[
             {
                 "message":{
-                    "type":"private"
+                    "type":"direct"
                 },
                 "flags":null
             }
@@ -174,7 +174,7 @@
         "accept_events":[
             {
                 "message":{
-                    "type":"private"
+                    "type":"direct"
                 },
                 "flags":null
             }
@@ -190,7 +190,7 @@
         "narrow":[
             [
                 "is",
-                "private"
+                "direct"
             ]
         ]
     },
@@ -301,7 +301,7 @@
         "reject_events":[
             {
                 "message":{
-                    "type":"private"
+                    "type":"direct"
                 },
                 "flags":null
             },

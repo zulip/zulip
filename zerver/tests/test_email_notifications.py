@@ -517,7 +517,7 @@ class TestMissedMessages(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([hamlet.email]).decode(),
             },
@@ -676,7 +676,7 @@ class TestMissedMessages(ZulipTestCase):
                 "Denmark > test",
                 "Othello, the Moor of Venice",
                 "1 2 3 4 5 6 7 8 9 10 @**King Hamlet**",
-                "private",
+                "direct",
                 "group",
                 "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
@@ -718,7 +718,7 @@ class TestMissedMessages(ZulipTestCase):
                 "Denmark > test",
                 "Othello, the Moor of Venice",
                 "1 2 3 4 5 @**all**",
-                "private",
+                "direct",
                 "group",
                 "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]

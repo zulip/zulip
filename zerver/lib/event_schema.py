@@ -218,7 +218,7 @@ delete_message_event = event_dict_type(
     required_keys=[
         # force vertical
         ("type", Equals("delete_message")),
-        ("message_type", EnumType(["private", "stream"])),
+        ("message_type", EnumType(["direct", "stream"])),
     ],
     optional_keys=[
         ("message_id", int),
@@ -245,7 +245,7 @@ def check_delete_message(
 
     if message_type == "stream":
         keys |= {"stream_id", "topic"}
-    elif message_type == "private":
+    elif message_type == "direct":
         pass
     else:
         raise AssertionError("unexpected message_type")
@@ -1388,7 +1388,7 @@ typing_person_type = DictType(
 
 equals_private_or_stream = EnumType(
     [
-        "private",
+        "direct",
         "stream",
     ]
 )
@@ -1668,7 +1668,7 @@ update_message_flags_remove_event = event_dict_type(
             StringDictType(
                 DictType(
                     required_keys=[
-                        ("type", EnumType(["private", "stream"])),
+                        ("type", EnumType(["direct", "stream"])),
                     ],
                     optional_keys=[
                         ("mentioned", bool),

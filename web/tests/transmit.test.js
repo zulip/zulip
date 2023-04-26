@@ -141,7 +141,7 @@ run_test("reply_message_private", ({override}) => {
     people.add_active_user(fred);
 
     const pm_message = {
-        type: "private",
+        type: "direct",
         display_recipient: [{id: fred.user_id}],
     };
 
@@ -166,7 +166,7 @@ run_test("reply_message_private", ({override}) => {
         sender_id: 155,
         queue_id: 177,
         local_id: "199",
-        type: "private",
+        type: "direct",
         to: '["fred@example.com"]',
         content: "hello",
     });

@@ -767,7 +767,7 @@ test_people("message_methods", () => {
     ]);
 
     let message = {
-        type: "private",
+        type: "direct",
         display_recipient: [{id: maria.user_id}, {id: me.user_id}, {id: charles.user_id}],
         sender_id: charles.user_id,
     };
@@ -777,7 +777,7 @@ test_people("message_methods", () => {
     assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png?s=50");
 
     message = {
-        type: "private",
+        type: "direct",
         display_recipient: [{id: maria.user_id}, {id: me.user_id}],
         avatar_url: "legacy.png",
     };
@@ -815,7 +815,7 @@ test_people("message_methods", () => {
     );
 
     message = {
-        type: "private",
+        type: "direct",
         display_recipient: [{id: me.user_id}],
     };
     assert.equal(people.pm_with_url(message), "#narrow/dm/30-Me-Myself");
@@ -875,7 +875,7 @@ test_people("extract_people_from_message", () => {
 
     // Get line coverage
     message = {
-        type: "private",
+        type: "direct",
         display_recipient: [unknown_user],
     };
     people.extract_people_from_message(message);
@@ -888,7 +888,7 @@ test_people("maybe_incr_recipient_count", () => {
     people.add_active_user(maria);
 
     let message = {
-        type: "private",
+        type: "direct",
         display_recipient: [maria_recip],
         sent_by_me: true,
     };
@@ -899,7 +899,7 @@ test_people("maybe_incr_recipient_count", () => {
     // Test all the no-op conditions to get test
     // coverage.
     message = {
-        type: "private",
+        type: "direct",
         sent_by_me: false,
         display_recipient: [maria_recip],
     };
@@ -913,7 +913,7 @@ test_people("maybe_incr_recipient_count", () => {
     };
 
     message = {
-        type: "private",
+        type: "direct",
         sent_by_me: true,
         display_recipient: [unknown_recip],
     };
@@ -1239,7 +1239,7 @@ test_people("huddle_string", () => {
 
     function huddle(user_ids) {
         return people.huddle_string({
-            type: "private",
+            type: "direct",
             display_recipient: user_ids.map((id) => ({id})),
         });
     }

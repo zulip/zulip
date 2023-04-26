@@ -1119,7 +1119,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": self.example_email("othello"),
             },
@@ -1136,7 +1136,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": self.example_email("othello"),
             },
@@ -1149,7 +1149,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             self.example_user("hamlet"),
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": self.example_email("othello"),
             },
@@ -1270,7 +1270,7 @@ class InactiveUserTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": self.example_email("othello"),
             },
@@ -1285,7 +1285,7 @@ class InactiveUserTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": self.example_email("othello"),
             },
@@ -1296,7 +1296,7 @@ class InactiveUserTest(ZulipTestCase):
             self.example_user("hamlet"),
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": self.example_email("othello"),
             },
@@ -1397,7 +1397,7 @@ class TestIncomingWebhookBot(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         othello = self.example_user("othello")
         payload = dict(
-            type="private",
+            type="direct",
             content="Test message",
             to=orjson.dumps([othello.email]).decode(),
         )

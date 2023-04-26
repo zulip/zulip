@@ -19,7 +19,7 @@ def do_send_typing_notification(
     ]
     event = dict(
         type="typing",
-        message_type="private",
+        message_type="direct",
         op=operator,
         sender=sender_dict,
         recipients=recipient_dicts,

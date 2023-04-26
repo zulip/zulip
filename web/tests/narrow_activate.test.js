@@ -214,7 +214,7 @@ run_test("basics", () => {
     message_lists.current.get_row = () => row;
     util.sorted_ids = () => [];
 
-    narrow.activate([{operator: "is", operand: "private"}], {
+    narrow.activate([{operator: "is", operand: "direct"}], {
         then_select_id: selected_id,
     });
 

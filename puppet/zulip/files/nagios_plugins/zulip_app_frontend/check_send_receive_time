@@ -151,7 +151,7 @@ time_start = time.time()
 send_zulip(
     zulip_sender,
     {
-        "type": "private",
+        "type": "direct",
         "content": msg_to_send,
         "subject": "time to send",
         "to": recipient.email,

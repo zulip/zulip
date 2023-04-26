@@ -391,7 +391,7 @@ test("default_stream_names", () => {
 
     const private_stream = {
         stream_id: 103,
-        name: "private",
+        name: "direct",
         subscribed: true,
         invite_only: true,
     };

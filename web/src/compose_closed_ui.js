@@ -33,7 +33,7 @@ export function get_recipient_label(message) {
                 const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
                 message = {
                     display_reply_to: message_store.get_pm_full_names({
-                        type: "private",
+                        type: "direct",
                         display_recipient: user_ids_dicts,
                     }),
                 };
@@ -167,7 +167,7 @@ export function initialize() {
     });
 
     $("body").on("click", ".compose_private_button", () => {
-        compose_actions.start("private", {trigger: "new private message"});
+        compose_actions.start("direct", {trigger: "new private message"});
     });
 
     $("body").on("click", ".compose_reply_button", () => {

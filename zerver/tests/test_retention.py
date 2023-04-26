@@ -1098,7 +1098,7 @@ class TestDoDeleteMessages(ZulipTestCase):
             "sender": message.sender.email,
             "sender_id": message.sender_id,
             "message_id": message.id,
-            "message_type": "private",
+            "message_type": "direct",
             "recipient_id": message.recipient_id,
         }
         move_messages_to_archive([message_id])

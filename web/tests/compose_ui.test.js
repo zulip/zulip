@@ -206,7 +206,7 @@ run_test("compute_placeholder_text", () => {
 
     // PM Narrows
     opts = {
-        message_type: "private",
+        message_type: "direct",
         stream: "",
         topic: "",
         private_message_recipient: "",

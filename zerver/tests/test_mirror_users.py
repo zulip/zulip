@@ -19,7 +19,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         recipients: List[str] = []
 
-        recipient_type_name = "private"
+        recipient_type_name = "direct"
         client = get_client("banned_mirror")
 
         with self.assertRaises(InvalidMirrorInputError):
@@ -35,7 +35,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.mit_user("starnine")
         sender = user
 
-        recipient_type_name = "private"
+        recipient_type_name = "direct"
 
         for client_name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]:
             client = get_client(client_name)
@@ -58,7 +58,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         recipients = [user.email, new_user_email]
 
-        recipient_type_name = "private"
+        recipient_type_name = "direct"
         client = get_client("zephyr_mirror")
 
         mirror_sender = create_mirrored_message_users(
@@ -109,7 +109,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
             self.nonreg_email("cordelia"),
         ]
 
-        recipient_type_name = "private"
+        recipient_type_name = "direct"
         client = get_client("irc_mirror")
 
         mirror_sender = create_mirrored_message_users(
@@ -138,7 +138,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
             self.nonreg_email("cordelia"),
         ]
 
-        recipient_type_name = "private"
+        recipient_type_name = "direct"
         client = get_client("jabber_mirror")
 
         mirror_sender = create_mirrored_message_users(

@@ -217,7 +217,7 @@ if (window.electron_bridge !== undefined) {
         const data = {
             type: message.type,
             content: reply,
-            to: message.type === "private" ? message.reply_to : message.stream,
+            to: message.type === "direct" ? message.reply_to : message.stream,
             topic: message.topic,
         };
 
@@ -277,7 +277,7 @@ export function process_notification(notification) {
         content = message.sender_full_name + content.slice(3);
     }
 
-    if (message.type === "private" || message.type === "test-notification") {
+    if (message.type === "direct" || message.type === "test-notification") {
         if (
             user_settings.pm_content_in_desktop_notifications !== undefined &&
             !user_settings.pm_content_in_desktop_notifications
@@ -320,7 +320,7 @@ export function process_notification(notification) {
         notification_object.close();
     }
 
-    if (message.type === "private") {
+    if (message.type === "direct") {
         if (message.display_recipient.length > 2) {
             // If the message has too many recipients to list them all...
             if (content.length + title.length + other_recipients.length > 230) {
@@ -439,7 +439,7 @@ export function should_send_desktop_notification(message) {
 
     // And then we need to check if the message is a PM, mention,
     // wildcard mention with wildcard_mentions_notify, or alert.
-    if (message.type === "private") {
+    if (message.type === "direct") {
         return true;
     }
 
@@ -485,7 +485,7 @@ export function should_send_audible_notification(message) {
 
     // And then we need to check if the message is a PM, mention,
     // wildcard mention with wildcard_mentions_notify, or alert.
-    if (message.type === "private" || message.type === "test-notification") {
+    if (message.type === "direct" || message.type === "test-notification") {
         return true;
     }
 

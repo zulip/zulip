@@ -391,7 +391,7 @@ test("private_messages", () => {
 
     const message = {
         id: 15,
-        type: "private",
+        type: "direct",
         display_recipient: [{id: anybody.user_id}, {id: me.user_id}],
         unread: true,
     };
@@ -434,7 +434,7 @@ test("private_messages", () => {
     const message = {
         id: 15,
         display_recipient: [{id: alice.user_id}],
-        type: "private",
+        type: "direct",
         unread: true,
         to_user_ids: alice.user_id.toString(),
     };
@@ -772,7 +772,7 @@ test("errors", () => {
     // Test unknown message leads to zero count
     const message = {
         id: 9,
-        type: "private",
+        type: "direct",
         display_recipient: [{id: 9999}],
     };
 

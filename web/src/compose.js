@@ -134,7 +134,7 @@ export function create_message_object() {
     };
     message.topic = "";
 
-    if (message.type === "private") {
+    if (message.type === "direct") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
         const recipient = compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient);
@@ -204,7 +204,7 @@ export function send_message_success(local_id, message_id, locally_echoed) {
 
 export function send_message(request = create_message_object()) {
     compose_state.set_recipient_edited_manually(false);
-    if (request.type === "private") {
+    if (request.type === "direct") {
         request.to = JSON.stringify(request.to);
     } else {
         request.to = JSON.stringify([request.to]);

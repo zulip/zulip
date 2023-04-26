@@ -255,7 +255,7 @@ test("compose fade interactions (PMs)", () => {
     // Fade fred if we are narrowed to a PM narrow that does
     // not include him.
     compose_fade_helper.set_focused_recipient({
-        type: "private",
+        type: "direct",
         to_user_ids: "9999999",
     });
     assert.equal(faded(), true);
@@ -263,7 +263,7 @@ test("compose fade interactions (PMs)", () => {
     // Now include fred in a narrow with jill, and we will
     // stop fading him.
     compose_fade_helper.set_focused_recipient({
-        type: "private",
+        type: "direct",
         to_user_ids: [fred.user_id, jill.user_id].join(","),
     });
 

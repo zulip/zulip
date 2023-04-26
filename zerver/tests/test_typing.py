@@ -133,7 +133,7 @@ class TypingValidateToArgumentsTest(ZulipTestCase):
 
 class TypingHappyPathTestPMs(ZulipTestCase):
     def test_valid_type_and_op_parameters(self) -> None:
-        recipient_type_name = ["direct", "private"]
+        recipient_type_name = ["direct", "direct"]
         operator_type = ["start", "stop"]
         sender = self.example_user("hamlet")
         recipient_user = self.example_user("othello")

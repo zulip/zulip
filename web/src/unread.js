@@ -630,7 +630,7 @@ export function process_loaded_messages(messages, expect_no_new_unreads = false)
             }
 
             const user_ids_string =
-                message.type === "private" ? people.pm_reply_user_string(message) : undefined;
+                message.type === "direct" ? people.pm_reply_user_string(message) : undefined;
 
             process_unread_message({
                 id: message.id,
@@ -656,7 +656,7 @@ export function process_unread_message(message) {
     // is actually unread--we don't defend against that.
     unread_messages.add(message.id);
 
-    if (message.type === "private") {
+    if (message.type === "direct") {
         unread_pm_counter.add({
             message_id: message.id,
             user_ids_string: message.user_ids_string,

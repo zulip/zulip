@@ -1801,7 +1801,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             "custom": {
                 "zulip": {
                     "message_ids": [message.id],
-                    "recipient_type": "private",
+                    "recipient_type": "direct",
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
                     "server": settings.EXTERNAL_HOST,
@@ -1836,7 +1836,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             "custom": {
                 "zulip": {
                     "message_ids": [message.id],
-                    "recipient_type": "private",
+                    "recipient_type": "direct",
                     "pm_users": ",".join(
                         str(user_profile_id)
                         for user_profile_id in sorted(
@@ -2009,7 +2009,7 @@ class TestGetAPNsPayload(PushNotificationTest):
             "custom": {
                 "zulip": {
                     "message_ids": [message.id],
-                    "recipient_type": "private",
+                    "recipient_type": "direct",
                     "pm_users": ",".join(
                         str(user_profile_id)
                         for user_profile_id in sorted(
@@ -2127,7 +2127,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "sender_email": hamlet.email,
                 "sender_full_name": "King Hamlet",
                 "sender_avatar_url": absolute_avatar_url(message.sender),
-                "recipient_type": "private",
+                "recipient_type": "direct",
             },
         )
         self.assertDictEqual(

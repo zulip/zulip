@@ -54,7 +54,7 @@ function get_focus_area(msg_type, opts) {
         return "#stream_message_recipient_topic";
     } else if (
         (msg_type === "stream" && opts.stream) ||
-        (msg_type === "private" && opts.private_message_recipient)
+        (msg_type === "direct" && opts.private_message_recipient)
     ) {
         if (opts.trigger === "new topic button") {
             return "#stream_message_recipient_topic";
@@ -201,7 +201,7 @@ function same_recipient_as_before(msg_type, opts) {
         ((msg_type === "stream" &&
             opts.stream === compose_state.stream_name() &&
             opts.topic === compose_state.topic()) ||
-            (msg_type === "private" &&
+            (msg_type === "direct" &&
                 opts.private_message_recipient === compose_state.private_message_recipient()))
     );
 }
@@ -381,7 +381,7 @@ export function respond_to_message(opts) {
             // home view.
             msg_type = "stream";
             if (narrow_state.narrowed_by_pm_reply()) {
-                msg_type = "private";
+                msg_type = "direct";
             }
 
             const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
@@ -397,8 +397,8 @@ export function respond_to_message(opts) {
     // Important note: A reply_type of 'personal' is for the R hotkey
     // (replying to a message's sender with a private message).  All
     // other replies can just copy message.type.
-    if (opts.reply_type === "personal" || message.type === "private") {
-        msg_type = "private";
+    if (opts.reply_type === "personal" || message.type === "direct") {
+        msg_type = "direct";
     } else {
         msg_type = message.type;
     }
@@ -565,7 +565,7 @@ export function on_narrow(opts) {
     }
 
     if (narrow_state.narrowed_by_pm_reply()) {
-        opts = fill_in_opts_from_current_narrowed_view("private", opts);
+        opts = fill_in_opts_from_current_narrowed_view("direct", opts);
         // Do not open compose box if an invalid recipient is present.
         if (!opts.private_message_recipient) {
             if (compose_state.composing()) {
@@ -590,7 +590,7 @@ export function on_narrow(opts) {
                 return;
             }
         }
-        start("private");
+        start("direct");
         return;
     }
 

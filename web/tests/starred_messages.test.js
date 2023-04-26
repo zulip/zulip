@@ -49,7 +49,7 @@ run_test("get starred ids in topic", () => {
     // when message_store.get() returns undefined
     message_store.update_message_cache({
         id: 2,
-        type: "private",
+        type: "direct",
     });
     message_store.update_message_cache({
         // Different stream

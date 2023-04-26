@@ -61,7 +61,7 @@ function message_in_home(message) {
     // additional logic for unmuted topics, mentions, and
     // single-stream windows.
     if (
-        message.type === "private" ||
+        message.type === "direct" ||
         message.mentioned ||
         (page_params.narrow_stream !== undefined &&
             message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())
@@ -92,7 +92,7 @@ function message_matches_search_term(message, operator, operand) {
         case "is":
             switch (operand) {
                 case "dm":
-                    return message.type === "private";
+                    return message.type === "direct";
                 case "starred":
                     return message.starred;
                 case "mentioned":
@@ -163,7 +163,7 @@ function message_matches_search_term(message, operator, operand) {
 
         case "dm": {
             // TODO: use user_ids, not emails here
-            if (message.type !== "private") {
+            if (message.type !== "direct") {
                 return false;
             }
             const operand_ids = people.pm_with_operand_ids(operand);
@@ -238,7 +238,7 @@ export class Filter {
         switch (operator) {
             case "is":
                 // "is:private" was renamed to "is:dm"
-                if (operand === "private") {
+                if (operand === "direct") {
                     operand = "dm";
                 }
                 break;
@@ -1042,7 +1042,7 @@ export class Filter {
             case "mentioned":
                 return verb + "@-mentions";
             case "dm":
-            case "private":
+            case "direct":
                 return verb + "direct messages";
             case "resolved":
                 return verb + "topics marked as resolved";

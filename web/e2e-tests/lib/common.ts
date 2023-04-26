@@ -407,7 +407,7 @@ export async function select_item_via_dropdown(
 // Wait for any previous send to finish, then send a message.
 export async function send_message(
     page: Page,
-    type: "stream" | "private",
+    type: "stream" | "direct",
     params: Message,
 ): Promise<void> {
     // If a message is outside the view, we do not need
@@ -420,7 +420,7 @@ export async function send_message(
 
     if (type === "stream") {
         await page.keyboard.press("KeyC");
-    } else if (type === "private") {
+    } else if (type === "direct") {
         await page.keyboard.press("KeyX");
         const recipients = params.recipient!.split(", ");
         for (const recipient of recipients) {
@@ -462,7 +462,7 @@ export async function send_message(
 
 export async function send_multiple_messages(page: Page, msgs: Message[]): Promise<void> {
     for (const msg of msgs) {
-        await send_message(page, msg.stream !== undefined ? "stream" : "private", msg);
+        await send_message(page, msg.stream !== undefined ? "stream" : "direct", msg);
     }
 }
 

@@ -64,7 +64,7 @@ run_test("get_unread_ids", () => {
 
     const private_msg = {
         id: 102,
-        type: "private",
+        type: "direct",
         unread: true,
         display_recipient: [{id: alice.user_id}],
     };
@@ -159,7 +159,7 @@ run_test("get_unread_ids", () => {
     });
 
     // "is:private" was renamed to "is:dm"
-    terms = [{operator: "is", operand: "private"}];
+    terms = [{operator: "is", operand: "direct"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [private_msg.id]);

@@ -2419,7 +2419,7 @@ class NormalActionsTest(BaseAction):
         check_delete_message(
             "events[0]",
             events[0],
-            message_type="private",
+            message_type="direct",
             num_message_ids=1,
             is_legacy=False,
         )
@@ -2439,7 +2439,7 @@ class NormalActionsTest(BaseAction):
         check_delete_message(
             "events[0]",
             events[0],
-            message_type="private",
+            message_type="direct",
             num_message_ids=1,
             is_legacy=True,
         )
@@ -3114,7 +3114,7 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
-        stream = self.make_stream("private", self.user_profile.realm, invite_only=True)
+        stream = self.make_stream("direct", self.user_profile.realm, invite_only=True)
         stream.message_retention_days = 10
         stream.save()
 

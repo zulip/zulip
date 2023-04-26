@@ -411,7 +411,7 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         with self.assertRaisesRegex(
             EmbeddedBotEmptyRecipientsListError, "Message must have recipients!"
         ):
-            self.bot_handler.send_message(message={"type": "private", "to": []})
+            self.bot_handler.send_message(message={"type": "direct", "to": []})
 
 
 ParamT = ParamSpec("ParamT")
@@ -578,7 +578,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
             profile_ids.remove(trigger_event["user_profile_id"])
             self.assertEqual(trigger_event["trigger"], "private_message")
             self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
-            self.assertEqual(trigger_event["message"]["type"], "private")
+            self.assertEqual(trigger_event["message"]["type"], "direct")
 
         mock_queue_json_publish.side_effect = check_values_passed
 

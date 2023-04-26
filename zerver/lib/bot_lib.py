@@ -95,7 +95,7 @@ class EmbeddedBotHandler:
             )
             return {"id": message_id}
 
-        assert message["type"] == "private"
+        assert message["type"] == "direct"
         # Ensure that it's a comma-separated list, even though the
         # usual 'to' field could be either a List[str] or a str.
         recipients = ",".join(message["to"]).split(",")
@@ -116,10 +116,10 @@ class EmbeddedBotHandler:
     def send_reply(
         self, message: Dict[str, Any], response: str, widget_content: Optional[str] = None
     ) -> Dict[str, Any]:
-        if message["type"] == "private":
+        if message["type"] == "direct":
             result = self.send_message(
                 dict(
-                    type="private",
+                    type="direct",
                     to=[x["email"] for x in message["display_recipient"]],
                     content=response,
                     sender_email=message["sender_email"],

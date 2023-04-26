@@ -874,7 +874,7 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "compose_private_message":
             if (!compose_state.composing()) {
-                compose_actions.start("private", {trigger: "compose_hotkey"});
+                compose_actions.start("direct", {trigger: "compose_hotkey"});
             }
             return true;
         case "open_drafts":
@@ -1026,7 +1026,7 @@ export function process_hotkey(e, hotkey) {
             // `window.location = hashutil.by_conversation_and_time_url(msg)`
             // but we use `narrow.activate` to pass in the `trigger` parameter
             switch (msg.type) {
-                case "private":
+                case "direct":
                     narrow.activate(
                         [
                             {operator: "dm", operand: msg.reply_to},

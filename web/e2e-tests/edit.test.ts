@@ -75,7 +75,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
 }
 
 async function test_edit_private_message(page: Page): Promise<void> {
-    await common.send_message(page, "private", {
+    await common.send_message(page, "direct", {
         recipient: "cordelia@zulip.com",
         content: "test editing pm",
     });

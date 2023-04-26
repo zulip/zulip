@@ -741,7 +741,7 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     let emails;
     override(compose_pm_pill, "get_emails", () => emails);
 
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
     people.add_active_user(ray);
     people.add_active_user(alice);
     people.add_active_user(me);

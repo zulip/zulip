@@ -100,7 +100,7 @@ test("process_new_message", () => {
     let message = {
         sender_email: "me@example.com",
         sender_id: me.user_id,
-        type: "private",
+        type: "direct",
         display_recipient: convert_recipients([me, bob, cindy]),
         flags: ["has_alert_word"],
         is_me_message: false,
@@ -205,7 +205,7 @@ test("message_booleans_parity", () => {
 test("errors", ({disallow_rewire}) => {
     // Test a user that doesn't exist
     let message = {
-        type: "private",
+        type: "direct",
         display_recipient: [{id: 92714}],
     };
 
@@ -231,7 +231,7 @@ test("errors", ({disallow_rewire}) => {
 });
 
 test("reify_message_id", () => {
-    const message = {type: "private", id: 500};
+    const message = {type: "direct", id: 500};
 
     message_store.update_message_cache(message);
     assert.equal(message_store.get_cached_message(500), message);

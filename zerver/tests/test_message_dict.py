@@ -395,7 +395,7 @@ class MessageHydrationTest(ZulipTestCase):
                 ),
             ],
         )
-        self.assertEqual(obj["type"], "private")
+        self.assertEqual(obj["type"], "direct")
 
     def test_messages_for_ids(self) -> None:
         hamlet = self.example_user("hamlet")

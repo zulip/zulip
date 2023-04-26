@@ -315,7 +315,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
 
         let user_ids_string;
 
-        if (message_info.type === "private") {
+        if (message_info.type === "direct") {
             user_ids_string = people.pm_lookup_key_from_user_ids(message_info.user_ids);
         }
 

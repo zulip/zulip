@@ -186,7 +186,7 @@ export function compare_people_for_relevance(
     // We use is_broadcast for a quick check.  It will
     // true for all/everyone/stream and undefined (falsy)
     // for actual people.
-    if (compose_state.get_message_type() !== "private") {
+    if (compose_state.get_message_type() !== "direct") {
         if (person_a.is_broadcast) {
             if (person_b.is_broadcast) {
                 return person_a.idx - person_b.idx;

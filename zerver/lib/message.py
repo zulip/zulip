@@ -648,7 +648,7 @@ class MessageDict:
             display_type = "stream"
         elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
             assert not isinstance(display_recipient, str)
-            display_type = "private"
+            display_type = "direct"
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
                 # someone and themself, preserving ordering
@@ -1274,10 +1274,10 @@ def apply_unread_message_event(
     message_id = message["id"]
     if message["type"] == "stream":
         recipient_type = "stream"
-    elif message["type"] == "private":
+    elif message["type"] == "direct":
         others = [recip for recip in message["display_recipient"] if recip["id"] != user_profile.id]
         if len(others) <= 1:
-            recipient_type = "private"
+            recipient_type = "direct"
         else:
             recipient_type = "huddle"
     else:
@@ -1300,7 +1300,7 @@ def apply_unread_message_event(
         ):
             state["unmuted_stream_msgs"].add(message_id)
 
-    elif recipient_type == "private":
+    elif recipient_type == "direct":
         if len(others) == 1:
             other_user_id = others[0]["id"]
         else:
@@ -1352,7 +1352,7 @@ def format_unread_message_details(
         # Note that user_ids excludes ourself, even for the case we send messages
         # to ourself.
         message_details = MessageDetailsDict(
-            type="private",
+            type="direct",
             user_ids=user_ids,
         )
         if message_id in raw_unread_data["mentions"]:
@@ -1380,7 +1380,7 @@ def format_unread_message_details(
         user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
         user_ids.sort()
         message_details = MessageDetailsDict(
-            type="private",
+            type="direct",
             user_ids=user_ids,
         )
         if message_id in raw_unread_data["mentions"]:
@@ -1399,7 +1399,7 @@ def add_message_to_unread_msgs(
     if message_details.get("mentioned"):
         state["mentions"].add(message_id)
 
-    if message_details["type"] == "private":
+    if message_details["type"] == "direct":
         user_ids: List[int] = message_details["user_ids"]
         user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
         if user_ids == []:

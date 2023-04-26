@@ -146,7 +146,7 @@ run_test("build_display_recipient", () => {
     assert.equal(display_recipient, "general");
 
     message = {
-        type: "private",
+        type: "direct",
         private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
@@ -171,7 +171,7 @@ run_test("build_display_recipient", () => {
     assert.equal(hamlet.unknown_local_echo_user, true);
 
     message = {
-        type: "private",
+        type: "direct",
         private_message_recipient: "iago@zulip.com",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
@@ -284,7 +284,7 @@ run_test("insert_local_message PM", ({override, override_rewire}) => {
 
     const message_request = {
         private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
-        type: "private",
+        type: "direct",
         sender_email: "iago@zulip.com",
         sender_full_name: "Iago",
         sender_id: 123,

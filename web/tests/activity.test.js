@@ -176,7 +176,7 @@ test("huddle_data.process_loaded_messages", () => {
 
     const messages = [
         {
-            type: "private",
+            type: "direct",
             display_recipient: [{id: jill.user_id}, {id: norbert.user_id}],
             timestamp: timestamp1,
         },
@@ -184,16 +184,16 @@ test("huddle_data.process_loaded_messages", () => {
             type: "stream",
         },
         {
-            type: "private",
+            type: "direct",
             display_recipient: [{id: me.user_id}], // PM to myself
         },
         {
-            type: "private",
+            type: "direct",
             display_recipient: [{id: alice.user_id}, {id: fred.user_id}],
             timestamp: timestamp2,
         },
         {
-            type: "private",
+            type: "direct",
             display_recipient: [{id: fred.user_id}, {id: alice.user_id}],
             timestamp: old_timestamp,
         },
@@ -215,7 +215,7 @@ test("presence_list_full_update", ({override, mock_template}) => {
 
     $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
-    compose_fade.set_focused_recipient("private");
+    compose_fade.set_focused_recipient("direct");
 
     const user_ids = activity.build_user_sidebar();
 

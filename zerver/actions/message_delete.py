@@ -36,7 +36,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     users_to_notify = []
     if not sample_message.is_stream_message():
         assert len(messages) == 1
-        message_type = "private"
+        message_type = "direct"
         ums = UserMessage.objects.filter(message_id__in=message_ids)
         users_to_notify = [um.user_profile_id for um in ums]
         archiving_chunk_size = retention.MESSAGE_BATCH_SIZE

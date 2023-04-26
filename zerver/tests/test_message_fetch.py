@@ -533,11 +533,11 @@ class NarrowBuilderTest(ZulipTestCase):
 
     # Test "is:private" (legacy alias for "is:dm")
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
-        term = dict(operator="is", operand="private")
+        term = dict(operator="is", operand="direct")
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_is_operator_private_operand_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="is", operand="private", negated=True)
+        term = dict(operator="is", operand="direct", negated=True)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
     # Test that "pm-with" (legacy alias for "dm") works.
@@ -648,7 +648,7 @@ class NarrowLibraryTest(ZulipTestCase):
         self.assertFalse(is_spectator_compatible([{"operator": "has"}]))
 
         # "is:private" is a legacy alias for "is:dm".
-        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "private"}]))
+        self.assertFalse(is_spectator_compatible([{"operator": "is", "operand": "direct"}]))
         # "pm-with:"" is a legacy alias for "dm:"
         self.assertFalse(
             is_spectator_compatible([{"operator": "pm-with", "operand": "hamlet@zulip.com"}])
@@ -714,7 +714,7 @@ class IncludeHistoryTest(ZulipTestCase):
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
         # "is:private" is a legacy alias for "is:dm".
         narrow = [
-            dict(operator="is", operand="private"),
+            dict(operator="is", operand="direct"),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile, False))
 
@@ -1397,7 +1397,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
         self.assertEqual(
             set(payload["Cache-Control"].split(", ")),
-            {"must-revalidate", "no-store", "no-cache", "max-age=0", "private"},
+            {"must-revalidate", "no-store", "no-cache", "max-age=0", "direct"},
         )
 
         result = orjson.loads(payload.content)
@@ -1610,7 +1610,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # "is:private" is a legacy alias for "is:dm".
         private_message_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
-            "narrow": orjson.dumps([dict(operator="is", operand="private")]).decode(),
+            "narrow": orjson.dumps([dict(operator="is", operand="direct")]).decode(),
         }
         result = self.client_get("/json/messages", dict(private_message_get_params))
         self.check_unauthenticated_response(result)

@@ -72,16 +72,16 @@ export function extract_pm_recipients(recipients: string): string[] {
     return recipients.split(/\s*[,;]\s*/).filter((recipient) => recipient.trim() !== "");
 }
 
-// When the type is "private", properties from PMRecipient, namely to_user_ids might be
+// When the type is "direct", properties from PMRecipient, namely to_user_ids might be
 // undefined. See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
-type Recipient = {to_user_ids?: string; type: "private"} | (StreamTopic & {type: "stream"});
+type Recipient = {to_user_ids?: string; type: "direct"} | (StreamTopic & {type: "stream"});
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
     if (a === undefined || b === undefined) {
         return false;
     }
 
-    if (a.type === "private" && b.type === "private") {
+    if (a.type === "direct" && b.type === "direct") {
         if (a.to_user_ids === undefined) {
             return false;
         }

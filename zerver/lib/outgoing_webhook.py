@@ -106,7 +106,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def make_request(
         self, base_url: str, event: Dict[str, Any], realm: Realm
     ) -> Optional[Response]:
-        if event["message"]["type"] == "private":
+        if event["message"]["type"] == "direct":
             failure_message = "Slack outgoing webhooks don't support direct messages."
             fail_with_message(event, failure_message)
             return None
@@ -179,7 +179,7 @@ def send_response_message(
     bot_id is the user_id of the bot sending the response
 
     message_info is used to address the message and should have these fields:
-        type - "stream" or "private"
+        type - "stream" or "direct"
         display_recipient - like we have in other message events
         topic - see get_topic_from_message_info
 
@@ -209,7 +209,7 @@ def send_response_message(
 
     if recipient_type_name == "stream":
         message_to = [display_recipient]
-    elif recipient_type_name == "private":
+    elif recipient_type_name == "direct":
         message_to = [recipient["email"] for recipient in display_recipient]
     else:
         raise JsonableError(_("Invalid message type"))
@@ -283,7 +283,7 @@ def notify_bot_owner(
         )
 
     message_info = dict(
-        type="private",
+        type="direct",
         display_recipient=[dict(email=bot_owner.email)],
     )
     response_data = dict(content=notification_message)

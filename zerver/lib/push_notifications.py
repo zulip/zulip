@@ -799,10 +799,10 @@ def get_message_payload(
         data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
-        data["recipient_type"] = "private"
+        data["recipient_type"] = "direct"
         data["pm_users"] = huddle_users(message.recipient.id)
     else:  # Recipient.PERSONAL
-        data["recipient_type"] = "private"
+        data["recipient_type"] = "direct"
 
     return data
 

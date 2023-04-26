@@ -178,7 +178,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     (function test_message_send_success_codepath() {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
-        compose_state.set_message_type("private");
+        compose_state.set_message_type("direct");
         page_params.user_id = new_user.user_id;
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
@@ -197,7 +197,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         override(transmit, "send_message", (payload, success) => {
             const single_msg = {
-                type: "private",
+                type: "direct",
                 content: "[foobar](/user_uploads/123456)",
                 sender_id: new_user.user_id,
                 queue_id: undefined,
@@ -407,7 +407,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_ui.compose_spinner_visible = false;
-        compose_state.set_message_type("private");
+        compose_state.set_message_type("direct");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
         override(compose_pm_pill, "get_user_ids", () => []);
 
@@ -542,7 +542,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
     let update_narrow_to_recipient_visibility_called = false;
 
     override(compose_fade, "set_focused_recipient", (msg_type) => {
-        assert.equal(msg_type, "private");
+        assert.equal(msg_type, "direct");
         set_focused_recipient_checked = true;
     });
 
@@ -562,7 +562,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
 
     update_narrow_to_recipient_visibility_called = false;
 
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
     compose_recipient.update_on_recipient_change();
     assert.ok(set_focused_recipient_checked);
     assert.ok(update_all_called);
@@ -787,7 +787,7 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
     override(compose_pm_pill, "get_emails", () => "alice@example.com,bob@example.com");
 
     message = compose.create_message_object();

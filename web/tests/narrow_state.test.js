@@ -161,7 +161,7 @@ test("excludes_muted_topics", () => {
     set_filter([["search", "whatever"]]);
     assert.ok(!narrow_state.excludes_muted_topics());
 
-    set_filter([["is", "private"]]);
+    set_filter([["is", "direct"]]);
     assert.ok(!narrow_state.excludes_muted_topics());
 
     set_filter([["is", "starred"]]);

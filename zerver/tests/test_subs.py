@@ -4471,7 +4471,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = get_realm("zulip")
 
         # Create a private stream with Hamlet subscribed
-        stream_name = "private"
+        stream_name = "direct"
         stream = ensure_stream(realm, stream_name, invite_only=True, acting_user=None)
 
         existing_user_profile = self.example_user("hamlet")

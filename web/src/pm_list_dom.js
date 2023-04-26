@@ -44,7 +44,7 @@ export function more_private_conversations_li(more_conversations_unread_count) {
 export function pm_ul(nodes) {
     const attrs = [
         ["class", "pm-list"],
-        ["data-name", "private"],
+        ["data-name", "direct"],
     ];
     return vdom.ul({
         attrs,

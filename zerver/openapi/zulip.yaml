@@ -1147,7 +1147,7 @@ paths:
                                   "streams":
                                     [
                                       {
-                                        "name": "private",
+                                        "name": "direct",
                                         "stream_id": 12,
                                         "description": "",
                                         "rendered_description": "",
@@ -1193,7 +1193,7 @@ paths:
                                   "streams":
                                     [
                                       {
-                                        "name": "private",
+                                        "name": "direct",
                                         "stream_id": 12,
                                         "description": "",
                                         "rendered_description": "",
@@ -1888,7 +1888,7 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    The type of message. Either `"stream"` or `"private"`.
+                                    The type of message. Either `"stream"` or `"direct"`.
                                   enum:
                                     - private
                                     - stream
@@ -1907,7 +1907,7 @@ paths:
                               example:
                                 {
                                   "type": "delete_message",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "message_id": 37,
                                   "id": 0,
                                 }
@@ -2423,7 +2423,7 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     all typing notifications were implicitly private messages.
@@ -2447,7 +2447,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message being typed. Each dictionary contains
@@ -2489,7 +2489,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "start",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -2541,7 +2541,7 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be `"stream"` or `"private"`.
+                                    Type of message being composed. Must be `"stream"` or `"direct"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     all typing notifications were implicitly private messages.
@@ -2565,7 +2565,7 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `"private"`.
+                                    Only present if `message_type` is `"direct"`.
 
                                     Array of dictionaries describing the set of users who would be
                                     recipients of the message that was previously being typed. Each
@@ -2607,7 +2607,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "stop",
-                                  "message_type": "private",
+                                  "message_type": "direct",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -4359,7 +4359,7 @@ paths:
                                     [
                                       {
                                         "id": 17,
-                                        "type": "private",
+                                        "type": "direct",
                                         "to": [6],
                                         "topic": "",
                                         "content": "Hello there!",
@@ -4392,7 +4392,7 @@ paths:
                                   "draft":
                                     {
                                       "id": 17,
-                                      "type": "private",
+                                      "type": "direct",
                                       "to": [6, 7, 8, 9, 10],
                                       "topic": "",
                                       "content": "Hello everyone!",
@@ -4480,7 +4480,7 @@ paths:
                                   "subject": "",
                                   "topic_links": [],
                                   "timestamp": 1375978404,
-                                  "type": "private",
+                                  "type": "direct",
                                 },
                               "type": "message",
                             },
@@ -4829,7 +4829,7 @@ paths:
                             },
                             {
                               "id": 2,
-                              "type": "private",
+                              "type": "direct",
                               "to": [4],
                               "topic": "",
                               "content": "What if we made it possible to sync drafts in Zulip?",
@@ -4837,7 +4837,7 @@ paths:
                             },
                             {
                               "id": 3,
-                              "type": "private",
+                              "type": "direct",
                               "to": [4, 10],
                               "topic": "",
                               "content": "What if we made it possible to sync drafts in Zulip?",
@@ -5456,7 +5456,7 @@ paths:
                             {
                               "subject": "",
                               "sender_realm_str": "zulip",
-                              "type": "private",
+                              "type": "direct",
                               "content": "<p>Security experts agree that relational algorithms are an interesting new topic in the field of networking, and scholars concur.</p>",
                               "flags": ["read"],
                               "id": 16,
@@ -5535,9 +5535,9 @@ paths:
 
             **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added as
             the preferred way to request a direct message, deprecating the original
-            `"private"`. While `"private"` is still supported for requesting direct
+            `"direct"`. While `"direct"` is still supported for requesting direct
             messages, clients are encouraged to use to the modern convention with
-            servers that support it, because support for `"private"` will eventually
+            servers that support it, because support for `"direct"` will eventually
             be removed.
           schema:
             type: string
@@ -6568,7 +6568,7 @@ paths:
                           {
                             "subject": "",
                             "sender_realm_str": "zulip",
-                            "type": "private",
+                            "type": "direct",
                             "content": "<p>Security experts agree that relational algorithms are an interesting new topic in the field of networking, and scholars concur.</p>",
                             "flags": ["read"],
                             "id": 16,
@@ -15256,7 +15256,7 @@ paths:
             **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added
             as the preferred way to indicate a direct message is being composed,
             becoming the default value for this parameter and deprecating the
-            original `"private"`.
+            original `"direct"`.
 
             New in Zulip 4.0 (feature level 58). Previously, typing notifications
             were only for direct messages.
@@ -17285,7 +17285,7 @@ components:
           type: string
           description: |
             The type of the draft. Either unaddressed (empty string), "stream",
-            or "private" (for PMs and private group messages).
+            or "direct" (for PMs and private group messages).
           enum:
             - ""
             - stream
@@ -17337,7 +17337,7 @@ components:
           type: string
           description: |
             The type of the scheduled message. Either unaddressed (empty string), "stream",
-            or "private" (for PMs and private group messages).
+            or "direct" (for PMs and private group messages).
           enum:
             - ""
             - stream

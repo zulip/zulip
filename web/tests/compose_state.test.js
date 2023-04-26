@@ -63,7 +63,7 @@ run_test("has_full_recipient", ({override, override_rewire}) => {
     compose_state.set_stream_name("bar");
     assert.equal(compose_state.has_full_recipient(), true);
 
-    compose_state.set_message_type("private");
+    compose_state.set_message_type("direct");
     compose_state.private_message_recipient("");
     assert.equal(compose_state.has_full_recipient(), false);
 

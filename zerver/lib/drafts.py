@@ -27,7 +27,7 @@ from zerver.models import Draft, UserProfile
 from zerver.tornado.django_api import send_event
 
 ParamT = ParamSpec("ParamT")
-VALID_DRAFT_TYPES: Set[str] = {"", "private", "stream"}
+VALID_DRAFT_TYPES: Set[str] = {"", "direct", "stream"}
 
 # A validator to verify if the structure (syntax) of a dictionary
 # meets the requirements to be a draft dictionary:
@@ -73,7 +73,7 @@ def further_validated_draft_dict(
             raise JsonableError(_("Must specify exactly 1 stream ID for stream messages"))
         stream, sub = access_stream_by_id(user_profile, to[0])
         recipient = stream.recipient
-    elif draft_dict["type"] == "private" and len(to) != 0:
+    elif draft_dict["type"] == "direct" and len(to) != 0:
         to_users = get_user_profiles_by_ids(set(to), user_profile.realm)
         try:
             recipient = recipient_for_user_profiles(to_users, False, None, user_profile)
