@@ -109,8 +109,9 @@ export function has_unconverted_data(pill_widget) {
 }
 
 export function typeahead_source(pill_widget) {
-    const persons = people.get_realm_users();
-    return filter_taken_users(persons, pill_widget);
+    // includes ONLY humans excluding bots
+    const humans = people.get_realm_humans();
+    return filter_taken_users(humans, pill_widget);
 }
 
 export function filter_taken_users(items, pill_widget) {

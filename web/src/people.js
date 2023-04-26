@@ -890,6 +890,19 @@ export function get_realm_users() {
     return [...active_user_dict.values()];
 }
 
+export function get_realm_humans() {
+    // includes ONLY humans from your realm
+    const humans = [];
+
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot) {
+            humans.push(user);
+        }
+    }
+
+    return humans;
+}
+
 export function get_active_human_ids() {
     const human_ids = [];
 
