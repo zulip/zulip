@@ -844,6 +844,13 @@ replicas](#postgresql-warm-standby). This is generally only set if you have
 multiple warm standby replicas, in order to avoid taking multiple backups, one
 per replica.
 
+#### `backups_disk_concurrency`
+
+Number of concurrent disk reads to use when taking backups. Defaults to 1; you
+may wish to increase this if you are taking backups on a replica, so can afford
+to affect other disk I/O, and have an SSD which is good at parallel random
+reads.
+
 #### `ssl_ca_file`
 
 Set to the path to the PEM-encoded certificate authority used to
