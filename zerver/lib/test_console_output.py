@@ -1,3 +1,4 @@
+import itertools
 import logging
 import re
 import sys
@@ -102,8 +103,9 @@ class WrappedIO(IO[bytes]):
         return num_chars
 
     def writelines(self, data: Iterable[bytes]) -> None:
+        data, data_copy = itertools.tee(data)
         self.stream.writelines(data)
-        lines = b"".join(data)
+        lines = b"".join(data_copy)
         self.extra_output_finder.find_extra_output(lines)
 
     def __next__(self) -> bytes:
