@@ -1,9 +1,12 @@
 import hashlib
 import re
 import secrets
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, TypeVar
 
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from hashlib import _Hash
 
 T = TypeVar("T")
 
@@ -55,7 +58,7 @@ class StatsDWrapper:
 statsd = StatsDWrapper()
 
 
-def make_safe_digest(string: str, hash_func: Callable[[bytes], Any] = hashlib.sha1) -> str:
+def make_safe_digest(string: str, hash_func: "Callable[[bytes], _Hash]" = hashlib.sha1) -> str:
     """
     return a hex digest of `string`.
     """
