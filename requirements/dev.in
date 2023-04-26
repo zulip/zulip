@@ -13,6 +13,7 @@ Twisted
 
 # Needed for documentation links test
 Scrapy
+parsel<1.8.0  # https://github.com/scrapy/scrapy/issues/5903
 
 # Needed to compute test coverage
 coverage<6.4.3  # undiagnosed bug

@@ -159,6 +159,9 @@ ignore = [
     "S310", # Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
     "S324", # Probable use of insecure hash functions in `hashlib`
+    "S603", # `subprocess` call: check for execution of untrusted input
+    "S606", # Starting a process without a shell
+    "S607", # Starting a process with a partial executable path
     "SIM103", # Return the condition directly
     "SIM108", # Use ternary operator `action = "[commented]" if action == "created" else f"{action} a [comment]"` instead of if-else-block
     "SIM114", # Combine `if` branches using logical `or` operator
