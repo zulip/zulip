@@ -842,8 +842,8 @@ test("misc", ({override_rewire, mock_template}) => {
     assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
     override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
-        {name: "some_stream", stream_id: 75, invite_only: true},
-        {name: "some_stream", stream_id: 42},
+        {name: "some_stream", stream_id: 75, invite_only: true, color: "red"},
+        {name: "some_stream", stream_id: 42, color: "blue"},
     ]);
 
     // Set stubs for dropdown_list_widget:

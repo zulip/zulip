@@ -68,7 +68,7 @@ export class DropdownListWidget {
         if (item.stream !== undefined) {
             const stream = item.stream;
             const rendered_stream_name_with_privacy_symbol_html =
-                render_inline_decorated_stream_name({stream});
+                render_inline_decorated_stream_name({stream, show_colored_icon: true});
             $elem.html(rendered_stream_name_with_privacy_symbol_html);
         } else {
             const text = this.render_text(item.name);
