@@ -541,9 +541,9 @@ def oauth_redirect_to_root(
     mobile_flow_otp: Optional[str] = REQ(default=None),
     desktop_flow_otp: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
-    main_site_uri = settings.ROOT_DOMAIN_URI + url
+    main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
-        main_site_uri = (
+        main_site_url = (
             settings.EXTERNAL_URI_SCHEME
             + settings.SOCIAL_AUTH_SUBDOMAIN
             + "."
@@ -570,7 +570,7 @@ def oauth_redirect_to_root(
 
     params = {**params, **extra_url_params}
 
-    return redirect(append_url_query_string(main_site_uri, urllib.parse.urlencode(params)))
+    return redirect(append_url_query_string(main_site_url, urllib.parse.urlencode(params)))
 
 
 def handle_desktop_flow(
