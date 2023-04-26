@@ -6,7 +6,6 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timedelta, timezone
-from typing import Dict
 
 import dateutil.parser
 
@@ -41,7 +40,7 @@ with open("/var/lib/nagios_state/last_postgresql_backup", "w") as f:
     f.write(now.isoformat())
     f.write("\n")
 
-backups: Dict[datetime, str] = {}
+backups = {}
 lines = subprocess.check_output(["env-wal-g", "backup-list"], text=True).split("\n")
 for line in lines[1:]:
     if line:
