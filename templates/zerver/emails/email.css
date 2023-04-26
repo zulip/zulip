@@ -204,42 +204,6 @@ p.digest_paragraph,
 }
 
 /* CSS for digest email content. */
-#private-messages {
-    width: 600px;
-    font-size: 12px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.recipient_block {
-    background-color: #f0f4f5;
-    border: 1px solid #000;
-    margin-bottom: 4px;
-}
-
-.recipient_header {
-    color: #e0dada;
-    background-color: #444;
-    border-bottom: 1px solid #000;
-    font-weight: bold;
-    padding: 2px;
-}
-
-.message_content {
-    background-color: #eff3f4;
-    margin-left: 1px;
-    margin-right: 2px;
-}
-
-.message_sender {
-    font-weight: bold;
-    padding-top: 1px;
-}
-
-.message_content_block {
-    padding-left: 6px;
-    font-weight: normal;
-}
-
 .messages {
     width: 600px;
     font-size: 12px;
@@ -260,48 +224,6 @@ p.digest_paragraph,
 }
 
 .hot_convo_message_content {
-    margin-left: 1px;
-    margin-right: 2px;
-}
-
-.hot_convo_message_sender {
-    font-weight: bold;
-    padding-top: 1px;
-}
-
-.recipient_block_with_messages {
-    border: 1px solid #000;
-    margin-bottom: 4px;
-}
-
-.recipient_header_with_messages {
-    background-color: #9ecaff;
-    border-bottom: 1px solid #000;
-    font-weight: bold;
-    padding: 2px;
-}
-
-.message_content_with_messages {
-    margin-left: 1px;
-    margin-right: 2px;
-}
-
-.recipient_block_without_messages {
-    background-color: #f0f4f5;
-    border: 1px solid #000;
-    margin-bottom: 4px;
-}
-
-.recipient_header_without_messages {
-    color: #fff;
-    background-color: #444;
-    border-bottom: 1px solid #000;
-    font-weight: bold;
-    padding: 2px;
-}
-
-.message_content_without_messages {
-    background-color: #f0f4f5;
     margin-left: 1px;
     margin-right: 2px;
 }
