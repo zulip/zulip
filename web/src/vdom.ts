@@ -2,7 +2,28 @@ import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 
-export function eq_array(a, b, eq) {
+// export generic types for VDOM
+export type VDomNode<T = Record<string, unknown>> = {
+    key: string;
+    eq: (other: VDomNode<T>) => boolean;
+    render: () => string;
+};
+
+type VDomOpts = {
+    attrs: [string, string][];
+    keyed_nodes: VDomNode[];
+};
+
+export type VDomTag = {
+    tag_name: string;
+    opts: VDomOpts;
+};
+
+export function eq_array(
+    a: VDomNode[],
+    b: VDomNode[],
+    eq: (a: VDomNode, b: VDomNode) => boolean,
+): boolean {
     if (a === b) {
         // either both are undefined, or they
         // are referentially equal
@@ -20,14 +41,14 @@ export function eq_array(a, b, eq) {
     return a.every((item, i) => eq(item, b[i]));
 }
 
-export function ul(opts) {
+export function ul(opts: VDomOpts): VDomTag {
     return {
         tag_name: "ul",
         opts,
     };
 }
 
-export function render_tag(tag) {
+export function render_tag(tag: VDomTag): string | undefined {
     /*
         This renders a tag into a string.  It will
         automatically escape attributes, but it's your
@@ -57,10 +78,13 @@ export function render_tag(tag) {
     return start_tag + "\n" + innards + "\n" + end_tag;
 }
 
-export function update_attrs($elem, new_attrs, old_attrs) {
+export function update_attrs(
+    $elem: JQuery,
+    new_attrs: [string, string][],
+    old_attrs: [string, string][],
+): void {
     const new_dict = new Map(new_attrs);
     const old_dict = new Map(old_attrs);
-
     for (const [k, v] of new_attrs) {
         if (v !== old_dict.get(k)) {
             $elem.attr(k, v);
@@ -74,7 +98,12 @@ export function update_attrs($elem, new_attrs, old_attrs) {
     }
 }
 
-export function update(replace_content, find, new_dom, old_dom) {
+export function update(
+    replace_content: (arg0: string | undefined) => void,
+    find: () => JQuery,
+    new_dom: VDomTag,
+    old_dom?: {opts: VDomOpts},
+): void {
     /*
         The update method allows you to continually
         update a "virtual" representation of your DOM,
@@ -126,7 +155,7 @@ export function update(replace_content, find, new_dom, old_dom) {
         For examples of creating vdom objects, look at
         `pm_list_dom.js`.
     */
-    function do_full_update() {
+    function do_full_update(): void {
         const rendered_dom = render_tag(new_dom);
         replace_content(rendered_dom);
     }
