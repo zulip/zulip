@@ -482,8 +482,7 @@ def remote_user_sso(
 
 @has_request_variables
 def get_email_and_realm_from_jwt_authentication_request(
-    request: HttpRequest,
-    json_web_token: str = REQ("token", default=""),
+    request: HttpRequest, json_web_token: str
 ) -> Tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
@@ -514,8 +513,9 @@ def get_email_and_realm_from_jwt_authentication_request(
 @csrf_exempt
 @require_post
 @log_view_func
-def remote_user_jwt(request: HttpRequest) -> HttpResponse:
-    email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+@has_request_variables
+def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpResponse:
+    email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
 
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
@@ -941,8 +941,10 @@ def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> Json
 def jwt_fetch_api_key(
     request: HttpRequest,
     include_profile: bool = REQ(default=False, json_validator=check_bool),
+    token: str = REQ(default=""),
 ) -> HttpResponse:
-    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
+
     return_data: Dict[str, bool] = {}
 
     user_profile = authenticate(
