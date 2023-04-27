@@ -857,7 +857,7 @@ a.compose_control_button.hide {
     float: right;
     color: hsl(0deg 0% 100%);
     border-radius: 0 4px 4px 0;
-    border-left: 1px solid hsl(213deg 14% 12% / 15%);
+    border-left: 1px solid hsl(0deg 0% 100% / 65%);
     padding: 0;
     margin: 0;
 
