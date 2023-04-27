@@ -21,15 +21,6 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 
-const bot_botson = {
-    email: "botson-bot@example.com",
-    user_id: 35,
-    full_name: "Bot Botson",
-    is_bot: true,
-    bot_owner_id: isaac.user_id,
-    role: 300,
-};
-
 const bogus_item = {
     email: "bogus@example.com",
     type: "user",
@@ -120,16 +111,12 @@ test("get_items", () => {
 });
 
 test("typeahead", () => {
-    // added bot
-    people.add_active_user(bot_botson);
-
     const items = [isaac_item, bogus_item];
     pill_widget.items = () => items;
 
     // Both alice and isaac are in our realm, but isaac will be
     // excluded by virtue of already being one of the widget items.
     // And then bogus_item is just a red herring to test robustness.
-    // the bot is excluded too
     const result = user_pill.typeahead_source(pill_widget);
     assert.deepEqual(result, [alice]);
 });

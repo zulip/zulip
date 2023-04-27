@@ -112,7 +112,7 @@ test_ui("populate_user_groups", ({mock_template}) => {
     people.add_active_user(alice);
     people.add_active_user(bob);
 
-    people.get_realm_users = () => [iago, alice, bob];
+    people.get_realm_humans = () => [iago, alice, bob];
 
     user_groups.get_realm_user_groups = () => [realm_user_group];
 
