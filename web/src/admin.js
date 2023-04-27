@@ -96,6 +96,7 @@ export function build_page() {
         custom_profile_field_types: page_params.custom_profile_field_types,
         full_name: page_params.full_name,
         realm_name: page_params.realm_name,
+        realm_default_topic: page_params.realm_default_topic,
         realm_org_type: page_params.realm_org_type,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         giphy_rating_options: page_params.giphy_rating_options,

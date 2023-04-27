@@ -143,8 +143,12 @@
                   is_checked=realm_mandatory_topics
                   label=admin_settings_label.realm_mandatory_topics}}
 
-                <input type = "text"> 
-                <br><br>
+                <div class="input-group admin-realm">
+                    <label for="id_realm_name">{{t "Default topic name" }}</label>
+                    <input type="text" id="id_realm_default_topic" name="realm_default_topic" class="admin-realm-name setting-widget prop-element settings_text_input"
+                      autocomplete="off" data-setting-widget-type="string"
+                      value="{{ realm_default_topic }}" maxlength="40" />
+                </div>
 
                 {{> settings_checkbox
                   setting_name="realm_enable_read_receipts"
