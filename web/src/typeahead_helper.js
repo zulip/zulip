@@ -340,20 +340,8 @@ function retain_unique_language_aliases(matches) {
 }
 
 export function sort_languages(matches, query) {
-    const results = typeahead.triage(query, matches, (x) => x);
+    const results = typeahead.triage(query, matches, (x) => x, compare_language);
 
-    // Languages that start with the query
-    results.matches = results.matches.sort(compare_language);
-
-    // Push exact matches to top.
-    const match_index = results.matches.indexOf(query);
-    if (match_index > -1) {
-        results.matches.splice(match_index, 1);
-        results.matches.unshift(query);
-    }
-
-    // Languages that have the query somewhere in their name
-    results.rest = results.rest.sort(compare_language);
     return retain_unique_language_aliases([...results.matches, ...results.rest]);
 }
 
@@ -399,7 +387,21 @@ export function sort_recipients({
         }
     }
 
-    return items.slice(0, max_num_items);
+    // Push exact matches to top. We could do by passing the
+    // comparator parameter to triage, but that would break the
+    // optimization of only doing expensive sorting operations when
+    // necessary.
+    const exact_matches = [];
+    const rest = [];
+    for (const item of items) {
+        if (item.full_name?.toLowerCase() === query.toLowerCase()) {
+            exact_matches.push(item);
+        } else {
+            rest.push(item);
+        }
+    }
+
+    return [...exact_matches, ...rest].slice(0, max_num_items);
 }
 
 function slash_command_comparator(slash_command_a, slash_command_b) {
@@ -415,10 +417,8 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
 export function sort_slash_commands(matches, query) {
     // We will likely want to in the future make this sort the
     // just-`/` commands by something approximating usefulness.
-    const results = typeahead.triage(query, matches, (x) => x.name);
+    const results = typeahead.triage(query, matches, (x) => x.name, slash_command_comparator);
 
-    results.matches = results.matches.sort(slash_command_comparator);
-    results.rest = results.rest.sort(slash_command_comparator);
     return [...results.matches, ...results.rest];
 }
 
@@ -455,16 +455,13 @@ export function compare_by_activity(stream_a, stream_b) {
 }
 
 export function sort_streams(matches, query) {
-    const name_results = typeahead.triage(query, matches, (x) => x.name);
-
-    const desc_results = typeahead.triage(query, name_results.rest, (x) => x.description);
-
-    // Streams that start with the query.
-    name_results.matches = name_results.matches.sort(compare_by_activity);
-    // Streams with descriptions that start with the query.
-    desc_results.matches = desc_results.matches.sort(compare_by_activity);
-    // Streams with names and descriptions that don't start with the query.
-    desc_results.rest = desc_results.rest.sort(compare_by_activity);
+    const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
+    const desc_results = typeahead.triage(
+        query,
+        name_results.rest,
+        (x) => x.description,
+        compare_by_activity,
+    );
 
     return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
 }
