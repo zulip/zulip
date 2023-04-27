@@ -528,8 +528,7 @@ input.recipient_box {
 
 #compose-schedule-confirm-button,
 #compose-send-button {
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding: 3px 12px;
     margin-bottom: 0;
     font-weight: 600;
     font-size: 0.9em;
