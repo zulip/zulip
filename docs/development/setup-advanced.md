@@ -39,9 +39,20 @@ cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
+CentOS, Fedora, and RHEL users should ensure that python3 is installed on their
+systems (Debian and Ubuntu distributions already include it):
+
 ```bash
-# On CentOS/RHEL/Fedora, you must first install python3
-# From a clone of zulip.git
+# On CentOS/Fedora/RHEL, you must first install python3.
+# For example, this command installs python3 with yum:
+yum install python
+```
+
+With python3 installed, change into the directory where you have cloned
+Zulip and run the following commands:
+
+```bash
+# From inside a clone of zulip.git:
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
 ./tools/run-dev  # starts the development server
