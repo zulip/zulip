@@ -8,6 +8,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
+import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as deprecated_feature_notice from "./deprecated_feature_notice";
@@ -44,7 +45,6 @@ import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -310,8 +310,7 @@ export function process_escape_key(e) {
 
             // Check for errors in compose box; close errors if they exist
             if ($(".compose_banner").length) {
-                compose_banner.clear_errors();
-                compose_banner.clear_warnings();
+                compose_banner.clear_all();
                 return true;
             }
 
@@ -558,7 +557,7 @@ export function process_shift_tab_key() {
     if ($("#compose-send-button").is(":focus")) {
         // Shift-Tab: go back to content textarea and restore
         // cursor position.
-        ui.restore_compose_cursor();
+        compose_textarea.restore_compose_cursor();
         return true;
     }
 
@@ -823,7 +822,7 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "narrow_private":
             return do_narrow_action((target, opts) => {
-                narrow.by("is", "private", opts);
+                narrow.by("is", "dm", opts);
             });
         case "query_streams":
             stream_list.initiate_search();
@@ -1030,7 +1029,7 @@ export function process_hotkey(e, hotkey) {
                 case "private":
                     narrow.activate(
                         [
-                            {operator: "pm-with", operand: msg.reply_to},
+                            {operator: "dm", operand: msg.reply_to},
                             {operator: "near", operand: msg.id},
                         ],
                         {trigger: "hotkey"},

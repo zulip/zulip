@@ -290,14 +290,14 @@ export function set_realm_url(new_realm_url: string): void {
 }
 
 export async function ensure_enter_does_not_send(page: Page): Promise<void> {
-    let enter_sends = false;
-    await page.$eval(".enter_sends_false", (el) => {
-        if ((el as HTMLElement).style.display !== "none") {
-            enter_sends = true;
-        }
-    });
+    // NOTE: Caller should ensure that the compose box is already open.
+    const enter_sends = await page.$eval(
+        ".enter_sends_true",
+        (el) => (el as HTMLElement).style.display !== "none",
+    );
 
     if (enter_sends) {
+        await page.click(".open_enter_sends_dialog");
         const enter_sends_false_selector = ".enter_sends_choice input[value='false']";
         await page.waitForSelector(enter_sends_false_selector);
         await page.click(enter_sends_false_selector);

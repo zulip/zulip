@@ -198,9 +198,11 @@ function populate_group_from_message_container(group, message_container) {
             group.stream_id = -1;
         } else {
             group.stream_id = sub.stream_id;
+            group.stream_muted = sub.is_muted;
         }
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
         group.topic_muted = user_topics.is_topic_muted(group.stream_id, group.topic);
+        group.topic_unmuted = user_topics.is_topic_unmuted(group.stream_id, group.topic);
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
@@ -1379,6 +1381,8 @@ export class MessageListView {
         just_unsubscribed,
         can_toggle_subscription,
         is_spectator,
+        invite_only,
+        is_web_public,
     ) {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
@@ -1391,6 +1395,8 @@ export class MessageListView {
                 just_unsubscribed,
                 is_spectator,
                 is_trailing_bookend: true,
+                invite_only,
+                is_web_public,
             }),
         );
         rows.get_table(this.table_name).append($rendered_trailing_bookend);

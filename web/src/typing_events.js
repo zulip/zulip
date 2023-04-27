@@ -28,12 +28,12 @@ const MAX_USERS_TO_DISPLAY_NAME = 3;
 
 function get_users_typing_for_narrow() {
     if (!narrow_state.narrowed_to_pms()) {
-        // Narrow is neither pm-with nor is: private
+        // Narrow is neither "dm:" nor "is:dm".
         return [];
     }
 
     const first_term = narrow_state.operators()[0];
-    if (first_term.operator === "pm-with") {
+    if (first_term.operator === "dm") {
         // Get list of users typing in this conversation
         const narrow_emails_string = first_term.operand;
         // TODO: Create people.emails_strings_to_user_ids.

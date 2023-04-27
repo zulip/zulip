@@ -132,8 +132,8 @@ function get_messages_success(data, opts) {
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
-    const operators_supporting_ids = new Set(["pm-with"]);
-    const operators_supporting_id = new Set(["sender", "group-pm-with", "stream"]);
+    const operators_supporting_ids = new Set(["dm", "pm-with"]);
+    const operators_supporting_id = new Set(["sender", "group-pm-with", "stream", "dm-including"]);
 
     if (data.narrow === undefined) {
         return data;

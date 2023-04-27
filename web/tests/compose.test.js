@@ -132,7 +132,7 @@ test_ui("send_message_success", ({override_rewire}) => {
     mock_banners();
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
-    $("#compose-send-button .loader").show();
+    $(".compose-submit-button .loader").show();
 
     let reify_message_id_checked;
     override_rewire(echo, "reify_message_id", (local_id, message_id) => {
@@ -145,7 +145,7 @@ test_ui("send_message_success", ({override_rewire}) => {
 
     assert.equal($("#compose-textarea").val(), "");
     assert.ok($("#compose-textarea").is_focused());
-    assert.ok(!$("#compose-send-button .loader").visible());
+    assert.ok(!$(".compose-submit-button .loader").visible());
 
     assert.ok(reify_message_id_checked);
 });
@@ -226,7 +226,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         $("#compose-textarea").val("[foobar](/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-button .loader").show();
+        $(".compose-submit-button .loader").show();
 
         compose.send_message();
 
@@ -238,7 +238,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.equal($("#compose-textarea").val(), "");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok(!$("#compose-send-button .loader").visible());
+        assert.ok(!$(".compose-submit-button .loader").visible());
     })();
 
     // This is the additional setup which is common to both the tests below.
@@ -280,7 +280,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
-        $("#compose-send-button .loader").show();
+        $(".compose-submit-button .loader").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
         override_rewire(echo, "try_deliver_locally", () => {});
@@ -299,7 +299,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(banner_rendered);
         assert.equal($("#compose-textarea").val(), "foobarfoobar");
         assert.ok($("#compose-textarea").is_focused());
-        assert.ok(!$("#compose-send-button .loader").visible());
+        assert.ok(!$(".compose-submit-button .loader").visible());
     })();
 });
 
@@ -325,7 +325,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
-        assert.equal($spinner.selector, "#compose-send-button .loader");
+        assert.equal($spinner.selector, ".compose-submit-button .loader");
         show_button_spinner_called = true;
     });
 
@@ -377,7 +377,7 @@ test_ui("finish", ({override, override_rewire}) => {
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
-        assert.equal($spinner.selector, "#compose-send-button .loader");
+        assert.equal($spinner.selector, ".compose-submit-button .loader");
         show_button_spinner_called = true;
     });
 
@@ -389,14 +389,14 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
-        $("#compose-send-button .loader").hide();
+        $(".compose-submit-button .loader").hide();
         $("#compose-textarea").off("select");
         $("#compose-textarea").val("");
         compose_ui.compose_spinner_visible = false;
         const res = compose.finish();
         assert.equal(res, false);
         assert.ok(!$("#compose_banners .recipient_not_subscribed").visible());
-        assert.ok(!$("#compose-send-button .loader").visible());
+        assert.ok(!$(".compose-submit-button .loader").visible());
         assert.ok(show_button_spinner_called);
     })();
 
@@ -825,6 +825,7 @@ test_ui("DM policy disabled", ({override, override_rewire}) => {
 
 test_ui("narrow_button_titles", ({override}) => {
     override(narrow_state, "pm_ids_string", () => "31");
+    override(narrow_state, "is_message_feed_visible", () => true);
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
         $("#left_bar_compose_stream_button_big").text(),

@@ -15,11 +15,11 @@ import * as dialog_widget from "./dialog_widget";
 import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
-import * as ui from "./ui";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
-import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 let custom_expiration_time_input = 10;
@@ -147,7 +147,7 @@ function submit_invitation_form() {
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
             $("#invitee_emails").trigger("focus");
-            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
@@ -173,7 +173,7 @@ function generate_multiuse_invite() {
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
-            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
@@ -190,18 +190,10 @@ function valid_to(expires_in) {
         return $t({defaultMessage: "Never expires"});
     }
     const valid_to = add(new Date(), {minutes: time_valid});
-    const options = {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: !user_settings.twenty_four_hour_time,
-    };
-    return $t(
-        {defaultMessage: "Expires on {date}"},
-        {date: valid_to.toLocaleTimeString([], options)},
-    );
+    const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
+    const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
+
+    return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
 function get_expiration_time_in_minutes() {

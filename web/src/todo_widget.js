@@ -179,8 +179,8 @@ export function activate(opts) {
                 return;
             }
 
-            $elem.find(".add-task").val("").trigger("focus");
-            $elem.find(".add-desc").val("").trigger("focus");
+            $elem.find("input.add-task").val("").trigger("focus");
+            $elem.find("input.add-desc").val("");
 
             const task_exists = task_data.name_in_use(task);
             if (task_exists) {

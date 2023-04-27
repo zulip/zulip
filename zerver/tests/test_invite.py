@@ -1094,7 +1094,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         result = self.submit_reg_form_for_user("foo@example.com", "password")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("only allows users with email addresses", result)
+        self.assert_in_response(
+            "does not allow signups using emails with your email domain", result
+        )
 
     def test_disposable_emails_before_closing(self) -> None:
         """
@@ -1119,7 +1121,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         result = self.submit_reg_form_for_user("foo@mailnator.com", "password")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response("Please sign up using a real email address.", result)
+        self.assert_in_response("does not allow signups using disposable email addresses.", result)
 
     def test_invite_with_email_containing_plus_before_closing(self) -> None:
         """
@@ -1145,9 +1147,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         result = self.submit_reg_form_for_user(external_address, "password")
         self.assertEqual(result.status_code, 200)
-        self.assert_in_response(
-            "Zulip Dev, does not allow signups using emails\n        that contains +", result
-        )
+        self.assert_in_response('does not allow signups using emails that contain "+".', result)
 
     def test_invalid_email_check_after_confirming_email(self) -> None:
         self.login("hamlet")
@@ -1542,7 +1542,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "bob"})
         response = self.submit_reg_form_for_user(email, "password", key=registration_key)
         self.assert_in_success_response(
-            ["New members cannot join this organization because all Zulip licenses are"], response
+            ["Organization cannot accept new members right now"], response
         )
 
         guest_prereg_user = PreregistrationUser.objects.create(

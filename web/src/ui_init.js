@@ -24,6 +24,7 @@ import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_textarea from "./compose_textarea";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -75,6 +76,7 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
+import * as scroll_util from "./scroll_util";
 import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
@@ -93,6 +95,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
@@ -100,7 +103,6 @@ import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typing from "./typing";
-import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_group_edit from "./user_group_edit";
@@ -277,7 +279,7 @@ export function initialize_kitchen_sink_stuff() {
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
     $(".modal-body, .scrolling_list, input, textarea").on("wheel", function (e) {
-        const $self = ui.get_scroll_element($(this));
+        const $self = scroll_util.get_scroll_element($(this));
         const scroll = $self.scrollTop();
         const delta = e.originalEvent.deltaY;
 
@@ -293,8 +295,11 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
-        // Except for the stream select dropdown, which still needs scroll events.
-        if ($(e.target).parents(".dropdown-list-body").length > 0) {
+        // Except for the stream select dropdown and compose banners, which still needs scroll events.
+        if (
+            $(e.target).closest(".dropdown-list-body").length ||
+            $(e.target).closest("#compose_banners").length
+        ) {
             return;
         }
         e.stopPropagation();
@@ -639,6 +644,7 @@ export function initialize_everything() {
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
     stream_list.initialize();
+    stream_list_sort.initialize();
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
@@ -666,6 +672,7 @@ export function initialize_everything() {
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
+    compose_textarea.initialize();
     search.initialize();
     tutorial.initialize();
     notifications.initialize();
@@ -692,7 +699,6 @@ export function initialize_everything() {
     drafts.initialize();
     sent_messages.initialize();
     hotspots.initialize();
-    ui.initialize();
     typing.initialize();
     starred_messages.initialize();
     user_status_ui.initialize();

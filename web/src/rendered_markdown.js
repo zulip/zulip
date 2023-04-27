@@ -13,6 +13,7 @@ import * as realm_playground from "./realm_playground";
 import * as rtl from "./rtl";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
+import {show_copied_confirmation} from "./tippyjs";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 
@@ -227,10 +228,13 @@ export const update_elements = ($content) => {
         }
         const $copy_button = $(copy_code_button());
         $pre.prepend($copy_button);
-        new ClipboardJS($copy_button[0], {
+        const clipboard = new ClipboardJS($copy_button[0], {
             text(copy_element) {
                 return $(copy_element).siblings("code").text();
             },
+        });
+        clipboard.on("success", () => {
+            show_copied_confirmation($copy_button[0]);
         });
     });
 

@@ -40,6 +40,7 @@ const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
+const stream_list_sort = zrequire("stream_list_sort");
 const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_ui = zrequire("compose_ui");
@@ -1062,7 +1063,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             "demote_inactive_streams",
             settings_config.demote_inactive_streams_values.never.code,
         );
-        stream_data.set_filter_out_inactives();
+
+        stream_list_sort.set_filter_out_inactives();
         fake_this = {completing: "stream", token: "s"};
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
@@ -1073,7 +1075,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             "demote_inactive_streams",
             settings_config.demote_inactive_streams_values.always.code,
         );
-        stream_data.set_filter_out_inactives();
+
+        stream_list_sort.set_filter_out_inactives();
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);

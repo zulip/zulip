@@ -410,8 +410,9 @@ h4.user_group_setting_subsection_title {
                 display: none;
                 font-size: 1.5em;
                 line-height: 1;
-                margin: 9px 0;
+                margin: 9px;
                 font-weight: 600;
+                word-break: break-all;
 
                 .large-icon {
                     display: inline-block;
@@ -768,7 +769,7 @@ h4.user_group_setting_subsection_title {
         .button-group {
             padding-top: 5px;
             margin-left: auto;
-            margin-right: 15px;
+            margin-right: 18px;
 
             .subscribe-button,
             #preview-stream-button,
@@ -788,25 +789,29 @@ h4.user_group_setting_subsection_title {
 
         .group-name-wrapper,
         .stream-name {
-            display: inline-block;
             position: relative;
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
             margin-top: -5px;
             white-space: nowrap;
+            max-width: 90%;
+            flex: auto;
+            min-width: 0;
+            overflow-x: clip;
+            text-overflow: ellipsis;
 
             .group-name,
             .sub-stream-name {
                 display: block;
-                max-width: 100%;
+                width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
         }
 
         .button-group {
-            margin-left: 1rem;
+            margin-left: auto;
 
             .deactivate {
                 margin-right: 3px;
@@ -845,7 +850,7 @@ h4.user_group_setting_subsection_title {
         .group_change_property_info,
         .stream_change_property_info {
             vertical-align: top;
-            margin: -5px 0 0;
+            margin: 0 5px 0 0;
         }
     }
 

@@ -8,41 +8,39 @@
 
     <hr />
 
-    {{#if development_environment}}
-        {{#if stream_muted}}
-            {{#unless topic_unmuted}}
-                <li class="hidden-for-spectators">
-                    <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                        <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-                        {{t "Unmute topic (muted stream)"}}
-                    </a>
-                </li>
-            {{else}}
-                <li class="hidden-for-spectators">
-                    <a tabindex="0" class="sidebar-popover-remove-unmute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-                        <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-                        {{t "Mute topic (muted stream)"}}
-                    </a>
-                </li>
-            {{/unless}}
-        {{/if}}
-    {{/if}}
-
-    {{#unless topic_muted}}
-    <li class="hidden-for-spectators">
-        <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-            {{t "Mute topic"}}
-        </a>
-    </li>
+    {{#if stream_muted}}
+        {{#unless topic_unmuted}}
+            <li class="hidden-for-spectators">
+                <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+                    <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
+                    {{t "Unmute topic"}}
+                </a>
+            </li>
+        {{else}}
+            <li class="hidden-for-spectators">
+                <a tabindex="0" class="sidebar-popover-remove-unmute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+                    <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
+                    {{t "Mute topic"}}
+                </a>
+            </li>
+        {{/unless}}
     {{else}}
-    <li class="hidden-for-spectators">
-        <a tabindex="0" class="sidebar-popover-remove-mute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-            {{t "Unmute topic"}}
-        </a>
-    </li>
-    {{/unless}}
+        {{#unless topic_muted}}
+        <li class="hidden-for-spectators">
+            <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+                <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
+                {{t "Mute topic"}}
+            </a>
+        </li>
+        {{else}}
+        <li class="hidden-for-spectators">
+            <a tabindex="0" class="sidebar-popover-remove-mute" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+                <i class="zulip-icon zulip-icon-unmute" aria-hidden="true"></i>
+                {{t "Unmute topic"}}
+            </a>
+        </li>
+        {{/unless}}
+    {{/if}}
 
     {{#if has_starred_messages}}
     <li class="hidden-for-spectators">

@@ -536,7 +536,7 @@ def do_change_user_setting(
         # setting; not doing so can make it look like the settings
         # change didn't have any effect.
         if setting_value:
-            status = UserPresence.ACTIVE
+            status = UserPresence.LEGACY_STATUS_ACTIVE_INT
             presence_time = timezone_now()
         else:
             # HACK: Remove existing presence data for the current user
@@ -553,7 +553,7 @@ def do_change_user_setting(
             #
             # We add a small additional offset as a fudge factor in
             # case of clock skew.
-            status = UserPresence.IDLE
+            status = UserPresence.LEGACY_STATUS_IDLE_INT
             presence_time = timezone_now() - datetime.timedelta(
                 seconds=settings.OFFLINE_THRESHOLD_SECS + 120
             )

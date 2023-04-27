@@ -162,7 +162,7 @@ run_test("test_by_conversation_and_time_url", () => {
 
     assert.equal(
         hash_util.by_conversation_and_time_url(message),
-        "http://zulip.zulipdev.com/#narrow/pm-with/15-pm/near/43",
+        "http://zulip.zulipdev.com/#narrow/dm/15-dm/near/43",
     );
 });
 

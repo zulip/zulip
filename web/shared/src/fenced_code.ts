@@ -1,6 +1,21 @@
 import katex from "katex";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
+type PygmentsData = {
+    langs: Record<
+        string,
+        {
+            priority: number;
+            pretty_name: string;
+        }
+    >;
+};
+
+type Handler = {
+    handle_line: (line: string) => void;
+    done: () => void;
+};
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //
@@ -26,18 +41,18 @@ const fencestr =
 const fence_re = new RegExp(fencestr);
 
 // Default stashing function does nothing
-let stash_func = function (text) {
+let stash_func = function (text: string): string {
     return text;
 };
 
 // We fill up the actual values when initializing.
-let pygments_data = {};
+let pygments_data: PygmentsData["langs"] = {};
 
-export function initialize(generated_pygments_data) {
+export function initialize(generated_pygments_data: PygmentsData): void {
     pygments_data = generated_pygments_data.langs;
 }
 
-export function wrap_code(code, lang) {
+export function wrap_code(code: string, lang?: string): string {
     let header = '<div class="codehilite"><pre><span></span><code>';
     // Mimics the backend logic of adding a data-attribute (data-code-language)
     // to know what Pygments language was used to highlight this code block.
@@ -56,7 +71,7 @@ export function wrap_code(code, lang) {
     return header + _.escape(code.replace(/^\n+|\n+$/g, "")) + "\n</code></pre></div>";
 }
 
-function wrap_quote(text) {
+function wrap_quote(text: string): string {
     const paragraphs = text.split("\n");
     const quoted_paragraphs = [];
 
@@ -70,7 +85,7 @@ function wrap_quote(text) {
     return quoted_paragraphs.join("\n");
 }
 
-function wrap_tex(tex) {
+function wrap_tex(tex: string): string {
     try {
         return "<p>" + katex.renderToString(tex, {displayMode: true}) + "</p>";
     } catch {
@@ -78,7 +93,7 @@ function wrap_tex(tex) {
     }
 }
 
-function wrap_spoiler(header, text, stash_func) {
+function wrap_spoiler(header: string, text: string, stash_func: (text: string) => string): string {
     const header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">';
     const end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">';
     const footer_html = "</div></div>";
@@ -93,20 +108,25 @@ function wrap_spoiler(header, text, stash_func) {
     return output.join("\n\n");
 }
 
-export function set_stash_func(stash_handler) {
+export function set_stash_func(stash_handler: (text: string) => string): void {
     stash_func = stash_handler;
 }
 
-export function process_fenced_code(content) {
+export function process_fenced_code(content: string): string {
     const input = content.split("\n");
-    const output = [];
-    const handler_stack = [];
-    let consume_line;
+    const output: string[] = [];
+    const handler_stack: Handler[] = [];
+    let consume_line: (lines: string[], line: string) => void;
 
-    function handler_for_fence(output_lines, fence, lang, header) {
+    function handler_for_fence(
+        output_lines: string[],
+        fence: string,
+        lang: string,
+        header: string,
+    ): Handler {
         // lang is ignored except for 'quote', as we
         // don't do syntax highlighting yet
-        const lines = [];
+        const lines: string[] = [];
         if (lang === "quote") {
             return {
                 handle_line(line) {
@@ -137,7 +157,7 @@ export function process_fenced_code(content) {
 
                 done() {
                     const text = wrap_tex(lines.join("\n"));
-                    const placeholder = stash_func(text, true);
+                    const placeholder = stash_func(text);
                     output_lines.push("", placeholder, "");
                     handler_stack.pop();
                 },
@@ -174,14 +194,14 @@ export function process_fenced_code(content) {
             done() {
                 const text = wrap_code(lines.join("\n"), lang);
                 // insert safe HTML that is passed through the parsing
-                const placeholder = stash_func(text, true);
+                const placeholder = stash_func(text);
                 output_lines.push("", placeholder, "");
                 handler_stack.pop();
             },
         };
     }
 
-    function default_handler() {
+    function default_handler(): Handler {
         return {
             handle_line(line) {
                 consume_line(output, line);
@@ -192,7 +212,7 @@ export function process_fenced_code(content) {
         };
     }
 
-    consume_line = function consume_line(output_lines, line) {
+    consume_line = function consume_line(output_lines: string[], line: string) {
         const match = fence_re.exec(line);
         if (match) {
             const fence = match[1];
@@ -210,6 +230,7 @@ export function process_fenced_code(content) {
 
     for (const line of input) {
         const handler = handler_stack.at(-1);
+        assert(handler !== undefined, "Handler stack is empty.");
         handler.handle_line(line);
     }
 
@@ -217,7 +238,7 @@ export function process_fenced_code(content) {
     // insert closing fences
     while (handler_stack.length !== 0) {
         const handler = handler_stack.at(-1);
-        handler.done();
+        handler!.done();
     }
 
     if (output.length > 2 && output.at(-2) !== "") {
@@ -228,7 +249,7 @@ export function process_fenced_code(content) {
 }
 
 const fence_length_re = /^ {0,3}(`{3,})/gm;
-export function get_unused_fence(content) {
+export function get_unused_fence(content: string): string {
     // we only return ``` fences, not ~~~.
     let length = 3;
     let match;

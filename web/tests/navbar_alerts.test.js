@@ -91,7 +91,7 @@ test("profile_incomplete_alert", () => {
 
 test("server_upgrade_alert hide_duration_expired", ({override}) => {
     const ls = localstorage();
-    const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
+    const start_time = 1620327447050; // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 
     override(Date, "now", () => start_time);
     assert.equal(ls.get("lastUpgradeNagDismissalTime"), undefined);
@@ -99,7 +99,7 @@ test("server_upgrade_alert hide_duration_expired", ({override}) => {
     navbar_alerts.dismiss_upgrade_nag(ls);
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
 
-    override(Date, "now", () => addDays(start_time, 8)); // Friday 14/5/2021 07:02:27 AM (UTC+0)
+    override(Date, "now", () => addDays(start_time, 8).getTime()); // Friday 14/5/2021 07:02:27 AM (UTC+0)
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), true);
     navbar_alerts.dismiss_upgrade_nag(ls);
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);

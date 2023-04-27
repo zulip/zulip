@@ -12,6 +12,7 @@ from typing import (
     Mapping,
     Optional,
     Sequence,
+    Set,
     Tuple,
     TypeVar,
     Union,
@@ -133,7 +134,7 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
 
 def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
     """Changes to this function should come with corresponding changes to
-    BuildNarrowFilterTest."""
+    NarrowLibraryTest."""
     check_supported_events_narrow_filter(narrow)
 
     def narrow_filter(event: Mapping[str, Any]) -> bool:
@@ -156,7 +157,8 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
             elif operator == "sender":
                 if operand.lower() != message["sender_email"].lower():
                     return False
-            elif operator == "is" and operand == "private":
+            elif operator == "is" and operand in ["dm", "private"]:
+                # "is:private" is a legacy alias for "is:dm"
                 if message["type"] != "private":
                     return False
             elif operator == "is" and operand in ["starred"]:
@@ -267,14 +269,18 @@ class NarrowBuilder:
             "near": self.by_near,
             "id": self.by_id,
             "search": self.by_search,
-            "pm-with": self.by_pm_with,
+            "dm": self.by_dm,
+            # "pm-with:" is a legacy alias for "dm:"
+            "pm-with": self.by_dm,
+            "dm-including": self.by_dm_including,
+            # "group-pm-with:" was deprecated by the addition of "dm-including:"
             "group-pm-with": self.by_group_pm_with,
             # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
             # for documented search operators with dashes, also implicitly supported
             # clients sending those same operators with underscores. We can remove
             # support for the below operators when support for the associated dashed
             # operator is removed.
-            "pm_with": self.by_pm_with,
+            "pm_with": self.by_dm,
             "group_pm_with": self.by_group_pm_with,
         }
 
@@ -336,7 +342,8 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        if operand == "private":
+        if operand in ["dm", "private"]:
+            # "is:private" is a legacy alias for "is:dm"
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
@@ -506,7 +513,7 @@ class NarrowBuilder:
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
-    def by_pm_with(
+    def by_dm(
         self, query: Select, operand: Union[str, Iterable[int]], maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
@@ -540,22 +547,22 @@ class NarrowBuilder:
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
 
-        # Group DM
+        # Group direct message
         if recipient.type == Recipient.HUDDLE:
             cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
 
-        # 1:1 PM
+        # 1:1 direct message
         other_participant = None
 
-        # Find if another person is in PM
+        # Find if another person is in direct message
         for user in user_profiles:
             if user.id != self.user_profile.id:
                 other_participant = user
 
-        # PM with another person
+        # Direct message with another person
         if other_participant:
-            # We need bidirectional messages PM with another person.
+            # We need bidirectional direct messages with another person.
             # But Recipient.PERSONAL objects only encode the person who
             # received the message, and not the other participant in
             # the thread (the sender), we need to do a somewhat
@@ -574,10 +581,71 @@ class NarrowBuilder:
             )
             return query.where(maybe_negate(cond))
 
-        # PM with self
+        # Direct message with self
         cond = and_(
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
+        )
+        return query.where(maybe_negate(cond))
+
+    def _get_huddle_recipients(self, other_user: UserProfile) -> Set[int]:
+        self_recipient_ids = [
+            recipient_tuple["recipient_id"]
+            for recipient_tuple in Subscription.objects.filter(
+                user_profile=self.user_profile,
+                recipient__type=Recipient.HUDDLE,
+            ).values("recipient_id")
+        ]
+        narrow_recipient_ids = [
+            recipient_tuple["recipient_id"]
+            for recipient_tuple in Subscription.objects.filter(
+                user_profile=other_user,
+                recipient__type=Recipient.HUDDLE,
+            ).values("recipient_id")
+        ]
+
+        return set(self_recipient_ids) & set(narrow_recipient_ids)
+
+    def by_dm_including(
+        self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
+    ) -> Select:
+        # This operator does not support is_web_public_query.
+        assert not self.is_web_public_query
+        assert self.user_profile is not None
+
+        try:
+            if isinstance(operand, str):
+                narrow_user_profile = get_user_including_cross_realm(operand, self.realm)
+            else:
+                narrow_user_profile = get_user_by_id_in_realm_including_cross_realm(
+                    operand, self.realm
+                )
+        except UserProfile.DoesNotExist:
+            raise BadNarrowOperatorError("unknown user " + str(operand))
+
+        # "dm-including" when combined with the user's own ID/email as the operand
+        # should return all group and 1:1 direct messages (including direct messages
+        # with self), so the simplest query to get these messages is the same as "is:dm".
+        if narrow_user_profile.id == self.user_profile.id:
+            cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
+            return query.where(maybe_negate(cond))
+
+        # all direct messages including another person (group and 1:1)
+        huddle_recipient_ids = self._get_huddle_recipients(narrow_user_profile)
+
+        self_recipient_id = self.user_profile.recipient_id
+        # See note above in `by_dm` about needing bidirectional messages
+        # for direct messages with another person.
+        cond = or_(
+            and_(
+                column("sender_id", Integer) == narrow_user_profile.id,
+                column("recipient_id", Integer) == self_recipient_id,
+            ),
+            and_(
+                column("sender_id", Integer) == self.user_profile.id,
+                column("recipient_id", Integer) == narrow_user_profile.recipient_id,
+            ),
+            column("recipient_id", Integer).in_(huddle_recipient_ids),
         )
         return query.where(maybe_negate(cond))
 
@@ -596,22 +664,7 @@ class NarrowBuilder:
         except UserProfile.DoesNotExist:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
-        self_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
-                user_profile=self.user_profile,
-                recipient__type=Recipient.HUDDLE,
-            ).values("recipient_id")
-        ]
-        narrow_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
-                user_profile=narrow_profile,
-                recipient__type=Recipient.HUDDLE,
-            ).values("recipient_id")
-        ]
-
-        recipient_ids = set(self_recipient_ids) & set(narrow_recipient_ids)
+        recipient_ids = self._get_huddle_recipients(narrow_profile)
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
@@ -692,8 +745,8 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
             # that supports user IDs. Relevant code is located in web/src/message_fetch.js
             # in handle_operators_supporting_id_based_api function where you will need to update
             # operators_supporting_id, or operators_supporting_ids array.
-            operators_supporting_id = ["sender", "group-pm-with", "stream"]
-            operators_supporting_ids = ["pm-with"]
+            operators_supporting_id = ["sender", "group-pm-with", "stream", "dm-including"]
+            operators_supporting_ids = ["pm-with", "dm"]
             operators_non_empty_operand = {"search"}
 
             operator = elem.get("operator", "")
@@ -831,9 +884,9 @@ def exclude_muting_conditions(
     # muted messages exist where their absence might make conversation
     # difficult to understand. As a result, we do not need to consider
     # muted users in this server-side logic for returning messages to
-    # clients. (We could in theory exclude PMs from muted users, but
-    # they're likely to be sufficiently rare to not be worth extra
-    # logic/testing here).
+    # clients. (We could in theory exclude direct messages from muted
+    # users, but they're likely to be sufficiently rare to not be worth
+    # extra logic/testing here).
 
     return conditions
 

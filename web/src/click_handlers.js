@@ -43,6 +43,7 @@ import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
 import * as user_profile from "./user_profile";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 export function initialize() {
@@ -177,12 +178,12 @@ export function initialize() {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
 
+        message_lists.current.select_id(id);
+
         if (message_edit.is_editing(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
-
-        message_lists.current.select_id(id);
 
         if (page_params.is_spectator) {
             return;
@@ -384,15 +385,40 @@ export function initialize() {
         message_edit.toggle_resolve_topic(message_id, topic_name);
     });
 
-    // TOPIC MUTING
-    $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
+    // Mute topic in a unmuted stream
+    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic($(e.target), true);
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.MUTED,
+        );
     });
 
-    $("body").on("click", ".message_header .on_hover_topic_unmute", (e) => {
+    // Unmute topic in a unmuted stream
+    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic($(e.target), false);
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.INHERIT,
+        );
+    });
+
+    // Unmute topic in a muted stream
+    $("body").on("click", ".message_header .stream_muted.on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.UNMUTED,
+        );
+    });
+
+    // Mute topic in a muted stream
+    $("body").on("click", ".message_header .stream_muted.on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     // RECIPIENT BARS
@@ -730,7 +756,7 @@ export function initialize() {
         },
     );
 
-    /* The PRIVATE MESSAGES label's click behavior is complicated;
+    /* The DIRECT MESSAGES label's click behavior is complicated;
      * only when zoomed in does it have a navigation effect, so we need
      * this click handler rather than just a link. */
     $("body").on(
@@ -740,7 +766,7 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
 
-            window.location.hash = "narrow/is/private";
+            window.location.hash = "narrow/is/dm";
         },
     );
 

@@ -25,8 +25,31 @@
         }
     }
 
-    & ul.filters a:hover {
-        color: inherit;
+    & ul.filters {
+        color: hsl(236deg 33% 90%);
+
+        & a:hover {
+            color: inherit;
+        }
+
+        .has-unmuted-mentions .unread_mention_info {
+            color: hsl(236deg 33% 90%);
+        }
+
+        & li.muted_topic,
+        li.out_of_home_view {
+            color: hsl(236deg 33% 90%/50%);
+        }
+
+        & li.unmuted_topic {
+            color: hsl(236deg 33% 90%);
+        }
+
+        & li.out_of_home_view {
+            &:hover {
+                color: hsl(236deg 33% 90%/ 75%);
+            }
+        }
     }
 
     /************************* MODAL DARK THEME *******************/
@@ -203,7 +226,8 @@
             }
         }
 
-        &.warning {
+        &.warning,
+        &.warning-style {
             background-color: hsl(53deg 100% 11%);
             border-color: hsl(38deg 44% 60% / 40%);
             color: hsl(50deg 45% 80%);

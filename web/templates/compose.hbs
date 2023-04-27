@@ -16,40 +16,66 @@
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
-            <span class="new_message_button reply_button_container ">
+            <span class="new_message_button reply_button_container" data-tooltip-template-id="compose_reply_message_button_tooltip_template">
                 <button type="button" class="button small rounded compose_reply_button"
-                  id="left_bar_compose_reply_button_big"
-                  title="{{t 'Reply to selected message' }} (r)">
+                  id="left_bar_compose_reply_button_big">
                     <span class="compose_reply_button_label">{{t 'Compose message' }}</span>
                 </button>
+                <template id="compose_reply_message_button_tooltip_template">
+                    {{t 'Reply to selected message' }}
+                    {{tooltip_hotkey_hints "R"}}
+                </template>
+                <template id="compose_reply_selected_topic_button_tooltip_template">
+                    {{t 'Reply to selected conversation' }}
+                    {{tooltip_hotkey_hints "R"}}
+                </template>
+                <template id="compose_reply_button_disabled_tooltip_template">
+                    {{t 'You are not allowed to send direct messages in this organization.' }}
+                </template>
             </span>
             <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"
                   id="left_bar_compose_mobile_button_big"
-                  title="{{t 'New message' }} (c)">
+                  data-tooltip-template-id="left_bar_compose_mobile_button_tooltip_template">
                     <span>+</span>
                 </button>
+                <template id="left_bar_compose_mobile_button_tooltip_template">
+                    {{t 'New message' }}
+                    {{tooltip_hotkey_hints "C"}}
+                </template>
             </span>
             <span class="new_message_button stream_button_container">
                 <button type="button" class="button small rounded compose_stream_button"
                   id="left_bar_compose_stream_button_big"
-                  title="{{t 'New topic' }} (c)">
+                  data-tooltip-template-id="new_topic_message_button_tooltip_template">
                     <span class="compose_stream_button_label">{{t 'New topic' }}</span>
                 </button>
+                <template id="new_topic_message_button_tooltip_template">
+                    {{t 'New topic' }}
+                    {{tooltip_hotkey_hints "C"}}
+                </template>
+                <template id="new_stream_message_button_tooltip_template">
+                    {{t 'New stream message' }}
+                    {{tooltip_hotkey_hints "C"}}
+                </template>
             </span>
             {{#unless embedded }}
             <span class="new_message_button private_button_container">
                 <button type="button" class="button small rounded compose_private_button"
                   id="left_bar_compose_private_button_big"
-                  title="{{t 'New direct message' }} (x)">
+                  data-tooltip-template-id="new_direct_message_button_tooltip_template">
                     <span class="compose_private_button_label">{{t 'New direct message' }}</span>
                 </button>
+                <template id="new_direct_message_button_tooltip_template">
+                    {{t 'New direct message' }}
+                    {{tooltip_hotkey_hints "X"}}
+                </template>
             </span>
             {{/unless}}
         </div>
     </div>
     <div class="message_comp">
-        <div id="compose_banners"></div>
+        <div id="compose_banners" data-simplebar></div>
         <div class="composition-area">
             <form id="send_message_form" action="/json/messages" method="post">
                 <div class="compose_table">
@@ -104,11 +130,12 @@
                             <div id="below-compose-content">
                                 <div class="compose_bottom_top_container">
                                     <div class="compose_right_float_container order-3">
-                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button">
+                                        <button type="submit" id="compose-send-button" class="button small send_message compose-submit-button animated-purple-button">
                                             <img class="loader" alt="" src="" />
                                             <span>{{t 'Send' }}</span>
                                         </button>
-                                        <button id="compose-schedule-confirm-button" class="button small hide animated-purple-button" tabindex=0>
+                                        <button id="compose-schedule-confirm-button" class="button small compose-submit-button hide animated-purple-button" tabindex=0>
+                                            <img class="loader" alt="" src="" />
                                             <span>{{t 'Schedule' }}</span>
                                         </button>
                                         <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">

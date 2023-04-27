@@ -195,6 +195,10 @@ jobs:
           source tools/ci/activate-venv
           ./tools/test-js-with-puppeteer
 
+      - name: Check pnpm dedupe
+        if: ${{ matrix.include_frontend_tests }}
+        run: pnpm dedupe --check
+
       - name: Check for untracked files
         run: |
           source tools/ci/activate-venv

@@ -6,7 +6,6 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
-import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
@@ -98,7 +97,6 @@ class BinaryDict {
 // The stream_info variable maps stream names to stream properties objects
 // Call clear_subscriptions() to initialize it.
 let stream_info;
-let filter_out_inactives = false;
 
 const stream_ids_by_name = new FoldDict();
 const default_stream_ids = new Set();
@@ -169,45 +167,6 @@ export function clear_subscriptions() {
 }
 
 clear_subscriptions();
-
-export function set_filter_out_inactives() {
-    if (
-        user_settings.demote_inactive_streams ===
-        settings_config.demote_inactive_streams_values.automatic.code
-    ) {
-        filter_out_inactives = num_subscribed_subs() >= 30;
-    } else if (
-        user_settings.demote_inactive_streams ===
-        settings_config.demote_inactive_streams_values.always.code
-    ) {
-        filter_out_inactives = true;
-    } else {
-        filter_out_inactives = false;
-    }
-}
-
-// for testing:
-export function is_filtering_inactives() {
-    return filter_out_inactives;
-}
-
-export function is_active(sub) {
-    if (!filter_out_inactives || sub.pin_to_top) {
-        // If users don't want to filter inactive streams
-        // to the bottom, we respect that setting and don't
-        // treat any streams as dormant.
-        //
-        // Currently this setting is automatically determined
-        // by the number of streams.  See the callers
-        // to set_filter_out_inactives.
-        return true;
-    }
-    return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
-}
-
-export function is_muted_active(sub) {
-    return sub.is_muted && is_active(sub);
-}
 
 export function rename_sub(sub, new_name) {
     const old_name = sub.name;
@@ -889,8 +848,6 @@ export function initialize(params) {
     populate_subscriptions(subscriptions, true, true);
     populate_subscriptions(unsubscribed, false, true);
     populate_subscriptions(never_subscribed, false, false);
-
-    set_filter_out_inactives();
 }
 
 export function remove_default_stream(stream_id) {

@@ -39,6 +39,7 @@ import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import {user_settings} from "./user_settings";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 import * as zcommand from "./zcommand";
 
@@ -332,7 +333,8 @@ export function finish() {
     if (popover_menus.is_time_selected_for_schedule()) {
         schedule_message_to_custom_date();
     } else if (reminder.is_deferred_delivery(message_content)) {
-        reminder.schedule_message();
+        const request = create_message_object();
+        reminder.schedule_message(request, clear_compose_box);
     } else {
         send_message();
     }
@@ -511,6 +513,28 @@ export function initialize() {
                 message_edit.toggle_resolve_topic(message_id, topic_name);
                 compose_validate.clear_topic_resolved_warning(true);
             });
+        },
+    );
+
+    $("#compose_banners").on(
+        "click",
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.unmute_topic_notification,
+        )} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
+
+            const $target = $(event.target).parents(".compose_banner");
+            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
+            const topic_name = $target.attr("data-topic-name");
+
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic_name,
+                user_topics.all_visibility_policies.UNMUTED,
+                false,
+                true,
+            );
         },
     );
 

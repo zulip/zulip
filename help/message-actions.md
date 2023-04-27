@@ -10,5 +10,5 @@ There are many ways to interact with a Zulip message.
 * [View a message's edit history](/help/view-a-messages-edit-history)
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
-* [Mute a topic](/help/mute-a-topic)
+* [Mute or unmute a topic](/help/mute-a-topic)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)

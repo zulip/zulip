@@ -19,7 +19,7 @@ Get Zulip notifications for Stripe events!
 Zulip currently supports Stripe events for Charges, Customers, Discounts,
 Sources, Subscriptions, Files, Invoices and Invoice items.
 
-{% if 'http:' in external_uri_scheme %}
+{% if 'http:' in external_url_scheme %}
 
 !!! tip ""
 

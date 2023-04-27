@@ -15,6 +15,7 @@ page_params.realm_users = [];
 // We use this with override.
 let num_unread_for_stream;
 let stream_has_any_unread_mentions;
+let stream_has_any_unmuted_mentions;
 const noop = () => {};
 
 mock_esm("../src/narrow_state", {
@@ -26,17 +27,22 @@ mock_esm("../src/keydown_util", {
 });
 const scroll_util = mock_esm("../src/scroll_util", {
     scroll_element_into_container() {},
+    get_scroll_element: ($element) => $element,
 });
-mock_esm("../src/ui", {get_scroll_element: ($element) => $element});
 mock_esm("../src/unread", {
-    num_unread_for_stream: () => num_unread_for_stream,
+    num_unread_for_stream: () => ({
+        unmuted_count: num_unread_for_stream,
+        stream_is_muted: false,
+        muted_count: 0,
+    }),
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
+    stream_has_any_unmuted_mentions: () => stream_has_any_unmuted_mentions,
 });
 
 const {Filter} = zrequire("../src/filter");
-const stream_sort = zrequire("stream_sort");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
+const stream_list_sort = zrequire("stream_list_sort");
 
 const devel = {
     name: "devel",
@@ -194,11 +200,11 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
     assert.ok(!$social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    override_rewire(stream_data, "is_active", () => true);
+    override_rewire(stream_list_sort, "has_recent_activity", () => true);
     row.update_whether_active();
     assert.ok(!$social_li.hasClass("inactive_stream"));
 
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
     row.update_whether_active();
     assert.ok($social_li.hasClass("inactive_stream"));
 
@@ -223,16 +229,16 @@ test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
     const $social_sidebar = $("<social-sidebar-row-stub>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
 
     stream_list.build_stream_list();
     assert.ok($social_sidebar.hasClass("inactive_stream"));
 
-    override_rewire(stream_data, "is_active", () => true);
+    override_rewire(stream_list_sort, "has_recent_activity", () => true);
     row.update_whether_active();
     assert.ok(!$social_sidebar.hasClass("inactive_stream"));
 
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
     row.update_whether_active();
     assert.ok($social_sidebar.hasClass("inactive_stream"));
 
@@ -240,7 +246,7 @@ test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
     const $devel_sidebar = $("<devel-sidebar-row-stub>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
 
     stream_list.build_stream_list();
     assert.ok(!$devel_sidebar.hasClass("inactive_stream"));
@@ -493,7 +499,7 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
 
     initialize_stream_data();
 
-    override_rewire(stream_data, "is_active", (sub) => sub.name !== "cars");
+    override_rewire(stream_list_sort, "has_recent_activity", (sub) => sub.name !== "cars");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -522,7 +528,7 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     assert.ok(active_subheader_flag);
     assert.ok(inactive_subheader_flag);
 
-    const streams = stream_sort.get_streams();
+    const streams = stream_list_sort.get_streams();
 
     assert.deepEqual(streams, [
         // three groups: pinned, normal, dormant
@@ -581,7 +587,7 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire, mock_template})
     };
     add_row(DenmarkSub);
 
-    override_rewire(stream_data, "is_active", (sub) => sub.name !== "Denmark");
+    override_rewire(stream_list_sort, "has_recent_activity", (sub) => sub.name !== "Denmark");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {

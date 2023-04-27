@@ -241,7 +241,7 @@ def delete_event_queue() -> Dict[str, object]:
 def get_user_presence() -> Dict[str, object]:
     iago = helpers.example_user("iago")
     client = Client.objects.create(name="curl-test-client-3")
-    update_user_presence(iago, client, timezone_now(), UserPresence.ACTIVE, False)
+    update_user_presence(iago, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT, False)
     return {}
 
 

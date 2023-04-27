@@ -198,7 +198,7 @@ export function scroll_finished() {
             compose_banner.scroll_to_message_banner_message_id,
         );
         if ($message_row.length > 0 && !message_viewport.is_message_below_viewport($message_row)) {
-            compose_banner.clear_message_sent_banners();
+            compose_banner.clear_message_sent_banners(false);
         }
     }
 

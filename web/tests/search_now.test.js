@@ -86,7 +86,6 @@ run_test("initialize", ({mock_template}) => {
 
     search_suggestion.max_num_of_search_results = 999;
     $search_query_box.typeahead = (opts) => {
-        assert.equal(opts.fixed, true);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
@@ -134,11 +133,11 @@ run_test("initialize", ({mock_template}) => {
             const search_suggestions = {
                 lookup_table: new Map([
                     [
-                        "group-pm-with:zo",
+                        "dm-including:zo",
                         {
                             description_html: "group direct messages including",
                             is_person: true,
-                            search_string: "group-pm-with:user7@zulipdev.com",
+                            search_string: "dm-including:user7@zulipdev.com",
                             user_pill_context: {
                                 display_value: "<strong>Zo</strong>e",
                                 has_image: true,
@@ -149,11 +148,11 @@ run_test("initialize", ({mock_template}) => {
                         },
                     ],
                     [
-                        "pm-with:zo",
+                        "dm:zo",
                         {
                             description_html: "direct messages with",
                             is_person: true,
-                            search_string: "pm-with:user7@zulipdev.com",
+                            search_string: "dm:user7@zulipdev.com",
                             user_pill_context: {
                                 display_value: "<strong>Zo</strong>e",
                                 has_image: true,
@@ -186,7 +185,7 @@ run_test("initialize", ({mock_template}) => {
                         },
                     ],
                 ]),
-                strings: ["zo", "sender:zo", "pm-with:zo", "group-pm-with:zo"],
+                strings: ["zo", "sender:zo", "dm:zo", "dm-including:zo"],
             };
 
             /* Test source */

@@ -21,6 +21,15 @@ export function place_caret_at_end(el: HTMLElement): void {
     }
 }
 
+export function replace_emoji_with_text($element: JQuery): void {
+    $element.find(".emoji").replaceWith(function () {
+        if ($(this).is("img")) {
+            return $(this).attr("alt") ?? "";
+        }
+        return $(this).text();
+    });
+}
+
 export function blur_active_element(): void {
     // this blurs anything that may perhaps be actively focused on.
     if (document.activeElement instanceof HTMLElement) {

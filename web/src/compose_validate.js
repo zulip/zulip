@@ -105,7 +105,7 @@ export function warn_if_private_stream_is_linked(linked_stream) {
         classname: compose_banner.CLASSNAMES.private_stream_warning,
     });
 
-    $("#compose_banners").append(new_row);
+    compose_banner.append_compose_banner_to_banner_list(new_row);
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned) {
@@ -161,7 +161,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
             };
 
             const new_row = render_not_subscribed_warning(context);
-            $("#compose_banners").append(new_row);
+            compose_banner.append_compose_banner_to_banner_list(new_row);
         }
     }
 }
@@ -197,7 +197,6 @@ export function warn_if_topic_resolved(topic_changed) {
     const stream_name = compose_state.stream_name();
     const message_content = compose_state.message_content();
     const sub = stream_data.get_sub(stream_name);
-    const $compose_banner_area = $("#compose_banners");
 
     if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
         if (compose_state.has_recipient_viewed_topic_resolved_banner()) {
@@ -222,7 +221,7 @@ export function warn_if_topic_resolved(topic_changed) {
         };
 
         const new_row = render_compose_banner(context);
-        $compose_banner_area.append(new_row);
+        compose_banner.append_compose_banner_to_banner_list(new_row);
         compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
         clear_topic_resolved_warning();
@@ -232,7 +231,6 @@ export function warn_if_topic_resolved(topic_changed) {
 function show_wildcard_warnings(stream_id) {
     const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
 
-    const $compose_banner_area = $("#compose_banners");
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
     const wildcard_template = render_wildcard_warning({
         banner_type: compose_banner.WARNING,
@@ -246,7 +244,7 @@ function show_wildcard_warnings(stream_id) {
 
     // only show one error for any number of @all or @everyone mentions
     if ($(`#compose_banners .${CSS.escape(classname)}`).length === 0) {
-        $compose_banner_area.append(wildcard_template);
+        compose_banner.append_compose_banner_to_banner_list(wildcard_template);
     }
 
     user_acknowledged_wildcard = false;
@@ -421,7 +419,7 @@ export function validation_error(error_type, stream_name) {
                 // closing the banner would be more confusing than helpful.
                 hide_close_button: true,
             });
-            $("#compose_banners").append(new_row);
+            compose_banner.append_compose_banner_to_banner_list(new_row);
             return false;
         }
     }

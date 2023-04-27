@@ -1069,6 +1069,11 @@ paths:
                                       `{client_name}`: Object containing the details of the user's
                                       presence on a particular platform. The object key is the client's
                                       platform name, for example `website` or `ZulipDesktop`.
+
+                                      **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                                      will always contain two keys, `website` and `aggregated`, with
+                                      identical data. The server no longer stores which client submitted
+                                      presence updates.
                                     additionalProperties: false
                                     properties:
                                       client:
@@ -5278,8 +5283,13 @@ paths:
             subscribed to appropriate streams or use a shared history
             search narrow with this endpoint.
 
-            **Changes**: In Zulip 2.1.0, added support for using user/stream IDs
-            when constructing narrows for a message's sender, its stream and/or
+            **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+            for three new filters related to direct messages: `is:dm`, `dm` and
+            `dm-including`; replacing and deprecating `is:private`, `pm-with` and
+            `group-pm-with` respectively.
+
+            In Zulip 2.1.0, added support for using user/stream IDs when
+            constructing narrows for a message's sender, its stream and/or
             its recipient(s).
           content:
             application/json:
@@ -6023,6 +6033,11 @@ paths:
           description: |
             The narrow you want update flags within. See how to
             [construct a narrow](/api/construct-narrow).
+
+            **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+            for three new filters related to direct messages: `is:dm`, `dm` and
+            `dm-including`; replacing and deprecating `is:private`, `pm-with` and
+            `group-pm-with` respectively.
           content:
             application/json:
               schema:
@@ -6389,9 +6404,14 @@ paths:
           required: true
         - name: narrow
           in: query
-          description:
+          description: |
             A structure defining the narrow to check against. See how to
             [construct a narrow](/api/construct-narrow).
+
+            **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+            for three new filters related to direct messages: `is:dm`, `dm` and
+            `dm-including`; replacing and deprecating `is:private`, `pm-with` and
+            `group-pm-with` respectively.
           content:
             application/json:
               schema:
@@ -7277,8 +7297,12 @@ paths:
                             There is also an `aggregated` key, which matches the contents of the object
                             that has been updated most recently.
 
-                            For most applications, you'll just want to look at the
-                            `aggregated` key.
+                            For most applications, you'll just want to look at the `aggregated` key.
+
+                            **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                            will always contain two keys, `website` and `aggregated`, with
+                            identical data. The server no longer stores which client submitted
+                            presence updates.
                     example:
                       {
                         "presence":
@@ -17229,6 +17253,11 @@ components:
         There is also an `aggregated` key, which matches the contents of the object
         that has been updated most recently (except for the `pushable` value which is
         not present).
+
+        **Changes**: Starting with Zulip 7.0 (feature level 178), this
+        will always contain two keys, `website` and `aggregated`, with
+        identical data. The server no longer stores which client submitted
+        presence updates.
       additionalProperties: false
       properties:
         client:
@@ -17983,14 +18012,14 @@ components:
         [narrow filter(s)](/api/construct-narrow) for which you'd
         like to receive events for.
 
-        For example, to receive events for private messages (including
-        group private messages) received by the user, one can use
-        `narrow=[["is", "private"]]`.
+        For example, to receive events for direct messages (including
+        group direct messages) received by the user, one can use
+        `narrow=[["is", "dm"]]`.
 
         Unlike the API for [fetching messages](/api/get-messages),
         this narrow parameter is simply a filter on messages that the
         user receives through their stream subscriptions (or because
-        they are a recipient of a private message).
+        they are a recipient of a direct message).
 
         This means that a client that requests a `narrow` filter of
         `[["stream", "Denmark"]]` will receive events for new messages
@@ -18007,6 +18036,11 @@ components:
         public stream messages in an organization.
 
         Defaults to `[]`.
+
+        **Changes**: In Zulip 7.0 (feature level 177), narrows gained support
+        for three new filters related to direct messages: `is:dm`, `dm` and
+        `dm-including`; replacing and deprecating `is:private`, `pm-with` and
+        `group-pm-with` respectively.
       content:
         application/json:
           schema:

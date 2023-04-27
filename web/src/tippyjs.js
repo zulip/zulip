@@ -198,6 +198,22 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: [
+            // Ideally this would be `#compose_buttons .button`, but the
+            // reply button's actual area is its containing span.
+            "#compose_buttons > .reply_button_container",
+            "#left_bar_compose_mobile_button_big",
+            "#left_bar_compose_stream_button_big",
+            "#left_bar_compose_private_button_big",
+        ],
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: ".compose_control_button",
         // Add some additional delay when they open
         // so that regular users don't have to see
@@ -384,7 +400,7 @@ export function initialize() {
                         defaultMessage: "Currently viewing the entire stream.",
                     });
                 } else if (
-                    _.isEqual(narrow_filter.sorted_term_types(), ["is-private"]) &&
+                    _.isEqual(narrow_filter.sorted_term_types(), ["is-dm"]) &&
                     compose_state.get_message_type() === "private"
                 ) {
                     display_current_view = $t({
@@ -623,4 +639,23 @@ export function initialize() {
         placement: "top",
         appendTo: () => document.body,
     });
+}
+
+export function show_copied_confirmation($copy_button) {
+    // Display a tooltip to notify the user the message or code was copied.
+    const instance = tippy($copy_button, {
+        placement: "top",
+        appendTo: () => document.body,
+        onUntrigger() {
+            remove_instance();
+        },
+    });
+    instance.setContent($t({defaultMessage: "Copied!"}));
+    instance.show();
+    function remove_instance() {
+        if (!instance.state.isDestroyed) {
+            instance.destroy();
+        }
+    }
+    setTimeout(remove_instance, 1000);
 }

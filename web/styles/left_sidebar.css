@@ -323,6 +323,7 @@ li.show-more-topics {
 ul.filters {
     list-style-type: none;
     margin-left: 0;
+    color: hsl(0deg 0% 20% / 100%);
 
     & a {
         color: inherit;
@@ -335,12 +336,52 @@ ul.filters {
 
     & li.muted_topic,
     li.out_of_home_view {
-        opacity: 0.5;
+        color: hsl(0deg 0% 20% / 50%);
+
+        .has-unmuted-mentions .unread_mention_info {
+            color: hsl(0deg 0% 20%);
+        }
+
+        .stream-privacy {
+            opacity: 0.5;
+        }
+
+        & .unread_count {
+            opacity: 0.5;
+        }
+
+        .has-unmuted-unreads {
+            .unread_count {
+                opacity: 1;
+            }
+        }
+
+        & li.unmuted_topic {
+            color: hsl(0deg 0% 20%);
+
+            .unread_count {
+                opacity: 1;
+            }
+        }
     }
 
     & li.out_of_home_view {
         &:hover {
-            opacity: 0.75;
+            color: hsla(0deg 0% 20% / 75%);
+
+            .stream-privacy {
+                opacity: 0.75;
+            }
+
+            .unread_count {
+                opacity: 0.75;
+            }
+
+            .has-unmuted-unreads {
+                .unread_count {
+                    opacity: 1;
+                }
+            }
         }
 
         & li.muted_topic {

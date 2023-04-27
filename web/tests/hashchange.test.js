@@ -95,6 +95,7 @@ run_test("operators_trailing_slash", () => {
 run_test("people_slugs", () => {
     let operators;
     let hash;
+    let narrow;
 
     const alice = {
         email: "alice@example.com",
@@ -106,12 +107,22 @@ run_test("people_slugs", () => {
     operators = [{operator: "sender", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, "#narrow/sender/42-Alice-Smith");
-    const narrow = hash_util.parse_narrow(hash.split("/"));
+    narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "sender", operand: "alice@example.com", negated: false}]);
 
+    operators = [{operator: "dm", operand: "alice@example.com"}];
+    hash = hash_util.operators_to_hash(operators);
+    assert.equal(hash, "#narrow/dm/42-Alice-Smith");
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "dm", operand: "alice@example.com", negated: false}]);
+
+    // Even though we renamed "pm-with" to "dm", preexisting
+    // links/URLs with "pm-with" operator are handled correctly.
     operators = [{operator: "pm-with", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, "#narrow/pm-with/42-Alice-Smith");
+    narrow = hash_util.parse_narrow(hash.split("/"));
+    assert.deepEqual(narrow, [{operator: "pm-with", operand: "alice@example.com", negated: false}]);
 });
 
 function test_helper({override, change_tab}) {
@@ -321,13 +332,13 @@ run_test("hash_interactions", ({override}) => {
 run_test("save_narrow", ({override}) => {
     const helper = test_helper({override});
 
-    let operators = [{operator: "is", operand: "private"}];
+    let operators = [{operator: "is", operand: "dm"}];
 
     blueslip.expect("warn", "browser does not support pushState");
     hashchange.save_narrow(operators);
 
     helper.assert_events([[message_viewport, "stop_auto_scrolling"]]);
-    assert.equal(window.location.hash, "#narrow/is/private");
+    assert.equal(window.location.hash, "#narrow/is/dm");
 
     let url_pushed;
     override(history, "pushState", (state, title, url) => {

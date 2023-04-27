@@ -21,7 +21,7 @@ def encode_stream(stream_id: int, stream_name: str) -> str:
 
 
 def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
-    base_url = f"{realm.uri}/#narrow/pm-with/"
+    base_url = f"{realm.uri}/#narrow/dm/"
     encoded_user_name = re2.sub(r'[ "%\/<>`\p{C}]+', "-", sender.full_name)
     pm_slug = str(sender.id) + "-" + encoded_user_name
     return base_url + pm_slug
@@ -29,7 +29,7 @@ def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
 
 def huddle_narrow_url(realm: Realm, other_user_ids: List[int]) -> str:
     pm_slug = ",".join(str(user_id) for user_id in sorted(other_user_ids)) + "-group"
-    base_url = f"{realm.uri}/#narrow/pm-with/"
+    base_url = f"{realm.uri}/#narrow/dm/"
     return base_url + pm_slug
 
 
@@ -91,7 +91,7 @@ def near_pm_message_url(realm: Realm, message: Dict[str, Any]) -> str:
     parts = [
         realm.uri,
         "#narrow",
-        "pm-with",
+        "dm",
         pm_str,
         "near",
         message_id,

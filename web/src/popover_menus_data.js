@@ -139,7 +139,6 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         topic_name,
         topic_muted,
         topic_unmuted,
-        development_environment: page_params.development_environment,
         can_move_topic,
         can_rename_topic,
         is_realm_admin: page_params.is_admin,

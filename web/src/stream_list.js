@@ -20,12 +20,11 @@ import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_popover from "./stream_popover";
-import * as stream_sort from "./stream_sort";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 
@@ -33,22 +32,60 @@ export let stream_cursor;
 
 let has_scrolled = false;
 
-export function update_count_in_dom($stream_li, count, stream_has_any_unread_mention_messages) {
+export function update_count_in_dom(
+    $stream_li,
+    stream_counts,
+    stream_has_any_unread_mention_messages,
+    stream_has_any_unmuted_unread_mention,
+) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
     const $subscription_block = $stream_li.find(".subscription_block");
 
-    ui_util.update_unread_count_in_dom($subscription_block, count);
     ui_util.update_unread_mention_info_in_dom(
         $subscription_block,
         stream_has_any_unread_mention_messages,
     );
 
-    if (count === 0) {
+    if (stream_has_any_unmuted_unread_mention) {
+        $subscription_block.addClass("has-unmuted-mentions");
+    } else {
+        $subscription_block.removeClass("has-unmuted-mentions");
+    }
+
+    // Here we set the count and compute the values of two classes:
+    // .stream-with-count is used for the layout CSS to know whether
+    // to leave space for the unread count, and has-unmuted-unreads is
+    // used in muted streams to set the fading correctly to indicate
+    // those are unread
+    if (stream_counts.unmuted_count > 0 && !stream_counts.stream_is_muted) {
+        // Normal stream, has unmuted unreads; display normally.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.removeClass("has-unmuted-unreads");
+    } else if (stream_counts.unmuted_count > 0 && stream_counts.stream_is_muted) {
+        // Muted stream, has unmuted unreads.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.addClass("has-unmuted-unreads");
+    } else if (stream_counts.muted_count > 0 && stream_counts.stream_is_muted) {
+        // Muted stream, only muted unreads.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.muted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.removeClass("has-unmuted-unreads");
+    } else if (stream_counts.muted_count > 0 && !stream_counts.stream_is_muted) {
+        // Normal stream, only muted unreads: display nothing. The
+        // current thinking is displaying those counts with muted
+        // styling would be more distracting than helpful.
+        ui_util.update_unread_count_in_dom($subscription_block, 0);
+        $subscription_block.removeClass("has-unmuted-unreads");
         $subscription_block.removeClass("stream-with-count");
     } else {
-        $subscription_block.addClass("stream-with-count");
+        // No unreads: display nothing.
+        ui_util.update_unread_count_in_dom($subscription_block, 0);
+        $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("stream-with-count");
     }
 }
 
@@ -122,9 +159,9 @@ export function build_stream_list(force_rerender) {
         return;
     }
 
-    // The main logic to build the list is in stream_sort.js, and
+    // The main logic to build the list is in stream_list_sort.js, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
-    const stream_groups = stream_sort.sort_groups(streams, get_search_term());
+    const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -336,7 +373,7 @@ class StreamSidebarRow {
     }
 
     update_whether_active() {
-        if (stream_data.is_active(this.sub) || this.sub.pin_to_top === true) {
+        if (stream_list_sort.has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
             this.$list_item.removeClass("inactive_stream");
         } else {
             this.$list_item.addClass("inactive_stream");
@@ -356,7 +393,15 @@ class StreamSidebarRow {
         const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
             this.sub.stream_id,
         );
-        update_count_in_dom(this.$list_item, count, stream_has_any_unread_mention_messages);
+        const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
+            this.sub.stream_id,
+        );
+        update_count_in_dom(
+            this.$list_item,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+        );
     }
 }
 
@@ -393,7 +438,12 @@ export function redraw_stream_privacy(sub) {
     $div.html(html);
 }
 
-function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages) {
+function set_stream_unread_count(
+    stream_id,
+    count,
+    stream_has_any_unread_mention_messages,
+    stream_has_any_unmuted_unread_mention,
+) {
     const $stream_li = get_stream_li(stream_id);
     if (!$stream_li) {
         // This can happen for legitimate reasons, but we warn
@@ -401,7 +451,12 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
         blueslip.warn("stream id no longer in sidebar: " + stream_id);
         return;
     }
-    update_count_in_dom($stream_li, count, stream_has_any_unread_mention_messages);
+    update_count_in_dom(
+        $stream_li,
+        count,
+        stream_has_any_unread_mention_messages,
+        stream_has_any_unmuted_unread_mention,
+    );
 }
 
 export function update_streams_sidebar(force_rerender) {
@@ -435,7 +490,14 @@ export function update_dom_with_unread_counts(counts) {
     for (const [stream_id, count] of counts.stream_count) {
         const stream_has_any_unread_mention_messages =
             counts.streams_with_mentions.includes(stream_id);
-        set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages);
+        const stream_has_any_unmuted_unread_mention =
+            counts.streams_with_unmuted_mentions.includes(stream_id);
+        set_stream_unread_count(
+            stream_id,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+        );
     }
 }
 
@@ -642,7 +704,7 @@ export function set_event_handlers() {
     }
 
     // check for user scrolls on streams list for first time
-    ui.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
+    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
         has_scrolled = true;
         toggle_pm_header_icon();
     });
@@ -655,9 +717,9 @@ export function set_event_handlers() {
                 const li = get_stream_li(stream_id);
                 return li;
             },
-            first_key: stream_sort.first_stream_id,
-            prev_key: stream_sort.prev_stream_id,
-            next_key: stream_sort.next_stream_id,
+            first_key: stream_list_sort.first_stream_id,
+            prev_key: stream_list_sort.prev_stream_id,
+            next_key: stream_list_sort.next_stream_id,
         },
         highlight_class: "highlighted_stream",
     });

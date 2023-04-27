@@ -187,8 +187,8 @@ function pick_empty_narrow_banner() {
                             },
                         ),
                     };
-                case "private":
-                    // You have no private messages.
+                case "dm":
+                    // You have no direct messages.
                     if (
                         page_params.realm_private_message_policy ===
                         settings_config.private_message_policy_values.disabled.code
@@ -283,7 +283,7 @@ function pick_empty_narrow_banner() {
                 search_data: retrieve_search_query_data(),
             };
         }
-        case "pm-with": {
+        case "dm": {
             if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
                 if (!first_operand.includes(",")) {
                     return {
@@ -308,7 +308,7 @@ function pick_empty_narrow_banner() {
                 };
             }
             if (!first_operand.includes(",")) {
-                // You have no private messages with this person
+                // You have no direct messages with this person
                 if (people.is_current_user(first_operand)) {
                     return {
                         title: $t({
@@ -381,30 +381,38 @@ function pick_empty_narrow_banner() {
                 title: $t({defaultMessage: "This user does not exist!"}),
             };
         }
-        case "group-pm-with": {
-            const person_in_group_pm = people.get_by_email(first_operand);
-            if (!person_in_group_pm) {
+        case "dm-including": {
+            const person_in_dms = people.get_by_email(first_operand);
+            if (!person_in_dms) {
                 return {
                     title: $t({defaultMessage: "This user does not exist!"}),
                 };
             }
             if (
                 page_params.realm_private_message_policy ===
-                settings_config.private_message_policy_values.disabled.code
+                    settings_config.private_message_policy_values.disabled.code &&
+                !person_in_dms.is_bot
             ) {
                 return {
                     title: $t({
                         defaultMessage:
-                            "You are not allowed to send group direct messages in this organization.",
+                            "You are not allowed to send direct messages in this organization.",
+                    }),
+                };
+            }
+            if (people.is_current_user(first_operand)) {
+                return {
+                    title: $t({
+                        defaultMessage: "You don't have any direct message conversations yet.",
                     }),
                 };
             }
             return {
                 title: $t(
                     {
-                        defaultMessage: "You have no group direct messages with {person} yet.",
+                        defaultMessage: "You have no direct messages including {person} yet.",
                     },
-                    {person: person_in_group_pm.full_name},
+                    {person: person_in_dms.full_name},
                 ),
                 html: $t_html(
                     {

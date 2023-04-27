@@ -63,13 +63,13 @@ const stream_data = mock_esm("../src/stream_data");
 const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
+const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
 const submessage = mock_esm("../src/submessage");
 mock_esm("../src/top_left_corner", {
     update_starred_count() {},
 });
 const typing_events = mock_esm("../src/typing_events");
-const ui = mock_esm("../src/ui");
 const unread_ops = mock_esm("../src/unread_ops");
 const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
@@ -83,12 +83,14 @@ const electron_bridge = set_global("electron_bridge", {});
 
 message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {
+    get_row: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
     },
 };
 message_lists.home = {
+    get_row: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
@@ -917,7 +919,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__demote_inactive_streams;
-        override(stream_data, "set_filter_out_inactives", noop);
+        override(stream_list_sort, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
         user_settings.demote_inactive_streams = 1;
         dispatch(event);
@@ -995,28 +997,16 @@ run_test("update_message (unread)", ({override}) => {
     });
 });
 
-run_test("update_message (add star)", ({override}) => {
+run_test("update_message (add star)", () => {
     const event = event_fixtures.update_message_flags__starred_add;
-    const stub = make_stub();
-    override(ui, "update_starred_view", stub.f);
     dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("message_id", "new_value");
-    assert_same(args.message_id, test_message.id);
-    assert_same(args.new_value, true); // for 'add'
     const msg = message_store.get(test_message.id);
     assert.equal(msg.starred, true);
 });
 
-run_test("update_message (remove star)", ({override}) => {
+run_test("update_message (remove star)", () => {
     const event = event_fixtures.update_message_flags__starred_remove;
-    const stub = make_stub();
-    override(ui, "update_starred_view", stub.f);
     dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("message_id", "new_value");
-    assert_same(args.message_id, test_message.id);
-    assert_same(args.new_value, false);
     const msg = message_store.get(test_message.id);
     assert.equal(msg.starred, false);
 });

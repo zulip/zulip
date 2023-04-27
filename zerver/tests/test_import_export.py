@@ -786,7 +786,9 @@ class RealmImportExportTest(ExportFile):
 
         client = get_client("website")
 
-        do_update_user_presence(sample_user, client, timezone_now(), UserPresence.ACTIVE)
+        do_update_user_presence(
+            sample_user, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT
+        )
 
         # send Cordelia to the islands
         do_update_user_status(
@@ -1242,7 +1244,11 @@ class RealmImportExportTest(ExportFile):
         def get_userpresence_timestamp(r: Realm) -> Set[object]:
             # It should be sufficient to compare UserPresence timestamps to verify
             # they got exported/imported correctly.
-            return set(UserPresence.objects.filter(realm=r).values_list("timestamp", flat=True))
+            return set(
+                UserPresence.objects.filter(realm=r).values_list(
+                    "last_active_time", "last_connected_time"
+                )
+            )
 
         @getter
         def get_realm_user_default_values(r: Realm) -> Dict[str, object]:
@@ -1730,14 +1736,13 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(rec["user_profile"], cordelia.id)
             self.assertEqual(make_datetime(rec["start"]), now)
 
-        do_update_user_presence(cordelia, client, now, UserPresence.ACTIVE)
-        do_update_user_presence(othello, client, now, UserPresence.IDLE)
+        do_update_user_presence(cordelia, client, now, UserPresence.LEGACY_STATUS_ACTIVE_INT)
+        do_update_user_presence(othello, client, now, UserPresence.LEGACY_STATUS_IDLE_INT)
 
         @checker
         def zerver_userpresence(records: List[Record]) -> None:
-            self.assertEqual(records[-1]["status"], UserPresence.ACTIVE)
-            self.assertEqual(records[-1]["client"], client.id)
-            self.assertEqual(make_datetime(records[-1]["timestamp"]), now)
+            self.assertEqual(make_datetime(records[-1]["last_connected_time"]), now)
+            self.assertEqual(make_datetime(records[-1]["last_active_time"]), now)
 
         do_update_user_status(
             user_profile=cordelia,

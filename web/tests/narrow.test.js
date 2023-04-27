@@ -175,15 +175,26 @@ run_test("urls", () => {
     people.initialize_current_user(me.user_id);
 
     let url = hash_util.pm_with_url(ray.email);
-    assert.equal(url, "#narrow/pm-with/22-Raymond");
+    assert.equal(url, "#narrow/dm/22-Raymond");
 
     url = hash_util.huddle_with_url("22,23");
-    assert.equal(url, "#narrow/pm-with/22,23-group");
+    assert.equal(url, "#narrow/dm/22,23-group");
 
     url = hash_util.by_sender_url(ray.email);
     assert.equal(url, "#narrow/sender/22-Raymond");
 
-    let emails = hash_util.decode_operand("pm-with", "22,23-group");
+    let emails = hash_util.decode_operand("dm", "22,23-group");
+    assert.equal(emails, "alice@example.com,ray@example.com");
+
+    emails = hash_util.decode_operand("dm", "5,22,23-group");
+    assert.equal(emails, "alice@example.com,ray@example.com");
+
+    emails = hash_util.decode_operand("dm", "5-group");
+    assert.equal(emails, "me@example.com");
+
+    // Even though we renamed "pm-with" to "dm", preexisting
+    // links/URLs with "pm-with" operator are decoded correctly.
+    emails = hash_util.decode_operand("pm-with", "22,23-group");
     assert.equal(emails, "alice@example.com,ray@example.com");
 
     emails = hash_util.decode_operand("pm-with", "5,22,23-group");
@@ -286,10 +297,10 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // organization has disabled sending private messages
+    // organization has disabled sending direct messages
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
-    set_filter([["is", "private"]]);
+    set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -298,10 +309,10 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // sending private messages enabled
+    // sending direct messages enabled
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
-    set_filter([["is", "private"]]);
+    set_filter([["is", "dm"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -325,12 +336,12 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         empty_narrow_html("translated: No topics are marked as resolved."),
     );
 
-    // organization has disabled sending private messages
+    // organization has disabled sending direct messages
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
     // prioritize information about invalid user(s) in narrow/search
-    set_filter([["pm-with", ["Yo"]]]);
+    set_filter([["dm", ["Yo"]]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -338,14 +349,14 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 
     people.add_active_user(alice);
-    set_filter([["pm-with", ["alice@example.com", "Yo"]]]);
+    set_filter([["dm", ["alice@example.com", "Yo"]]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: One or more of these users do not exist!"),
     );
 
-    set_filter([["pm-with", "alice@example.com"]]);
+    set_filter([["dm", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -354,10 +365,10 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // private messages with a bot are possible even though
-    // the organization has disabled sending private messages
+    // direct messages with a bot are possible even though
+    // the organization has disabled sending direct messages
     people.add_active_user(bot);
-    set_filter([["pm-with", "bot@example.com"]]);
+    set_filter([["dm", "bot@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -367,9 +378,9 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // group private messages with bots are not possible when
-    // sending private messages is disabled
-    set_filter([["pm-with", bot.email + "," + alice.email]]);
+    // group direct messages with bots are not possible when
+    // sending direct messages is disabled
+    set_filter([["dm", bot.email + "," + alice.email]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -378,10 +389,10 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // sending private messages enabled
+    // sending direct messages enabled
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.by_anyone.code;
-    set_filter([["pm-with", "alice@example.com"]]);
+    set_filter([["dm", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -393,7 +404,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
-    set_filter([["pm-with", me.email]]);
+    set_filter([["dm", me.email]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -403,7 +414,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    set_filter([["pm-with", me.email + "," + alice.email]]);
+    set_filter([["dm", me.email + "," + alice.email]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -413,49 +424,57 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // organization has disabled sending private messages
+    // organization has disabled sending direct messages
     page_params.realm_private_message_policy =
         settings_config.private_message_policy_values.disabled.code;
 
     // prioritize information about invalid user in narrow/search
-    set_filter([["group-pm-with", ["Yo"]]]);
+    set_filter([["dm-including", ["Yo"]]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This user does not exist!"),
     );
 
-    set_filter([["group-pm-with", "alice@example.com"]]);
+    set_filter([["dm-including", "alice@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You are not allowed to send group direct messages in this organization.",
+            "translated: You are not allowed to send direct messages in this organization.",
         ),
     );
 
-    // group private messages with bots are not possible when
-    // sending private messages is disabled
-    set_filter([["group-pm-with", "bot@example.com"]]);
+    // direct messages with a bot are possible even though
+    // the organization has disabled sending direct messages
+    set_filter([["dm-including", "bot@example.com"]]);
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You are not allowed to send group direct messages in this organization.",
-        ),
-    );
-
-    // sending private messages enabled
-    page_params.realm_private_message_policy =
-        settings_config.private_message_policy_values.by_anyone.code;
-    set_filter([["group-pm-with", "alice@example.com"]]);
-    narrow_banner.show_empty_narrow_message();
-    assert.equal(
-        $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: You have no group direct messages with Alice Smith yet.",
+            "translated: You have no direct messages including Example Bot yet.",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
+    );
+
+    // sending direct messages enabled
+    page_params.realm_private_message_policy =
+        settings_config.private_message_policy_values.by_anyone.code;
+    set_filter([["dm-including", "alice@example.com"]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no direct messages including Alice Smith yet.",
+            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+        ),
+    );
+
+    set_filter([["dm-including", me.email]]);
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: You don't have any direct message conversations yet."),
     );
 
     set_filter([["sender", "ray@example.com"]]);
@@ -711,7 +730,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 });
 
-run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
+run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
     const args = {called: false};
     override_rewire(narrow, "activate", (operators, opts) => {
         args.operators = operators;
@@ -732,7 +751,7 @@ run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "pm-with", operand: "alice@example.com"}]);
+    assert.deepEqual(args.operators, [{operator: "dm", operand: "alice@example.com"}]);
 
     // Test with valid persons
     emails = "alice@example.com,ray@example.com";
@@ -740,7 +759,7 @@ run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [
-        {operator: "pm-with", operand: "alice@example.com,ray@example.com"},
+        {operator: "dm", operand: "alice@example.com,ray@example.com"},
     ]);
 
     // Test with some invalid persons
@@ -748,21 +767,21 @@ run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 
     // Test with all invalid persons
     emails = "alice,random,ray";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 
     // Test with no persons
     emails = "";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
+    assert.deepEqual(args.operators, [{operator: "is", operand: "dm"}]);
 });
 
 run_test("narrow_compute_title", ({override}) => {
@@ -803,7 +822,7 @@ run_test("narrow_compute_title", ({override}) => {
     filter = new Filter([{operator: "stream", operand: "Elephant"}]);
     assert.equal(narrow.compute_narrow_title(filter), "translated: Unknown stream #Elephant");
 
-    // Private messages with narrows
+    // Direct messages with narrows
     const joe = {
         email: "joe@example.com",
         user_id: 31,
@@ -811,14 +830,14 @@ run_test("narrow_compute_title", ({override}) => {
     };
     people.add_active_user(joe);
 
-    filter = new Filter([{operator: "pm-with", operand: "joe@example.com"}]);
+    filter = new Filter([{operator: "dm", operand: "joe@example.com"}]);
     assert.equal(narrow.compute_narrow_title(filter), "joe");
 
-    filter = new Filter([{operator: "pm-with", operand: "joe@example.com,sally@doesnotexist.com"}]);
+    filter = new Filter([{operator: "dm", operand: "joe@example.com,sally@doesnotexist.com"}]);
     blueslip.expect("warn", "Unknown emails: joe@example.com,sally@doesnotexist.com");
     assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid users");
 
-    filter = new Filter([{operator: "pm-with", operand: "sally@doesnotexist.com"}]);
+    filter = new Filter([{operator: "dm", operand: "sally@doesnotexist.com"}]);
     blueslip.expect("warn", "Unknown emails: sally@doesnotexist.com");
     assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid user");
 });

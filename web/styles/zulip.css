@@ -72,9 +72,9 @@ body,
 %dark-theme {
     --color-default-text: hsl(0deg 0% 100%);
     --color-date: hsl(0deg 0% 100% / 75%);
-    --color-background-private-message-header: hsl(46deg 25% 20%);
+    --color-background-private-message-header: hsl(46deg 15% 20%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
-    --color-background-private-message-content: hsl(46deg 25% 14%);
+    --color-background-private-message-content: hsl(46deg 10% 15%);
     --color-text-message-header: hsl(0deg 0% 100%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
@@ -1494,7 +1494,8 @@ td.pointer {
 
 .always_visible_topic_edit,
 .on_hover_topic_read,
-.on_hover_topic_unmute {
+.stream_unmuted.on_hover_topic_unmute,
+.stream_muted.on_hover_topic_mute {
     opacity: 0.7;
 
     &:hover {
@@ -1506,7 +1507,8 @@ td.pointer {
 .on_hover_topic_edit,
 .on_hover_topic_unresolve,
 .on_hover_topic_resolve,
-.on_hover_topic_mute {
+.stream_unmuted.on_hover_topic_mute,
+.stream_muted.on_hover_topic_unmute {
     opacity: 0.2;
 
     &:hover {
@@ -2441,6 +2443,17 @@ select.invite-as {
 
 .sub-unsub-message .stream-status {
     opacity: 0.6;
+
+    & i {
+        font-size: 10px;
+        position: relative;
+        top: 1px;
+        margin-left: 2px;
+    }
+
+    .zulip-icon.zulip-icon-lock {
+        font-size: 12px;
+    }
 }
 
 .sub-unsub-message {
@@ -2731,8 +2744,8 @@ select.invite-as {
         margin-right: 7px;
     }
 
-    .top-navbar-container {
-        width: calc(100% - 84px);
+    #navbar-middle {
+        margin-right: 87px;
     }
 
     .search_closed .zulip-icon-search {
@@ -2792,7 +2805,6 @@ select.invite-as {
 
     .column-middle-inner {
         margin-left: 0;
-        margin-right: 15px;
     }
 
     .app-main .column-middle .column-middle-inner {
@@ -2805,7 +2817,6 @@ select.invite-as {
 
     .top-navbar-border {
         margin-left: 40px;
-        width: calc(100% - 108px);
     }
 
     .search_closed .zulip-icon-search {

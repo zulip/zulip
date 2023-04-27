@@ -89,5 +89,5 @@ From there, you can also search for and **unmute** users.
 
 * [Deactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Moderating open organizations](/help/moderating-open-organizations)
-* [Mute a stream](/help/mute-a-stream)
-* [Mute a topic](/help/mute-a-topic)
+* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a topic](/help/mute-a-topic)

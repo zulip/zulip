@@ -184,12 +184,19 @@ export class MessageList {
            * The user has "Mark messages as read on scroll" option
              turned on in their user settings.
         */
+        const filter = this.data.filter;
+        const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
         return (
             this.data.can_mark_messages_read() &&
             !this.reading_prevented &&
             !(
                 user_settings.web_mark_read_on_scroll_policy ===
                 web_mark_read_on_scroll_policy_values.never.code
+            ) &&
+            !(
+                user_settings.web_mark_read_on_scroll_policy ===
+                    web_mark_read_on_scroll_policy_values.conversation_only.code &&
+                !is_conversation_view
             )
         );
     }
@@ -319,6 +326,8 @@ export class MessageList {
         let just_unsubscribed = false;
         const subscribed = stream_data.is_subscribed_by_name(stream_name);
         const sub = stream_data.get_sub(stream_name);
+        const invite_only = sub.invite_only;
+        const is_web_public = sub.is_web_public;
         const can_toggle_subscription =
             sub !== undefined && stream_data.can_toggle_subscription(sub);
         if (sub === undefined) {
@@ -326,6 +335,7 @@ export class MessageList {
         } else if (!subscribed && !this.last_message_historical) {
             just_unsubscribed = true;
         }
+
         this.view.render_trailing_bookend(
             stream_name,
             subscribed,
@@ -333,6 +343,8 @@ export class MessageList {
             just_unsubscribed,
             can_toggle_subscription,
             page_params.is_spectator,
+            invite_only,
+            is_web_public,
         );
     }
 

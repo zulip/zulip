@@ -1,17 +1,6 @@
-# Mute a stream
+# Mute or unmute a stream
 
-Messages from muted streams do not show up in **All messages** or generate
-notifications, unless you are
-[mentioned](/help/mention-a-user-or-group). Messages from muted streams
-do not generate [alert word](/help/dm-mention-alert-notifications#alert-words) notifications.
-
-Muted streams still appear in the left sidebar, but they are grayed out and
-sorted to the bottom of their section.
-
-!!! warn ""
-
-    **Note**: Some parts of the Zulip experience may start to degrade
-    if you receive more than a few hundred muted messages a day.
+{!mute-unmute-intro.md!}
 
 ## Mute a stream
 
@@ -82,6 +71,6 @@ sorted to the bottom of their section.
 
 ## Related articles
 
-* [Mute a topic](/help/mute-a-topic)
+* [Mute or unmute a topic](/help/mute-a-topic)
 
 * [Mute a user](/help/mute-a-user)

@@ -151,8 +151,8 @@ export function compute_narrow_title(filter) {
         return "#" + filter_title;
     }
 
-    if (filter.has_operator("pm-with")) {
-        const emails = filter.operands("pm-with")[0];
+    if (filter.has_operator("dm")) {
+        const emails = filter.operands("dm")[0];
         const user_ids = people.emails_strings_to_user_ids_string(emails);
 
         if (user_ids !== undefined) {
@@ -594,6 +594,7 @@ export function activate(raw_operators, opts) {
     stream_list.handle_narrow_activated(current_filter);
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
+    unread_ui.update_unread_banner();
 
     // It is important to call this after other important updates
     // like narrow filter and compose recipients happen.
@@ -886,19 +887,19 @@ export function narrow_to_next_topic() {
 }
 
 export function narrow_to_next_pm_string() {
-    const curr_pm = narrow_state.pm_ids_string();
+    const current_direct_message = narrow_state.pm_ids_string();
 
-    const next_pm = topic_generator.get_next_unread_pm_string(curr_pm);
+    const next_direct_message = topic_generator.get_next_unread_pm_string(current_direct_message);
 
-    if (!next_pm) {
+    if (!next_direct_message) {
         return;
     }
 
     // Hopefully someday we can narrow by user_ids_string instead of
     // mapping back to emails.
-    const pm_with = people.user_ids_string_to_emails_string(next_pm);
+    const direct_message = people.user_ids_string_to_emails_string(next_direct_message);
 
-    const filter_expr = [{operator: "pm-with", operand: pm_with}];
+    const filter_expr = [{operator: "dm", operand: direct_message}];
 
     // force_close parameter is true to not auto open compose_box
     const opts = {
@@ -950,7 +951,7 @@ export function by_recipient(target_id, opts) {
 
     switch (message.type) {
         case "private":
-            by("pm-with", message.reply_to, opts);
+            by("dm", message.reply_to, opts);
             break;
 
         case "stream":
@@ -991,12 +992,12 @@ export function to_compose_target() {
         const emails = util.extract_pm_recipients(recipient_string);
         const invalid = emails.filter((email) => !people.is_valid_email_for_compose(email));
         // If there are no recipients or any recipient is
-        // invalid, narrow to all PMs.
+        // invalid, narrow to all direct messages.
         if (emails.length === 0 || invalid.length > 0) {
-            by("is", "private", opts);
+            by("is", "dm", opts);
             return;
         }
-        by("pm-with", util.normalize_recipients(recipient_string), opts);
+        by("dm", util.normalize_recipients(recipient_string), opts);
     }
 }
 
@@ -1064,6 +1065,7 @@ export function deactivate(coming_from_recent_topics = false) {
     $("#zfilt").removeClass("focused_table");
     $("#zhome").addClass("focused_table");
     message_lists.set_current(message_lists.home);
+    message_lists.current.resume_reading();
     condense.condense_and_collapse($("#zhome div.message_row"));
 
     reset_ui_state();

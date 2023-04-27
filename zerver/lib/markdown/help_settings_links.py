@@ -29,7 +29,7 @@ link_mapping = {
     "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
     "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
     "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
-    "muted-topics": ["Personal settings", "Muted topics", "/#settings/muted-topics"],
+    "topics": ["Personal settings", "Topics", "/#settings/topics"],
     "muted-users": ["Personal settings", "Muted users", "/#settings/muted-users"],
     "organization-profile": [
         "Organization settings",

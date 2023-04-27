@@ -8,11 +8,11 @@ import render_topic_list_item from "../templates/topic_list_item.hbs";
 import * as blueslip from "./blueslip";
 import * as narrow from "./narrow";
 import * as popover_menus from "./popover_menus";
+import * as scroll_util from "./scroll_util";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
 import * as topic_list_data from "./topic_list_data";
-import * as ui from "./ui";
 import * as vdom from "./vdom";
 
 /*
@@ -279,7 +279,7 @@ export function zoom_in() {
         active_widget.build();
     }
 
-    ui.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
+    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
 
     const spinner = true;
     active_widget.build(spinner);

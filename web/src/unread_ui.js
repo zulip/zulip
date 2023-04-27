@@ -1,10 +1,12 @@
 import $ from "jquery";
 
-import render_mark_as_read_disabled_banner from "../templates/mark_as_read_disabled_banner.hbs";
-import render_mark_as_read_turned_off_banner from "../templates/mark_as_read_turned_off_banner.hbs";
+import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark_as_read_disabled_banner.hbs";
+import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
+import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
 
 import * as activity from "./activity";
 import * as message_lists from "./message_lists";
+import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
@@ -19,11 +21,19 @@ import {user_settings} from "./user_settings";
 let user_closed_unread_banner = false;
 
 export function update_unread_banner() {
+    const filter = narrow_state.filter();
+    const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
     if (
         user_settings.web_mark_read_on_scroll_policy ===
         web_mark_read_on_scroll_policy_values.never.code
     ) {
         $("#mark_as_read_turned_off_banner").html(render_mark_as_read_disabled_banner());
+    } else if (
+        user_settings.web_mark_read_on_scroll_policy ===
+            web_mark_read_on_scroll_policy_values.conversation_only.code &&
+        !is_conversation_view
+    ) {
+        $("#mark_as_read_turned_off_banner").html(render_mark_as_read_only_in_conversation_view());
     } else {
         $("#mark_as_read_turned_off_banner").html(render_mark_as_read_turned_off_banner());
 

@@ -497,27 +497,6 @@ export function pm_with_user_ids(message) {
     return sorted_other_user_ids(user_ids);
 }
 
-export function group_pm_with_user_ids(message) {
-    if (message.type !== "private") {
-        return undefined;
-    }
-
-    if (message.display_recipient.length === 0) {
-        blueslip.error("Empty recipient list in message");
-        return undefined;
-    }
-
-    const user_ids = message.display_recipient.map((recip) => recip.id);
-    const is_user_present = user_ids.some((user_id) => is_my_user_id(user_id));
-    if (is_user_present) {
-        user_ids.sort();
-        if (user_ids.length > 2) {
-            return user_ids;
-        }
-    }
-    return undefined;
-}
-
 export function pm_perma_link(message) {
     const user_ids = all_user_ids_in_pm(message);
 
@@ -530,11 +509,11 @@ export function pm_perma_link(message) {
     if (user_ids.length >= 3) {
         suffix = "group";
     } else {
-        suffix = "pm";
+        suffix = "dm";
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const url = "#narrow/pm-with/" + slug;
+    const url = "#narrow/dm/" + slug;
     return url;
 }
 
@@ -560,7 +539,7 @@ export function pm_with_url(message) {
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const url = "#narrow/pm-with/" + slug;
+    const url = "#narrow/dm/" + slug;
     return url;
 }
 

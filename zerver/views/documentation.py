@@ -34,7 +34,7 @@ class DocumentationArticle:
     endpoint_method: Optional[str]
 
 
-def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
+def add_api_url_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context.update(zulip_default_context(request))
 
     subdomain = get_subdomain(request)
@@ -50,7 +50,7 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
     zulip_url = settings.EXTERNAL_URI_SCHEME + display_host
 
-    context["external_uri_scheme"] = settings.EXTERNAL_URI_SCHEME
+    context["external_url_scheme"] = settings.EXTERNAL_URI_SCHEME
     context["api_url"] = api_url
     context["api_url_scheme_relative"] = api_url_scheme_relative
     context["zulip_url"] = zulip_url
@@ -61,7 +61,7 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
         context = super().get_context_data(**kwargs)
-        add_api_uri_context(context, self.request)
+        add_api_url_context(context, self.request)
         return context
 
 
@@ -216,13 +216,13 @@ class MarkdownDirectoryView(ApiURLView):
             context["PAGE_DESCRIPTION"] = request_notes.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
-        # An "article" might require the api_uri_context to be rendered
-        api_uri_context: Dict[str, Any] = {}
-        add_api_uri_context(api_uri_context, self.request)
-        api_uri_context["run_content_validators"] = True
-        context["api_uri_context"] = api_uri_context
+        # An "article" might require the api_url_context to be rendered
+        api_url_context: Dict[str, Any] = {}
+        add_api_url_context(api_url_context, self.request)
+        api_url_context["run_content_validators"] = True
+        context["api_url_context"] = api_url_context
         if endpoint_name and endpoint_method:
-            context["api_uri_context"]["API_ENDPOINT_NAME"] = endpoint_name + ":" + endpoint_method
+            context["api_url_context"]["API_ENDPOINT_NAME"] = endpoint_name + ":" + endpoint_method
         add_google_analytics_context(context)
         return context
 
@@ -304,7 +304,7 @@ def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> Http
         return HttpResponseNotFound()
 
     context: Dict[str, Any] = {}
-    add_api_uri_context(context, request)
+    add_api_url_context(context, request)
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name

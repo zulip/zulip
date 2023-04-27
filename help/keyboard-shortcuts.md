@@ -164,7 +164,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd> — Muted topics
   don't show up in any views (including **All messages**), and don't contribute
-  to unread counts. Read more about [muting topics](/help/mute-a-topic).
+  to unread counts. Read more about [muting or unmuting topics](/help/mute-a-topic).
 
 ## Recent conversations
 

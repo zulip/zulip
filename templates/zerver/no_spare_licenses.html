@@ -5,16 +5,21 @@
 {% endblock %}
 
 {% block portico_content %}
-<br/>
-<br/>
-<br/>
-
-<h3>{{ _("This organization cannot accept new members right now.") }}</h3>
-
-<p>
-    {% trans %}
-    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who
-    invited you and ask them to increase the number of licenses, then try again.
-    {% endtrans %}
-</p>
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+            <div class="get-started">
+                <h1>{{ _("Organization cannot accept new members right now") }}</h1>
+            </div>
+            <div class="white-box">
+                <p>
+                    {% trans %}New members cannot currently join <a href="{{ realm_uri }}">{{ realm_name }}</a> because all Zulip Cloud licenses are in use.{% endtrans %}
+                </p>
+                <p>
+                    {{ _("Please contact the person who invited you and ask them to increase the number of licenses, then try again.") }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

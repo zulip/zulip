@@ -720,27 +720,15 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     # currently idle and should potentially get email notifications
     # (and push notifications with with
     # user_profile.enable_online_push_notifications=False).
-    #
-    # We exclude any presence data from ZulipMobile for the purpose of
-    # triggering these notifications; the mobile app can more
-    # effectively do its own client-side filtering of notification
-    # sounds/etc. for the case that the user is actively doing a PM
-    # conversation in the app.
 
     if not user_ids:
         return []
 
     recent = timezone_now() - datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
-    rows = (
-        UserPresence.objects.filter(
-            user_profile_id__in=user_ids,
-            status=UserPresence.ACTIVE,
-            timestamp__gte=recent,
-        )
-        .exclude(client__name="ZulipMobile")
-        .distinct("user_profile_id")
-        .values("user_profile_id")
-    )
+    rows = UserPresence.objects.filter(
+        user_profile_id__in=user_ids,
+        last_active_time__gte=recent,
+    ).values("user_profile_id")
     active_user_ids = {row["user_profile_id"] for row in rows}
     idle_user_ids = user_ids - active_user_ids
     return sorted(idle_user_ids)

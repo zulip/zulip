@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 
 const list_widget = mock_esm("../src/list_widget");
 
-const settings_muted_topics = zrequire("settings_muted_topics");
+const settings_user_topics = zrequire("settings_user_topics");
 const stream_data = zrequire("stream_data");
 const user_topics = zrequire("user_topics");
 
@@ -36,26 +36,30 @@ run_test("settings", ({override}) => {
                 stream: frontend.name,
                 stream_id: frontend.stream_id,
                 topic: "js",
+                visibility_policy: user_topics.all_visibility_policies.MUTED,
             },
         ]);
         populate_list_called = true;
     });
 
-    settings_muted_topics.reset();
-    assert.equal(settings_muted_topics.loaded, false);
+    settings_user_topics.reset();
+    assert.equal(settings_user_topics.loaded, false);
 
-    settings_muted_topics.set_up();
-    assert.equal(settings_muted_topics.loaded, true);
+    settings_user_topics.set_up();
+    assert.equal(settings_user_topics.loaded, true);
     assert.ok(populate_list_called);
 
-    const topic_click_handler = $("body").get_on_handler("click", ".settings-unmute-topic");
-    assert.equal(typeof topic_click_handler, "function");
+    const topic_change_handler = $("body").get_on_handler(
+        "change",
+        ".settings_user_topic_visibility_policy",
+    );
+    assert.equal(typeof topic_change_handler, "function");
 
     const event = {
         stopPropagation: noop,
     };
 
-    const $topic_fake_this = $.create("fake.settings-unmute-topic");
+    const $topic_fake_this = $.create("fake.settings_user_topic_visibility_policy");
     const $topic_tr_html = $('tr[data-topic="js"]');
     $topic_fake_this.closest = (opts) => {
         assert.equal(opts, "tr");
@@ -76,13 +80,15 @@ run_test("settings", ({override}) => {
         }
     };
 
-    let unmute_topic_called = false;
-    user_topics.set_user_topic_visibility_policy = (stream_id, topic) => {
+    let user_topic_visibility_policy_changed = false;
+    user_topics.set_user_topic_visibility_policy = (stream_id, topic, visibility_policy) => {
         assert.equal(stream_id, frontend.stream_id);
         assert.equal(topic, "js");
-        unmute_topic_called = true;
+        assert.equal(visibility_policy, user_topics.all_visibility_policies.UNMUTED);
+        user_topic_visibility_policy_changed = true;
     };
-    topic_click_handler.call($topic_fake_this, event);
-    assert.ok(unmute_topic_called);
+    $topic_fake_this.value = user_topics.all_visibility_policies.UNMUTED;
+    topic_change_handler.call($topic_fake_this, event);
+    assert.ok(user_topic_visibility_policy_changed);
     assert.equal(topic_data_called, 2);
 });

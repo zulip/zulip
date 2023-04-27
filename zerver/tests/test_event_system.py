@@ -1401,7 +1401,7 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
                 self.example_user("cordelia"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
                 force_send_update=True,
             )
 
@@ -1410,6 +1410,6 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
                 self.example_user("hamlet"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
                 force_send_update=False,
             )

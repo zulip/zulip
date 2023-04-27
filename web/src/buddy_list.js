@@ -7,7 +7,7 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as message_viewport from "./message_viewport";
 import * as padded_widget from "./padded_widget";
-import * as ui from "./ui";
+import * as scroll_util from "./scroll_util";
 
 class BuddyListConf {
     container_sel = "#user_presences";
@@ -264,7 +264,7 @@ export class BuddyList extends BuddyListConf {
     fill_screen_with_content() {
         let height = this.height_to_fill();
 
-        const elem = ui.get_scroll_element($(this.scroll_container_sel)).expectOne()[0];
+        const elem = scroll_util.get_scroll_element($(this.scroll_container_sel)).expectOne()[0];
 
         // Add a fudge factor.
         height += 10;
@@ -292,7 +292,7 @@ export class BuddyList extends BuddyListConf {
     start_scroll_handler() {
         // We have our caller explicitly call this to make
         // sure everything's in place.
-        const $scroll_container = ui.get_scroll_element($(this.scroll_container_sel));
+        const $scroll_container = scroll_util.get_scroll_element($(this.scroll_container_sel));
 
         $scroll_container.on("scroll", () => {
             this.fill_screen_with_content();

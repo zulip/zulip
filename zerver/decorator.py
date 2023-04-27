@@ -59,7 +59,7 @@ from zerver.lib.response import json_method_not_allowed
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
-from zerver.lib.utils import has_api_key_format, statsd
+from zerver.lib.utils import has_api_key_format
 from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
 
 if TYPE_CHECKING:
@@ -940,26 +940,6 @@ def internal_notify_view(
 
 def to_utc_datetime(var_name: str, timestamp: str) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
-
-
-def statsd_increment(
-    counter: str, val: int = 1
-) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
-    """Increments a statsd counter on completion of the
-    decorated function.
-
-    Pass the name of the counter to this decorator-returning function."""
-
-    def wrapper(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
-        @wraps(func)
-        def wrapped_func(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
-            ret = func(*args, **kwargs)
-            statsd.incr(counter, val)
-            return ret
-
-        return wrapped_func
-
-    return wrapper
 
 
 def return_success_on_head_request(

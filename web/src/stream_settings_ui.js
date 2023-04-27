@@ -20,6 +20,7 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
@@ -39,7 +40,6 @@ import * as stream_muting from "./stream_muting";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
@@ -217,6 +217,7 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update UI elements
     update_left_panel_row(sub);
+    message_lists.current.update_trailing_bookend();
     stream_ui_updates.update_setting_element(sub, "stream_privacy");
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
@@ -278,16 +279,18 @@ export function add_sub_to_table(sub) {
     const $new_row = $(html);
 
     if (stream_create.get_name() === sub.name) {
-        ui.get_content_element($(".streams-list")).prepend($new_row);
-        ui.reset_scrollbar($(".streams-list"));
+        scroll_util.get_content_element($(".streams-list")).prepend($new_row);
+        scroll_util.reset_scrollbar($(".streams-list"));
     } else {
-        ui.get_content_element($(".streams-list")).append($new_row);
+        scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
 
     const settings_html = render_stream_settings({
         sub: stream_settings_data.get_sub_for_settings(sub),
     });
-    ui.get_content_element($("#streams_overlay_container .settings")).append($(settings_html));
+    scroll_util
+        .get_content_element($("#streams_overlay_container .settings"))
+        .append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -441,7 +444,7 @@ export function render_left_panel_superset() {
         subscriptions: stream_settings_data.get_updated_unsorted_subs(),
     });
 
-    ui.get_content_element($("#streams_overlay_container .streams-list")).html(html);
+    scroll_util.get_content_element($("#streams_overlay_container .streams-list")).html(html);
 }
 
 export function update_empty_left_panel_message() {
@@ -514,14 +517,14 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         widgets.set(stream_id, $(row).detach());
     }
 
-    ui.reset_scrollbar($("#subscription_overlay .streams-list"));
+    scroll_util.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
 
     for (const stream_id of all_stream_ids) {
-        ui.get_content_element($("#streams_overlay_container .streams-list")).append(
-            widgets.get(stream_id),
-        );
+        scroll_util
+            .get_content_element($("#streams_overlay_container .streams-list"))
+            .append(widgets.get(stream_id));
     }
     maybe_reset_right_panel();
     update_empty_left_panel_message();
@@ -675,7 +678,11 @@ export function setup_page(callback) {
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
+        const notifications_stream = stream_data.get_notifications_stream();
+        const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+
         const template_data = {
+            notifications_stream_sub,
             ask_to_announce_stream: true,
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||

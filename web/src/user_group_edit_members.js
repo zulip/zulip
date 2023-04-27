@@ -13,8 +13,8 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as scroll_util from "./scroll_util";
 import * as settings_users from "./settings_users";
-import * as ui from "./ui";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 
@@ -124,7 +124,7 @@ function show_user_group_membership_request_result({
         already_subscribed_users,
         ignored_deactivated_users,
     });
-    ui.get_content_element($user_group_subscription_req_result_elem).html(html);
+    scroll_util.get_content_element($user_group_subscription_req_result_elem).html(html);
     if (add_class) {
         $user_group_subscription_req_result_elem.addClass(add_class);
     }

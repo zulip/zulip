@@ -195,9 +195,9 @@ run_test("is private with no target", () => {
     test_with(fixture);
 });
 
-run_test("pm-with with target outside of range", () => {
+run_test("dm with target outside of range", () => {
     const fixture = {
-        filter_terms: [{operator: "pm-with", operand: "alice@example.com"}],
+        filter_terms: [{operator: "dm", operand: "alice@example.com"}],
         target_id: 5,
         unread_info: {
             flavor: "not_found",

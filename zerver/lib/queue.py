@@ -18,7 +18,7 @@ from pika.channel import Channel
 from pika.spec import Basic
 from tornado import ioloop
 
-from zerver.lib.utils import assert_is_not_none, statsd
+from zerver.lib.utils import assert_is_not_none
 
 MAX_REQUEST_RETRIES = 3
 ChannelT = TypeVar("ChannelT", Channel, BlockingChannel)
@@ -127,8 +127,6 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
                 properties=pika.BasicProperties(delivery_mode=2),
                 body=body,
             )
-
-            statsd.incr(f"rabbitmq.publish.{queue_name}")
 
         self.ensure_queue(queue_name, do_publish)
 

@@ -61,7 +61,6 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
     STATIC_URL,
-    STATSD_HOST,
     TORNADO_PORTS,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
@@ -514,17 +513,6 @@ if PRODUCTION:
     ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
-
-########################################################################
-# STATSD CONFIGURATION
-########################################################################
-
-# Statsd is not super well supported; if you want to use it you'll need
-# to set STATSD_HOST and STATSD_PREFIX.
-if STATSD_HOST != "":
-    INSTALLED_APPS += ["django_statsd"]
-    STATSD_PORT = 8125
-    STATSD_CLIENT = "django_statsd.clients.normal"
 
 ########################################################################
 # CAMO HTTPS CACHE CONFIGURATION

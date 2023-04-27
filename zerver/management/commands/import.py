@@ -1,3 +1,5 @@
+# noqa: N999
+
 import argparse
 import os
 import subprocess

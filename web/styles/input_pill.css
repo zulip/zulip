@@ -12,6 +12,7 @@
     .pill {
         display: inline-flex;
         align-items: center;
+        max-width: 100%;
 
         height: 20px;
         margin: 1px 2px;
@@ -38,6 +39,9 @@
 
         .pill-value {
             margin: 0 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .exit {

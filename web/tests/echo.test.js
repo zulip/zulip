@@ -15,8 +15,8 @@ const notifications = mock_esm("../src/notifications");
 
 let disparities = [];
 
-mock_esm("../src/ui", {
-    show_failed_message_success() {},
+mock_esm("../src/message_live_update", {
+    update_message_in_all_views() {},
 });
 
 mock_esm("../src/sent_messages", {

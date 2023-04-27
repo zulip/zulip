@@ -367,7 +367,9 @@ td .button {
     }
 }
 
-.settings_select {
+/* list_select is similar to settings_select, but without the height styling. */
+.settings_select,
+.list_select {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
@@ -1511,7 +1513,7 @@ $option_title_width: 180px;
             }
         }
 
-        &:disabled i {
+        &:disabled i.fa-chevron-down {
             display: none;
         }
     }

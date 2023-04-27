@@ -13,11 +13,15 @@ class Clipboard {
     constructor(...args) {
         clipboard_args = args;
     }
+    on(success, show_copied_confirmation) {
+        show_copied_confirmation();
+    }
 }
 
 mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
+const tippyjs = mock_esm("../src/tippyjs");
 user_settings.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
@@ -428,6 +432,8 @@ run_test("code playground none", ({override, mock_template}) => {
         return undefined;
     });
 
+    override(tippyjs, "show_copied_confirmation", () => {});
+
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, false);
     assert.deepEqual(prepends, [$copy_code]);
     assert_clipboard_setup();
@@ -441,6 +447,8 @@ run_test("code playground single", ({override, mock_template}) => {
         assert.equal(language, "javascript");
         return [{name: "Some Javascript Playground"}];
     });
+
+    override(tippyjs, "show_copied_confirmation", () => {});
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);
@@ -459,6 +467,8 @@ run_test("code playground multiple", ({override, mock_template}) => {
         assert.equal(language, "javascript");
         return ["whatever", "whatever"];
     });
+
+    override(tippyjs, "show_copied_confirmation", () => {});
 
     const {prepends, $copy_code, $view_code} = test_code_playground(mock_template, true);
     assert.deepEqual(prepends, [$view_code, $copy_code]);

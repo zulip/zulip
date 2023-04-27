@@ -6,4 +6,4 @@ Section lacks heading\. Consider using “h2”-“h6” elements to add identif
 
 # Opinionated informational messages.
 
-Self-closing tag syntax in text/html documents is widely discouraged; it’s unnecessary and interacts badly with other HTML features \(e\.g\., unquoted attribute values\)\. If you’re using a tool that injects self-closing tag syntax into all void elements, without any option to prevent it from doing so, then consider switching to a different tool\.
+Trailing slash on void elements has no effect and interacts badly with unquoted attribute values\.

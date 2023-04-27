@@ -12,12 +12,16 @@ import * as overlays from "./overlays";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
-import * as ui from "./ui";
 import * as user_group_create from "./user_group_create";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 
 let group_list_widget;
+
+// Ideally this should be included in page params.
+// Like we have page_params.max_stream_name_length` and
+// `page_params.max_stream_description_length` for streams.
+export const max_user_group_name_length = 100;
 
 export function set_up_click_handlers() {
     $("#groups_overlay").on("click", ".left #clear_search_group_name", (e) => {
@@ -119,7 +123,9 @@ export function add_group_to_table(group) {
     });
 
     group_list_widget.replace_list_data(user_groups.get_realm_user_groups());
-    ui.get_content_element($("#groups_overlay_container .settings")).append($(settings_html));
+    scroll_util
+        .get_content_element($("#groups_overlay_container .settings"))
+        .append($(settings_html));
 
     // TODO: Address issue for visibility of newely created group.
     if (user_group_create.get_name() === group.name) {
@@ -177,11 +183,14 @@ export function setup_page(callback) {
     function populate_and_fill() {
         const template_data = {
             can_create_or_edit_user_groups: settings_data.user_can_edit_user_groups(),
+            max_user_group_name_length,
         };
 
         const rendered = render_user_group_settings_overlay(template_data);
 
-        const $groups_overlay_container = ui.get_content_element($("#groups_overlay_container"));
+        const $groups_overlay_container = scroll_util.get_content_element(
+            $("#groups_overlay_container"),
+        );
         $groups_overlay_container.empty();
         $groups_overlay_container.append(rendered);
 

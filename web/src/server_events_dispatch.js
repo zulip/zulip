@@ -62,8 +62,10 @@ import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
@@ -219,7 +221,7 @@ export function dispatch_normal_event(event) {
                 move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
-                notifications_stream_id: noop,
+                notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: noop,
                 send_welcome_emails: noop,
@@ -667,7 +669,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();
-                stream_data.set_filter_out_inactives();
+                stream_list_sort.set_filter_out_inactives();
             }
             if (event.property === "user_list_style") {
                 settings_display.report_user_list_style_change(
