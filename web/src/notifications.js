@@ -401,9 +401,12 @@ export function message_is_notifiable(message) {
         return true;
     }
 
-    // Messages to muted streams that don't mention us specifically
-    // are not notifiable.
-    if (message.type === "stream" && stream_data.is_muted(message.stream_id)) {
+    // Messages to unmuted topics in muted streams may generate desktop notifications.
+    if (
+        message.type === "stream" &&
+        stream_data.is_muted(message.stream_id) &&
+        !user_topics.is_topic_unmuted(message.stream_id, message.topic)
+    ) {
         return false;
     }
 
