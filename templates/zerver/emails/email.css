@@ -147,8 +147,8 @@ p.digest_paragraph,
 .sponsorship_request_link:hover,
 .support_request_link:hover,
 .email-preferences a:hover,
-.missed_message.no_content a:hover {
-    color: #434388;
+.missed_message.no_content-explanation a:hover {
+    color: #434388 !important;
 }
 
 .important {
