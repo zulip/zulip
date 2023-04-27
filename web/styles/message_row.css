@@ -249,6 +249,11 @@ $time_column_max_width: 150px;
                 }
 
                 .sender_name {
+                    margin-top: $sender_name_distance_below_flex_center;
+                }
+
+                .sender_name,
+                .sender_name-in-status {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
@@ -257,7 +262,6 @@ $time_column_max_width: 150px;
                        from start and end vertically in all languages. */
                     line-height: normal;
                     outline: none;
-                    margin-top: $sender_name_distance_below_flex_center;
                 }
 
                 .sender_name_padding {
