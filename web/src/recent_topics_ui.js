@@ -363,7 +363,7 @@ function format_conversation(conversation_data) {
     context.full_last_msg_date_time = timerender.get_full_datetime(time);
     context.conversation_key = get_key_from_message(last_msg);
     context.unread_count = message_to_conversation_unread_count(last_msg);
-    context.last_msg_time = timerender.last_seen_status_from_date(time);
+    context.last_msg_time = timerender.relative_time_string_from_date(time);
     context.is_private = last_msg.type === "private";
     let all_senders;
     let senders;
@@ -541,9 +541,11 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     if (!filters.has("include_muted") && topic_data.type === "stream") {
+        // We want to show the unmuted topics within muted streams in the recent topics.
+        const topic_unmuted = Boolean(user_topics.is_topic_unmuted(msg.stream_id, msg.topic));
         const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
-        if (topic_muted || stream_muted) {
+        if (topic_muted || (stream_muted && !topic_unmuted)) {
             return true;
         }
     }
@@ -616,7 +618,7 @@ export function inplace_rerender(topic_key) {
     return true;
 }
 
-export function update_topic_is_muted(stream_id, topic) {
+export function update_topic_visibility_policy(stream_id, topic) {
     const key = get_topic_key(stream_id, topic);
     if (!topics.has(key)) {
         // we receive mute request for a topic we are
@@ -759,7 +761,7 @@ function topic_offset_to_visible_area(topic_row) {
     return "visible";
 }
 
-function set_focus_to_element_in_center() {
+function recenter_focus_if_off_screen() {
     const table_wrapper_element = document.querySelector("#recent_topics_table .table_fix_head");
     const $topic_rows = $("#recent_topics_table table tbody tr");
 
@@ -852,7 +854,13 @@ export function complete_rerender() {
         $simplebar_container: $("#recent_topics_table .table_fix_head"),
         callback_after_render: () => setTimeout(revive_current_focus, 0),
         is_scroll_position_for_render,
-        post_scroll__pre_render_callback: set_focus_to_element_in_center,
+        post_scroll__pre_render_callback() {
+            // Hide popovers on scroll in recent conversations.
+            popovers.hide_all();
+
+            // Update the focused element for keyboard navigation if needed.
+            recenter_focus_if_off_screen();
+        },
         get_min_load_count,
     });
 }
@@ -878,7 +886,7 @@ export function show() {
     set_visible(true);
     $(".header").css("padding-bottom", "0px");
 
-    unread_ui.hide_mark_as_read_turned_off_banner();
+    unread_ui.hide_unread_banner();
 
     // We want to show `new stream message` instead of
     // `new topic`, which we are already doing in this

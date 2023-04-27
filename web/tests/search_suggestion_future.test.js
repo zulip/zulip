@@ -538,7 +538,6 @@ test("check_is_suggestions", ({override}) => {
         "is:mentioned",
         "is:alerted",
         "is:unread",
-        "is:resolved",
         "sender:myself@zulip.com",
         "has:link",
         "has:image",

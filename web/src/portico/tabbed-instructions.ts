@@ -24,7 +24,7 @@ export function detect_user_os(): UserOS {
     return "mac"; // if unable to determine OS return Mac by default
 }
 
-export function activate_correct_tab($codeSection: JQuery<HTMLElement>): void {
+export function activate_correct_tab($codeSection: JQuery): void {
     const user_os = detect_user_os();
     const desktop_os = new Set(["mac", "linux", "windows"]);
     const $li = $codeSection.find("ul.nav li");

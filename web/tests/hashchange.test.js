@@ -125,11 +125,13 @@ function test_helper({override, change_tab}) {
     }
 
     stub(admin, "launch");
+    stub(admin, "build_page");
     stub(drafts, "launch");
     stub(message_viewport, "stop_auto_scrolling");
     stub(narrow, "deactivate");
     stub(overlays, "close_for_hash_change");
     stub(settings, "launch");
+    stub(settings, "build_page");
     stub(stream_settings_ui, "launch");
     stub(ui_util, "blur_active_element");
     stub(ui_report, "error");
@@ -294,6 +296,8 @@ run_test("hash_interactions", ({override}) => {
     $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
+        [settings, "build_page"],
+        [admin, "build_page"],
         [settings, "launch"],
     ]);
 
@@ -303,6 +307,8 @@ run_test("hash_interactions", ({override}) => {
     $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
+        [settings, "build_page"],
+        [admin, "build_page"],
         [admin, "launch"],
     ]);
 

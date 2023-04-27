@@ -7,12 +7,12 @@ type Hook = () => void;
 
 type OverlayOptions = {
     name: string;
-    $overlay: JQuery<HTMLElement>;
+    $overlay: JQuery;
     on_close: () => void;
 };
 
 type Overlay = {
-    $element: JQuery<HTMLElement>;
+    $element: JQuery;
     close_handler: () => void;
 };
 
@@ -85,6 +85,10 @@ export function drafts_open(): boolean {
     return open_overlay_name === "drafts";
 }
 
+export function scheduled_messages_open(): boolean {
+    return open_overlay_name === "scheduled";
+}
+
 export function active_modal(): string | undefined {
     if (!is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
@@ -106,7 +110,7 @@ export function open_overlay(opts: OverlayOptions): void {
     if (active_overlay || open_overlay_name) {
         blueslip.error(
             `Programming error - trying to open ${opts.name} before closing ${
-                open_overlay_name || "undefined"
+                open_overlay_name ?? "undefined"
             }`,
         );
 
@@ -251,7 +255,7 @@ export function close_overlay(name: string): void {
     call_hooks(pre_close_hooks);
 
     if (name !== open_overlay_name) {
-        blueslip.error(`Trying to close ${name} when ${open_overlay_name || "undefined"} is open.`);
+        blueslip.error(`Trying to close ${name} when ${open_overlay_name ?? "undefined"} is open.`);
         return;
     }
 
@@ -300,7 +304,7 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
 
     if (active_modal() !== `#${CSS.escape(modal_id)}`) {
         blueslip.error(
-            `Trying to close ${modal_id} modal when ${active_modal() || "undefined"} is open.`,
+            `Trying to close ${modal_id} modal when ${active_modal() ?? "undefined"} is open.`,
         );
         return;
     }
@@ -331,7 +335,7 @@ export function close_active_modal(): void {
     }
 
     const $micromodal = $(".micromodal.modal--open");
-    Micromodal.close(`${CSS.escape($micromodal.attr("id") || "")}`);
+    Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
 }
 
 export function close_for_hash_change(): void {

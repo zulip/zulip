@@ -3,6 +3,7 @@ import * as resolved_topic from "../shared/src/resolved_topic";
 import * as hash_util from "./hash_util";
 import * as narrow_state from "./narrow_state";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -10,34 +11,17 @@ import * as util from "./util";
 const max_topics = 8;
 const max_topics_with_unread = 12;
 
-export function get_list_info(stream_id, zoomed, search_term) {
-    let topics_selected = 0;
-    let more_topics_unreads = 0;
-    let more_topics_have_unread_mention_messages = false;
-
-    let active_topic = narrow_state.topic();
-
-    if (active_topic) {
-        active_topic = active_topic.toLowerCase();
-    }
-
-    let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
-    if (zoomed) {
-        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
-    }
-
-    const items = [];
-
-    const topics_with_unread_mentions = unread.get_topics_with_unread_mentions(stream_id);
-
+function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
     for (const [idx, topic_name] of topic_names.entries()) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
-        const is_active_topic = active_topic === topic_name.toLowerCase();
+        const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
         const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
         const [topic_resolved_prefix, topic_display_name] =
             resolved_topic.display_parts(topic_name);
         // Important: Topics are lower-case in this set.
-        const contains_unread_mention = topics_with_unread_mentions.has(topic_name.toLowerCase());
+        const contains_unread_mention = topic_choice_state.topics_with_unread_mentions.has(
+            topic_name.toLowerCase(),
+        );
 
         if (!zoomed) {
             function should_show_topic(topics_selected) {
@@ -64,7 +48,7 @@ export function get_list_info(stream_id, zoomed, search_term) {
 
                 // We include the most recent max_topics topics,
                 // even if there are no unread messages.
-                if (idx < max_topics) {
+                if (idx < max_topics && topics_selected < max_topics) {
                     return true;
                 }
 
@@ -81,20 +65,20 @@ export function get_list_info(stream_id, zoomed, search_term) {
                 return false;
             }
 
-            const show_topic = should_show_topic(topics_selected);
+            const show_topic = should_show_topic(topic_choice_state.topics_selected);
             if (!show_topic) {
                 if (!is_topic_muted) {
                     // The "more topics" unread count, like
                     // stream-level counts, only counts messages
                     // on unmuted topics.
-                    more_topics_unreads += num_unread;
+                    topic_choice_state.more_topics_unreads += num_unread;
                     if (contains_unread_mention) {
-                        more_topics_have_unread_mention_messages = true;
+                        topic_choice_state.more_topics_have_unread_mention_messages = true;
                     }
                 }
                 continue;
             }
-            topics_selected += 1;
+            topic_choice_state.topics_selected += 1;
             // We fall through to rendering the topic, using the
             // same code we do when zoomed.
         }
@@ -111,13 +95,46 @@ export function get_list_info(stream_id, zoomed, search_term) {
             contains_unread_mention,
         };
 
-        items.push(topic_info);
+        topic_choice_state.items.push(topic_info);
+    }
+}
+
+export function get_list_info(stream_id, zoomed, search_term) {
+    const topic_choice_state = {
+        items: [],
+        topics_selected: 0,
+        more_topics_unreads: 0,
+        more_topics_have_unread_mention_messages: false,
+        active_topic: narrow_state.topic()?.toLowerCase(),
+        topics_with_unread_mentions: unread.get_topics_with_unread_mentions(stream_id),
+    };
+
+    const stream_muted = sub_store.get(stream_id).is_muted;
+
+    let topic_names = stream_topic_history.get_recent_topic_names(stream_id);
+    if (zoomed) {
+        topic_names = util.filter_by_word_prefix_match(topic_names, search_term, (item) => item);
+    }
+
+    if (stream_muted && !zoomed) {
+        const unmuted_topics = topic_names.filter((topic) =>
+            user_topics.is_topic_unmuted(stream_id, topic),
+        );
+        choose_topics(stream_id, unmuted_topics, zoomed, topic_choice_state);
+
+        const other_topics = topic_names.filter(
+            (topic) => !user_topics.is_topic_unmuted(stream_id, topic),
+        );
+        choose_topics(stream_id, other_topics, zoomed, topic_choice_state);
+    } else {
+        choose_topics(stream_id, topic_names, zoomed, topic_choice_state);
     }
 
     return {
-        items,
+        items: topic_choice_state.items,
         num_possible_topics: topic_names.length,
-        more_topics_unreads,
-        more_topics_have_unread_mention_messages,
+        more_topics_unreads: topic_choice_state.more_topics_unreads,
+        more_topics_have_unread_mention_messages:
+            topic_choice_state.more_topics_have_unread_mention_messages,
     };
 }

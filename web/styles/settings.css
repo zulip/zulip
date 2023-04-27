@@ -246,7 +246,7 @@ h3,
 
 #linkifier-settings {
     #linkifier_pattern,
-    #linkifier_format_string {
+    #linkifier_template {
         width: calc(100% - 10em - 6em);
     }
 }
@@ -726,7 +726,7 @@ input[type="checkbox"] {
 }
 
 #admin-linkifier-pattern-status,
-#admin-linkifier-format-status {
+#admin-linkifier-template-status {
     margin: 20px 0 0;
 }
 
@@ -1308,6 +1308,11 @@ $option_title_width: 180px;
                 background-repeat: no-repeat;
             }
 
+            .zulip-icon-smart-toy {
+                font-size: 1.6em;
+                margin: 8px 11px 10px 9px;
+            }
+
             .locked {
                 width: 18px;
                 height: 18px;
@@ -1578,6 +1583,10 @@ $option_title_width: 180px;
                     hsl(200deg 100% 40%),
                     hsl(200deg 100% 35%)
                 );
+            }
+
+            &:focus {
+                text-decoration: none;
             }
         }
     }
@@ -1866,7 +1875,7 @@ $option_title_width: 180px;
         }
     }
 
-    .topic_date_muted {
+    .topic_date_updated {
         display: none;
     }
 
@@ -1894,7 +1903,7 @@ $option_title_width: 180px;
 
 #edit-linkifier-form {
     #edit-linkifier-pattern,
-    #edit-linkifier-url-format-string {
+    #edit-linkifier-url-template {
         width: 400px;
     }
 
@@ -1903,7 +1912,7 @@ $option_title_width: 180px;
     }
 
     #edit-linkifier-pattern-status,
-    #edit-linkifier-format-status {
+    #edit-linkifier-template-status {
         margin-top: 10px;
     }
 

@@ -20,6 +20,7 @@ export type UserSettings = (StreamNotificationSettings & PmNotificationSettings)
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
     dense_mode: boolean;
+    web_mark_read_on_scroll_policy: number;
     email_notifications_batching_period_seconds: number;
     emojiset: string;
     enable_digest_emails: boolean;

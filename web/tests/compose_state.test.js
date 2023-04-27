@@ -2,12 +2,29 @@
 
 const {strict: assert} = require("assert");
 
+const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const $ = require("./lib/zjquery");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 
 const compose_state = zrequire("compose_state");
+const compose_fade = zrequire("compose_fade");
+const compose_recipient = zrequire("compose_recipient");
+const stream_bar = zrequire("stream_bar");
+
+const noop = () => {};
+
+let stream_value = "";
+compose_recipient.compose_stream_widget = {
+    value() {
+        return stream_value;
+    },
+    render(val) {
+        stream_value = val;
+    },
+};
 
 run_test("private_message_recipient", ({override}) => {
     let emails;
@@ -21,7 +38,13 @@ run_test("private_message_recipient", ({override}) => {
     assert.equal(compose_state.private_message_recipient(), "fred@fred.org");
 });
 
-run_test("has_full_recipient", ({override}) => {
+run_test("has_full_recipient", ({override, override_rewire}) => {
+    mock_stream_header_colorblock();
+    $(`#compose_banners .topic_resolved`).remove = noop;
+    compose_fade.update_all = noop;
+    $(".narrow_to_compose_recipients").toggleClass = noop;
+    override_rewire(stream_bar, "decorate", noop);
+
     let emails;
     override(compose_pm_pill, "set_from_emails", (value) => {
         emails = value;

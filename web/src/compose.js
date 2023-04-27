@@ -1,3 +1,5 @@
+/* Main compose box module for sending messages. */
+
 import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
@@ -7,7 +9,6 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import {get_recipient_label} from "./compose_closed_ui";
-import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -21,16 +22,19 @@ import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as scheduled_messages from "./scheduled_messages";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
+import {get_timestamp_for_flatpickr} from "./timerender";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -90,27 +94,6 @@ export function clear_preview_area() {
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
     autosize.update($("#compose-textarea"));
-}
-
-function update_fade() {
-    if (!compose_state.composing()) {
-        return;
-    }
-
-    const msg_type = compose_state.get_message_type();
-
-    // It's possible that the new topic is not a resolved topic
-    // so we clear the older warning.
-    compose_validate.clear_topic_resolved_warning();
-
-    compose_validate.warn_if_topic_resolved();
-    compose_fade.set_focused_recipient(msg_type);
-    compose_fade.update_all();
-}
-
-export function update_on_recipient_change() {
-    update_fade();
-    compose_actions.update_narrow_to_recipient_visibility();
 }
 
 export function abort_xhr() {
@@ -204,6 +187,7 @@ export function clear_compose_box() {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_ui.hide_compose_spinner();
+    reset_compose_scheduling_state();
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {
@@ -284,6 +268,7 @@ export function send_message(request = create_message_object()) {
     }
 
     transmit.send_message(request, success, error);
+    scheduled_messages.delete_scheduled_message_if_sent_directly();
     server_events.assert_get_events_running(
         "Restarting get_events because it was not running during send",
     );
@@ -344,7 +329,9 @@ export function finish() {
         return false;
     }
 
-    if (reminder.is_deferred_delivery(message_content)) {
+    if (popover_menus.is_time_selected_for_schedule()) {
+        schedule_message_to_custom_date();
+    } else if (reminder.is_deferred_delivery(message_content)) {
         reminder.schedule_message();
     } else {
         send_message();
@@ -373,7 +360,7 @@ export function update_email(user_id, new_email) {
 }
 
 function insert_video_call_url(url, target_textarea) {
-    const link_text = $t({defaultMessage: "Click to join video call"});
+    const link_text = $t({defaultMessage: "Join video call."});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
 }
 
@@ -438,15 +425,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
 
 export function initialize() {
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
-    $(
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("keyup", update_on_recipient_change);
-    $(
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("change", () => {
-        update_on_recipient_change();
-        compose_state.set_recipient_edited_manually(true);
-    });
+
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });
@@ -509,7 +488,7 @@ export function initialize() {
             event.preventDefault();
 
             const stream_name = compose_state.stream_name();
-            if (stream_name === undefined) {
+            if (stream_name === "") {
                 return;
             }
             const sub = stream_data.get_sub(stream_name);
@@ -705,7 +684,7 @@ export function initialize() {
             flatpickr.show_flatpickr(
                 $(compose_click_target)[0],
                 on_timestamp_selection,
-                new Date(),
+                get_timestamp_for_flatpickr(),
                 {
                     // place the time picker above the icon and center it horizontally
                     position: "above center",
@@ -787,4 +766,27 @@ export function initialize() {
             compose_actions.start("stream", {});
         }
     }
+}
+
+export function reset_compose_scheduling_state(reset_edit_state = true) {
+    $("#compose-textarea").prop("disabled", false);
+    $("#compose-schedule-confirm-button").hide();
+    popover_menus.reset_selected_schedule_time();
+    $("#compose-send-button").show();
+    if (reset_edit_state) {
+        $("#compose-textarea").removeAttr("data-scheduled-message-id");
+    }
+}
+
+function schedule_message_to_custom_date() {
+    const request = create_message_object();
+    const selected_send_later_time = popover_menus.get_selected_send_later_time();
+    request.content = `/schedule ${selected_send_later_time}\n` + request.content;
+    // If this is an edit request `scheduled_message_id` will be defined.
+    let scheduled_message_id;
+    if ($("#compose-textarea").attr("data-scheduled-message-id")) {
+        scheduled_message_id = $("#compose-textarea").attr("data-scheduled-message-id");
+        $("#compose-textarea").removeAttr("data-scheduled-message-id");
+    }
+    reminder.schedule_message(request, clear_compose_box, scheduled_message_id);
 }

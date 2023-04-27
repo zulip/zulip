@@ -52,6 +52,7 @@ mock_esm("../src/user_topics", {
     is_topic_muted: () => false,
 });
 
+const compose_recipient = zrequire("compose_recipient");
 const util = zrequire("util");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
@@ -88,7 +89,7 @@ function test_helper() {
     stub(message_view_header, "initialize");
     stub(top_left_corner, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
-    stub(compose_actions, "update_narrow_to_recipient_visibility");
+    stub(compose_recipient, "update_narrow_to_recipient_visibility");
     stub(unread_ops, "process_visible");
     stub(compose_closed_ui, "update_buttons_for_stream");
     stub(compose_closed_ui, "update_buttons_for_private");
@@ -202,7 +203,7 @@ run_test("basics", () => {
         [stream_list, "handle_narrow_activated"],
         [typing_events, "render_notifications_for_narrow"],
         [message_view_header, "initialize"],
-        [compose_actions, "update_narrow_to_recipient_visibility"],
+        [compose_recipient, "update_narrow_to_recipient_visibility"],
     ]);
 
     message_lists.current.selected_id = () => -1;

@@ -9,18 +9,17 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
 from zerver.lib.validator import check_int, check_list, check_string_in
-from zerver.models import UserProfile
+from zerver.models import Message, UserProfile
 
 VALID_OPERATOR_TYPES = ["start", "stop"]
-VALID_MESSAGE_TYPES = ["private", "stream"]
 
 
 @has_request_variables
 def send_notification_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_type: str = REQ(
-        "type", str_validator=check_string_in(VALID_MESSAGE_TYPES), default="private"
+    req_type: str = REQ(
+        "type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES), default="direct"
     ),
     operator: str = REQ("op", str_validator=check_string_in(VALID_OPERATOR_TYPES)),
     notification_to: List[int] = REQ("to", json_validator=check_list(check_int)),
@@ -31,7 +30,12 @@ def send_notification_backend(
     if to_length == 0:
         raise JsonableError(_("Empty 'to' list"))
 
-    if message_type == "stream":
+    recipient_type_name = req_type
+    if recipient_type_name == "private":
+        # TODO: Use "direct" in typing notification events.
+        recipient_type_name = "direct"
+
+    if recipient_type_name == "stream":
         if to_length > 1:
             raise JsonableError(_("Cannot send to multiple streams"))
 

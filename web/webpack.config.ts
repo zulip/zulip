@@ -171,6 +171,7 @@ export default (
                   // (https://github.com/webpack/webpack/issues/11937)
                   (pathData) => "files" + path.join("/", pathData.filename!),
             chunkFilename: production ? "[contenthash].js" : "[id].js",
+            crossOriginLoading: "anonymous",
         },
         resolve: {
             ...baseConfig.resolve,
@@ -197,7 +198,7 @@ export default (
         },
         plugins: [
             new DefinePlugin({
-                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION || "development"),
+                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
             }),
             new DebugRequirePlugin(),
             new BundleTracker({

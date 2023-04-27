@@ -11,7 +11,6 @@ img {
 }
 
 body {
-    background-color: #f5f9f8;
     font-family: sans-serif;
     font-size: 14px;
     line-height: 1.4;
@@ -40,7 +39,6 @@ table td {
 }
 
 .body {
-    background-color: #f5f9f8;
     width: 100%;
 }
 
@@ -87,16 +85,10 @@ table td {
 }
 
 .footer td,
-.footer p,
-.footer span,
-.footer a {
+.footer span {
     color: #5f5ec7;
     font-size: 12px;
     text-align: center;
-}
-
-.footer .content-block p {
-    margin-top: 0;
 }
 
 h1,

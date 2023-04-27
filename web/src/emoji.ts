@@ -204,7 +204,7 @@ function build_emojis_by_name({
                 const emoji_dict: EmojiDict = {
                     name: emoji_name,
                     display_name: emoji_name,
-                    aliases: default_emoji_aliases.get(codepoint) || [],
+                    aliases: default_emoji_aliases.get(codepoint) ?? [],
                     is_realm_emoji: false,
                     emoji_code: codepoint,
                     has_reacted: false,
@@ -251,7 +251,7 @@ export function update_emojis(realm_emojis: RealmEmojiMap): void {
             still_url: data.still_url,
             deactivated: data.deactivated,
         });
-        if (data.deactivated !== true) {
+        if (!data.deactivated) {
             active_realm_emojis.set(data.name, {
                 id: data.id,
                 emoji_name: data.name,

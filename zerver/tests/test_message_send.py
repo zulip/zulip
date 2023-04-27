@@ -586,7 +586,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([othello.email]).decode(),
             },
@@ -605,7 +605,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([user_profile.email]).decode(),
             },
@@ -628,52 +628,60 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_personal_message_by_id(self) -> None:
         """
-        Sending a personal message to a valid user ID is successful.
+        Sending a personal message to a valid user ID is successful
+        for both valid strings for `type` parameter.
         """
         self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "private",
-                "content": "Test message",
-                "to": orjson.dumps([self.example_user("othello").id]).decode(),
-            },
-        )
-        self.assert_json_success(result)
+        recipient_type_name = ["direct", "private"]
 
-        msg = self.get_last_message()
-        self.assertEqual("Test message", msg.content)
-        self.assertEqual(msg.recipient_id, self.example_user("othello").recipient_id)
+        for type in recipient_type_name:
+            result = self.client_post(
+                "/json/messages",
+                {
+                    "type": type,
+                    "content": "Test message",
+                    "to": orjson.dumps([self.example_user("othello").id]).decode(),
+                },
+            )
+            self.assert_json_success(result)
+
+            msg = self.get_last_message()
+            self.assertEqual("Test message", msg.content)
+            self.assertEqual(msg.recipient_id, self.example_user("othello").recipient_id)
 
     def test_group_personal_message_by_id(self) -> None:
         """
-        Sending a personal message to a valid user ID is successful.
+        Sending a personal message to a valid user ID is successful
+        for both valid strings for `type` parameter.
         """
         self.login("hamlet")
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "private",
-                "content": "Test message",
-                "to": orjson.dumps(
-                    [self.example_user("othello").id, self.example_user("cordelia").id]
-                ).decode(),
-            },
-        )
-        self.assert_json_success(result)
+        recipient_type_name = ["direct", "private"]
 
-        msg = self.get_last_message()
-        self.assertEqual("Test message", msg.content)
-        self.assertEqual(
-            msg.recipient_id,
-            get_huddle_recipient(
+        for type in recipient_type_name:
+            result = self.client_post(
+                "/json/messages",
                 {
-                    self.example_user("hamlet").id,
-                    self.example_user("othello").id,
-                    self.example_user("cordelia").id,
-                }
-            ).id,
-        )
+                    "type": type,
+                    "content": "Test message",
+                    "to": orjson.dumps(
+                        [self.example_user("othello").id, self.example_user("cordelia").id]
+                    ).decode(),
+                },
+            )
+            self.assert_json_success(result)
+
+            msg = self.get_last_message()
+            self.assertEqual("Test message", msg.content)
+            self.assertEqual(
+                msg.recipient_id,
+                get_huddle_recipient(
+                    {
+                        self.example_user("hamlet").id,
+                        self.example_user("othello").id,
+                        self.example_user("cordelia").id,
+                    }
+                ).id,
+            )
 
     def test_personal_message_copying_self(self) -> None:
         """
@@ -686,7 +694,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([hamlet.id, othello.id]).decode(),
             },
@@ -704,7 +712,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": "nonexistent",
             },
@@ -723,7 +731,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([othello.id]).decode(),
             },
@@ -733,7 +741,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "to": orjson.dumps([othello.id, cordelia.id]).decode(),
             },
@@ -754,7 +762,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "to": othello.email,
             },
         )
-        self.assert_json_error(result, "Invalid message type")
+        self.assert_json_error(result, "Invalid type")
 
     def test_empty_message(self) -> None:
         """
@@ -764,7 +772,7 @@ class MessagePOSTTest(ZulipTestCase):
         othello = self.example_user("othello")
         result = self.client_post(
             "/json/messages",
-            {"type": "private", "content": " ", "to": othello.email},
+            {"type": "direct", "content": " ", "to": othello.email},
         )
         self.assert_json_error(result, "Message must not be empty")
 
@@ -824,9 +832,9 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid character in topic, at position 5!")
 
-    def test_invalid_message_type(self) -> None:
+    def test_invalid_recipient_type(self) -> None:
         """
-        Messages other than the type of "private" or "stream" are considered as invalid
+        Messages other than the type of "direct", "private" or "stream" are invalid.
         """
         self.login("hamlet")
         result = self.client_post(
@@ -838,7 +846,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "topic": "Test topic",
             },
         )
-        self.assert_json_error(result, "Invalid message type")
+        self.assert_json_error(result, "Invalid type")
 
     def test_private_message_without_recipients(self) -> None:
         """
@@ -847,7 +855,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         result = self.client_post(
             "/json/messages",
-            {"type": "private", "content": "Test content", "to": ""},
+            {"type": "direct", "content": "Test content", "to": ""},
         )
         self.assert_json_error(result, "Message must have recipients")
 
@@ -859,7 +867,7 @@ class MessagePOSTTest(ZulipTestCase):
             self.mit_user("starnine"),
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -879,7 +887,7 @@ class MessagePOSTTest(ZulipTestCase):
             self.mit_user("starnine"),
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -898,7 +906,7 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post(
             "/json/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -916,7 +924,7 @@ class MessagePOSTTest(ZulipTestCase):
             self.mit_user("starnine"),
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -931,7 +939,7 @@ class MessagePOSTTest(ZulipTestCase):
         Sending two mirrored huddles in the row return the same ID
         """
         msg = {
-            "type": "private",
+            "type": "direct",
             "sender": self.mit_email("sipbtest"),
             "content": "Test message",
             "client": "zephyr_mirror",
@@ -1065,7 +1073,7 @@ class MessagePOSTTest(ZulipTestCase):
             self.mit_user("starnine"),
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "content": "Test message",
                 "client": "zephyr_mirror",
                 "to": self.mit_email("starnine"),
@@ -1079,7 +1087,7 @@ class MessagePOSTTest(ZulipTestCase):
             self.mit_user("starnine"),
             "/api/v1/messages",
             {
-                "type": "not-private",
+                "type": "stream",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -1098,7 +1106,7 @@ class MessagePOSTTest(ZulipTestCase):
             self.mit_user("starnine"),
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -1120,7 +1128,7 @@ class MessagePOSTTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -1141,7 +1149,7 @@ class MessagePOSTTest(ZulipTestCase):
             user,
             "/api/v1/messages",
             {
-                "type": "private",
+                "type": "direct",
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
@@ -1343,6 +1351,9 @@ class ScheduledMessageTest(ZulipTestCase):
     def last_scheduled_message(self) -> ScheduledMessage:
         return ScheduledMessage.objects.all().order_by("-id")[0]
 
+    def get_scheduled_message(self, id: str) -> ScheduledMessage:
+        return ScheduledMessage.objects.get(id=id)
+
     def do_schedule_message(
         self,
         msg_type: str,
@@ -1351,6 +1362,7 @@ class ScheduledMessageTest(ZulipTestCase):
         defer_until: str = "",
         tz_guess: str = "",
         delivery_type: str = "send_later",
+        scheduled_message_id: str = "",
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
@@ -1368,6 +1380,10 @@ class ScheduledMessageTest(ZulipTestCase):
         }
         if defer_until:
             payload["deliver_at"] = defer_until
+
+        if scheduled_message_id:
+            payload["scheduled_message_id"] = scheduled_message_id
+
         # `Topic` cannot be empty according to OpenAPI specification.
         intentionally_undocumented: bool = topic_name == ""
         result = self.client_post(
@@ -1385,6 +1401,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, "Test message 1")
+        self.assertEqual(message.rendered_content, "<p>Test message 1</p>")
         self.assertEqual(message.topic_name(), "Test topic")
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
@@ -1405,6 +1422,7 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, "Test message 3")
+        self.assertEqual(message.rendered_content, "<p>Test message 3</p>")
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
@@ -1476,6 +1494,106 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_error(
             result, "Missing deliver_at in a request for delayed message delivery"
         )
+
+    def test_edit_schedule_message(self) -> None:
+        content = "Original test message"
+        defer_until = timezone_now().replace(tzinfo=None) + datetime.timedelta(days=1)
+        defer_until_str = str(defer_until)
+
+        # Scheduling a message to a stream you are subscribed is successful.
+        result = self.do_schedule_message("stream", "Verona", content, defer_until_str)
+        message = self.last_scheduled_message()
+        self.assert_json_success(result)
+        self.assertEqual(message.content, "Original test message")
+        self.assertEqual(message.topic_name(), "Test topic")
+        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
+
+        # Edit content and time of scheduled message.
+        edited_content = "Edited test message"
+        new_defer_until = defer_until + datetime.timedelta(days=3)
+        new_defer_until_str = str(new_defer_until)
+
+        result = self.do_schedule_message(
+            "stream",
+            "Verona",
+            edited_content,
+            new_defer_until_str,
+            scheduled_message_id=str(message.id),
+        )
+        message = self.get_scheduled_message(str(message.id))
+        self.assert_json_success(result)
+        self.assertEqual(message.content, edited_content)
+        self.assertEqual(message.topic_name(), "Test topic")
+        self.assertEqual(message.scheduled_timestamp, convert_to_UTC(new_defer_until))
+        self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
+
+    def test_fetch_scheduled_messages(self) -> None:
+        self.login("hamlet")
+        # No scheduled message
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        self.assert_length(orjson.loads(result.content)["scheduled_messages"], 0)
+
+        content = "Test message"
+        defer_until = timezone_now().replace(tzinfo=None) + datetime.timedelta(days=1)
+        defer_until_str = str(defer_until)
+        self.do_schedule_message("stream", "Verona", content, defer_until_str)
+
+        # Single scheduled message
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        scheduled_messages = orjson.loads(result.content)["scheduled_messages"]
+
+        self.assert_length(scheduled_messages, 1)
+        self.assertEqual(scheduled_messages[0]["message_id"], self.last_scheduled_message().id)
+        self.assertEqual(scheduled_messages[0]["content"], content)
+        self.assertEqual(scheduled_messages[0]["to"], [self.get_stream_id("Verona")])
+        self.assertEqual(scheduled_messages[0]["type"], "stream")
+        self.assertEqual(scheduled_messages[0]["topic"], "Test topic")
+        self.assertEqual(
+            scheduled_messages[0]["deliver_at"], int(convert_to_UTC(defer_until).timestamp() * 1000)
+        )
+
+        othello = self.example_user("othello")
+        result = self.do_schedule_message(
+            "private", [othello.email], content + " 3", defer_until_str
+        )
+
+        # Multiple scheduled messages
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        self.assert_length(orjson.loads(result.content)["scheduled_messages"], 2)
+
+        # Check if another user can access these scheduled messages.
+        self.logout()
+        self.login("othello")
+        result = self.client_get("/json/scheduled_messages")
+        self.assert_json_success(result)
+        self.assert_length(orjson.loads(result.content)["scheduled_messages"], 0)
+
+    def test_delete_scheduled_messages(self) -> None:
+        self.login("hamlet")
+
+        content = "Test message"
+        defer_until = timezone_now().replace(tzinfo=None) + datetime.timedelta(days=1)
+        defer_until_str = str(defer_until)
+        self.do_schedule_message("stream", "Verona", content, defer_until_str)
+        message = self.last_scheduled_message()
+        self.logout()
+
+        # Other user cannot delete it.
+        othello = self.example_user("othello")
+        result = self.api_delete(othello, f"/api/v1/scheduled_messages/{message.id}")
+        self.assert_json_error(result, "Scheduled message does not exist", 404)
+
+        self.login("hamlet")
+        result = self.client_delete(f"/json/scheduled_messages/{message.id}")
+        self.assert_json_success(result)
+
+        # Already deleted.
+        result = self.client_delete(f"/json/scheduled_messages/{message.id}")
+        self.assert_json_error(result, "Scheduled message does not exist", 404)
 
 
 class StreamMessagesTest(ZulipTestCase):
@@ -2447,7 +2565,7 @@ class TestAddressee(ZulipTestCase):
 
         result = Addressee.legacy_build(
             sender=self.example_user("hamlet"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=user_ids,
             topic_name="random_topic",
             realm=realm,
@@ -2466,7 +2584,7 @@ class TestAddressee(ZulipTestCase):
 
         result = Addressee.legacy_build(
             sender=sender,
-            message_type_name="stream",
+            recipient_type_name="stream",
             message_to=[stream.id],
             topic_name="random_topic",
             realm=realm,

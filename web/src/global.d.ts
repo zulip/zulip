@@ -5,6 +5,7 @@
 
 declare let zulip_test: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 interface JQuery {
     expectOne(): JQuery;
     tab(action?: string): this; // From web/third/bootstrap

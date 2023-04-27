@@ -23,6 +23,7 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_recipient from "./compose_recipient";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -72,6 +73,7 @@ import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
@@ -87,7 +89,6 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
-import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -292,6 +293,10 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
+        // Except for the stream select dropdown, which still needs scroll events.
+        if ($(e.target).parents(".dropdown-list-body").length > 0) {
+            return;
+        }
         e.stopPropagation();
         e.preventDefault();
     });
@@ -364,14 +369,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $("#main_div").on("mouseleave", ".embed-video a", function () {
         $(this).removeClass("fa fa-play");
-    });
-
-    $("#stream_message_recipient_stream").on("change", function () {
-        stream_bar.decorate(
-            this.value,
-            $("#compose-stream-recipient .message_header_stream"),
-            true,
-        );
     });
 
     $(window).on("blur", () => {
@@ -629,7 +626,6 @@ export function initialize_everything() {
     scroll_bar.initialize();
     message_viewport.initialize();
     navbar_alerts.initialize();
-    compose_closed_ui.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_edit.initialize();
@@ -647,6 +643,7 @@ export function initialize_everything() {
     spoilers.initialize();
     lightbox.initialize();
     click_handlers.initialize();
+    scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();
     overlays.initialize();
     invite.initialize();
@@ -654,7 +651,9 @@ export function initialize_everything() {
     message_view_header.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);
+    compose_recipient.initialize();
     compose_pm_pill.initialize();
+    compose_closed_ui.initialize();
     search_pill_widget.initialize();
     reload.initialize();
     user_groups.initialize(user_groups_params);
@@ -723,7 +722,5 @@ $(async () => {
         });
         Object.assign(page_params, state);
     }
-    blueslip.measure_time("initialize_everything", () => {
-        initialize_everything();
-    });
+    initialize_everything();
 });

@@ -275,6 +275,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/rest-error-handling",
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
+        "/jwt/fetch_api_key",
     }
 
     # Endpoints where the documentation is currently failing our
@@ -921,6 +922,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "messages",
             "drafts",
             "webhooks",
+            "scheduled_messages",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
         for path, path_item in paths.items():

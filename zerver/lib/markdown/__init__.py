@@ -41,6 +41,7 @@ import markdown.treeprocessors
 import markdown.util
 import re2
 import requests
+import uri_template
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
@@ -1788,7 +1789,7 @@ class LinkifierPattern(CompiledInlineProcessor):
     def __init__(
         self,
         source_pattern: str,
-        format_string: str,
+        url_template: str,
         zmd: "ZulipMarkdown",
     ) -> None:
         # Do not write errors to stderr (this still raises exceptions)
@@ -1796,7 +1797,8 @@ class LinkifierPattern(CompiledInlineProcessor):
         options.log_errors = False
 
         compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-        self.format_string = percent_escape_format_string(format_string)
+
+        self.prepared_url_template = uri_template.URITemplate(url_template)
 
         super().__init__(compiled_re2, zmd)
 
@@ -1806,7 +1808,7 @@ class LinkifierPattern(CompiledInlineProcessor):
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         url = url_to_a(
             db_data,
-            self.format_string % m.groupdict(),
+            self.prepared_url_template.expand(**m.groupdict()),
             markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP)),
         )
         if isinstance(url, str):
@@ -2260,7 +2262,7 @@ class ZulipMarkdown(markdown.Markdown):
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
             registry.register(
-                LinkifierPattern(pattern, linkifier["url_format"], self),
+                LinkifierPattern(pattern, linkifier["url_template"], self),
                 f"linkifiers/{pattern}",
                 45,
             )
@@ -2368,7 +2370,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     options.log_errors = False
     for linkifier in linkifiers:
         raw_pattern = linkifier["pattern"]
-        url_format_string = percent_escape_format_string(linkifier["url_format"])
+        prepared_url_template = uri_template.URITemplate(linkifier["url_template"])
         try:
             pattern = re2.compile(prepare_linkifier_pattern(raw_pattern), options=options)
         except re2.error:
@@ -2396,7 +2398,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             # don't have to implement any logic of their own to get back the text.
             matches += [
                 TopicLinkMatch(
-                    url=url_format_string % match_details,
+                    url=prepared_url_template.expand(**match_details),
                     text=match_text,
                     index=m.start(),
                     precedence=precedence,

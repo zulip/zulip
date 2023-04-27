@@ -5,6 +5,7 @@ import * as resolved_topic from "../shared/src/resolved_topic";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
+import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import * as blueslip from "./blueslip";
@@ -30,6 +31,7 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -417,6 +419,7 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
         .map((stream) => ({
             name: stream.name,
             value: stream.stream_id.toString(),
+            stream,
         }))
         .sort((a, b) => {
             if (a.name.toLowerCase() < b.name.toLowerCase()) {
@@ -602,9 +605,94 @@ export function start($row, edit_box_open_callback) {
     });
 }
 
+function get_resolve_topic_time_limit_error_string(time_limit, time_limit_unit, topic_is_resolved) {
+    if (topic_is_resolved) {
+        if (time_limit_unit === "minute") {
+            return $t(
+                {
+                    defaultMessage:
+                        "You do not have permission to unresolve topics with messages older than {N, plural, one {# minute} other {# minutes}} in this organization.",
+                },
+                {N: time_limit},
+            );
+        } else if (time_limit_unit === "hour") {
+            return $t(
+                {
+                    defaultMessage:
+                        "You do not have permission to unresolve topics with messages older than {N, plural, one {# hour} other {# hours}} in this organization.",
+                },
+                {N: time_limit},
+            );
+        }
+        return $t(
+            {
+                defaultMessage:
+                    "You do not have permission to unresolve topics with messages older than {N, plural, one {# day} other {# days}} in this organization.",
+            },
+            {N: time_limit},
+        );
+    }
+
+    if (time_limit_unit === "minute") {
+        return $t(
+            {
+                defaultMessage:
+                    "You do not have permission to resolve topics with messages older than {N, plural, one {# minute} other {# minutes}} in this organization.",
+            },
+            {N: time_limit},
+        );
+    } else if (time_limit_unit === "hour") {
+        return $t(
+            {
+                defaultMessage:
+                    "You do not have permission to resolve topics with messages older than {N, plural, one {# hour} other {# hours}} in this organization.",
+            },
+            {N: time_limit},
+        );
+    }
+    return $t(
+        {
+            defaultMessage:
+                "You do not have permission to resolve topics with messages older than {N, plural, one {# day} other {# days}} in this organization.",
+        },
+        {N: time_limit},
+    );
+}
+
+function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved) {
+    const time_limit_for_resolving_topic = timerender.get_time_limit_setting_in_appropriate_unit(
+        page_params.realm_move_messages_within_stream_limit_seconds,
+    );
+    const resolve_topic_time_limit_error_string = get_resolve_topic_time_limit_error_string(
+        time_limit_for_resolving_topic.value,
+        time_limit_for_resolving_topic.unit,
+        topic_is_resolved,
+    );
+
+    const html_body = render_resolve_topic_time_limit_error_modal({
+        topic_is_resolved,
+        resolve_topic_time_limit_error_string,
+    });
+    let modal_heading;
+    if (topic_is_resolved) {
+        modal_heading = $t_html({defaultMessage: "Could not unresolve topic"});
+    } else {
+        modal_heading = $t_html({defaultMessage: "Could not resolve topic"});
+    }
+    dialog_widget.launch({
+        html_heading: modal_heading,
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Close"}),
+        on_click() {},
+        single_footer_button: true,
+        focus_submit_on_open: true,
+    });
+}
+
 export function toggle_resolve_topic(message_id, old_topic_name) {
     let new_topic_name;
-    if (resolved_topic.is_resolved(old_topic_name)) {
+    const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
+    if (topic_is_resolved) {
         new_topic_name = resolved_topic.unresolve_name(old_topic_name);
     } else {
         new_topic_name = resolved_topic.resolve_name(old_topic_name);
@@ -620,6 +708,11 @@ export function toggle_resolve_topic(message_id, old_topic_name) {
     channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
+        error(xhr) {
+            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
+            }
+        },
     });
 }
 

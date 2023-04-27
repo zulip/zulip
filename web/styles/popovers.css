@@ -856,3 +856,19 @@ ul {
         column-count: 1;
     }
 }
+
+#send_later_popover {
+    & hr {
+        margin: 5px 0;
+    }
+
+    .send_later_popover_header {
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .selected_send_later_time {
+        text-align: center;
+        margin-top: 3px;
+    }
+}

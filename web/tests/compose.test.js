@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
+const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
@@ -51,10 +52,12 @@ const upload = mock_esm("../src/upload");
 const compose_ui = zrequire("compose_ui");
 const compose_banner = zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
+const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 
 function reset_jquery() {
@@ -303,6 +306,20 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("#compose-textarea").toggleClass = noop;
+    override_rewire(stream_bar, "decorate", noop);
+    mock_stream_header_colorblock();
+    compose_recipient.open_compose_stream_dropup = noop;
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
+    let stream_value = "";
+    compose_recipient.compose_stream_widget = {
+        value() {
+            return stream_value;
+        },
+        render(val) {
+            stream_value = val;
+        },
+    };
+
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -351,6 +368,10 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
+    mock_stream_header_colorblock();
+    override_rewire(stream_bar, "decorate", noop);
+
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -512,13 +533,9 @@ test_ui("initialize", ({override}) => {
     })();
 });
 
-test_ui("update_fade", ({override}) => {
+test_ui("update_fade", ({override, override_rewire}) => {
     mock_banners();
     initialize_handlers({override});
-
-    const selector =
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
-    const keyup_handler_func = $(selector).get_on_handler("keyup");
 
     let set_focused_recipient_checked = false;
     let update_all_called = false;
@@ -533,12 +550,12 @@ test_ui("update_fade", ({override}) => {
         update_all_called = true;
     });
 
-    override(compose_actions, "update_narrow_to_recipient_visibility", () => {
+    override_rewire(compose_recipient, "update_narrow_to_recipient_visibility", () => {
         update_narrow_to_recipient_visibility_called = true;
     });
 
     compose_state.set_message_type(false);
-    keyup_handler_func();
+    compose_recipient.update_on_recipient_change();
     assert.ok(!set_focused_recipient_checked);
     assert.ok(!update_all_called);
     assert.ok(update_narrow_to_recipient_visibility_called);
@@ -546,7 +563,7 @@ test_ui("update_fade", ({override}) => {
     update_narrow_to_recipient_visibility_called = false;
 
     compose_state.set_message_type("private");
-    keyup_handler_func();
+    compose_recipient.update_on_recipient_change();
     assert.ok(set_focused_recipient_checked);
     assert.ok(update_all_called);
     assert.ok(update_narrow_to_recipient_visibility_called);
@@ -575,6 +592,8 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
 });
 
 test_ui("on_events", ({override}) => {
+    mock_stream_header_colorblock();
+
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", () => {});
@@ -745,6 +764,10 @@ test_ui("on_events", ({override}) => {
 });
 
 test_ui("create_message_object", ({override, override_rewire}) => {
+    mock_stream_header_colorblock();
+    override_rewire(stream_bar, "decorate", noop);
+    override_rewire(compose_recipient, "update_on_recipient_change", noop);
+
     compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");

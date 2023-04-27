@@ -24,10 +24,6 @@ const narrow_state = mock_esm("../src/narrow_state", {
     topic() {},
 });
 
-const topic_list = mock_esm("../src/topic_list", {
-    get_topic_search_term() {},
-});
-
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
@@ -40,9 +36,11 @@ const general = {
 
 stream_data.add_sub(general);
 
-function get_list_info(zoomed) {
+function get_list_info(zoom, search) {
     const stream_id = general.stream_id;
-    return topic_list_data.get_list_info(stream_id, zoomed, topic_list.get_topic_search_term());
+    const zoomed = zoom === undefined ? false : zoom;
+    const search_term = search === undefined ? "" : search;
+    return topic_list_data.get_list_info(stream_id, zoomed, search_term);
 }
 
 function test(label, f) {
@@ -112,11 +110,10 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         unread: 0,
         url: "#narrow/stream/556-general/topic/topic.208",
     });
-    // If we zoom in, our results based on topic filter.
-    // If topic search input is empty, we show all 10 topics.
 
+    // If we zoom in, our results are based on topic filter.
+    // If topic search input is empty, we show all 10 topics.
     const zoomed = true;
-    override(topic_list, "get_topic_search_term", () => "");
     list_info = get_list_info(zoomed);
     assert.equal(list_info.items.length, 10);
     assert.equal(list_info.more_topics_unreads, 0);
@@ -125,9 +122,11 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     add_topic_message("After Brooklyn", 1008);
     add_topic_message("Catering", 1009);
-    // when topic search is open then we list topics based on search term.
-    override(topic_list, "get_topic_search_term", () => "b,c");
-    list_info = get_list_info(zoomed);
+
+    // When topic search input is not empty, we show topics
+    // based on the search term.
+    const search_term = "b,c";
+    list_info = get_list_info(zoomed, search_term);
     assert.equal(list_info.items.length, 2);
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
@@ -251,6 +250,15 @@ test("get_list_info unreads", ({override}) => {
         return topic_name === "topic 4";
     });
 
+    // muting the stream and unmuting the topic 5
+    // this should make topic 5 at top in items array
+    general.is_muted = true;
+    add_unreads("topic 5", 1);
+    override(user_topics, "is_topic_unmuted", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name === "topic 5";
+    });
+
     list_info = get_list_info();
     assert.equal(list_info.items.length, 12);
     assert.equal(list_info.more_topics_unreads, 3);
@@ -260,11 +268,11 @@ test("get_list_info unreads", ({override}) => {
     assert.deepEqual(
         list_info.items.map((li) => li.topic_name),
         [
+            "topic 5",
             "topic 0",
             "topic 1",
             "topic 2",
             "topic 3",
-            "topic 5",
             "topic 6",
             "topic 7",
             "topic 8",

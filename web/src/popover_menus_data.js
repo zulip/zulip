@@ -131,6 +131,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
+    const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -140,6 +141,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         topic_unmuted,
         development_environment: page_params.development_environment,
         can_move_topic,
+        can_rename_topic,
         is_realm_admin: page_params.is_admin,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         color: sub.color,

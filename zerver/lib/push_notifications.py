@@ -547,6 +547,9 @@ def add_push_device_token(
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
             "user_uuid": str(user_profile.uuid),
+            # user_id is sent so that the bouncer can delete any pre-existing registrations
+            # for this user+device to avoid duplication upon adding the uuid registration.
+            "user_id": str(user_profile.id),
             "token": token_str,
             "token_kind": kind,
         }

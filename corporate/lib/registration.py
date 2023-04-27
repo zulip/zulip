@@ -72,11 +72,7 @@ def check_spare_licenses_available_for_adding_new_users(
     realm: Realm, extra_non_guests_count: int = 0, extra_guests_count: int = 0
 ) -> None:
     plan = get_current_plan_by_realm(realm)
-    if (
-        plan is None
-        or plan.automanage_licenses
-        or plan.customer.exempt_from_from_license_number_check
-    ):
+    if plan is None or plan.automanage_licenses or plan.customer.exempt_from_license_number_check:
         return
 
     if plan.licenses() < get_seat_count(

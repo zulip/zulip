@@ -53,7 +53,7 @@ export function clean_function_name(
     };
 }
 
-const sourceCache: {[source: string]: string | Promise<string>} = {};
+const sourceCache: Record<string, string | Promise<string>> = {};
 
 const stack_trace_gps = new StackTraceGPS({sourceCache});
 

@@ -997,9 +997,9 @@ class RealmTest(ZulipTestCase):
             realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
         )
 
-        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 10)
+        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 9)
         self.assert_length(
-            UserGroupMembership.objects.filter(user_group=full_members_system_group), 10
+            UserGroupMembership.objects.filter(user_group=full_members_system_group), 9
         )
         self.assertEqual(realm.waiting_period_threshold, 0)
 
@@ -1238,6 +1238,7 @@ class RealmAPITest(ZulipTestCase):
             default_view=["recent_topics", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
+            web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],

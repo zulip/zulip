@@ -1273,17 +1273,17 @@ def apply_unread_message_event(
 ) -> None:
     message_id = message["id"]
     if message["type"] == "stream":
-        message_type = "stream"
+        recipient_type = "stream"
     elif message["type"] == "private":
         others = [recip for recip in message["display_recipient"] if recip["id"] != user_profile.id]
         if len(others) <= 1:
-            message_type = "private"
+            recipient_type = "private"
         else:
-            message_type = "huddle"
+            recipient_type = "huddle"
     else:
         raise AssertionError("Invalid message type {}".format(message["type"]))
 
-    if message_type == "stream":
+    if recipient_type == "stream":
         stream_id = message["stream_id"]
         topic = message[TOPIC_NAME]
         state["stream_dict"][message_id] = RawUnreadStreamDict(
@@ -1300,7 +1300,7 @@ def apply_unread_message_event(
         ):
             state["unmuted_stream_msgs"].add(message_id)
 
-    elif message_type == "private":
+    elif recipient_type == "private":
         if len(others) == 1:
             other_user_id = others[0]["id"]
         else:

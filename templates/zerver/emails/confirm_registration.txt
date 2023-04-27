@@ -5,10 +5,14 @@
 {% endif %}
 
 {% if create_realm %}
-{{ _('Click the button below to create the organization and register your account.') }}
+{{ _('Click the link below to create the organization and register your account.') }}
 {% else %}
-{{ _('Click the button below to complete registration.') }}
+{{ _('Click the link below to complete registration.') }}
 {% endif %}
     <{{ activate_url }}>
 
-{% trans %}Contact us any time at {{ support_email }} if you run into trouble,have any feedback, or just want to chat!{% endtrans %}
+{% if corporate_enabled %}
+    {% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
+{% else %}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at {{ support_email }}.{% endtrans %}
+{% endif %}

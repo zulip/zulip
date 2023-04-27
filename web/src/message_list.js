@@ -1,13 +1,16 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as stream_data from "./stream_data";
+import {user_settings} from "./user_settings";
 
 export class MessageList {
     // A MessageList is the main interface for a message feed that is
@@ -173,11 +176,29 @@ export class MessageList {
 
     can_mark_messages_read() {
         /* Automatically marking messages as read can be disabled for
-           two different reasons:
+           three different reasons:
            * The view is structurally a search view, encoded in the
              properties of the message_list_data object.
            * The user recently marked messages in the view as unread, and
              we don't want to lose that state.
+           * The user has "Mark messages as read on scroll" option
+             turned on in their user settings.
+        */
+        return (
+            this.data.can_mark_messages_read() &&
+            !this.reading_prevented &&
+            !(
+                user_settings.web_mark_read_on_scroll_policy ===
+                web_mark_read_on_scroll_policy_values.never.code
+            )
+        );
+    }
+
+    can_mark_messages_read_without_setting() {
+        /*
+            Similar to can_mark_messages_read() above, this is a helper
+            function to check if messages can be automatically read without
+            the "Do not mark messages as read on scroll" setting.
         */
         return this.data.can_mark_messages_read() && !this.reading_prevented;
     }
@@ -374,16 +395,6 @@ export class MessageList {
         $recipient_row.find(".always_visible_topic_edit").show();
     }
 
-    show_message_as_read(message, options) {
-        const $row = this.get_row(message.id);
-        if (options.from === "pointer" || options.from === "server") {
-            $row.find(".unread_marker").addClass("fast_fade");
-        } else {
-            $row.find(".unread_marker").addClass("slow_fade");
-        }
-        $row.removeClass("unread");
-    }
-
     reselect_selected_id() {
         const selected_id = this.data.selected_id();
 
@@ -416,6 +427,20 @@ export class MessageList {
     }
 
     update_muting_and_rerender() {
+        // For the home message list, we need to re-initialize
+        // _all_items for stream muting/topic unmuting from
+        // all_messages_data, since otherwise unmuting a previously
+        // muted stream won't work.
+        //
+        // TODO: The zhome conditional is a bit awkward, but a check
+        // for whether the filter excludes muted streams wouldn't be
+        // correct, because other narrows can't pull from
+        // all_messages.
+        if (this.table_name === "zhome") {
+            this.data.clear();
+            this.data.add_messages(all_messages_data.all_messages());
+        }
+
         this.data.update_items_for_muting();
         // We need to rerender whether or not the narrow hides muted
         // topics, because we need to update recipient bars for topics

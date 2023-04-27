@@ -286,6 +286,7 @@ export function initialize() {
         stream_popover.build_move_topic_to_stream_popover(
             message.stream_id,
             message.topic,
+            false,
             message,
         );
         e.stopPropagation();
@@ -659,6 +660,19 @@ export function initialize() {
             return;
         }
 
+        if ($target.is("#send_later i")) {
+            // Since the click for this is handled by tippyjs, we cannot add stopPropagation
+            // there without adding a special click event handler to show the popover,
+            // so it is better just do it here.
+            e.stopPropagation();
+            return;
+        }
+
+        // The dropdown menu needs to process clicks to open and close.
+        if ($target.parents("#compose_stream_selection_dropdown").length > 0) {
+            return;
+        }
+
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
         if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {
@@ -670,14 +684,6 @@ export function initialize() {
             return;
         }
 
-        // Don't let clicks in the compose area count as
-        // "unfocusing" our compose -- in other words, e.g.
-        // clicking "Press Enter to send" should not
-        // trigger the composebox-closing code in MAIN CLICK HANDLER.
-        // But do allow our formatting link.
-        if (!$target.is("a")) {
-            e.stopPropagation();
-        }
         // Still hide the popovers, however
         popovers.hide_all();
     }
@@ -867,6 +873,7 @@ export function initialize() {
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (
+                !$(e.target).parents("#compose").length &&
                 !window.getSelection().toString() &&
                 // Clicking any input or text area should not close
                 // the compose box; this means using the sidebar

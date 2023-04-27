@@ -6,6 +6,7 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -136,7 +137,7 @@ const keypress_mappings = {
     71: {name: "G_end", message_view_only: true}, // 'G'
     74: {name: "vim_page_down", message_view_only: true}, // 'J'
     75: {name: "vim_page_up", message_view_only: true}, // 'K'
-    77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
+    77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
@@ -397,8 +398,8 @@ function handle_popover_events(event_name) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(".dropdown.open").length && $(e.target).attr("role") === "menuitem") {
-        // on #gear-menu li a[tabindex] elements, force a click and prevent default.
+    if ($(".dropdown.open, .dropup.open").length > 0 && $(e.target).attr("role") === "menuitem") {
+        // on dropdown menu elements, force a click and prevent default.
         // this is because these links do not have an href and so don't force a
         // default action.
         e.target.click();
@@ -444,6 +445,14 @@ export function process_enter_key(e) {
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
         drafts.drafts_handle_events(e, "enter");
+        return true;
+    }
+
+    // Transfer the enter keypress from button to the `<i>` tag inside
+    // it since it is the trigger for the popover. <button> is already used
+    // to trigger the tooltip so it cannot be used to trigger the popover.
+    if (e.target.id === "send_later") {
+        $("#send_later i").trigger("click");
         return true;
     }
 
@@ -572,6 +581,11 @@ export function process_shift_tab_key() {
     // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
     if (emoji_picker.reactions_popped()) {
         return emoji_picker.navigate("shift_tab");
+    }
+
+    if ($("#stream_message_recipient_topic").is(":focus")) {
+        compose_recipient.open_compose_stream_dropup();
+        return true;
     }
 
     return false;
@@ -983,8 +997,8 @@ export function process_hotkey(e, hotkey) {
             reactions.toggle_emoji_reaction(msg.id, first_reaction.emoji_name);
             return true;
         }
-        case "toggle_topic_mute":
-            muted_topics_ui.toggle_topic_mute(msg);
+        case "toggle_topic_visibility_policy":
+            muted_topics_ui.toggle_topic_visibility_policy(msg);
             return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
@@ -1005,7 +1019,7 @@ export function process_hotkey(e, hotkey) {
                 return false;
             }
 
-            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, msg);
+            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
             return true;
         }
         case "zoom_to_message_near": {

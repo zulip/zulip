@@ -68,20 +68,16 @@
                             </template>
                         </div>
                         <div id="compose-stream-recipient" class="order-1">
-                            <div class="stream-selection-header-colorblock message_header_stream left_part" tab-index="-1"></div>
-                            <div class="right_part">
-                                <span id="compose-lock-icon">
-                                    <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
-                                </span>
-                                <span id="compose-globe-icon">
-                                    <i class="zulip-icon zulip-icon-globe" title="{{t 'This is a web-public stream' }}" aria-hidden="true"></i>
-                                </span>
-                                <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip" tabindex="0">
-                                </a>
-                                <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="{{ max_stream_name_length }}" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
-                                <i class="fa fa-angle-right" aria-hidden="true"></i>
-                                <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                            <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip" tabindex="0">
+                            </a>
+                            <div id="compose_stream_selection_dropdown" class="new-style">
+                                <div class="stream_header_colorblock"></div>
+                                {{> settings/dropdown_list_widget
+                                  widget_name="compose_select_stream"
+                                  list_placeholder=(t 'Filter streams')}}
                             </div>
+                            <i class="fa fa-angle-right" aria-hidden="true"></i>
+                            <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
                         </div>
                         <div id="compose-private-recipient" class="order-1">
                             <div class="to_text">
@@ -108,10 +104,24 @@
                             <div id="below-compose-content">
                                 <div class="compose_bottom_top_container">
                                     <div class="compose_right_float_container order-3">
-                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button" title="{{t 'Send' }} (Ctrl + Enter)">
+                                        <button type="submit" id="compose-send-button" class="button small send_message animated-purple-button">
                                             <img class="loader" alt="" src="" />
                                             <span>{{t 'Send' }}</span>
                                         </button>
+                                        <button id="compose-schedule-confirm-button" class="button small hide animated-purple-button" tabindex=0>
+                                            <span>{{t 'Schedule' }}</span>
+                                        </button>
+                                        <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
+                                            <i class="fa fa-chevron-up"></i>
+                                        </button>
+                                        <template id="send-enter-tooltip-template">
+                                            {{t 'Send' }}
+                                            {{tooltip_hotkey_hints "Enter"}}
+                                        </template>
+                                        <template id="send-ctrl-enter-tooltip-template">
+                                            {{t 'Send' }}
+                                            {{tooltip_hotkey_hints "Ctrl" "Enter"}}
+                                        </template>
                                     </div>
                                     {{> compose_control_buttons }}
                                 </div>

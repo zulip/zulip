@@ -11,8 +11,8 @@ const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
-const compose_actions = mock_esm("../src/compose_actions");
 
+const compose_actions = zrequire("compose_actions");
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
@@ -23,6 +23,17 @@ const resolved_topic = zrequire("../shared/src/resolved_topic");
 const settings_config = zrequire("settings_config");
 const settings_data = mock_esm("../src/settings_data");
 const stream_data = zrequire("stream_data");
+const compose_recipient = zrequire("compose_recipient");
+
+let stream_value = "";
+compose_recipient.compose_stream_widget = {
+    value() {
+        return stream_value;
+    },
+    render(val) {
+        stream_value = val;
+    },
+};
 
 const me = {
     email: "me@example.com",
@@ -136,8 +147,9 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     assert.ok(subscription_error_rendered);
 });
 
-test_ui("validate", ({override, mock_template}) => {
-    override(compose_actions, "update_placeholder_text", () => {});
+test_ui("validate", ({mock_template}) => {
+    compose_actions.update_placeholder_text = () => {};
+    compose_recipient.on_compose_select_stream_update = () => {};
 
     function initialize_pm_pill() {
         $.clear_all_elements();
@@ -654,6 +666,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
+    stream_value = "";
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned_details = {

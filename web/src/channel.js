@@ -86,7 +86,7 @@ function call(args) {
                 blueslip.error(
                     "Unexpected 403 response from server",
                     {xhr: xhr.responseText, args},
-                    error.stack,
+                    error,
                 );
             }
         }
@@ -111,9 +111,6 @@ function call(args) {
 
     return $.ajax(args);
 }
-
-// TODO: When this file is converted to TypeScript, deduplicate the
-// AjaxRequest type defined in dialog_widget.js.
 
 export function get(options) {
     const args = {type: "GET", dataType: "json", ...options};

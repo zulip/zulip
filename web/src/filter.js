@@ -11,6 +11,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as unread from "./unread";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 function zephyr_stream_name_match(message, operand) {
@@ -56,6 +57,9 @@ function zephyr_topic_name_match(message, operand) {
 }
 
 function message_in_home(message) {
+    // The home view contains messages not sent to muted streams, with
+    // additional logic for unmuted topics, mentions, and
+    // single-stream windows.
     if (
         message.type === "private" ||
         message.mentioned ||
@@ -65,8 +69,10 @@ function message_in_home(message) {
         return true;
     }
 
-    // We don't display muted streams in 'All messages' view
-    return !stream_data.is_muted(message.stream_id);
+    return (
+        !stream_data.is_muted(message.stream_id) ||
+        user_topics.is_topic_unmuted(message.stream_id, message.topic)
+    );
 }
 
 function message_matches_search_term(message, operator, operand) {

@@ -53,7 +53,8 @@ Usage examples:
             realm_dict = vars(realm).copy()
             # Remove a field that is confusingly useless
             del realm_dict["_state"]
-            # Fix the one bitfield to display useful data
+
+            # This is not an attribute of realm strictly speaking, but valuable info to include.
             realm_dict["authentication_methods"] = str(realm.authentication_methods_dict())
 
             for key in identifier_attributes:

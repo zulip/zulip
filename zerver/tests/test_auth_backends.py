@@ -59,6 +59,7 @@ from zerver.actions.invites import do_invite_users
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
+    do_set_realm_authentication_methods,
     do_set_realm_property,
 )
 from zerver.actions.user_settings import do_change_password, do_change_user_setting
@@ -247,9 +248,13 @@ class AuthBackendTest(ZulipTestCase):
             if isinstance(backend, AUTH_BACKEND_NAME_MAP[backend_name]):
                 break
 
-        index = getattr(user_profile.realm.authentication_methods, backend_name).number
-        user_profile.realm.authentication_methods.set_bit(index, False)
-        user_profile.realm.save()
+        authentication_methods = user_profile.realm.authentication_methods_dict()
+        authentication_methods[backend_name] = False
+
+        do_set_realm_authentication_methods(
+            user_profile.realm, authentication_methods, acting_user=None
+        )
+
         if "realm" in good_kwargs:
             # Because this test is a little unfaithful to the ordering
             # (i.e. we fetched the realm object before this function
@@ -264,8 +269,11 @@ class AuthBackendTest(ZulipTestCase):
             self.assertEqual(result["Location"], user_profile.realm.uri + "/login/")
         else:
             self.assertIsNone(result)
-        user_profile.realm.authentication_methods.set_bit(index, True)
-        user_profile.realm.save()
+
+        authentication_methods[backend_name] = True
+        do_set_realm_authentication_methods(
+            user_profile.realm, authentication_methods, acting_user=None
+        )
 
     def test_dummy_backend(self) -> None:
         realm = get_realm("zulip")

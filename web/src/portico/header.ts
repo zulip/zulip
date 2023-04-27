@@ -26,7 +26,7 @@ $(() => {
     // In case user presses `back` with menu open.
     // See https://github.com/zulip/zulip/pull/24301#issuecomment-1418547337.
     if ($(".top-menu-tab-input:checked").length === 1) {
-        const sub_menu_height = $(".top-menu-tab-input:checked ~ .top-menu-submenu").height() || 0;
+        const sub_menu_height = $(".top-menu-tab-input:checked ~ .top-menu-submenu").height() ?? 0;
         $("#top-menu-submenu-backdrop").css("height", sub_menu_height + 16);
     }
 
@@ -78,6 +78,23 @@ $(() => {
             document.body.classList.add("_full-height-no-scroll");
         } else {
             document.body.classList.remove("_full-height-no-scroll");
+        }
+    });
+
+    /* Used by navbar of non-corporate URLs. */
+    $(".portico-header li.logout").on("click", () => {
+        $("#logout_form").trigger("submit");
+        return false;
+    });
+
+    $(".portico-header .dropdown").on("click", (e) => {
+        const $user_dropdown = $(e.target).closest(".dropdown");
+        const dropdown_is_shown = $user_dropdown.hasClass("show");
+
+        if (!dropdown_is_shown) {
+            $user_dropdown.addClass("show");
+        } else if (dropdown_is_shown) {
+            $user_dropdown.removeClass("show");
         }
     });
 });

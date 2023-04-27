@@ -529,32 +529,6 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .recipient_row {
-        .message_row.unread {
-            .date_row {
-                background-color: hsl(212deg 28% 18%);
-            }
-        }
-
-        .private-message.unread {
-            .date_row {
-                background-color: hsl(208deg 17% 29%);
-            }
-        }
-
-        .message_row.unread ~ .message_row.unread {
-            .date_row {
-                background-color: transparent;
-            }
-        }
-
-        .private-message.unread ~ .private-message.unread {
-            .date_row {
-                background-color: hsl(208deg 17% 29%);
-            }
-        }
-    }
-
     .spectator_narrow_login_button,
     .top-navbar-border {
         border-color: hsl(0deg 0% 0% / 60%);
@@ -882,9 +856,16 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .draft-row .message_header_private_message .message_label_clickable {
+    .overlay-message-row
+        .message_header_private_message
+        .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
+    }
+
+    .send_later_popover_header,
+    .selected_send_later_time {
+        color: hsl(236deg 33% 90%);
     }
 
     .nav-list > li > a,
@@ -1283,6 +1264,7 @@
         background-color: hsl(212deg 28% 18%);
     }
 
+    .scheduled-messages-loading-logo,
     .alert-zulip-logo,
     .top-messages-logo,
     .bottom-messages-logo {

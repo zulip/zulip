@@ -1011,6 +1011,7 @@ export function init_dropdown_widgets() {
         data: streams.map((x) => ({
             name: x.name,
             value: x.stream_id.toString(),
+            stream: x,
         })),
         on_update() {
             save_discard_widget_status_handler($("#org-notifications"));

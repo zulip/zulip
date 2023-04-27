@@ -16,6 +16,7 @@ Markdown
 importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
+uri-template
 
 # Needed for manage.py
 ipython
@@ -81,9 +82,6 @@ https://github.com/andersk/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65a
 
 # Needed for Redis
 redis
-
-# Needed to parse source maps for error reporting
-sourcemap
 
 # Tornado used for server->client push system
 tornado

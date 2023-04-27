@@ -24,7 +24,7 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import to_float
+from zerver.lib.validator import check_int, check_string_in, to_float
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
@@ -51,11 +51,11 @@ def create_mirrored_message_users(
     user_profile: UserProfile,
     recipients: Iterable[str],
     sender: str,
-    message_type: str,
+    recipient_type_name: str,
 ) -> UserProfile:
     sender_email = sender.strip().lower()
     referenced_users = {sender_email}
-    if message_type == "private":
+    if recipient_type_name == "private":
         for email in recipients:
             referenced_users.add(email.lower())
 
@@ -142,10 +142,11 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
 def handle_deferred_message(
     sender: UserProfile,
     client: Client,
-    message_type_name: str,
+    recipient_type_name: str,
     message_to: Union[Sequence[str], Sequence[int]],
     topic_name: Optional[str],
     message_content: str,
+    scheduled_message_id: Optional[int],
     delivery_type: str,
     defer_until: str,
     tz_guess: Optional[str],
@@ -175,10 +176,11 @@ def handle_deferred_message(
     check_schedule_message(
         sender,
         client,
-        message_type_name,
+        recipient_type_name,
         message_to,
         topic_name,
         message_content,
+        scheduled_message_id,
         delivery_type,
         deliver_at,
         realm=realm,
@@ -191,7 +193,7 @@ def handle_deferred_message(
 def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_type_name: str = REQ("type"),
+    req_type: str = REQ("type", str_validator=check_string_in(Message.API_RECIPIENT_TYPES)),
     req_to: Optional[str] = REQ("to", default=None),
     req_sender: Optional[str] = REQ("sender", default=None, documentation_pending=True),
     forged_str: Optional[str] = REQ("forged", default=None, documentation_pending=True),
@@ -200,17 +202,27 @@ def send_message_backend(
     widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
     local_id: Optional[str] = REQ(default=None),
     queue_id: Optional[str] = REQ(default=None),
+    scheduled_message_id: Optional[int] = REQ(
+        default=None, json_validator=check_int, documentation_pending=True
+    ),
     delivery_type: str = REQ("delivery_type", default="send_now", documentation_pending=True),
     defer_until: Optional[str] = REQ("deliver_at", default=None, documentation_pending=True),
     tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
     time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
 ) -> HttpResponse:
+    recipient_type_name = req_type
+    if recipient_type_name == "direct":
+        # For now, use "private" from Message.API_RECIPIENT_TYPES.
+        # TODO: Use "direct" here, as well as in events and
+        # message (created, schdeduled, drafts) objects/dicts.
+        recipient_type_name = "private"
+
     # If req_to is None, then we default to an
     # empty list of recipients.
     message_to: Union[Sequence[int], Sequence[str]] = []
 
     if req_to is not None:
-        if message_type_name == "stream":
+        if recipient_type_name == "stream":
             stream_indicator = extract_stream_indicator(req_to)
 
             # For legacy reasons check_send_message expects
@@ -254,7 +266,7 @@ def send_message_backend(
         # same-realm constraint.
         if req_sender is None:
             raise JsonableError(_("Missing sender"))
-        if message_type_name != "private" and not can_forge_sender:
+        if recipient_type_name != "private" and not can_forge_sender:
             raise JsonableError(_("User not authorized for this query"))
 
         # For now, mirroring only works with recipient emails, not for
@@ -269,7 +281,7 @@ def send_message_backend(
 
         try:
             mirror_sender = create_mirrored_message_users(
-                client, user_profile, message_to, req_sender, message_type_name
+                client, user_profile, message_to, req_sender, recipient_type_name
             )
         except InvalidMirrorInputError:
             raise JsonableError(_("Invalid mirrored message"))
@@ -289,10 +301,11 @@ def send_message_backend(
         deliver_at = handle_deferred_message(
             sender,
             client,
-            message_type_name,
+            recipient_type_name,
             message_to,
             topic_name,
             message_content,
+            scheduled_message_id,
             delivery_type,
             defer_until,
             tz_guess,
@@ -304,7 +317,7 @@ def send_message_backend(
     ret = check_send_message(
         sender,
         client,
-        message_type_name,
+        recipient_type_name,
         message_to,
         topic_name,
         message_content,

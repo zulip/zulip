@@ -1467,10 +1467,6 @@ soupsieve==2.4 \
     # via
     #   -r requirements/common.in
     #   beautifulsoup4
-sourcemap==0.2.1 \
-    --hash=sha256:be00a90185e7a16b87bbe62a68ffd5e38bc438ef4700806d9b90e44d8027787c \
-    --hash=sha256:c448a8c48f9482e522e4582106b0c641a83b5dbc7f13927b178848e3ea20967b
-    # via -r requirements/common.in
 sqlalchemy==1.4.47 \
     --hash=sha256:03be6f3cb66e69fb3a09b5ea89d77e4bc942f3bf84b207dba84666a26799c166 \
     --hash=sha256:048509d7f3ac27b83ad82fd96a1ab90a34c8e906e4e09c8d677fc531d12c23c5 \
@@ -1580,6 +1576,10 @@ uhashring==2.3 \
     --hash=sha256:7ee8a25ca495a97effad10bd563c83b4054a6d7606d9530757049a04edab9297 \
     --hash=sha256:9f76187e8d8e82f6e5519c995eef1f1bf44d4a5e0fc4fdd1219a044b10040612
     # via python-binary-memcached
+uri-template==1.2.0 \
+    --hash=sha256:934e4d09d108b70eb8a24410af8615294d09d279ce0e7cbcdaef1bd21f932b06 \
+    --hash=sha256:f1699c77b73b925cf4937eae31ab282a86dc885c333f2e942513f08f691fc7db
+    # via -r requirements/common.in
 urllib3==1.26.15 \
     --hash=sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305 \
     --hash=sha256:aa751d169e23c7479ce47a0cb0da579e3ede798f994f5816a74e4f4500dcea42

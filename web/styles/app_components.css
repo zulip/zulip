@@ -826,20 +826,17 @@ div.overlay {
 }
 
 .stream-privacy-type-icon {
-    &.zulip-icon-globe {
-        position: relative;
-        top: 1px;
-        padding-right: 1px;
+    position: relative;
+    top: 0.06rem;
+    padding-right: 1px;
+
+    &.zulip-icon-globe,
+    &.zulip-icon-hashtag {
         font-size: 0.75em;
     }
 
-    &.fa-lock {
-        padding-right: 1px;
-        font-size: 0.865em;
-    }
-
-    &.hashtag:empty::after {
-        font-size: 1em;
+    &.zulip-icon-lock {
+        font-size: 0.8em;
     }
 }
 
@@ -853,6 +850,160 @@ div.overlay {
         & span {
             min-width: 210px;
             width: fit-content;
+        }
+    }
+}
+
+/* This includes css needed to display messages in an overlay. */
+.overlay-messages-container {
+    position: relative;
+    height: 95%;
+    background-color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    padding: 0;
+    width: 58%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+    display: flex;
+    flex-direction: column;
+
+    @media (width < $md_min) {
+        height: 95%;
+        max-width: none;
+        width: 90%;
+    }
+
+    .overlay-messages-header {
+        padding-top: 4px;
+        padding-bottom: 8px;
+        text-align: center;
+        border-bottom: 1px solid hsl(0deg 0% 87%);
+
+        & h1 {
+            margin: 0;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .exit {
+            font-weight: 400;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0deg 0% 67%);
+            cursor: pointer;
+
+            .exit-sign {
+                position: relative;
+                top: 1px;
+                margin-left: 3px;
+                font-size: 1.5rem;
+                line-height: 1;
+                font-weight: 600;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .overlay-messages-list {
+        padding: 10px 25px;
+        overflow: auto;
+
+        .no-overlay-messages {
+            display: block;
+            margin-top: calc(45vh - 30px - 1.5em);
+            text-align: center;
+            font-size: 1.5em;
+            color: hsl(0deg 0% 67%);
+            pointer-events: none;
+        }
+    }
+}
+
+.overlay-messages-container .overlay-message-row {
+    padding: 5px 0;
+
+    > div {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .overlay-message-info-box {
+        width: 100%;
+        margin-bottom: 10px;
+
+        &.active {
+            outline: 2px solid hsl(215deg 47% 50%);
+            /* this offset ensures no gap between the blue box and the draft in active state */
+            outline-offset: -1px;
+        }
+
+        .message_row {
+            border-radius: 0 0 7px 7px;
+            border: 1px solid var(--color-message-list-border);
+            border-top: 0;
+        }
+
+        .messagebox-content {
+            grid-template-rows: auto;
+            grid-template-columns: auto max-content;
+            padding: 10px;
+
+            .message_content {
+                grid-column: 1 / 2;
+                /* to space from restore draft button */
+                margin-right: 5px;
+            }
+
+            .message_top_line {
+                grid-column: 2 / 3;
+            }
+        }
+
+        .messagebox {
+            cursor: auto;
+            box-shadow: none;
+            border-radius: 0 0 7px 7px;
+        }
+
+        .overlay_message_controls {
+            display: inline-block;
+            font-size: 0.9em;
+
+            [data-tippy-root] {
+                width: max-content;
+                word-wrap: unset;
+            }
+
+            .restore-overlay-message {
+                cursor: pointer;
+                margin-right: 5px;
+                color: hsl(170deg 48% 54%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .delete-overlay-message {
+                cursor: pointer;
+                margin-left: 5px;
+                color: hsl(357deg 52% 57%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+
+        .message_header {
+            /* We don't need these effects applied for message list in the drafts overlay. */
+            box-shadow: none !important;
+            border: 0 !important;
+            background: transparent;
         }
     }
 }

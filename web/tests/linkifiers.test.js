@@ -20,12 +20,12 @@ run_test("python_to_js_linkifier", () => {
     linkifiers.update_linkifier_rules([
         {
             pattern: "/a(?im)a/g",
-            url_format: "http://example1.example.com",
+            url_template: "http://example1.example.com",
             id: 10,
         },
         {
             pattern: "/a(?L)a/g",
-            url_format: "http://example2.example.com",
+            url_template: "http://example2.example.com",
             id: 20,
         },
     ]);
@@ -36,7 +36,7 @@ run_test("python_to_js_linkifier", () => {
     linkifiers.update_linkifier_rules([
         {
             pattern: "#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)",
-            url_format: "http://example3.example.com",
+            url_template: "http://example3.example.com",
             id: 30,
         },
     ]);
@@ -51,7 +51,7 @@ run_test("python_to_js_linkifier", () => {
     linkifiers.update_linkifier_rules([
         {
             pattern: "!@#@(!#&((!&(@#(",
-            url_format: "http://example4.example.com",
+            url_template: "http://example4.example.com",
             id: 40,
         },
     ]);

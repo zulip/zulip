@@ -16,6 +16,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -212,6 +213,7 @@ function do_hashchange_normal(from_reload) {
         case "#organization":
         case "#settings":
         case "#about-zulip":
+        case "#scheduled":
             blueslip.error("overlay logic skipped for: " + hash);
             break;
         default:
@@ -341,11 +343,15 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "settings") {
+        settings.build_page();
+        admin.build_page();
         settings.launch(section);
         return;
     }
 
     if (base === "organization") {
+        settings.build_page();
+        admin.build_page();
         admin.launch(section);
         return;
     }
@@ -367,6 +373,10 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "about-zulip") {
         about_zulip.launch();
+    }
+
+    if (base === "scheduled") {
+        scheduled_messages_overlay_ui.launch();
     }
 }
 

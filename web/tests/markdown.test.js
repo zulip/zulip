@@ -12,18 +12,30 @@ const {page_params, user_settings} = require("./lib/zpage_params");
 const example_realm_linkifiers = [
     {
         pattern: "#(?P<id>[0-9]{2,8})",
-        url_format: "https://trac.example.com/ticket/%(id)s",
+        url_template: "https://trac.example.com/ticket/{id}",
         id: 1,
     },
     {
         pattern: "ZBUG_(?P<id>[0-9]{2,8})",
-        url_format: "https://trac2.zulip.net/ticket/%(id)s",
+        url_template: "https://trac2.zulip.net/ticket/{id}",
         id: 2,
     },
     {
         pattern: "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
-        url_format: "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
+        url_template: "https://zone_{zone}.zulip.net/ticket/{id}",
         id: 3,
+    },
+    {
+        // For example, this linkifier matches:
+        // FOO_abcde;e;zulip;luxembourg;foo;23;testing
+        // which expands to:
+        // https://zone_e.zulip.net/ticket/luxembourg/abcde?name=foo&chapter=23#testi
+        // This exercises different URL template supported syntax.
+        pattern:
+            "FOO_(?P<id>[a-f]{5});(?P<zone>[a-f]);(?P<domain>[a-z]+);(?P<location>[a-z]+);(?P<name>[a-z]{2,8});(?P<chapter>[0-9]{2,3});(?P<fragment>[a-z]{2,8})",
+        url_template:
+            "https://zone_{zone}{.domain}.net/ticket{/location}{/id}{?name,chapter}{#fragment:5}",
+        id: 4,
     },
 ];
 user_settings.translate_emoticons = false;
@@ -431,6 +443,11 @@ test("marked", () => {
             expected:
                 '<p>This is a linkifier <a href="https://trac.example.com/ticket/1234" title="https://trac.example.com/ticket/1234">#1234</a> with text after it</p>',
         },
+        {
+            input: "This is a complicated linkifier FOO_abcde;e;zulip;luxembourg;foo;23;testing with text after it",
+            expected:
+                '<p>This is a complicated linkifier <a href="https://zone_e.zulip.net/ticket/luxembourg/abcde?name=foo&amp;chapter=23#testi" title="https://zone_e.zulip.net/ticket/luxembourg/abcde?name=foo&amp;chapter=23#testi">FOO_abcde;e;zulip;luxembourg;foo;23;testing</a> with text after it</p>',
+        },
         {input: "#1234is not a linkifier.", expected: "<p>#1234is not a linkifier.</p>"},
         {
             input: "A pattern written as #1234is not a linkifier.",
@@ -652,6 +669,14 @@ test("topic_links", () => {
     message = {type: "not-stream"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 0);
+
+    message = {type: "stream", topic: "FOO_abcde;e;zulip;luxembourg;foo;23;testing"};
+    markdown.add_topic_links(message);
+    assert.equal(message.topic_links.length, 1);
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://zone_e.zulip.net/ticket/luxembourg/abcde?name=foo&chapter=23#testi",
+        text: "FOO_abcde;e;zulip;luxembourg;foo;23;testing",
+    });
 });
 
 test("message_flags", () => {

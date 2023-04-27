@@ -1,6 +1,7 @@
 import datetime
+import itertools
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -324,6 +325,27 @@ def do_update_embedded_data(
     send_event(user_profile.realm, event, list(map(user_info, ums)))
 
 
+def get_visibility_policy_after_merge(
+    orig_topic_visibility_policy: int, target_topic_visibility_policy: int
+) -> int:
+    # This function determines the final visibility_policy after the merge
+    # operation, based on the visibility policies of the original and target
+    # topics.
+    #
+    # The algorithm to decide is based on:
+    # Whichever of the two policies is most visible is what we keep.
+    # The general motivation is to err on the side of showing messages
+    # rather than hiding them.
+    if orig_topic_visibility_policy == target_topic_visibility_policy:
+        return orig_topic_visibility_policy
+    elif (
+        orig_topic_visibility_policy == UserTopic.VisibilityPolicy.UNMUTED
+        or target_topic_visibility_policy == UserTopic.VisibilityPolicy.UNMUTED
+    ):
+        return UserTopic.VisibilityPolicy.UNMUTED
+    return UserTopic.VisibilityPolicy.INHERIT
+
+
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic(savepoint=False)
 def do_update_message(
@@ -547,6 +569,23 @@ def do_update_message(
 
     update_edit_history(target_message, timestamp, edit_history_event)
 
+    # 'target_topic_has_messages', 'target_stream', and 'target_topic'
+    # will be used while migrating user_topic records later in this function.
+    #
+    # We need to calculate 'target_topic_has_messages' here,
+    # as we are moving the messages in the next step.
+    if topic_name is not None or new_stream is not None:
+        assert stream_being_edited is not None
+        assert orig_topic_name is not None
+
+        target_stream: Stream = new_stream if new_stream is not None else stream_being_edited
+        target_topic: str = topic_name if topic_name is not None else orig_topic_name
+
+        assert target_stream.recipient_id is not None
+        target_topic_has_messages = messages_for_topic(
+            target_stream.recipient_id, target_topic
+        ).exists()
+
     delete_event_notify_user_ids: List[int] = []
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
@@ -757,16 +796,14 @@ def do_update_message(
     #   the acting user has moved the entire topic (as visible to them).
     #
     # This rule corresponds to checking moved_all_visible_messages.
-    #
-    # We may want more complex behavior in cases where one appears to
-    # be merging topics (E.g. there are existing messages in the
-    # target topic).
     if moved_all_visible_messages:
         assert stream_being_edited is not None
-        assert topic_name is not None or new_stream is not None
+        assert target_stream is not None
+        assert target_topic is not None
 
-        user_profiles_for_visibility_policy: Dict[int, List[UserProfile]] = defaultdict(list)
         stream_inaccessible_to_user_profiles: List[UserProfile] = []
+        orig_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
+        target_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
         for user_topic in get_users_with_user_topic_visibility_policy(
             stream_being_edited.id, orig_topic_name
         ):
@@ -776,9 +813,47 @@ def do_update_message(
             ):
                 stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
-                user_profiles_for_visibility_policy[user_topic.visibility_policy].append(
+                orig_topic_user_profile_to_visibility_policy[
                     user_topic.user_profile
-                )
+                ] = user_topic.visibility_policy
+
+        for user_topic in get_users_with_user_topic_visibility_policy(
+            target_stream.id, target_topic
+        ):
+            target_topic_user_profile_to_visibility_policy[
+                user_topic.user_profile
+            ] = user_topic.visibility_policy
+
+        # User profiles having any of the visibility policies set for either the original or target topic.
+        user_profiles_having_visibility_policy: Set[UserProfile] = set(
+            itertools.chain(
+                orig_topic_user_profile_to_visibility_policy.keys(),
+                target_topic_user_profile_to_visibility_policy.keys(),
+            )
+        )
+
+        user_profiles_for_visibility_policy_pair: Dict[
+            Tuple[int, int], List[UserProfile]
+        ] = defaultdict(list)
+        for user_profile in user_profiles_having_visibility_policy:
+            if user_profile not in target_topic_user_profile_to_visibility_policy:
+                target_topic_user_profile_to_visibility_policy[
+                    user_profile
+                ] = UserTopic.VisibilityPolicy.INHERIT
+            elif user_profile not in orig_topic_user_profile_to_visibility_policy:
+                orig_topic_user_profile_to_visibility_policy[
+                    user_profile
+                ] = UserTopic.VisibilityPolicy.INHERIT
+
+            orig_topic_visibility_policy = orig_topic_user_profile_to_visibility_policy[
+                user_profile
+            ]
+            target_topic_visibility_policy = target_topic_user_profile_to_visibility_policy[
+                user_profile
+            ]
+            user_profiles_for_visibility_policy_pair[
+                (orig_topic_visibility_policy, target_topic_visibility_policy)
+            ].append(user_profile)
 
         # If the messages are being moved to a stream the user
         # cannot access, then we treat this as the
@@ -797,29 +872,65 @@ def do_update_message(
         # can access. We move the user topic records for such
         # users, but removing the old topic visibility_policy
         # and then creating a new one.
-        for visibility_policy in UserTopic.VisibilityPolicy.values:
-            # Using the dict, we get the user_profiles lists for the original_topic
-            # that corresponds to each visibility_policy.
-            # Perform the remove and create operation for each of
-            # these user_profiles lists.
-            if visibility_policy in user_profiles_for_visibility_policy:
+        #
+        # Algorithm used for the 'merge userTopic states' case:
+        # Using the 'user_profiles_for_visibility_policy_pair' dictionary,
+        # we have 'orig_topic_visibility_policy', 'target_topic_visibility_policy',
+        # and a list of 'user_profiles' having the mentioned visibility policies.
+        #
+        # For every 'orig_topic_visibility_policy and target_topic_visibility_policy' pair,
+        # we determine the final visibility_policy that should be after the merge.
+        # Update the visibility_policy for the concerned set of user_profiles.
+        for (
+            visibility_policy_pair,
+            user_profiles,
+        ) in user_profiles_for_visibility_policy_pair.items():
+            orig_topic_visibility_policy, target_topic_visibility_policy = visibility_policy_pair
+
+            if orig_topic_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
                 bulk_do_set_user_topic_visibility_policy(
-                    user_profiles_for_visibility_policy[visibility_policy],
+                    user_profiles,
                     stream_being_edited,
                     orig_topic_name,
                     visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
-                    # do_set_user_topic_visibility_policy with visibility_policy
+                    # bulk_do_set_user_topic_visibility_policy with visibility_policy
                     # set to 'new_visibility_policy' will send an updated muted topic
                     # event, which contains the full set of muted
                     # topics, just after this.
                     skip_muted_topics_event=True,
                 )
 
+            new_visibility_policy = orig_topic_visibility_policy
+
+            if target_topic_has_messages:
+                # Here, we handle the complex case when target_topic already has
+                # some messages. We determine the resultant visibility_policy
+                # based on the visibility_policy of the orig_topic + target_topic.
+                # Finally, bulk_update the user_topic rows with the new visibility_policy.
+                new_visibility_policy = get_visibility_policy_after_merge(
+                    orig_topic_visibility_policy, target_topic_visibility_policy
+                )
+                if new_visibility_policy == target_topic_visibility_policy:
+                    continue
                 bulk_do_set_user_topic_visibility_policy(
-                    user_profiles_for_visibility_policy[visibility_policy],
-                    new_stream if new_stream is not None else stream_being_edited,
-                    topic_name if topic_name is not None else orig_topic_name,
-                    visibility_policy=visibility_policy,
+                    user_profiles,
+                    target_stream,
+                    target_topic,
+                    visibility_policy=new_visibility_policy,
+                )
+            else:
+                # This corresponds to the case when messages are moved
+                # to a stream-topic pair that didn't exist.
+                if new_visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
+                    # This avoids unnecessary db operations and INFO logs.
+                    # As INHERIT is the default visibility_policy in the new
+                    # stream-topic pair for users.
+                    continue
+                bulk_do_set_user_topic_visibility_policy(
+                    user_profiles,
+                    target_stream,
+                    target_topic,
+                    visibility_policy=new_visibility_policy,
                 )
 
     send_event(user_profile.realm, event, users_to_be_notified)

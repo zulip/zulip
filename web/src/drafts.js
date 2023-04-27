@@ -408,7 +408,7 @@ export function format_draft(draft) {
             {
                 draft_content: draft.content,
             },
-            error.stack,
+            error,
         );
         return undefined;
     }

@@ -1250,8 +1250,9 @@ export class MessageListView {
         this._post_process($rendered_msg);
         $row.replaceWith($rendered_msg);
 
-        if (was_selected) {
-            this.list.select_id(message_container.msg.id);
+        // If this list not currently displayed, we don't need to select the message.
+        if (was_selected && this.list === message_lists.current) {
+            this.list.reselect_selected_id(message_container.msg.id);
         }
     }
 
@@ -1511,10 +1512,14 @@ export class MessageListView {
         } else {
             $sticky_header.addClass("sticky_header");
             const sticky_header_props = $sticky_header[0].getBoundingClientRect();
+            /* date separator starts to be hidden at this height difference. */
+            const date_separator_padding = 7;
+            const sticky_header_bottom = sticky_header_props.top + sticky_header_props.height;
+            const possible_new_date_separator_start = sticky_header_bottom - date_separator_padding;
             /* Get `message_row` under the sticky header. */
             const elements_below_sticky_header = document.elementsFromPoint(
                 sticky_header_props.left,
-                sticky_header_props.top,
+                possible_new_date_separator_start,
             );
             $message_row = $(
                 elements_below_sticky_header.filter((element) =>
@@ -1571,5 +1576,24 @@ export class MessageListView {
             const $stream_header = $(stream_header);
             stream_color.update_stream_recipient_color($stream_header);
         }
+    }
+
+    show_message_as_read(message, options) {
+        const $row = this.get_row(message.id);
+        if (options.from === "pointer" || options.from === "server") {
+            $row.find(".unread_marker").addClass("fast_fade");
+        } else {
+            $row.find(".unread_marker").addClass("slow_fade");
+        }
+        $row.removeClass("unread");
+    }
+
+    show_messages_as_unread(message_ids) {
+        const $table = rows.get_table(this.table_name);
+        const $rows_to_show_as_unread = $table.find(".message_row").filter((index, $row) => {
+            const message_id = Number.parseFloat($row.getAttribute("zid"));
+            return message_ids.includes(message_id);
+        });
+        $rows_to_show_as_unread.addClass("unread");
     }
 }

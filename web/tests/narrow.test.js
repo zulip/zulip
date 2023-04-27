@@ -17,6 +17,7 @@ const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
 const narrow = zrequire("narrow");
 const settings_config = zrequire("settings_config");
+const compose_recipient = zrequire("compose_recipient");
 
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 mock_esm("../src/spectators", {
@@ -25,6 +26,16 @@ mock_esm("../src/spectators", {
 const recent_topics_util = mock_esm("../src/recent_topics_util", {
     is_visible() {},
 });
+
+let stream_value = "";
+compose_recipient.compose_stream_widget = {
+    value() {
+        return stream_value;
+    },
+    render(val) {
+        stream_value = val;
+    },
+};
 
 function empty_narrow_html(title, html, search_data) {
     const opts = {
@@ -260,7 +271,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: You haven't starred anything yet!",
+            "translated: You have no starred messages.",
             'translated HTML: Learn more about starring messages <a href="/help/star-a-message">here</a>.',
         ),
     );
@@ -639,6 +650,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
 });
 
 run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
+    compose_recipient.on_compose_select_stream_update = () => {};
     disallow_rewire(narrow, "activate");
 
     // No-op when not composing.

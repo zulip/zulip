@@ -1868,38 +1868,40 @@ paths:
                                 message_ids:
                                   type: array
                                   description: |
-                                    The `message_ids` property will be present for clients that support
-                                    the `bulk_message_deletion` client capability.
+                                    Only present for clients that support the `bulk_message_deletion`
+                                    [client capability][client-capabilities].
 
-                                    An containing the IDs of the newly deleted messages.
+                                    A list containing the IDs of the newly deleted messages.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                   items:
                                     type: integer
                                 message_id:
                                   type: integer
                                   description: |
-                                    The `message_id` property will be present for clients that do not support
-                                    the `bulk_message_deletion` client capability.
+                                    Only present for clients that do not support the `bulk_message_deletion`
+                                    [client capability][client-capabilities].
 
                                     The ID of the newly deleted message.
+
+                                    [client-capabilities]: /api/register-queue#parameter-client_capabilities
                                 message_type:
                                   type: string
                                   description: |
-                                    The type of message. Either 'stream' or 'private'. The other keys
-                                    present in the event, necessary to update various frontend data structures
-                                    that might be tracking the message, depend on the message type.
+                                    The type of message. Either `"stream"` or `"private"`.
                                   enum:
                                     - private
                                     - stream
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present for stream messages.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The ID of the stream to which the message was sent.
                                 topic:
                                   type: string
                                   description: |
-                                    Only present for stream messages.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The topic to which the message was sent.
                               example:
@@ -2397,12 +2399,15 @@ paths:
                                 message being typed, with the additional rule that typing
                                 notifications for stream messages are only sent to clients
                                 that included `stream_typing_notifications` in their
-                                `client_capabilities` when registering the event queue.
+                                [client capabilities][client-capabilities] when registering
+                                the event queue.
+
+                                See [POST /typing](/api/set-typing-status) endpoint for more details.
 
                                 **Changes**: Typing notifications for stream messages are new in
                                 Zulip 4.0 (feature level 58).
 
-                                See the [typing endpoint docs](/api/set-typing-status) for more details.
+                                [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2418,11 +2423,10 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be "stream" or "private",
-                                    as with sending a message.
+                                    Type of message being composed. Must be `"stream"` or `"private"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly private `private`.
+                                    all typing notifications were implicitly private messages.
                                   enum:
                                     - private
                                     - stream
@@ -2430,7 +2434,7 @@ paths:
                                   additionalProperties: false
                                   type: object
                                   description: |
-                                    Object describing the "sender" (i.e. the user who is typing a message).
+                                    Object describing the user who is typing the message.
                                   properties:
                                     user_id:
                                       type: integer
@@ -2443,12 +2447,12 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present if `message_type` is `private`.
+                                    Only present if `message_type` is `"private"`.
 
-                                    Array of dictionaries describing the set of users who would be recipients
-                                    of the message being typed. Each dictionary contains details on one
-                                    one of the recipients users; the sending user is guaranteed to appear
-                                    among the recipients.
+                                    Array of dictionaries describing the set of users who would be
+                                    recipients of the message being typed. Each dictionary contains
+                                    details about one of the recipients. The sending user is guaranteed
+                                    to appear among the recipients.
                                   items:
                                     type: object
                                     additionalProperties: false
@@ -2466,7 +2470,7 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The unique ID of the stream to which message is being typed.
 
@@ -2475,7 +2479,7 @@ paths:
                                 topic:
                                   type: string
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     Topic within the stream where the message is being typed.
 
@@ -2485,6 +2489,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "start",
+                                  "message_type": "private",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -2512,12 +2517,15 @@ paths:
                                 that was previously being typed, with the additional rule
                                 that typing notifications for stream messages are only sent to
                                 clients that included `stream_typing_notifications` in their
-                                `client_capabilities` when registering the event queue.
+                                [client capabilities][client-capabilities] when registering
+                                the event queue.
+
+                                See [POST /typing](/api/set-typing-status) endpoint for more details.
 
                                 **Changes**: Typing notifications for stream messages are new in
                                 Zulip 4.0 (feature level 58).
 
-                                See the [typing endpoint docs](/api/set-typing-status) for more details.
+                                [client-capabilities]: /api/register-queue#parameter-client_capabilities
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2533,11 +2541,10 @@ paths:
                                 message_type:
                                   type: string
                                   description: |
-                                    Type of message being composed. Must be "stream" or "private",
-                                    as with sending a message.
+                                    Type of message being composed. Must be `"stream"` or `"private"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly private `private`.
+                                    all typing notifications were implicitly private messages.
                                   enum:
                                     - private
                                     - stream
@@ -2545,8 +2552,7 @@ paths:
                                   additionalProperties: false
                                   type: object
                                   description: |
-                                    Object describing the "sender" (i.e. the user who was previously
-                                    typing a message).
+                                    Object describing the user who was previously typing the message.
                                   properties:
                                     user_id:
                                       type: integer
@@ -2559,12 +2565,12 @@ paths:
                                 recipients:
                                   type: array
                                   description: |
-                                    Only present for typing notifications for (group) private messages.
+                                    Only present if `message_type` is `"private"`.
 
-                                    Array of dictionaries describing the set of users who would be recipients
-                                    of the message that stopped being typed. Each dictionary contains
-                                    details on one one of the recipients users; the sending user is
-                                    guaranteed to appear among the recipients.
+                                    Array of dictionaries describing the set of users who would be
+                                    recipients of the message that was previously being typed. Each
+                                    dictionary contains details about one of the recipients. The
+                                    sending user is guaranteed to appear among the recipients.
                                   items:
                                     type: object
                                     additionalProperties: false
@@ -2582,7 +2588,7 @@ paths:
                                 stream_id:
                                   type: integer
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     The unique ID of the stream to which message is being typed.
 
@@ -2591,7 +2597,7 @@ paths:
                                 topic:
                                   type: string
                                   description: |
-                                    Only present if `message_type` is `stream`.
+                                    Only present if `message_type` is `"stream"`.
 
                                     Topic within the stream where the message is being typed.
 
@@ -2601,6 +2607,7 @@ paths:
                                 {
                                   "type": "typing",
                                   "op": "stop",
+                                  "message_type": "private",
                                   "sender":
                                     {
                                       "user_id": 10,
@@ -3089,6 +3096,16 @@ paths:
                                 Processing this event is important to doing Markdown local echo
                                 correctly.
 
+                                The client will not receive this event unless the event queue
+                                is registered with `linkifier_url_template` client capability set to `true`.
+                                See [`POST /register`](/api/register-queue#parameter-client_capabilities)
+                                for how client capabilities can be specified.
+
+                                **Changes**: Changed in Zulip 7.0 (feature level 176). This event no longer
+                                gets sent unless the `linkifier_url_template` client capability is set to
+                                `true`, due to the backwards-incompatible change from specifying the
+                                URL from a `url_format` format string to `url_template`.
+
                                 **Changes**: New in Zulip 4.0 (feature level 54), replacing the
                                 previous `realm_filters` event type, which is still sent for
                                 backwards compatibility reasons.
@@ -3118,11 +3135,14 @@ paths:
                                         description: |
                                           The string regex pattern which represents the pattern that
                                           should be linkified by this linkifier.
-                                      url_format:
+                                      url_template:
                                         type: string
                                         description: |
-                                          The URL format string to be used for linkifying matches.
+                                          The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant
+                                          URL template to be used for linkifying matches.
 
+                                          **Changes**: New in Zulip 7.0 (feature level 176). This replaced `url_format`,
+                                          which contained a URL format string.
                                       id:
                                         type: integer
                                         description: |
@@ -3134,7 +3154,7 @@ paths:
                                     [
                                       {
                                         "pattern": "#(?P<id>[123])",
-                                        "url_format": "https://realm.com/my_realm_filter/%(id)s",
+                                        "url_template": "https://realm.com/my_realm_filter/{id}",
                                         "id": 1,
                                       },
                                     ],
@@ -3147,6 +3167,9 @@ paths:
                                 Legacy event type. Sent to all users in a Zulip organization
                                 when the set of configured [linkifiers](/help/add-a-custom-linkifier)
                                 for the organization has changed.
+
+                                **Changes**: In Zulip 7.0 (feature level 176), clients will no longer
+                                receive this event.
 
                                 **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
                                 the `realm_linkifiers` event type, which has a clearer name and format,
@@ -3177,14 +3200,7 @@ paths:
                               example:
                                 {
                                   "type": "realm_filters",
-                                  "realm_filters":
-                                    [
-                                      [
-                                        "#(?P<id>[123])",
-                                        "https://realm.com/my_realm_filter/%(id)s",
-                                        1,
-                                      ],
-                                    ],
+                                  "realm_filters": [],
                                   "id": 0,
                                 }
                             - type: object
@@ -4971,6 +4987,91 @@ paths:
                   - description: |
                       JSON response for when no draft exists with the provided ID.
                     example: {"result": "error", "msg": "Draft does not exist"}
+  /scheduled_messages:
+    get:
+      operationId: get-scheduled-messages
+      tags: ["scheduled_messages"]
+      summary: Get scheduled messages
+      description: |
+        Fetch all scheduled messages for the current user.
+
+        Scheduled messages are messages the user has scheduled to be
+        sent in the future via the send later feature.
+
+        **Changes**: New in Zulip 7.0 (feature level 173).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      scheduled_messages:
+                        type: array
+                        description: |
+                          Returns all of the current user's scheduled
+                          messages, ordered by scheduled timestamp (ascending).
+                        items:
+                          $ref: "#/components/schemas/ScheduledMessage"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "scheduled_messages":
+                          [
+                            {
+                              "message_id": 27,
+                              "to": [14],
+                              "type": "stream",
+                              "content": "Hi",
+                              "rendered_content": "<p>Hi</p>",
+                              "topic": "Introduction",
+                              "deliver_at": 1681662420000,
+                            },
+                          ],
+                      }
+  /scheduled_messages/{scheduled_message_id}:
+    delete:
+      operationId: delete-scheduled-message
+      tags: ["scheduled_messages"]
+      summary: Delete a scheduled message.
+      description: |
+        Delete/cancel a previously scheduled message.
+
+        **Changes**: New in Zulip 7.0 (feature level 173).
+      parameters:
+        - name: scheduled_message_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the scheduled message you want to delete.
+          required: True
+          example: 1
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - description: |
+                      Example response for when no scheduled message exists with the provided ID.
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "Scheduled message does not exist",
+                      }
   /default_streams:
     post:
       operationId: add-default-stream
@@ -5417,25 +5518,35 @@ paths:
       summary: Send a message
       tags: ["messages"]
       description: |
-        Send a stream or a private message.
+        Send a [stream message](/help/streams-and-topics) or a
+        [direct message](/help/direct-messages).
       parameters:
         - name: type
           in: query
           description: |
-            The type of message to be sent. `private` for a private message and
-            `stream` for a stream message.
+            The type of message to be sent.
+
+            `"direct"` for a direct message and `"stream"` for a stream message.
+
+            **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added as
+            the preferred way to request a direct message, deprecating the original
+            `"private"`. While `"private"` is still supported for requesting direct
+            messages, clients are encouraged to use to the modern convention with
+            servers that support it, because support for `"private"` will eventually
+            be removed.
           schema:
             type: string
             enum:
-              - private
+              - direct
               - stream
-          example: private
+              - private
+          example: direct
           required: true
         - name: to
           in: query
           description: |
             For stream messages, either the name or integer ID of the stream. For
-            private messages, either a list containing integer user IDs or a list
+            direct messages, either a list containing integer user IDs or a list
             containing string email addresses.
 
             **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
@@ -5461,7 +5572,9 @@ paths:
             The topic of the message. Only required for stream messages
             (`type="stream"`), ignored otherwise.
 
-            Maximum length of 60 characters.
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length
 
             **Changes**: New in Zulip 2.0.0. Previous Zulip releases encoded
             this as `subject`, which is currently a deprecated alias.
@@ -5539,7 +5652,7 @@ paths:
                             "result": "error",
                           }
                         description: |
-                          A typical failed JSON response for when a private message is sent to a user
+                          A typical failed JSON response for when a direct message is sent to a user
                           that does not exist:
   /messages/{message_id}/history:
     get:
@@ -6544,7 +6657,10 @@ paths:
           in: query
           description: |
             The topic to move the message(s) to, to request changing the topic.
-            Maximum length of 60 characters.
+
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length
 
             Should only be sent when changing the topic, and will throw an error
             if the target message is not a stream message.
@@ -7918,11 +8034,19 @@ paths:
                       type: string
                       description: |
                         The name of the stream.
+
+                        Clients should use the `max_stream_name_length` returned by the
+                        [`POST /register`](/api/register-queue) endpoint to determine
+                        the maximum stream name length.
                     description:
                       type: string
                       description: |
                         The [description](/help/change-the-stream-description)
                         to use for a new stream being created, in text/markdown format.
+
+                        Clients should use the `max_stream_description_length` returned
+                        by the [`POST /register`](/api/register-queue) endpoint to
+                        determine the maximum stream description length.
                   required:
                     - name
                   example:
@@ -8994,6 +9118,25 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: web_mark_read_on_scroll_policy
+          in: query
+          description: |
+            Whether or not to mark messages as read when the client scrolls through their
+            feed.
+
+            - 1 - Always
+            - 2 - Only in conversation views
+            - 3 - Never
+
+            **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+            like the "Always" setting, without any way to configure this.
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: color_scheme
           in: query
           description: |
@@ -9818,10 +9961,14 @@ paths:
                               description: |
                                 The string regex pattern which represents the pattern that
                                 should be linkified by this linkifier.
-                            url_format:
+                            url_template:
                               type: string
                               description: |
-                                The URL format string to be used for linkifying matches.
+                                The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant
+                                URL template to be used for linkifying matches.
+
+                                **Changes**: New in Zulip 7.0 (feature level 176). This replaced `url_format`,
+                                which contained a URL format string.
                             id:
                               type: integer
                               description: |
@@ -9833,7 +9980,7 @@ paths:
                           [
                             {
                               "pattern": "#(?P<id>[0-9]+)",
-                              "url_format": "https://github.com/zulip/zulip/issues/%(id)s",
+                              "url_template": "https://github.com/zulip/zulip/issues/{id}",
                               "id": 1,
                             },
                           ],
@@ -9850,7 +9997,7 @@ paths:
         appear in messages and topics.
       parameters:
         - $ref: "#/components/parameters/LinkifierPattern"
-        - $ref: "#/components/parameters/LinkifierURLFormatString"
+        - $ref: "#/components/parameters/LinkifierURLTemplate"
       responses:
         "200":
           description: Success.
@@ -9911,7 +10058,7 @@ paths:
           example: 2
           required: true
         - $ref: "#/components/parameters/LinkifierPattern"
-        - $ref: "#/components/parameters/LinkifierURLFormatString"
+        - $ref: "#/components/parameters/LinkifierURLTemplate"
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -10179,6 +10326,15 @@ paths:
               any server version. Clients can then use the `zulip_feature_level` in the
               `/register` response or the presence/absence of a `user_settings` key to
               determine where to look for the data.
+
+            - `linkifier_url_template`: Boolean for whether the client accepts linkifiers
+              that uses [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL
+              template for linkifying matches. If false or unset, then the `realm_linkifiers`
+              list in the `/register` response will be empty if present, and no `realm_linkifiers`
+              events will be sent.
+
+              **Changes**: New in Zulip 7.0 (feature level 176). This capability is for
+              backwards-compatibility.
           content:
             application/json:
               schema:
@@ -10360,36 +10516,36 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a stream name. Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
+                          The maximum allowed length for a stream name, in Unicode code
+                          points. Clients should use this property rather than hardcoding
+                          field sizes.
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
                           this required `stream` in `fetch_event_types`, was called
-                          `stream_name_max_length`, and always had value 60.
+                          `stream_name_max_length`, and always had a value of 60.
                       max_stream_description_length:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a stream description. Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
+                          The maximum allowed length for a stream description, in Unicode
+                          code points. Clients should use this property rather than hardcoding
+                          field sizes.
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
                           this required `stream` in `fetch_event_types`, was called
-                          `stream_description_max_length`, and always had value 1024.
+                          `stream_description_max_length`, and always had a value of 1024.
                       max_topic_length:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The maximum allowed length for a topic. Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
+                          The maximum allowed length for a topic, in Unicode code points.
+                          Clients should use this property rather than hardcoding field
+                          sizes.
 
                           **Changes**: New in Zulip 4.0 (feature level 53). Previously,
-                          this always had value 60.
+                          this property always had a value of 60.
                       max_message_length:
                         type: integer
                         description: |
@@ -10533,6 +10689,16 @@ paths:
                           Array of objects where each object describes a single
                           [linkifier](/help/add-a-custom-linkifier).
 
+                          If the client capability `linkifier_url_template` is false or unset, then
+                          the `realm_linkifiers` list in the `/register` response will be empty if
+                          present, and no `realm_linkifiers` events will be sent.
+                          See [`POST /register`](/api/register-queue#parameter-client_capabilities).
+                          for how client capabilities can be specified.
+
+                          **Changes**: In Zulip 7.0 (feature level 176), clients will always receive
+                          an empty list in the response unless they set the `linkifier_url_template`
+                          client capability to `true`.
+
                           **Changes**: New in Zulip 4.0 (feature level 54). Clients can
                           access these data on older server versions via the previous
                           `realm_filters` key.
@@ -10545,10 +10711,14 @@ paths:
                               description: |
                                 The string regex pattern which represents the pattern that
                                 should be linkified on matching.
-                            url_format:
+                            url_template:
                               type: string
                               description: |
-                                The URL with which the pattern matching string should be linkified.
+                                The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL
+                                template with which the pattern matching string should be linkified.
+
+                                **Changes**: New in Zulip 7.0 (feature level 176). This replaced `url_format`,
+                                which contained a URL format string.
                             id:
                               type: integer
                               description: |
@@ -10566,11 +10736,13 @@ paths:
                           Legacy property for linkifiers. Present if `realm_filters` is
                           present in `fetch_event_types`.
 
-                          An array of tuples (fixed-length arrays) where each tuple describes
+                          When present, this is always an empty array.
+
+                          **Changes**: Became empty in Zulip 7.0 (feature level 176). In previous versions,
+                          there is an array of tuples (fixed-length arrays) where each tuple describes
                           a single [linkifier](/help/add-a-custom-linkifier).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
-
                           The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the ID of the realm filter.
@@ -11037,6 +11209,18 @@ paths:
                             description: |
                               This setting has no effect at present. It is reserved for use in controlling
                               the default font size in Zulip.
+                          web_mark_read_on_scroll_policy:
+                            type: integer
+                            description: |
+                              Whether or not to mark messages as read when the client scrolls through their
+                              feed.
+
+                              - 1 - Always
+                              - 2 - Only in conversation views
+                              - 3 - Never
+
+                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+                              like the "Always" setting, without any way to configure this.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -12990,6 +13174,18 @@ paths:
                             description: |
                               This setting has no effect at present. It is reserved for use in
                               controlling the default font size in Zulip.
+                          web_mark_read_on_scroll_policy:
+                            type: integer
+                            description: |
+                              Whether or not to mark messages as read when the client scrolls through their
+                              feed.
+
+                              - 1 - Always
+                              - 2 - Only in conversation views
+                              - 3 - Never
+
+                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+                              like the "Always" setting, without any way to configure this.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -13935,6 +14131,25 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: web_mark_read_on_scroll_policy
+          in: query
+          description: |
+            Whether or not to mark messages as read when the client scrolls through their
+            feed.
+
+            - 1 - Always
+            - 2 - Only in conversation views
+            - 3 - Never
+
+            **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
+            like the "Always" setting, without any way to configure this.
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: starred_message_counts
           in: query
           description: |
@@ -14784,8 +14999,12 @@ paths:
         - name: description
           in: query
           description: |
-            The new description for the stream. Limited Zulip markdown is allowed in this
-            field.
+            The new [description](/help/change-the-stream-description) for
+            the stream, in text/markdown format.
+
+            Clients should use the `max_stream_description_length` returned
+            by the [`POST /register`](/api/register-queue) endpoint to
+            determine the maximum stream description length.
 
             **Changes**: Removed unnecessary JSON-encoding of this parameter in
             Zulip 4.0 (feature level 64).
@@ -14798,6 +15017,10 @@ paths:
           in: query
           description: |
             The new name for the stream.
+
+            Clients should use the `max_stream_name_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum stream name length.
 
             **Changes**: Removed unnecessary JSON-encoding of this parameter in
             Zulip 4.0 (feature level 64).
@@ -14971,7 +15194,7 @@ paths:
       summary: Set "typing" status
       tags: ["users"]
       description: |
-        Notify other users whether the current user is typing a message.
+        Notify other users whether the current user is [typing a message](/help/typing-notifications).
 
         Clients implementing Zulip's typing notifications protocol should work as follows:
 
@@ -15015,15 +15238,21 @@ paths:
           description: |
             Type of the message being composed.
 
-            **Changes**: New in Zulip 4.0 (feature level 58). Previously, typing
-            notifications were only for private messages.
+            **Changes**: In Zulip 7.0 (feature level 174), `"direct"` was added
+            as the preferred way to indicate a direct message is being composed,
+            becoming the default value for this parameter and deprecating the
+            original `"private"`.
+
+            New in Zulip 4.0 (feature level 58). Previously, typing notifications
+            were only for direct messages.
           schema:
             type: string
             enum:
-              - private
+              - direct
               - stream
-            default: private
-          example: private
+              - private
+            default: direct
+          example: direct
         - name: op
           in: query
           description: |
@@ -15038,16 +15267,16 @@ paths:
         - name: to
           in: query
           description: |
-            For `"private"` type it is the user_ids of the recipients of the message being typed.
-            Send a JSON-encoded list of user_ids. (Use a list even if there is only one
-            recipient.)
+            For `"direct"` type it is the user IDs of the recipients of the message
+            being typed. Send a JSON-encoded list of user IDs. (Use a list even if
+            there is only one recipient.)
 
             For `"stream"` type it is a single element list containing ID of stream in
             which the message is being typed.
 
             **Changes**: Support for typing notifications for stream messages
             is new in Zulip 4.0 (feature level 58). Previously, typing
-            notifications were only for private messages.
+            notifications were only for direct messages.
 
             Before Zulip 2.0.0, this parameter accepted only a JSON-encoded
             list of email addresses. Support for the email address-based format was
@@ -15064,10 +15293,10 @@ paths:
           in: query
           description: |
             Topic to which message is being typed. Required for the `"stream"` type.
-            Ignored in the case of `"private"` type.
+            Ignored in the case of `"direct"` type.
 
             **Changes**: New in Zulip 4.0 (feature level 58). Previously, typing
-            notifications were only for private messages.
+            notifications were only for direct messages.
           schema:
             type: string
           example: typing notifications
@@ -17079,6 +17308,64 @@ components:
         - to
         - topic
         - content
+    ScheduledMessage:
+      type: object
+      description: |
+        A dictionary for representing a scheduled message.
+      properties:
+        message_id:
+          type: integer
+          description: |
+            The unique ID of the scheduled message. It can be used to modify and
+            delete the scheduled message.
+        type:
+          type: string
+          description: |
+            The type of the scheduled message. Either unaddressed (empty string), "stream",
+            or "private" (for PMs and private group messages).
+          enum:
+            - ""
+            - stream
+            - private
+        to:
+          type: array
+          description: |
+            An array of the tentative target audience IDs. For "stream"
+            messages, this should contain exactly 1 ID, the ID of the
+            target stream. For private messages, this should be an array
+            of target user IDs. This cannot be an empty array since
+            scheduled messages are always addressed.
+          items:
+            type: integer
+        topic:
+          type: string
+          description: |
+            For stream scheduled message, the tentative topic name. For private messages,
+            this will be ignored and should ideally
+            be the empty string. Should not contain null bytes.
+        content:
+          type: string
+          description: |
+            The body of the scheduled message. Should not contain null bytes.
+        rendered_content:
+          type: string
+          description: |
+            The body of the scheduled message rendered in HTML.
+        deliver_at:
+          type: number
+          description: |
+            A Unix timestamp (seconds only) representing when the scheduled
+            message will be sent by the server.
+          example: 1595479019
+      additionalProperties: false
+      required:
+        - message_id
+        - type
+        - to
+        - topic
+        - content
+        - rendered_content
+        - deliver_at
     User:
       allOf:
         - $ref: "#/components/schemas/UserBase"
@@ -18032,16 +18319,22 @@ components:
         type: string
       example: "#(?P<id>[0-9]+)"
       required: true
-    LinkifierURLFormatString:
-      name: url_format_string
+    LinkifierURLTemplate:
+      name: url_template
       in: query
       description: |
-        The URL used for the link. If you used named groups for the `pattern`,
+        The [RFC
+        6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL template
+        used for the link. If you used named groups for the `pattern`,
         you can insert their content here with
-        `%(name_of_the_capturing_group)s`.
+        `{name_of_the_capturing_group}`.
+
+        **Changes**: New in Zulip 7.0 (feature level 176). This replaced
+        the parameter `url_format_string`, which was a format string in which
+        named groups' content could be inserted with `%(name_of_the_capturing_group)s`.
       schema:
         type: string
-      example: https://github.com/zulip/zulip/issues/%(id)s
+      example: https://github.com/zulip/zulip/issues/{id}
       required: true
     DirectMemberOnly:
       name: direct_member_only

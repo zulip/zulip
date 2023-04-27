@@ -5,7 +5,7 @@ import $ from "jquery";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
+import * as compose_recipient from "./compose_recipient";
 import * as keydown_util from "./keydown_util";
 import * as ui_util from "./ui_util";
 
@@ -360,7 +360,7 @@ export function create(opts) {
             funcs.removePill($pill[0]);
             $next.trigger("focus");
 
-            compose.update_on_recipient_change();
+            compose_recipient.update_on_recipient_change();
         });
 
         store.$parent.on("click", function (e) {

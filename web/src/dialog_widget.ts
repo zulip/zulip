@@ -5,6 +5,7 @@ import render_dialog_widget from "../templates/dialog_widget.hbs";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
+import type {AjaxRequestHandler} from "./types";
 import * as ui_report from "./ui_report";
 
 /*
@@ -61,24 +62,10 @@ type WidgetConfig = {
     loading_spinner?: boolean;
 };
 
-// TODO: This type should probably be exported from channel.ts once
-// that's converted to TypeScript.
-type AjaxRequest = ({
-    url,
-    data = {},
-    success,
-    error,
-}: {
-    url: string;
-    data?: Record<string, never>;
-    success(response_data?: string): void;
-    error(xhr?: JQuery.jqXHR): void;
-}) => void;
-
 type RequestOpts = {
     failure_msg_html?: string;
-    success_continuation?: (response_data?: string) => void;
-    error_continuation?: (xhr?: JQuery.jqXHR) => void;
+    success_continuation?: Parameters<AjaxRequestHandler>[0]["success"];
+    error_continuation?: Parameters<AjaxRequestHandler>[0]["error"];
 };
 
 export function hide_dialog_spinner(): void {
@@ -134,7 +121,7 @@ export function launch(conf: WidgetConfig): void {
     // * loading_spinner: Whether to show a loading spinner inside the
     //   submit button when clicked.
 
-    const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
+    const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
     const html = render_dialog_widget({
         heading_text: conf.html_heading,
         link: conf.help_link,
@@ -190,9 +177,9 @@ export function launch(conf: WidgetConfig): void {
 }
 
 export function submit_api_request(
-    request_method: AjaxRequest,
+    request_method: AjaxRequestHandler,
     url: string,
-    data = {},
+    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
     {
         failure_msg_html = $t_html({defaultMessage: "Failed"}),
         success_continuation,
@@ -203,17 +190,17 @@ export function submit_api_request(
     request_method({
         url,
         data,
-        success(response_data?: string) {
+        success(response_data, textStatus, jqXHR) {
             close_modal();
             if (success_continuation !== undefined) {
-                success_continuation(response_data);
+                success_continuation(response_data, textStatus, jqXHR);
             }
         },
-        error(xhr?: JQuery.jqXHR) {
+        error(xhr, error_type, xhn) {
             ui_report.error(failure_msg_html, xhr, $("#dialog_error"));
             hide_dialog_spinner();
             if (error_continuation !== undefined) {
-                error_continuation(xhr);
+                error_continuation(xhr, error_type, xhn);
             }
         },
     });

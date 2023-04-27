@@ -1,3 +1,6 @@
+/* Compose box module responsible for manipulating the compose box
+   textarea correctly. */
+
 import autosize from "autosize";
 import $ from "jquery";
 import {insert, replace, set, wrapSelection} from "text-field-edit";
@@ -247,6 +250,9 @@ export function make_compose_box_full_size() {
 
     // Set the `top` property of compose-box.
     set_compose_box_top(true);
+    // The compose select dropup should now open down because it's
+    // at the top of the screen.
+    $("#id_compose_select_stream").removeClass("dropup").addClass("dropdown");
 
     $(".collapse_composebox_button").show();
     $(".expand_composebox_button").hide();
@@ -261,6 +267,9 @@ export function make_compose_box_original_size() {
 
     // Unset the `top` property of compose-box.
     set_compose_box_top(false);
+    // The compose select dropup should now open up because it's
+    // near the bottom of the screen.
+    $("#id_compose_select_stream").removeClass("dropdown").addClass("dropup");
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
@@ -468,6 +477,8 @@ export function format_text($textarea, type) {
     }
 }
 
+/* TODO: This functions don't belong in this module, as they have
+ * nothing to do with the compose textarea. */
 export function hide_compose_spinner() {
     compose_spinner_visible = false;
     $("#compose-send-button .loader").hide();
@@ -492,4 +503,11 @@ export function get_compose_click_target(e) {
         return compose_control_buttons_popover.reference;
     }
     return e.target;
+}
+
+export function get_submit_button() {
+    if (popover_menus.is_time_selected_for_schedule()) {
+        return $("#compose-schedule-confirm-button");
+    }
+    return $("#compose-send-button");
 }

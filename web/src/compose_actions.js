@@ -1,6 +1,7 @@
+/* Module primarily for opening/closing the compose box. */
+
 import autosize from "autosize";
 import $ from "jquery";
-import _ from "lodash";
 
 import * as fenced_code from "../shared/src/fenced_code";
 
@@ -9,6 +10,7 @@ import * as compose from "./compose";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -29,7 +31,6 @@ import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
-import * as util from "./util";
 
 export function blur_compose_inputs() {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
@@ -62,7 +63,7 @@ function get_focus_area(msg_type, opts) {
     }
 
     if (msg_type === "stream") {
-        return "#stream_message_recipient_stream";
+        return "#compose_select_stream_widget";
     }
     return "#private_message_recipient";
 }
@@ -71,8 +72,8 @@ function get_focus_area(msg_type, opts) {
 export const _get_focus_area = get_focus_area;
 
 export function set_focus(msg_type, opts) {
-    const focus_area = get_focus_area(msg_type, opts);
     if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+        const focus_area = get_focus_area(msg_type, opts);
         const $elt = $(focus_area);
         $elt.trigger("focus").trigger("select");
     }
@@ -120,6 +121,7 @@ function clear_box() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
+    compose.reset_compose_scheduling_state();
 }
 
 export function autosize_message_content() {
@@ -139,60 +141,6 @@ export function expand_compose_box() {
     $(".message_comp").show();
 }
 
-function composing_to_current_topic_narrow() {
-    return (
-        util.lower_same(compose_state.stream_name(), narrow_state.stream() || "") &&
-        util.lower_same(compose_state.topic(), narrow_state.topic() || "")
-    );
-}
-
-function composing_to_current_private_message_narrow() {
-    const compose_state_recipient = compose_state.private_message_recipient();
-    const narrow_state_recipient = narrow_state.pm_emails_string();
-    return (
-        compose_state_recipient &&
-        narrow_state_recipient &&
-        _.isEqual(
-            compose_state_recipient
-                .split(",")
-                .map((s) => s.trim())
-                .sort(),
-            narrow_state_recipient
-                .split(",")
-                .map((s) => s.trim())
-                .sort(),
-        )
-    );
-}
-
-export function update_narrow_to_recipient_visibility() {
-    const message_type = compose_state.get_message_type();
-    if (message_type === "stream") {
-        const stream_name = compose_state.stream_name();
-        const stream_exists = Boolean(stream_data.get_stream_id(stream_name));
-
-        if (
-            stream_exists &&
-            !composing_to_current_topic_narrow() &&
-            compose_state.has_full_recipient()
-        ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
-            return;
-        }
-    } else if (message_type === "private") {
-        const recipients = compose_state.private_message_recipient();
-        if (
-            recipients &&
-            !composing_to_current_private_message_narrow() &&
-            compose_state.has_full_recipient()
-        ) {
-            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
-            return;
-        }
-    }
-    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
-}
-
 export function complete_starting_tasks(msg_type, opts) {
     // This is sort of a kitchen sink function, and it's called only
     // by compose.start() for now.  Having this as a separate function
@@ -200,10 +148,10 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(opts.stream, $("#compose-stream-recipient .message_header_stream"), true);
+    stream_bar.decorate(opts.stream, $("#compose-stream-recipient .message_header_stream"));
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     update_placeholder_text();
-    update_narrow_to_recipient_visibility();
+    compose_recipient.update_narrow_to_recipient_visibility();
 }
 
 export function maybe_scroll_up_selected_message() {
@@ -319,6 +267,12 @@ export function start(msg_type, opts) {
         // Clear the compose box if the existing message is to a different recipient
         clear_box();
     }
+
+    compose_recipient.compose_stream_widget.render(opts.stream);
+    const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
+        ".stream_header_colorblock",
+    );
+    stream_bar.decorate(opts.stream, $stream_header_colorblock);
 
     // We set the stream/topic/private_message_recipient
     // unconditionally here, which assumes the caller will have passed

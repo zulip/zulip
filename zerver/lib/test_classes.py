@@ -1455,7 +1455,7 @@ Output:
         This raises a failure inside of the try/except block of
         markdown.__init__.do_convert.
         """
-        with self.settings(ERROR_BOT=None), mock.patch(
+        with mock.patch(
             "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
         ), self.assertLogs(
             level="ERROR"

@@ -11,6 +11,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_recipient from "./compose_recipient";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
@@ -67,6 +68,7 @@ import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
@@ -490,10 +492,11 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
-                        stream_settings_ui.remove_stream(stream.stream_id);
                         stream_data.delete_sub(stream.stream_id);
+                        stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
+                            compose_recipient.update_stream_dropdown_options();
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream.stream_id);
@@ -625,6 +628,7 @@ export function dispatch_normal_event(event) {
                 "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
+                "web_mark_read_on_scroll_policy",
                 "emojiset",
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
@@ -674,6 +678,9 @@ export function dispatch_normal_event(event) {
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
                 $("body").toggleClass("more_dense_mode");
+            }
+            if (event.property === "web_mark_read_on_scroll_policy") {
+                unread_ui.update_unread_banner();
             }
             if (event.property === "color_scheme") {
                 $("body").fadeOut(300);

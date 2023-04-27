@@ -14,6 +14,7 @@ import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
+import {user_settings} from "./user_settings";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -63,13 +64,19 @@ function hide_tooltip_if_reference_removed(
     observer.observe(target_node, config);
 }
 
-// We use two delay settings for tooltips. The default "instant"
+// We use three delay settings for tooltips. The default "instant"
 // version has just a tiny bit of delay to create a natural feeling
 // transition, while the "long" version is intended for elements where
 // we want to avoid distracting the user with the tooltip
 // unnecessarily.
 const INSTANT_HOVER_DELAY = [100, 20];
 const LONG_HOVER_DELAY = [750, 20];
+// EXTRA_LONG_HOVER_DELAY is for elements like the compose box send
+// button where the tooltip content is almost exactly the same as the
+// text in the button, and the tooltip exists just to advertise a
+// keyboard shortcut. For these tooltips, it's very important to avoid
+// distracting users unnecessarily.
+const EXTRA_LONG_HOVER_DELAY = [1500, 20];
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -107,6 +114,44 @@ export function initialize() {
     // * Set placement; we typically use `data-tippy-placement="top"`.
     delegate("body", {
         target: ".tippy-zulip-tooltip",
+    });
+
+    delegate("body", {
+        target: ".tippy-left-sidebar-tooltip",
+        placement: "right",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
+    });
+
+    // Variant of .tippy-left-sidebar-tooltip configuration. Since
+    // this element doesn't have an always visible label, and
+    // thus hovering it is a way to find out what it does, give
+    // it the faster LONG_HOVER_DELAY.
+    delegate("body", {
+        target: "#show_all_private_messages",
+        placement: "right",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "bottom",
+                    },
+                },
+            ],
+        },
     });
 
     // The below definitions are for specific tooltips that require
@@ -161,6 +206,19 @@ export function initialize() {
         // This ensures that the upload files tooltip
         // doesn't hide behind the left sidebar.
         appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#compose-send-button",
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            if (user_settings.enter_sends) {
+                instance.setContent(parse_html($("#send-enter-tooltip-template").html()));
+            } else {
+                instance.setContent(parse_html($("#send-ctrl-enter-tooltip-template").html()));
+            }
+        },
     });
 
     delegate("body", {
@@ -246,14 +304,42 @@ export function initialize() {
     // box or it is not limited by the parent container.
     delegate("body", {
         target: [
-            ".recipient_bar_icon",
             "#streams_header .sidebar-title",
             "#userlist-title",
             "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
             ".code_external_link",
             ".spectator_narrow_login_button",
+            "#stream-specific-notify-table .unmute_stream",
+            "#add_streams_tooltip",
+            "#filter_streams_tooltip",
         ],
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: ".recipient_bar_icon",
+        onShow(instance) {
+            if (!document.body.contains(instance.reference)) {
+                return false;
+            }
+            const $elem = $(instance.reference);
+
+            const config = {attributes: false, childList: true, subtree: true};
+            const target = $elem.parents(".message_header.message_header_stream.right_part").get(0);
+            const nodes_to_check_for_removal = [
+                $elem.parents(".recipient_bar_controls").get(0),
+                $elem.get(0),
+            ];
+            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+            return true;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            if (observer) {
+                observer.disconnect();
+            }
+        },
         appendTo: () => document.body,
     });
 
@@ -267,16 +353,12 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: "#stream-specific-notify-table .unmute_stream",
-        appendTo: () => document.body,
-    });
-
-    delegate("body", {
         target: [
             ".rendered_markdown .copy_codeblock",
             "#compose_top_right [data-tippy-content]",
             "#compose_top_right [data-tooltip-template-id]",
         ],
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
@@ -285,6 +367,7 @@ export function initialize() {
 
     delegate("body", {
         target: ".narrow_to_compose_recipients",
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         content() {
             const narrow_filter = narrow_state.filter();
@@ -319,6 +402,7 @@ export function initialize() {
 
     delegate("body", {
         target: [".enter_sends_true", ".enter_sends_false"],
+        delay: LONG_HOVER_DELAY,
         content: $t({defaultMessage: "Change send shortcut"}),
         onShow() {
             // Don't show tooltip if the popover is displayed.
@@ -487,20 +571,56 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: "#show_all_private_messages",
-        placement: "bottom",
-        content: $t({
-            defaultMessage: "All direct messages (P)",
-        }),
-        appendTo: () => document.body,
-    });
-
-    delegate("body", {
         target: ".view_user_card_tooltip",
         content: $t({
             defaultMessage: "View user card (u)",
         }),
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            if (!document.body.contains(instance.reference)) {
+                return false;
+            }
+            const $elem = $(instance.reference);
+            const target = $elem.parents(".message_row.include-sender").get(0);
+            const config = {attributes: true, childList: false, subtree: false};
+            const nodes_to_check_for_removal = [$elem.get(0)];
+            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+            return true;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            if (observer) {
+                observer.disconnect();
+            }
+        },
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#compose-schedule-confirm-button",
+        onShow(instance) {
+            if (popover_menus.get_scheduled_messages_popover()) {
+                return false;
+            }
+
+            const send_at_time = popover_menus.get_selected_send_later_time();
+            instance.setContent(
+                parse_html(
+                    $t(
+                        {defaultMessage: "Schedule message for <br/> {send_at_time}"},
+                        {send_at_time},
+                    ),
+                ),
+            );
+            return true;
+        },
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#send_later",
+        delay: LONG_HOVER_DELAY,
+        placement: "top",
         appendTo: () => document.body,
     });
 }

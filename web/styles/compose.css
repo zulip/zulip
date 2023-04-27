@@ -96,7 +96,8 @@
         }
     }
 
-    .right_part {
+    .right_part,
+    #compose-stream-recipient {
         padding: 0;
         display: flex;
         align-items: center;
@@ -137,22 +138,6 @@
         vertical-align: middle;
 
         font-weight: 600;
-    }
-
-    #compose-lock-icon,
-    #compose-globe-icon {
-        position: relative;
-        left: 6px;
-        top: 0.5px;
-        width: 0;
-    }
-
-    #compose-globe-icon {
-        left: 4.5px;
-
-        .zulip-icon-globe {
-            font-size: 12px;
-        }
     }
 
     .message_header {
@@ -514,22 +499,11 @@ input.recipient_box {
     border-radius: 3px;
 }
 
-#stream_message_recipient_stream.recipient_box {
-    width: 20%;
-    border-radius: 0 3px 3px 0;
-    border-left: 0;
-
-    @media (width > $sm_min) {
-        min-width: 120px;
-    }
-
-    &:focus {
-        border-left: none;
-    }
-
-    &.lock-padding {
-        padding-left: 20px;
-    }
+#compose_select_stream_widget,
+#compose_select_stream_widget .button {
+    margin: 0;
+    min-width: 0;
+    flex: 1;
 }
 
 #stream_message_recipient_topic.recipient_box {
@@ -543,13 +517,14 @@ input.recipient_box {
     width: 100%;
 }
 
+#compose-schedule-confirm-button,
 #compose-send-button {
-    height: 24px;
     padding-top: 3px;
     padding-bottom: 3px;
     margin-bottom: 0;
     font-weight: 600;
     font-size: 0.9em;
+    border-radius: 4px 0 0 4px;
 
     .loader {
         display: none;
@@ -630,6 +605,10 @@ input.recipient_box {
         font-size: 12px;
         font-weight: 600;
     }
+}
+
+#compose-stream-recipient {
+    min-width: 0;
 }
 
 #compose-stream-recipient,
@@ -716,11 +695,10 @@ input.recipient_box {
 
 .compose_right_float_container {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    flex-direction: row;
     white-space: nowrap;
-    gap: 4px;
     margin-top: 2px;
+    height: 24px;
 }
 
 a.compose_control_button {
@@ -774,6 +752,66 @@ a.compose_control_button.hide {
     margin: auto;
 }
 
+#compose_stream_selection_dropdown {
+    display: flex;
+    justify-content: flex-start;
+    flex: 0 1 200px;
+    min-width: 0;
+
+    .stream_header_colorblock {
+        margin: 0;
+    }
+
+    .dropdown-toggle {
+        border-radius: 0 4px 4px 0 !important;
+        display: flex;
+        min-width: 0;
+    }
+
+    .dropup .dropdown-menu {
+        top: auto;
+        bottom: 100%;
+        left: -10px;
+        margin-bottom: 17px;
+    }
+
+    .dropdown .dropdown-menu {
+        top: auto;
+        left: -10px;
+    }
+
+    #compose_select_stream_name {
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .dropdown-list-body .list_item a {
+        white-space: normal;
+    }
+
+    .fa-chevron-down {
+        float: right;
+        padding-left: 5px;
+        color: hsl(0deg 0% 58%);
+        font-weight: lighter;
+    }
+
+    /* This is the "Select a stream" default message */
+    .text-warning {
+        color: inherit;
+    }
+}
+
+#stream_message_recipient_topic {
+    min-width: 0;
+}
+
+#id_compose_select_stream {
+    display: flex;
+}
+
 .dropdown-menu {
     & ul {
         list-style: none;
@@ -805,6 +843,31 @@ a.compose_control_button.hide {
     margin-right: 4px;
 }
 
+/* `^` icon located next to `Send` / `Scheduled` button which shows
+   options to schedule the message. */
+#send_later {
+    float: right;
+    color: hsl(0deg 0% 100%);
+    border-radius: 0 4px 4px 0;
+    border-left: 1px solid hsl(213deg 14% 12% / 15%);
+    padding: 0;
+    margin: 0;
+
+    .fa {
+        padding: 4.5px 4px;
+
+        &::before {
+            position: relative;
+            top: -1px;
+        }
+    }
+
+    &:hover,
+    &:focus {
+        box-shadow: none;
+    }
+}
+
 @media (width < $xl_min) {
     #compose-content {
         margin-right: 7px;
@@ -819,13 +882,6 @@ a.compose_control_button.hide {
 }
 
 @media (width < $mm_min) {
-    #stream_message_recipient_topic.recipient_box {
-        /* The max-width here is designed to allow this to share space with
-           the Stream input in small windows, without leaving empty space. */
-        max-width: calc(100% - 90px);
-        min-width: 110px;
-    }
-
     #compose-content {
         margin-right: 5px;
         margin-left: 5px;

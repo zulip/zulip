@@ -7,6 +7,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_fade from "./compose_fade";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import {Filter} from "./filter";
@@ -178,12 +179,12 @@ export function reset_ui_state() {
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
-    unread_ui.reset_mark_as_read_turned_off_banner();
+    unread_ui.reset_unread_banner();
 }
 
 export function handle_middle_pane_transition() {
     if (compose_state.composing) {
-        compose_actions.update_narrow_to_recipient_visibility();
+        compose_recipient.update_narrow_to_recipient_visibility();
     }
 }
 

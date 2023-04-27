@@ -113,12 +113,16 @@ from zproject.settings_types import OIDCIdPConfigDict
 redis_client = get_redis_client()
 
 
+def all_implemented_backend_names() -> List[str]:
+    return list(AUTH_BACKEND_NAME_MAP.keys())
+
+
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
 # In each case, we both needs to check at the server level (via
 # `settings.AUTHENTICATION_BACKENDS`, queried via
 # `django.contrib.auth.get_backends`) and at the realm level (via the
-# `Realm.authentication_methods` BitField).
+# `RealmAuthenticationMethod` table).
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
@@ -129,11 +133,23 @@ def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     return method_dict
 
 
-def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
+def auth_enabled_helper(
+    backends_to_check: List[str],
+    realm: Optional[Realm],
+    realm_authentication_methods: Optional[Dict[str, bool]] = None,
+) -> bool:
+    """
+    realm_authentication_methods can be passed if already fetched to avoid
+    a database query.
+    """
     if realm is not None:
-        enabled_method_dict = realm.authentication_methods_dict()
+        if realm_authentication_methods is not None:
+            # Copy the dict to avoid mutating the original if it was passed in as argument.
+            enabled_method_dict = realm_authentication_methods.copy()
+        else:
+            enabled_method_dict = realm.authentication_methods_dict()
     else:
-        enabled_method_dict = {method: True for method in Realm.AUTHENTICATION_FLAGS}
+        enabled_method_dict = {method: True for method in AUTH_BACKEND_NAME_MAP}
 
     pad_method_dict(enabled_method_dict)
     for supported_backend in supported_auth_backends():
@@ -144,40 +160,60 @@ def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) ->
     return False
 
 
-def ldap_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["LDAP"], realm)
+def ldap_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["LDAP"], realm, realm_authentication_methods)
 
 
-def email_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Email"], realm)
+def email_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Email"], realm, realm_authentication_methods)
 
 
-def password_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return ldap_auth_enabled(realm) or email_auth_enabled(realm)
+def password_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return ldap_auth_enabled(realm, realm_authentication_methods) or email_auth_enabled(
+        realm, realm_authentication_methods
+    )
 
 
-def dev_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Dev"], realm)
+def dev_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Dev"], realm, realm_authentication_methods)
 
 
-def google_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Google"], realm)
+def google_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Google"], realm, realm_authentication_methods)
 
 
-def github_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["GitHub"], realm)
+def github_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["GitHub"], realm, realm_authentication_methods)
 
 
-def gitlab_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["GitLab"], realm)
+def gitlab_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["GitLab"], realm, realm_authentication_methods)
 
 
-def apple_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Apple"], realm)
+def apple_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Apple"], realm, realm_authentication_methods)
 
 
-def saml_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["SAML"], realm)
+def saml_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["SAML"], realm, realm_authentication_methods)
 
 
 def require_email_format_usernames(realm: Optional[Realm] = None) -> bool:

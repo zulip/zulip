@@ -193,12 +193,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Missing user_id or user_uuid")
         result = self.uuid_post(
-            self.server_uuid,
-            endpoint,
-            {"user_id": user_id, "user_uuid": "xxx", "token": token, "token_kind": token_kind},
-        )
-        self.assert_json_error(result, "Specify only one of user_id or user_uuid")
-        result = self.uuid_post(
             self.server_uuid, endpoint, {"user_id": user_id, "token": token, "token_kind": 17}
         )
         self.assert_json_error(result, "Invalid token type")
@@ -280,6 +274,40 @@ class PushBouncerNotificationTest(BouncerTestCase):
             401,
         )
 
+    def test_register_device_deduplication(self) -> None:
+        hamlet = self.example_user("hamlet")
+        token = "111222"
+        user_id = hamlet.id
+        user_uuid = str(hamlet.uuid)
+        token_kind = PushDeviceToken.GCM
+
+        endpoint = "/api/v1/remotes/push/register"
+
+        # First we create a legacy user_id registration.
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {"user_id": user_id, "token_kind": token_kind, "token": token},
+        )
+        self.assert_json_success(result)
+
+        registrations = list(RemotePushDeviceToken.objects.filter(token=token))
+        self.assert_length(registrations, 1)
+        self.assertEqual(registrations[0].user_id, user_id)
+        self.assertEqual(registrations[0].user_uuid, None)
+
+        # Register same user+device with uuid now. The old registration should be deleted
+        # to avoid duplication.
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {"user_id": user_id, "user_uuid": user_uuid, "token_kind": token_kind, "token": token},
+        )
+        registrations = list(RemotePushDeviceToken.objects.filter(token=token))
+        self.assert_length(registrations, 1)
+        self.assertEqual(registrations[0].user_id, None)
+        self.assertEqual(str(registrations[0].user_uuid), user_uuid)
+
     def test_remote_push_user_endpoints(self) -> None:
         endpoints = [
             ("/api/v1/remotes/push/register", "register"),
@@ -308,6 +336,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
         token = "aaaa"
         android_tokens = []
+        uuid_android_tokens = []
         for i in ["aa", "bb"]:
             android_tokens.append(
                 RemotePushDeviceToken.objects.create(
@@ -317,6 +346,19 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     server=server,
                 )
             )
+
+            # Create a duplicate, newer uuid-based registration for the same user to verify
+            # the bouncer will handle that correctly, without triggering a duplicate notification,
+            # and will delete the old, legacy registration.
+            uuid_android_tokens.append(
+                RemotePushDeviceToken.objects.create(
+                    kind=RemotePushDeviceToken.GCM,
+                    token=hex_to_b64(token + i),
+                    user_uuid=str(hamlet.uuid),
+                    server=server,
+                )
+            )
+
         apple_token = RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.APNS,
             token=hex_to_b64(token),
@@ -326,6 +368,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         many_ids = ",".join(str(i) for i in range(1, 250))
         payload = {
             "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
             "gcm_payload": {"event": "remove", "zulip_message_ids": many_ids},
             "apns_payload": {
                 "badge": 0,
@@ -355,12 +398,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
             logger.output,
             [
                 "INFO:zilencer.views:"
-                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}>: "
-                "2 via FCM devices, 1 via APNs devices"
+                f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{str(hamlet.uuid)} and tokens:{sorted([t.token for t in android_tokens[:]])}",
+                "INFO:zilencer.views:"
+                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{str(hamlet.uuid)}>: "
+                "2 via FCM devices, 1 via APNs devices",
             ],
         )
 
-        user_identity = UserPushIdentityCompat(user_id=hamlet.id)
+        user_identity = UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid))
         apple_push.assert_called_once_with(
             user_identity,
             [apple_token],
@@ -377,7 +422,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         android_push.assert_called_once_with(
             user_identity,
-            list(reversed(android_tokens)),
+            list(reversed(uuid_android_tokens)),
             {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
             {},
             remote=server,

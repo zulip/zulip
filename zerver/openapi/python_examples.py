@@ -87,11 +87,11 @@ def add_subscriptions(client: Client) -> None:
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
-    ensure_users([26], ["newbie"])
+    ensure_users([25], ["newbie"])
     # {code_example|start}
     # To subscribe other users to a stream, you may pass
     # the `principals` argument, like so:
-    user_id = 26
+    user_id = 25
     result = client.add_subscriptions(
         streams=[
             {"name": "new stream", "description": "New stream for testing"},
@@ -430,12 +430,17 @@ def create_realm_profile_field(client: Client) -> None:
 
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> None:
+    # TODO: Switch back to using client.add_realm_filter when python-zulip-api
+    # begins to support url_template.
+
     # {code_example|start}
     # Add a filter to automatically linkify #<number> to the corresponding
     # issue in Zulip's server repo
-    result = client.add_realm_filter(
-        "#(?P<id>[0-9]+)", "https://github.com/zulip/zulip/issues/%(id)s"
-    )
+    request = {
+        "pattern": "#(?P<id>[0-9]+)",
+        "url_template": "https://github.com/zulip/zulip/issues/{id}",
+    }
+    result = client.call_endpoint("/realm/filters", method="POST", request=request)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
@@ -448,7 +453,7 @@ def update_realm_filter(client: Client) -> None:
     filter_id = 1
     request = {
         "pattern": "#(?P<id>[0-9]+)",
-        "url_format_string": "https://github.com/zulip/zulip/issues/%(id)s",
+        "url_template": "https://github.com/zulip/zulip/issues/{id}",
     }
 
     result = client.call_endpoint(
@@ -633,13 +638,13 @@ def test_user_not_authorized_error(nonadmin_client: Client) -> None:
 
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
-    ensure_users([11, 26], ["iago", "newbie"])
+    ensure_users([11, 25], ["iago", "newbie"])
 
     # {code_example|start}
     # Get the subscribers to a stream
     result = client.get_subscribers(stream="new stream")
     # {code_example|end}
-    assert result["subscribers"] == [11, 26]
+    assert result["subscribers"] == [11, 25]
 
 
 def get_user_agent(client: Client) -> None:
@@ -954,6 +959,7 @@ def send_message(client: Client) -> int:
         "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/messages", "post", "200")
@@ -971,7 +977,7 @@ def send_message(client: Client) -> int:
     ensure_users([10], ["hamlet"])
 
     # {code_example|start}
-    # Send a private message
+    # Send a direct message
     user_id = 10
     request = {
         "type": "private",
@@ -979,6 +985,7 @@ def send_message(client: Client) -> int:
         "content": "With mirth and laughter let old wrinkles come.",
     }
     result = client.send_message(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/messages", "post", "200")
@@ -1294,7 +1301,8 @@ def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
 
     # {code_example|start}
-    # The user has started to type in the group PM with Iago and Polonius
+    # The user has started typing in the group direct message
+    # with Iago and Polonius
     user_id1 = 10
     user_id2 = 11
 
@@ -1309,7 +1317,8 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
-    # The user has finished typing in the group PM with Iago and Polonius
+    # The user has finished typing in the group direct message
+    # with Iago and Polonius
     user_id1 = 10
     user_id2 = 11
 
@@ -1324,7 +1333,8 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
-    # The user has started to type in topic "typing status" of stream "Denmark"
+    # The user has started to type in topic "typing status"
+    # of stream "Denmark"
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 
@@ -1341,7 +1351,8 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
-    # The user has finished typing in topic "typing status" of stream "Denmark"
+    # The user has finished typing in topic "typing status"
+    # of stream "Denmark"
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 

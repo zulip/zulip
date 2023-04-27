@@ -272,7 +272,7 @@ export function initialize() {
                 // The below checks might seem redundant, but it's
                 // possible this logic, which runs after a delay, lost
                 // a race with switching to another view, like Recent
-                // Topics, and we don't want to displ[ay this banner
+                // Topics, and we don't want to display this banner
                 // in such a view.
                 //
                 // This can likely be fixed more cleanly with another approach.

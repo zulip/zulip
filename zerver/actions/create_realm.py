@@ -22,6 +22,7 @@ from zerver.models import (
     PreregistrationRealm,
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmUserDefault,
     Stream,
     UserProfile,
@@ -29,6 +30,7 @@ from zerver.models import (
     get_realm,
     get_system_bot,
 )
+from zproject.backends import all_implemented_backend_names
 
 if settings.CORPORATE_ENABLED:
     from corporate.lib.support import get_support_url
@@ -231,6 +233,14 @@ def do_create_realm(
         )
 
         create_system_user_groups_for_realm(realm)
+
+        # We create realms with all authentications methods enabled by default.
+        RealmAuthenticationMethod.objects.bulk_create(
+            [
+                RealmAuthenticationMethod(name=backend_name, realm=realm)
+                for backend_name in all_implemented_backend_names()
+            ]
+        )
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(

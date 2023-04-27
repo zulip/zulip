@@ -15,7 +15,7 @@
 type KeyValue<V> = {k: string; v: V};
 
 export class FoldDict<V> {
-    private _items: Map<string, KeyValue<V>> = new Map();
+    private _items = new Map<string, KeyValue<V>>();
 
     get size(): number {
         return this._items.size;
@@ -29,7 +29,7 @@ export class FoldDict<V> {
         return mapping.v;
     }
 
-    set(key: string, value: V): FoldDict<V> {
+    set(key: string, value: V): this {
         this._items.set(this._munge(key), {k: key, v: value});
         return this;
     }

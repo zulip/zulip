@@ -1,5 +1,5 @@
-<div class="draft-row" data-draft-id="{{draft_id}}">
-    <div class="draft-info-box" tabindex="0">
+<div class="draft-row overlay-message-row" data-draft-id="{{draft_id}}">
+    <div class="draft-info-box overlay-message-info-box" tabindex="0">
         {{#if is_stream}}
         <div class="message_header message_header_stream">
             <div class="message-header-contents" style="background: {{recipient_bar_color}};">
@@ -34,12 +34,20 @@
             <div class="messagebox">
                 <div class="messagebox-content">
                     <div class="message_top_line">
-                        <div class="draft_controls">
-                            <i class="fa fa-pencil fa-lg restore-draft tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Restore draft' }} (Enter)"></i>
-                            <i class="fa fa-trash-o fa-lg delete-draft tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Delete draft' }} (Backspace)"></i>
+                        <div class="draft_controls overlay_message_controls">
+                            <i class="fa fa-pencil fa-lg restore-draft restore-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="restore-draft-tooltip-template"></i>
+                            <template id="restore-draft-tooltip-template">
+                                {{t 'Restore draft' }}
+                                {{tooltip_hotkey_hints "Enter"}}
+                            </template>
+                            <i class="fa fa-trash-o fa-lg delete-draft delete-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="delete-draft-tooltip-template"></i>
+                            <template id="delete-draft-tooltip-template">
+                                {{t 'Delete draft' }}
+                                {{tooltip_hotkey_hints "Backspace"}}
+                            </template>
                         </div>
                     </div>
-                    <div class="message_content rendered_markdown restore-draft" title="{{t 'Restore draft' }}">{{rendered_markdown content}}</div>
+                    <div class="message_content rendered_markdown restore-draft restore-overlay-message" title="{{t 'Restore draft' }}">{{rendered_markdown content}}</div>
                 </div>
             </div>
         </div>

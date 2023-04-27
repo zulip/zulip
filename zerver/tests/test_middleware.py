@@ -31,8 +31,6 @@ class SlowQueryTest(ZulipTestCase):
         self.assertTrue(is_slow_query(2, "/some/random/url"))
         self.assertTrue(is_slow_query(5.1, "/activity"))
         self.assertFalse(is_slow_query(2, "/activity"))
-        self.assertFalse(is_slow_query(2, "/json/report/error"))
-        self.assertFalse(is_slow_query(2, "/api/v1/deployments/report_error"))
         self.assertFalse(is_slow_query(2, "/realm_activity/whatever"))
         self.assertFalse(is_slow_query(2, "/user_activity/whatever"))
         self.assertFalse(is_slow_query(9, "/accounts/webathena_kerberos_login/"))

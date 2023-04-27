@@ -19,11 +19,13 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         recipients: List[str] = []
 
-        message_type = "private"
+        recipient_type_name = "private"
         client = get_client("banned_mirror")
 
         with self.assertRaises(InvalidMirrorInputError):
-            create_mirrored_message_users(client, user, recipients, sender.email, message_type)
+            create_mirrored_message_users(
+                client, user, recipients, sender.email, recipient_type_name
+            )
 
     def test_invalid_email(self) -> None:
         invalid_email = "alice AT example.com"
@@ -33,13 +35,15 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.mit_user("starnine")
         sender = user
 
-        message_type = "private"
+        recipient_type_name = "private"
 
         for client_name in ["zephyr_mirror", "irc_mirror", "jabber_mirror"]:
             client = get_client(client_name)
 
             with self.assertRaises(InvalidMirrorInputError):
-                create_mirrored_message_users(client, user, recipients, sender.email, message_type)
+                create_mirrored_message_users(
+                    client, user, recipients, sender.email, recipient_type_name
+                )
 
     @mock.patch(
         "DNS.dnslookup",
@@ -54,11 +58,11 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         recipients = [user.email, new_user_email]
 
-        message_type = "private"
+        recipient_type_name = "private"
         client = get_client("zephyr_mirror")
 
         mirror_sender = create_mirrored_message_users(
-            client, user, recipients, sender.email, message_type
+            client, user, recipients, sender.email, recipient_type_name
         )
 
         self.assertEqual(mirror_sender, sender)
@@ -82,11 +86,11 @@ class MirroredMessageUsersTest(ZulipTestCase):
 
         recipients = ["stream_name"]
 
-        message_type = "stream"
+        recipient_type_name = "stream"
         client = get_client("zephyr_mirror")
 
         mirror_sender = create_mirrored_message_users(
-            client, user, recipients, sender_email, message_type
+            client, user, recipients, sender_email, recipient_type_name
         )
 
         assert mirror_sender is not None
@@ -105,11 +109,11 @@ class MirroredMessageUsersTest(ZulipTestCase):
             self.nonreg_email("cordelia"),
         ]
 
-        message_type = "private"
+        recipient_type_name = "private"
         client = get_client("irc_mirror")
 
         mirror_sender = create_mirrored_message_users(
-            client, user, recipients, sender.email, message_type
+            client, user, recipients, sender.email, recipient_type_name
         )
 
         self.assertEqual(mirror_sender, sender)
@@ -134,11 +138,11 @@ class MirroredMessageUsersTest(ZulipTestCase):
             self.nonreg_email("cordelia"),
         ]
 
-        message_type = "private"
+        recipient_type_name = "private"
         client = get_client("jabber_mirror")
 
         mirror_sender = create_mirrored_message_users(
-            client, user, recipients, sender.email, message_type
+            client, user, recipients, sender.email, recipient_type_name
         )
 
         self.assertEqual(mirror_sender, sender)

@@ -132,11 +132,11 @@ from zerver.views.registration import (
 )
 from zerver.views.report import (
     report_csp_violations,
-    report_error,
     report_narrow_times,
     report_send_times,
     report_unnarrow_times,
 )
+from zerver.views.scheduled_messages import delete_scheduled_messages, fetch_scheduled_messages
 from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
@@ -322,6 +322,9 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # New scheduled messages are created via send_message_backend.
+    rest_path("scheduled_messages", GET=fetch_scheduled_messages),
+    rest_path("scheduled_messages/<int:scheduled_message_id>", DELETE=delete_scheduled_messages),
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     rest_path(
@@ -491,11 +494,6 @@ v1_api_and_json_patterns = [
     # These endpoints are for internal error/performance reporting
     # from the browser to the web app, and we don't expect to ever
     # include in our API documentation.
-    rest_path(
-        "report/error",
-        # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
-        POST=(report_error, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
     rest_path("report/send_times", POST=(report_send_times, {"intentionally_undocumented"})),
     rest_path(
         "report/narrow_times",
@@ -725,6 +723,9 @@ v1_api_mobile_patterns = [
     # API key - as we consider access to the API key sensitive
     # and just having a logged-in session should be insufficient.
     rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
+    #  This view accepts a JWT containing an email and returns an API key
+    #  and the details for a single user.
+    path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
 # View for uploading messages from email mirror
@@ -755,11 +756,6 @@ urls += [
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
-#  This view accepts a JWT containing an email and returns an API key
-#  and the details for a single user.
-urls += [
-    path("api/v1/jwt/fetch_api_key", jwt_fetch_api_key),
-]
 
 # SCIM2
 

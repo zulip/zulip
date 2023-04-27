@@ -505,7 +505,7 @@ exports.fixtures = {
         realm_linkifiers: [
             {
                 pattern: "#[123]",
-                url_format: "ticket %(id)s",
+                url_template: "ticket {id}",
                 id: 55,
             },
         ],
@@ -961,6 +961,13 @@ exports.fixtures = {
         op: "update",
         property: "user_list_style",
         value: 2,
+    },
+
+    user_settings__web_mark_read_on_scroll_policy: {
+        type: "user_settings",
+        op: "update",
+        property: "web_mark_read_on_scroll_policy",
+        value: 1,
     },
 
     user_status__set_status_emoji: {

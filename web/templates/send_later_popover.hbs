@@ -1,0 +1,36 @@
+<ul id="send_later_popover" class="nav nav-list">
+    <li class="send_later_popover_header">
+        {{t "Schedule message" }}
+    </li>
+    {{#if formatted_send_later_time }}
+    <li class="selected_send_later_time">
+        {{ formatted_send_later_time }}
+    </li>
+    <hr />
+    <li>
+        <a id="clear_compose_schedule_state">{{t "Now" }}</a>
+    </li>
+    {{/if}}
+    <hr />
+    {{#if possible_send_later_today}}
+        {{#each possible_send_later_today}}
+            <li>
+                <a id="{{@key}}" class="send_later_today">{{this.text}}</a>
+            </li>
+        {{/each}}
+        <hr />
+    {{/if}}
+    {{#each send_later_tomorrow}}
+        <li>
+            <a id="{{@key}}" class="send_later_tomorrow">{{this.text}}</a>
+        </li>
+    {{/each}}
+    <hr />
+    <li>
+        <a id="send-later-custom-input">{{send_later_custom.text}}</a>
+    </li>
+    <hr />
+    <li>
+        <a href="#scheduled">{{t "View scheduled messages" }}</a>
+    </li>
+</ul>

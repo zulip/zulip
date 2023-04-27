@@ -60,6 +60,7 @@ from zerver.lib.notification_data import (
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.recipient_users import recipient_for_user_profiles
+from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.stream_subscription import (
     get_subscriptions_for_send_message,
     num_subscribers_for_stream_id,
@@ -467,7 +468,11 @@ def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) ->
         scheduled_message.recipient = send_request.message.recipient
         topic_name = send_request.message.topic_name()
         scheduled_message.set_topic_name(topic_name=topic_name)
+        rendering_result = render_markdown(
+            send_request.message, send_request.message.content, send_request.realm
+        )
         scheduled_message.content = send_request.message.content
+        scheduled_message.rendered_content = rendering_result.rendered_content
         scheduled_message.sending_client = send_request.message.sending_client
         scheduled_message.stream = send_request.stream
         scheduled_message.realm = send_request.realm
@@ -482,6 +487,33 @@ def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) ->
 
     ScheduledMessage.objects.bulk_create(scheduled_messages)
     return [scheduled_message.id for scheduled_message in scheduled_messages]
+
+
+def edit_scheduled_message(
+    scheduled_message_id: int, send_request: SendMessageRequest, sender: UserProfile
+) -> int:
+    with transaction.atomic():
+        scheduled_message_object = access_scheduled_message(sender, scheduled_message_id)
+
+        # Handles the race between us initiating this transaction and user sending us the edit request.
+        if scheduled_message_object.delivered is True:
+            raise JsonableError(_("Scheduled message was already sent"))
+
+        # Only override fields that user can change.
+        scheduled_message_object.recipient = send_request.message.recipient
+        topic_name = send_request.message.topic_name()
+        scheduled_message_object.set_topic_name(topic_name=topic_name)
+        rendering_result = render_markdown(
+            send_request.message, send_request.message.content, send_request.realm
+        )
+        scheduled_message_object.content = send_request.message.content
+        scheduled_message_object.rendered_content = rendering_result.rendered_content
+        scheduled_message_object.sending_client = send_request.message.sending_client
+        scheduled_message_object.stream = send_request.stream
+        assert send_request.deliver_at is not None
+        scheduled_message_object.scheduled_timestamp = send_request.deliver_at
+        scheduled_message_object.save()
+    return scheduled_message_id
 
 
 def build_message_send_dict(
@@ -1122,7 +1154,7 @@ def check_send_private_message(
 def check_send_message(
     sender: UserProfile,
     client: Client,
-    message_type_name: str,
+    recipient_type_name: str,
     message_to: Union[Sequence[int], Sequence[str]],
     topic_name: Optional[str],
     message_content: str,
@@ -1136,7 +1168,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
 ) -> int:
-    addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
         message = check_message(
             sender,
@@ -1160,16 +1192,17 @@ def check_send_message(
 def check_schedule_message(
     sender: UserProfile,
     client: Client,
-    message_type_name: str,
+    recipient_type_name: str,
     message_to: Union[Sequence[str], Sequence[int]],
     topic_name: Optional[str],
     message_content: str,
+    scheduled_message_id: Optional[int],
     delivery_type: str,
     deliver_at: datetime.datetime,
     realm: Optional[Realm] = None,
     forwarder_user_profile: Optional[UserProfile] = None,
 ) -> int:
-    addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
 
     send_request = check_message(
         sender,
@@ -1187,6 +1220,9 @@ def check_schedule_message(
         recipient.type != Recipient.STREAM and recipient.type_id != sender.id
     ):
         raise JsonableError(_("Reminders can only be set for streams."))
+
+    if scheduled_message_id is not None:
+        return edit_scheduled_message(scheduled_message_id, send_request, sender)
 
     return do_schedule_messages([send_request])[0]
 

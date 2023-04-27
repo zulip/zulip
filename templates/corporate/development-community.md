@@ -143,8 +143,8 @@ topic to a different stream](/help/move-content-to-another-stream).
   comment on work posted here, even if you’re new to the Zulip
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
-  feedback is super helpful. Note that GitHub is our primarily system
-  for managing code review.
+  feedback is super helpful. Note that GitHub is our primary system
+  for managing code reviews.
 - [#backend](https://chat.zulip.org/#narrow/stream/3-backend),
   [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend),
   [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation),

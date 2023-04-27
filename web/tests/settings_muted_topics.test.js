@@ -31,8 +31,8 @@ run_test("settings", ({override}) => {
     override(list_widget, "create", ($container, list) => {
         assert.deepEqual(list, [
             {
-                date_muted: 1577836800000,
-                date_muted_str: "Jan 1, 2020",
+                date_updated: 1577836800000,
+                date_updated_str: "Jan 1, 2020",
                 stream: frontend.name,
                 stream_id: frontend.stream_id,
                 topic: "js",

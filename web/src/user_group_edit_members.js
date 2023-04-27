@@ -296,13 +296,13 @@ function remove_member({group_id, target_user_id, $list_entry}) {
 export function initialize() {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
-        $parent_container: $("#manage_groups_container"),
+        $parent_container: $("#groups_overlay_container"),
         pill_selector: ".edit_members_for_user_group .pill-container",
         button_selector: ".edit_members_for_user_group .add-subscriber-button",
         action: add_new_members,
     });
 
-    $("#manage_groups_container").on(
+    $("#groups_overlay_container").on(
         "submit",
         ".edit_members_for_user_group .subscriber_list_remove form",
         (e) => {

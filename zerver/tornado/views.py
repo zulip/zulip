@@ -156,6 +156,9 @@ def get_events_backend(
     pronouns_field_type_supported: bool = REQ(
         default=True, json_validator=check_bool, intentionally_undocumented=True
     ),
+    linkifier_url_template: bool = REQ(
+        default=False, json_validator=check_bool, intentionally_undocumented=True
+    ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
         raise JsonableError(_("User not authorized for this query"))
@@ -188,6 +191,7 @@ def get_events_backend(
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
 
     result = in_tornado_thread(fetch_events)(

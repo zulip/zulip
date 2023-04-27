@@ -101,7 +101,7 @@ export class IterationProfiler {
         if (diff > 1) {
             this.sections.set(
                 "_rest_of_iteration",
-                (this.sections.get("_rest_of_iteration") || 0) + diff,
+                (this.sections.get("_rest_of_iteration") ?? 0) + diff,
             );
         }
         this.last_time = now;
@@ -109,7 +109,7 @@ export class IterationProfiler {
 
     section(label: string): void {
         const now = window.performance.now();
-        this.sections.set(label, (this.sections.get(label) || 0) + (now - this.last_time));
+        this.sections.set(label, (this.sections.get(label) ?? 0) + (now - this.last_time));
         this.last_time = now;
     }
 

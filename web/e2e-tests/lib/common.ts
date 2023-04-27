@@ -1,6 +1,7 @@
 import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
+import timersPromises from "timers/promises";
 
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
@@ -13,7 +14,11 @@ import {test_credentials} from "../../../var/puppeteer/test_credentials";
 const root_dir = path.resolve(__dirname, "../../..");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
-type Message = Record<string, string | boolean> & {recipient?: string; content: string};
+type Message = Record<string, string | boolean> & {
+    recipient?: string;
+    content: string;
+    stream?: string;
+};
 
 let browser: Browser | null = null;
 let screenshot_id = 0;
@@ -186,7 +191,7 @@ export async function check_form_contents(
     }
 }
 
-export async function get_element_text(element: ElementHandle<Element>): Promise<string> {
+export async function get_element_text(element: ElementHandle): Promise<string> {
     const text = await (await element.getProperty("innerText"))!.jsonValue();
     assert.ok(typeof text === "string");
     return text;
@@ -204,7 +209,10 @@ export async function check_compose_state(
 ): Promise<void> {
     const form_params: Record<string, string> = {content: params.content};
     if (params.stream) {
-        form_params.stream_message_recipient_stream = params.stream;
+        assert.equal(
+            await get_text_from_selector(page, "#compose_select_stream_name"),
+            params.stream,
+        );
     }
     if (params.topic) {
         form_params.stream_message_recipient_topic = params.topic;
@@ -317,7 +325,7 @@ export async function assert_compose_box_content(
 export async function wait_for_fully_processed_message(page: Page, content: string): Promise<void> {
     // Wait in parallel for the message list scroll animation, which
     // interferes with Puppeteer accurately clicking on messages.
-    const scroll_delay = page.waitForTimeout(400);
+    const scroll_delay = timersPromises.setTimeout(400);
 
     await page.waitForFunction(
         (content: string) => {
@@ -376,6 +384,26 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
     await scroll_delay;
 }
 
+export async function select_item_via_dropdown(
+    page: Page,
+    dropdown_selector: string,
+    item: string,
+): Promise<void> {
+    console.log(`Clicking on ${dropdown_selector} to select ${item}`);
+    const menu_visible = (await page.$(`${dropdown_selector} .open`)) !== null;
+    if (!menu_visible) {
+        await page.waitForSelector(dropdown_selector, {visible: true});
+        await page.click(`${dropdown_selector} .dropdown-toggle`);
+        await page.waitForSelector(`${dropdown_selector} .dropdown-menu`, {visible: true});
+    }
+    const entry_selector = `xpath///*[${has_class_x(
+        "list_item",
+    )} and contains(normalize-space(), "${item}")]`;
+    await page.waitForSelector(entry_selector, {visible: true});
+    await page.click(entry_selector);
+    await page.waitForSelector(`.dropdown-menu`, {visible: false});
+}
+
 // Wait for any previous send to finish, then send a message.
 export async function send_message(
     page: Page,
@@ -404,7 +432,7 @@ export async function send_message(
     }
 
     if (params.stream) {
-        params.stream_message_recipient_stream = params.stream;
+        await select_item_via_dropdown(page, "#compose_select_stream_widget", params.stream);
         delete params.stream;
     }
 
