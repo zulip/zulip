@@ -3,11 +3,11 @@
 import $ from "jquery";
 import _ from "lodash";
 
-// todo: fix circular import here
-import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
+import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t} from "./i18n";
@@ -134,12 +134,39 @@ function switch_message_type(message_type) {
 
     const opts = {
         message_type,
-        trigger: "toggle recipient type",
         stream: compose_state.stream_name(),
         topic: compose_state.topic(),
         private_message_recipient: compose_state.private_message_recipient(),
     };
-    compose_actions.show_compose_box(message_type, opts);
+    update_compose_for_message_type(message_type, opts);
+    update_placeholder_text();
+    compose_ui.set_focus(message_type, opts);
+}
+
+export function update_compose_for_message_type(message_type) {
+    if (message_type === "stream") {
+        $("#compose-direct-recipient").hide();
+        $("#stream_message_recipient_topic").show();
+        $("#stream_toggle").addClass("active");
+        $("#private_message_toggle").removeClass("active");
+        $("#compose-recipient").removeClass("compose-recipient-direct-selected");
+    } else {
+        $("#compose-direct-recipient").show();
+        $("#stream_message_recipient_topic").hide();
+        $("#stream_toggle").removeClass("active");
+        $("#private_message_toggle").addClass("active");
+        $("#compose-recipient").addClass("compose-recipient-direct-selected");
+        // TODO: When "Direct message" is selected, we show "DM" on the dropdown
+        // button. It would be nice if the dropdown supported a way to attach
+        // the "DM" button display string so we wouldn't have to manually change
+        // it here.
+        const direct_message_label = $t({defaultMessage: "DM"});
+        $("#compose_select_recipient_name").html(
+            `<i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> ${direct_message_label}`,
+        );
+    }
+    compose_banner.clear_errors();
+    compose_banner.clear_warnings();
 }
 
 export function on_compose_select_recipient_update(new_value) {
@@ -245,4 +272,22 @@ export function initialize() {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);
     });
+}
+
+export function update_placeholder_text() {
+    // Change compose placeholder text only if compose box is open.
+    if (!$("#compose-textarea").is(":visible")) {
+        return;
+    }
+
+    const opts = {
+        message_type: compose_state.get_message_type(),
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
+        // TODO: to remove a circular import, PM recipient needs
+        // to be calculated in compose_state instead of compose_pm_pill.
+        private_message_recipient: compose_pm_pill.get_emails(),
+    };
+
+    $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
 }

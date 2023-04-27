@@ -33,6 +33,37 @@ export function autosize_textarea($textarea) {
     }
 }
 
+function get_focus_area(msg_type, opts) {
+    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    if (msg_type === "stream" && opts.stream && !opts.topic) {
+        return "#stream_message_recipient_topic";
+    } else if (
+        (msg_type === "stream" && opts.stream) ||
+        (msg_type === "private" && opts.private_message_recipient)
+    ) {
+        if (opts.trigger === "new topic button") {
+            return "#stream_message_recipient_topic";
+        }
+        return "#compose-textarea";
+    }
+
+    if (msg_type === "stream") {
+        return "#compose_select_recipient_widget";
+    }
+    return "#private_message_recipient";
+}
+
+// Export for testing
+export const _get_focus_area = get_focus_area;
+
+export function set_focus(msg_type, opts) {
+    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+        const focus_area = get_focus_area(msg_type, opts);
+        const $elt = $(focus_area);
+        $elt.trigger("focus").trigger("select");
+    }
+}
+
 export function smart_insert_inline($textarea, syntax) {
     function is_space(c) {
         return c === " " || c === "\t" || c === "\n";

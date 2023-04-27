@@ -8,7 +8,6 @@ import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
@@ -827,7 +826,7 @@ export function dispatch_normal_event(event) {
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
-                    compose_actions.update_placeholder_text();
+                    compose_recipient.update_placeholder_text();
                 }
             }
 

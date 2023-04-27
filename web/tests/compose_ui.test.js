@@ -749,3 +749,21 @@ run_test("right-to-left", () => {
 
     assert.equal($textarea.hasClass("rtl"), false);
 });
+
+const get_focus_area = compose_ui._get_focus_area;
+run_test("get_focus_area", () => {
+    assert.equal(get_focus_area("private", {}), "#private_message_recipient");
+    assert.equal(
+        get_focus_area("private", {
+            private_message_recipient: "bob@example.com",
+        }),
+        "#compose-textarea",
+    );
+    assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget");
+    assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
+    assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
+    assert.equal(
+        get_focus_area("stream", {stream: "fun", topic: "more", trigger: "new topic button"}),
+        "#stream_message_recipient_topic",
+    );
+});

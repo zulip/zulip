@@ -591,7 +591,7 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
     assert.ok(compose_finish_checked);
 });
 
-test_ui("on_events", ({override}) => {
+test_ui("on_events", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
 
     initialize_handlers({override});
@@ -752,7 +752,7 @@ test_ui("on_events", ({override}) => {
             stopPropagation: noop,
         };
 
-        override(compose_actions, "update_placeholder_text", noop);
+        override_rewire(compose_recipient, "update_placeholder_text", noop);
 
         handler(event);
 
