@@ -9,6 +9,12 @@ Contents:
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
+:::{warning}
+There is no supported uninstallation process with the direct-install
+method. If you want that, use [the Vagrant environment](setup-recommended.md),
+where you can just do `vagrant destroy` to clean up the development environment.
+:::
+
 One can install the Zulip development environment directly on a Linux
 host by following these instructions. Currently supported platforms
 are:
@@ -23,12 +29,6 @@ are:
 If you are using a [remote server](remote.md), see
 the
 [section on creating appropriate user accounts](remote.md#setting-up-user-accounts).
-
-:::{warning}
-There is no supported uninstallation process with this
-method. If you want that, use the Vagrant environment, where you can
-just do `vagrant destroy` to clean up the development environment.
-:::
 
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
