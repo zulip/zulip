@@ -3,6 +3,8 @@ import $ from "jquery";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
+import * as scroll_util from "./scroll_util";
+
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
     scroll_to_message_banner_message_id = val;
@@ -48,6 +50,10 @@ export const CLASSNAMES = {
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
 };
+
+export function append_compose_banner_to_banner_list(new_row: HTMLElement): void {
+    scroll_util.get_content_element($("#compose_banners")).append(new_row);
+}
 
 export function clear_message_sent_banners(include_unmute_banner = true): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {

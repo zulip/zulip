@@ -7,7 +7,6 @@ import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
-import * as compose_validate from "./compose_validate";
 import * as favicon from "./favicon";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -179,7 +178,7 @@ function notify_unmute(muted_narrow, stream_id, topic_name) {
         }),
     );
     compose_banner.clear_unmute_topic_notifications();
-    compose_validate.append_compose_banner_to_banner_list($unmute_notification);
+    compose_banner.append_compose_banner_to_banner_list($unmute_notification);
 }
 
 export function notify_above_composebox(
@@ -201,7 +200,7 @@ export function notify_above_composebox(
     // We pass in include_unmute_banner as false because we don't want to
     // clear any unmute_banner associated with this same message.
     compose_banner.clear_message_sent_banners(false);
-    compose_validate.append_compose_banner_to_banner_list($notification);
+    compose_banner.append_compose_banner_to_banner_list($notification);
 }
 
 if (window.electron_bridge !== undefined) {
