@@ -862,10 +862,11 @@ a.compose_control_button.hide {
     padding: 0;
     margin: 0;
 
-    .fa {
-        padding: 4.5px 4px;
+    .zulip-icon {
+        vertical-align: middle;
 
         &::before {
+            padding: 5px 9px;
             position: relative;
             top: -1px;
         }
