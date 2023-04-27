@@ -257,10 +257,6 @@ export function set_up_toggler() {
 }
 
 export function show(target) {
-    if (!toggler) {
-        set_up_toggler();
-    }
-
     const $overlay = $(".informational-overlays");
 
     if (!$overlay.hasClass("show")) {
@@ -271,6 +267,10 @@ export function show(target) {
                 browser_history.exit_overlay();
             },
         });
+    }
+
+    if (!toggler) {
+        set_up_toggler();
     }
 
     if (target) {
