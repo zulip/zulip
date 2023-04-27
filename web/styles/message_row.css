@@ -258,11 +258,17 @@ $time_column_max_width: 150px;
                     line-height: normal;
                     outline: none;
                     margin-top: $sender_name_distance_below_flex_center;
+                }
 
-                    .sender_name_padding {
-                        /* Add padding to align user name with the content */
-                        padding-left: $avatar_column_width;
-                    }
+                .sender_name_padding {
+                    /* Add padding to align user name with the content. This region is
+                       important to ensure that the hover region for the sender name
+                       and avatar are continuous with each other. */
+                    padding-left: $avatar_column_width;
+                }
+
+                .sender_name-in-status .sender_name_padding {
+                    margin-left: -$avatar_column_width;
                 }
             }
 
