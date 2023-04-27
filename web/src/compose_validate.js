@@ -15,7 +15,6 @@ import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
-import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
@@ -25,10 +24,6 @@ let user_acknowledged_wildcard = false;
 let wildcard_mention;
 
 export let wildcard_mention_large_stream_threshold = 15;
-
-export function append_compose_banner_to_banner_list(new_row) {
-    scroll_util.get_content_element($("#compose_banners")).append(new_row);
-}
 
 export function needs_subscribe_warning(user_id, stream_id) {
     // This returns true if all of these conditions are met:
@@ -110,7 +105,7 @@ export function warn_if_private_stream_is_linked(linked_stream) {
         classname: compose_banner.CLASSNAMES.private_stream_warning,
     });
 
-    append_compose_banner_to_banner_list(new_row);
+    compose_banner.append_compose_banner_to_banner_list(new_row);
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned) {
@@ -166,7 +161,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
             };
 
             const new_row = render_not_subscribed_warning(context);
-            append_compose_banner_to_banner_list(new_row);
+            compose_banner.append_compose_banner_to_banner_list(new_row);
         }
     }
 }
@@ -226,7 +221,7 @@ export function warn_if_topic_resolved(topic_changed) {
         };
 
         const new_row = render_compose_banner(context);
-        append_compose_banner_to_banner_list(new_row);
+        compose_banner.append_compose_banner_to_banner_list(new_row);
         compose_state.set_recipient_viewed_topic_resolved_banner(true);
     } else {
         clear_topic_resolved_warning();
@@ -249,7 +244,7 @@ function show_wildcard_warnings(stream_id) {
 
     // only show one error for any number of @all or @everyone mentions
     if ($(`#compose_banners .${CSS.escape(classname)}`).length === 0) {
-        append_compose_banner_to_banner_list(wildcard_template);
+        compose_banner.append_compose_banner_to_banner_list(wildcard_template);
     }
 
     user_acknowledged_wildcard = false;
@@ -424,7 +419,7 @@ export function validation_error(error_type, stream_name) {
                 // closing the banner would be more confusing than helpful.
                 hide_close_button: true,
             });
-            append_compose_banner_to_banner_list(new_row);
+            compose_banner.append_compose_banner_to_banner_list(new_row);
             return false;
         }
     }

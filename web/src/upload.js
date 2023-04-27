@@ -5,9 +5,9 @@ import $ from "jquery";
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import * as compose_validate from "./compose_validate";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
@@ -123,10 +123,10 @@ function add_upload_banner(config, banner_type, banner_text, file_id) {
         banner_text,
         file_id,
     });
-    // TODO: Extend compose_validate.append_compose_banner_to_banner_list
+    // TODO: Extend compose_banner.append_compose_banner_to_banner_list
     // to support the message edit container too.
     if (config.mode === "compose") {
-        compose_validate.append_compose_banner_to_banner_list(new_banner);
+        compose_banner.append_compose_banner_to_banner_list(new_banner);
     } else {
         get_item("banner_container", config).append(new_banner);
     }
