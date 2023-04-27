@@ -1144,6 +1144,7 @@ class RealmAPITest(ZulipTestCase):
             default_language=["de", "en"],
             default_code_block_language=["javascript", ""],
             description=["Realm description", "New description"],
+            default_topic=["General Topic", "New Topic"],
             digest_weekday=[0, 1, 2],
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],

@@ -37,7 +37,7 @@ from zerver.lib.validator import (
     check_string_or_int,
     to_non_negative_int,
 )
-from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
+from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile, MAX_TOPIC_NAME_LENGTH
 from zerver.views.user_settings import check_settings_values
 
 ORG_TYPE_IDS: List[int] = [t["id"] for t in Realm.ORG_TYPES.values()]
@@ -81,6 +81,10 @@ def update_realm(
         json_validator=check_int_in(Realm.EDIT_TOPIC_POLICY_TYPES), default=None
     ),
     mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    default_topic: Optional[str] = REQ(
+        str_validator=check_capped_string(MAX_TOPIC_NAME_LENGTH),
+        default=None,
+    ),
     message_content_edit_limit_seconds_raw: Optional[Union[int, str]] = REQ(
         "message_content_edit_limit_seconds", json_validator=check_string_or_int, default=None
     ),

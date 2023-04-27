@@ -327,6 +327,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     email_changes_disabled = models.BooleanField(default=False)
     avatar_changes_disabled = models.BooleanField(default=False)
 
+    default_topic = models.TextField(default="")
+
     POLICY_MEMBERS_ONLY = 1
     POLICY_ADMINS_ONLY = 2
     POLICY_FULL_MEMBERS_ONLY = 3
@@ -721,6 +723,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         create_web_public_stream_policy=int,
         default_code_block_language=(str, type(None)),
         default_language=str,
+        default_topic=str,
         delete_own_message_policy=int,
         description=str,
         digest_emails_enabled=bool,
