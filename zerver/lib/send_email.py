@@ -32,9 +32,6 @@ from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_u
 from zproject.email_backends import EmailLogBackEnd, get_forward_address
 
 MAX_CONNECTION_TRIES = 3
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
-EMAIL_TEMPLATES_PATH = os.path.join(ZULIP_PATH, "templates", "zerver", "emails")
-CSS_SOURCE_PATH = os.path.join(EMAIL_TEMPLATES_PATH, "email.css")
 
 ## Logging setup ##
 
@@ -43,9 +40,7 @@ log_to_file(logger, settings.EMAIL_LOG_PATH)
 
 
 def get_inliner_instance() -> css_inline.CSSInliner:
-    with open(CSS_SOURCE_PATH) as file:
-        content = file.read()
-    return css_inline.CSSInliner(extra_css=content)
+    return css_inline.CSSInliner()
 
 
 class FromAddress:
