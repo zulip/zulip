@@ -9,6 +9,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import {get_recipient_label} from "./compose_closed_ui";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -766,11 +767,11 @@ export function initialize() {
     });
 
     $("#compose-textarea").on("focus", () => {
-        compose_actions.update_placeholder_text();
+        compose_recipient.update_placeholder_text();
     });
 
     $("#stream_message_recipient_topic").on("focus", () => {
-        compose_actions.update_placeholder_text();
+        compose_recipient.update_placeholder_text();
     });
 
     $("body").on("click", ".formatting_button", (e) => {

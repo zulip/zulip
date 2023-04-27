@@ -48,69 +48,12 @@ function hide_box() {
     $("#compose_controls").show();
 }
 
-function get_focus_area(msg_type, opts) {
-    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === "stream" && opts.stream && !opts.topic) {
-        return "#stream_message_recipient_topic";
-    } else if (
-        (msg_type === "stream" && opts.stream) ||
-        (msg_type === "private" && opts.private_message_recipient)
-    ) {
-        if (opts.trigger === "new topic button") {
-            return "#stream_message_recipient_topic";
-        }
-        return "#compose-textarea";
-    }
-
-    if (msg_type === "stream") {
-        return "#compose_select_recipient_widget";
-    }
-    return "#private_message_recipient";
-}
-
-// Export for testing
-export const _get_focus_area = get_focus_area;
-
-export function set_focus(msg_type, opts) {
-    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
-        const focus_area = get_focus_area(msg_type, opts);
-        const $elt = $(focus_area);
-        $elt.trigger("focus").trigger("select");
-    }
-}
-
-export function show_compose_box(msg_type, opts) {
-    if (msg_type === "stream") {
-        $("#compose-direct-recipient").hide();
-        $("#stream_message_recipient_topic").show();
-        $("#stream_toggle").addClass("active");
-        $("#private_message_toggle").removeClass("active");
-        $("#compose-recipient").removeClass("compose-recipient-direct-selected");
-    } else {
-        $("#compose-direct-recipient").show();
-        $("#stream_message_recipient_topic").hide();
-        $("#stream_toggle").removeClass("active");
-        $("#private_message_toggle").addClass("active");
-        $("#compose-recipient").addClass("compose-recipient-direct-selected");
-        // TODO: When "Direct message" is selected, we show "DM" on the dropdown
-        // button. It would be nice if the dropdown supported a way to attach
-        // the "DM" button display string so we wouldn't have to manually change
-        // it here.
-        const direct_message_label = $t({defaultMessage: "DM"});
-        $("#compose_select_recipient_name").html(
-            `<i class="zulip-icon zulip-icon-users stream-privacy-type-icon"></i> ${direct_message_label}`,
-        );
-    }
-    compose_banner.clear_errors();
-    compose_banner.clear_warnings();
+function show_compose_box(msg_type, opts) {
+    compose_recipient.update_compose_for_message_type(msg_type, opts);
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
-
-    if (opts.trigger === "toggle recipient type") {
-        update_placeholder_text();
-    }
-    set_focus(msg_type, opts);
+    compose_ui.set_focus(msg_type, opts);
 }
 
 export function clear_textarea() {
@@ -164,7 +107,7 @@ export function complete_starting_tasks(msg_type, opts) {
     compose_fade.start_compose(msg_type);
     stream_bar.decorate(opts.stream, $("#stream_message_recipient_topic .message_header_stream"));
     $(document).trigger(new $.Event("compose_started.zulip", opts));
-    update_placeholder_text();
+    compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
 }
 
@@ -218,22 +161,6 @@ function same_recipient_as_before(msg_type, opts) {
             (msg_type === "private" &&
                 opts.private_message_recipient === compose_state.private_message_recipient()))
     );
-}
-
-export function update_placeholder_text() {
-    // Change compose placeholder text only if compose box is open.
-    if (!$("#compose-textarea").is(":visible")) {
-        return;
-    }
-
-    const opts = {
-        message_type: compose_state.get_message_type(),
-        stream: compose_state.stream_name(),
-        topic: compose_state.topic(),
-        private_message_recipient: compose_pm_pill.get_emails(),
-    };
-
-    $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
 }
 
 export function start(msg_type, opts) {
