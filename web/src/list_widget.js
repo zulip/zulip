@@ -172,263 +172,267 @@ export function create($container, list, opts) {
         return undefined;
     }
 
-    const widget = {};
+    const widget = {
+        get_current_list() {
+            return meta.filtered_list;
+        },
 
-    widget.get_current_list = function () {
-        return meta.filtered_list;
-    };
+        filter_and_sort() {
+            meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
 
-    widget.filter_and_sort = function () {
-        meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
+            if (meta.sorting_function) {
+                meta.filtered_list.sort(meta.sorting_function);
+            }
 
-        if (meta.sorting_function) {
-            meta.filtered_list.sort(meta.sorting_function);
-        }
+            if (meta.reverse_mode) {
+                meta.filtered_list.reverse();
+            }
+        },
 
-        if (meta.reverse_mode) {
-            meta.filtered_list.reverse();
-        }
-    };
+        // Used in case of Multiselect DropdownListWidget to retain
+        // previously checked items even after widget redraws.
+        retain_selected_items() {
+            const items = opts.multiselect;
 
-    // Used in case of Multiselect DropdownListWidget to retain
-    // previously checked items even after widget redraws.
-    widget.retain_selected_items = function () {
-        const items = opts.multiselect;
-
-        if (items.selected_items) {
-            const data = items.selected_items;
-            for (const value of data) {
-                const $list_item = $container.find(`li[data-value = "${value}"]`);
-                if ($list_item.length) {
-                    const $link_elem = $list_item.find("a").expectOne();
-                    $list_item.addClass("checked");
-                    $link_elem.prepend($("<i>").addClass(["fa", "fa-check"]));
+            if (items.selected_items) {
+                const data = items.selected_items;
+                for (const value of data) {
+                    const $list_item = $container.find(`li[data-value = "${value}"]`);
+                    if ($list_item.length) {
+                        const $link_elem = $list_item.find("a").expectOne();
+                        $list_item.addClass("checked");
+                        $link_elem.prepend($("<i>").addClass(["fa", "fa-check"]));
+                    }
                 }
             }
-        }
-    };
+        },
 
-    // Reads the provided list (in the scope directly above)
-    // and renders the next block of messages automatically
-    // into the specified container.
-    widget.render = function (how_many) {
-        let load_count = how_many || DEFAULTS.LOAD_COUNT;
-        if (opts.get_min_load_count) {
-            load_count = opts.get_min_load_count(meta.offset, load_count);
-        }
-
-        // Stop once the offset reaches the length of the original list.
-        if (meta.offset >= meta.filtered_list.length) {
-            return;
-        }
-
-        const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
-
-        let html = "";
-        for (const item of slice) {
-            const s = opts.modifier(item);
-
-            if (typeof s !== "string") {
-                blueslip.error("List item is not a string", {item: s});
-                continue;
+        // Reads the provided list (in the scope directly above)
+        // and renders the next block of messages automatically
+        // into the specified container.
+        render(how_many) {
+            let load_count = how_many || DEFAULTS.LOAD_COUNT;
+            if (opts.get_min_load_count) {
+                load_count = opts.get_min_load_count(meta.offset, load_count);
             }
 
-            // append the HTML or nothing if corrupt (null, undef, etc.).
-            if (s) {
-                html += s;
-            }
-        }
-
-        $container.append($(html));
-        meta.offset += load_count;
-
-        if (opts.multiselect) {
-            widget.retain_selected_items();
-        }
-
-        if (opts.callback_after_render) {
-            opts.callback_after_render();
-        }
-    };
-
-    widget.render_item = (item) => {
-        if (!opts.html_selector) {
-            // We don't have any way to find the existing item.
-            return;
-        }
-        const $html_item = meta.$scroll_container.find(opts.html_selector(item));
-        if (!$html_item) {
-            // We don't have the item in the current scroll container; it'll be
-            // rendered with updated data when it is scrolled to.
-            return;
-        }
-
-        if (opts.get_item) {
-            item = opts.get_item(item);
-        }
-        const html = opts.modifier(item);
-        if (typeof html !== "string") {
-            blueslip.error("List item is not a string", {item: html});
-            return;
-        }
-
-        // At this point, we have asserted we have all the information to replace
-        // the html now.
-        $html_item.replaceWith(html);
-    };
-
-    widget.clear = function () {
-        $container.empty();
-        meta.offset = 0;
-    };
-
-    widget.set_filter_value = function (filter_value) {
-        meta.filter_value = filter_value;
-    };
-
-    widget.set_reverse_mode = function (reverse_mode) {
-        meta.reverse_mode = reverse_mode;
-    };
-
-    // the sorting function is either the function or string that calls the
-    // function to sort the list by. The prop is used for generic functions
-    // that can be called to sort with a particular prop.
-    widget.set_sorting_function = function (sorting_function, prop) {
-        if (typeof sorting_function === "function") {
-            meta.sorting_function = sorting_function;
-        } else if (typeof sorting_function === "string") {
-            if (typeof prop === "string") {
-                meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
-            } else {
-                meta.sorting_function = meta.sorting_functions.get(sorting_function);
-            }
-        }
-    };
-
-    widget.set_up_event_handlers = function () {
-        meta.$scroll_container = scroll_util.get_scroll_element(opts.$simplebar_container);
-
-        // on scroll of the nearest scrolling container, if it hits the bottom
-        // of the container then fetch a new block of items and render them.
-        meta.$scroll_container.on("scroll.list_widget_container", function () {
-            if (opts.post_scroll__pre_render_callback) {
-                opts.post_scroll__pre_render_callback();
+            // Stop once the offset reaches the length of the original list.
+            if (meta.offset >= meta.filtered_list.length) {
+                return;
             }
 
-            if (opts.is_scroll_position_for_render === undefined) {
-                opts.is_scroll_position_for_render = is_scroll_position_for_render;
+            const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
+
+            let html = "";
+            for (const item of slice) {
+                const s = opts.modifier(item);
+
+                if (typeof s !== "string") {
+                    blueslip.error("List item is not a string", {item: s});
+                    continue;
+                }
+
+                // append the HTML or nothing if corrupt (null, undef, etc.).
+                if (s) {
+                    html += s;
+                }
             }
 
-            const should_render = opts.is_scroll_position_for_render(this);
-            if (should_render) {
-                widget.render();
-            }
-        });
+            $container.append($(html));
+            meta.offset += load_count;
 
-        if (opts.$parent_container) {
-            opts.$parent_container.on("click.list_widget_sort", "[data-sort]", function () {
-                handle_sort($(this), widget);
+            if (opts.multiselect) {
+                widget.retain_selected_items();
+            }
+
+            if (opts.callback_after_render) {
+                opts.callback_after_render();
+            }
+        },
+
+        render_item(item) {
+            if (!opts.html_selector) {
+                // We don't have any way to find the existing item.
+                return;
+            }
+            const $html_item = meta.$scroll_container.find(opts.html_selector(item));
+            if (!$html_item) {
+                // We don't have the item in the current scroll container; it'll be
+                // rendered with updated data when it is scrolled to.
+                return;
+            }
+
+            if (opts.get_item) {
+                item = opts.get_item(item);
+            }
+            const html = opts.modifier(item);
+            if (typeof html !== "string") {
+                blueslip.error("List item is not a string", {item: html});
+                return;
+            }
+
+            // At this point, we have asserted we have all the information to replace
+            // the html now.
+            $html_item.replaceWith(html);
+        },
+
+        clear() {
+            $container.empty();
+            meta.offset = 0;
+        },
+
+        set_filter_value(filter_value) {
+            meta.filter_value = filter_value;
+        },
+
+        set_reverse_mode(reverse_mode) {
+            meta.reverse_mode = reverse_mode;
+        },
+
+        // the sorting function is either the function or string that calls the
+        // function to sort the list by. The prop is used for generic functions
+        // that can be called to sort with a particular prop.
+        set_sorting_function(sorting_function, prop) {
+            if (typeof sorting_function === "function") {
+                meta.sorting_function = sorting_function;
+            } else if (typeof sorting_function === "string") {
+                if (typeof prop === "string") {
+                    meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
+                } else {
+                    meta.sorting_function = meta.sorting_functions.get(sorting_function);
+                }
+            }
+        },
+
+        set_up_event_handlers() {
+            meta.$scroll_container = scroll_util.get_scroll_element(opts.$simplebar_container);
+
+            // on scroll of the nearest scrolling container, if it hits the bottom
+            // of the container then fetch a new block of items and render them.
+            meta.$scroll_container.on("scroll.list_widget_container", function () {
+                if (opts.post_scroll__pre_render_callback) {
+                    opts.post_scroll__pre_render_callback();
+                }
+
+                if (opts.is_scroll_position_for_render === undefined) {
+                    opts.is_scroll_position_for_render = is_scroll_position_for_render;
+                }
+
+                const should_render = opts.is_scroll_position_for_render(this);
+                if (should_render) {
+                    widget.render();
+                }
             });
-        }
 
-        if (opts.filter && opts.filter.$element) {
-            opts.filter.$element.on("input.list_widget_filter", function () {
-                const value = this.value.toLocaleLowerCase();
-                widget.set_filter_value(value);
-                widget.hard_redraw();
-            });
-        }
-    };
+            if (opts.$parent_container) {
+                opts.$parent_container.on("click.list_widget_sort", "[data-sort]", function () {
+                    handle_sort($(this), widget);
+                });
+            }
 
-    widget.clear_event_handlers = function () {
-        meta.$scroll_container.off("scroll.list_widget_container");
+            if (opts.filter && opts.filter.$element) {
+                opts.filter.$element.on("input.list_widget_filter", function () {
+                    const value = this.value.toLocaleLowerCase();
+                    widget.set_filter_value(value);
+                    widget.hard_redraw();
+                });
+            }
+        },
 
-        if (opts.$parent_container) {
-            opts.$parent_container.off("click.list_widget_sort", "[data-sort]");
-        }
+        clear_event_handlers() {
+            meta.$scroll_container.off("scroll.list_widget_container");
 
-        if (opts.filter && opts.filter.$element) {
-            opts.filter.$element.off("input.list_widget_filter");
-        }
-    };
+            if (opts.$parent_container) {
+                opts.$parent_container.off("click.list_widget_sort", "[data-sort]");
+            }
 
-    widget.increase_rendered_offset = function () {
-        meta.offset = Math.min(meta.offset + 1, meta.filtered_list.length);
-    };
+            if (opts.filter && opts.filter.$element) {
+                opts.filter.$element.off("input.list_widget_filter");
+            }
+        },
 
-    widget.reduce_rendered_offset = function () {
-        meta.offset = Math.max(meta.offset - 1, 0);
-    };
+        increase_rendered_offset() {
+            meta.offset = Math.min(meta.offset + 1, meta.filtered_list.length);
+        },
 
-    widget.remove_rendered_row = function (rendered_row) {
-        rendered_row.remove();
-        // We removed a rendered row, so we need to reduce one offset.
-        widget.reduce_rendered_offset();
-    };
+        reduce_rendered_offset() {
+            meta.offset = Math.max(meta.offset - 1, 0);
+        },
 
-    widget.insert_rendered_row = function (item) {
-        // NOTE: Caller should call `filter_and_sort` before calling this function
-        // so that `meta.filtered_list` already has the `item`.
-        if (meta.filtered_list.length <= 2) {
-            // Avoids edge cases for us and could be faster too.
+        remove_rendered_row(rendered_row) {
+            rendered_row.remove();
+            // We removed a rendered row, so we need to reduce one offset.
+            widget.reduce_rendered_offset();
+        },
+
+        clean_redraw() {
+            widget.filter_and_sort();
+            widget.clear();
+            widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
+        },
+
+        hard_redraw() {
             widget.clean_redraw();
-            return;
-        }
-        if (!opts.filter.predicate(item)) {
-            return;
-        }
-        // We need to insert the row for it to be displayed at the
-        // correct position. filtered_list must contain the new item
-        // since we know it is not hidden from the above check.
-        const topic_insert_index = meta.filtered_list.findIndex(
-            (list_item) => list_item.last_msg_id === item.last_msg_id,
-        );
-        // Rows greater than `offset` are not rendered in the DOM by list_widget;
-        // for those, there's nothing to update.
-        if (topic_insert_index <= meta.offset) {
-            if (!opts.modifier || !opts.html_selector) {
-                blueslip.error(
-                    "Please specify modifier and html_selector when creating the widget.",
-                );
+            if (opts.filter && opts.filter.onupdate) {
+                opts.filter.onupdate();
             }
-            const rendered_row = opts.modifier(item);
-            if (topic_insert_index === meta.filtered_list.length - 1) {
-                const $target_row = opts.html_selector(meta.filtered_list[topic_insert_index - 1]);
-                $target_row.after(rendered_row);
-            } else {
-                const $target_row = opts.html_selector(meta.filtered_list[topic_insert_index + 1]);
-                $target_row.before(rendered_row);
+        },
+
+        insert_rendered_row(item) {
+            // NOTE: Caller should call `filter_and_sort` before calling this function
+            // so that `meta.filtered_list` already has the `item`.
+            if (meta.filtered_list.length <= 2) {
+                // Avoids edge cases for us and could be faster too.
+                widget.clean_redraw();
+                return;
             }
-            widget.increase_rendered_offset();
-        }
-    };
+            if (!opts.filter.predicate(item)) {
+                return;
+            }
+            // We need to insert the row for it to be displayed at the
+            // correct position. filtered_list must contain the new item
+            // since we know it is not hidden from the above check.
+            const topic_insert_index = meta.filtered_list.findIndex(
+                (list_item) => list_item.last_msg_id === item.last_msg_id,
+            );
+            // Rows greater than `offset` are not rendered in the DOM by list_widget;
+            // for those, there's nothing to update.
+            if (topic_insert_index <= meta.offset) {
+                if (!opts.modifier || !opts.html_selector) {
+                    blueslip.error(
+                        "Please specify modifier and html_selector when creating the widget.",
+                    );
+                }
+                const rendered_row = opts.modifier(item);
+                if (topic_insert_index === meta.filtered_list.length - 1) {
+                    const $target_row = opts.html_selector(
+                        meta.filtered_list[topic_insert_index - 1],
+                    );
+                    $target_row.after(rendered_row);
+                } else {
+                    const $target_row = opts.html_selector(
+                        meta.filtered_list[topic_insert_index + 1],
+                    );
+                    $target_row.before(rendered_row);
+                }
+                widget.increase_rendered_offset();
+            }
+        },
 
-    widget.sort = function (sorting_function, prop) {
-        widget.set_sorting_function(sorting_function, prop);
-        widget.hard_redraw();
-    };
+        sort(sorting_function, prop) {
+            widget.set_sorting_function(sorting_function, prop);
+            widget.hard_redraw();
+        },
 
-    widget.clean_redraw = function () {
-        widget.filter_and_sort();
-        widget.clear();
-        widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
-    };
-
-    widget.hard_redraw = function () {
-        widget.clean_redraw();
-        if (opts.filter && opts.filter.onupdate) {
-            opts.filter.onupdate();
-        }
-    };
-
-    widget.replace_list_data = function (list) {
-        /*
-            We mostly use this widget for lists where you are
-            not adding or removing rows, so when you do modify
-            the list, we have a brute force solution.
-        */
-        meta.list = list;
-        widget.hard_redraw();
+        replace_list_data(list) {
+            /*
+                We mostly use this widget for lists where you are
+                not adding or removing rows, so when you do modify
+                the list, we have a brute force solution.
+            */
+            meta.list = list;
+            widget.hard_redraw();
+        },
     };
 
     widget.set_up_event_handlers();
