@@ -54,7 +54,7 @@ export function edit_scheduled_message(scheduled_msg_id) {
             {trigger: "edit scheduled message"},
         );
     } else {
-        narrow.activate([{operator: "pm-with", operand: compose_args.private_message_recipient}], {
+        narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
             trigger: "edit scheduled message",
         });
     }
