@@ -888,7 +888,6 @@ export function show() {
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
     set_visible(true);
-    $(".header").css("padding-bottom", "0px");
 
     unread_ui.hide_unread_banner();
 
@@ -924,8 +923,6 @@ export function hide() {
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     set_visible(false);
-
-    $(".header").css("padding-bottom", "10px");
 
     // This solves a bug with message_view_header
     // being broken sometimes when we narrow

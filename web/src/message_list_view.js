@@ -1468,7 +1468,7 @@ export class MessageListView {
             // header has a box-shodow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
-            // This value is dependent upon margin-bottom applied to recipient row.
+            // This value is dependent upon space between two `recipient_row` message groups.
             const margin_between_recipient_rows = 10;
             const sticky_or_about_to_be_sticky_header_position =
                 visible_top + header_props.height + margin_between_recipient_rows;

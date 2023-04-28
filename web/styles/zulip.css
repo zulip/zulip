@@ -195,12 +195,6 @@ p.n-margin {
     display: none;
 }
 
-.top-messages-logo {
-    /* Since padding under message header is not transparent
-       we need to position it below the padding. */
-    padding-top: var(--header-padding-bottom);
-}
-
 .scheduled-messages-loading-logo,
 .alert-zulip-logo,
 .top-messages-logo,
@@ -220,6 +214,13 @@ p.n-margin {
             stroke: hsl(0deg 0% 100%);
         }
     }
+}
+
+.top-messages-logo {
+    /* Since padding under message header is not transparent
+       we need to position it below the padding. */
+    padding-top: var(--header-padding-bottom);
+    margin-bottom: 0;
 }
 
 #feedback_container {
@@ -294,7 +295,6 @@ p.n-margin {
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     height: var(--header-height);
-    padding-bottom: var(--header-padding-bottom);
     /* Since the headers are sticky, we need non-transparent background. */
     background-color: hsl(0deg 0% 100%);
 }
@@ -1183,9 +1183,9 @@ td.pointer {
 
 .message_list {
     .recipient_row {
-        /* This value should be in sync with `margin_between_recipient_rows`
-        in `message_list_view`. */
-        margin-bottom: 10px;
+        /* Browser overlaps extra top padding of message header and
+           the bottom border message if this margin is not present. */
+        margin-bottom: 1px;
         border-radius: 5px;
 
         .message_row:last-of-type {
@@ -1212,7 +1212,8 @@ td.pointer {
 
     .message_header {
         position: sticky;
-        top: var(--sidebar-top);
+        padding-top: var(--header-padding-bottom);
+        top: var(--header-height);
         z-index: 3;
         box-shadow: 0 -1px 0 0 var(--color-background);
 
