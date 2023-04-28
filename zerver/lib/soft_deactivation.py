@@ -163,6 +163,10 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # For stream messages we need to check messages against data from
     # RealmAuditLog for visibility to user. So we fetch the subscription logs.
     stream_ids = [sub["recipient__type_id"] for sub in all_stream_subs]
+
+    # We have a partial index on RealmAuditLog for these rows -- if
+    # this set changes, the partial index must be updated as well, to
+    # keep this query performant
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_DEACTIVATED,

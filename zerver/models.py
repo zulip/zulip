@@ -4496,6 +4496,21 @@ class RealmAuditLog(AbstractRealmAuditLog):
             return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
         return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
 
+    class Meta:
+        indexes = [
+            models.Index(
+                name="zerver_realmauditlog_user_subscriptions_idx",
+                fields=["modified_user", "modified_stream"],
+                condition=Q(
+                    event_type__in=[
+                        AbstractRealmAuditLog.SUBSCRIPTION_CREATED,
+                        AbstractRealmAuditLog.SUBSCRIPTION_ACTIVATED,
+                        AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+                    ]
+                ),
+            )
+        ]
+
 
 class UserHotspot(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)
