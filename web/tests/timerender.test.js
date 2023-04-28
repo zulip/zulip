@@ -448,6 +448,9 @@ run_test("get_full_datetime", () => {
     let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
     assert.equal(timerender.get_full_datetime(time), expected);
 
+    expected = "translated: 5/18/2017 at 9:12 PM UTC";
+    assert.equal(timerender.get_full_datetime(time, "time"), expected);
+
     // test 24 hour time setting.
     user_settings.twenty_four_hour_time = true;
     expected = "translated: 5/18/2017 at 21:12:53 UTC";

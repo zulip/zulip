@@ -44,6 +44,7 @@ import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
+import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
@@ -92,7 +93,7 @@ export function get_formatted_selected_send_later_time() {
     if (!selected_send_later_time) {
         return undefined;
     }
-    return format(new Date(selected_send_later_time), "MMM d yyyy 'at' h:mm a");
+    return timerender.get_full_datetime(selected_send_later_time, "time");
 }
 
 export function reset_selected_schedule_time() {
