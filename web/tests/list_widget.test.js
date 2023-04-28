@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, mock_jquery, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
+const $ = require("./lib/zjquery");
 
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects
@@ -723,7 +724,8 @@ run_test("render item", () => {
     const $scroll_container = make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
     let called = false;
-    $scroll_container.find = (query) => {
+    $scroll_container.find = (element) => {
+        const query = element.selector;
         const expected_queries = [
             `tr[data-item='${INITIAL_RENDER_COUNT}']`,
             `tr[data-item='${INITIAL_RENDER_COUNT - 1}']`,
@@ -756,7 +758,7 @@ run_test("render item", () => {
         name: "replace-list",
         modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item,
-        html_selector: (item) => `tr[data-item='${item}']`,
+        html_selector: (item) => $(`tr[data-item='${item.value}']`),
         $simplebar_container: $scroll_container,
     });
     const item = INITIAL_RENDER_COUNT - 1;
@@ -765,7 +767,7 @@ run_test("render item", () => {
     assert.ok($container.$appended_data.html().includes("<tr data-item=3>initial: 3</tr>"));
     text = "updated";
     called = false;
-    widget.render_item(INITIAL_RENDER_COUNT - 1);
+    widget.render_item(get_item(INITIAL_RENDER_COUNT - 1));
     assert.ok(called);
     assert.ok($container.$appended_data.html().includes("<tr data-item=2>initial: 2</tr>"));
     assert.ok(
@@ -781,9 +783,9 @@ run_test("render item", () => {
             ),
     );
     called = false;
-    widget.render_item(INITIAL_RENDER_COUNT);
+    widget.render_item(get_item(INITIAL_RENDER_COUNT));
     assert.ok(!called);
-    widget.render_item(INITIAL_RENDER_COUNT - 1);
+    widget.render_item(get_item(INITIAL_RENDER_COUNT - 1));
     assert.ok(called);
 
     // Tests below this are for the corner cases, where we abort the rerender.
@@ -809,6 +811,7 @@ run_test("render item", () => {
         },
         $simplebar_container: $scroll_container,
     });
+
     get_item_called = false;
     widget_2.render_item(item);
     // Test that we didn't try to render the item.
@@ -819,7 +822,7 @@ run_test("render item", () => {
         name: "replace-list",
         modifier: (item) => (rendering_item ? undefined : `${item}\n`),
         get_item,
-        html_selector: (item) => `tr[data-item='${item}']`,
+        html_selector: (item) => $(`tr[data-item='${item}']`),
         $simplebar_container: $scroll_container,
     });
     // Once we have initially rendered the widget, change the

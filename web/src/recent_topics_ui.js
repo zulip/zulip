@@ -583,11 +583,11 @@ export function inplace_rerender(topic_key) {
     }
 
     const topic_data = topics.get(topic_key);
-    const topic_row = get_topic_row(topic_data);
+    const $topic_row = get_topic_row(topic_data);
     // We cannot rely on `topic_widget.meta.filtered_list` to know
     // if a topic is rendered since the `filtered_list` might have
     // already been updated via other calls.
-    const is_topic_rendered = topic_row.length;
+    const is_topic_rendered = $topic_row.length;
     // Resorting the topics_widget is important for the case where we
     // are rerendering because of message editing or new messages
     // arriving, since those operations often change the sort key.
@@ -605,7 +605,7 @@ export function inplace_rerender(topic_key) {
         if (row_is_focused && row_focus >= current_topics_list.length) {
             row_focus = current_topics_list.length - 1;
         }
-        topics_widget.remove_rendered_row(topic_row);
+        topics_widget.remove_rendered_row($topic_row);
     } else if (!is_topic_rendered && filters_should_hide_topic(topic_data)) {
         // In case `topic_row` is not present, our job is already done here
         // since it has not been rendered yet and we already removed it from
