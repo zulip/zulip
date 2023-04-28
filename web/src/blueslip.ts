@@ -9,7 +9,7 @@
 import * as Sentry from "@sentry/browser";
 import $ from "jquery";
 
-import * as blueslip_stacktrace from "./blueslip_stacktrace";
+import {BlueslipError, display_stacktrace} from "./blueslip_stacktrace";
 import {page_params} from "./page_params";
 
 if (Error.stackTraceLimit !== undefined) {
@@ -86,17 +86,6 @@ export function warn(msg: string, more_info?: unknown): void {
     }
 }
 
-class BlueslipError extends Error {
-    override name = "BlueslipError";
-    more_info?: object;
-    constructor(msg: string, more_info?: object | undefined, cause?: unknown | undefined) {
-        super(msg, {cause});
-        if (more_info !== undefined) {
-            this.more_info = more_info;
-        }
-    }
-}
-
 export function error(
     msg: string,
     more_info?: object | undefined,
@@ -136,6 +125,6 @@ if (page_params.development_environment) {
             return;
         }
 
-        void blueslip_stacktrace.display_stacktrace(ex);
+        void display_stacktrace(ex);
     });
 }
