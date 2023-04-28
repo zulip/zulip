@@ -180,6 +180,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
             modified_user=user_profile, modified_stream_id__in=stream_ids, event_type__in=events
         )
         .order_by("event_last_message_id", "id")
+        .only("id", "event_type", "modified_stream_id", "event_last_message_id")
     )
 
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]] = defaultdict(list)
