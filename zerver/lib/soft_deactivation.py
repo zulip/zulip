@@ -176,8 +176,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # meantime.  Without that tiebreak, we could end up incorrectly
     # processing the ordering of those two subscription changes.
     subscription_logs = list(
-        RealmAuditLog.objects.select_related("modified_stream")
-        .filter(
+        RealmAuditLog.objects.filter(
             modified_user=user_profile, modified_stream_id__in=stream_ids, event_type__in=events
         )
         .order_by("event_last_message_id", "id")
