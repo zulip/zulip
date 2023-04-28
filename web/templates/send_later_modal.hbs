@@ -8,10 +8,6 @@
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
-                <div class="send_later_input_group">
-                    <input class="send_later_date_input" type="text" placeholder="{{t 'Select Date and time' }}" readonly="readonly"
-                      {{#if formatted_send_later_time }}value="{{formatted_send_later_time}}"{{/if}} />
-                </div>
                 <div class="send_later_options">
                     <ul class="nav nav-list">
                         {{#if possible_send_later_today}}

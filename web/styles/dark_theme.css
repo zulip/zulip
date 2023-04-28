@@ -888,12 +888,6 @@
         color: inherit;
     }
 
-    #send_later_modal .send_later_input_group .send_later_date_input {
-        opacity: 0.8;
-        color: hsl(0deg 0% 100%);
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
     .nav-list > li > a,
     .nav-list .nav-header {
         text-shadow: none;

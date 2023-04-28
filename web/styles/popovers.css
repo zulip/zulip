@@ -867,18 +867,4 @@ ul {
     .modal__content {
         padding-bottom: 16px;
     }
-
-    .send_later_input_group {
-        display: flex;
-
-        .send_later_date_input {
-            width: 100%;
-            cursor: pointer;
-            background: hsl(0deg 0% 100%);
-
-            &:focus {
-                box-shadow: none;
-            }
-        }
-    }
 }
