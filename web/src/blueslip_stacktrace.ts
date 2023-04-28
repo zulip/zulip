@@ -5,6 +5,17 @@ import StackTraceGPS from "stacktrace-gps";
 
 import render_blueslip_stacktrace from "../templates/blueslip_stacktrace.hbs";
 
+export class BlueslipError extends Error {
+    override name = "BlueslipError";
+    more_info?: object;
+    constructor(msg: string, more_info?: object | undefined, cause?: unknown | undefined) {
+        super(msg, {cause});
+        if (more_info !== undefined) {
+            this.more_info = more_info;
+        }
+    }
+}
+
 type FunctionName = {
     scope: string;
     name: string;
