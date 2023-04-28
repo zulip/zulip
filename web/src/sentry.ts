@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/browser";
-import {BrowserTracing} from "@sentry/tracing";
 import _ from "lodash";
 
 import {page_params} from "./page_params";
@@ -51,7 +50,7 @@ if (page_params.server_sentry_dsn) {
 
         release: "zulip-server@" + ZULIP_VERSION,
         integrations: [
-            new BrowserTracing({
+            new Sentry.BrowserTracing({
                 tracePropagationTargets: url_matches,
             }),
         ],

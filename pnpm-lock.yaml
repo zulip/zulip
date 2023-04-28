@@ -31,9 +31,6 @@ dependencies:
   '@sentry/integrations':
     specifier: ^7.51.2
     version: 7.51.2
-  '@sentry/tracing':
-    specifier: ^7.51.2
-    version: 7.51.2
   '@uppy/core':
     specifier: ^3.0.2
     version: 3.2.0
@@ -2629,13 +2626,6 @@ packages:
       '@sentry/core': 7.51.2
       '@sentry/types': 7.51.2
       '@sentry/utils': 7.51.2
-    dev: false
-
-  /@sentry/tracing@7.51.2:
-    resolution: {integrity: sha512-qYl8TtwdEAtLBFSSTtHX6OpSGI73sgoPZhc3ZtF7+cLe29FRM5M6uyV7HhgIrxCstAx/5lZRlCWJabkIewGfFA==}
-    engines: {node: '>=8'}
-    dependencies:
-      '@sentry-internal/tracing': 7.51.2
     dev: false
 
   /@sentry/types@7.51.2:
