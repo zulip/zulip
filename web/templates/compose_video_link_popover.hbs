@@ -1,0 +1,27 @@
+{{! Contents of the "video call link" popup }}
+
+<ul class="nav nav-list">
+    {{#if should_display_jitsi_meet}}
+    <li>
+        <a class="video_chat_provider_jitsi_meet" data-video-chat-id="{{available_providers.jitsi_meet.id}}" tabindex="0">
+            {{t "Jitsi Meet" }}
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if should_display_zoom}}
+    <li>
+        <a class="video_chat_provider_zoom" data-video-chat-id="{{available_providers.zoom.id}}" tabindex="0">
+            {{t "Zoom"}}
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if should_display_bigbluebutton}}
+    <li>
+        <a class="video_chat_provider_bigbluebutton" data-video-chat-id="{{available_providers.big_blue_button.id}}" tabindex="0">
+            {{t "BigBlueButton" }}
+        </a>
+    </li>
+    {{/if}}
+</ul>

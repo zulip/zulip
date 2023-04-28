@@ -3,6 +3,7 @@ import $ from "jquery";
 import pygments_data from "../generated/pygments_data.json";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
+import render_settings_video_chat_providers_list from "../templates/settings/video_chat_provider.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -255,11 +256,6 @@ function set_realm_waiting_period_setting() {
         "id_realm_waiting_period_threshold_custom_input",
         $("#id_realm_waiting_period_threshold").val() === "custom_period",
     );
-}
-
-function set_video_chat_provider_dropdown() {
-    const chat_provider_id = page_params.realm_video_chat_provider;
-    $("#id_realm_video_chat_provider").val(chat_provider_id);
 }
 
 function set_giphy_rating_dropdown() {
@@ -551,6 +547,40 @@ export function populate_auth_methods(auth_methods) {
     $auth_methods_list.html(rendered_auth_method_rows);
 }
 
+export function populate_video_chat_provider(chat_providers) {
+    if (!meta.loaded) {
+        return;
+    }
+    const $chat_providers_list = $("#id_realm_video_chat_provider").expectOne();
+    const available_chat_providers = Object.values(
+        page_params.realm_available_video_chat_providers,
+    ).map((x) => ({
+        name: x.name,
+        value: x.id,
+    }));
+
+    let rendered_chat_provider__rows = "";
+    for (const chat_provider of available_chat_providers) {
+        let is_disabled = false;
+        if (chat_providers.includes(0)) {
+            if (chat_provider.value === 0) {
+                is_disabled = false;
+            } else {
+                is_disabled = true;
+            }
+        } else {
+            is_disabled = false;
+        }
+        rendered_chat_provider__rows += render_settings_video_chat_providers_list({
+            chat_provider_name: chat_provider.name,
+            chat_provider_value: chat_provider.value,
+            enabled: chat_providers.includes(chat_provider.value),
+            is_disabled,
+        });
+    }
+    $chat_providers_list.html(rendered_chat_provider__rows);
+}
+
 function update_dependent_subsettings(property_name) {
     if (simple_dropdown_properties.includes(property_name)) {
         set_property_dropdown_value(property_name);
@@ -558,9 +588,6 @@ function update_dependent_subsettings(property_name) {
     }
 
     switch (property_name) {
-        case "realm_video_chat_provider":
-            set_video_chat_provider_dropdown();
-            break;
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(page_params.realm_allow_message_editing);
             break;
@@ -635,6 +662,9 @@ export function discard_property_element_changes(elem, for_realm_default_setting
     const property_value = get_property_value(property_name, for_realm_default_settings, sub);
 
     switch (property_name) {
+        case "realm_video_chat_provider":
+            populate_video_chat_provider(property_value);
+            break;
         case "realm_authentication_methods":
             populate_auth_methods(property_value);
             break;
@@ -900,6 +930,19 @@ function get_auth_method_list_data() {
     return new_auth_methods;
 }
 
+function get_video_chat_provider_list_data() {
+    const new_chat_providers = [];
+    const $chat_providers_rows = $("#id_realm_video_chat_provider").find("div.chat_provider_row");
+
+    for (const chat_providers_row of $chat_providers_rows) {
+        if ($(chat_providers_row).find("input").prop("checked")) {
+            new_chat_providers.push($(chat_providers_row).data("chat_provider_value"));
+        }
+    }
+
+    return new_chat_providers;
+}
+
 export function parse_time_limit($elem) {
     return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
 }
@@ -957,6 +1000,9 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
         case "realm_default_code_block_language":
         case "can_remove_subscribers_group_id":
             proposed_val = get_dropdown_list_widget_setting_value($elem, false);
+            break;
+        case "realm_video_chat_provider":
+            proposed_val = get_video_chat_provider_list_data();
             break;
         case "email_notifications_batching_period_seconds":
             proposed_val = get_time_limit_setting_value($elem, false);
@@ -1190,6 +1236,15 @@ export function register_save_discard_widget_handlers(
                     "#org-notifications .language_selection_widget .language_selection_button span",
                 ).attr("data-language-code");
                 break;
+            case "other_settings": {
+                const code_block_language_value = default_code_language_widget.value();
+                // No need to JSON-encode, since this value is already a string.
+                data.default_code_block_language = code_block_language_value;
+
+                const video_chat_provider_value = get_video_chat_provider_list_data();
+                data.video_chat_provider = JSON.stringify(video_chat_provider_value);
+                break;
+            }
             case "join_settings": {
                 const org_join_restrictions = $("#id_realm_org_join_restrictions").val();
                 switch (org_join_restrictions) {
@@ -1212,6 +1267,41 @@ export function register_save_discard_widget_handlers(
                 data = {};
                 data.authentication_methods = JSON.stringify(get_auth_method_list_data());
                 break;
+        }
+        return data;
+    }
+
+    function populate_data_for_request(subsection) {
+        const data = {};
+        const properties_elements = get_subsection_property_elements(subsection);
+
+        for (const input_elem of properties_elements) {
+            const $input_elem = $(input_elem);
+            if (check_property_changed($input_elem, for_realm_default_settings)) {
+                const input_value = get_input_element_value($input_elem);
+                if (input_value !== undefined) {
+                    let property_name;
+                    if (for_realm_default_settings) {
+                        property_name = extract_property_name(
+                            $input_elem,
+                            for_realm_default_settings,
+                        );
+                    } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
+                        // Authentication Method component IDs include authentication method name
+                        // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
+                        // We need to strip that whole construct down to extract the actual property name.
+                        // The [\da-z]+ part of the regexp covers the auth method name itself.
+                        // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
+                        // this is ensured by a respective allowlist-based filter in populate_auth_methods().
+                        [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec(
+                            $input_elem.attr("id"),
+                        );
+                    } else {
+                        [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
+                    }
+                    data[property_name] = input_value;
+                }
+            }
         }
         return data;
     }
@@ -1253,12 +1343,14 @@ export function build_page() {
     // Populate authentication methods table
     populate_auth_methods(page_params.realm_authentication_methods);
 
+    // Populate realm video chat provider
+    populate_video_chat_provider(page_params.realm_video_chat_provider);
+
     for (const property_name of simple_dropdown_properties) {
         set_property_dropdown_value(property_name);
     }
 
     set_realm_waiting_period_setting();
-    set_video_chat_provider_dropdown();
     set_giphy_rating_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_move_limit_setting("realm_move_messages_within_stream_limit_seconds");
@@ -1322,6 +1414,34 @@ export function build_page() {
             "id_realm_digest_weekday",
             digest_emails_enabled === true,
         );
+    });
+
+    $("#id_realm_video_chat_provider").on("change", (e) => {
+        const chat_provider_value = $(e.target)
+            .closest(".chat_provider_row")
+            .data("chat_provider_value");
+
+        if ($(e.target).is(":checked")) {
+            if (chat_provider_value === 0) {
+                $(".chat_provider_row:not(:first-child)")
+                    .find(":checkbox")
+                    .prop("disabled", true)
+                    .prop("checked", false);
+            }
+        } else {
+            $(".chat_provider_row:not(:first-child)")
+                .find("[type='checkbox']")
+                .prop("disabled", false);
+
+            // check if all checkboxes are unchecked
+            const allUnchecked = $("#id_realm_video_chat_provider:checked").length === 0;
+
+            if (allUnchecked) {
+                $(".chat_provider_row[data-chat_provider_value='1']")
+                    .find("[type='checkbox']")
+                    .prop("checked", true);
+            }
+        }
     });
 
     $("#id_realm_org_join_restrictions").on("change", (e) => {

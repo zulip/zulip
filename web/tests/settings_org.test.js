@@ -493,7 +493,7 @@ function test_discard_changes_button(discard_changes) {
     assert.ok(props.hidden);
 }
 
-test("set_up", ({override, override_rewire}) => {
+test("set_up", ({override, override_rewire, mock_template}) => {
     page_params.realm_available_video_chat_providers = {
         jitsi_meet: {
             id: 1,
@@ -508,6 +508,10 @@ test("set_up", ({override, override_rewire}) => {
             name: "BigBlueButton",
         },
     };
+
+    page_params.realm_video_chat_provider = [1];
+
+    mock_template("settings/video_chat_provider.hbs", true, (data, html) => html);
 
     let upload_realm_logo_or_icon;
     realm_icon.build_realm_icon_widget = (f) => {

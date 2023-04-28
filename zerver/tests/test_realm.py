@@ -624,7 +624,6 @@ class RealmTest(ZulipTestCase):
             create_web_public_stream_policy=10,
             invite_to_stream_policy=10,
             message_retention_days=10,
-            video_chat_provider=10,
             giphy_rating=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
@@ -667,11 +666,11 @@ class RealmTest(ZulipTestCase):
 
     def test_change_video_chat_provider(self) -> None:
         self.assertEqual(
-            get_realm("zulip").video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
+            get_realm("zulip").video_chat_provider, [Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]]
         )
         self.login("iago")
 
-        invalid_video_chat_provider_value = 10
+        invalid_video_chat_provider_value = [10]
         req = {"video_chat_provider": orjson.dumps(invalid_video_chat_provider_value).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(
@@ -680,40 +679,40 @@ class RealmTest(ZulipTestCase):
 
         req = {
             "video_chat_provider": orjson.dumps(
-                Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"]
+                [Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"]]
             ).decode()
         }
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
         self.assertEqual(
-            get_realm("zulip").video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"]
+            get_realm("zulip").video_chat_provider, [Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"]]
         )
 
         req = {
             "video_chat_provider": orjson.dumps(
-                Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
+                [Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]]
             ).decode()
         }
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
         self.assertEqual(
-            get_realm("zulip").video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
+            get_realm("zulip").video_chat_provider, [Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]]
         )
 
         req = {
             "video_chat_provider": orjson.dumps(
-                Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"]
+                [Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"]]
             ).decode()
         }
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
         self.assertEqual(
             get_realm("zulip").video_chat_provider,
-            Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"],
+            [Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"]],
         )
 
         req = {
-            "video_chat_provider": orjson.dumps(Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]).decode()
+            "video_chat_provider": orjson.dumps([Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]]).decode()
         }
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
@@ -1159,7 +1158,7 @@ class RealmAPITest(ZulipTestCase):
             video_chat_provider=[
                 dict(
                     video_chat_provider=orjson.dumps(
-                        Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
+                        [Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]]
                     ).decode(),
                 ),
             ],
@@ -1201,6 +1200,7 @@ class RealmAPITest(ZulipTestCase):
 
     def test_update_realm_properties(self) -> None:
         for prop in Realm.property_types:
+            print(prop)
             with self.subTest(property=prop):
                 self.do_test_realm_update_api(prop)
 

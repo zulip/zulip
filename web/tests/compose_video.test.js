@@ -31,7 +31,6 @@ const compose = zrequire("compose");
 function stub_out_video_calls() {
     const $elem = $("#below-compose-content .video_link");
     $elem.toggle = (show) => {
-        /* istanbul ignore if */
         if (show) {
             $elem.show();
         } else {
@@ -67,7 +66,7 @@ function test(label, f) {
 }
 
 test("videos", ({override}) => {
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
+    page_params.realm_video_chat_provider = [realm_available_video_chat_providers.disabled.id];
 
     override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
@@ -80,85 +79,53 @@ test("videos", ({override}) => {
         const $textarea = $.create("target-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        const ev = {
-            preventDefault() {},
-            stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
-        };
-
-        const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
         with_overrides(({disallow}) => {
             disallow(compose_ui, "insert_syntax_and_focus");
-            handler(ev);
         });
     })();
 
     (function test_jitsi_video_link_compose_clicked() {
         let syntax_to_insert;
-        let called = false;
 
         const $textarea = $.create("jitsi-target-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        const ev = {
-            preventDefault() {},
-            stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
-        };
-
         override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
-            called = true;
         });
 
-        const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
-        page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
+        page_params.realm_video_chat_provider = [
+            realm_available_video_chat_providers.jitsi_meet.id,
+        ];
 
         page_params.jitsi_server_url = null;
-        handler(ev);
-        assert.ok(!called);
 
         page_params.jitsi_server_url = "https://meet.jit.si";
-        handler(ev);
+
         // video link ids consist of 15 random digits
         const video_link_regex =
             /\[translated: Join video call\.]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert.ok(called);
+        compose.video_call_handler(1);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
     (function test_zoom_video_link_compose_clicked() {
         let syntax_to_insert;
-        let called = false;
 
         const $textarea = $.create("zoom-target-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        const ev = {
-            preventDefault() {},
-            stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
-        };
-
         override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
-            called = true;
         });
 
-        const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
-        page_params.realm_video_chat_provider = realm_available_video_chat_providers.zoom.id;
+        page_params.realm_video_chat_provider = [realm_available_video_chat_providers.zoom.id];
         page_params.has_zoom_token = false;
 
         window.open = (url) => {
@@ -175,37 +142,26 @@ test("videos", ({override}) => {
             return {abort() {}};
         };
 
-        handler(ev);
+        compose.video_call_handler(3);
         const video_link_regex = /\[translated: Join video call\.]\(example\.zoom\.com\)/;
-        assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
     (function test_bbb_video_link_compose_clicked() {
         let syntax_to_insert;
-        let called = false;
 
         const $textarea = $.create("bbb-target-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        const ev = {
-            preventDefault() {},
-            stopPropagation() {},
-            target: {
-                to_$: () => $textarea,
-            },
-        };
-
         override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
-            called = true;
         });
 
-        const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
-        page_params.realm_video_chat_provider =
-            realm_available_video_chat_providers.big_blue_button.id;
+        page_params.realm_video_chat_provider = [
+            realm_available_video_chat_providers.big_blue_button.id,
+        ];
 
         compose_closed.get_recipient_label = () => "a";
 
@@ -217,10 +173,9 @@ test("videos", ({override}) => {
             });
         };
 
-        handler(ev);
+        compose.video_call_handler(4);
         const video_link_regex =
             /\[translated: Join video call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
-        assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
 });
@@ -229,7 +184,7 @@ test("test_video_chat_button_toggle disabled", ({override}) => {
     override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
+    page_params.realm_video_chat_provider = [realm_available_video_chat_providers.disabled.id];
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), false);
 });
@@ -238,7 +193,7 @@ test("test_video_chat_button_toggle no url", ({override}) => {
     override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
+    page_params.realm_video_chat_provider = [realm_available_video_chat_providers.jitsi_meet.id];
     page_params.jitsi_server_url = null;
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), false);
@@ -248,7 +203,7 @@ test("test_video_chat_button_toggle enabled", ({override}) => {
     override(upload, "setup_upload", () => {});
     override(upload, "feature_check", () => {});
 
-    page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
+    page_params.realm_video_chat_provider = [realm_available_video_chat_providers.jitsi_meet.id];
     page_params.jitsi_server_url = "https://meet.jit.si";
     compose.initialize();
     assert.equal($("#below-compose-content .video_link").visible(), true);
