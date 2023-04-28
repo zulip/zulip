@@ -17,6 +17,12 @@
 * [Mark messages as read in bulk](/api/mark-all-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
 
+#### Scheduled messages
+
+* [Get scheduled messages](/api/get-scheduled-messages)
+* [Create or edit a scheduled message](/api/create-or-update-scheduled-message)
+* [Delete a scheduled message](/api/delete-scheduled-message)
+
 #### Drafts
 
 * [Get drafts](/api/get-drafts)
