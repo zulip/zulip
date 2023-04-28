@@ -606,7 +606,7 @@ ul {
         width: 100%;
         height: 100%;
 
-        background-color: hsl(0deg 0% 0% / 70%);
+        background-color: hsl(0deg 0% 0% / 70%) !important;
         border-radius: 0;
         border: none;
 
