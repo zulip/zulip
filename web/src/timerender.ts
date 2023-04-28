@@ -444,10 +444,11 @@ export function absolute_time(timestamp: number, today = new Date()): string {
     );
 }
 
-export function get_full_datetime(time: Date): string {
+// Pass time_format="time" to not include seconds in the time format.
+export function get_full_datetime(time: Date, time_format: TimeFormat = "time_sec"): string {
     const locale = get_user_locale();
     const date_string = time.toLocaleDateString(locale);
-    let time_string = get_localized_date_or_time_for_format(time, "time_sec");
+    let time_string = get_localized_date_or_time_for_format(time, time_format);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
 
