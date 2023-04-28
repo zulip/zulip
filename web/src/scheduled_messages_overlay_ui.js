@@ -26,7 +26,7 @@ function format(scheduled_messages) {
         const msg_render_context = {...msg};
         if (msg.type === "stream") {
             msg_render_context.is_stream = true;
-            msg_render_context.stream_id = msg.to[0];
+            msg_render_context.stream_id = msg.to;
             msg_render_context.stream_name = stream_data.maybe_get_stream_name(
                 msg_render_context.stream_id,
             );

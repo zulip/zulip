@@ -221,7 +221,7 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_messages[0]["scheduled_message_id"], self.last_scheduled_message().id
         )
         self.assertEqual(scheduled_messages[0]["content"], content)
-        self.assertEqual(scheduled_messages[0]["to"], [self.get_stream_id("Verona")])
+        self.assertEqual(scheduled_messages[0]["to"], self.get_stream_id("Verona"))
         self.assertEqual(scheduled_messages[0]["type"], "stream")
         self.assertEqual(scheduled_messages[0]["topic"], "Test topic")
         self.assertEqual(

@@ -17358,21 +17358,23 @@ components:
             - stream
             - private
         to:
-          type: array
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
           description: |
-            An array of the tentative target audience IDs. For "stream"
-            messages, this should contain exactly 1 ID, the ID of the
-            target stream. For private messages, this should be an array
-            of target user IDs. This cannot be an empty array since
-            scheduled messages are always addressed.
-          items:
-            type: integer
+            The scheduled message's tentative target audience.
+
+            For stream messages, it will be the unique ID of the target
+            stream. For private messages, it will be an array with the
+            target users' IDs.
         topic:
           type: string
           description: |
-            For stream scheduled message, the tentative topic name. For private messages,
-            this will be ignored and should ideally
-            be the empty string. Should not contain null bytes.
+            Only present if `type` is `"stream"`.
+
+            The topic for the stream message.
         content:
           type: string
           description: |
@@ -17392,7 +17394,6 @@ components:
         - scheduled_message_id
         - type
         - to
-        - topic
         - content
         - rendered_content
         - deliver_at
