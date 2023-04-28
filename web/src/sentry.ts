@@ -65,6 +65,7 @@ if (page_params.server_sentry_dsn) {
         integrations: [
             new Sentry.BrowserTracing({
                 tracePropagationTargets: url_matches,
+                startTransactionOnLocationChange: false,
                 beforeNavigate(context) {
                     return {
                         ...context,
