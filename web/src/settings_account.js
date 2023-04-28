@@ -735,6 +735,7 @@ export function set_up() {
                 on_shown() {
                     ui_util.place_caret_at_end($("#change_email_form input")[0]);
                 },
+                update_submit_disabled_state_on_change: true,
             });
         }
     });
