@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 179**:
+
+* [`POST /scheduled_messages`](/api/create-or-update-scheduled-message):
+  Added new endpoint to create and edit scheduled messages.
+* [`GET /events`](/api/get-events)
+  Added `scheduled_messages` events sent to clients when a user creates,
+  edits or deletes scheduled messages.
+* [`POST /register`](/api/register-queue):
+  Added an optional `scheduled_messages` field to that includes all
+  of the undelivered scheduled messages for the current user.
+
 **Feature level 178**
 
 * `POST users/me/presence`, [`POST /register`](/api/register-queue),

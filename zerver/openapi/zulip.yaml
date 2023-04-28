@@ -4435,6 +4435,8 @@ paths:
                               description: |
                                 Event sent to a user's clients when scheduled messages
                                 are created.
+
+                                **Changes**: New in Zulip 7.0 (feature level 179).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4475,6 +4477,8 @@ paths:
                               description: |
                                 Event sent to a user's clients when a scheduled message
                                 is edited.
+
+                                **Changes**: New in Zulip 7.0 (feature level 179).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4508,6 +4512,8 @@ paths:
                               description: |
                                 Event sent to a user's clients when a scheduled message
                                 is deleted.
+
+                                **Changes**: New in Zulip 7.0 (feature level 179).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -5144,9 +5150,9 @@ paths:
                           ],
                       }
     post:
-      operationId: create-or-update-scheduled-messages
+      operationId: create-or-update-scheduled-message
       tags: ["scheduled_messages"]
-      summary: Create or edit scheduled messages
+      summary: Create or edit scheduled message
       description: |
         Create a new scheduled message or edit an existing scheduled message.
 
@@ -5155,6 +5161,8 @@ paths:
         message is created. When it is specified, the existing scheduled
         message with that unique ID is updated for the values passed to the
         other endpoint parameters.
+
+        **Changes**: New in Zulip 7.0 (feature level 179).
       parameters:
         - name: type
           in: query
@@ -10857,6 +10865,8 @@ paths:
                           Present if `scheduled_messages` is present in `fetch_event_types`.
 
                           An array of all undelivered scheduled messages by the user.
+
+                          **Changes**: New in Zulip 7.0 (feature level 179).
                         items:
                           $ref: "#/components/schemas/ScheduledMessage"
                       muted_topics:
