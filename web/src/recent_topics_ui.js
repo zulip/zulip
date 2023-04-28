@@ -616,7 +616,11 @@ export function inplace_rerender(topic_key) {
         topics_widget.render_item(topic_data);
     } else {
         // Final case: !is_topic_rendered && !filters_should_hide_topic(topic_data).
-        topics_widget.insert_rendered_row(topic_data);
+        topics_widget.insert_rendered_row(topic_data, () =>
+            current_topics_list.findIndex(
+                (list_item) => list_item.last_msg_id === topic_data.last_msg_id,
+            ),
+        );
     }
     setTimeout(revive_current_focus, 0);
     return true;
