@@ -910,9 +910,9 @@ export function initialize() {
                                 e.target.click();
                             }
                         });
-                        $send_later_modal.one("click", ".send_later_date_input", (e) => {
+                        $send_later_modal.on("click", ".send_later_custom", (e) => {
                             flatpickr.show_flatpickr(
-                                $(".send_later_date_input")[0],
+                                $(".send_later_custom")[0],
                                 update_scheduled_date_from_modal,
                                 new Date(),
                             );
