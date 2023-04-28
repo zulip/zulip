@@ -4,6 +4,7 @@ import tippy, {delegate} from "tippy.js";
 
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
+import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import * as compose_state from "./compose_state";
 import {$t} from "./i18n";
@@ -107,6 +108,8 @@ tippy.setDefaultProps({
 });
 
 export function initialize() {
+    $("#tooltip-templates-container").html(render_tooltip_templates());
+
     // Our default tooltip configuration. For this, one simply needs to:
     // * Set `class="tippy-zulip-tooltip"` on an element for enable this.
     // * Set `data-tippy-content="{{t 'Tooltip content' }}"`, often

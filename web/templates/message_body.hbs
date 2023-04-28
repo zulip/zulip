@@ -7,10 +7,6 @@
             <span class="sender_name_padding view_user_card_tooltip" data-tooltip-template-id="view-user-card-tooltip-template"></span>
             <span class="view_user_card_tooltip" data-tooltip-template-id="view-user-card-tooltip-template">{{msg/sender_full_name}}{{> status_emoji msg/status_emoji_info}}</span>
         </span>
-        <template id="view-user-card-tooltip-template">
-            {{t 'View user card' }}
-            {{tooltip_hotkey_hints "U"}}
-        </template>
         {{#if sender_is_bot}}
         <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
         {{/if}}
