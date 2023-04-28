@@ -378,7 +378,7 @@ export function create($container, list, opts) {
             }
         },
 
-        insert_rendered_row(item) {
+        insert_rendered_row(item, get_insert_index) {
             // NOTE: Caller should call `filter_and_sort` before calling this function
             // so that `meta.filtered_list` already has the `item`.
             if (meta.filtered_list.length <= 2) {
@@ -392,27 +392,22 @@ export function create($container, list, opts) {
             // We need to insert the row for it to be displayed at the
             // correct position. filtered_list must contain the new item
             // since we know it is not hidden from the above check.
-            const topic_insert_index = meta.filtered_list.findIndex(
-                (list_item) => list_item.last_msg_id === item.last_msg_id,
-            );
+            const insert_index = get_insert_index(meta.filtered_list, item);
+
             // Rows greater than `offset` are not rendered in the DOM by list_widget;
             // for those, there's nothing to update.
-            if (topic_insert_index <= meta.offset) {
+            if (insert_index <= meta.offset) {
                 if (!opts.modifier || !opts.html_selector) {
                     blueslip.error(
                         "Please specify modifier and html_selector when creating the widget.",
                     );
                 }
                 const rendered_row = opts.modifier(item);
-                if (topic_insert_index === meta.filtered_list.length - 1) {
-                    const $target_row = opts.html_selector(
-                        meta.filtered_list[topic_insert_index - 1],
-                    );
+                if (insert_index === meta.filtered_list.length - 1) {
+                    const $target_row = opts.html_selector(meta.filtered_list[insert_index - 1]);
                     $target_row.after(rendered_row);
                 } else {
-                    const $target_row = opts.html_selector(
-                        meta.filtered_list[topic_insert_index + 1],
-                    );
+                    const $target_row = opts.html_selector(meta.filtered_list[insert_index + 1]);
                     $target_row.before(rendered_row);
                 }
                 widget.increase_rendered_offset();
