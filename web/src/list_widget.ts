@@ -1,19 +1,91 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip";
 import * as scroll_util from "./scroll_util";
 
+type SortingFunction<T> = (a: T, b: T) => number;
+type GenericSortingFunction<T = Record<string, unknown>> = (prop: string) => SortingFunction<T>;
+
+type ListWidgetMeta<Key = unknown, Item = Key> = {
+    sorting_function: SortingFunction<Item> | null;
+    sorting_functions: Map<string, SortingFunction<Item>>;
+    filter_value: string;
+    offset: number;
+    list: Key[];
+    filtered_list: Item[];
+    reverse_mode: boolean;
+    $scroll_container: JQuery;
+};
+
+// This type ensures the mutually exclusive nature of the predicate and filterer options.
+type ListWidgetFilterOpts<Item = unknown> = {
+    $element?: JQuery;
+    onupdate?: () => void;
+} & (
+    | {
+          predicate: (item: Item, value: string) => boolean;
+          filterer?: never;
+      }
+    | {
+          predicate?: never;
+          filterer: (list: Item[], value: string) => Item[];
+      }
+);
+
+type ListWidgetOpts<Key = unknown, Item = Key> = {
+    name?: string;
+    get_item: (key: Key) => Item;
+    modifier: (item: Item) => string;
+    init_sort?: string | SortingFunction<Item>;
+    initially_descending_sort?: boolean;
+    html_selector?: (item: Item) => JQuery;
+    callback_after_render?: () => void;
+    post_scroll__pre_render_callback?: () => void;
+    get_min_load_count?: (rendered_count: number, load_count: number) => number;
+    is_scroll_position_for_render?: (scroll_container: HTMLElement) => boolean;
+    filter?: ListWidgetFilterOpts<Item>;
+    multiselect?: {
+        selected_items: Key[];
+    };
+    sort_fields?: Record<string, SortingFunction<Item>>;
+    $simplebar_container: JQuery;
+    $parent_container?: JQuery;
+};
+
+type ListWidget<Key = unknown, Item = Key> = {
+    get_current_list(): Item[];
+    filter_and_sort(): void;
+    retain_selected_items(): void;
+    render(how_many?: number): void;
+    render_item(item: Item): void;
+    clear(): void;
+    set_filter_value(value: string): void;
+    set_reverse_mode(reverse_mode: boolean): void;
+    set_sorting_function(sorting_function: string | SortingFunction<Item>): void;
+    set_up_event_handlers(): void;
+    clear_event_handlers(): void;
+    increase_rendered_offset(): void;
+    reduce_rendered_offset(): void;
+    remove_rendered_row(row: JQuery): void;
+    clean_redraw(): void;
+    hard_redraw(): void;
+    insert_rendered_row(item: Item, get_insert_index: (list: Item[], item: Item) => number): void;
+    sort(sorting_function: string, prop?: string): void;
+    replace_list_data(list: Key[]): void;
+};
+
 const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
-    instances: new Map(),
+    instances: new Map<string, ListWidget>(),
 };
 
 // ----------------------------------------------------
 // This function describes (programmatically) how to use the ListWidget.
 // ----------------------------------------------------
 
-export function validate_opts(opts) {
+export function validate_opts<Key, Item>(opts: ListWidgetOpts<Key, Item>): boolean {
     if (opts.html_selector && typeof opts.html_selector !== "function") {
         // We have an html_selector, but it is not a function.
         // This is a programming error.
@@ -31,7 +103,11 @@ export function validate_opts(opts) {
     return true;
 }
 
-export function get_filtered_items(value, list, opts) {
+export function get_filtered_items<Key, Item>(
+    value: string,
+    list: Key[],
+    opts: ListWidgetOpts<Key, Item>,
+): Item[] {
     /*
         This is used by the main object (see `create`),
         but we split it out to make it a bit easier
@@ -50,7 +126,7 @@ export function get_filtered_items(value, list, opts) {
         );
     }
 
-    const predicate = (item) => opts.filter.predicate(item, value);
+    const predicate = (item: Item): boolean => opts.filter!.predicate!(item, value);
 
     const result = [];
 
@@ -64,11 +140,11 @@ export function get_filtered_items(value, list, opts) {
     return result;
 }
 
-export function alphabetic_sort(prop) {
-    return function (a, b) {
+export const alphabetic_sort: GenericSortingFunction = (prop) =>
+    function (a, b) {
         // The conversion to uppercase helps make the sorting case insensitive.
-        const str1 = a[prop].toUpperCase();
-        const str2 = b[prop].toUpperCase();
+        const str1 = (a[prop] as string).toUpperCase();
+        const str2 = (b[prop] as string).toUpperCase();
 
         if (str1 === str2) {
             return 0;
@@ -78,27 +154,31 @@ export function alphabetic_sort(prop) {
 
         return -1;
     };
-}
 
-export function numeric_sort(prop) {
-    return function (a, b) {
-        if (Number.parseFloat(a[prop]) > Number.parseFloat(b[prop])) {
+export const numeric_sort: GenericSortingFunction = (prop) =>
+    function (a, b) {
+        const a_prop = Number.parseFloat(a[prop] as string);
+        const b_prop = Number.parseFloat(b[prop] as string);
+
+        if (a_prop > b_prop) {
             return 1;
-        } else if (Number.parseFloat(a[prop]) === Number.parseFloat(b[prop])) {
+        } else if (a_prop === b_prop) {
             return 0;
         }
 
         return -1;
     };
-}
 
 const generic_sorts = {
     alphabetic: alphabetic_sort,
     numeric: numeric_sort,
 };
 
-export function generic_sort_functions(generic_func, props) {
-    const sorting_functions = {};
+export function generic_sort_functions<T extends Record<string, unknown>>(
+    generic_func: keyof typeof generic_sorts,
+    props: string[],
+): Record<string, SortingFunction<T>> {
+    const sorting_functions: Record<string, SortingFunction<T>> = {};
     for (const prop of props) {
         const key = `${prop}_${generic_func}`;
         sorting_functions[key] = generic_sorts[generic_func](prop);
@@ -107,7 +187,7 @@ export function generic_sort_functions(generic_func, props) {
     return sorting_functions;
 }
 
-export function valid_filter_opts(opts) {
+export function valid_filter_opts<Key, Item>(opts: ListWidgetOpts<Key, Item>): boolean {
     if (!opts.filter) {
         return true;
     }
@@ -130,7 +210,7 @@ export function valid_filter_opts(opts) {
     return true;
 }
 
-function is_scroll_position_for_render(scroll_container) {
+function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
     return (
         scroll_container.scrollHeight -
             (scroll_container.scrollTop + scroll_container.clientHeight) <
@@ -142,7 +222,11 @@ function is_scroll_position_for_render(scroll_container) {
 // $container: jQuery object to append to.
 // list: The list of items to progressively append.
 // opts: An object of random preferences.
-export function create($container, list, opts) {
+export function create<Key = unknown, Item = Key>(
+    $container: JQuery,
+    list: Key[],
+    opts: ListWidgetOpts<Key, Item>,
+): ListWidget<Key, Item> | undefined {
     if (!opts) {
         blueslip.error("Need opts to create widget.");
         return undefined;
@@ -154,16 +238,16 @@ export function create($container, list, opts) {
 
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // Clear event handlers for prior widget.
-        const old_widget = DEFAULTS.instances.get(opts.name);
+        const old_widget = DEFAULTS.instances.get(opts.name)!;
         old_widget.clear_event_handlers();
     }
 
-    const meta = {
+    const meta: ListWidgetMeta<Key, Item> = {
         sorting_function: null,
         sorting_functions: new Map(),
         offset: 0,
         list,
-        filtered_list: list,
+        filtered_list: [],
         reverse_mode: false,
         filter_value: "",
         $scroll_container: scroll_util.get_scroll_element(opts.$simplebar_container),
@@ -178,7 +262,7 @@ export function create($container, list, opts) {
         return undefined;
     }
 
-    const widget = {
+    const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
         },
@@ -200,10 +284,10 @@ export function create($container, list, opts) {
         retain_selected_items() {
             const items = opts.multiselect;
 
-            if (items.selected_items) {
+            if (items?.selected_items) {
                 const data = items.selected_items;
                 for (const value of data) {
-                    const $list_item = $container.find(`li[data-value = "${value}"]`);
+                    const $list_item = $container.find(`li[data-value = "${value as string}"]`);
                     if ($list_item.length) {
                         const $link_elem = $list_item.find("a").expectOne();
                         $list_item.addClass("checked");
@@ -217,7 +301,7 @@ export function create($container, list, opts) {
         // and renders the next block of messages automatically
         // into the specified container.
         render(how_many) {
-            let load_count = how_many || DEFAULTS.LOAD_COUNT;
+            let load_count = how_many ?? DEFAULTS.LOAD_COUNT;
             if (opts.get_min_load_count) {
                 load_count = opts.get_min_load_count(meta.offset, load_count);
             }
@@ -268,7 +352,6 @@ export function create($container, list, opts) {
                 return;
             }
 
-            item = opts.get_item(item);
             const html = opts.modifier(item);
             if (typeof html !== "string") {
                 blueslip.error("List item is not a string", {item: html});
@@ -306,7 +389,7 @@ export function create($container, list, opts) {
                     return;
                 }
 
-                meta.sorting_function = meta.sorting_functions.get(sorting_function);
+                meta.sorting_function = meta.sorting_functions.get(sorting_function)!;
             }
         },
 
@@ -334,13 +417,11 @@ export function create($container, list, opts) {
                 });
             }
 
-            if (opts.filter && opts.filter.$element) {
-                opts.filter.$element.on("input.list_widget_filter", function () {
-                    const value = this.value.toLocaleLowerCase();
-                    widget.set_filter_value(value);
-                    widget.hard_redraw();
-                });
-            }
+            opts.filter?.$element?.on("input.list_widget_filter", function () {
+                const value = (this as HTMLInputElement).value.toLocaleLowerCase();
+                widget.set_filter_value(value);
+                widget.hard_redraw();
+            });
         },
 
         clear_event_handlers() {
@@ -350,9 +431,7 @@ export function create($container, list, opts) {
                 opts.$parent_container.off("click.list_widget_sort", "[data-sort]");
             }
 
-            if (opts.filter && opts.filter.$element) {
-                opts.filter.$element.off("input.list_widget_filter");
-            }
+            opts.filter?.$element?.off("input.list_widget_filter");
         },
 
         increase_rendered_offset() {
@@ -377,7 +456,7 @@ export function create($container, list, opts) {
 
         hard_redraw() {
             widget.clean_redraw();
-            if (opts.filter && opts.filter.onupdate) {
+            if (opts.filter?.onupdate) {
                 opts.filter.onupdate();
             }
         },
@@ -390,9 +469,15 @@ export function create($container, list, opts) {
                 widget.clean_redraw();
                 return;
             }
-            if (!opts.filter.predicate(item)) {
+
+            assert(
+                opts.filter?.predicate,
+                "filter.predicate should be defined for insert_rendered_row",
+            );
+            if (!opts.filter.predicate(item, meta.filter_value)) {
                 return;
             }
+
             // We need to insert the row for it to be displayed at the
             // correct position. filtered_list must contain the new item
             // since we know it is not hidden from the above check.
@@ -408,10 +493,10 @@ export function create($container, list, opts) {
                 }
                 const rendered_row = opts.modifier(item);
                 if (insert_index === meta.filtered_list.length - 1) {
-                    const $target_row = opts.html_selector(meta.filtered_list[insert_index - 1]);
+                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]);
                     $target_row.after(rendered_row);
                 } else {
-                    const $target_row = opts.html_selector(meta.filtered_list[insert_index + 1]);
+                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]);
                     $target_row.before(rendered_row);
                 }
                 widget.increase_rendered_offset();
@@ -462,11 +547,11 @@ export function create($container, list, opts) {
     return widget;
 }
 
-export function get(name) {
-    return DEFAULTS.instances.get(name) || false;
+export function get(name: string): ListWidget | false {
+    return DEFAULTS.instances.get(name) ?? false;
 }
 
-export function handle_sort($th, list) {
+export function handle_sort($th: JQuery, list: ListWidget): void {
     /*
         one would specify sort parameters like this:
             - name => sort alphabetic.
@@ -480,8 +565,8 @@ export function handle_sort($th, list) {
             <th data-sort="status"></th>
         </thead>
         */
-    const sort_type = $th.data("sort");
-    const prop_name = $th.data("sort-prop");
+    const sort_type: string = $th.data("sort");
+    const prop_name: string = $th.data("sort-prop");
 
     if ($th.hasClass("active")) {
         if (!$th.hasClass("descend")) {
@@ -501,4 +586,4 @@ export function handle_sort($th, list) {
     list.sort(sort_type, prop_name);
 }
 
-export const default_get_item = (item) => item;
+export const default_get_item = <T = unknown>(item: T): T => item;

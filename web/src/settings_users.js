@@ -287,7 +287,7 @@ section.bots.create_table = () => {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier: render_admin_user_list,
-        html_selector: (item) => `tr[data-user-id='${CSS.escape(item)}']`,
+        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item)}']`),
         filter: {
             $element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
