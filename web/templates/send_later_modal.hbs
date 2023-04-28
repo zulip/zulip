@@ -14,11 +14,6 @@
                 </div>
                 <div class="send_later_options">
                     <ul class="nav nav-list">
-                        {{#if formatted_send_later_time }}
-                        <li>
-                            <a id="clear_compose_schedule_state" tabindex="0">{{t "Now" }}</a>
-                        </li>
-                        {{/if}}
                         {{#if possible_send_later_today}}
                             {{#each possible_send_later_today}}
                                 <li>

@@ -930,15 +930,15 @@ export function initialize() {
                                 e.stopPropagation();
                             },
                         );
-
-                        $send_later_modal.one("click", "#clear_compose_schedule_state", (e) => {
-                            overlays.close_active_modal();
-                            compose.reset_compose_scheduling_state(false);
-                            e.preventDefault();
-                            e.stopPropagation();
-                        });
                     },
                 });
+            });
+            $popper.one("click", "#clear_compose_schedule_state", (e) => {
+                compose.reset_compose_scheduling_state(false);
+                // Close the popper instance when clearing scheduling:
+                instance.hide();
+                e.preventDefault();
+                e.stopPropagation();
             });
         },
         onHidden(instance) {
