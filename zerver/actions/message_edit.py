@@ -528,16 +528,19 @@ def do_update_message(
         new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
 
         # Get users who aren't subscribed to the new_stream.
-        subs_losing_usermessages = [
+        subs_losing_access = [
             sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_sub_ids
         ]
-        # Users who can longer access the message without some action
-        # from administrators.
-        subs_losing_access = [
-            sub
-            for sub in subs_losing_usermessages
-            if sub.user_profile.is_guest or not new_stream.is_public()
-        ]
+        # We remove UserMessage for users who will lose permanent access to the message without subscribing to the new stream.
+        # For public streams, only guest users who are not subscribed to the new stream will lose access since they still
+        # view the messages without subscrbing to them.
+        if new_stream.is_public():
+            subs_losing_usermessages = [
+                sub for sub in subs_losing_access if sub.user_profile.is_guest
+            ]
+        else:  # For private streams
+            subs_losing_usermessages = subs_losing_access
+
         ums = ums.exclude(
             user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
         )
@@ -654,6 +657,8 @@ def do_update_message(
                 "stream_id": stream_being_edited.id,
                 "topic": orig_topic_name,
             }
+            # We sent delete event to all users who are not subscribed to the new stream since
+            # to them this message was deleted.
             delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
 
@@ -804,13 +809,16 @@ def do_update_message(
         stream_inaccessible_to_user_profiles: List[UserProfile] = []
         orig_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
         target_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
+        subs_losing_usermessages_user_profile_ids: List[int] = []
+        if new_stream is not None:
+            subs_losing_usermessages_user_profile_ids = [
+                sub.user_profile_id for sub in subs_losing_usermessages
+            ]
+
         for user_topic in get_users_with_user_topic_visibility_policy(
             stream_being_edited.id, orig_topic_name
         ):
-            if (
-                new_stream is not None
-                and user_topic.user_profile_id in delete_event_notify_user_ids
-            ):
+            if user_topic.user_profile_id in subs_losing_usermessages_user_profile_ids:
                 stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
                 orig_topic_user_profile_to_visibility_policy[

@@ -1465,7 +1465,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1529,7 +1529,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1552,7 +1552,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(25):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -3275,11 +3275,13 @@ class EditMessageTest(EditMessageTestCase):
             )
 
         self.assertEqual(
+            # Non guest user will have UserMessage if the message
+            # was moved to a public stream.
             UserMessage.objects.filter(
                 user_profile_id=non_guest_user.id,
                 message_id=msg_id_to_test_acesss,
             ).count(),
-            0,
+            1,
         )
         self.assertEqual(
             has_message_access(
@@ -3900,7 +3902,7 @@ class EditMessageTest(EditMessageTestCase):
                 user_profile_id=user_losing_access.id,
                 message_id=msg_id,
             ).count(),
-            0,
+            0 if to_invite_only else 1,
         )
         # When the history is shared, UserMessage is not created for the user but the user
         # can see the message.
