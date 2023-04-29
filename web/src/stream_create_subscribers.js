@@ -7,6 +7,7 @@ import * as add_subscribers_pill from "./add_subscribers_pill";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
 
@@ -73,7 +74,11 @@ export function create_handlers($container) {
 
 export function build_widgets() {
     const $add_people_container = $("#people_to_add");
-    $add_people_container.html(render_new_stream_users({}));
+    $add_people_container.html(
+        render_new_stream_users({
+            permission_to_add_user: settings_data.user_can_subscribe_other_users(),
+        }),
+    );
 
     const $simplebar_container = $add_people_container.find(".subscriber_list_container");
 

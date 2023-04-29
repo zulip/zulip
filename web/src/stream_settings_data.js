@@ -2,6 +2,7 @@ import * as hash_util from "./hash_util";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import {user_settings} from "./user_settings";
@@ -47,7 +48,7 @@ export function add_settings_fields(sub) {
     sub.can_access_subscribers = stream_data.can_view_subscribers(sub);
     sub.can_add_subscribers = stream_data.can_subscribe_others(sub);
     sub.can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
-
+    sub.permission_to_add_user = settings_data.user_can_subscribe_other_users();
     sub.preview_url = hash_util.by_stream_url(sub.stream_id);
     sub.is_old_stream = sub.stream_weekly_traffic !== null;
 }

@@ -256,6 +256,18 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.no_permission_to_add_user {
+    .person_picker,
+    .add_subscriber_btn_wrapper {
+        opacity: 0.4;
+        cursor: not-allowed;
+
+        & button {
+            pointer-events: none;
+        }
+    }
+}
+
 .remove-subscriber-form {
     margin: 0;
 }
