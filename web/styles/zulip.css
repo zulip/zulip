@@ -223,6 +223,9 @@ p.n-margin {
        we need to position it below the padding. */
     padding-top: var(--header-padding-bottom);
     margin-bottom: 0;
+    /* To fit the logo inside the spinner. */
+    position: relative;
+    top: -2px;
 }
 
 #feedback_container {
