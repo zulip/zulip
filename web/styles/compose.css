@@ -776,16 +776,14 @@ a.compose_control_button.hide {
         min-width: 0;
     }
 
-    .dropup .dropdown-menu {
+    .dropdown-menu {
         top: auto;
-        bottom: 100%;
         left: -10px;
-        margin-bottom: 17px;
     }
 
-    .dropdown .dropdown-menu {
-        top: auto;
-        left: -10px;
+    .dropup .dropdown-menu {
+        bottom: 100%;
+        margin-bottom: 17px;
     }
 
     #compose_select_recipient_name {
