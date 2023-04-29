@@ -93,7 +93,7 @@ export function get_formatted_selected_send_later_time() {
     if (!selected_send_later_time) {
         return undefined;
     }
-    return timerender.get_full_datetime(selected_send_later_time, "time");
+    return timerender.get_full_datetime(new Date(selected_send_later_time), "time");
 }
 
 export function reset_selected_schedule_time() {
