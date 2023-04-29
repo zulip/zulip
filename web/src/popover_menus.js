@@ -911,10 +911,12 @@ export function initialize() {
                             }
                         });
                         $send_later_modal.on("click", ".send_later_custom", (e) => {
+                            const current_time = new Date();
                             flatpickr.show_flatpickr(
                                 $(".send_later_custom")[0],
                                 update_scheduled_date_from_modal,
-                                new Date(),
+                                new Date(current_time.getTime() + 60 * 60 * 1000),
+                                {minDate: new Date(current_time.getTime() + 5 * 60 * 1000)},
                             );
                             e.preventDefault();
                             e.stopPropagation();
