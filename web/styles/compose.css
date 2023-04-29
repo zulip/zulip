@@ -777,6 +777,9 @@ a.compose_control_button.hide {
     }
 
     .dropdown-menu {
+        /* The Bootstrap default of 160px wraps too early.
+           TODO: Replace this with a max-width and natural scaling? */
+        width: 200px;
         top: auto;
         left: -10px;
     }
