@@ -902,13 +902,18 @@ def import_uploads(
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
 #
+# (Note that this list is not exhaustive and only talks about the main,
+# most important models. There's a bunch of minor models that are handled
+# separately and not mentioned here - but following the principle that we
+# have to import the dependencies first.)
+#
 # * Client [no deps]
 # * Realm [-notifications_stream]
 # * UserGroup
 # * Stream [only depends on realm]
 # * Realm's notifications_stream
-# * Now can do all realm_tables
 # * UserProfile, in order by ID to avoid bot loop issues
+# * Now can do all realm_tables
 # * Huddle
 # * Recipient
 # * Subscription
