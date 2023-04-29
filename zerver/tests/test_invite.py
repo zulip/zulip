@@ -691,6 +691,18 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
 
+    def test_successful_invite_users_with_specified_streams(self) -> None:
+        invitee = self.nonreg_email("alice")
+        realm = get_realm("zulip")
+        self.login("hamlet")
+
+        stream_names = ["Rome", "Scotland", "Venice"]
+        streams = [get_stream(stream_name, realm) for stream_name in stream_names]
+        self.assert_json_success(self.invite(invitee, stream_names))
+        self.assertTrue(find_key_by_email(invitee))
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams("alice", streams)
+
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
             user_profile.refresh_from_db()
