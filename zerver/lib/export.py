@@ -54,6 +54,7 @@ from zerver.models import (
     RealmPlayground,
     RealmUserDefault,
     Recipient,
+    ScheduledMessage,
     Service,
     Stream,
     Subscription,
@@ -205,7 +206,6 @@ NON_EXPORTED_TABLES = {
     # sense to export, but is relatively low value.
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
-    "zerver_scheduledmessage",
     # These tables are related to a user's 2FA authentication
     # configuration, which will need to be set up again on the new
     # server.
@@ -223,8 +223,6 @@ NON_EXPORTED_TABLES = {
     "zerver_archivedreaction",
     "zerver_archivedsubmessage",
     "zerver_archivetransaction",
-    # We don't export this until export of ScheduledMessage in general is implemented.
-    "zerver_attachment_scheduled_messages",
     # Social auth tables are not needed post-export, since we don't
     # use any of this state outside of a direct authentication flow.
     "social_auth_association",
@@ -252,6 +250,7 @@ IMPLICIT_TABLES = {
     # ManyToMany relationships are exported implicitly when importing
     # the parent table.
     "zerver_attachment_messages",
+    "zerver_attachment_scheduled_messages",
 }
 
 ATTACHMENT_TABLES = {
@@ -292,6 +291,7 @@ DATE_FIELDS: Dict[TableName, List[Field]] = {
     "zerver_muteduser": ["date_muted"],
     "zerver_realmauditlog": ["event_time"],
     "zerver_realm": ["date_created"],
+    "zerver_scheduledmessage": ["scheduled_timestamp"],
     "zerver_stream": ["date_created"],
     "zerver_useractivityinterval": ["start", "end"],
     "zerver_useractivity": ["last_visit"],
@@ -692,6 +692,12 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        custom_tables=["zerver_scheduledmessage"],
+        virtual_parent=realm_config,
+        custom_fetch=custom_fetch_scheduled_messages,
+    )
+
+    Config(
         table="zerver_defaultstream",
         model=DefaultStream,
         normal_parent=realm_config,
@@ -1047,10 +1053,13 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
 
 
 def fetch_attachment_data(
-    response: TableData, realm_id: int, message_ids: Set[int]
+    response: TableData, realm_id: int, message_ids: Set[int], scheduled_message_ids: Set[int]
 ) -> List[Attachment]:
     attachments = list(
-        Attachment.objects.filter(realm_id=realm_id, messages__in=message_ids).distinct()
+        Attachment.objects.filter(
+            Q(messages__in=message_ids) | Q(scheduled_messages__in=scheduled_message_ids),
+            realm_id=realm_id,
+        ).distinct()
     )
     response["zerver_attachment"] = make_raw(attachments)
     floatify_datetime_fields(response, "zerver_attachment")
@@ -1060,10 +1069,17 @@ def fetch_attachment_data(
     quite ALL messages for the realm.  So, we need to
     clean up our attachment data to have correct
     values for response['zerver_attachment'][<n>]['messages'].
+
+    Same reasoning applies to scheduled_messages.
     """
     for row in response["zerver_attachment"]:
         filtered_message_ids = set(row["messages"]).intersection(message_ids)
         row["messages"] = sorted(filtered_message_ids)
+
+        filtered_scheduled_message_ids = set(row["scheduled_messages"]).intersection(
+            scheduled_message_ids
+        )
+        row["scheduled_messages"] = sorted(filtered_scheduled_message_ids)
 
     return attachments
 
@@ -1121,6 +1137,19 @@ def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
     response["_huddle_recipient"] = huddle_recipients
     response["_huddle_subscription"] = huddle_subscription_dicts
     response["zerver_huddle"] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
+
+
+def custom_fetch_scheduled_messages(response: TableData, context: Context) -> None:
+    """
+    Simple custom fetch function to fetch only the ScheduledMessage objects that we're allowed to.
+    """
+    realm = context["realm"]
+    exportable_scheduled_message_ids = context["exportable_scheduled_message_ids"]
+
+    query = ScheduledMessage.objects.filter(realm=realm, id__in=exportable_scheduled_message_ids)
+    rows = make_raw(list(query))
+
+    response["zerver_scheduledmessage"] = rows
 
 
 def fetch_usermessages(
@@ -1827,6 +1856,28 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write("\n")
 
 
+def get_exportable_scheduled_message_ids(
+    realm: Realm, public_only: bool = False, consent_message_id: Optional[int] = None
+) -> Set[int]:
+    """
+    Scheduled messages are private to the sender, so which ones we export depends on the
+    public/consent/full export mode.
+    """
+
+    if public_only:
+        return set()
+
+    if consent_message_id:
+        sender_ids = get_consented_user_ids(consent_message_id)
+        return set(
+            ScheduledMessage.objects.filter(sender_id__in=sender_ids, realm=realm).values_list(
+                "id", flat=True
+            )
+        )
+
+    return set(ScheduledMessage.objects.filter(realm=realm).values_list("id", flat=True))
+
+
 def do_export_realm(
     realm: Realm,
     output_dir: Path,
@@ -1848,12 +1899,20 @@ def do_export_realm(
 
     create_soft_link(source=output_dir, in_progress=True)
 
+    exportable_scheduled_message_ids = get_exportable_scheduled_message_ids(
+        realm, public_only, consent_message_id
+    )
+
     logging.info("Exporting data from get_realm_config()...")
     export_from_config(
         response=response,
         config=realm_config,
         seed_object=realm,
-        context=dict(realm=realm, exportable_user_ids=exportable_user_ids),
+        context=dict(
+            realm=realm,
+            exportable_user_ids=exportable_user_ids,
+            exportable_scheduled_message_ids=exportable_scheduled_message_ids,
+        ),
     )
     logging.info("...DONE with get_realm_config() data")
 
@@ -1892,7 +1951,10 @@ def do_export_realm(
 
     # zerver_attachment
     attachments = export_attachment_table(
-        realm=realm, output_dir=output_dir, message_ids=message_ids
+        realm=realm,
+        output_dir=output_dir,
+        message_ids=message_ids,
+        scheduled_message_ids=exportable_scheduled_message_ids,
     )
 
     logging.info("Exporting uploaded files and avatars")
@@ -1921,11 +1983,14 @@ def do_export_realm(
 
 
 def export_attachment_table(
-    realm: Realm, output_dir: Path, message_ids: Set[int]
+    realm: Realm, output_dir: Path, message_ids: Set[int], scheduled_message_ids: Set[int]
 ) -> List[Attachment]:
     response: TableData = {}
     attachments = fetch_attachment_data(
-        response=response, realm_id=realm.id, message_ids=message_ids
+        response=response,
+        realm_id=realm.id,
+        message_ids=message_ids,
+        scheduled_message_ids=scheduled_message_ids,
     )
     output_file = os.path.join(output_dir, "attachment.json")
     write_table_data(output_file=output_file, data=response)
