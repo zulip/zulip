@@ -58,6 +58,7 @@ from zerver.models import (
     RealmPlayground,
     RealmUserDefault,
     Recipient,
+    ScheduledMessage,
     Service,
     Stream,
     Subscription,
@@ -136,6 +137,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "analytics_streamcount": {},
     "analytics_usercount": {},
     "realmuserdefault": {},
+    "scheduledmessage": {},
 }
 
 id_map_to_list: Dict[str, Dict[int, List[int]]] = {
@@ -371,7 +373,10 @@ def fix_message_rendered_content(
             ).rendered_content
 
             message["rendered_content"] = rendered_content
-            message["rendered_content_version"] = markdown_version
+            if "scheduled_timestamp" not in message:
+                # This logic runs also for ScheduledMessage, which doesn't use
+                # the rendered_content_version field.
+                message["rendered_content_version"] = markdown_version
         except Exception:
             # This generally happens with two possible causes:
             # * rendering Markdown throwing an uncaught exception
@@ -1312,6 +1317,27 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     sender_map = {user["id"]: user for user in data["zerver_userprofile"]}
 
+    if "zerver_scheduledmessage" in data:
+        fix_datetime_fields(data, "zerver_scheduledmessage")
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "sender", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "recipient", related_table="recipient")
+        re_map_foreign_keys(
+            data, "zerver_scheduledmessage", "sending_client", related_table="client"
+        )
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "stream", related_table="stream")
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "realm", related_table="realm")
+
+        fix_upload_links(data, "zerver_scheduledmessage")
+
+        fix_message_rendered_content(
+            realm=realm,
+            sender_map=sender_map,
+            messages=data["zerver_scheduledmessage"],
+        )
+
+        update_model_ids(ScheduledMessage, data, "scheduledmessage")
+        bulk_import_model(data, ScheduledMessage)
+
     # Import zerver_message and zerver_usermessage
     import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
 
@@ -1524,11 +1550,7 @@ def import_attachments(data: TableData) -> None:
     parent_model = Attachment
     parent_db_table_name = "zerver_attachment"
     parent_singular = "attachment"
-    child_singular = "message"
-    child_plural = "messages"
-    m2m_table_name = "zerver_attachment_messages"
     parent_id = "attachment_id"
-    child_id = "message_id"
 
     update_model_ids(parent_model, data, "attachment")
     # We don't bulk_import_model yet, because we need to first compute
@@ -1538,27 +1560,41 @@ def import_attachments(data: TableData) -> None:
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
 
-    m2m_rows: List[Record] = []
-    for parent_row in data[parent_db_table_name]:
-        for fk_id in parent_row[child_plural]:
-            m2m_row: Record = {}
-            m2m_row[parent_singular] = parent_row["id"]
-            m2m_row[child_singular] = ID_MAP["message"][fk_id]
-            m2m_rows.append(m2m_row)
+    def format_m2m_data(
+        child_singular: str, child_plural: str, m2m_table_name: str, child_id: str
+    ) -> Tuple[str, List[Record], str]:
+        m2m_rows: List[Record] = []
+        for parent_row in data[parent_db_table_name]:
+            for fk_id in parent_row[child_plural]:
+                m2m_row: Record = {}
+                m2m_row[parent_singular] = parent_row["id"]
+                # child_singular will generally match the model name (e.g. Message, ScheduledMessage)
+                # after lowercasing, and that's what we enter as ID_MAP keys, so this should be
+                # a reasonable assumption to make.
+                m2m_row[child_singular] = ID_MAP[child_singular][fk_id]
+                m2m_rows.append(m2m_row)
 
-        # TODO: Import of scheduled messages is not implemented yet.
-        if "scheduled_messages" in parent_row:
-            del parent_row["scheduled_messages"]
+        # Create our table data for insert.
+        m2m_data: TableData = {m2m_table_name: m2m_rows}
+        convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
+        convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
+        m2m_rows = m2m_data[m2m_table_name]
 
-    # Create our table data for insert.
-    m2m_data: TableData = {m2m_table_name: m2m_rows}
-    convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
-    convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
-    m2m_rows = m2m_data[m2m_table_name]
+        # Next, delete out our child data from the parent rows.
+        for parent_row in data[parent_db_table_name]:
+            del parent_row[child_plural]
 
-    # Next, delete out our child data from the parent rows.
-    for parent_row in data[parent_db_table_name]:
-        del parent_row[child_plural]
+        return m2m_table_name, m2m_rows, child_id
+
+    messages_m2m_tuple = format_m2m_data(
+        "message", "messages", "zerver_attachment_messages", "message_id"
+    )
+    scheduled_messages_m2m_tuple = format_m2m_data(
+        "scheduledmessage",
+        "scheduled_messages",
+        "zerver_attachment_scheduled_messages",
+        "scheduledmessage_id",
+    )
 
     # Update 'path_id' for the attachments
     for attachment in data[parent_db_table_name]:
@@ -1571,19 +1607,23 @@ def import_attachments(data: TableData) -> None:
     # TODO: Do this the kosher Django way.  We may find a
     # better way to do this in Django 1.9 particularly.
     with connection.cursor() as cursor:
-        sql_template = SQL(
+        for m2m_table_name, m2m_rows, child_id in [
+            messages_m2m_tuple,
+            scheduled_messages_m2m_tuple,
+        ]:
+            sql_template = SQL(
+                """
+                INSERT INTO {m2m_table_name} ({parent_id}, {child_id}) VALUES %s
             """
-            INSERT INTO {m2m_table_name} ({parent_id}, {child_id}) VALUES %s
-        """
-        ).format(
-            m2m_table_name=Identifier(m2m_table_name),
-            parent_id=Identifier(parent_id),
-            child_id=Identifier(child_id),
-        )
-        tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
-        execute_values(cursor.cursor, sql_template, tups)
+            ).format(
+                m2m_table_name=Identifier(m2m_table_name),
+                parent_id=Identifier(parent_id),
+                child_id=Identifier(child_id),
+            )
+            tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
+            execute_values(cursor.cursor, sql_template, tups)
 
-    logging.info("Successfully imported M2M table %s", m2m_table_name)
+            logging.info("Successfully imported M2M table %s", m2m_table_name)
 
 
 def import_analytics_data(realm: Realm, import_dir: Path) -> None:

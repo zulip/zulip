@@ -27,6 +27,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_authentication_methods,
 )
+from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -66,6 +67,7 @@ from zerver.models import (
     RealmEmoji,
     RealmUserDefault,
     Recipient,
+    ScheduledMessage,
     Stream,
     Subscription,
     UserGroup,
@@ -790,6 +792,22 @@ class RealmImportExportTest(ExportFile):
             sample_user, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT
         )
 
+        # Set up scheduled messages.
+        ScheduledMessage.objects.filter(realm=original_realm).delete()
+        check_schedule_message(
+            sender=hamlet,
+            client=get_client("website"),
+            recipient_type_name="stream",
+            message_to=[Stream.objects.get(name="Denmark", realm=original_realm).id],
+            topic_name="test-import",
+            message_content="test message",
+            scheduled_message_id=None,
+            deliver_at=timezone_now() + datetime.timedelta(days=365),
+            realm=original_realm,
+        )
+        original_scheduled_message = ScheduledMessage.objects.filter(realm=original_realm).last()
+        assert original_scheduled_message is not None
+
         # send Cordelia to the islands
         do_update_user_status(
             user_profile=cordelia,
@@ -939,6 +957,15 @@ class RealmImportExportTest(ExportFile):
                 huddle_object.recipient_id,
                 Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
             )
+
+        self.assertEqual(ScheduledMessage.objects.filter(realm=imported_realm).count(), 1)
+        imported_scheduled_message = ScheduledMessage.objects.first()
+        assert imported_scheduled_message is not None
+        self.assertEqual(imported_scheduled_message.content, original_scheduled_message.content)
+        self.assertEqual(
+            imported_scheduled_message.scheduled_timestamp,
+            original_scheduled_message.scheduled_timestamp,
+        )
 
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
             # Check that all Subscriptions have the correct is_user_active set.
