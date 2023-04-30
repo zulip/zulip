@@ -11,11 +11,11 @@ export const RESOLVED_TOPIC_PREFIX = "✔ ";
 // Compare maybe_send_resolve_topic_notifications in zerver/actions/message_edit.py.
 const RESOLVED_TOPIC_PREFIX_RE = /^✔ [ ✔]*/;
 
-export function is_resolved(topic_name) {
+export function is_resolved(topic_name: string): boolean {
     return topic_name.startsWith(RESOLVED_TOPIC_PREFIX);
 }
 
-export function resolve_name(topic_name) {
+export function resolve_name(topic_name: string): string {
     return RESOLVED_TOPIC_PREFIX + topic_name;
 }
 
@@ -24,7 +24,7 @@ export function resolve_name(topic_name) {
  *
  * If the topic is already not a resolved topic, this is the identity.
  */
-export function unresolve_name(topic_name) {
+export function unresolve_name(topic_name: string): string {
     return topic_name.replace(RESOLVED_TOPIC_PREFIX_RE, "");
 }
 
@@ -38,7 +38,7 @@ export function unresolve_name(topic_name) {
  * property we want when listing topics in the UI, so that we don't end up
  * showing what look like several identical topics.
  */
-export function display_parts(topic_name) {
+export function display_parts(topic_name: string): [string, string] {
     return is_resolved(topic_name)
         ? [RESOLVED_TOPIC_PREFIX, topic_name.slice(RESOLVED_TOPIC_PREFIX.length)]
         : ["", topic_name];
