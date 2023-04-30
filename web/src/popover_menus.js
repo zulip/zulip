@@ -25,6 +25,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
 import * as drafts from "./drafts";
@@ -80,10 +81,6 @@ export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
 
-export function is_time_selected_for_schedule() {
-    return selected_send_later_time !== undefined;
-}
-
 export function get_selected_send_later_time() {
     if (!selected_send_later_time) {
         return undefined;
@@ -96,6 +93,10 @@ export function get_formatted_selected_send_later_time() {
         return undefined;
     }
     return timerender.get_full_datetime(new Date(selected_send_later_time), "time");
+}
+
+export function set_selected_schedule_time(scheduled_time) {
+    selected_send_later_time = scheduled_time;
 }
 
 export function reset_selected_schedule_time() {
@@ -229,11 +230,8 @@ export function toggle_message_actions_menu(message) {
     return true;
 }
 
-export function show_schedule_confirm_button(send_at_time, not_from_flatpickr = false) {
-    // If no time was selected by the user, we don't show the schedule button.
-    if (!send_at_time) {
-        return;
-    }
+export function do_schedule_message(send_at_time, not_from_flatpickr = false) {
+    overlays.close_active_modal();
 
     // flatpickr.show_flatpickr doesn't pass any value for not_from_flatpickr,
     // making it false by default and we pass it as true in other cases.
@@ -244,13 +242,7 @@ export function show_schedule_confirm_button(send_at_time, not_from_flatpickr = 
     }
 
     selected_send_later_time = send_at_time;
-    $("#compose-schedule-confirm-button").show();
-    $("#compose-send-button").hide();
-}
-
-function update_scheduled_date_from_modal(send_at_time, not_from_flatpickr = false) {
-    overlays.close_active_modal();
-    show_schedule_confirm_button(send_at_time, not_from_flatpickr);
+    compose.finish(true);
 }
 
 export function initialize() {
@@ -799,13 +791,6 @@ export function initialize() {
         },
     });
 
-    $("body").on("click", "#compose-schedule-confirm-button", (e) => {
-        compose.finish();
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
     const send_later_today = {
         today_nine_am: {
             text: $t({defaultMessage: "Today at 9:00 AM"}),
@@ -880,6 +865,10 @@ export function initialize() {
             const $popper = $(instance.popper);
 
             $popper.one("click", ".open_send_later_modal", () => {
+                if (!compose_validate.validate()) {
+                    return;
+                }
+
                 // Only show send later options that are possible today.
                 const date = new Date();
                 const hours = date.getHours();
@@ -892,7 +881,7 @@ export function initialize() {
                     possible_send_later_today = false;
                 }
 
-                const formatted_send_later_time = get_selected_send_later_time();
+                const formatted_send_later_time = get_formatted_selected_send_later_time();
                 $("body").append(
                     render_send_later_modal({
                         possible_send_later_today,
@@ -914,7 +903,7 @@ export function initialize() {
                             const current_time = new Date();
                             flatpickr.show_flatpickr(
                                 $(".send_later_custom")[0],
-                                update_scheduled_date_from_modal,
+                                do_schedule_message,
                                 new Date(current_time.getTime() + 60 * 60 * 1000),
                                 {minDate: new Date(current_time.getTime() + 5 * 60 * 1000)},
                             );
@@ -927,20 +916,24 @@ export function initialize() {
                             (e) => {
                                 const send_at_time = set_compose_box_schedule(e.currentTarget);
                                 const not_from_flatpickr = true;
-                                update_scheduled_date_from_modal(send_at_time, not_from_flatpickr);
+                                do_schedule_message(send_at_time, not_from_flatpickr);
+                                e.preventDefault();
+                                e.stopPropagation();
+                            },
+                        );
+                        $send_later_modal.one(
+                            "click",
+                            ".send_later_selected_send_later_time",
+                            (e) => {
+                                const send_at_time = get_selected_send_later_time();
+                                const not_from_flatpickr = true;
+                                do_schedule_message(send_at_time, not_from_flatpickr);
                                 e.preventDefault();
                                 e.stopPropagation();
                             },
                         );
                     },
                 });
-            });
-            $popper.one("click", "#clear_compose_schedule_state", (e) => {
-                compose.reset_compose_scheduling_state(false);
-                // Close the popper instance when clearing scheduling:
-                instance.hide();
-                e.preventDefault();
-                e.stopPropagation();
             });
         },
         onHidden(instance) {

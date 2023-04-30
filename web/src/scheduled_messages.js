@@ -65,8 +65,7 @@ export function edit_scheduled_message(scheduled_msg_id) {
     compose.clear_compose_box();
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
-    $("#compose-textarea").attr("data-scheduled-message-id", scheduled_msg_id);
-    popover_menus.show_schedule_confirm_button(scheduled_msg.formatted_send_at_time, true);
+    popover_menus.set_selected_schedule_time(scheduled_msg.formatted_send_at_time);
 }
 
 export function send_request_to_schedule_message(scheduled_message_data, deliver_at) {
@@ -99,7 +98,7 @@ export function send_request_to_schedule_message(scheduled_message_data, deliver
     });
 }
 
-export function delete_scheduled_message(scheduled_msg_id) {
+export function delete_scheduled_message(scheduled_msg_id, edit_if_delete_successs) {
     channel.del({
         url: "/json/scheduled_messages/" + scheduled_msg_id,
         success() {
@@ -109,25 +108,9 @@ export function delete_scheduled_message(scheduled_msg_id) {
                     `#scheduled_messages_overlay .scheduled-message-row[data-message-id=${scheduled_msg_id}]`,
                 ).remove();
             }
-            if ($("#compose-textarea").attr("data-scheduled-message-id")) {
-                const compose_scheduled_msg_id = $("#compose-textarea").attr(
-                    "data-scheduled-message-id",
-                );
-                // If user deleted the scheduled message which is being edited in compose, we clear
-                // the scheduled message id from there which converts this editing state into a normal
-                // schedule message state. So, clicking "Schedule" will now create a new scheduled message.
-                if (compose_scheduled_msg_id === scheduled_msg_id) {
-                    $("#compose-textarea").removeAttr("data-scheduled-message-id");
-                }
+            if (edit_if_delete_successs) {
+                edit_scheduled_message(scheduled_msg_id);
             }
         },
     });
-}
-
-export function delete_scheduled_message_if_sent_directly() {
-    // Delete old scheduled message if it was sent.
-    if ($("#compose-textarea").attr("data-scheduled-message-id")) {
-        delete_scheduled_message($("#compose-textarea").attr("data-scheduled-message-id"));
-        $("#compose-textarea").removeAttr("data-scheduled-message-id");
-    }
 }
