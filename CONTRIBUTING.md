@@ -397,6 +397,9 @@ experience, these are the best predictors of success:
 - Being helpful and friendly on the [Zulip community
   server](https://zulip.com/development-community/).
 
+[![Top Contributors Widget](https://open-source-assets.middlewarehq.com/svgs/zulip-zulip-contributor-metrics-dark-widget.svg)](https://www.middlewarehq.com/)
+
+
 [great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
 
 ## Reporting issues
