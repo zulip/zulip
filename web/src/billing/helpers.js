@@ -75,8 +75,10 @@ export function format_money(cents) {
     } else {
         precision = 2;
     }
-    // TODO: Add commas for thousands, millions, etc.
-    return (cents / 100).toFixed(precision);
+    return new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: precision,
+        maximumFractionDigits: precision,
+    }).format((cents / 100).toFixed(precision));
 }
 
 export function update_charged_amount(prices, schedule) {
