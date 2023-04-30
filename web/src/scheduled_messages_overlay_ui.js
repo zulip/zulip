@@ -91,7 +91,7 @@ export function initialize() {
             .closest(".scheduled-message-row")
             .attr("data-message-id");
         scheduled_msg_id = Number.parseInt(scheduled_msg_id, 10);
-        scheduled_messages.edit_scheduled_message(scheduled_msg_id);
+        scheduled_messages.delete_scheduled_message(scheduled_msg_id, true);
 
         e.stopPropagation();
         e.preventDefault();

@@ -623,27 +623,6 @@ export function initialize() {
     });
 
     delegate("body", {
-        target: "#compose-schedule-confirm-button",
-        onShow(instance) {
-            if (popover_menus.get_scheduled_messages_popover()) {
-                return false;
-            }
-
-            const send_at_time = popover_menus.get_formatted_selected_send_later_time();
-            instance.setContent(
-                parse_html(
-                    $t(
-                        {defaultMessage: "Schedule message for <br/> {send_at_time}"},
-                        {send_at_time},
-                    ),
-                ),
-            );
-            return true;
-        },
-        appendTo: () => document.body,
-    });
-
-    delegate("body", {
         target: "#send_later",
         delay: LONG_HOVER_DELAY,
         placement: "top",

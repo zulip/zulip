@@ -22,6 +22,11 @@
                                 <a id="{{@key}}" class="send_later_tomorrow" tabindex="0">{{this.text}}</a>
                             </li>
                         {{/each}}
+                        {{#if formatted_send_later_time}}
+                            <li>
+                                <a class="send_later_selected_send_later_time" tabindex="0">{{formatted_send_later_time}}</a>
+                            </li>
+                        {{/if}}
                         <li>
                             <a class="send_later_custom" tabindex="0">{{t 'Custom time'}}</a>
                         </li>
