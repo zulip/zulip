@@ -186,6 +186,16 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".tippy-narrow-tooltip",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onCreate(instance) {
+            const content = instance.props.content + $("#narrow-hotkey-tooltip-template").html();
+            instance.setContent(parse_html(content));
+        },
+    });
+
+    delegate("body", {
         target: ".toggle-subscription-tooltip",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
