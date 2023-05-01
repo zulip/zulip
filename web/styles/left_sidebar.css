@@ -386,6 +386,10 @@ ul.filters {
                     opacity: 1;
                 }
             }
+
+            & li.muted_topic {
+                color: hsla(0deg 0% 20% / 75%);
+            }
         }
 
         & li.muted_topic {

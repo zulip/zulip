@@ -43,7 +43,7 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
                 // We unconditionally skip showing muted topics
                 // when not zoomed, even if they have unread
                 // messages.
-                if (is_topic_muted) {
+                if (is_topic_muted && !sub_store.get(stream_id).is_muted) {
                     return false;
                 }
 
