@@ -64,19 +64,15 @@ export function launch() {
         url: "/json/scheduled_messages",
         success(data) {
             hide_loading_indicator();
-            if (data.scheduled_messages.length === 0) {
-                $(".no-overlay-messages").show();
-            } else {
-                // Saving formatted data is helpful when user is trying to edit a scheduled message.
-                scheduled_messages.override_scheduled_messages_data(
-                    format(data.scheduled_messages),
-                );
-                const rendered_list = render_scheduled_message({
-                    scheduled_messages_data: scheduled_messages.scheduled_messages_data,
-                });
-                const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
-                $messages_list.append(rendered_list);
-            }
+            // Saving formatted data is helpful when user is trying to edit a scheduled message.
+            scheduled_messages.override_scheduled_messages_data(
+                format(data.scheduled_messages),
+            );
+            const rendered_list = render_scheduled_message({
+                scheduled_messages_data: scheduled_messages.scheduled_messages_data,
+            });
+            const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
+            $messages_list.append(rendered_list);
         },
         error(xhr) {
             hide_loading_indicator();

@@ -12,5 +12,9 @@
 
     .no-overlay-messages {
         display: none;
+
+        &:only-child {
+            display: block;
+        }
     }
 }
