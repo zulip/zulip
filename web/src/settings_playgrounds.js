@@ -35,6 +35,7 @@ export function populate_playgrounds(playgrounds_data) {
     const $playgrounds_table = $("#admin_playgrounds_table").expectOne();
     ListWidget.create($playgrounds_table, playgrounds_data, {
         name: "playgrounds_list",
+        get_item: ListWidget.default_get_item,
         modifier(playground) {
             return render_admin_playground_list({
                 playground: {

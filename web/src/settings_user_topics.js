@@ -25,6 +25,7 @@ export function populate_list() {
 
     ListWidget.create($user_topics_table, all_user_topics, {
         name: "user-topics-list",
+        get_item: ListWidget.default_get_item,
         modifier(user_topic) {
             const context = {
                 user_topic,

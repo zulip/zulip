@@ -116,6 +116,7 @@ export class DropdownListWidget {
 
         this.list_widget = ListWidget.create($dropdown_list_body, this.get_data(data), {
             name: `${CSS.escape(this.widget_name)}_list`,
+            get_item: ListWidget.default_get_item,
             modifier(item) {
                 return render_dropdown_list({item});
             },
@@ -414,6 +415,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
 
         this.list_widget = ListWidget.create($dropdown_list_body, data, {
             name: `${CSS.escape(this.widget_name)}_list`,
+            get_item: ListWidget.default_get_item,
             modifier(item) {
                 return render_dropdown_list({item});
             },

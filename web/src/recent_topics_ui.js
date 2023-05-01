@@ -843,6 +843,7 @@ export function complete_rerender() {
     $container.empty();
     topics_widget = ListWidget.create($container, mapped_topic_values, {
         name: "recent_topics_table",
+        get_item: ListWidget.default_get_item,
         $parent_container: $("#recent_topics_table"),
         modifier(item) {
             return render_recent_topic_row(format_conversation(item));
