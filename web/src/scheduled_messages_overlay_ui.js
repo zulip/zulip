@@ -1,4 +1,3 @@
-import * as date_fns from "date-fns";
 import $ from "jquery";
 
 import render_scheduled_message from "../templates/scheduled_message.hbs";
@@ -31,8 +30,7 @@ function format(scheduled_messages) {
             msg_render_context.recipients = people.get_recipients(msg.to.join(","));
         }
         const time = new Date(msg.scheduled_delivery_timestamp * 1000);
-        msg_render_context.full_date_time = timerender.get_full_datetime(time);
-        msg_render_context.formatted_send_at_time = date_fns.format(time, "MMM d yyyy h:mm a");
+        msg_render_context.formatted_send_at_time = timerender.get_full_datetime(time, "time");
         formatted_msgs.push(msg_render_context);
     }
     return formatted_msgs;
