@@ -811,10 +811,6 @@ export function initialize() {
         },
     };
 
-    const send_later_custom = {
-        text: $t({defaultMessage: "Custom"}),
-    };
-
     function set_compose_box_schedule(element) {
         const send_later_in = element.id;
         const send_later_class = element.classList[0];
@@ -886,7 +882,6 @@ export function initialize() {
                     render_send_later_modal({
                         possible_send_later_today,
                         send_later_tomorrow,
-                        send_later_custom,
                     }),
                 );
                 overlays.open_modal("send_later_modal", {
