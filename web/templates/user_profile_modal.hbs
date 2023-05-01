@@ -60,31 +60,29 @@
                                     </div>
                                     {{/if}}
                                 </div>
+                                <div id="content">
+                                    {{#if is_bot}}
+                                        <div class="field-section">
+                                            <div class="name">{{t "Bot type" }}</div>
+                                            <div class="bot_info_value">{{bot_type}}</div>
+                                        </div>
+                                        {{#if bot_owner}}
+                                        <div class="field-section bot_owner_user_field" data-field-id="{{bot_owner.user_id}}">
+                                            <div class="name">{{t "Owner" }}</div>
+                                            <div class="pill-container not-editable">
+                                                <div class="input" contenteditable="false" style="display: none;"></div>
+                                            </div>
+                                        </div>
+                                        {{/if}}
+                                    {{else}}
+                                        {{> user_custom_profile_fields profile_fields=profile_data}}
+                                    {{/if}}
+                                </div>
                             </div>
                             <div class="col-wrap col-right">
                                 <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
                                   style="background-image: url('{{user_avatar}}');">
                                 </div>
-                            </div>
-                        </div>
-                        <div class="bottom">
-                            <div id="content">
-                                {{#if is_bot}}
-                                    <div class="field-section">
-                                        <div class="name">{{t "Bot type" }}</div>
-                                        <div class="bot_info_value">{{bot_type}}</div>
-                                    </div>
-                                    {{#if bot_owner}}
-                                    <div class="field-section bot_owner_user_field" data-field-id="{{bot_owner.user_id}}">
-                                        <div class="name">{{t "Owner" }}</div>
-                                        <div class="pill-container not-editable">
-                                            <div class="input" contenteditable="false" style="display: none;"></div>
-                                        </div>
-                                    </div>
-                                    {{/if}}
-                                {{else}}
-                                    {{> user_custom_profile_fields profile_fields=profile_data}}
-                                {{/if}}
                             </div>
                         </div>
                     </div>
