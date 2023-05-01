@@ -23,6 +23,7 @@ export function rerender_alert_words_ui() {
 
     ListWidget.create($word_list, words, {
         name: "alert-words-list",
+        get_item: ListWidget.default_get_item,
         modifier(alert_word) {
             return render_alert_word_settings_item({alert_word});
         },

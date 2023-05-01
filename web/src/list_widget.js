@@ -24,6 +24,10 @@ export function validate_opts(opts) {
         blueslip.error("$simplebar_container is missing.");
         return false;
     }
+    if (!opts.get_item) {
+        blueslip.error("get_item is missing.");
+        return false;
+    }
     return true;
 }
 
@@ -36,38 +40,28 @@ export function get_filtered_items(value, list, opts) {
     const get_item = opts.get_item;
 
     if (!opts.filter) {
-        if (get_item) {
-            return list.map((key) => get_item(key));
-        }
-        return [...list];
+        return list.map((key) => get_item(key));
     }
 
     if (opts.filter.filterer) {
-        if (get_item) {
-            return opts.filter.filterer(
-                list.map((key) => get_item(key)),
-                value,
-            );
-        }
-        return opts.filter.filterer(list, value);
+        return opts.filter.filterer(
+            list.map((key) => get_item(key)),
+            value,
+        );
     }
 
     const predicate = (item) => opts.filter.predicate(item, value);
 
-    if (get_item) {
-        const result = [];
+    const result = [];
 
-        for (const key of list) {
-            const item = get_item(key);
-            if (predicate(item)) {
-                result.push(item);
-            }
+    for (const key of list) {
+        const item = get_item(key);
+        if (predicate(item)) {
+            result.push(item);
         }
-
-        return result;
     }
 
-    return list.filter((item) => predicate(item));
+    return result;
 }
 
 export function alphabetic_sort(prop) {
@@ -262,9 +256,7 @@ export function create($container, list, opts) {
                 return;
             }
 
-            if (opts.get_item) {
-                item = opts.get_item(item);
-            }
+            item = opts.get_item(item);
             const html = opts.modifier(item);
             if (typeof html !== "string") {
                 blueslip.error("List item is not a string", {item: html});
@@ -495,3 +487,5 @@ export function handle_sort($th, list) {
     // and not if it is undefined.
     list.sort(sort_type, prop_name);
 }
+
+export const default_get_item = (item) => item;

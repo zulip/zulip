@@ -47,6 +47,7 @@ export function setup(tippy_props, get_options, item_click_callback, dropdown_pr
 
             const list_widget = ListWidget.create($dropdown_list_body, get_options(), {
                 name: `${CSS.escape(tippy_props.target)}-list-widget`,
+                get_item: ListWidget.default_get_item,
                 modifier(item) {
                     return render_dropdown_list({item});
                 },

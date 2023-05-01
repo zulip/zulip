@@ -136,6 +136,7 @@ export function populate_linkifiers(linkifiers_data) {
     const $linkifiers_table = $("#admin_linkifiers_table").expectOne();
     ListWidget.create($linkifiers_table, linkifiers_data, {
         name: "linkifiers_list",
+        get_item: ListWidget.default_get_item,
         modifier(linkifier) {
             return render_admin_linkifier_list({
                 linkifier: {

@@ -83,6 +83,7 @@ function render_user_stream_list(streams, user) {
     $container.empty();
     ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
+        get_item: ListWidget.default_get_item,
         modifier(item) {
             return format_user_stream_list_item(item, user);
         },
@@ -102,6 +103,7 @@ function render_user_group_list(groups, user) {
     $container.empty();
     ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
+        get_item: ListWidget.default_get_item,
         modifier(item) {
             return format_user_group_list_item(item);
         },

@@ -111,6 +111,7 @@ export function populate_emoji() {
     const $emoji_table = $("#admin_emoji_table").expectOne();
     ListWidget.create($emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
+        get_item: ListWidget.default_get_item,
         modifier(item) {
             if (item.deactivated !== true) {
                 return render_admin_emoji_list({

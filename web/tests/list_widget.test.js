@@ -157,6 +157,7 @@ run_test("scrolling", () => {
 
     const opts = {
         modifier: (item) => item,
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
 
@@ -205,6 +206,7 @@ run_test("not_scrolling", () => {
 
     const opts = {
         modifier: (item) => item,
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
         is_scroll_position_for_render: () => false,
         post_scroll__pre_render_callback,
@@ -243,6 +245,7 @@ run_test("filtering", () => {
             predicate: (item, value) => item.includes(value),
         },
         modifier: (item) => div(item),
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
 
@@ -288,6 +291,7 @@ run_test("no filtering", () => {
         callback_after_render() {
             callback_called = true;
         },
+        get_item: (item) => item,
     };
     const widget = ListWidget.create($container, ["apple", "banana"], opts);
     widget.render();
@@ -362,6 +366,7 @@ run_test("wire up filter element", () => {
             $element: $filter_element,
         },
         modifier: (s) => "(" + s + ")",
+        get_item: (item) => item,
         $simplebar_container: $scroll_container,
     };
 
@@ -392,6 +397,7 @@ run_test("sorting", () => {
         name: "sorting-list",
         $parent_container: $sort_container,
         modifier: (item) => div(item.name) + div(item.salary),
+        get_item: (item) => item,
         filter: {
             predicate: () => true,
         },
@@ -492,6 +498,7 @@ run_test("custom sort", () => {
     ListWidget.create($container, list, {
         name: "custom-sort-list",
         modifier: (n) => "(" + n.x + ", " + n.y + ")",
+        get_item: (item) => item,
         sort_fields: {
             product: sort_by_product,
             x_value: sort_by_x,
@@ -529,6 +536,7 @@ run_test("clear_event_handlers", () => {
         name: "list-we-create-twice",
         $parent_container: $sort_container,
         modifier() {},
+        get_item() {},
         filter: {
             $element: $filter_element,
             predicate: /* istanbul ignore next */ () => true,
@@ -578,6 +586,7 @@ run_test("errors", () => {
             predicate: "wrong type",
         },
         $simplebar_container: $scroll_container,
+        get_item() {},
     });
     blueslip.reset();
 
@@ -588,6 +597,7 @@ run_test("errors", () => {
             predicate: /* istanbul ignore next */ () => true,
         },
         $simplebar_container: $scroll_container,
+        get_item() {},
     });
     blueslip.reset();
 
@@ -595,6 +605,7 @@ run_test("errors", () => {
     ListWidget.create($container, list, {
         filter: {},
         $simplebar_container: $scroll_container,
+        get_item() {},
     });
     blueslip.reset();
 
@@ -602,6 +613,7 @@ run_test("errors", () => {
     ListWidget.create($container, list, {
         modifier: () => 999,
         $simplebar_container: $scroll_container,
+        get_item: (item) => item,
     });
     blueslip.reset();
 });
@@ -638,6 +650,7 @@ run_test("replace_list_data w/filter update", () => {
     ListWidget.create($container, list, {
         name: "replace-list",
         modifier: (n) => "(" + n.toString() + ")",
+        get_item: (item) => item,
         filter: {
             predicate: (n) => n % 2 === 0,
             onupdate() {
@@ -873,6 +886,7 @@ run_test("Multiselect dropdown retain_selected_items", () => {
     const widget = ListWidget.create($container, list, {
         name: "replace-list",
         modifier: (item) => `<li data-value="${item.value}">${item.name}</li>\n`,
+        get_item: (item) => item,
         multiselect: {
             selected_items: data,
         },

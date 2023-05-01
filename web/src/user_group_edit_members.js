@@ -66,6 +66,7 @@ function make_list_widget({$parent_container, name, user_ids}) {
 
     return ListWidget.create($list_container, users, {
         name,
+        get_item: ListWidget.default_get_item,
         $parent_container,
         sort_fields: {
             email: settings_users.sort_email,

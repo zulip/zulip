@@ -94,6 +94,7 @@ function render_attachments_ui() {
 
     ListWidget.create($uploaded_files_table, attachments, {
         name: "uploaded-files-list",
+        get_item: ListWidget.default_get_item,
         modifier(attachment) {
             return render_uploaded_files_list({attachment});
         },
