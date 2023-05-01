@@ -859,7 +859,10 @@ export function initialize() {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-
+            $popper.one("click", ".send_later_selected_send_later_time", () => {
+                const send_at_timestamp = get_selected_send_later_timestamp();
+                do_schedule_message(send_at_timestamp);
+            });
             $popper.one("click", ".open_send_later_modal", () => {
                 if (!compose_validate.validate()) {
                     return;
@@ -877,13 +880,11 @@ export function initialize() {
                     possible_send_later_today = false;
                 }
 
-                const formatted_send_later_time = get_formatted_selected_send_later_time();
                 $("body").append(
                     render_send_later_modal({
                         possible_send_later_today,
                         send_later_tomorrow,
                         send_later_custom,
-                        formatted_send_later_time,
                     }),
                 );
                 overlays.open_modal("send_later_modal", {
@@ -911,18 +912,7 @@ export function initialize() {
                             ".send_later_today, .send_later_tomorrow",
                             (e) => {
                                 const send_at_time = set_compose_box_schedule(e.currentTarget);
-                                const not_from_flatpickr = true;
-                                do_schedule_message(send_at_time, not_from_flatpickr);
-                                e.preventDefault();
-                                e.stopPropagation();
-                            },
-                        );
-                        $send_later_modal.one(
-                            "click",
-                            ".send_later_selected_send_later_time",
-                            (e) => {
-                                const send_at_timestamp = get_selected_send_later_timestamp();
-                                do_schedule_message(send_at_timestamp);
+                                do_schedule_message(send_at_time);
                                 e.preventDefault();
                                 e.stopPropagation();
                             },
