@@ -692,6 +692,7 @@ def send_confirm_registration_email(
         context={
             "create_realm": (realm is None),
             "activate_url": activation_url,
+            "corporate_enabled": settings.CORPORATE_ENABLED,
         },
         realm=realm,
         request=request,
