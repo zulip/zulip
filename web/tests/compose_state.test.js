@@ -12,7 +12,6 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose_fade = zrequire("compose_fade");
 const compose_recipient = zrequire("compose_recipient");
-const stream_bar = zrequire("stream_bar");
 
 const noop = () => {};
 
@@ -43,7 +42,7 @@ run_test("has_full_recipient", ({override, override_rewire}) => {
     $(`#compose_banners .topic_resolved`).remove = noop;
     compose_fade.update_all = noop;
     $(".narrow_to_compose_recipients").toggleClass = noop;
-    override_rewire(stream_bar, "decorate", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     let emails;
     override(compose_pm_pill, "set_from_emails", (value) => {

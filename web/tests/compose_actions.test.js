@@ -66,7 +66,6 @@ const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
-const stream_bar = zrequire("stream_bar");
 const compose_recipient = zrequire("compose_recipient");
 
 let stream_value = "";
@@ -129,9 +128,8 @@ test("start", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
-    override_rewire(compose_recipient, "update_on_recipient_change", () => {});
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", () => {});
-    stream_bar.decorate = () => {};
     mock_stream_header_colorblock();
 
     let compose_defaults;
@@ -294,6 +292,7 @@ test("reply_with_mention", ({override, override_rewire}) => {
     mock_banners();
     mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
