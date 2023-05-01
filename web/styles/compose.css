@@ -101,12 +101,21 @@
         }
     }
 
-    .right_part,
-    #compose-stream-recipient {
+    #compose-recipient {
         padding: 0;
         display: flex;
         align-items: center;
         flex: 1;
+
+        &.compose-recipient-direct-selected {
+            #compose_recipient_selection_dropdown .dropdown-toggle {
+                border-radius: 4px !important;
+            }
+
+            .stream_header_colorblock {
+                display: none;
+            }
+        }
 
         .fa-angle-right {
             font-size: 0.9em;
@@ -132,17 +141,8 @@
         }
     }
 
-    .pm_recipient {
-        margin-left: 5px;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
-
-    #compose-private-recipient .to_text {
-        vertical-align: middle;
-
-        font-weight: 600;
+    #compose-direct-recipient {
+        flex-grow: 1;
     }
 
     .message_header {
@@ -240,7 +240,6 @@
 #compose_top_right {
     display: flex;
     align-items: center;
-    margin-bottom: auto;
 
     & button {
         background: transparent;
@@ -508,8 +507,8 @@ input.recipient_box {
     border-radius: 3px;
 }
 
-#compose_select_stream_widget,
-#compose_select_stream_widget .button {
+#compose_select_recipient_widget,
+#compose_select_recipient_widget .button {
     margin: 0;
     min-width: 0;
     flex: 1;
@@ -528,8 +527,7 @@ input.recipient_box {
 
 #compose-schedule-confirm-button,
 #compose-send-button {
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding: 3px 12px;
     margin-bottom: 0;
     font-weight: 600;
     font-size: 0.9em;
@@ -616,16 +614,9 @@ input.recipient_box {
     }
 }
 
-#compose-stream-recipient {
+#compose-recipient {
     min-width: 0;
-}
-
-#compose-stream-recipient,
-#compose-private-recipient {
     display: flex;
-}
-
-#compose-private-recipient {
     align-items: center;
     width: 100%;
 }
@@ -708,6 +699,15 @@ input.recipient_box {
     white-space: nowrap;
     margin-top: 2px;
     height: 24px;
+
+    &.disabled-compose-send-button-container {
+        cursor: not-allowed;
+
+        & button {
+            pointer-events: none;
+            background-color: hsl(0deg 0% 65%);
+        }
+    }
 }
 
 a.compose_control_button {
@@ -761,11 +761,9 @@ a.compose_control_button.hide {
     margin: auto;
 }
 
-#compose_stream_selection_dropdown {
+#compose_recipient_selection_dropdown {
     display: flex;
     justify-content: flex-start;
-    flex: 0 1 200px;
-    min-width: 0;
 
     .stream_header_colorblock {
         margin: 0;
@@ -777,19 +775,20 @@ a.compose_control_button.hide {
         min-width: 0;
     }
 
-    .dropup .dropdown-menu {
+    .dropdown-menu {
+        /* The Bootstrap default of 160px wraps too early.
+           TODO: Replace this with a max-width and natural scaling? */
+        width: 200px;
         top: auto;
-        bottom: 100%;
         left: -10px;
+    }
+
+    .dropup .dropdown-menu {
+        bottom: 100%;
         margin-bottom: 17px;
     }
 
-    .dropdown .dropdown-menu {
-        top: auto;
-        left: -10px;
-    }
-
-    #compose_select_stream_name {
+    #compose_select_recipient_name {
         flex-grow: 1;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -817,7 +816,7 @@ a.compose_control_button.hide {
     min-width: 0;
 }
 
-#id_compose_select_stream {
+#id_compose_select_recipient {
     display: flex;
 }
 
@@ -858,14 +857,15 @@ a.compose_control_button.hide {
     float: right;
     color: hsl(0deg 0% 100%);
     border-radius: 0 4px 4px 0;
-    border-left: 1px solid hsl(213deg 14% 12% / 15%);
+    border-left: 1px solid hsl(0deg 0% 100% / 65%);
     padding: 0;
     margin: 0;
 
-    .fa {
-        padding: 4.5px 4px;
+    .zulip-icon {
+        vertical-align: middle;
 
         &::before {
+            padding: 5px 9px;
             position: relative;
             top: -1px;
         }

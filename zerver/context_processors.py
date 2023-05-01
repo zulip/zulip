@@ -47,6 +47,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
         "external_host": settings.EXTERNAL_HOST,
         "user_name": user.full_name,
+        "corporate_enabled": settings.CORPORATE_ENABLED,
     }
 
 

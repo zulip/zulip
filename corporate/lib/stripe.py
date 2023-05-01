@@ -940,7 +940,9 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     plan.save(update_fields=["next_invoice_date"])
 
 
-def invoice_plans_as_needed(event_time: datetime = timezone_now()) -> None:
+def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
+    if event_time is None:  # nocoverage
+        event_time = timezone_now()
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         invoice_plan(plan, event_time)
 

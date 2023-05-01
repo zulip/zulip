@@ -613,5 +613,5 @@ regarding such collection and use, please do not hesitate to contact us at:
 If you are located in the European Union or United Kingdom, you may use our
 contact information above, or contact our European-based representative:
 
-- European Union Representative: Jack Baylor, 2 Ashton Place, Gardiner’s Hill Cork, Ireland
+- European Union Representative: George Barry, 4 St Christopher's Rd, Montenotte, Cork, T23 E9TR, Ireland
 - UK Representative: S. Alec Lawton, Graigwen, Plasycoed road, Pontypool Torfaen, NP4 6QH, UK

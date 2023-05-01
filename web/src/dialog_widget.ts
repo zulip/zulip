@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
@@ -60,6 +61,7 @@ type WidgetConfig = {
     on_hidden?: () => void;
     post_render?: () => void;
     loading_spinner?: boolean;
+    update_submit_disabled_state_on_change?: boolean;
 };
 
 type RequestOpts = {
@@ -120,6 +122,8 @@ export function launch(conf: WidgetConfig): void {
     // * post_render: Callback to run after the modal body is added to DOM.
     // * loading_spinner: Whether to show a loading spinner inside the
     //   submit button when clicked.
+    // * update_submit_disabled_state_on_change: If true, updates state of submit button
+    //   on valid input change in modal.
 
     const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
     const html = render_dialog_widget({
@@ -138,6 +142,33 @@ export function launch(conf: WidgetConfig): void {
     }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
+
+    function get_current_values($inputs: JQuery): Record<string, unknown> {
+        const current_values: Record<string, unknown> = {};
+        $inputs.each(function () {
+            const property_name = $(this).attr("name")!;
+            current_values[property_name] = $(this).val();
+        });
+        return current_values;
+    }
+
+    if (conf.update_submit_disabled_state_on_change) {
+        const $inputs = $dialog.find(".modal__content :input");
+
+        const original_values = get_current_values($inputs);
+
+        $submit_button.prop("disabled", true);
+
+        $inputs.on("input", () => {
+            const current_values = get_current_values($inputs);
+
+            if (!_.isEqual(original_values, current_values)) {
+                $submit_button.prop("disabled", false);
+            } else {
+                $submit_button.prop("disabled", true);
+            }
+        });
+    }
 
     // This is used to link the submit button with the form, if present, in the modal.
     // This makes it so that submitting this form by pressing Enter on an input element

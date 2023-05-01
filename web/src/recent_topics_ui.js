@@ -360,7 +360,7 @@ function format_conversation(conversation_data) {
     const last_msg = message_store.get(conversation_data.last_msg_id);
     const time = new Date(last_msg.timestamp * 1000);
     const type = last_msg.type;
-    context.full_last_msg_date_time = timerender.get_full_datetime(time);
+    context.full_last_msg_date_time = timerender.get_full_datetime_clarification(time);
     context.conversation_key = get_key_from_message(last_msg);
     context.unread_count = message_to_conversation_unread_count(last_msg);
     context.last_msg_time = timerender.relative_time_string_from_date(time);
@@ -433,9 +433,8 @@ function format_conversation(conversation_data) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
-                // Bots do not have status emoji, and are modeled as
-                // always present.
-                context.user_circle_class = "user_circle_green";
+                // We display the bot icon rather than a user circle for bots.
+                context.is_bot = true;
             } else {
                 context.user_circle_class = buddy_data.get_user_circle_class(user_id);
             }
@@ -888,7 +887,6 @@ export function show() {
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
     set_visible(true);
-    $(".header").css("padding-bottom", "0px");
 
     unread_ui.hide_unread_banner();
 
@@ -924,8 +922,6 @@ export function hide() {
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     set_visible(false);
-
-    $(".header").css("padding-bottom", "10px");
 
     // This solves a bug with message_view_header
     // being broken sometimes when we narrow

@@ -33,6 +33,7 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
+import * as tippyjs from "./tippyjs";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -1275,6 +1276,9 @@ export class MessageListView {
     }
 
     rerender_messages(messages, message_content_edited) {
+        // We need to destroy all the tippy instances from the DOM before re-rendering to
+        // prevent the appearance of tooltips whose reference has been removed.
+        tippyjs.destroy_all_message_list_tooltips();
         // Convert messages to list messages
         let message_containers = messages.map((message) => this.message_containers.get(message.id));
         // We may not have the message_container if the stream or topic was muted
@@ -1468,7 +1472,7 @@ export class MessageListView {
             // header has a box-shodow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
-            // This value is dependent upon margin-bottom applied to recipient row.
+            // This value is dependent upon space between two `recipient_row` message groups.
             const margin_between_recipient_rows = 10;
             const sticky_or_about_to_be_sticky_header_position =
                 visible_top + header_props.height + margin_between_recipient_rows;

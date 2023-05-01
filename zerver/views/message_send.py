@@ -1,16 +1,12 @@
-import sys
 from email.headerregistry import Address
 from typing import Iterable, Optional, Sequence, Union, cast
 
-from dateutil.parser import parse as dateparser
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import (
-    check_schedule_message,
     check_send_message,
     compute_irc_user_fullname,
     compute_jabber_user_fullname,
@@ -22,24 +18,17 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import render_markdown
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import check_int, check_string_in, to_float
+from zerver.lib.validator import check_string_in, to_float
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     Client,
     Message,
-    Realm,
     RealmDomain,
     UserProfile,
     get_user_including_cross_realm,
 )
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
 
 
 class InvalidMirrorInputError(Exception):
@@ -139,56 +128,6 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 
-def handle_deferred_message(
-    sender: UserProfile,
-    client: Client,
-    recipient_type_name: str,
-    message_to: Union[Sequence[str], Sequence[int]],
-    topic_name: Optional[str],
-    message_content: str,
-    scheduled_message_id: Optional[int],
-    delivery_type: str,
-    defer_until: str,
-    tz_guess: Optional[str],
-    forwarder_user_profile: UserProfile,
-    realm: Optional[Realm],
-) -> str:
-    deliver_at = None
-    local_tz = "UTC"
-    if tz_guess:
-        local_tz = tz_guess
-    elif sender.timezone:
-        local_tz = sender.timezone
-    try:
-        deliver_at = dateparser(defer_until)
-    except ValueError:
-        raise JsonableError(_("Invalid time format"))
-
-    deliver_at_usertz = deliver_at
-    if deliver_at_usertz.tzinfo is None:
-        user_tz = zoneinfo.ZoneInfo(local_tz)
-        deliver_at_usertz = deliver_at.replace(tzinfo=user_tz)
-    deliver_at = convert_to_UTC(deliver_at_usertz)
-
-    if deliver_at <= timezone_now():
-        raise JsonableError(_("Time must be in the future."))
-
-    check_schedule_message(
-        sender,
-        client,
-        recipient_type_name,
-        message_to,
-        topic_name,
-        message_content,
-        scheduled_message_id,
-        delivery_type,
-        deliver_at,
-        realm=realm,
-        forwarder_user_profile=forwarder_user_profile,
-    )
-    return str(deliver_at_usertz)
-
-
 @has_request_variables
 def send_message_backend(
     request: HttpRequest,
@@ -202,12 +141,6 @@ def send_message_backend(
     widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
     local_id: Optional[str] = REQ(default=None),
     queue_id: Optional[str] = REQ(default=None),
-    scheduled_message_id: Optional[int] = REQ(
-        default=None, json_validator=check_int, documentation_pending=True
-    ),
-    delivery_type: str = REQ("delivery_type", default="send_now", documentation_pending=True),
-    defer_until: Optional[str] = REQ("deliver_at", default=None, documentation_pending=True),
-    tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
     time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
 ) -> HttpResponse:
     recipient_type_name = req_type
@@ -293,26 +226,6 @@ def send_message_backend(
         if req_sender is not None:
             raise JsonableError(_("Invalid mirrored message"))
         sender = user_profile
-
-    if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is None:
-        raise JsonableError(_("Missing deliver_at in a request for delayed message delivery"))
-
-    if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is not None:
-        deliver_at = handle_deferred_message(
-            sender,
-            client,
-            recipient_type_name,
-            message_to,
-            topic_name,
-            message_content,
-            scheduled_message_id,
-            delivery_type,
-            defer_until,
-            tz_guess,
-            forwarder_user_profile=user_profile,
-            realm=realm,
-        )
-        return json_success(request, data={"deliver_at": deliver_at})
 
     ret = check_send_message(
         sender,

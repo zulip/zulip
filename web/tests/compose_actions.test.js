@@ -31,6 +31,7 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,
     is_full_size: () => false,
+    set_focus: noop,
 });
 const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
@@ -69,7 +70,7 @@ const stream_bar = zrequire("stream_bar");
 const compose_recipient = zrequire("compose_recipient");
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },
@@ -80,7 +81,6 @@ compose_recipient.compose_stream_widget = {
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
-const get_focus_area = compose_actions._get_focus_area;
 const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
@@ -126,11 +126,11 @@ test("start", ({override, override_rewire}) => {
     override_private_message_recipient({override});
     override_rewire(compose_actions, "autosize_message_content", () => {});
     override_rewire(compose_actions, "expand_compose_box", () => {});
-    override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_rewire(compose_recipient, "update_on_recipient_change", () => {});
+    override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", () => {});
     stream_bar.decorate = () => {};
     mock_stream_header_colorblock();
 
@@ -146,8 +146,8 @@ test("start", ({override, override_rewire}) => {
     let opts = {};
     start("stream", opts);
 
-    assert_visible("#compose-stream-recipient");
-    assert_hidden("#compose-private-recipient");
+    assert_visible("#stream_message_recipient_topic");
+    assert_hidden("#compose-direct-recipient");
 
     assert.equal(compose_state.stream_name(), "stream1");
     assert.equal(compose_state.topic(), "topic1");
@@ -207,8 +207,8 @@ test("start", ({override, override_rewire}) => {
 
     start("private", opts);
 
-    assert_hidden("#compose-stream-recipient");
-    assert_visible("#compose-private-recipient");
+    assert_hidden("#stream_message_recipient_topic");
+    assert_visible("#compose-direct-recipient");
 
     assert.equal(compose_state.private_message_recipient(), "foo@example.com");
     assert.equal($("#compose-textarea").val(), "hello");
@@ -244,16 +244,15 @@ test("start", ({override, override_rewire}) => {
     assert.ok(abort_xhr_called);
     assert.ok(pill_cleared);
     assert_visible("#compose_controls");
-    assert_hidden("#compose-private-recipient");
+    assert_hidden("#compose-direct-recipient");
     assert.ok(!compose_state.composing());
 });
 
 test("respond_to_message", ({override, override_rewire}) => {
     mock_banners();
-    override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
-    override_rewire(compose_recipient, "update_on_recipient_change", () => {});
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_private_message_recipient({override});
     mock_stream_header_colorblock();
 
@@ -295,7 +294,6 @@ test("reply_with_mention", ({override, override_rewire}) => {
     mock_banners();
     mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
-    override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
@@ -350,7 +348,6 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     };
     people.add_active_user(steve);
 
-    override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
@@ -433,23 +430,6 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
     quote_and_reply(opts);
     assert.ok(replaced);
-});
-
-test("get_focus_area", () => {
-    assert.equal(get_focus_area("private", {}), "#private_message_recipient");
-    assert.equal(
-        get_focus_area("private", {
-            private_message_recipient: "bob@example.com",
-        }),
-        "#compose-textarea",
-    );
-    assert.equal(get_focus_area("stream", {}), "#compose_select_stream_widget");
-    assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
-    assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
-    assert.equal(
-        get_focus_area("stream", {stream: "fun", topic: "more", trigger: "new topic button"}),
-        "#stream_message_recipient_topic",
-    );
 });
 
 test("focus_in_empty_compose", () => {

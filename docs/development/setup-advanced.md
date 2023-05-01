@@ -9,6 +9,12 @@ Contents:
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
+:::{warning}
+There is no supported uninstallation process with the direct-install
+method. If you want that, use [the Vagrant environment](setup-recommended.md),
+where you can just do `vagrant destroy` to clean up the development environment.
+:::
+
 One can install the Zulip development environment directly on a Linux
 host by following these instructions. Currently supported platforms
 are:
@@ -24,12 +30,6 @@ If you are using a [remote server](remote.md), see
 the
 [section on creating appropriate user accounts](remote.md#setting-up-user-accounts).
 
-:::{warning}
-There is no supported uninstallation process with this
-method. If you want that, use the Vagrant environment, where you can
-just do `vagrant destroy` to clean up the development environment.
-:::
-
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
@@ -39,9 +39,20 @@ cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
+CentOS, Fedora, and RHEL users should ensure that python3 is installed on their
+systems (Debian and Ubuntu distributions already include it):
+
 ```bash
-# On CentOS/RHEL/Fedora, you must first install python3
-# From a clone of zulip.git
+# On CentOS/Fedora/RHEL, you must first install python3.
+# For example, this command installs python3 with yum:
+yum install python
+```
+
+With python3 installed, change into the directory where you have cloned
+Zulip and run the following commands:
+
+```bash
+# From inside a clone of zulip.git:
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
 ./tools/run-dev  # starts the development server

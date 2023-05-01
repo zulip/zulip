@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_stream_header_colorblock} = require("./lib/compose");
+const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -57,7 +58,7 @@ const ct = composebox_typeahead;
 ct.__Rewire__("max_num_items", 15);
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },
@@ -220,10 +221,24 @@ const netherland_stream = {
     stream_id: 3,
     subscribed: false,
 };
+const mobile_stream = {
+    name: "Mobile",
+    description: "Mobile development",
+    stream_id: 4,
+    subscribed: false,
+};
+const mobile_team_stream = {
+    name: "Mobile team",
+    description: "Mobile development team",
+    stream_id: 5,
+    subscribed: true,
+};
 
 stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
+stream_data.add_sub(mobile_stream);
+stream_data.add_sub(mobile_team_stream);
 
 const name_to_codepoint = {};
 for (const [key, val] of emojis_by_name.entries()) {
@@ -244,6 +259,12 @@ emoji.initialize({
 });
 emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
+
+const ali = {
+    email: "ali@zulip.com",
+    user_id: 98,
+    full_name: "Ali",
+};
 
 const alice = {
     email: "alice@zulip.com",
@@ -346,6 +367,7 @@ function test(label, f) {
         people.init();
         user_groups.init();
 
+        people.add_active_user(ali);
         people.add_active_user(alice);
         people.add_active_user(hamlet);
         people.add_active_user(othello);
@@ -677,8 +699,8 @@ function sorted_names_from(subs) {
 
 test("initialize", ({override, override_rewire, mock_template}) => {
     mock_stream_header_colorblock();
-    override_rewire(compose_recipient, "update_on_recipient_change", noop);
-    override_rewire(stream_bar, "decorate", noop);
+    mock_banners();
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     let pill_items = [];
     let cleared = false;
@@ -785,6 +807,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source("");
         let expected_value = [
+            ali,
             alice,
             cordelia,
             hal,
@@ -865,6 +888,11 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         query = "othello";
         actual_value = sorter(query, [othello]);
         expected_value = [othello];
+        assert.deepEqual(actual_value, expected_value);
+
+        query = "Ali";
+        actual_value = sorter(query, [alice, ali]);
+        expected_value = [ali, alice];
         assert.deepEqual(actual_value, expected_value);
 
         // A literal match at the beginning of an element puts it at the top.
@@ -1511,7 +1539,7 @@ test("filter_and_sort_mentions (normal)", () => {
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
     const mention_all = ct.broadcast_mentions()[0];
-    assert.deepEqual(suggestions, [mention_all, alice, hal, call_center]);
+    assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
 });
 
 test("filter_and_sort_mentions (silent)", () => {
@@ -1519,11 +1547,17 @@ test("filter_and_sort_mentions (silent)", () => {
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    assert.deepEqual(suggestions, [alice, hal, call_center]);
+    assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
 });
 
 test("typeahead_results", () => {
-    const stream_list = [denmark_stream, sweden_stream, netherland_stream];
+    const stream_list = [
+        denmark_stream,
+        sweden_stream,
+        netherland_stream,
+        mobile_team_stream,
+        mobile_stream,
+    ];
 
     function compose_typeahead_results(completing, items, token) {
         return ct.filter_and_sort_candidates(completing, items, token);
@@ -1645,6 +1679,8 @@ test("typeahead_results", () => {
     // Do not match stream descriptions
     assert_stream_matches("cold", []);
     assert_stream_matches("city", []);
+    // Always prioritise exact matches, irrespective of activity
+    assert_stream_matches("Mobile", [mobile_stream, mobile_team_stream]);
 });
 
 test("message people", ({override, override_rewire}) => {
@@ -1727,16 +1763,29 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
             stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
     );
     mock_stream_header_colorblock();
+    mock_banners();
     override_rewire(stream_bar, "decorate", noop);
     override_rewire(compose_recipient, "update_on_recipient_change", noop);
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_name("");
     results = ct.get_pm_people("li");
-    assert.deepEqual(results, [alice, cordelia]);
+    assert.deepEqual(results, [ali, alice, cordelia]);
 
-    // When viewing denmark stream, subscriber twin2 is placed higher
+    // When viewing denmark stream, subscriber cordelia is placed higher
     compose_state.set_stream_name("Denmark");
     results = ct.get_pm_people("li");
-    assert.deepEqual(results, [cordelia, alice]);
+    assert.deepEqual(results, [cordelia, ali, alice]);
+
+    // Simulating just alice being subscribed to denmark.
+    override_rewire(
+        stream_data,
+        "is_user_subscribed",
+        (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
+    );
+
+    // When viewing denmark stream to which alice is subscribed, ali is still
+    // 1st by virtue of the name being an exact match with the query.
+    results = ct.get_pm_people("ali");
+    assert.deepEqual(results, [ali, alice]);
 });

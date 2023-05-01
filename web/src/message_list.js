@@ -10,6 +10,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as stream_data from "./stream_data";
+import * as tippyjs from "./tippyjs";
 import {user_settings} from "./user_settings";
 
 export class MessageList {
@@ -421,6 +422,9 @@ export class MessageList {
     }
 
     rerender() {
+        // We need to destroy all the tippy instances from the DOM before re-rendering to
+        // prevent the appearance of tooltips whose reference has been removed.
+        tippyjs.destroy_all_message_list_tooltips();
         // We need to clear the rendering state, rather than just
         // doing clear_table, since we want to potentially recollapse
         // things.

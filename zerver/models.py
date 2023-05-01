@@ -625,6 +625,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         },
     }
 
+    ORG_TYPE_IDS: List[int] = [t["id"] for t in ORG_TYPES.values()]
+
     org_type = models.PositiveSmallIntegerField(
         default=ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in ORG_TYPES.values()],
@@ -4282,6 +4284,25 @@ class ScheduledMessageNotificationEmail(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)
 
 
+class StreamScheduledMessageAPI(TypedDict):
+    scheduled_message_id: int
+    to: int
+    type: str
+    content: str
+    rendered_content: str
+    topic: str
+    scheduled_delivery_timestamp: int
+
+
+class DirectScheduledMessageAPI(TypedDict):
+    scheduled_message_id: int
+    to: List[int]
+    type: str
+    content: str
+    rendered_content: str
+    scheduled_delivery_timestamp: int
+
+
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
@@ -4316,6 +4337,35 @@ class ScheduledMessage(models.Model):
 
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
+
+    def to_dict(self) -> Union[StreamScheduledMessageAPI, DirectScheduledMessageAPI]:
+        recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
+
+        if recipient_type_str == "private":
+            # The topic for direct messages should always be an empty string.
+            assert self.topic_name() == ""
+
+            return DirectScheduledMessageAPI(
+                scheduled_message_id=self.id,
+                to=recipient,
+                type=recipient_type_str,
+                content=self.content,
+                rendered_content=self.rendered_content,
+                scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+            )
+
+        # The recipient for stream messages should always just be the unique stream ID.
+        assert len(recipient) == 1
+
+        return StreamScheduledMessageAPI(
+            scheduled_message_id=self.id,
+            to=recipient[0],
+            type=recipient_type_str,
+            content=self.content,
+            rendered_content=self.rendered_content,
+            topic=self.topic_name(),
+            scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+        )
 
 
 EMAIL_TYPES = {
@@ -4496,6 +4546,21 @@ class RealmAuditLog(AbstractRealmAuditLog):
         if self.modified_stream is not None:
             return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
         return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
+
+    class Meta:
+        indexes = [
+            models.Index(
+                name="zerver_realmauditlog_user_subscriptions_idx",
+                fields=["modified_user", "modified_stream"],
+                condition=Q(
+                    event_type__in=[
+                        AbstractRealmAuditLog.SUBSCRIPTION_CREATED,
+                        AbstractRealmAuditLog.SUBSCRIPTION_ACTIVATED,
+                        AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+                    ]
+                ),
+            )
+        ]
 
 
 class UserHotspot(models.Model):

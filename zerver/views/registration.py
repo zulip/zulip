@@ -2,10 +2,10 @@ import logging
 import urllib
 from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
-from django.contrib.auth import authenticate, get_backends
+from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
 from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -58,7 +58,13 @@ from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
-from zerver.lib.validator import to_converted_or_fallback, to_non_negative_int, to_timezone_or_empty
+from zerver.lib.validator import (
+    check_capped_string,
+    check_int_in,
+    to_converted_or_fallback,
+    to_non_negative_int,
+    to_timezone_or_empty,
+)
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     DisposableEmailError,
@@ -83,7 +89,6 @@ from zerver.views.auth import (
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
-    get_safe_redirect_to,
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
@@ -687,6 +692,7 @@ def send_confirm_registration_email(
         context={
             "create_realm": (realm is None),
             "activate_url": activation_url,
+            "corporate_enabled": settings.CORPORATE_ENABLED,
         },
         realm=realm,
         request=request,
@@ -756,7 +762,14 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             if key_record is not None:
                 key_record.delete()
             new_realm_send_confirm_url = reverse("new_realm_send_confirm")
-            query = urlencode({"email": email})
+            query = urlencode(
+                {
+                    "email": email,
+                    "realm_name": realm_name,
+                    "realm_type": realm_type,
+                    "realm_subdomain": realm_subdomain,
+                }
+            )
             url = append_url_query_string(new_realm_send_confirm_url, query)
             return HttpResponseRedirect(url)
     else:
@@ -787,11 +800,26 @@ def signup_send_confirm(request: HttpRequest, email: str = REQ("email")) -> Http
 
 @add_google_analytics
 @has_request_variables
-def new_realm_send_confirm(request: HttpRequest, email: str = REQ("email")) -> HttpResponse:
+def new_realm_send_confirm(
+    request: HttpRequest,
+    email: str = REQ("email"),
+    realm_name: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_NAME_LENGTH)),
+    realm_type: int = REQ(json_validator=check_int_in(Realm.ORG_TYPE_IDS)),
+    realm_subdomain: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH)),
+) -> HttpResponse:
     return TemplateResponse(
         request,
         "zerver/accounts_send_confirm.html",
-        context={"email": email, "realm_creation": True},
+        context={
+            "email": email,
+            # Using "new_realm_name" key here since "realm_name" key is already present in
+            # the context provided by zulip_default_context and it is "None" during realm
+            # creation.
+            "new_realm_name": realm_name,
+            "realm_type": realm_type,
+            "realm_subdomain": realm_subdomain,
+            "realm_creation": True,
+        },
     )
 
 
@@ -988,7 +1016,13 @@ def realm_redirect(request: HttpRequest, next: str = REQ(default="")) -> HttpRes
         if form.is_valid():
             subdomain = form.cleaned_data["subdomain"]
             realm = get_realm(subdomain)
-            redirect_to = get_safe_redirect_to(next, realm.uri)
+            redirect_to = urljoin(realm.uri, settings.HOME_NOT_LOGGED_IN)
+
+            if next:
+                redirect_to = append_url_query_string(
+                    redirect_to, urlencode({REDIRECT_FIELD_NAME: next})
+                )
+
             return HttpResponseRedirect(redirect_to)
     else:
         form = RealmRedirectForm()

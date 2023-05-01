@@ -1,13 +1,13 @@
 {{#if msg/local_edit_timestamp}}
-<div class="message_edit_notice auto-select" title="{{t 'Edited ({last_edit_timestr})' }}">
+<div class="message_edit_notice auto-select tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edited ({last_edit_timestr})' }}">
     {{t "SAVING" }}
 </div>
 {{else if moved}}
-<div class="message_edit_notice auto-select" title="{{t 'Moved ({last_edit_timestr})' }}">
+<div class="message_edit_notice auto-select tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Moved ({last_edit_timestr})' }}">
     {{t "MOVED" }}
 </div>
 {{else}}
-<div class="message_edit_notice auto-select" title="{{t 'Edited ({last_edit_timestr})' }}">
+<div class="message_edit_notice auto-select tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Edited ({last_edit_timestr})' }}">
     {{t "EDITED" }}
 </div>
 {{/if}}

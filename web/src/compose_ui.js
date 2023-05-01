@@ -33,6 +33,37 @@ export function autosize_textarea($textarea) {
     }
 }
 
+function get_focus_area(msg_type, opts) {
+    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    if (msg_type === "stream" && opts.stream && !opts.topic) {
+        return "#stream_message_recipient_topic";
+    } else if (
+        (msg_type === "stream" && opts.stream) ||
+        (msg_type === "private" && opts.private_message_recipient)
+    ) {
+        if (opts.trigger === "new topic button") {
+            return "#stream_message_recipient_topic";
+        }
+        return "#compose-textarea";
+    }
+
+    if (msg_type === "stream") {
+        return "#compose_select_recipient_widget";
+    }
+    return "#private_message_recipient";
+}
+
+// Export for testing
+export const _get_focus_area = get_focus_area;
+
+export function set_focus(msg_type, opts) {
+    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+        const focus_area = get_focus_area(msg_type, opts);
+        const $elt = $(focus_area);
+        $elt.trigger("focus").trigger("select");
+    }
+}
+
 export function smart_insert_inline($textarea, syntax) {
     function is_space(c) {
         return c === " " || c === "\t" || c === "\n";
@@ -252,7 +283,7 @@ export function make_compose_box_full_size() {
     set_compose_box_top(true);
     // The compose select dropup should now open down because it's
     // at the top of the screen.
-    $("#id_compose_select_stream").removeClass("dropup").addClass("dropdown");
+    $("#id_compose_select_recipient").removeClass("dropup").addClass("dropdown");
 
     $(".collapse_composebox_button").show();
     $(".expand_composebox_button").hide();
@@ -269,7 +300,7 @@ export function make_compose_box_original_size() {
     set_compose_box_top(false);
     // The compose select dropup should now open up because it's
     // near the bottom of the screen.
-    $("#id_compose_select_stream").removeClass("dropdown").addClass("dropup");
+    $("#id_compose_select_recipient").removeClass("dropdown").addClass("dropup");
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen

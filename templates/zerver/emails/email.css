@@ -12,7 +12,7 @@ img.bottom-illustration {
     vertical-align: bottom;
 }
 
-body {
+body.default-email-font-settings {
     font-family: sans-serif;
     font-size: 14px;
     line-height: 1.4;
@@ -147,7 +147,7 @@ p.digest_paragraph,
 .sponsorship_request_link:hover,
 .support_request_link:hover,
 .email-preferences a:hover,
-.missed_message.no_content-explanation a:hover {
+.missed_message.no-content-explanation a:hover {
     color: #434388 !important;
 }
 

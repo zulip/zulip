@@ -26,6 +26,7 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.users import do_change_user_role
@@ -773,6 +774,19 @@ class Command(BaseCommand):
                     {"id": github_profile.id, "value": "zulipbot"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+            )
+            # We need to create at least one scheduled message for Iago for the api-test
+            # cURL example to delete an existing scheduled message.
+            check_schedule_message(
+                sender=iago,
+                client=get_client("populate_db"),
+                recipient_type_name="stream",
+                message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
+                topic_name="test-api",
+                message_content="It's time to celebrate the anniversary of provisioning this development environment :tada:!",
+                scheduled_message_id=None,
+                deliver_at=timezone_now() + timedelta(days=365),
+                realm=zulip_realm,
             )
         else:
             zulip_realm = get_realm("zulip")

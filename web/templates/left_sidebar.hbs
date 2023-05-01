@@ -66,6 +66,16 @@
                 </template>
                 <span class="arrow drafts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
+            <li class="top_left_scheduled_messages top_left_row hidden-for-spectators">
+                <a href="#scheduled">
+                    <span class="filter-icon">
+                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'Scheduled messages' }}</span>
+                    <span class="unread_count"></span>
+                </a>
+            </li>
         </ul>
     </div>
 
@@ -82,7 +92,7 @@
                 </a>
                 <template id="show-all-pms-template">
                     {{t 'All direct messages' }}
-                    {{tooltip_hotkey_hints "P"}}
+                    {{tooltip_hotkey_hints "Shift" "P"}}
                 </template>
             </div>
         </div>

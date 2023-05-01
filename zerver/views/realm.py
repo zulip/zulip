@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -39,8 +39,6 @@ from zerver.lib.validator import (
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile, MAX_TOPIC_NAME_LENGTH
 from zerver.views.user_settings import check_settings_values
-
-ORG_TYPE_IDS: List[int] = [t["id"] for t in Realm.ORG_TYPES.values()]
 
 
 @require_realm_admin
@@ -141,7 +139,7 @@ def update_realm(
         str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         default=None,
     ),
-    org_type: Optional[int] = REQ(json_validator=check_int_in(ORG_TYPE_IDS), default=None),
+    org_type: Optional[int] = REQ(json_validator=check_int_in(Realm.ORG_TYPE_IDS), default=None),
     enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
     want_advertise_in_communities_directory: Optional[bool] = REQ(
         json_validator=check_bool, default=None

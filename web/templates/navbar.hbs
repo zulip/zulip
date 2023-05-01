@@ -7,7 +7,11 @@
         </div>
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
-                <div id="streamlist-toggle" {{#if embedded}}class="hide-streamlist-toggle-visibility"{{/if}} title="{{t 'Stream list' }} (q)">
+                <div id="streamlist-toggle" class="tippy-zulip-delayed-tooltip {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" data-tooltip-template-id="streamlist-toggle-tooltip-template">
+                    <template id="streamlist-toggle-tooltip-template" >
+                        {{t 'View streams' }}
+                        {{tooltip_hotkey_hints "Q"}}
+                    </template>
                     <a id="streamlist-toggle-button" role="button" tabindex="0"><i class="fa fa-reorder" aria-hidden="true"></i>
                         <span id="streamlist-toggle-unreadcount">0</span>
                     </a>
@@ -19,11 +23,11 @@
                     <div id="searchbox">
                         <form id="searchbox_form" class="navbar-search">
                             <div id="search_arrows" class="pill-container input-append">
-                                <span class="search_icon search_open" ><i class="zulip-icon zulip-icon-search"></i></span>
+                                <span class="search_icon search_open"><i class="zulip-icon zulip-icon-search tippy-zulip-delayed-tooltip" data-tooltip-template-id="search-query-tooltip-template"></i></span>
                                 <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{t 'Search' }}"
-                                  autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)">
+                                  autocomplete="off">
                                 </div>
-                                <button class="btn search_close_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}">
+                                <button class="btn search_close_button tippy-zulip-delayed-tooltip" type="button" id="search_exit" aria-label="{{t 'Exit search' }}" data-tippy-content="Close">
                                     <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -33,10 +37,10 @@
                     <div id="searchbox_legacy">
                         <form id="searchbox_form" class="navbar-search">
                             <div id="search_arrows" class="input-append">
-                                <span class="search_icon search_open" ><i class="zulip-icon zulip-icon-search"></i></span>
+                                <span class="search_icon search_open"><i class="zulip-icon zulip-icon-search tippy-zulip-delayed-tooltip" data-tooltip-template-id="search-query-tooltip-template"></i></span>
                                 <input class="search-query input-block-level home-page-input" id="search_query" type="text" placeholder="{{t 'Search' }}"
-                                  autocomplete="off" aria-label="{{t 'Search' }}" title="{{t 'Search' }} (/)"/>
-                                <button class="btn search_close_button" type="button" id="search_exit" aria-label="{{t 'Exit search' }}"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
+                                  autocomplete="off"/>
+                                <button class="btn search_close_button tippy-zulip-delayed-tooltip" type="button" id="search_exit" aria-label="{{t 'Exit search' }}" data-tippy-content="Close"><i class="zulip-icon zulip-icon-close" aria-hidden="true"></i></button>
                             </div>
                         </form>
                     </div>
@@ -61,10 +65,14 @@
                     </a>
                 </div>
             </div>
-            <div id="userlist-toggle" title="{{t 'User list' }} (w)" class="hidden-for-spectators">
+            <div id="userlist-toggle" class="hidden-for-spectators tippy-zulip-delayed-tooltip" data-tooltip-template-id="userlist-tooltip-template">
                 <a id="userlist-toggle-button" role="button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
+                <template id="userlist-tooltip-template">
+                    {{t 'User list' }}
+                    {{tooltip_hotkey_hints "W"}}
+                </template>
             </div>
             <div id="navbar-buttons" {{#if embedded}}class="hide-navbar-buttons-visibility"{{/if}}>
             </div>

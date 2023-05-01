@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-const compose_actions = mock_esm("../src/compose_actions");
+const compose_recipient = mock_esm("../src/compose_recipient");
 const input_pill = mock_esm("../src/input_pill");
 const people = zrequire("people");
 
@@ -17,7 +17,7 @@ let pills = {
 };
 
 run_test("pills", ({override}) => {
-    override(compose_actions, "update_placeholder_text", () => {});
+    override(compose_recipient, "update_placeholder_text", () => {});
 
     const othello = {
         user_id: 1,
@@ -145,7 +145,7 @@ run_test("pills", ({override}) => {
     // We stub the return value of input_pill.create(), manually add widget functions to it.
     pills.onPillCreate = (callback) => {
         // Exercise our callback for line coverage. It is
-        // just compose_actions.update_placeholder_text(),
+        // just compose_recipient.update_placeholder_text(),
         // which we override.
         callback();
     };

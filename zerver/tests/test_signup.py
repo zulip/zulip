@@ -758,7 +758,9 @@ class PasswordResetTest(ZulipTestCase):
         result = self.client_get("/accounts/send_confirm/?email=alice@example.com")
         self.assert_in_success_response(["/accounts/home/"], result)
 
-        result = self.client_get("/accounts/new/send_confirm/?email=alice@example.com")
+        result = self.client_get(
+            "/accounts/new/send_confirm/?email=alice@example.com&realm_name=Zulip+test&realm_type=10&realm_subdomain=zuliptest"
+        )
         self.assert_in_success_response(["/new/"], result)
 
     def test_password_reset_for_soft_deactivated_user(self) -> None:
@@ -1049,7 +1051,7 @@ class LoginTest(ZulipTestCase):
         """
         self.login("cordelia")
         response = self.client_get("/login/")
-        self.assertEqual(response["Location"], "http://zulip.testserver")
+        self.assertEqual(response["Location"], "http://zulip.testserver/")
 
     def test_options_request_to_login_page(self) -> None:
         response = self.client_options("/login/")
@@ -1067,7 +1069,7 @@ class LoginTest(ZulipTestCase):
         self.login_2fa(user_profile)
 
         response = self.client_get("/login/")
-        self.assertEqual(response["Location"], "http://zulip.testserver")
+        self.assertEqual(response["Location"], "http://zulip.testserver/")
 
     def test_start_two_factor_auth(self) -> None:
         request = HostRequestMock()
@@ -1266,7 +1268,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(org_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1401,7 +1403,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1447,7 +1449,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1496,7 +1498,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1543,7 +1545,7 @@ class RealmCreationTest(ZulipTestCase):
         password = "test"
         string_id = "zuliptest"
         email = "user1@test.com"
-        realm_name = "Test"
+        realm_name = "Zulip test"
 
         # Make sure the realm does not exist
         with self.assertRaises(Realm.DoesNotExist):
@@ -1551,12 +1553,12 @@ class RealmCreationTest(ZulipTestCase):
 
         # Create new realm with the email
         result = self.submit_realm_creation_form(
-            email, realm_subdomain=string_id, realm_name="Zulip test"
+            email, realm_subdomain=string_id, realm_name=realm_name
         )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1601,7 +1603,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1642,7 +1644,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1687,7 +1689,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1741,7 +1743,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(first_realm_name)}&realm_type=10&realm_subdomain={first_string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1755,7 +1757,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(second_realm_name)}&realm_type=10&realm_subdomain={second_string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -3962,6 +3964,14 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "/accounts/go/?next=%2Fupgrade%2F")
 
+    def test_login_page_redirects_using_next_when_already_authenticated(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        result = self.client_get("/login/", {"next": "/upgrade/"})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"{hamlet.realm.uri}/upgrade/")
+
     @patch("django.http.HttpRequest.get_host")
     def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
         mock_get_host.return_value = "www.testserver"
@@ -4227,7 +4237,7 @@ class TwoFactorAuthTest(ZulipTestCase):
             # Going to login page should redirect to '/' if user is already
             # logged in.
             result = self.client_get("/accounts/login/")
-            self.assertEqual(result["Location"], "http://zulip.testserver")
+            self.assertEqual(result["Location"], "http://zulip.testserver/")
 
 
 class NameRestrictionsTest(ZulipTestCase):
@@ -4242,7 +4252,7 @@ class RealmRedirectTest(ZulipTestCase):
 
         result = self.client_post("/accounts/go/", {"subdomain": "zephyr"})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://zephyr.testserver")
+        self.assertEqual(result["Location"], "http://zephyr.testserver/login/")
 
         result = self.client_post("/accounts/go/", {"subdomain": "invalid"})
         self.assert_in_success_response(["We couldn&#39;t find that Zulip organization."], result)
@@ -4255,4 +4265,4 @@ class RealmRedirectTest(ZulipTestCase):
 
         result = self.client_post("/accounts/go/?next=billing", {"subdomain": "lear"})
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://lear.testserver/billing")
+        self.assertEqual(result["Location"], "http://lear.testserver/login/?next=billing")

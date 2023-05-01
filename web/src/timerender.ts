@@ -444,10 +444,23 @@ export function absolute_time(timestamp: number, today = new Date()): string {
     );
 }
 
-export function get_full_datetime(time: Date): string {
+// Pass time_format="time" to not include seconds in the time format.
+export function get_full_datetime(time: Date, time_format: TimeFormat = "time_sec"): string {
+    const date_string = get_localized_date_or_time_for_format(time, "dayofyear_year");
+    const time_string = get_localized_date_or_time_for_format(time, time_format);
+    return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
+}
+
+// Preferred variant for displaying a full datetime to users in
+// contexts like tooltips, where the time was already displayed to the
+// user in a less precise format.
+export function get_full_datetime_clarification(
+    time: Date,
+    time_format: TimeFormat = "time_sec",
+): string {
     const locale = get_user_locale();
     const date_string = time.toLocaleDateString(locale);
-    let time_string = get_localized_date_or_time_for_format(time, "time_sec");
+    let time_string = get_localized_date_or_time_for_format(time, time_format);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
 

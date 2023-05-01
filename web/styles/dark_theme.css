@@ -59,11 +59,6 @@
         border: 1px solid hsl(0deg 0% 0% / 60%);
     }
 
-    .modal__btn:disabled {
-        opacity: 1;
-        background-color: hsl(0deg 0% 83% / 50%);
-    }
-
     .modal__content.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 100% / 20%);
     }
@@ -102,6 +97,12 @@
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
         }
+    }
+
+    .modal__btn:disabled,
+    .disabled-compose-send-button-container button {
+        opacity: 1;
+        background-color: hsl(0deg 0% 83% / 50%);
     }
 
     & table.table-striped thead.table-sticky-headers th {
@@ -474,7 +475,7 @@
     }
 
     #search_arrows .pill,
-    .pm_recipient .pill-container .pill {
+    #compose-direct-recipient.pill-container .pill {
         color: inherit;
         border: 1px solid hsl(0deg 0% 0% / 50%);
         background-color: hsl(0deg 0% 0% / 25%);
@@ -482,7 +483,7 @@
     }
 
     #search_arrows .pill:focus,
-    .pm_recipient .pill-container .pill:focus {
+    #compose-direct-recipient.pill-container .pill:focus {
         color: hsl(0deg 0% 100%);
         border: 1px solid hsl(176deg 78% 28% / 60%);
         background-color: hsl(176deg 49% 42% / 40%);
@@ -885,11 +886,6 @@
         .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
-    }
-
-    .send_later_popover_header,
-    .selected_send_later_time {
-        color: hsl(236deg 33% 90%);
     }
 
     .nav-list > li > a,

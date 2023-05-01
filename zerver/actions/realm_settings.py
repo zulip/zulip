@@ -481,7 +481,12 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         event_type=RealmAuditLog.REALM_REACTIVATION_EMAIL_SENT,
         event_time=timezone_now(),
     )
-    context = {"confirmation_url": url, "realm_uri": realm.uri, "realm_name": realm.name}
+    context = {
+        "confirmation_url": url,
+        "realm_uri": realm.uri,
+        "realm_name": realm.name,
+        "corporate_enabled": settings.CORPORATE_ENABLED,
+    }
     language = realm.default_language
     send_email_to_admins(
         "zerver/emails/realm_reactivation",

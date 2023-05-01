@@ -695,7 +695,7 @@ export function initialize() {
         }
 
         // The dropdown menu needs to process clicks to open and close.
-        if ($target.parents("#compose_stream_selection_dropdown").length > 0) {
+        if ($target.parents("#compose_recipient_selection_dropdown").length > 0) {
             return;
         }
 
@@ -884,7 +884,7 @@ export function initialize() {
             popovers.hide_all(not_hide_tippy_instances);
         }
 
-        if (compose_state.composing()) {
+        if (compose_state.composing() && !$(e.target).parents("#compose").length) {
             if (
                 $(e.target).closest("a").length > 0 ||
                 $(e.target).closest(".copy_codeblock").length > 0
@@ -899,7 +899,6 @@ export function initialize() {
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (
-                !$(e.target).parents("#compose").length &&
                 !window.getSelection().toString() &&
                 // Clicking any input or text area should not close
                 // the compose box; this means using the sidebar

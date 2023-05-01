@@ -61,14 +61,6 @@
         </li>
     {{/if}}
 
-    {{#if should_display_reminder_option}}
-    <li>
-        <a class='reminder_button' data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-bell" aria-hidden="true"></i> {{t "Remind me about this" }}
-        </a>
-    </li>
-    {{/if}}
-
     {{#if should_display_hide_option}}
     <li>
         <a class="rehide_muted_user_message" data-message-id="{{message_id}}" tabindex="0">

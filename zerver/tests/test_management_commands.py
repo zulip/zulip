@@ -323,20 +323,23 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=False)
     def test_generate_link_confirm_email(self) -> None:
         email = "user1@test.com"
+        realm_name = "Zulip test"
+        string_id = "zuliptest"
         generated_link = generate_realm_creation_url(by_admin=False)
 
         result = self.client_post(
             generated_link,
             {
                 "email": email,
-                "realm_name": "Zulip test",
+                "realm_name": realm_name,
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
-                "realm_subdomain": "zuliptest",
+                "realm_subdomain": string_id,
             },
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
-            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}", result["Location"]
+            f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}",
+            result["Location"],
         )
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email", result)

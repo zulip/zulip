@@ -12,7 +12,6 @@ const {page_params} = require("./lib/zpage_params");
 
 const channel = mock_esm("../src/channel");
 
-const compose_actions = zrequire("compose_actions");
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
@@ -26,7 +25,7 @@ const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 
 let stream_value = "";
-compose_recipient.compose_stream_widget = {
+compose_recipient.compose_recipient_widget = {
     value() {
         return stream_value;
     },
@@ -148,8 +147,8 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 });
 
 test_ui("validate", ({mock_template}) => {
-    compose_actions.update_placeholder_text = () => {};
-    compose_recipient.on_compose_select_stream_update = () => {};
+    compose_recipient.update_placeholder_text = () => {};
+    compose_recipient.on_compose_select_recipient_update = () => {};
 
     function initialize_pm_pill() {
         $.clear_all_elements();

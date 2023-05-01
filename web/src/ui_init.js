@@ -573,6 +573,9 @@ export function initialize_everything() {
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
 
+    /* To store theme data for spectators, we need to initialize
+       user_settings before setting the theme. */
+    initialize_user_settings(user_settings_params);
     if (page_params.is_spectator) {
         const ls = localstorage();
         const preferred_theme = ls.get("spectator-theme-preference");
@@ -588,7 +591,6 @@ export function initialize_everything() {
     popovers.initialize();
     popover_menus.initialize();
 
-    initialize_user_settings(user_settings_params);
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
     people.initialize(page_params.user_id, people_params);
 

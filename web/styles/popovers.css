@@ -69,6 +69,10 @@
 .popover_user_name_row {
     display: flex;
     align-items: center;
+
+    .zulip-icon.zulip-icon-bot {
+        padding-left: 5px;
+    }
 }
 
 .user_info_popover_action_buttons {
@@ -429,9 +433,16 @@ ul {
     }
 
     .user_profile_edit_button {
-        margin-left: 10px;
         width: 25px;
         text-align: center;
+    }
+
+    .user_profile_name {
+        margin-right: 10px;
+    }
+
+    .zulip-icon.zulip-icon-bot {
+        padding: 3px 0 0;
     }
 
     #user_profile_edit_button_icon {
@@ -606,7 +617,7 @@ ul {
         width: 100%;
         height: 100%;
 
-        background-color: hsl(0deg 0% 0% / 70%);
+        background-color: hsl(0deg 0% 0% / 70%) !important;
         border-radius: 0;
         border: none;
 
@@ -861,14 +872,10 @@ ul {
     & hr {
         margin: 5px 0;
     }
+}
 
-    .send_later_popover_header {
-        text-align: center;
-        font-weight: bold;
-    }
-
-    .selected_send_later_time {
-        text-align: center;
-        margin-top: 3px;
+#send_later_modal {
+    .modal__content {
+        padding-bottom: 16px;
     }
 }

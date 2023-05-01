@@ -11,7 +11,7 @@ async function test_mention(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
 
-    await common.select_item_via_dropdown(page, "#compose_select_stream_widget", "Verona");
+    await common.select_item_via_dropdown(page, "#compose_select_recipient_widget", "Verona");
     await common.fill_form(page, 'form[action^="/json/messages"]', {
         stream_message_recipient_topic: "Test mention all",
     });

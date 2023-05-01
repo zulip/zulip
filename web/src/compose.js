@@ -9,6 +9,7 @@ import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import {get_recipient_label} from "./compose_closed_ui";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -23,7 +24,6 @@ import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -335,9 +335,6 @@ export function finish() {
 
     if (popover_menus.is_time_selected_for_schedule()) {
         schedule_message_to_custom_date();
-    } else if (reminder.is_deferred_delivery(message_content)) {
-        const request = create_message_object();
-        reminder.schedule_message(request, clear_compose_box);
     } else {
         send_message();
     }
@@ -769,11 +766,11 @@ export function initialize() {
     });
 
     $("#compose-textarea").on("focus", () => {
-        compose_actions.update_placeholder_text();
+        compose_recipient.update_placeholder_text();
     });
 
     $("#stream_message_recipient_topic").on("focus", () => {
-        compose_actions.update_placeholder_text();
+        compose_recipient.update_placeholder_text();
     });
 
     $("body").on("click", ".formatting_button", (e) => {
@@ -806,14 +803,35 @@ export function reset_compose_scheduling_state(reset_edit_state = true) {
 }
 
 function schedule_message_to_custom_date() {
-    const request = create_message_object();
-    const selected_send_later_time = popover_menus.get_selected_send_later_time();
-    request.content = `/schedule ${selected_send_later_time}\n` + request.content;
-    // If this is an edit request `scheduled_message_id` will be defined.
-    let scheduled_message_id;
-    if ($("#compose-textarea").attr("data-scheduled-message-id")) {
-        scheduled_message_id = $("#compose-textarea").attr("data-scheduled-message-id");
-        $("#compose-textarea").removeAttr("data-scheduled-message-id");
+    const compose_message_object = create_message_object();
+
+    const deliver_at = popover_menus.get_formatted_selected_send_later_time();
+    const send_later_time = popover_menus.get_selected_send_later_time();
+    const scheduled_delivery_timestamp = Math.floor(Date.parse(send_later_time) / 1000);
+
+    const message_type = compose_message_object.type;
+    let req_type;
+
+    if (message_type === "private") {
+        req_type = "direct";
+    } else {
+        req_type = message_type;
     }
-    reminder.schedule_message(request, clear_compose_box, scheduled_message_id);
+
+    const scheduled_message_data = {
+        type: req_type,
+        to: JSON.stringify(compose_message_object.to),
+        topic: compose_message_object.topic,
+        content: compose_message_object.content,
+        scheduled_delivery_timestamp,
+    };
+
+    // If this is an edit request `scheduled_message_id` will be defined.
+    if ($("#compose-textarea").attr("data-scheduled-message-id")) {
+        scheduled_message_data.scheduled_message_id = $("#compose-textarea").attr(
+            "data-scheduled-message-id",
+        );
+    }
+
+    scheduled_messages.send_request_to_schedule_message(scheduled_message_data, deliver_at);
 }

@@ -408,9 +408,9 @@
                 width: 14px;
                 height: 14px;
 
-                .fa-group {
+                .fa-group,
+                .zulip-icon.zulip-icon-bot {
                     font-size: 0.8rem;
-                    /* color: hsl(105, 2%, 50%); */
                     opacity: 0.6;
                 }
 
