@@ -1590,13 +1590,13 @@ class RealmCreationTest(ZulipTestCase):
         self.assertFalse(user.enable_marketing_emails)
 
     @override_settings(OPEN_REALM_CREATION=True)
-    def test_create_regular_realm_welcome_bot_pm(self) -> None:
+    def test_create_regular_realm_welcome_bot_direct_message(self) -> None:
         password = "test"
         string_id = "zuliptest"
         email = "user1@test.com"
         realm_name = "Test"
 
-        # Create new realm with the email
+        # Create new realm with the email.
         result = self.submit_realm_creation_form(
             email, realm_subdomain=string_id, realm_name=realm_name
         )
@@ -1623,28 +1623,36 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
 
-        # Make sure the correct Welcome Bot PM is sent
+        # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(
             sender__email="welcome-bot@zulip.com", recipient__type=Recipient.PERSONAL
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+
+        # Organization type is not education or education_nonprofit,
+        # and organization is not a demo organization.
+        self.assertIn("Getting started guide", welcome_msg.content)
+        self.assertNotIn("Using Zulip for a class guide", welcome_msg.content)
         self.assertNotIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
-    def test_create_demo_realm_welcome_bot_pm(self) -> None:
+    def test_create_education_demo_organiztion_welcome_bot_direct_message(self) -> None:
         password = "test"
         string_id = "zuliptest"
         email = "user1@test.com"
         realm_name = "Test"
 
-        # Create new realm with the email
+        # Create new realm with the email.
         result = self.submit_realm_creation_form(
-            email, realm_subdomain=string_id, realm_name=realm_name
+            email,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+            realm_type=Realm.ORG_TYPES["education"]["id"],
         )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
             result["Location"].endswith(
-                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=10&realm_subdomain={string_id}"
+                f"/accounts/new/send_confirm/?email={urllib.parse.quote(email)}&realm_name={urllib.parse.quote_plus(realm_name)}&realm_type=35&realm_subdomain={string_id}"
             )
         )
         result = self.client_get(result["Location"])
@@ -1661,15 +1669,20 @@ class RealmCreationTest(ZulipTestCase):
             realm_subdomain=string_id,
             realm_name=realm_name,
             enable_marketing_emails=False,
+            realm_type=Realm.ORG_TYPES["education"]["id"],
             is_demo_organization=True,
         )
         self.assertEqual(result.status_code, 302)
 
-        # Make sure the correct Welcome Bot PM is sent
+        # Make sure the correct Welcome Bot direct message is sent.
         welcome_msg = Message.objects.filter(
             sender__email="welcome-bot@zulip.com", recipient__type=Recipient.PERSONAL
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
+
+        # Organization type is education, and organization is a demo organization.
+        self.assertNotIn("Getting started guide", welcome_msg.content)
+        self.assertIn("Using Zulip for a class guide", welcome_msg.content)
         self.assertIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)

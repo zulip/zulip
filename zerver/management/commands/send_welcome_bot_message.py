@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from typing import Any
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.onboarding import send_initial_pms
+from zerver.lib.onboarding import send_initial_direct_message
 
 
 class Command(ZulipBaseCommand):
@@ -18,4 +18,4 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args: Any, **options: str) -> None:
         for user_profile in self.get_users(options, self.get_realm(options), is_bot=False):
-            send_initial_pms(user_profile)
+            send_initial_direct_message(user_profile)

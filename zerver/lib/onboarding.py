@@ -39,40 +39,75 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_pms(user: UserProfile) -> None:
-    organization_setup_text = ""
+def send_initial_direct_message(user: UserProfile) -> None:
+    # We adjust the initial Welcome Bot direct message for education organizations.
+    education_organization = False
+    if (
+        user.realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
+        or user.realm.org_type == Realm.ORG_TYPES["education"]["id"]
+    ):
+        education_organization = True
 
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
     # request and thus may not have the user's language context yet.
     with override_language(user.default_language):
-        if user.is_realm_admin:
-            help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
-            organization_setup_text = (
-                " " + _("We also have a guide for [Setting up your organization]({help_url}).")
-            ).format(help_url=help_url)
-
-        welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
-        demo_org_warning = ""
-        if user.realm.demo_organization_scheduled_deletion_date is not None:
-            demo_org_help_url = user.realm.uri + "/help/demo-organizations"
-            demo_org_warning = (
+        if education_organization:
+            getting_started_help = user.realm.uri + "/help/using-zulip-for-a-class"
+            getting_started_string = (
                 _(
-                    "Note that this is a [demo organization]({demo_org_help_url}) and will be "
+                    "If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!"
+                )
+            ).format(getting_started_url=getting_started_help)
+        else:
+            getting_started_help = user.realm.uri + "/help/getting-started-with-zulip"
+            getting_started_string = (
+                _(
+                    "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
+                )
+            ).format(getting_started_url=getting_started_help)
+
+        organization_setup_string = ""
+        # Add extra content on setting up a new organization for administrators.
+        if user.is_realm_admin:
+            if education_organization:
+                organization_setup_help = user.realm.uri + "/help/setting-up-zulip-for-a-class"
+                organization_setup_string = (
+                    " "
+                    + _(
+                        "We also have a guide for [Setting up Zulip for a class]({organization_setup_url})."
+                    )
+                ).format(organization_setup_url=organization_setup_help)
+            else:
+                organization_setup_help = (
+                    user.realm.uri + "/help/getting-your-organization-started-with-zulip"
+                )
+                organization_setup_string = (
+                    " "
+                    + _(
+                        "We also have a guide for [Setting up your organization]({organization_setup_url})."
+                    )
+                ).format(organization_setup_url=organization_setup_help)
+
+        demo_organization_warning_string = ""
+        # Add extra content about automatic deletion for demo organization owners.
+        if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
+            demo_organization_help = user.realm.uri + "/help/demo-organizations"
+            demo_organization_warning_string = (
+                _(
+                    "Note that this is a [demo organization]({demo_organization_help_url}) and will be "
                     "**automatically deleted** in 30 days."
                 )
                 + "\n\n"
-            ).format(demo_org_help_url=demo_org_help_url)
+            ).format(demo_organization_help_url=demo_organization_help)
 
         content = "".join(
             [
-                welcome_msg + " ",
+                _("Hello, and welcome to Zulip!") + "👋" + " ",
                 _("This is a direct message from me, Welcome Bot.") + "\n\n",
-                _(
-                    "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
-                ),
+                "{getting_started_text}",
                 "{organization_setup_text}\n\n",
-                "{demo_org_warning}",
+                "{demo_organization_text}",
                 _(
                     "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
                 )
@@ -83,9 +118,9 @@ def send_initial_pms(user: UserProfile) -> None:
         )
 
     content = content.format(
-        organization_setup_text=organization_setup_text,
-        demo_org_warning=demo_org_warning,
-        getting_started_url="/help/getting-started-with-zulip",
+        getting_started_text=getting_started_string,
+        organization_setup_text=organization_setup_string,
+        demo_organization_text=demo_organization_warning_string,
     )
 
     internal_send_private_message(
