@@ -113,7 +113,7 @@ async function test_open_close_compose_box(page: Page): Promise<void> {
 
 async function test_narrow_to_private_messages_with_cordelia(page: Page): Promise<void> {
     const you_and_cordelia_selector =
-        '*[data-tippy-content="Narrow to your direct messages with Cordelia, Lear\'s daughter"]';
+        '*[data-tippy-content="Go to direct messages with Cordelia, Lear\'s daughter"]';
     // For some unknown reason page.click() isn't working here.
     await page.evaluate(
         (selector: string) => document.querySelector<HTMLElement>(selector)!.click(),
