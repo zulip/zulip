@@ -227,17 +227,20 @@ installing Zulip with a dedicated database server.
   syncing `LOCAL_UPLOADS_DIR` or using the [S3 file uploads
   backend][s3-uploads].
 
-- **Sharding:** Zulip releases do not fully support dividing Tornado
-  traffic for a single Zulip realm/organization between multiple
-  application servers, which is why we recommend a hot spare over
-  load-balancing. We don't have an easily deployed configuration for
-  load-balancing Tornado within a single organization, and as a result
-  can't currently offer this model outside of enterprise support
-  contracts.
+- **Sharding:** For servers with several thousand daily active users,
+  it is necessary to shard Zulip's Tornado service. Care must be taken
+  when dividing traffic for a single Zulip realm between multiple
+  Zulip application servers, which is why we recommend a hot spare
+  over load-balancing for most installations desiring extra
+  redundancy.
 
   - Zulip 2.0 and later supports running multiple Tornado servers
     sharded by realm/organization, which is how we scale Zulip Cloud.
-    [Contact us][contact-support] for help implementing the sharding policy.
+  - Zulip 6.0 and later supports running multiple Tornado servers
+    sharded by user ID, which is necessary for individual realms with
+    many thousands of daily active users.
+
+  [Contact us][contact-support] for help implementing the sharding policy.
 
 Scalability is an area of active development, so if you're unsure
 whether Zulip is a fit for your organization or need further advice
