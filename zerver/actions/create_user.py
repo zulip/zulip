@@ -252,9 +252,9 @@ def process_new_human_user(
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
-    from zerver.lib.onboarding import send_initial_pms
+    from zerver.lib.onboarding import send_initial_direct_message
 
-    send_initial_pms(user_profile)
+    send_initial_direct_message(user_profile)
 
 
 def notify_created_user(user_profile: UserProfile) -> None:
