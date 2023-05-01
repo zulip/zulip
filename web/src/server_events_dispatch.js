@@ -39,6 +39,8 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as reload from "./reload";
+import * as scheduled_messages from "./scheduled_messages";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
@@ -80,6 +82,29 @@ import * as user_status from "./user_status";
 export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
+        case "scheduled_messages":
+            switch (event.op) {
+                case "add": {
+                    scheduled_messages.add_scheduled_messages(event.scheduled_messages);
+                    scheduled_messages_overlay_ui.rerender();
+                    break;
+                }
+                case "remove": {
+                    scheduled_messages.remove_scheduled_message(event.scheduled_message_id);
+                    scheduled_messages_overlay_ui.remove_scheduled_message_id(
+                        event.scheduled_message_id,
+                    );
+                    break;
+                }
+                case "update": {
+                    scheduled_messages.update_scheduled_message(event.scheduled_message);
+                    scheduled_messages_overlay_ui.rerender();
+                    break;
+                }
+                // No default
+            }
+            break;
+
         case "alert_words":
             alert_words.set_words(event.alert_words);
             alert_words_ui.rerender_alert_words_ui();

@@ -8,28 +8,52 @@ import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
-import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
+import * as stream_data from "./stream_data";
 
-// This is only updated when user opens the scheduled messages overlay.
 export let scheduled_messages_data = [];
 
-export function override_scheduled_messages_data(data) {
-    scheduled_messages_data = data;
+function sort_scheduled_messages_data() {
+    scheduled_messages_data.sort(
+        (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
+    );
 }
 
-export function edit_scheduled_message(scheduled_msg_id) {
-    const scheduled_msg = scheduled_messages_data.find(
-        (msg) => msg.scheduled_message_id === scheduled_msg_id,
+export function add_scheduled_messages(scheduled_messages) {
+    scheduled_messages_data.push(...scheduled_messages);
+    sort_scheduled_messages_data();
+}
+
+export function remove_scheduled_message(scheduled_message_id) {
+    const msg_index = scheduled_messages_data.findIndex(
+        (msg) => msg.scheduled_message_id === scheduled_message_id,
+    );
+    if (msg_index !== undefined) {
+        scheduled_messages_data.splice(msg_index, 1);
+    }
+}
+
+export function update_scheduled_message(scheduled_message) {
+    const msg_index = scheduled_messages_data.findIndex(
+        (msg) => msg.scheduled_message_id === scheduled_message.scheduled_message_id,
     );
 
-    let compose_args;
+    if (msg_index === undefined) {
+        return;
+    }
 
+    scheduled_messages_data[msg_index] = scheduled_message;
+    sort_scheduled_messages_data();
+}
+
+export function open_scheduled_message_in_compose(scheduled_msg) {
+    let compose_args;
     if (scheduled_msg.type === "stream") {
         compose_args = {
             type: "stream",
-            stream: scheduled_msg.stream_name,
+            stream: stream_data.maybe_get_stream_name(scheduled_msg.to),
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
         };
@@ -61,11 +85,11 @@ export function edit_scheduled_message(scheduled_msg_id) {
         });
     }
 
-    overlays.close_overlay("scheduled");
     compose.clear_compose_box();
+    compose_banner.clear_message_sent_banners(false);
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
-    popover_menus.set_selected_schedule_time(scheduled_msg.formatted_send_at_time);
+    popover_menus.set_selected_schedule_time(scheduled_msg.scheduled_delivery_timestamp * 1000);
 }
 
 export function send_request_to_schedule_message(scheduled_message_data, deliver_at) {
@@ -98,19 +122,26 @@ export function send_request_to_schedule_message(scheduled_message_data, deliver
     });
 }
 
-export function delete_scheduled_message(scheduled_msg_id, edit_if_delete_successs) {
+export function edit_scheduled_message(scheduled_message_id) {
+    const scheduled_msg = scheduled_messages_data.find(
+        (msg) => msg.scheduled_message_id === scheduled_message_id,
+    );
+    delete_scheduled_message(scheduled_message_id, () =>
+        open_scheduled_message_in_compose(scheduled_msg),
+    );
+}
+
+export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
     channel.del({
         url: "/json/scheduled_messages/" + scheduled_msg_id,
-        success() {
-            // TODO: Do this via events received from the server in server_events_dispatch.
-            if (overlays.scheduled_messages_open()) {
-                $(
-                    `#scheduled_messages_overlay .scheduled-message-row[data-message-id=${scheduled_msg_id}]`,
-                ).remove();
-            }
-            if (edit_if_delete_successs) {
-                edit_scheduled_message(scheduled_msg_id);
-            }
-        },
+        success,
     });
+}
+
+export function initialize() {
+    if (scheduled_messages_data.length === 0) {
+        scheduled_messages_data = page_params.scheduled_messages;
+    } else {
+        add_scheduled_messages(page_params.scheduled_messages);
+    }
 }

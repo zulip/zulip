@@ -613,6 +613,40 @@ exports.fixtures = {
         immediate: true,
     },
 
+    scheduled_messages__add: {
+        type: "scheduled_messages",
+        op: "add",
+        scheduled_messages: [
+            {
+                scheduled_message_id: 17,
+                type: "private",
+                to: [6],
+                content: "Hello there!",
+                rendered_content: "<p>Hello there!</p>",
+                scheduled_delivery_timestamp: 1681662420,
+            },
+        ],
+    },
+
+    scheduled_messages__remove: {
+        type: "scheduled_messages",
+        op: "remove",
+        scheduled_message_id: 17,
+    },
+
+    scheduled_messages__update: {
+        type: "scheduled_messages",
+        op: "update",
+        scheduled_message: {
+            scheduled_message_id: 17,
+            type: "private",
+            to: [6],
+            content: "Hello there!",
+            rendered_content: "<p>Hello there!</p>",
+            scheduled_delivery_timestamp: 1681662420,
+        },
+    },
+
     stream__create: {
         type: "stream",
         op: "create",

@@ -74,6 +74,7 @@ import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
@@ -588,6 +589,8 @@ export function initialize_everything() {
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
+    // This populates data for scheduled messages.
+    scheduled_messages.initialize();
     popovers.initialize();
     popover_menus.initialize();
 

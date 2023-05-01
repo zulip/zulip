@@ -95,8 +95,8 @@ export function get_formatted_selected_send_later_time() {
     return timerender.get_full_datetime(new Date(selected_send_later_time), "time");
 }
 
-export function set_selected_schedule_time(scheduled_time) {
-    selected_send_later_time = scheduled_time;
+export function set_selected_schedule_time(raw_scheduled_time) {
+    selected_send_later_time = raw_scheduled_time;
 }
 
 export function reset_selected_schedule_time() {
