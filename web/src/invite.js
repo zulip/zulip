@@ -189,6 +189,8 @@ function valid_to(expires_in) {
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
     }
+
+    // The below is a duplicate of timerender.get_full_datetime, with a different base string.
     const valid_to = add(new Date(), {minutes: time_valid});
     const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
     const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
