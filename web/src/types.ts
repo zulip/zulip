@@ -78,3 +78,18 @@ export type AjaxRequestHandler = (args: {
     success?(response_data: unknown, textStatus: string, jqXHR: JQuery.jqXHR): void;
     error?(xhr: JQuery.jqXHR, error_type: string, xhn: string): void;
 }) => void;
+
+// TODO/typescript: export type to user_group_pill
+export type PillItem = {
+    type: string;
+    id: number;
+    display_value: string;
+    group_name: string;
+};
+
+// TODO/typescript: export type to input_pill_create
+export type PillWidget = {
+    appendValidatedData: (item: PillItem) => void;
+    clear_text: () => void;
+    items: () => PillItem[];
+};

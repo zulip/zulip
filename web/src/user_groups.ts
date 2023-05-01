@@ -4,7 +4,7 @@ import * as group_permission_settings from "./group_permission_settings";
 import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
-type UserGroup = {
+export type UserGroup = {
     description: string;
     id: number;
     name: string;
