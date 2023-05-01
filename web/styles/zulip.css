@@ -1219,7 +1219,8 @@ td.pointer {
         position: sticky;
         padding-top: var(--header-padding-bottom);
         top: var(--header-height);
-        z-index: 3;
+        /* Needs to be higher than the z-index of date_row. */
+        z-index: 4;
         box-shadow: 0 -1px 0 0 var(--color-background);
 
         &.sticky_header {
@@ -3000,6 +3001,7 @@ select.invite-as {
     .message_row.unread {
         .date_row {
             position: relative;
+            /* Needs to be lower than the z-index of message_header. */
             z-index: 3;
         }
     }
