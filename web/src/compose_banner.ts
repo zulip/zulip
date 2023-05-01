@@ -17,7 +17,7 @@ export const ERROR = "error";
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
     narrow_to_recipient: "narrow_to_recipient",
-    scheduled_message_banner: "scheduled_message_banner",
+    message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
 };
 // Technically, unmute_topic_notification is a message sent banner, but
 // it has distinct behavior / look - it has an associated action button,
