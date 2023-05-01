@@ -27,16 +27,17 @@ export function update_unread_banner() {
         user_settings.web_mark_read_on_scroll_policy ===
         web_mark_read_on_scroll_policy_values.never.code
     ) {
-        $("#mark_as_read_turned_off_banner").html(render_mark_as_read_disabled_banner());
+        $("#mark_read_on_scroll_state_banner").html(render_mark_as_read_disabled_banner());
     } else if (
         user_settings.web_mark_read_on_scroll_policy ===
             web_mark_read_on_scroll_policy_values.conversation_only.code &&
         !is_conversation_view
     ) {
-        $("#mark_as_read_turned_off_banner").html(render_mark_as_read_only_in_conversation_view());
+        $("#mark_read_on_scroll_state_banner").html(
+            render_mark_as_read_only_in_conversation_view(),
+        );
     } else {
-        $("#mark_as_read_turned_off_banner").html(render_mark_as_read_turned_off_banner());
-
+        $("#mark_read_on_scroll_state_banner").html(render_mark_as_read_turned_off_banner());
         if (message_lists.current.can_mark_messages_read_without_setting()) {
             hide_unread_banner();
         }
@@ -46,7 +47,7 @@ export function update_unread_banner() {
 export function hide_unread_banner() {
     // Use visibility instead of hide() to prevent messages on the screen from
     // shifting vertically.
-    $("#mark_as_read_turned_off_banner").toggleClass("invisible", true);
+    $("#mark_read_on_scroll_state_banner").toggleClass("invisible", true);
 }
 
 export function reset_unread_banner() {
@@ -56,7 +57,7 @@ export function reset_unread_banner() {
 
 export function notify_messages_remain_unread() {
     if (!user_closed_unread_banner) {
-        $("#mark_as_read_turned_off_banner").toggleClass("invisible", false);
+        $("#mark_read_on_scroll_state_banner").toggleClass("invisible", false);
     }
 }
 
