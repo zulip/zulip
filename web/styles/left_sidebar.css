@@ -331,6 +331,10 @@ ul.filters {
 
     & a {
         color: inherit;
+
+        &:focus {
+            text-decoration: none;
+        }
     }
 
     & hr {
