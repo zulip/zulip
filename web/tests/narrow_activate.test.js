@@ -98,7 +98,7 @@ function test_helper() {
     stub(compose_closed_ui, "update_buttons_for_stream");
     stub(compose_closed_ui, "update_buttons_for_private");
     // We don't test the css calls; we just skip over them.
-    $("#mark_as_read_turned_off_banner").toggleClass = () => {};
+    $("#mark_read_on_scroll_state_banner").toggleClass = () => {};
 
     return {
         clear() {
