@@ -51,7 +51,9 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
-export function append_compose_banner_to_banner_list(new_row: HTMLElement): void {
+export function append_compose_banner_to_banner_list(
+    new_row: HTMLElement | JQuery.htmlString,
+): void {
     scroll_util.get_content_element($("#compose_banners")).append(new_row);
 }
 
@@ -99,8 +101,7 @@ export function show_error_message(message: string, classname: string, $bad_inpu
         button_text: null,
         classname,
     });
-    const $compose_banner_area = $("#compose_banners");
-    $compose_banner_area.append(new_row);
+    append_compose_banner_to_banner_list(new_row);
 
     hide_compose_spinner();
 
@@ -118,8 +119,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
         stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
-    const $compose_banner_area = $("#compose_banners");
-    $compose_banner_area.append(new_row);
+    append_compose_banner_to_banner_list(new_row);
     hide_compose_spinner();
 
     // A copy of `compose_recipient.open_compose_stream_dropup()` that
