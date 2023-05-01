@@ -1784,8 +1784,8 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
         (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
     );
 
-    // When viewing denmark stream to which alice is subscribed, ali is still
-    // 1st by virtue of the name being an exact match with the query.
+    // When viewing denmark stream to which alice is subscribed, ali is not
+    // 1st despite having an exact name match with the query.
     results = ct.get_pm_people("ali");
-    assert.deepEqual(results, [ali, alice]);
+    assert.deepEqual(results, [alice, ali]);
 });
