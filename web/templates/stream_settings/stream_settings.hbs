@@ -17,7 +17,7 @@
         </template>
         <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
-        <button class="button small rounded btn-danger deactivate tippy-zulip-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        <button class="button small rounded btn-danger deactivate tippy-zulip-delayed-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
         {{/if}}
     </div>
     <template id="view-stream-tooltip-template">
@@ -43,7 +43,7 @@
                 </div>
                 <div class="stream_change_property_info alert-notification"></div>
                 <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
-                    <button id="open_stream_info_modal" class="button rounded small btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Change stream info' }}">
+                    <button id="open_stream_info_modal" class="button rounded small btn-warning tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Change stream info' }}">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </button>
                 </div>
