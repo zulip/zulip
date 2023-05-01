@@ -51,10 +51,14 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
+// This function provides a convenient way to add new elements
+// to a banner container. The function accepts a container element
+// as a parameter, to which a banner should be appended.
 export function append_compose_banner_to_banner_list(
-    new_row: HTMLElement | JQuery.htmlString,
+    banner: HTMLElement | JQuery.htmlString,
+    $list_container: JQuery,
 ): void {
-    scroll_util.get_content_element($("#compose_banners")).append(new_row);
+    scroll_util.get_content_element($list_container).append(banner);
 }
 
 export function clear_message_sent_banners(include_unmute_banner = true): void {
