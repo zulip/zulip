@@ -169,7 +169,7 @@ a few rules to keep in mind:
   as needed.
 - Make it readable to someone who is familiar with Zulip's code base, but hasn't
   been involved with the effort you're working on.
-- Use no more than 76 characters for the entire commit summary (parts 1 and 2).
+- Use no more than 72 characters for the entire commit summary (parts 1 and 2).
 
 ### Examples of good commit summaries
 
