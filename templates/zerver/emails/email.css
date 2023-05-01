@@ -12,7 +12,7 @@ img.bottom-illustration {
     vertical-align: bottom;
 }
 
-body {
+body.default-email-font-settings {
     font-family: sans-serif;
     font-size: 14px;
     line-height: 1.4;
