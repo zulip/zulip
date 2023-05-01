@@ -371,7 +371,7 @@ export function initialize() {
                 return false;
             }
             const time = new Date(message.timestamp * 1000);
-            instance.setContent(timerender.get_full_datetime(time));
+            instance.setContent(timerender.get_full_datetime_clarification(time));
             return true;
         },
         onHidden(instance) {

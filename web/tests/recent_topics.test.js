@@ -138,7 +138,7 @@ mock_esm("../src/stream_list", {
 });
 mock_esm("../src/timerender", {
     relative_time_string_from_date: () => "Just now",
-    get_full_datetime: () => "date at time",
+    get_full_datetime_clarification: () => "date at time",
 });
 mock_esm("../src/sub_store", {
     get(stream) {

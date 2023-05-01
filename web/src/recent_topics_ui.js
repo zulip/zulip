@@ -360,7 +360,7 @@ function format_conversation(conversation_data) {
     const last_msg = message_store.get(conversation_data.last_msg_id);
     const time = new Date(last_msg.timestamp * 1000);
     const type = last_msg.type;
-    context.full_last_msg_date_time = timerender.get_full_datetime(time);
+    context.full_last_msg_date_time = timerender.get_full_datetime_clarification(time);
     context.conversation_key = get_key_from_message(last_msg);
     context.unread_count = message_to_conversation_unread_count(last_msg);
     context.last_msg_time = timerender.relative_time_string_from_date(time);
