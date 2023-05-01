@@ -1,13 +1,13 @@
 import $ from "jquery";
 
+import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
+
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
-import {$t} from "./i18n";
 import * as narrow from "./narrow";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
@@ -93,15 +93,14 @@ export function open_scheduled_message_in_compose(scheduled_msg) {
 }
 
 export function send_request_to_schedule_message(scheduled_message_data, deliver_at) {
-    const success = function () {
+    const success = function (data) {
         compose.clear_compose_box();
-        notifications.notify_above_composebox(
-            $t({defaultMessage: `Your message has been scheduled for {deliver_at}.`}, {deliver_at}),
-            "scheduled_message_banner",
-            "/#scheduled",
-            "",
-            $t({defaultMessage: "View scheduled messages"}),
-        );
+        const new_row = render_success_message_scheduled_banner({
+            scheduled_message_id: data.scheduled_message_id,
+            deliver_at,
+        });
+        compose_banner.clear_message_sent_banners();
+        compose_banner.append_compose_banner_to_banner_list(new_row);
     };
 
     const error = function (xhr) {
@@ -144,4 +143,16 @@ export function initialize() {
     } else {
         add_scheduled_messages(page_params.scheduled_messages);
     }
+
+    $("body").on("click", ".undo_scheduled_message", (e) => {
+        const scheduled_message_id = Number.parseInt(
+            $(e.target)
+                .parents(".message_scheduled_success_compose_banner")
+                .attr("data-scheduled-message-id"),
+            10,
+        );
+        edit_scheduled_message(scheduled_message_id);
+        e.preventDefault();
+        e.stopPropagation();
+    });
 }

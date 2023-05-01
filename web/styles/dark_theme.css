@@ -225,6 +225,19 @@
                     color: hsl(147deg 51% 55% / 75%);
                 }
             }
+
+            .compose_banner_action_button {
+                background-color: hsl(147deg 51% 55% / 10%);
+                color: inherit;
+
+                &:hover {
+                    background-color: hsl(147deg 51% 55% / 15%);
+                }
+
+                &:active {
+                    background-color: hsl(147deg 51% 55% / 20%);
+                }
+            }
         }
 
         &.warning,
@@ -306,6 +319,21 @@
                 &:active {
                     color: hsl(205deg 58% 69% / 75%);
                 }
+            }
+        }
+    }
+
+    .compose_banner.success.message_scheduled_success_compose_banner {
+        .undo_scheduled_message {
+            color: hsl(50deg 45% 61%);
+            background-color: hsl(54deg 75% 15.69%);
+
+            &:hover {
+                background-color: hsl(52.13deg 64.21% 18.63%);
+            }
+
+            &:active {
+                background-color: hsl(51.29deg 57.41% 21.18%);
             }
         }
     }
