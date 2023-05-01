@@ -16,6 +16,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
+import * as ui_util from "./ui_util";
 import * as util from "./util";
 
 export let compose_recipient_widget;
@@ -191,7 +192,7 @@ export function on_compose_select_recipient_update(new_value) {
         // Always move focus to the topic input even if it's not empty,
         // since it's likely the user will want to update the topic
         // after updating the stream.
-        $("#stream_message_recipient_topic").trigger("focus").trigger("select");
+        ui_util.place_caret_at_end($("#stream_message_recipient_topic")[0]);
         check_stream_posting_policy_for_compose_box(new_value);
     }
     update_on_recipient_change();

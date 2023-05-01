@@ -39,7 +39,6 @@ const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
-const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 const stream_list_sort = zrequire("stream_list_sort");
 const compose = zrequire("compose");
@@ -1764,8 +1763,7 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
     );
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(stream_bar, "decorate", noop);
-    override_rewire(compose_recipient, "update_on_recipient_change", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_name("");

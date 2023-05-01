@@ -56,7 +56,6 @@ const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
 const people = zrequire("people");
-const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 
 function reset_jquery() {
@@ -305,10 +304,9 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("#compose-textarea").toggleClass = noop;
-    override_rewire(stream_bar, "decorate", noop);
     mock_stream_header_colorblock();
     compose_recipient.open_compose_stream_dropup = noop;
-    override_rewire(compose_recipient, "update_on_recipient_change", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     let stream_value = "";
     compose_recipient.compose_recipient_widget = {
         value() {

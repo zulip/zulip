@@ -231,6 +231,7 @@ EXEMPT_FILES = make_set(
         "web/src/zulip.js",
         "web/src/zulip_test.js",
         "web/tests/lib/mdiff.js",
+        "web/tests/lib/zjquery_element.js",
     ]
 )
 
