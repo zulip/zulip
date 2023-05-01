@@ -19,7 +19,6 @@ const zpage_params = require("./zpage_params");
 process.env.NODE_ENV = "test";
 
 const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
-global.DOMParser = dom.window.DOMParser;
 global.navigator = {
     userAgent: "node.js",
 };

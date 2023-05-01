@@ -163,6 +163,9 @@ dependencies:
   panzoom:
     specifier: ^9.4.2
     version: 9.4.3
+  parse5:
+    specifier: ^7.1.2
+    version: 7.1.2
   plotly.js:
     specifier: ^2.0.0
     version: 2.21.0
@@ -8741,7 +8744,6 @@ packages:
     resolution: {integrity: sha512-Czj1WaSVpaoj0wbhMzLmWD69anp2WH7FXMB9n1Sy8/ZFF9jolSQVMu1Ij5WIyGmcBmhk7EOndpO4mIpihVqAXw==}
     dependencies:
       entities: 4.5.0
-    dev: true
 
   /parseurl@1.3.3:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}

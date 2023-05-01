@@ -1,4 +1,5 @@
 import _ from "lodash";
+import * as parse5 from "parse5";
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
@@ -261,9 +262,8 @@ export function convert_message_topic(message: Message): void {
     }
 }
 
-export function clean_user_content_links(html: string): string {
-    const content = new DOMParser().parseFromString(html, "text/html").body;
-    for (const elt of content.querySelectorAll("a")) {
+function clean_element_links(elt: parse5.DefaultTreeAdapterMap["element"]): void {
+    if (elt.tagName === "a") {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
         // never replace the Zulip web app while also protecting
@@ -273,48 +273,61 @@ export function clean_user_content_links(html: string): string {
         // Fragment links, which we intend to only open within the
         // Zulip web app using our hashchange system, do not require
         // these attributes.
-        const href = elt.getAttribute("href");
-        if (href === null) {
-            continue;
+        const href = elt.attrs.find((attr) => attr.name === "href")?.value;
+        if (href === undefined) {
+            return;
         }
+
         let url;
         try {
             url = new URL(href, window.location.href);
         } catch {
-            elt.removeAttribute("href");
-            elt.removeAttribute("title");
-            continue;
+            elt.attrs = elt.attrs.filter((attr) => attr.name !== "href" && attr.name !== "title");
+            return;
         }
 
         // eslint-disable-next-line no-script-url
         if (["data:", "javascript:", "vbscript:"].includes(url.protocol)) {
             // Remove unsafe links completely.
-            elt.removeAttribute("href");
-            elt.removeAttribute("title");
-            continue;
+            elt.attrs = elt.attrs.filter((attr) => attr.name !== "href" && attr.name !== "title");
+            return;
         }
 
         // We detect URLs that are just fragments by comparing the URL
         // against a new URL generated using only the hash.
         if (url.hash === "" || url.href !== new URL(url.hash, window.location.href).href) {
-            elt.setAttribute("target", "_blank");
-            elt.setAttribute("rel", "noopener noreferrer");
+            elt.attrs = [
+                ...elt.attrs.filter((attr) => attr.name !== "target" && attr.name !== "rel"),
+                {name: "target", value: "_blank"},
+                {name: "rel", value: "noopener noreferrer"},
+            ];
         } else {
-            elt.removeAttribute("target");
+            elt.attrs = elt.attrs.filter((attr) => attr.name !== "target");
         }
 
-        if (elt.parentElement?.classList.contains("message_inline_image")) {
+        const title = elt.attrs.find((attr) => attr.name === "title")?.value;
+        if (
+            elt.parentNode !== null &&
+            parse5.defaultTreeAdapter.isElementNode(elt.parentNode) &&
+            elt.parentNode.attrs
+                .find((attr) => attr.name === "class")
+                ?.value.split(" ")
+                .includes("message_inline_image")
+        ) {
             // For inline images we want to handle the tooltips explicitly, and disable
             // the browser's built in handling of the title attribute.
-            const title = elt.getAttribute("title");
-            if (title !== null) {
-                elt.setAttribute("aria-label", title);
-                elt.removeAttribute("title");
+            if (title !== undefined) {
+                elt.attrs = [
+                    ...elt.attrs.filter(
+                        (attr) => attr.name !== "aria-label" && attr.name !== "title",
+                    ),
+                    {name: "aria-label", value: title},
+                ];
             }
         } else {
             // For non-image user uploads, the following block ensures that the title
             // attribute always displays the filename as a security measure.
-            let title: string;
+            let new_title: string;
             let legacy_title: string;
             if (
                 url.origin === window.location.origin &&
@@ -324,21 +337,41 @@ export function clean_user_content_links(html: string): string {
                 // happen when clicking the file.  This is particularly
                 // important in the desktop app, where hovering a URL does
                 // not display the URL like it does in the web app.
-                title = legacy_title = $t(
+                new_title = legacy_title = $t(
                     {defaultMessage: "Download {filename}"},
                     {filename: url.pathname.slice(url.pathname.lastIndexOf("/") + 1)},
                 );
             } else {
-                title = url.toString();
+                new_title = url.toString();
                 legacy_title = href;
             }
-            elt.setAttribute(
-                "title",
-                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-            );
+            elt.attrs = [
+                ...elt.attrs.filter((attr) => attr.name !== "title"),
+                {
+                    name: "title",
+                    value:
+                        title === undefined || ["", legacy_title].includes(title)
+                            ? new_title
+                            : `${new_title}\n${title}`,
+                },
+            ];
         }
     }
-    return content.innerHTML;
+}
+
+function clean_node_links(node: parse5.DefaultTreeAdapterMap["parentNode"]): void {
+    for (const child of node.childNodes) {
+        if (parse5.defaultTreeAdapter.isElementNode(child)) {
+            clean_element_links(child);
+            clean_node_links(child);
+        }
+    }
+}
+
+export function clean_user_content_links(html: string): string {
+    const root = parse5.parseFragment(html);
+    clean_node_links(root);
+    return parse5.serialize(root);
 }
 
 export function filter_by_word_prefix_match<T>(
