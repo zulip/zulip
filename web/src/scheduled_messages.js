@@ -89,7 +89,7 @@ export function open_scheduled_message_in_compose(scheduled_msg) {
     compose_banner.clear_message_sent_banners(false);
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
-    popover_menus.set_selected_schedule_time(scheduled_msg.scheduled_delivery_timestamp * 1000);
+    popover_menus.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
 }
 
 export function send_request_to_schedule_message(scheduled_message_data, deliver_at) {

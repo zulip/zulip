@@ -188,7 +188,7 @@ export function clear_compose_box() {
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
     compose_ui.hide_compose_spinner();
-    popover_menus.reset_selected_schedule_time();
+    popover_menus.reset_selected_schedule_timestamp();
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {
@@ -792,8 +792,7 @@ function schedule_message_to_custom_date() {
     const compose_message_object = create_message_object();
 
     const deliver_at = popover_menus.get_formatted_selected_send_later_time();
-    const send_later_time = popover_menus.get_selected_send_later_time();
-    const scheduled_delivery_timestamp = Math.floor(Date.parse(send_later_time) / 1000);
+    const scheduled_delivery_timestamp = popover_menus.get_selected_send_later_timestamp();
 
     const message_type = compose_message_object.type;
     let req_type;
