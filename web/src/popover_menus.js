@@ -54,7 +54,7 @@ import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
-let selected_send_later_time;
+let selected_send_later_timestamp;
 
 const popover_instances = {
     compose_control_buttons: null,
@@ -81,26 +81,26 @@ export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
 
-export function get_selected_send_later_time() {
-    if (!selected_send_later_time) {
+export function get_selected_send_later_timestamp() {
+    if (!selected_send_later_timestamp) {
         return undefined;
     }
-    return selected_send_later_time;
+    return selected_send_later_timestamp;
 }
 
 export function get_formatted_selected_send_later_time() {
-    if (!selected_send_later_time) {
+    if (!selected_send_later_timestamp) {
         return undefined;
     }
-    return timerender.get_full_datetime(new Date(selected_send_later_time), "time");
+    return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
 }
 
-export function set_selected_schedule_time(raw_scheduled_time) {
-    selected_send_later_time = raw_scheduled_time;
+export function set_selected_schedule_timestamp(timestamp) {
+    selected_send_later_timestamp = timestamp;
 }
 
-export function reset_selected_schedule_time() {
-    selected_send_later_time = undefined;
+export function reset_selected_schedule_timestamp() {
+    selected_send_later_timestamp = undefined;
 }
 
 export function get_scheduled_messages_popover() {
@@ -230,18 +230,14 @@ export function toggle_message_actions_menu(message) {
     return true;
 }
 
-export function do_schedule_message(send_at_time, not_from_flatpickr = false) {
+export function do_schedule_message(send_at_time) {
     overlays.close_active_modal();
 
-    // flatpickr.show_flatpickr doesn't pass any value for not_from_flatpickr,
-    // making it false by default and we pass it as true in other cases.
-    // This is used to determine if flatpickr was used to select time for the
-    // message to be sent.
-    if (!not_from_flatpickr) {
-        send_at_time = format(new Date(send_at_time), "MMM d yyyy h:mm a");
+    if (!Number.isInteger(send_at_time)) {
+        // Convert to timestamp if this is not a timestamp.
+        send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
     }
-
-    selected_send_later_time = send_at_time;
+    selected_send_later_timestamp = send_at_time;
     compose.finish(true);
 }
 
@@ -925,9 +921,8 @@ export function initialize() {
                             "click",
                             ".send_later_selected_send_later_time",
                             (e) => {
-                                const send_at_time = get_selected_send_later_time();
-                                const not_from_flatpickr = true;
-                                do_schedule_message(send_at_time, not_from_flatpickr);
+                                const send_at_timestamp = get_selected_send_later_timestamp();
+                                do_schedule_message(send_at_timestamp);
                                 e.preventDefault();
                                 e.stopPropagation();
                             },
