@@ -387,21 +387,12 @@ export function sort_recipients({
         }
     }
 
-    // Push exact matches to top. We could do by passing the
-    // comparator parameter to triage, but that would break the
-    // optimization of only doing expensive sorting operations when
-    // necessary.
-    const exact_matches = [];
-    const rest = [];
-    for (const item of items) {
-        if (item.full_name?.toLowerCase() === query.toLowerCase()) {
-            exact_matches.push(item);
-        } else {
-            rest.push(item);
-        }
-    }
-
-    return [...exact_matches, ...rest].slice(0, max_num_items);
+    // We don't push exact matches to the top, like we do with other
+    // typeaheads, because in open organizations, it's not uncommon to
+    // have a bunch of inactive users with display names that are just
+    // FirstName, which we don't want to artificially prioritize over the
+    // the lone active user whose name is FirstName LastName.
+    return items.slice(0, max_num_items);
 }
 
 function slash_command_comparator(slash_command_a, slash_command_b) {
