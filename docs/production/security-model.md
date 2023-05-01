@@ -219,25 +219,12 @@ strength allowed is controlled by two settings in
   file to be accessed by the unauthorized user. Of course, any
   such authorized user could have just downloaded and sent the file
   instead of the URL, so this is arguably pretty good protection.)
-  However, to help protect against accidental
-  sharing of URLs to restricted files (e.g. by forwarding a
-  missed-message email or leaks involving the Referer header), we
-  provide additional layers of protection in both backends as well.
 
-  In the Zulip S3 backend, the random URLs to access files that are
-  presented to users don't actually host the content. Instead, the S3
-  backend verifies that the user has a valid Zulip session in the
-  relevant organization (and that has access to a Zulip message linking to
-  the file), and if so, then redirects the browser to a temporary S3
-  URL for the file that expires a short time later. In this way,
-  possessing a URL to a secret file in Zulip does not provide
-  unauthorized users with access to that file.
-
-  We have a similar protection for the `LOCAL_UPLOADS_DIR` backend.
-  Every access
-  to an uploaded file has access control verified (confirming that the
-  browser is logged into a Zulip account that has received the
-  uploaded file in question).
+  However, to help protect against accidental sharing of URLs to
+  restricted files (e.g. by forwarding a missed-message email or leaks
+  involving the Referer header), every access to an uploaded file has
+  access control verified (confirming that the browser is logged into
+  a Zulip account that has received the uploaded file in question).
 
 - Zulip supports using the [go-camo][go-camo] image proxy to proxy content like
   inline image previews, that can be inserted into the Zulip message feed by

@@ -202,8 +202,9 @@ installing Zulip with a dedicated database server.
 - **Disk for application server:** We recommend using [the S3 file
   uploads backend][s3-uploads] to store uploaded files at scale. With
   the S3 backend configuration, we recommend 50 GB of disk for the OS,
-  Zulip software, logs and scratch/free space. Disk needs when
-  storing uploads locally
+  Zulip software, logs and scratch/free space. Because uploaded files
+  are cached locally, you may need more disk space if you make heavy
+  use of uploaded files.
 
 - **Disk for database:** SSD disk is highly recommended. For
   installations where most messages have <100 recipients, 10 GB per 1M
