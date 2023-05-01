@@ -114,14 +114,16 @@ export function abort_video_callbacks(edit_message_id = "") {
 }
 
 export function empty_topic_placeholder() {
-    return $t({defaultMessage: "(no topic)"});
+    return page_params.realm_default_topic;
 }
 
 export function create_message_object() {
     // Topics are optional, and we provide a placeholder if one isn't given.
     let topic = compose_state.topic();
+    let is_no_topic = false;
     if (topic === "") {
         topic = empty_topic_placeholder();
+        is_no_topic = true;
     }
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
@@ -167,6 +169,7 @@ export function create_message_object() {
             message.to = stream_name;
         }
         message.topic = topic;
+        message.is_no_topic = is_no_topic;
     }
     return message;
 }
