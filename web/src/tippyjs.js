@@ -29,6 +29,38 @@ function get_tooltip_content(reference) {
     return "";
 }
 
+// We need to store all message list instances together to destroy them in case of re-rendering.
+const message_list_tippy_instances = new Set();
+
+// This keeps track of all the instances created and destroyed.
+const store_message_list_instances_plugin = {
+    fn() {
+        return {
+            onCreate(instance) {
+                message_list_tippy_instances.add(instance);
+            },
+            onDestroy(instance) {
+                // To make sure the `message_list_tippy_instances` contains only instances
+                // that are present in the DOM, we need to delete instances that are destroyed
+                message_list_tippy_instances.delete(instance);
+            },
+        };
+    },
+};
+
+// To prevent the appearance of tooltips whose reference is hidden or removed from the
+// DOM during re-rendering, we need to destroy all the message list present instances,
+// and then initialize triggers of the tooltips again after re-rendering.
+export function destroy_all_message_list_tooltips() {
+    for (const instance of message_list_tippy_instances) {
+        if (instance.reference === document.body) {
+            continue;
+        }
+        instance.destroy();
+    }
+    message_list_tippy_instances.clear();
+}
+
 // Defining observer outside ensures that at max only one observer is active at all times.
 let observer;
 function hide_tooltip_if_reference_removed(
@@ -78,6 +110,19 @@ const LONG_HOVER_DELAY = [750, 20];
 // keyboard shortcut. For these tooltips, it's very important to avoid
 // distracting users unnecessarily.
 const EXTRA_LONG_HOVER_DELAY = [1500, 20];
+
+// Tooltips present outside of message list table in DOM don't get
+// effected by `rerender` but since their original reference is removed,
+// their position is miscalculated and they get placed at top left of the
+// window. To avoid this, we use this wrapping function.
+function message_list_tooltip(target, props) {
+    delegate("body", {
+        target,
+        appendTo: () => document.body,
+        plugins: [store_message_list_instances_plugin],
+        ...props,
+    });
+}
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -192,8 +237,7 @@ export function initialize() {
 
     // message reaction tooltip showing who reacted.
     let observer;
-    delegate("body", {
-        target: ".message_reaction, .message_reactions .reaction_button",
+    message_list_tooltip(".message_reaction, .message_reactions .reaction_button", {
         placement: "bottom",
         onShow(instance) {
             if (!document.body.contains(instance.reference)) {
@@ -225,7 +269,6 @@ export function initialize() {
                 observer.disconnect();
             }
         },
-        appendTo: () => document.body,
     });
 
     delegate("body", {
@@ -275,22 +318,17 @@ export function initialize() {
         },
     });
 
-    delegate("body", {
-        target: ".message_control_button",
-        // This ensures that the tooltip doesn't
-        // hide by the selected message blue border.
-        appendTo: () => document.body,
-        // Add some additional delay when they open
-        // so that regular users don't have to see
-        // them unless they want to.
+    message_list_tooltip(".message_control_button", {
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
             // Handle dynamic "starred messages" and "edit" widgets.
             const $elem = $(instance.reference);
             const tippy_content = $elem.attr("data-tippy-content");
             const $template = $(`#${CSS.escape($elem.attr("data-tooltip-template-id"))}`);
-
             instance.setContent(tippy_content ?? parse_html($template.html()));
+        },
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 
@@ -301,9 +339,7 @@ export function initialize() {
         e.currentTarget?._tippy?.destroy();
     });
 
-    delegate("body", {
-        target: ".slow-send-spinner",
-        appendTo: () => document.body,
+    message_list_tooltip(".slow-send-spinner", {
         onShow(instance) {
             instance.setContent(
                 $t({
@@ -325,9 +361,7 @@ export function initialize() {
         },
     });
 
-    delegate("body", {
-        target: ".message_table .message_time",
-        appendTo: () => document.body,
+    message_list_tooltip(".message_table .message_time", {
         onShow(instance) {
             const $time_elem = $(instance.reference);
             const $row = $time_elem.closest(".message_row");
@@ -345,24 +379,20 @@ export function initialize() {
         },
     });
 
-    delegate("body", {
-        target: ".recipient_row_date > span",
-        appendTo: () => document.body,
+    message_list_tooltip(".recipient_row_date > span", {
         onHidden(instance) {
             instance.destroy();
         },
     });
 
-    // In case of recipient bar icons, following change
-    // ensures that tooltip doesn't hide behind the message
-    // box or it is not limited by the parent container.
+    message_list_tooltip(".code_external_link");
+
     delegate("body", {
         target: [
             "#streams_header .sidebar-title",
             "#userlist-title",
             "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
-            ".code_external_link",
             ".spectator_narrow_login_button",
             "#stream-specific-notify-table .unmute_stream",
             "#add_streams_tooltip",
@@ -371,36 +401,14 @@ export function initialize() {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
-        target: ".recipient_bar_icon",
-        onShow(instance) {
-            if (!document.body.contains(instance.reference)) {
-                return false;
-            }
-            const $elem = $(instance.reference);
-
-            const config = {attributes: false, childList: true, subtree: true};
-            const target = $elem.parents(".message_header.message_header_stream.right_part").get(0);
-            const nodes_to_check_for_removal = [
-                $elem.parents(".recipient_bar_controls").get(0),
-                $elem.get(0),
-            ];
-            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
-            return true;
-        },
+    message_list_tooltip([".recipient_bar_icon"], {
         onHidden(instance) {
             instance.destroy();
-            if (observer) {
-                observer.disconnect();
-            }
         },
-        appendTo: () => document.body,
     });
 
-    delegate("body", {
-        target: ".rendered_markdown time",
+    message_list_tooltip([".rendered_markdown time", ".rendered_markdown .copy_codeblock"], {
         content: timerender.get_markdown_time_tooltip,
-        appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
         },
@@ -408,7 +416,6 @@ export function initialize() {
 
     delegate("body", {
         target: [
-            ".rendered_markdown .copy_codeblock",
             "#compose_top_right [data-tippy-content]",
             "#compose_top_right [data-tooltip-template-id]",
         ],
@@ -468,9 +475,7 @@ export function initialize() {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
-        target: ".message_inline_image > a > img",
-        appendTo: () => document.body,
+    message_list_tooltip(".message_inline_image > a > img", {
         // Add a short delay so the user can mouseover several inline images without
         // tooltips showing and hiding rapidly
         delay: [300, 20],
@@ -481,20 +486,6 @@ export function initialize() {
                 $(instance.reference).parent().attr("aria-label") ||
                 $(instance.reference).parent().attr("href");
             instance.setContent(parse_html(render_message_inline_image_tooltip({title})));
-
-            const target_node = $(instance.reference)
-                .parents(".message_table.focused_table")
-                .get(0);
-            const config = {attributes: false, childList: true, subtree: false};
-            const nodes_to_check_for_removal = [
-                $(instance.reference).parents(".message_inline_image").get(0),
-            ];
-            hide_tooltip_if_reference_removed(
-                target_node,
-                config,
-                instance,
-                nodes_to_check_for_removal,
-            );
         },
         onHidden(instance) {
             instance.destroy();
@@ -624,27 +615,11 @@ export function initialize() {
         appendTo: () => document.body,
     });
 
-    delegate("body", {
-        target: ".view_user_card_tooltip",
+    message_list_tooltip(".view_user_card_tooltip", {
         delay: LONG_HOVER_DELAY,
-        onShow(instance) {
-            if (!document.body.contains(instance.reference)) {
-                return false;
-            }
-            const $elem = $(instance.reference);
-            const target = $elem.parents(".message_row.include-sender").get(0);
-            const config = {attributes: true, childList: false, subtree: false};
-            const nodes_to_check_for_removal = [$elem.get(0)];
-            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
-            return true;
-        },
         onHidden(instance) {
             instance.destroy();
-            if (observer) {
-                observer.disconnect();
-            }
         },
-        appendTo: () => document.body,
     });
 
     delegate("body", {
