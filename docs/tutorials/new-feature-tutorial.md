@@ -246,9 +246,7 @@ is helpful.
 
 ### Test your migration changes
 
-Apply the migration using Django's `migrate` command: `./manage.py migrate`.
-
-Output:
+Apply the migration using Django's `migrate` command, `./manage.py migrate`:
 
 ```console
 shell $ ./manage.py migrate
@@ -340,7 +338,7 @@ field), you'll need to create a new function to explicitly update this
 field and send an event. For example:
 
 ```python
-# zerver/actions/realm_settings.p
+# zerver/actions/realm_settings.py
 
 def do_set_realm_authentication_methods(
     realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
