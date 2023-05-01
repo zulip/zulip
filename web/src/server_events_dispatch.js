@@ -146,10 +146,6 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "user_topic":
-            muted_topics_ui.handle_topic_updates(event);
-            break;
-
         case "muted_users":
             muted_users_ui.handle_user_updates(event.muted_users);
             break;
@@ -355,6 +351,7 @@ export function dispatch_normal_event(event) {
                     break;
             }
             break;
+
         case "realm_emoji":
             // The authoritative data source is here.
             emoji.update_emojis(event.realm_emoji);
@@ -363,6 +360,10 @@ export function dispatch_normal_event(event) {
             settings_emoji.populate_emoji();
             emoji_picker.rebuild_catalog();
             composebox_typeahead.update_emoji_data();
+            break;
+
+        case "realm_export":
+            settings_exports.populate_exports_table(event.exports);
             break;
 
         case "realm_linkifiers":
@@ -840,8 +841,9 @@ export function dispatch_normal_event(event) {
                 );
             }
             break;
-        case "realm_export":
-            settings_exports.populate_exports_table(event.exports);
+
+        case "user_topic":
+            muted_topics_ui.handle_topic_updates(event);
             break;
     }
 }
