@@ -1166,7 +1166,6 @@ td.pointer {
             height: 17px;
             line-height: 17px;
             overflow: hidden;
-/*             text-overflow: ellipsis; */
 
             .message_label_clickable.narrows_by_topic {
                 position: relative;
