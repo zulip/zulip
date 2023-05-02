@@ -346,9 +346,7 @@ export function get_backfill_anchor(msg_list) {
         return oldest_msg.id;
     }
 
-    // msg_list is empty, which is an impossible
-    // case, raise a fatal error.
-    throw new Error("There are no message available to backfill.");
+    return "first_unread";
 }
 
 export function get_frontfill_anchor(msg_list) {
