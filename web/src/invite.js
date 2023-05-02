@@ -320,12 +320,12 @@ function open_invite_user_modal(e) {
         });
 
         $("#invite_check_all_button").on("click", () => {
-            $("#streams_to_add :checkbox").prop("checked", true);
+            $("#streams_to_add input[type=checkbox]").prop("checked", true);
             toggle_invite_submit_button();
         });
 
         $("#invite_uncheck_all_button").on("click", () => {
-            $("#streams_to_add :checkbox").prop("checked", false);
+            $("#streams_to_add input[type=checkbox]").prop("checked", false);
             $("#invite-user-modal .dialog_submit_button").prop(
                 "disabled",
                 !$("#generate_multiuse_invite_radio").is(":checked"),
