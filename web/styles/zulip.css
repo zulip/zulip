@@ -1416,6 +1416,11 @@ td.pointer {
             width: 16px;
             height: 16px;
         }
+
+        .private_message_header_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 }
 
