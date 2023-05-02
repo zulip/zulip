@@ -82,29 +82,6 @@ import * as user_status from "./user_status";
 export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
-        case "scheduled_messages":
-            switch (event.op) {
-                case "add": {
-                    scheduled_messages.add_scheduled_messages(event.scheduled_messages);
-                    scheduled_messages_overlay_ui.rerender();
-                    break;
-                }
-                case "remove": {
-                    scheduled_messages.remove_scheduled_message(event.scheduled_message_id);
-                    scheduled_messages_overlay_ui.remove_scheduled_message_id(
-                        event.scheduled_message_id,
-                    );
-                    break;
-                }
-                case "update": {
-                    scheduled_messages.update_scheduled_message(event.scheduled_message);
-                    scheduled_messages_overlay_ui.rerender();
-                    break;
-                }
-                // No default
-            }
-            break;
-
         case "alert_words":
             alert_words.set_words(event.alert_words);
             alert_words_ui.rerender_alert_words_ui();
@@ -488,6 +465,29 @@ export function dispatch_normal_event(event) {
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);
                     break;
+            }
+            break;
+
+        case "scheduled_messages":
+            switch (event.op) {
+                case "add": {
+                    scheduled_messages.add_scheduled_messages(event.scheduled_messages);
+                    scheduled_messages_overlay_ui.rerender();
+                    break;
+                }
+                case "remove": {
+                    scheduled_messages.remove_scheduled_message(event.scheduled_message_id);
+                    scheduled_messages_overlay_ui.remove_scheduled_message_id(
+                        event.scheduled_message_id,
+                    );
+                    break;
+                }
+                case "update": {
+                    scheduled_messages.update_scheduled_message(event.scheduled_message);
+                    scheduled_messages_overlay_ui.rerender();
+                    break;
+                }
+                // No default
             }
             break;
 
