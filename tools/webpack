@@ -18,6 +18,11 @@ def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     webpack_args += ["node_modules/.bin/webpack-cli", "--mode=production"]
     if quiet:
         webpack_args += ["--stats=errors-only"]
+
+    # Silence warnings from "browserslist" about using old data; those
+    # warnings are only useful for development
+    os.environ["BROWSERSLIST_IGNORE_OLD_DATA"] = "1"
+
     os.execvp(webpack_args[0], webpack_args)
 
 
