@@ -83,6 +83,9 @@ def invite_users_backend(
             )
         streams.append(stream)
 
+    if len(streams) and not user_profile.can_subscribe_other_users():
+        raise JsonableError(_("You do not have permission to subscribe other users to streams."))
+
     do_invite_users(
         user_profile,
         invitee_emails,
