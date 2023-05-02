@@ -124,8 +124,12 @@ export class MessageList {
         }
 
         if (this.narrowed && !this.empty() && this.selected_id() === -1) {
-            // And also select the newly arrived message.
-            this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
+            // The message list was previously empty, but now isn't
+            // due to adding these messages, and we need to select a
+            // message. Regardless of whether the messages are new or
+            // old, we want to select a message as though we just
+            // entered this view.
+            this.select_id(this.first_unread_message_id(), {then_scroll: true, use_closest: true});
         }
 
         return render_info;
