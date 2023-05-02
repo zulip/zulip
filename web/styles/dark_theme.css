@@ -323,21 +323,6 @@
         }
     }
 
-    .compose_banner.success.message_scheduled_success_compose_banner {
-        .undo_scheduled_message {
-            color: hsl(50deg 45% 61%);
-            background-color: hsl(54deg 75% 15.69%);
-
-            &:hover {
-                background-color: hsl(52.13deg 64.21% 18.63%);
-            }
-
-            &:active {
-                background-color: hsl(51.29deg 57.41% 21.18%);
-            }
-        }
-    }
-
     .upload_banner {
         .moving_bar {
             background: hsl(204deg 63% 18%);
