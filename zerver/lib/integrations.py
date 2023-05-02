@@ -582,6 +582,9 @@ INTEGRATIONS: Dict[str, Integration] = {
         stream_name="commits",
     ),
     "nagios": Integration("nagios", "nagios", ["monitoring"], doc="zerver/integrations/nagios.md"),
+    "notion": Integration(
+        "notion", "notion", ["productivity"], doc="zerver/integrations/notion.md"
+    ),
     "openshift": Integration(
         "openshift",
         "openshift",
