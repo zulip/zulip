@@ -426,32 +426,6 @@
     }
 }
 
-.compose_banner.success.message_scheduled_success_compose_banner {
-    & a.open_scheduled_message_overlay {
-        line-height: normal;
-        display: inline-block;
-        box-sizing: border-box;
-
-        &:hover,
-        &:focus {
-            text-decoration: none;
-        }
-    }
-
-    .undo_scheduled_message {
-        color: hsl(38deg 44% 27%);
-        background-color: hsl(46.29deg 46.67% 85.29%);
-
-        &:hover {
-            background-color: hsl(47.65deg 41.46% 83.92%);
-        }
-
-        &:active {
-            background-color: hsl(47.65deg 37.78% 82.35%);
-        }
-    }
-}
-
 .upload_banner {
     overflow: hidden;
 
