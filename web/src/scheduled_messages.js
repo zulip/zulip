@@ -8,7 +8,6 @@ import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
 import * as narrow from "./narrow";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as stream_data from "./stream_data";
@@ -137,8 +136,8 @@ export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
     });
 }
 
-export function initialize() {
-    scheduled_messages_data = page_params.scheduled_messages;
+export function initialize(scheduled_messages_params) {
+    scheduled_messages_data = scheduled_messages_params.scheduled_messages;
 
     $("body").on("click", ".undo_scheduled_message", (e) => {
         const scheduled_message_id = Number.parseInt(
