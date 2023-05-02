@@ -17,7 +17,9 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
         },
         {
             "z-link": (content_html) =>
-                `<a href="/help/public-access-option">${content_html.join("")}</a>`,
+                `<a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">${content_html.join(
+                    "",
+                )}</a>`,
         },
     ),
 };
@@ -168,7 +170,9 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="/help/star-a-message">${content_html.join("")}</a>`,
+                                    `<a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">${content_html.join(
+                                        "",
+                                    )}</a>`,
                             },
                         ),
                     };
@@ -181,7 +185,7 @@ function pick_empty_narrow_banner() {
                             },
                             {
                                 "z-link": (content_html) =>
-                                    `<a href="/help/mention-a-user-or-group">${content_html.join(
+                                    `<a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">${content_html.join(
                                         "",
                                     )}</a>`,
                             },

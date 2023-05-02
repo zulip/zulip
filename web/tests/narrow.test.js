@@ -236,7 +236,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a href="/help/public-access-option">publicly accessible</a> conversation.',
+            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
 
@@ -249,7 +249,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a href="/help/public-access-option">publicly accessible</a> conversation.',
+            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
 
@@ -272,7 +272,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no starred messages.",
-            'translated HTML: Learn more about starring messages <a href="/help/star-a-message">here</a>.',
+            'translated HTML: Learn more about starring messages <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">here</a>.',
         ),
     );
 
@@ -282,7 +282,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You haven't been mentioned yet!",
-            'translated HTML: Learn more about mentions <a href="/help/mention-a-user-or-group">here</a>.',
+            'translated HTML: Learn more about mentions <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">here</a>.',
         ),
     );
 
