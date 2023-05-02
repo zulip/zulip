@@ -303,7 +303,9 @@ export function load_messages_for_narrow(opts) {
 
 export function get_backfill_anchor(msg_list) {
     const oldest_msg =
-        msg_list === message_lists.home ? all_messages_data.first() : msg_list.first();
+        msg_list === message_lists.home
+            ? all_messages_data.first_including_muted()
+            : msg_list.data.first_including_muted();
 
     if (oldest_msg) {
         return oldest_msg.id;
@@ -315,7 +317,10 @@ export function get_backfill_anchor(msg_list) {
 }
 
 export function get_frontfill_anchor(msg_list) {
-    const last_msg = msg_list === message_lists.home ? all_messages_data.last() : msg_list.last();
+    const last_msg =
+        msg_list === message_lists.home
+            ? all_messages_data.last_including_muted()
+            : msg_list.data.last_including_muted();
 
     if (last_msg) {
         return last_msg.id;
