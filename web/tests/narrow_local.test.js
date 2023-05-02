@@ -43,7 +43,7 @@ function test_with(fixture) {
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
         },
-        empty: () => fixture.empty,
+        visibly_empty: () => fixture.visibly_empty,
         all_messages() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
@@ -159,7 +159,7 @@ run_test("near with no unreads", () => {
             flavor: "not_found",
         },
         has_found_newest: false,
-        empty: true,
+        visibly_empty: true,
         expected_id_info: {
             target_id: 42,
             final_select_id: 42,
@@ -222,7 +222,7 @@ run_test("is:private with no unreads before fetch", () => {
             flavor: "not_found",
         },
         has_found_newest: false,
-        empty: true,
+        visibly_empty: true,
         expected_id_info: {
             target_id: undefined,
             final_select_id: undefined,
@@ -242,7 +242,7 @@ run_test("is:private with target and no unreads", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
-        empty: false,
+        visibly_empty: false,
         all_messages: [
             {id: 350},
             {id: 400, type: "private", to_user_ids: "1,2"},
@@ -401,7 +401,7 @@ run_test("stream, no unread, not in all_messages", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
-        empty: false,
+        visibly_empty: false,
         all_messages: [{id: 400}, {id: 500}],
         expected_id_info: {
             target_id: 450,
@@ -424,7 +424,7 @@ run_test("search, stream, not in all_messages", () => {
             flavor: "cannot_compute",
         },
         has_found_newest: true,
-        empty: false,
+        visibly_empty: false,
         all_messages: [{id: 400}, {id: 500}],
         expected_id_info: {
             target_id: undefined,
@@ -476,7 +476,7 @@ run_test("final corner case", () => {
             flavor: "not_found",
         },
         has_found_newest: true,
-        empty: false,
+        visibly_empty: false,
         all_messages: [
             {id: 400, topic: "whatever"},
             {id: 425, topic: "whatever", starred: true},

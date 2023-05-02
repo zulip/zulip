@@ -63,7 +63,14 @@ export class MessageListData {
         return this._items.length;
     }
 
+    // The message list is completely empty.
     empty() {
+        // BUG: This should be checking _all_items.
+        return this._items.length === 0;
+    }
+
+    // The message list appears empty, but might contain messages that hidden by muting.
+    visibly_empty() {
         return this._items.length === 0;
     }
 

@@ -139,7 +139,7 @@ export function hide_top_of_narrow_notices() {
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
-    if (message_viewport.bottom_message_visible() || message_lists.current.empty()) {
+    if (message_viewport.bottom_message_visible() || message_lists.current.visibly_empty()) {
         // If last message is visible, just hide the
         // scroll to bottom button.
         $show_scroll_to_bottom_button.removeClass("show");

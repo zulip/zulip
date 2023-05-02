@@ -129,8 +129,8 @@ function stub_message_list() {
             return this.data.get(msg_id);
         }
 
-        empty() {
-            return this.data.empty();
+        visibly_empty() {
+            return this.data.visibly_empty();
         }
 
         select_id(msg_id) {
@@ -166,7 +166,7 @@ run_test("basics", () => {
 
     all_messages_data.all_messages_data = {
         all_messages: () => messages,
-        empty: () => false,
+        visibly_empty: () => false,
         first: () => ({id: 900}),
         last: () => ({id: 1100}),
     };

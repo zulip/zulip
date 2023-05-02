@@ -890,7 +890,7 @@ export function process_hotkey(e, hotkey) {
 
     // Hotkeys below this point are for the message feed, and so
     // should only function if the message feed is visible and nonempty.
-    if (!narrow_state.is_message_feed_visible() || message_lists.current.empty()) {
+    if (!narrow_state.is_message_feed_visible() || message_lists.current.visibly_empty()) {
         return false;
     }
 
