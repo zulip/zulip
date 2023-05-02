@@ -441,7 +441,14 @@ export class MessageList {
         this.view.update_render_window(this.selected_idx(), false);
 
         if (this.narrowed) {
-            if (this.visibly_empty()) {
+            if (
+                this.visibly_empty() &&
+                this.data.has_found_oldest() &&
+                this.data.has_found_newest()
+            ) {
+                // Show the empty narrow message only if we're certain
+                // that the view doesn't have messages that we're
+                // waiting for the server to send us.
                 narrow_banner.show_empty_narrow_message();
             } else {
                 narrow_banner.hide_empty_narrow_message();
