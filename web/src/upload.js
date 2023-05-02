@@ -123,13 +123,10 @@ function add_upload_banner(config, banner_type, banner_text, file_id) {
         banner_text,
         file_id,
     });
-    // TODO: Extend compose_banner.append_compose_banner_to_banner_list
-    // to support the message edit container too.
-    if (config.mode === "compose") {
-        compose_banner.append_compose_banner_to_banner_list(new_banner);
-    } else {
-        get_item("banner_container", config).append(new_banner);
-    }
+    compose_banner.append_compose_banner_to_banner_list(
+        new_banner,
+        get_item("banner_container", config),
+    );
 }
 
 export function show_error_message(

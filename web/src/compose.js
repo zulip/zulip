@@ -249,6 +249,7 @@ export function send_message(request = create_message_object()) {
             compose_banner.show_error_message(
                 response,
                 compose_banner.CLASSNAMES.generic_compose_error,
+                $("#compose_banners"),
                 $("#compose-textarea"),
             );
             // For messages that were not locally echoed, we're
@@ -541,7 +542,9 @@ export function initialize() {
         )} .compose_banner_action_button`,
         (event) => {
             event.preventDefault();
-
+            const $edit_form = $(event.target)
+                .closest(".message_edit_form")
+                .find(".edit_form_banners");
             const $invite_row = $(event.target).parents(".compose_banner");
 
             const user_id = Number.parseInt($invite_row.data("user-id"), 10);
@@ -556,6 +559,7 @@ export function initialize() {
                 compose_banner.show_error_message(
                     error_msg,
                     compose_banner.CLASSNAMES.generic_compose_error,
+                    $edit_form.length ? $edit_form : $("#compose_banners"),
                     $("#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);

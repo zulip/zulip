@@ -93,6 +93,7 @@ export function open_scheduled_message_in_compose(scheduled_msg) {
 }
 
 export function send_request_to_schedule_message(scheduled_message_data, deliver_at) {
+    const $banner_container = $("#compose_banners");
     const success = function (data) {
         drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
         compose.clear_compose_box();
@@ -101,7 +102,7 @@ export function send_request_to_schedule_message(scheduled_message_data, deliver
             deliver_at,
         });
         compose_banner.clear_message_sent_banners();
-        compose_banner.append_compose_banner_to_banner_list(new_row);
+        compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
     };
 
     const error = function (xhr) {
@@ -110,6 +111,7 @@ export function send_request_to_schedule_message(scheduled_message_data, deliver
         compose_banner.show_error_message(
             response,
             compose_banner.CLASSNAMES.generic_compose_error,
+            $banner_container,
             $("#compose-textarea"),
         );
     };
