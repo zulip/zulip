@@ -152,8 +152,6 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     MockDate.set(new Date(fake_now * 1000));
 
-    override(sent_messages, "start_tracking_message", () => {});
-
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
@@ -199,6 +197,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 content: "[foobar](/user_uploads/123456)",
                 sender_id: new_user.user_id,
                 queue_id: undefined,
+                resend: false,
                 stream: "",
                 topic: "",
                 to: `[${alice.user_id}]`,
