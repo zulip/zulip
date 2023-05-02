@@ -138,11 +138,7 @@ export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
 }
 
 export function initialize() {
-    if (scheduled_messages_data.length === 0) {
-        scheduled_messages_data = page_params.scheduled_messages;
-    } else {
-        add_scheduled_messages(page_params.scheduled_messages);
-    }
+    scheduled_messages_data = page_params.scheduled_messages;
 
     $("body").on("click", ".undo_scheduled_message", (e) => {
         const scheduled_message_id = Number.parseInt(
