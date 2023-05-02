@@ -50,21 +50,37 @@ function process_result(data, opts) {
         message_util.add_old_messages(messages, opts.msg_list);
     }
 
+    huddle_data.process_loaded_messages(messages);
+    recent_topics_ui.process_messages(messages);
+    stream_list.update_streams_sidebar();
+    stream_list.maybe_scroll_narrow_into_view();
+
     if (
         opts.msg_list === message_lists.current &&
         opts.msg_list.narrowed &&
         opts.msg_list.visibly_empty()
     ) {
-        // Even after loading more messages, we have
-        // no messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message();
+        // The view appears to be empty. However, because in stream
+        // narrows, we fetch messages including those that might be
+        // hidden by topic muting, it's possible that we received all
+        // the messages we requested, and all of them are in muted
+        // topics, but there are older messages for this stream that
+        // we need to ask the server for.
+        const has_found_oldest = opts.msg_list.data.fetch_status.has_found_oldest();
+        const has_found_newest = opts.msg_list.data.fetch_status.has_found_newest();
+        if (has_found_oldest && has_found_newest) {
+            // Even after loading more messages, we have
+            // no messages to display in this narrow.
+            narrow_banner.show_empty_narrow_message();
+        }
+
+        if (opts.num_before > 0 && !has_found_oldest) {
+            maybe_load_older_messages({msg_list: opts.msg_list});
+        }
+        if (opts.num_after > 0 && !has_found_newest) {
+            maybe_load_newer_messages({msg_list: opts.msg_list});
+        }
     }
-
-    huddle_data.process_loaded_messages(messages);
-    stream_list.update_streams_sidebar();
-    recent_topics_ui.process_messages(messages);
-
-    stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
         opts.cont(data, opts);
