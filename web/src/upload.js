@@ -270,18 +270,8 @@ export function setup_upload(config) {
         event.target.value = "";
     });
 
-    // These are close-click handlers for error banners that aren't associated
-    // with a particular file.
-    $("#compose_banners").on(
-        "click",
-        ".upload_banner.file_generic_error .compose_banner_close_button",
-        (event) => {
-            event.preventDefault();
-            $(event.target).parents(".upload_banner").remove();
-        },
-    );
-
-    $("#edit_form_banners").on(
+    const $banner_container = get_item("banner_container", config);
+    $banner_container.on(
         "click",
         ".upload_banner.file_generic_error .compose_banner_close_button",
         (event) => {
