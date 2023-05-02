@@ -342,6 +342,13 @@ ul.filters {
         margin-bottom: 10px;
     }
 
+    /* This is a noop in the current design, because unread counts for
+       muted streams have the same opacity, but the logic is here to
+       be explicit and because the design may change in the future. */
+    .more_topic_unreads_muted_only .unread_count {
+        opacity: 0.5;
+    }
+
     & li.muted_topic,
     li.out_of_home_view {
         color: hsl(0deg 0% 20% / 50%);
