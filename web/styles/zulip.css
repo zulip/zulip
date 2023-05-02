@@ -1172,6 +1172,8 @@ td.pointer {
             .message_label_clickable.narrows_by_topic {
                 position: relative;
                 top: 0.5px;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
 
