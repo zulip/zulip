@@ -62,7 +62,7 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     if (fileName === undefined || lineNumber === undefined) {
         return undefined;
     }
-    let sourceContent;
+    let sourceContent: string;
     try {
         sourceContent = await sourceCache[fileName];
     } catch {
