@@ -69,12 +69,14 @@ function choose_topics(stream_id, topic_names, zoomed, topic_choice_state) {
             const show_topic = should_show_topic(topic_choice_state.topics_selected);
             if (!show_topic) {
                 if (!is_topic_muted) {
-                    // The "more topics" unread count, like
-                    // stream-level counts, only counts messages
-                    // on unmuted topics.
-                    topic_choice_state.more_topics_unreads += num_unread;
+                    topic_choice_state.more_topics_unmuted_unreads += num_unread;
                     if (contains_unread_mention) {
                         topic_choice_state.more_topics_have_unread_mention_messages = true;
+                    }
+                } else {
+                    topic_choice_state.more_topics_muted_unreads += num_unread;
+                    if (contains_unread_mention) {
+                        topic_choice_state.more_topics_have_muted_unread_mention_messages = true;
                     }
                 }
                 continue;
@@ -105,8 +107,10 @@ export function get_list_info(stream_id, zoomed, search_term) {
     const topic_choice_state = {
         items: [],
         topics_selected: 0,
-        more_topics_unreads: 0,
+        more_topics_muted_unreads: 0,
+        more_topics_unmuted_unreads: 0,
         more_topics_have_unread_mention_messages: false,
+        more_topics_have_muted_unread_mention_messages: false,
         active_topic: narrow_state.topic()?.toLowerCase(),
         topics_with_unread_mentions: unread.get_topics_with_unread_mentions(stream_id),
     };
@@ -132,11 +136,32 @@ export function get_list_info(stream_id, zoomed, search_term) {
         choose_topics(stream_id, topic_names, zoomed, topic_choice_state);
     }
 
+    if (
+        topic_choice_state.more_topics_unmuted_unreads === 0 &&
+        topic_choice_state.more_topics_muted_unreads > 0 &&
+        stream_muted
+    ) {
+        // For muted streams, if the only unreads are in muted topics,
+        // we have a muted styling "more topics" row.
+        return {
+            items: topic_choice_state.items,
+            num_possible_topics: topic_names.length,
+            more_topics_unreads: topic_choice_state.more_topics_muted_unreads,
+            more_topics_have_unread_mention_messages:
+                topic_choice_state.more_topics_have_muted_unread_mention_messages,
+            more_topics_unread_count_muted: true,
+        };
+    }
     return {
         items: topic_choice_state.items,
         num_possible_topics: topic_names.length,
-        more_topics_unreads: topic_choice_state.more_topics_unreads,
+        more_topics_unreads: topic_choice_state.more_topics_unmuted_unreads,
         more_topics_have_unread_mention_messages:
-            topic_choice_state.more_topics_have_unread_mention_messages,
+            // Because mentions are important, and get displayed in the
+            // overall summary, we display the mention indicator even if
+            // they are in muted streams.
+            topic_choice_state.more_topics_have_unread_mention_messages ||
+            topic_choice_state.more_topics_have_muted_unread_mention_messages,
+        more_topics_unread_count_muted: false,
     };
 }
