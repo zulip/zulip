@@ -23,6 +23,7 @@ mock_esm("../src/sent_messages", {
     mark_disparity(local_id) {
         disparities.push(local_id);
     },
+    report_event_received() {},
 });
 
 const message_store = mock_esm("../src/message_store", {

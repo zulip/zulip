@@ -230,13 +230,8 @@ export function send_message(request = create_message_object()) {
     }
 
     request.local_id = local_id;
-
-    sent_messages.start_tracking_message({
-        local_id,
-        locally_echoed,
-    });
-
     request.locally_echoed = locally_echoed;
+    request.resend = false;
 
     function success(data) {
         send_message_success(local_id, data.id, locally_echoed);
