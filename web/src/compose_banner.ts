@@ -51,6 +51,12 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
+export function get_compose_banner_container($textarea: JQuery): JQuery {
+    return $textarea.attr("id") === "compose-textarea"
+        ? $("#compose_banners")
+        : $textarea.closest(".message_edit_form").find(".edit_form_banners");
+}
+
 // This function provides a convenient way to add new elements
 // to a banner container. The function accepts a container element
 // as a parameter, to which a banner should be appended.
