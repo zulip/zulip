@@ -140,6 +140,10 @@ export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
     });
 }
 
+export function get_count() {
+    return scheduled_messages_data.length;
+}
+
 export function initialize(scheduled_messages_params) {
     scheduled_messages_data = scheduled_messages_params.scheduled_messages;
 

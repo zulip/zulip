@@ -100,6 +100,7 @@ import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
+import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
@@ -649,6 +650,7 @@ export function initialize_everything() {
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
+    top_left_corner.initialize();
     stream_list.initialize();
     stream_list_sort.initialize();
     condense.initialize();

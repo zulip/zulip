@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as resize from "./resize";
+import * as scheduled_messages from "./scheduled_messages";
 import * as ui_util from "./ui_util";
 
 let last_mention_count = 0;
@@ -8,6 +9,12 @@ let last_mention_count = 0;
 export function update_starred_count(count) {
     const $starred_li = $(".top_left_starred_messages");
     ui_util.update_unread_count_in_dom($starred_li, count);
+}
+
+export function update_scheduled_messages_row() {
+    const $scheduled_li = $(".top_left_scheduled_messages");
+    const count = scheduled_messages.get_count();
+    ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
 export function update_dom_with_unread_counts(counts) {
@@ -98,4 +105,8 @@ function do_new_messages_animation($li) {
     }
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
+}
+
+export function initialize() {
+    update_scheduled_messages_row();
 }

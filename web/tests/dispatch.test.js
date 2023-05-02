@@ -70,6 +70,7 @@ const stream_topic_history = mock_esm("../src/stream_topic_history");
 const submessage = mock_esm("../src/submessage");
 mock_esm("../src/top_left_corner", {
     update_starred_count() {},
+    update_scheduled_messages_row() {},
 });
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
