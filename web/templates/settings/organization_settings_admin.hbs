@@ -31,6 +31,12 @@
                   value_type="number" }}
 
                 {{> settings_checkbox
+                  setting_name="realm_message_content_allowed_in_email_notifications"
+                  prefix="id_"
+                  is_checked=realm_message_content_allowed_in_email_notifications
+                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
+
+                {{> settings_checkbox
                   setting_name="realm_send_welcome_emails"
                   prefix="id_"
                   is_checked=realm_send_welcome_emails
@@ -131,12 +137,6 @@
                   reset_button_text=(t '[Unset]')
                   label=admin_settings_label.realm_default_code_block_language
                   value_type="string" }}
-
-                {{> settings_checkbox
-                  setting_name="realm_message_content_allowed_in_email_notifications"
-                  prefix="id_"
-                  is_checked=realm_message_content_allowed_in_email_notifications
-                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
 
                 {{> settings_checkbox
                   setting_name="realm_mandatory_topics"
