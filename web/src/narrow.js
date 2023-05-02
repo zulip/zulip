@@ -620,14 +620,14 @@ function min_defined(a, b) {
 
 function load_local_messages(msg_data) {
     // This little helper loads messages into our narrow message
-    // data and returns true unless it's empty.  We use this for
+    // data and returns true unless it's visibly empty.  We use this for
     // cases when our local cache (all_messages_data) has at least
     // one message the user will expect to see in the new narrow.
 
     const in_msgs = all_messages_data.all_messages();
     msg_data.add_messages(in_msgs);
 
-    return !msg_data.empty();
+    return !msg_data.visibly_empty();
 }
 
 export function maybe_add_local_messages(opts) {
@@ -761,7 +761,7 @@ export function maybe_add_local_messages(opts) {
     //
     // And similarly for `near: max_int` with has_found_newest.
     if (
-        all_messages_data.empty() ||
+        all_messages_data.visibly_empty() ||
         id_info.target_id < all_messages_data.first().id ||
         id_info.target_id > all_messages_data.last().id
     ) {
@@ -795,7 +795,7 @@ export function update_selection(opts) {
         return;
     }
 
-    if (message_lists.current.empty()) {
+    if (message_lists.current.visibly_empty()) {
         // There's nothing to select if there are no messages.
         return;
     }

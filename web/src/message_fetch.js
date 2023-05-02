@@ -57,7 +57,7 @@ function process_result(data, opts) {
     if (
         opts.msg_list === message_lists.current &&
         opts.msg_list.narrowed &&
-        opts.msg_list.empty()
+        opts.msg_list.visibly_empty()
     ) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
@@ -410,7 +410,7 @@ export function initialize(home_view_loaded) {
     function load_more(data) {
         // If we haven't selected a message in the home view yet, and
         // the home view isn't empty, we select the anchor message here.
-        if (message_lists.home.selected_id() === -1 && !message_lists.home.empty()) {
+        if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
             // We fall back to the closest selected id, as the user
             // may have removed a stream from the home view while we
             // were loading data.

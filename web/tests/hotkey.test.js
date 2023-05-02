@@ -89,7 +89,7 @@ const stream_popover = mock_esm("../src/stream_popover", {
 });
 
 message_lists.current = {
-    empty() {
+    visibly_empty() {
         return false;
     },
     selected_id() {
@@ -343,7 +343,7 @@ run_test("misc", ({override}) => {
 
     // Check that they do nothing without a selected message
     with_overrides(({override}) => {
-        override(message_lists.current, "empty", () => true);
+        override(message_lists.current, "visibly_empty", () => true);
         assert_unmapped(message_view_only_keys);
     });
 
@@ -470,7 +470,7 @@ run_test("motion_keys", () => {
     }
 
     list_util.inside_list = () => false;
-    message_lists.current.empty = () => true;
+    message_lists.current.visibly_empty = () => true;
     overlays.settings_open = () => false;
     overlays.streams_open = () => false;
     overlays.lightbox_open = () => false;
@@ -488,7 +488,7 @@ run_test("motion_keys", () => {
     assert_mapping("down_arrow", list_util, "go_down");
     list_util.inside_list = () => false;
 
-    message_lists.current.empty = () => false;
+    message_lists.current.visibly_empty = () => false;
     assert_mapping("down_arrow", navigate, "down");
     assert_mapping("end", navigate, "to_end");
     assert_mapping("home", navigate, "to_home");

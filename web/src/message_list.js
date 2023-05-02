@@ -116,14 +116,14 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this.narrowed && !this.empty()) {
+        if (this.narrowed && !this.visibly_empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (this.narrowed && !this.empty() && this.selected_id() === -1) {
+        if (this.narrowed && !this.visibly_empty() && this.selected_id() === -1) {
             // The message list was previously empty, but now isn't
             // due to adding these messages, and we need to select a
             // message. Regardless of whether the messages are new or
@@ -145,6 +145,10 @@ export class MessageList {
 
     empty() {
         return this.data.empty();
+    }
+
+    visibly_empty() {
+        return this.data.visibly_empty();
     }
 
     first() {
@@ -437,7 +441,7 @@ export class MessageList {
         this.view.update_render_window(this.selected_idx(), false);
 
         if (this.narrowed) {
-            if (this.empty()) {
+            if (this.visibly_empty()) {
                 narrow_banner.show_empty_narrow_message();
             } else {
                 narrow_banner.hide_empty_narrow_message();

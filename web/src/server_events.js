@@ -119,7 +119,7 @@ function get_events_success(events) {
         }
     }
 
-    if (message_lists.home.selected_id() === -1 && !message_lists.home.empty()) {
+    if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
         message_lists.home.select_id(message_lists.home.first().id, {then_scroll: false});
     }
 
