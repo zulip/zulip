@@ -866,21 +866,22 @@ a.compose_control_button.hide {
 /* `^` icon located next to `Send` / `Scheduled` button which shows
    options to schedule the message. */
 #send_later {
+    display: flex;
+    align-items: center;
     float: right;
     color: hsl(0deg 0% 100%);
     border-radius: 0 4px 4px 0;
-    border-left: 1px solid hsl(0deg 0% 100% / 65%);
     padding: 0;
     margin: 0;
 
     .zulip-icon {
-        vertical-align: middle;
+        padding: 5px 9px;
+    }
 
-        &::before {
-            padding: 5px 9px;
-            position: relative;
-            top: -1px;
-        }
+    .separator-line {
+        background-color: hsl(0deg 0% 100% / 65%);
+        height: 70%;
+        width: 1px;
     }
 
     &:hover,
