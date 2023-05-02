@@ -465,7 +465,7 @@ export function initialize() {
 
     upload.feature_check($("#compose .compose_upload_file"));
 
-    $("#compose_banners").on(
+    $("body").on(
         "click",
         `.${CSS.escape(compose_banner.CLASSNAMES.wildcard_warning)} .compose_banner_action_button`,
         (event) => {
@@ -479,7 +479,7 @@ export function initialize() {
     const user_not_subscribed_selector = `.${CSS.escape(
         compose_banner.CLASSNAMES.user_not_subscribed,
     )}`;
-    $("#compose_banners").on(
+    $("body").on(
         "click",
         `${user_not_subscribed_selector} .compose_banner_action_button`,
         (event) => {
@@ -495,7 +495,7 @@ export function initialize() {
         },
     );
 
-    $("#compose_banners").on(
+    $("body").on(
         "click",
         `.${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)} .compose_banner_action_button`,
         (event) => {
@@ -512,7 +512,7 @@ export function initialize() {
         },
     );
 
-    $("#compose_banners").on(
+    $("body").on(
         "click",
         `.${CSS.escape(
             compose_banner.CLASSNAMES.unmute_topic_notification,
@@ -534,7 +534,7 @@ export function initialize() {
         },
     );
 
-    $("#compose_banners").on(
+    $("body").on(
         "click",
         `.${CSS.escape(
             compose_banner.CLASSNAMES.recipient_not_subscribed,
@@ -574,14 +574,10 @@ export function initialize() {
 
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
-        $("#compose_banners").on(
-            "click",
-            `${classname_selector} .compose_banner_close_button`,
-            (event) => {
-                event.preventDefault();
-                $(event.target).parents(classname_selector).remove();
-            },
-        );
+        $("body").on("click", `${classname_selector} .compose_banner_close_button`, (event) => {
+            event.preventDefault();
+            $(event.target).parents(classname_selector).remove();
+        });
     }
 
     // Click event binding for "Attach files" button
