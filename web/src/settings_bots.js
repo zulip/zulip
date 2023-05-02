@@ -206,12 +206,12 @@ export function add_a_new_bot() {
     let create_avatar_widget;
 
     function create_a_new_bot() {
-        const bot_type = $("#create_bot_type :selected").val();
+        const bot_type = $("#create_bot_type").val();
         const full_name = $("#create_bot_name").val();
         const short_name = $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
         const payload_url = $("#create_payload_url").val();
         const interface_type = $("#create_interface_type").val();
-        const service_name = $("#select_service_name :selected").val();
+        const service_name = $("#select_service_name").val();
         const formData = new FormData();
 
         formData.append("csrfmiddlewaretoken", csrf_token);
@@ -267,7 +267,7 @@ export function add_a_new_bot() {
         create_avatar_widget = avatar.build_bot_create_widget();
 
         $("#create_bot_type").on("change", () => {
-            const bot_type = $("#create_bot_type :selected").val();
+            const bot_type = $("#create_bot_type").val();
             // For "generic bot" or "incoming webhook" both these fields need not be displayed.
             $("#service_name_list").hide();
             $("#select_service_name").removeClass("required");
@@ -288,7 +288,7 @@ export function add_a_new_bot() {
 
         $("#select_service_name").on("change", () => {
             $("#config_inputbox").children().hide();
-            const selected_bot = $("#select_service_name :selected").val();
+            const selected_bot = $("#select_service_name").val();
             $(`[name*='${CSS.escape(selected_bot)}']`).show();
         });
     }
@@ -382,7 +382,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             const service_payload_url = $("#edit_service_base_url").val();
-            const service_interface = $("#edit_service_interface :selected").val();
+            const service_interface = $("#edit_service_interface").val();
             formData.append("service_payload_url", JSON.stringify(service_payload_url));
             formData.append("service_interface", service_interface);
         } else if (bot_type === EMBEDDED_BOT_TYPE && service !== undefined) {
