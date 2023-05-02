@@ -1336,6 +1336,21 @@ export class MessageListView {
     }
 
     prepend(messages) {
+        if (this._render_win_end - this._render_win_start === 0) {
+            // If the message list previously contained no visible
+            // messages, appending and prepending are equivalent, but
+            // the prepend logic will throw an exception, so just
+            // handle this as an append request.
+            //
+            // This is somewhat hacky, but matches how we do rendering
+            // for the first messages in a new msg_list_data object.
+            this.append(messages, false);
+            return;
+        }
+
+        // If we already have some messages rendered, then prepending
+        // will effectively change the meaning of the existing
+        // numbers.
         this._render_win_start += messages.length;
         this._render_win_end += messages.length;
 
