@@ -153,7 +153,7 @@ export function launch(conf: WidgetConfig): void {
     }
 
     if (conf.update_submit_disabled_state_on_change) {
-        const $inputs = $dialog.find(".modal__content :input");
+        const $inputs = $dialog.find(".modal__content").find("input,select,textarea,button");
 
         const original_values = get_current_values($inputs);
 
