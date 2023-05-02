@@ -387,27 +387,20 @@ function should_show_custom_query(query, items) {
     return !matched;
 }
 
-export const slash_commands = [
+export const dev_only_slash_commands = [
     {
         text: $t({defaultMessage: "/dark (Switch to the dark theme)"}),
         name: "dark",
         aliases: "night",
     },
     {
-        text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
-        name: "fixed-width",
-        aliases: "",
-    },
-    {
-        text: $t({defaultMessage: "/fluid-width (Toggle fluid width mode)"}),
-        name: "fluid-width",
-        aliases: "",
-    },
-    {
         text: $t({defaultMessage: "/light (Switch to light theme)"}),
         name: "light",
         aliases: "day",
     },
+];
+
+export const slash_commands = [
     {
         text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
@@ -425,6 +418,8 @@ export const slash_commands = [
         aliases: "",
     },
 ];
+
+export const all_slash_commands = [...dev_only_slash_commands, ...slash_commands];
 
 export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
@@ -667,7 +662,7 @@ export function get_candidates(query) {
     }
 
     function get_slash_commands_data() {
-        const commands = slash_commands;
+        const commands = page_params.development_environment ? all_slash_commands : slash_commands;
         return commands;
     }
 

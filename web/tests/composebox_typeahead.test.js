@@ -1580,7 +1580,7 @@ test("typeahead_results", () => {
     function assert_slash_matches(input, expected) {
         const returned = compose_typeahead_results(
             "slash",
-            composebox_typeahead.slash_commands,
+            composebox_typeahead.all_slash_commands,
             input,
         );
         assert.deepEqual(returned, expected);
