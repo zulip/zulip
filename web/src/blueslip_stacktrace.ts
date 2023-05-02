@@ -24,6 +24,23 @@ type CleanStackFrame = {
     context?: NumberedLine[];
 };
 
+export function exception_msg(
+    ex: Error & {
+        // Unsupported properties available on some browsers
+        fileName?: string;
+        lineNumber?: number;
+    },
+): string {
+    let message = ex.message;
+    if (ex.fileName !== undefined) {
+        message += " at " + ex.fileName;
+        if (ex.lineNumber !== undefined) {
+            message += `:${ex.lineNumber}`;
+        }
+    }
+    return message;
+}
+
 export function clean_path(full_path?: string): string | undefined {
     // If the file is local, just show the filename.
     // Otherwise, show the full path starting from node_modules.
@@ -81,10 +98,7 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     }));
 }
 
-export async function display_stacktrace(error: string, stack: string): Promise<void> {
-    const ex = new Error("dummy");
-    ex.stack = stack;
-
+export async function display_stacktrace(ex: Error): Promise<void> {
     const stackframes: CleanStackFrame[] = await Promise.all(
         ErrorStackParser.parse(ex).map(async (location: StackFrame) => {
             try {
@@ -104,7 +118,12 @@ export async function display_stacktrace(error: string, stack: string): Promise<
 
     const $alert = $("<div>")
         .addClass("stacktrace")
-        .html(render_blueslip_stacktrace({error, stackframes}));
+        .html(
+            render_blueslip_stacktrace({
+                error: exception_msg(ex),
+                stackframes,
+            }),
+        );
     $(".alert-box").append($alert);
     $alert.addClass("show");
 }
