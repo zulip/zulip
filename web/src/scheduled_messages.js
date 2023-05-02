@@ -7,6 +7,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
+import * as drafts from "./drafts";
 import * as narrow from "./narrow";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
@@ -93,6 +94,7 @@ export function open_scheduled_message_in_compose(scheduled_msg) {
 
 export function send_request_to_schedule_message(scheduled_message_data, deliver_at) {
     const success = function (data) {
+        drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
         compose.clear_compose_box();
         const new_row = render_success_message_scheduled_banner({
             scheduled_message_id: data.scheduled_message_id,
