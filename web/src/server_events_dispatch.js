@@ -69,6 +69,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
+import * as top_left_corner from "./top_left_corner";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -473,6 +474,7 @@ export function dispatch_normal_event(event) {
                 case "add": {
                     scheduled_messages.add_scheduled_messages(event.scheduled_messages);
                     scheduled_messages_overlay_ui.rerender();
+                    top_left_corner.update_scheduled_messages_row();
                     break;
                 }
                 case "remove": {
@@ -480,11 +482,13 @@ export function dispatch_normal_event(event) {
                     scheduled_messages_overlay_ui.remove_scheduled_message_id(
                         event.scheduled_message_id,
                     );
+                    top_left_corner.update_scheduled_messages_row();
                     break;
                 }
                 case "update": {
                     scheduled_messages.update_scheduled_message(event.scheduled_message);
                     scheduled_messages_overlay_ui.rerender();
+                    top_left_corner.update_scheduled_messages_row();
                     break;
                 }
                 // No default
