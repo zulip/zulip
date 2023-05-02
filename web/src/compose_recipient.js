@@ -121,6 +121,7 @@ export function check_stream_posting_policy_for_compose_box(stream_name) {
                 defaultMessage: "You do not have permission to post in this stream.",
             }),
             compose_banner.CLASSNAMES.no_post_permissions,
+            $("#compose_banners"),
         );
     } else {
         $(".compose_right_float_container").removeClass("disabled-compose-send-button-container");

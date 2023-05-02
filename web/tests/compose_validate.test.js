@@ -613,6 +613,7 @@ test_ui("needs_subscribe_warning", () => {
 });
 
 test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
+    const $textarea = $("<textarea>").attr("id", "compose-textarea");
     const test_sub = {
         name: compose_state.stream_name(),
         stream_id: 99,
@@ -641,7 +642,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
         banner_rendered = false;
         compose_state.set_message_type("stream");
         denmark.invite_only = invite_only;
-        compose_validate.warn_if_private_stream_is_linked(denmark);
+        compose_validate.warn_if_private_stream_is_linked(denmark, $textarea);
         assert.ok(!banner_rendered);
     }
 
@@ -660,11 +661,12 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     };
     stream_data.add_sub(denmark);
     banner_rendered = false;
-    compose_validate.warn_if_private_stream_is_linked(denmark);
+    compose_validate.warn_if_private_stream_is_linked(denmark, $textarea);
     assert.ok(banner_rendered);
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
+    const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stream_value = "";
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
@@ -687,7 +689,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
         compose_state.set_message_type(msg_type);
         page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
         mentioned_details.is_broadcast = is_broadcast;
-        compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
+        compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
         assert.ok(!new_banner_rendered);
     }
 
@@ -702,7 +704,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     // Test with empty stream name in compose box. It should return noop.
     new_banner_rendered = false;
     assert.equal(compose_state.stream_name(), "");
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(!new_banner_rendered);
 
     compose_state.set_stream_name("random");
@@ -713,7 +715,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     // Test with invalid stream in compose box. It should return noop.
     new_banner_rendered = false;
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(!new_banner_rendered);
 
     // Test mentioning a user that should gets a warning.
@@ -726,8 +728,10 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     stream_data.add_sub(sub);
     new_banner_rendered = false;
-    $("#compose_banners .recipient_not_subscribed").length = 0;
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
+    const $banner_container = $("#compose_banners");
+    $banner_container.set_find_results(".recipient_not_subscribed", []);
+
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);
 
     // Simulate that the row was added to the DOM.
@@ -743,7 +747,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     // Now try to mention the same person again. The template should
     // not render.
     new_banner_rendered = false;
-    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
+    $banner_container.set_find_results(".recipient_not_subscribed", $warning_row);
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(!new_banner_rendered);
 });
 

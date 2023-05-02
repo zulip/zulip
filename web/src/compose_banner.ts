@@ -100,7 +100,12 @@ export function clear_all(): void {
     $(`#compose_banners`).empty();
 }
 
-export function show_error_message(message: string, classname: string, $bad_input?: JQuery): void {
+export function show_error_message(
+    message: string,
+    classname: string,
+    $container: JQuery,
+    $bad_input?: JQuery,
+): void {
     $(`#compose_banners .${CSS.escape(classname)}`).remove();
 
     const new_row = render_compose_banner({
@@ -111,7 +116,7 @@ export function show_error_message(message: string, classname: string, $bad_inpu
         button_text: null,
         classname,
     });
-    append_compose_banner_to_banner_list(new_row);
+    append_compose_banner_to_banner_list(new_row, $container);
 
     hide_compose_spinner();
 
@@ -129,7 +134,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
         stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
-    append_compose_banner_to_banner_list(new_row);
+    append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
     hide_compose_spinner();
 
     // A copy of `compose_recipient.open_compose_stream_dropup()` that

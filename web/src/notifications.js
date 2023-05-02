@@ -178,7 +178,10 @@ function notify_unmute(muted_narrow, stream_id, topic_name) {
         }),
     );
     compose_banner.clear_unmute_topic_notifications();
-    compose_banner.append_compose_banner_to_banner_list($unmute_notification);
+    compose_banner.append_compose_banner_to_banner_list(
+        $unmute_notification,
+        $("#compose_banners"),
+    );
 }
 
 export function notify_above_composebox(
@@ -200,7 +203,7 @@ export function notify_above_composebox(
     // We pass in include_unmute_banner as false because we don't want to
     // clear any unmute_banner associated with this same message.
     compose_banner.clear_message_sent_banners(false);
-    compose_banner.append_compose_banner_to_banner_list($notification);
+    compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
 }
 
 if (window.electron_bridge !== undefined) {
