@@ -296,18 +296,24 @@ export function initialize() {
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.start_inline_topic_edit($recipient_row);
+        $(".zulip-icon-mute").hide();
+        $(".mark-as-resolved").hide();
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.save_inline_topic_edit($recipient_row);
+        $(".zulip-icon-mute").show();
+        $(".mark-as-resolved").show();
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
         const $recipient_row = $(this).closest(".recipient_row");
         message_edit.end_inline_topic_edit($recipient_row);
+        $(".zulip-icon-mute").show();
+        $(".mark-as-resolved").show();
         e.stopPropagation();
         popovers.hide_all();
     });
