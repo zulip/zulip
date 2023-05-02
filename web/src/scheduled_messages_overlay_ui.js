@@ -69,7 +69,7 @@ export function rerender() {
 export function remove_scheduled_message_id(scheduled_msg_id) {
     if (overlays.scheduled_messages_open()) {
         $(
-            `#scheduled_messages_overlay .scheduled-message-row[data-message-id=${scheduled_msg_id}]`,
+            `#scheduled_messages_overlay .scheduled-message-row[data-scheduled-message-id=${scheduled_msg_id}]`,
         ).remove();
     }
 }
@@ -78,7 +78,7 @@ export function initialize() {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
         let scheduled_msg_id = $(e.currentTarget)
             .closest(".scheduled-message-row")
-            .attr("data-message-id");
+            .attr("data-scheduled-message-id");
         scheduled_msg_id = Number.parseInt(scheduled_msg_id, 10);
         scheduled_messages.edit_scheduled_message(scheduled_msg_id);
         overlays.close_overlay("scheduled");
@@ -89,7 +89,7 @@ export function initialize() {
     $("body").on("click", ".scheduled-message-row .delete-overlay-message", (e) => {
         const scheduled_msg_id = $(e.currentTarget)
             .closest(".scheduled-message-row")
-            .attr("data-message-id");
+            .attr("data-scheduled-message-id");
         scheduled_messages.delete_scheduled_message(scheduled_msg_id);
 
         e.stopPropagation();
