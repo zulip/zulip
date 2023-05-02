@@ -261,9 +261,16 @@ export function convert_message_topic(message: Message): void {
     }
 }
 
+let inertDocument: Document | undefined;
+
 export function clean_user_content_links(html: string): string {
-    const content = new DOMParser().parseFromString(html, "text/html").body;
-    for (const elt of content.querySelectorAll("a")) {
+    if (inertDocument === undefined) {
+        inertDocument = new DOMParser().parseFromString("", "text/html");
+    }
+    const template = inertDocument.createElement("template");
+    template.innerHTML = html;
+
+    for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
         // never replace the Zulip web app while also protecting
@@ -338,7 +345,7 @@ export function clean_user_content_links(html: string): string {
             );
         }
     }
-    return content.innerHTML;
+    return template.innerHTML;
 }
 
 export function filter_by_word_prefix_match<T>(
