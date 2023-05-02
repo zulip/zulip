@@ -122,23 +122,6 @@ export function error(
     // fatal error even in production, use throw new Error(…) instead.
 }
 
-export function exception_msg(
-    ex: Error & {
-        // Unsupported properties available on some browsers
-        fileName?: string;
-        lineNumber?: number;
-    },
-): string {
-    let message = ex.message;
-    if (ex.fileName !== undefined) {
-        message += " at " + ex.fileName;
-        if (ex.lineNumber !== undefined) {
-            message += `:${ex.lineNumber}`;
-        }
-    }
-    return message;
-}
-
 // Install a window-wide onerror handler in development to display the stacktraces, to make them
 // hard to miss
 if (page_params.development_environment) {
@@ -153,6 +136,6 @@ if (page_params.development_environment) {
             return;
         }
 
-        void blueslip_stacktrace.display_stacktrace(exception_msg(ex), ex.stack);
+        void blueslip_stacktrace.display_stacktrace(ex);
     });
 }
