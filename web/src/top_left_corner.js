@@ -14,6 +14,11 @@ export function update_starred_count(count) {
 export function update_scheduled_messages_row() {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
+    if (count > 0) {
+        $scheduled_li.show();
+    } else {
+        $scheduled_li.hide();
+    }
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
