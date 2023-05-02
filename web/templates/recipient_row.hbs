@@ -84,7 +84,7 @@
           href="{{pm_with_url}}"
           data-tippy-content="{{t 'Narrow to your direct messages with {display_reply_to}' }}">
         <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
-        {{t "You and {display_reply_to}" }}
+        <span class="private_message_header_name">{{t "You and {display_reply_to}" }}</span>
         </a>
         <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>
