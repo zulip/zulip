@@ -897,13 +897,23 @@ export function initialize() {
                             }
                         });
                         $send_later_modal.on("click", ".send_later_custom", (e) => {
+                            const $send_later_modal_content =
+                                $send_later_modal.find(".modal__content");
                             const current_time = new Date();
                             flatpickr.show_flatpickr(
                                 $(".send_later_custom")[0],
                                 do_schedule_message,
                                 new Date(current_time.getTime() + 60 * 60 * 1000),
-                                {minDate: new Date(current_time.getTime() + 5 * 60 * 1000)},
+                                {
+                                    minDate: new Date(current_time.getTime() + 5 * 60 * 1000),
+                                    onClose() {
+                                        // Return to normal state.
+                                        $send_later_modal_content.css("pointer-events", "all");
+                                    },
+                                },
                             );
+                            // Disable interaction with rest of the options in the modal.
+                            $send_later_modal_content.css("pointer-events", "none");
                             e.preventDefault();
                             e.stopPropagation();
                         });
