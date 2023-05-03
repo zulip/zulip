@@ -102,19 +102,14 @@ export function error(
     more_info?: object | undefined,
     original_error?: unknown | undefined,
 ): void {
-    // original_error could be of any type, because you can "raise"
-    // any type -- something we do see in practice with the error
-    // object being "dead": https://github.com/zulip/zulip/issues/18374
-    let exception: string | Error = msg;
-    if (original_error !== undefined && original_error instanceof Error) {
-        original_error.message = msg;
-        exception = original_error;
-    }
-
     // Log the Sentry error before the console warning, so we don't
     // end up with a doubled message in the Sentry logs.
     Sentry.setContext("more_info", more_info === undefined ? null : more_info);
-    Sentry.getCurrentHub().captureException(exception);
+
+    // Note that original_error could be of any type, because you can "raise"
+    // any type -- something we do see in practice with the error
+    // object being "dead": https://github.com/zulip/zulip/issues/18374
+    Sentry.getCurrentHub().captureException(new Error(msg, {cause: original_error}));
 
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
