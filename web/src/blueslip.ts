@@ -89,8 +89,8 @@ export function warn(msg: string, more_info?: unknown): void {
 class BlueslipError extends Error {
     override name = "BlueslipError";
     more_info?: object;
-    constructor(msg: string, more_info?: object | undefined) {
-        super(msg);
+    constructor(msg: string, more_info?: object | undefined, cause?: unknown | undefined) {
+        super(msg, {cause});
         if (more_info !== undefined) {
             this.more_info = more_info;
         }
@@ -116,7 +116,7 @@ export function error(
 
     // Throw an error in development; this will show a dialog (see below).
     if (page_params.development_environment) {
-        throw new BlueslipError(msg, more_info);
+        throw new BlueslipError(msg, more_info, original_error);
     }
     // This function returns to its caller in production!  To raise a
     // fatal error even in production, use throw new Error(…) instead.
