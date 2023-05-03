@@ -450,7 +450,10 @@ export function initialize() {
 
         const nearest = message_lists.current.get(msg_id);
         const selected = message_lists.current.selected_message();
-        if (util.same_recipient(nearest, selected)) {
+        if (
+            message_lists.current.view.collapse_messages &&
+            util.same_recipient(nearest, selected)
+        ) {
             return selected.id;
         }
         return nearest.id;
