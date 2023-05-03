@@ -1,4 +1,4 @@
 declare module "*.hbs" {
-    const render: (context: unknown) => string;
+    const render: (context?: unknown) => string;
     export = render;
 }

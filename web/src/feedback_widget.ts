@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import $ from "jquery";
 
 import render_feedback_container from "../templates/feedback_container.hbs";
@@ -22,10 +24,17 @@ Code-wise it's a singleton widget that controls the DOM inside
 
 */
 
-const meta = {
-    hide_me_time: null,
+const meta: {
+    hide_me_time: number;
+    alert_hover_state: boolean;
+    $container?: JQuery;
+    opened: boolean;
+    handlers_set?: boolean;
+    undo?: () => void;
+} = {
+    hide_me_time: 0,
     alert_hover_state: false,
-    $container: null,
+    $container: undefined,
     opened: false,
 };
 
@@ -42,23 +51,23 @@ const animate = {
 
         setTimeout(animate.maybe_close, 100);
     },
-    fadeOut() {
-        if (!meta.opened) {
+    fadeOut(): void {
+        if (meta.opened === undefined) {
             return;
         }
 
-        if (meta.$container) {
+        if (meta.$container !== undefined) {
             meta.$container.fadeOut(500).removeClass("show");
             meta.opened = false;
             meta.alert_hover_state = false;
         }
     },
-    fadeIn() {
+    fadeIn(): void {
         if (meta.opened) {
             return;
         }
 
-        if (meta.$container) {
+        if (meta.$container !== undefined) {
             meta.$container.fadeIn(500).addClass("show");
             meta.opened = true;
             setTimeout(animate.maybe_close, 100);
@@ -66,16 +75,20 @@ const animate = {
     },
 };
 
-function set_up_handlers() {
-    if (meta.handlers_set) {
+function set_up_handlers(): void {
+    if (meta.handlers_set !== undefined) {
         return;
     }
 
     meta.handlers_set = true;
+    if (meta.$container === undefined) {
+        return;
+    }
 
     // if the user mouses over the notification, don't hide it.
+
     meta.$container.on("mouseenter", () => {
-        if (!meta.opened) {
+        if (meta.opened === undefined) {
             return;
         }
 
@@ -83,8 +96,9 @@ function set_up_handlers() {
     });
 
     // once the user's mouse leaves the notification, restart the countdown.
+
     meta.$container.on("mouseleave", () => {
-        if (!meta.opened) {
+        if (meta.opened === undefined) {
             return;
         }
 
@@ -106,16 +120,21 @@ function set_up_handlers() {
     });
 }
 
-export function is_open() {
+export function is_open(): boolean {
     return meta.opened;
 }
 
-export function dismiss() {
+export function dismiss(): void {
     animate.fadeOut();
 }
 
-export function show(opts) {
-    if (!opts.populate) {
+export function show(opts: {
+    title_text: string;
+    undo_button_text: string;
+    populate: (container: JQuery) => void;
+    on_undo: () => void;
+}): void {
+    if (opts.populate === undefined) {
         blueslip.error("programmer needs to supply populate callback.");
         return;
     }
@@ -123,7 +142,9 @@ export function show(opts) {
     meta.$container = $("#feedback_container");
 
     const html = render_feedback_container();
-    meta.$container.html(html);
+    if (meta.$container?.html !== undefined) {
+        meta.$container.html(html);
+    }
 
     set_up_handlers();
 
@@ -131,10 +152,11 @@ export function show(opts) {
 
     // add a four second delay before closing up.
     meta.hide_me_time = Date.now() + 4000;
+    if (meta.$container !== undefined) {
+        meta.$container.find(".feedback_title").text(opts.title_text);
+        meta.$container.find(".feedback_undo").text(opts.undo_button_text);
+        opts.populate(meta.$container.find(".feedback_content"));
 
-    meta.$container.find(".feedback_title").text(opts.title_text);
-    meta.$container.find(".feedback_undo").text(opts.undo_button_text);
-    opts.populate(meta.$container.find(".feedback_content"));
-
-    animate.fadeIn();
+        animate.fadeIn();
+    }
 }
