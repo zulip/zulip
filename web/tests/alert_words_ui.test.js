@@ -31,6 +31,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
             list_widget_create_called = true;
             return alert_words;
         },
+        generic_sort_functions: noop,
     });
     mock_template("settings/alert_word_settings_item.hbs", false, (args) => {
         assert.ok(["foo", "bar"].includes(args.alert_word.word));

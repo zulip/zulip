@@ -45,7 +45,11 @@ export function populate_list() {
                 );
             },
         },
-        init_sort: ["numeric", "date_updated"],
+        init_sort: "date_updated_numeric",
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["stream", "topic"]),
+            ...ListWidget.generic_sort_functions("numeric", ["date_updated", "visibility_policy"]),
+        },
         initially_descending_sort: true,
         $parent_container: $("#user-topic-settings"),
         $simplebar_container: $("#user-topic-settings .progressive-table-wrapper"),

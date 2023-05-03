@@ -858,6 +858,7 @@ export function complete_rerender() {
         sort_fields: {
             stream_sort,
             topic_sort,
+            ...ListWidget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
         $simplebar_container: $("#recent_topics_table .table_fix_head"),

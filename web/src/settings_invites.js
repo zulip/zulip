@@ -90,9 +90,15 @@ function populate_invites(invites_data) {
             },
         },
         $parent_container: $("#admin-invites-list").expectOne(),
-        init_sort: [sort_invitee],
+        init_sort: sort_invitee,
         sort_fields: {
             invitee: sort_invitee,
+            ...ListWidget.generic_sort_functions("alphabetic", ["ref"]),
+            ...ListWidget.generic_sort_functions("numeric", [
+                "invited",
+                "expires_at",
+                "invited_as",
+            ]),
         },
         $simplebar_container: $("#admin-invites-list .progressive-table-wrapper"),
     });

@@ -160,7 +160,7 @@ export function populate_linkifiers(linkifiers_data) {
             },
         },
         $parent_container: $("#linkifier-settings").expectOne(),
-        init_sort: [sort_pattern],
+        init_sort: sort_pattern,
         sort_fields: {
             pattern: sort_pattern,
             url: sort_url,

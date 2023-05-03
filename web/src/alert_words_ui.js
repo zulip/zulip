@@ -29,6 +29,9 @@ export function rerender_alert_words_ui() {
         },
         $parent_container: $("#alert-word-settings"),
         $simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["word"]),
+        },
     });
 }
 

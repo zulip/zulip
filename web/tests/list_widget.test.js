@@ -401,6 +401,10 @@ run_test("sorting", () => {
         filter: {
             predicate: () => true,
         },
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
+            ...ListWidget.generic_sort_functions("numeric", ["salary"]),
+        },
         $simplebar_container: $scroll_container,
     };
 
@@ -503,7 +507,7 @@ run_test("custom sort", () => {
             product: sort_by_product,
             x_value: sort_by_x,
         },
-        init_sort: [sort_by_product],
+        init_sort: sort_by_product,
         $simplebar_container: $scroll_container,
     });
 

@@ -125,7 +125,10 @@ export function build_default_stream_table() {
             },
         },
         $parent_container: $("#admin-default-streams-list").expectOne(),
-        init_sort: ["alphabetic", "name"],
+        init_sort: "name_alphabetic",
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
+        },
         $simplebar_container: $("#admin-default-streams-list .progressive-table-wrapper"),
     });
 

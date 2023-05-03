@@ -99,6 +99,7 @@ export function build_widgets() {
         sort_fields: {
             email: settings_users.sort_email,
             id: settings_users.sort_user_id,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         filter: {
             $element: $("#people_to_add .add-user-list-filter"),
