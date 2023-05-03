@@ -96,6 +96,7 @@ export class MessageState {
         setTag("rendered_changed", this.rendered_changed);
         setTag("locally_echoed", this.locally_echoed);
         this.txn.finish();
+        messages.delete(this.local_id);
     }
 }
 
