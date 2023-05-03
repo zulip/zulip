@@ -13,19 +13,26 @@ log][commit-log] for an up-to-date list of all changes.
 
 #### Highlights
 
-- (Unfinished) Many significant visual changes as part of Zulip's
-  ongoing redesign project, including message feed headers, date
-  dividers, error banners and tooltips.
-- (Unfinished) Added support for unmuting a topic in a muted stream,
-  previously the 4th most upvoted GitHub issue.
+- Many significant visual changes as part of Zulip's ongoing redesign
+  project, including message feed headers, mention colors, dates and
+  times, compose box banners, icons, and tooltips. Many further
+  improvements are planned for future releases.
+- Added support for unmuting a topic in a muted stream, previously the
+  4th most upvoted GitHub issue.
+- Redesigned the permissions settings for message editing, topic
+  editing, and moving topics to have a cleaner model.
+- New compose box features: Scheduling a message to be sent later, a
+  nicer stream picker, and the ability to switch between stream and
+  private messages.
 - Numerous improvements to the Help Center, including documentation
-  for how to to many common tasks in the Zulip mobile apps.
+  for how to complete many common tasks in the Zulip mobile apps.
 - Redesigned the interface and permissions model for moving topics to
   be independent from message content editing, providing a cleaner
   experience and better configurability.
 - Renamed "Private messages" to "Direct messages" across the user
-  interface. We expect API changes to be integrated gradually over
-  coming releases due to backwards compatibility considerations.
+  interface, including search operators. We expect further API changes
+  to be integrated gradually over coming releases due to backwards
+  compatibility considerations.
 - Added a new personal privacy setting for to what extent the user's
   email address should be shared with other users in the organization;
   previously this was solely controlled by organization
@@ -38,9 +45,25 @@ log][commit-log] for an up-to-date list of all changes.
   with another application.
 - Added new stream setting controlling which users can remove other
   subscribers from the stream.
+- Added new setting to control when messages are marked as read when
+  scrolling.
+- Added notification bot messages when another user adds you to or
+  removes you from a user group.
+- Added additional confirmation dialogs for actions deserving caution,
+  including marking all messages as read, removing the last user from a
+  private stream, and disabling all notifications for direct messages.
+- Added support for deployment hooks to be run whenever the Zulip
+  server is upgraded.
 - Added new `z` keyboard shortcut to view a message in context.
 - Added new `=` keyboard shortcut to upvote an existing emoji reaction.
+- Changed the `s` keyboard shortcut to be a toggle, replacing the
+  previous model that required both `s` and `S` keyboard shortcuts.
 - Clarified automated notifications when moving and resolving topics.
+- New webhook integrations: Rundeck.
+- Reworked linkifiers to use URL templates for the URL patterns.
+- Improved left sidebar to show more topics within the current stream,
+  and more private message converations, especially when many are
+  unread.
 - Improved many interaction details in the settings subsystem,
   including how files are uploaded, hover behaviors, etc.
 - Improved the logged out experience to suggest logging in to see more
@@ -57,6 +80,8 @@ log][commit-log] for an up-to-date list of all changes.
   pre-resolution topic.
 - Improved the Slack incoming integration's handling of fancier Slack
   syntax.
+- Improved notification format for most Git integrations.
+- Improved onboarding emails with better content and links to guides.
 - Improved how uploaded files are served with the S3 file uploads
   backend to better support browser caching.
 - Improved the instructions for data imports from third-party tools to
@@ -66,8 +91,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved the content of onboarding emails.
 - Improved default for whether to include the Zulip realm name in
   the subject line of email notifications.
-- Improved notification format for most Git integrations.
 - Improved rendering format for emoji inside headings.
+- Improved performance of rendering message views.
+- Improved capabilities of compliance exports, including new CSV format.
 - Fixed missing localization for dates/times in the message feed.
 - Fixed a subtle issue causing files uploaded via the incoming email
   gateway to not be viewable.
@@ -79,12 +105,10 @@ log][commit-log] for an up-to-date list of all changes.
 - Fixed an issue the management command to garbage-collect uploaded
   files that are no longer used in a message was not running in cron.
 - Fixed noticeable lag when marking messages as unread in the web app.
+- Fixed a bug that could cause duplicate mobile push notifications.
 - Added support for configurable hooks to be run when upgrading the
   Zulip server.
 - Added support for using TLS to secure the RabbitMQ connection.
-- Added additional confirmation dialogs for actions deserving caution,
-  including marking all messages as read, removing the last user from a
-  private stream, and disabling all notifications for direct messages.
 - The Zulip API now includes a `ignored_parameters_unsupported` field
   to help client developers debug when they are attempting to use a
   parameter that the Zulip server does not support.
@@ -94,6 +118,7 @@ log][commit-log] for an up-to-date list of all changes.
 - Converted many JavaScript modules to TypeScript.
 - Reorganized the codebase, with new web/, help/, and api_docs/
   top-level directories.
+- Upgraded many third-party dependencies, including to Django 4.2 LTS.
 
 #### Upgrade notes for 7.0
 
@@ -109,6 +134,19 @@ log][commit-log] for an up-to-date list of all changes.
   feature](../production/authentication-methods.md#jwt) will need
   to make minor adjustments in the format of JWT requests; see the
   documentation for details on the new format.
+- High volume log files like `server.log` are now by default retained
+  for 14 days, configured via the `access_log_retention_days`
+  [deployment
+  option](../production/deployment.md#system-and-deployment-configuration). This
+  replaces a harder to understand size-based algorithm that was not
+  easily configurable.
+- The URL patterns for
+  [linkifiers](https://zulip.com/help/add-a-custom-linkifier) have
+  been migrated from a custom format string to RFC 6570 URL
+  templates. A database migration will automatically migrate existing
+  linkifiers correctly in the vast majority of cases, but some fancier
+  linkfiers may require manual adjustment to generate correct URLs
+  following this upgrade.
 
 ## Zulip 6.x series
 
