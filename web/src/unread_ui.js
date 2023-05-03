@@ -75,7 +75,7 @@ export function set_count_toggle_button($elem, count) {
     return $elem.text("1k+");
 }
 
-export function update_unread_counts() {
+export function update_unread_counts(skip_animations = false) {
     // Pure computation:
     const res = unread.get_counts();
 
@@ -83,7 +83,7 @@ export function update_unread_counts() {
     // This updates some DOM elements directly, so try to
     // avoid excessive calls to this.
     activity.update_dom_with_unread_counts(res);
-    top_left_corner.update_dom_with_unread_counts(res);
+    top_left_corner.update_dom_with_unread_counts(res, skip_animations);
     stream_list.update_dom_with_unread_counts(res);
     pm_list.update_dom_with_unread_counts(res);
     topic_list.update();
@@ -125,7 +125,8 @@ export function should_display_bankruptcy_banner() {
 }
 
 export function initialize() {
-    update_unread_counts();
+    const skip_animations = true;
+    update_unread_counts(skip_animations);
     $("body").on("click", "#mark_view_read", () => {
         // Mark all messages in the current view as read.
         //
