@@ -49,7 +49,7 @@ run(["./tools/webpack", "--quiet"])
 run(["./manage.py", "collectstatic", "-v0", "--noinput"])
 
 # Compile translation strings to generate `.mo` files.
-run(["./manage.py", "compilemessages", "-v0"])
+run(["./manage.py", "compilemessages", "-v0", "--ignore=*"])
 
 # Needed if PRODUCTION
 os.makedirs("prod-static", exist_ok=True)
