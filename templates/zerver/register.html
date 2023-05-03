@@ -76,28 +76,10 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
-                    <input type="hidden" name="email_address_visibility" id="email_address_visibility"/>
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
                     <div id="id_email">{{ email }}</div>
                     {% if not creating_new_realm %}
-                    <p id="new-user-email-address-visibility">
-                        <span class="current-selected-option">
-                            {% if default_email_address_visibility == email_address_visibility_admins_only %}
-                                {% trans %}Administrators of this Zulip organization will be able to see this email address.
-                                {% endtrans %}
-                            {% elif default_email_address_visibility == email_address_visibility_moderators %}
-                                {% trans %}Administrators and moderators of this Zulip organization will be able to see this email address.
-                                {% endtrans %}
-                            {% elif default_email_address_visibility == email_address_visibility_nobody %}
-                                {% trans %}Nobody in this Zulip organization will be able to see this email address.
-                                {% endtrans %}
-                            {% else %}
-                                {% trans %}Other users in this Zulip organization will be able to see this email address.
-                                {% endtrans %}
-                            {% endif %}
-                        </span>
-                        <a target="_blank" class="change_email_address_visibility" rel="noopener noreferrer">{{ _('Change') }}</a>
-                    </p>
+                    {% include 'zerver/new_user_email_address_visibility.html' %}
                     {% endif %}
                 </div>
 
