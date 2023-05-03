@@ -34,16 +34,27 @@ mock_esm("../src/rows", {
     },
 });
 
-mock_esm("../src/people", {
-    sender_is_bot: () => false,
-    sender_is_guest: () => false,
-    small_avatar_url: () => "fake/small/avatar/url",
-});
-
 const {Filter} = zrequire("../src/filter");
 const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
 const muted_users = zrequire("muted_users");
+const people = zrequire("people");
+const stream_data = zrequire("stream_data");
+
+const alice = {
+    email: "alice@zulip.com",
+    user_id: 101,
+    full_name: "Alice",
+};
+const hamlet = {
+    email: "hamlet@zulip.com",
+    user_id: 10,
+    full_name: "King Hamlet",
+    is_bot: false,
+    is_guest: false,
+};
+people.add_active_user(alice);
+people.add_active_user(hamlet);
 
 let next_timestamp = 1500000000;
 
@@ -316,15 +327,15 @@ test("muted_message_vars", () => {
         // Make a representative message group of three messages.
         const messages = [
             build_message_context(
-                {sender_id: 10, content: "<message-stub-1>"},
+                {sender_id: hamlet.user_id, content: "<message-stub-1>"},
                 {include_sender: true},
             ),
             build_message_context(
-                {mentioned: true, sender_id: 10, content: "<message-stub2>"},
+                {mentioned: true, sender_id: hamlet.user_id, content: "<message-stub2>"},
                 {include_sender: false},
             ),
             build_message_context(
-                {sender_id: 10, content: "<message-stub-3>"},
+                {sender_id: hamlet.user_id, content: "<message-stub-3>"},
                 {include_sender: false},
             ),
         ];
@@ -338,7 +349,6 @@ test("muted_message_vars", () => {
         // sanity check on mocked values
         assert.equal(result[1].sender_is_bot, false);
         assert.equal(result[1].sender_is_guest, false);
-        assert.equal(result[1].small_avatar_url, "fake/small/avatar/url");
 
         // Check that `is_hidden` is false on all messages, and `include_sender` has not changed.
         assert.equal(result[0].is_hidden, false);
@@ -685,6 +695,139 @@ test("merge_message_groups", () => {
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
+    })();
+});
+
+test("build_message_groups", () => {
+    function build_stream_message(content, id) {
+        stream_data.add_sub({stream_id: 13, name: "test"});
+
+        return {
+            msg: {
+                clean_reactions: new Map(),
+                collapsed: false,
+                content,
+                display_recipient: "Zoolippy",
+                id,
+                is_stream: true,
+                recipient_id: 35,
+                sender_full_name: hamlet.full_name,
+                sender_id: hamlet.user_id,
+                sender_email: hamlet.email,
+                stream: "test",
+                stream_id: 13,
+                timestamp: 1646398167,
+                topic: "fancy topic",
+                type: "stream",
+                unread: false,
+                url: `http://zulip.zulipdev.com/#narrow/stream/13-test/topic/fancy.20topic/near/${id}`,
+            },
+            stream_url: "#narrow/stream/13-test",
+            timestr: "4:49 AM",
+            topic_url: "#narrow/stream/13-test/topic/fancy.20topic",
+        };
+    }
+
+    function build_direct_message(content, id) {
+        return {
+            msg: {
+                clean_reactions: new Map(),
+                collapsed: false,
+                content,
+                display_recipient: [
+                    {
+                        email: alice.email,
+                        id: alice.user_id,
+                        full_name: alice.full_name,
+                    },
+                ],
+                id,
+                is_private: true,
+                pm_with_url: "#narrow/dm/101-Alice",
+                recipient_id: 101,
+                sender_full_name: hamlet.full_name,
+                sender_id: hamlet.user_id,
+                sender_email: hamlet.email,
+                timestamp: 1646398167,
+                type: "private",
+                unread: false,
+                url: `http://zulip.zulipdev.com/#narrow/dm/101-Alice/near/${id}`,
+            },
+        };
+    }
+
+    (function test_stream_collapse_messages_true() {
+        // When stream messages are collapsed the recipient bar
+        // should link to the recipient (topic) directly.
+        const table_name = "zfilt";
+        const filter = new Filter([{operator: "stream", operand: "test"}]);
+
+        const list = new message_list.MessageList({
+            table_name,
+            filter,
+        });
+        const view = new MessageListView(list, table_name, true);
+        const groups = view.build_message_groups([
+            build_stream_message("<p>Ah what a beautiful message out today.</p>", 1),
+            build_stream_message("<p>It sure is beautiful.</p>", 2),
+        ]);
+        assert.equal(groups.length, 1);
+        assert.equal(groups[0].message_containers.length, 2);
+        assert.equal(groups[0].recipient_bar_url, "#narrow/stream/13-test/topic/fancy.20topic");
+    })();
+
+    (function test_direct_collapse_messages_true() {
+        // When direct messages are collapsed the recipient bar
+        // should link to the direct message conversation directly.
+        const table_name = "zfilt";
+        const filter = new Filter([{operator: "is", operand: "dm"}]);
+
+        const list = new message_list.MessageList({
+            table_name,
+            filter,
+        });
+        const view = new MessageListView(list, table_name, true);
+        const groups = view.build_message_groups([
+            build_direct_message("<p>This is a beautiful conversation.</p>", 3),
+        ]);
+        assert.equal(groups.length, 1);
+        assert.equal(groups[0].message_containers.length, 1);
+        assert.equal(groups[0].is_private, true);
+        assert.equal(groups[0].recipient_bar_url, "#narrow/dm/101-Alice");
+    })();
+
+    (function test_collapse_messages_false() {
+        // When stream messages are not collapsed the recipient bar
+        // should link to the single attached message in a near view.
+        const table_name = "zfilt";
+        const filter = new Filter([{operator: "search", operand: "beautiful"}]);
+
+        const list = new message_list.MessageList({
+            table_name,
+            filter,
+        });
+        const view = new MessageListView(list, table_name, false);
+        const groups = view.build_message_groups([
+            build_stream_message("<p>Ah what a beautiful message out today.</p>", 1),
+            build_stream_message("<p>It sure is beautiful.</p>", 2),
+            build_direct_message("<p>This is a beautiful conversation.</p>", 3),
+        ]);
+        assert.equal(groups.length, 3);
+        assert.equal(groups[0].message_containers.length, 1);
+        assert.equal(groups[1].message_containers.length, 1);
+        assert.equal(groups[2].message_containers.length, 1);
+        assert.equal(
+            groups[0].recipient_bar_url,
+            new URL("#narrow/stream/13-test/topic/fancy.20topic/near/1", window.location).href,
+        );
+        assert.equal(
+            groups[1].recipient_bar_url,
+            new URL("#narrow/stream/13-test/topic/fancy.20topic/near/2", window.location).href,
+        );
+        assert.equal(
+            groups[2].recipient_bar_url,
+            new URL("#narrow/dm/101-Alice/near/3", window.location).href,
+        );
     })();
 });
 

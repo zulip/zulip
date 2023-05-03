@@ -913,6 +913,18 @@ export function by(operator, operand, opts) {
 }
 
 export function by_topic(target_id, opts) {
+    if (
+        (opts.trigger === "message header" || opts.trigger === "hotkey") &&
+        !message_lists.current.view.collapse_messages
+    ) {
+        // For search-like views (where collapse_messages is false),
+        // we want to go to the near view for if the user selected
+        // the message by clicking on the message header or by using
+        // the keyboard shortcut.
+        by_near(target_id, opts);
+        return;
+    }
+
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const original = message_store.get(target_id);
     if (original.type !== "stream") {
@@ -943,6 +955,18 @@ export function by_topic(target_id, opts) {
 }
 
 export function by_recipient(target_id, opts) {
+    if (
+        (opts.trigger === "message header" || opts.trigger === "hotkey") &&
+        !message_lists.current.view.collapse_messages
+    ) {
+        // For search-like views (where collapse_messages is false),
+        // we want to go to the near view for if the user selected
+        // the message by clicking on the message header or by using
+        // the keyboard shortcut.
+        by_near(target_id, opts);
+        return;
+    }
+
     opts = {then_select_id: target_id, ...opts};
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
@@ -976,6 +1000,31 @@ export function by_recipient(target_id, opts) {
             by("stream", stream_data.get_stream_name_from_id(message.stream_id), opts);
             break;
     }
+}
+
+export function by_near(target_id, opts) {
+    opts = {then_select_id: target_id, ...opts};
+    // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
+    const message = message_store.get(target_id);
+    let search_terms = [];
+
+    switch (message.type) {
+        case "private":
+            search_terms = [
+                {operator: "dm", operand: message.reply_to},
+                {operator: "near", operand: target_id},
+            ];
+            break;
+
+        case "stream":
+            search_terms = [
+                {operator: "stream", operand: message.stream},
+                {operator: "topic", operand: message.topic},
+                {operator: "near", operand: target_id},
+            ];
+            break;
+    }
+    activate(search_terms, opts);
 }
 
 // Called by the narrow_to_compose_target hotkey.

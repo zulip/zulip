@@ -487,6 +487,17 @@ export class MessageListView {
                     current_group,
                     current_group.message_containers[0],
                 );
+                // Clicking on the message header from search-like views (where
+                // collapse_messages is false) should link to the near view for
+                // the message. Otherwise, we link more generally to the topic
+                // or direct message conversation.
+                if (this.collapse_messages) {
+                    current_group.recipient_bar_url = current_group.is_stream
+                        ? current_group.topic_url
+                        : current_group.pm_with_url;
+                } else {
+                    current_group.recipient_bar_url = current_group.message_containers[0].msg.url;
+                }
                 new_message_groups.push(current_group);
             }
         };
