@@ -91,4 +91,9 @@ if (page_params.server_sentry_dsn) {
             user: user_info,
         },
     });
+} else {
+    // Always add the tracing extensions, so Sentry doesn't throw runtime errors if one calls
+    // startTransaction without having created the Sentry.BrowserTracing object.
+    Sentry.addTracingExtensions();
+    Sentry.init({});
 }
