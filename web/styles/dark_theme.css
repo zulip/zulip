@@ -1167,6 +1167,26 @@
         border-color: hsl(165deg 68% 37%);
     }
 
+    .alert.alert-info {
+        color: hsl(205deg 58% 80%);
+        background-color: hsl(204deg 100% 12%);
+        border-color: hsl(205deg 58% 69% / 40%);
+
+        .banner-action-button {
+            background-color: hsl(205deg 58% 69% / 10%);
+            border-color: transparent;
+            color: hsl(205deg 58% 69%);
+
+            &:hover {
+                background-color: hsl(205deg 58% 69% / 15%);
+            }
+
+            &:active {
+                background-color: hsl(205deg 58% 69% / 20%);
+            }
+        }
+    }
+
     .alert.alert-error,
     .alert.alert-danger {
         background-color: hsl(318deg 12% 21%);
