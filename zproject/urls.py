@@ -132,9 +132,6 @@ from zerver.views.registration import (
 )
 from zerver.views.report import (
     report_csp_violations,
-    report_narrow_times,
-    report_send_times,
-    report_unnarrow_times,
 )
 from zerver.views.scheduled_messages import (
     delete_scheduled_messages,
@@ -493,20 +490,6 @@ v1_api_and_json_patterns = [
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
     rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
-    # report -> zerver.views.report
-    #
-    # These endpoints are for internal error/performance reporting
-    # from the browser to the web app, and we don't expect to ever
-    # include in our API documentation.
-    rest_path("report/send_times", POST=(report_send_times, {"intentionally_undocumented"})),
-    rest_path(
-        "report/narrow_times",
-        POST=(report_narrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
-    rest_path(
-        "report/unnarrow_times",
-        POST=(report_unnarrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
