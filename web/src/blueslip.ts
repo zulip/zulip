@@ -88,7 +88,7 @@ export function warn(msg: string, more_info?: unknown): void {
 
 class BlueslipError extends Error {
     override name = "BlueslipError";
-    more_info?: unknown;
+    more_info?: object;
     constructor(msg: string, more_info?: object | undefined) {
         super(msg);
         if (more_info !== undefined) {
