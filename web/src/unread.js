@@ -411,6 +411,10 @@ class UnreadTopicCounter {
 
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            if (stream_id === undefined) {
+                // This is a private message containing a mention.
+                continue;
+            }
             streams_with_mentions.add(stream_id);
         }
 
@@ -423,6 +427,11 @@ class UnreadTopicCounter {
         // in an unmuted topic within a muted stream.
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            if (stream_id === undefined) {
+                // This is a private message containing a mention.
+                continue;
+            }
+
             const stream_bucketer = this.bucketer.get_bucket(stream_id);
             const topic = stream_bucketer.reverse_lookup.get(message_id);
             if (user_topics.is_topic_unmuted(stream_id, topic)) {
