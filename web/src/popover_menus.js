@@ -811,6 +811,17 @@ export function initialize() {
         },
     };
 
+    const send_later_monday = {
+        monday_nine_am: {
+            text: $t({defaultMessage: "Monday at 9:00 AM"}),
+            time: "9:00 am",
+        },
+    };
+
+    const send_later_custom = {
+        text: $t({defaultMessage: "Custom"}),
+    };
+
     function set_compose_box_schedule(element) {
         const send_later_in = element.id;
         const send_later_class = element.classList[0];
@@ -827,6 +838,15 @@ export function initialize() {
                 const date = new Date();
                 const send_at_time =
                     format(date.setDate(date.getDate()), "MMM d yyyy ") + send_time;
+                return send_at_time;
+            }
+            case "send_later_monday": {
+                const send_time = send_later_monday[send_later_in].time;
+                const date = new Date();
+                // Subtract from 8 to find the next Monday.
+                const monday_offset = 8 - date.getDay();
+                const scheduled_date = date.setDate(date.getDate() + monday_offset);
+                const send_at_time = format(scheduled_date, "MMM d yyyy ") + send_time;
                 return send_at_time;
             }
             // No default
@@ -868,8 +888,10 @@ export function initialize() {
 
                 // Only show send later options that are possible today.
                 const date = new Date();
+                const day = date.getDay(); // Starts with 0 for Sunday.
                 const hours = date.getHours();
                 let possible_send_later_today = {};
+                let possible_send_later_monday = {};
                 if (hours <= 8) {
                     possible_send_later_today = send_later_today;
                 } else if (hours <= 15) {
@@ -877,11 +899,19 @@ export function initialize() {
                 } else {
                     possible_send_later_today = false;
                 }
+                // Show send_later_monday options only on Fridays and Saturdays.
+                if (day >= 5) {
+                    possible_send_later_monday = send_later_monday;
+                } else {
+                    possible_send_later_monday = false;
+                }
 
                 $("body").append(
                     render_send_later_modal({
                         possible_send_later_today,
                         send_later_tomorrow,
+                        possible_send_later_monday,
+                        send_later_custom,
                     }),
                 );
                 overlays.open_modal("send_later_modal", {
@@ -916,7 +946,7 @@ export function initialize() {
                         });
                         $send_later_modal.one(
                             "click",
-                            ".send_later_today, .send_later_tomorrow",
+                            ".send_later_today, .send_later_tomorrow, .send_later_monday",
                             (e) => {
                                 const send_at_time = set_compose_box_schedule(e.currentTarget);
                                 do_schedule_message(send_at_time);
