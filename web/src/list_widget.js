@@ -92,6 +92,21 @@ export function numeric_sort(prop) {
     };
 }
 
+const generic_sorts = {
+    alphabetic: alphabetic_sort,
+    numeric: numeric_sort,
+};
+
+export function generic_sort_functions(generic_func, props) {
+    const sorting_functions = {};
+    for (const prop of props) {
+        const key = `${prop}_${generic_func}`;
+        sorting_functions[key] = generic_sorts[generic_func](prop);
+    }
+
+    return sorting_functions;
+}
+
 export function valid_filter_opts(opts) {
     if (!opts.filter) {
         return true;
@@ -146,10 +161,6 @@ export function create($container, list, opts) {
     const meta = {
         sorting_function: null,
         sorting_functions: new Map(),
-        generic_sorting_functions: {
-            alphabetic: alphabetic_sort,
-            numeric: numeric_sort,
-        },
         offset: 0,
         list,
         filtered_list: list,
@@ -281,18 +292,20 @@ export function create($container, list, opts) {
             meta.reverse_mode = reverse_mode;
         },
 
-        // the sorting function is either the function or string that calls the
-        // function to sort the list by. The prop is used for generic functions
-        // that can be called to sort with a particular prop.
-        set_sorting_function(sorting_function, prop) {
+        // the sorting function is either the function or a string which will be a key
+        // for the sorting_functions map to get the function. In case of generic sort
+        // functions like numeric and alphabetic, we pass the string in the given format -
+        // "{property}_{numeric|alphabetic}" - e.g. "email_alphabetic" or "age_numeric".
+        set_sorting_function(sorting_function) {
             if (typeof sorting_function === "function") {
                 meta.sorting_function = sorting_function;
             } else if (typeof sorting_function === "string") {
-                if (typeof prop === "string") {
-                    meta.sorting_function = meta.generic_sorting_functions[sorting_function](prop);
-                } else {
-                    meta.sorting_function = meta.sorting_functions.get(sorting_function);
+                if (!meta.sorting_functions.has(sorting_function)) {
+                    blueslip.error("Sorting function not found: " + sorting_function);
+                    return;
                 }
+
+                meta.sorting_function = meta.sorting_functions.get(sorting_function);
             }
         },
 
@@ -407,7 +420,8 @@ export function create($container, list, opts) {
         },
 
         sort(sorting_function, prop) {
-            widget.set_sorting_function(sorting_function, prop);
+            const key = prop ? `${prop}_${sorting_function}` : sorting_function;
+            widget.set_sorting_function(key);
             widget.hard_redraw();
         },
 
@@ -431,7 +445,7 @@ export function create($container, list, opts) {
     }
 
     if (opts.init_sort) {
-        widget.set_sorting_function(...opts.init_sort);
+        widget.set_sorting_function(opts.init_sort);
     }
 
     if (opts.initially_descending_sort) {
@@ -483,7 +497,7 @@ export function handle_sort($th, list) {
 
     list.set_reverse_mode($th.hasClass("descend"));
 
-    // if `prop_name` is defined, it will trigger the generic codepath,
+    // if `prop_name` is defined, it will trigger the generic sort functions,
     // and not if it is undefined.
     list.sort(sort_type, prop_name);
 }

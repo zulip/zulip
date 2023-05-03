@@ -6,14 +6,16 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-const list_widget = mock_esm("../src/list_widget");
+const noop = () => {};
+
+const list_widget = mock_esm("../src/list_widget", {
+    generic_sort_functions: noop,
+});
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
-
-const noop = () => {};
 
 run_test("settings", ({override}) => {
     people.add_active_user({user_id: 5, email: "five@zulip.com", full_name: "Feivel Fiverson"});

@@ -43,7 +43,7 @@ let expected_data_to_replace_in_list_widget;
 
 const ListWidget = mock_esm("../src/list_widget", {
     modifier: noop,
-
+    generic_sort_functions: noop,
     create(_container, mapped_topic_values, opts) {
         const formatted_topics = [];
         ListWidget.modifier = opts.modifier;

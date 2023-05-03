@@ -83,9 +83,10 @@ export function populate_exports_table(exports) {
             },
         },
         $parent_container: $("#data-exports").expectOne(),
-        init_sort: [sort_user],
+        init_sort: sort_user,
         sort_fields: {
             user: sort_user,
+            ...ListWidget.generic_sort_functions("numeric", ["export_time"]),
         },
         $simplebar_container: $("#data-exports .progressive-table-wrapper"),
     });

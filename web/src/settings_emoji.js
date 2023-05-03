@@ -138,8 +138,9 @@ export function populate_emoji() {
         $parent_container: $("#emoji-settings").expectOne(),
         sort_fields: {
             author_full_name: sort_author_full_name,
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
         },
-        init_sort: ["alphabetic", "name"],
+        init_sort: "name_alphabetic",
         $simplebar_container: $("#emoji-settings .progressive-table-wrapper"),
     });
 

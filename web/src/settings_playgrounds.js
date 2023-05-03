@@ -60,7 +60,14 @@ export function populate_playgrounds(playgrounds_data) {
             },
         },
         $parent_container: $("#playground-settings").expectOne(),
-        init_sort: ["alphabetic", "pygments_language"],
+        init_sort: "pygments_language_alphabetic",
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", [
+                "pygments_language",
+                "name",
+                "url_prefix",
+            ]),
+        },
         $simplebar_container: $("#playground-settings .progressive-table-wrapper"),
     });
 }

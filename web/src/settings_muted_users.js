@@ -36,6 +36,10 @@ export function populate_list() {
                 );
             },
         },
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["user_name"]),
+            ...ListWidget.generic_sort_functions("numeric", ["date_muted"]),
+        },
         $parent_container: $("#muted-user-settings"),
         $simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),
     });

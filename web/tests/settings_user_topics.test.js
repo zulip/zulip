@@ -6,13 +6,15 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-const list_widget = mock_esm("../src/list_widget");
+const noop = () => {};
+
+const list_widget = mock_esm("../src/list_widget", {
+    generic_sort_functions: noop,
+});
 
 const settings_user_topics = zrequire("settings_user_topics");
 const stream_data = zrequire("stream_data");
 const user_topics = zrequire("user_topics");
-
-const noop = () => {};
 
 const frontend = {
     stream_id: 101,

@@ -302,11 +302,12 @@ section.bots.create_table = () => {
             onupdate: reset_scrollbar($bots_table),
         },
         $parent_container: $("#admin-bot-list").expectOne(),
-        init_sort: ["alphabetic", "full_name"],
+        init_sort: "full_name_alphabetic",
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
             role: sort_role,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name", "bot_type"]),
         },
         $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
@@ -330,12 +331,13 @@ section.active.create_table = (active_users) => {
             onupdate: reset_scrollbar($users_table),
         },
         $parent_container: $("#admin-user-list").expectOne(),
-        init_sort: ["alphabetic", "full_name"],
+        init_sort: "full_name_alphabetic",
         sort_fields: {
             email: sort_email,
             last_active: sort_last_active,
             role: sort_role,
             id: sort_user_id,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
     });
@@ -359,11 +361,12 @@ section.deactivated.create_table = (deactivated_users) => {
             onupdate: reset_scrollbar($deactivated_users_table),
         },
         $parent_container: $("#admin-deactivated-users-list").expectOne(),
-        init_sort: ["alphabetic", "full_name"],
+        init_sort: "full_name_alphabetic",
         sort_fields: {
             email: sort_email,
             role: sort_role,
             id: sort_user_id,
+            ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
     });
