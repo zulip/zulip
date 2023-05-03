@@ -5,6 +5,7 @@ const path = require("path");
 
 require("css.escape");
 require("handlebars/runtime");
+const Sentry = require("@sentry/browser");
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
@@ -37,6 +38,9 @@ require("@babel/register")({
     ],
     root: path.resolve(__dirname, "../.."),
 });
+
+// Ensure that startTransaction and friends are available at runtime
+Sentry.addTracingExtensions();
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {
