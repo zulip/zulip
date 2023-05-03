@@ -12,6 +12,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
@@ -967,11 +968,15 @@ export function save_message_row_edit($row) {
                 }
 
                 hide_message_edit_spinner($row);
-                const message = channel.xhr_error_message(
-                    $t({defaultMessage: "Error saving edit"}),
-                    xhr,
+                const message = channel.xhr_error_message(null, xhr);
+                const $container = compose_banner.get_compose_banner_container(
+                    $row.find("textarea"),
                 );
-                $row.find(".edit_error").text(message).show();
+                compose_banner.show_error_message(
+                    message,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $container,
+                );
             }
         },
     });
