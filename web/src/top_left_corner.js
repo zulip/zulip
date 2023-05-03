@@ -22,7 +22,7 @@ export function update_scheduled_messages_row() {
     ui_util.update_unread_count_in_dom($scheduled_li, count);
 }
 
-export function update_dom_with_unread_counts(counts) {
+export function update_dom_with_unread_counts(counts, skip_animations) {
     // Note that "Private messages" counts are handled in pm_list.js.
 
     // mentioned/home have simple integer counts
@@ -32,7 +32,9 @@ export function update_dom_with_unread_counts(counts) {
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_li, counts.home_unread_messages);
 
-    animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+    if (!skip_animations) {
+        animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+    }
 }
 
 function remove($elem) {

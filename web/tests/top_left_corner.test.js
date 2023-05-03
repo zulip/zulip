@@ -74,7 +74,7 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_scheduled_messages"), "<scheduled-count>");
 
-    top_left_corner.update_dom_with_unread_counts(counts);
+    top_left_corner.update_dom_with_unread_counts(counts, false);
     top_left_corner.update_starred_count(444);
     // Calls top_left_corner.update_scheduled_messages_row
     top_left_corner.initialize();
@@ -87,7 +87,7 @@ run_test("update_count_in_dom", () => {
     counts.mentioned_message_count = 0;
     scheduled_messages.get_count = () => 0;
 
-    top_left_corner.update_dom_with_unread_counts(counts);
+    top_left_corner.update_dom_with_unread_counts(counts, false);
     top_left_corner.update_starred_count(0);
     top_left_corner.update_scheduled_messages_row();
 
