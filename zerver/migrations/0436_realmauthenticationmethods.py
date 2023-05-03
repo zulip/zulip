@@ -11,12 +11,13 @@ def fill_RealmAuthenticationMethod_data(
 ) -> None:
     Realm = apps.get_model("zerver", "Realm")
     RealmAuthenticationMethod = apps.get_model("zerver", "RealmAuthenticationMethod")
+    rows_to_create = []
     for realm in Realm.objects.order_by("id"):
-        rows_to_create = []
         for key, value in realm.authentication_methods.iteritems():
             if value:
                 rows_to_create.append(RealmAuthenticationMethod(name=key, realm_id=realm.id))
-        RealmAuthenticationMethod.objects.bulk_create(rows_to_create)
+
+    RealmAuthenticationMethod.objects.bulk_create(rows_to_create, batch_size=10000)
 
 
 class Migration(migrations.Migration):
