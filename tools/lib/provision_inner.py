@@ -314,7 +314,7 @@ def main(options: argparse.Namespace) -> int:
             print("No need to regenerate the test DB.")
 
         if options.is_force or need_to_run_compilemessages():
-            run(["./manage.py", "compilemessages"])
+            run(["./manage.py", "compilemessages", "--ignore=*"])
             write_new_digest(
                 "last_compilemessages_hash",
                 compilemessages_paths(),
