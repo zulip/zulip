@@ -33,10 +33,6 @@ const consts = {
 function process_result(data, opts) {
     let messages = data.messages;
 
-    if (!$("#connection-error").hasClass("get-events-error")) {
-        ui_report.hide_error($("#connection-error"));
-    }
-
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     // In some rare situations, we expect to discover new unread
@@ -256,9 +252,20 @@ export function load_messages(opts, attempt = 1) {
         url: "/json/messages",
         data,
         success(data) {
+            if (!$("#connection-error").hasClass("get-events-error")) {
+                ui_report.hide_error($("#connection-error"));
+            }
+
             get_messages_success(data, opts);
         },
         error(xhr) {
+            if (xhr.status === 400 && !$("#connection-error").hasClass("get-events-error")) {
+                // We successfully reached the server, so hide the
+                // connection error notice, even if the request failed
+                // for other reasons.
+                ui_report.hide_error($("#connection-error"));
+            }
+
             if (opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
                 // We unnarrowed before getting an error so don't
                 // bother trying again or doing further processing.
