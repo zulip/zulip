@@ -96,4 +96,4 @@ class ThumbnailTest(ZulipTestCase):
                 "size": "full",
             },
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)

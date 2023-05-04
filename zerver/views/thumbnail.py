@@ -39,7 +39,11 @@ def backend_serve_thumbnail(
         assert isinstance(maybe_user_profile, UserProfile)
         realm = maybe_user_profile.realm
 
-    if not validate_thumbnail_request(realm, maybe_user_profile, url):
+    validation_result = validate_thumbnail_request(realm, maybe_user_profile, url)
+    if validation_result is None:
+        return redirect("static/images/errors/missing_image.png")
+
+    if not validation_result:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
 
     thumbnail_url = generate_thumbnail_url(url)
