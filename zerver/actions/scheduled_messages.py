@@ -205,6 +205,7 @@ def construct_send_request(scheduled_message: ScheduledMessage) -> SendMessageRe
 
 
 def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
+    assert not scheduled_message.delivered
     message_send_request = construct_send_request(scheduled_message)
     do_send_messages([message_send_request])
     scheduled_message.delivered = True
