@@ -229,28 +229,39 @@ export function warn_if_topic_resolved(topic_changed) {
     }
 }
 
-function show_wildcard_warnings(stream_id, $banner_container, wildcard_mention) {
-    const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
-    const stream_name = stream_data.maybe_get_stream_name(stream_id);
-    const is_edit_container = $banner_container.closest(".edit_form_banners").length > 0;
-    const button_text = is_edit_container
-        ? $t({defaultMessage: "Yes, save"})
+function show_wildcard_warnings(opts) {
+    const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
+    const stream_name = stream_data.maybe_get_stream_name(opts.stream_id);
+    const is_edit_container = opts.$banner_container.closest(".edit_form_banners").length > 0;
+    const classname = compose_banner.CLASSNAMES.wildcard_warning;
+
+    let button_text = opts.scheduling_message
+        ? $t({defaultMessage: "Yes, schedule"})
         : $t({defaultMessage: "Yes, send"});
 
-    const classname = compose_banner.CLASSNAMES.wildcard_warning;
+    if (is_edit_container) {
+        button_text = $t({defaultMessage: "Yes, save"});
+    }
+
     const wildcard_template = render_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
         stream_name,
-        wildcard_mention,
+        wildcard_mention: opts.wildcard_mention,
         button_text,
         hide_close_button: true,
         classname,
     });
 
     // only show one error for any number of @all or @everyone mentions
-    if ($banner_container.find(`.${CSS.escape(classname)}`).length === 0) {
-        compose_banner.append_compose_banner_to_banner_list(wildcard_template, $banner_container);
+    if (opts.$banner_container.find(`.${CSS.escape(classname)}`).length === 0) {
+        compose_banner.append_compose_banner_to_banner_list(
+            wildcard_template,
+            opts.$banner_container,
+        );
+    } else {
+        // if there is already a banner, replace it with the new one
+        opts.$banner_container.find(`.${CSS.escape(classname)}`).replaceWith(wildcard_template);
     }
 
     user_acknowledged_wildcard = false;
@@ -356,12 +367,15 @@ export function set_wildcard_mention_large_stream_threshold(value) {
     wildcard_mention_large_stream_threshold = value;
 }
 
-export function validate_stream_message_mentions(stream_id, $banner_container, wildcard_mention) {
-    const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
+export function validate_stream_message_mentions(opts) {
+    const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
     // stream, check if they permission to do so.
-    if (wildcard_mention !== null && subscriber_count > wildcard_mention_large_stream_threshold) {
+    if (
+        opts.wildcard_mention !== null &&
+        subscriber_count > wildcard_mention_large_stream_threshold
+    ) {
         if (!wildcard_mention_allowed()) {
             compose_banner.show_error_message(
                 $t({
@@ -369,13 +383,13 @@ export function validate_stream_message_mentions(stream_id, $banner_container, w
                         "You do not have permission to use wildcard mentions in this stream.",
                 }),
                 compose_banner.CLASSNAMES.wildcards_not_allowed,
-                $banner_container,
+                opts.$banner_container,
             );
             return false;
         }
 
         if (!user_acknowledged_wildcard) {
-            show_wildcard_warnings(stream_id, $banner_container, wildcard_mention);
+            show_wildcard_warnings(opts);
 
             $("#compose-send-button").prop("disabled", false);
             compose_ui.hide_compose_spinner();
@@ -383,7 +397,7 @@ export function validate_stream_message_mentions(stream_id, $banner_container, w
         }
     } else {
         // the message no longer contains @all or @everyone
-        clear_wildcard_warnings($banner_container);
+        clear_wildcard_warnings(opts.$banner_container);
     }
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
     user_acknowledged_wildcard = false;
@@ -443,7 +457,7 @@ export function validate_stream_message_address_info(stream_name) {
     return validation_error(error_type, stream_name);
 }
 
-function validate_stream_message() {
+function validate_stream_message(scheduling_message) {
     const stream_name = compose_state.stream_name();
     const $banner_container = $("#compose_banners");
     if (stream_name === "") {
@@ -491,7 +505,12 @@ function validate_stream_message() {
 
     if (
         !validate_stream_message_address_info(stream_name) ||
-        !validate_stream_message_mentions(sub.stream_id, $banner_container, wildcard_mention)
+        !validate_stream_message_mentions({
+            stream_id: sub.stream_id,
+            $banner_container,
+            wildcard_mention,
+            scheduling_message,
+        })
     ) {
         return false;
     }
@@ -624,7 +643,7 @@ export function validate_message_length() {
     return true;
 }
 
-export function validate() {
+export function validate(scheduling_message) {
     const message_content = compose_state.message_content();
     if (/^\s*$/.test(message_content)) {
         $("#compose-textarea").toggleClass("invalid", true);
@@ -649,5 +668,5 @@ export function validate() {
     if (compose_state.get_message_type() === "private") {
         return validate_private_message();
     }
-    return validate_stream_message();
+    return validate_stream_message(scheduling_message);
 }
