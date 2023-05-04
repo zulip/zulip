@@ -56,10 +56,10 @@ Usage: ./manage.py deliver_scheduled_messages
                     messages_to_deliver = ScheduledMessage.objects.filter(
                         scheduled_timestamp__lte=timezone_now(), delivered=False
                     ).select_for_update()
-                    for message in messages_to_deliver:
-                        do_send_messages([self.construct_message(message)])
-                        message.delivered = True
-                        message.save(update_fields=["delivered"])
+                    for scheduled_message in messages_to_deliver:
+                        do_send_messages([self.construct_message(scheduled_message)])
+                        scheduled_message.delivered = True
+                        scheduled_message.save(update_fields=["delivered"])
 
                 cur_time = timezone_now()
                 time_next_min = (cur_time + timedelta(minutes=1)).replace(second=0, microsecond=0)
