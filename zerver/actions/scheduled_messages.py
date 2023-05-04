@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from zerver.actions.message_send import build_message_send_dict, check_message, do_send_messages
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
 from zerver.lib.message import SendMessageRequest, render_markdown
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.models import (
@@ -206,6 +206,16 @@ def construct_send_request(scheduled_message: ScheduledMessage) -> SendMessageRe
 
 def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     assert not scheduled_message.delivered
+    assert not scheduled_message.failed
+
+    # Repeat the checks from validate_account_and_subdomain, in case
+    # the state changed since the message as scheduled.
+    if scheduled_message.realm.deactivated:
+        raise RealmDeactivatedError
+
+    if not scheduled_message.sender.is_active:
+        raise UserDeactivatedError
+
     message_send_request = construct_send_request(scheduled_message)
     do_send_messages([message_send_request])
     scheduled_message.delivered = True

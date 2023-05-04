@@ -24,7 +24,11 @@ def get_undelivered_scheduled_messages(
     user_profile: UserProfile,
 ) -> List[Union[APIScheduledDirectMessageDict, APIScheduledStreamMessageDict]]:
     scheduled_messages = ScheduledMessage.objects.filter(
-        sender=user_profile, delivered=False, delivery_type=ScheduledMessage.SEND_LATER
+        sender=user_profile,
+        # Notably, we don't require failed=False, since we will want
+        # to display those to users.
+        delivered=False,
+        delivery_type=ScheduledMessage.SEND_LATER,
     ).order_by("scheduled_timestamp")
     scheduled_message_dicts: List[
         Union[APIScheduledDirectMessageDict, APIScheduledStreamMessageDict]
