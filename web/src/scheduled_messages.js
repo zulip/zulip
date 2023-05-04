@@ -48,7 +48,23 @@ export function update_scheduled_message(scheduled_message) {
     sort_scheduled_messages_data();
 }
 
-export function open_scheduled_message_in_compose(scheduled_msg) {
+function narrow_via_edit_scheduled_message(compose_args) {
+    if (compose_args.type === "stream") {
+        narrow.activate(
+            [
+                {operator: "stream", operand: compose_args.stream},
+                {operator: "topic", operand: compose_args.topic},
+            ],
+            {trigger: "edit scheduled message"},
+        );
+    } else {
+        narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
+            trigger: "edit scheduled message",
+        });
+    }
+}
+
+export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient) {
     let compose_args;
     if (scheduled_msg.type === "stream") {
         compose_args = {
@@ -71,18 +87,8 @@ export function open_scheduled_message_in_compose(scheduled_msg) {
         };
     }
 
-    if (compose_args.type === "stream") {
-        narrow.activate(
-            [
-                {operator: "stream", operand: compose_args.stream},
-                {operator: "topic", operand: compose_args.topic},
-            ],
-            {trigger: "edit scheduled message"},
-        );
-    } else {
-        narrow.activate([{operator: "dm", operand: compose_args.private_message_recipient}], {
-            trigger: "edit scheduled message",
-        });
+    if (should_narrow_to_recipient) {
+        narrow_via_edit_scheduled_message(compose_args);
     }
 
     compose.clear_compose_box();
@@ -124,12 +130,12 @@ export function send_request_to_schedule_message(scheduled_message_data, deliver
     });
 }
 
-export function edit_scheduled_message(scheduled_message_id) {
+export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
     const scheduled_msg = scheduled_messages_data.find(
         (msg) => msg.scheduled_message_id === scheduled_message_id,
     );
     delete_scheduled_message(scheduled_message_id, () =>
-        open_scheduled_message_in_compose(scheduled_msg),
+        open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient),
     );
 }
 
@@ -154,7 +160,8 @@ export function initialize(scheduled_messages_params) {
                 .attr("data-scheduled-message-id"),
             10,
         );
-        edit_scheduled_message(scheduled_message_id);
+        const should_narrow_to_recipient = false;
+        edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient);
         e.preventDefault();
         e.stopPropagation();
     });
