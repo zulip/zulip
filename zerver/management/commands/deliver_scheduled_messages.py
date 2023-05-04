@@ -30,12 +30,18 @@ Usage: ./manage.py deliver_scheduled_messages
         try:
             while True:
                 with transaction.atomic():
-                    messages_to_deliver = ScheduledMessage.objects.filter(
-                        scheduled_timestamp__lte=timezone_now(), delivered=False
-                    ).select_for_update()
-                    for scheduled_message in messages_to_deliver:
+                    scheduled_message = (
+                        ScheduledMessage.objects.filter(
+                            scheduled_timestamp__lte=timezone_now(), delivered=False
+                        )
+                        .select_for_update()
+                        .first()
+                    )
+                    if scheduled_message is not None:
                         send_scheduled_message(scheduled_message)
+                        continue
 
+                # If there's no overdue scheduled messages, go to sleep until the next minute.
                 cur_time = timezone_now()
                 time_next_min = (cur_time + timedelta(minutes=1)).replace(second=0, microsecond=0)
                 sleep_time = (time_next_min - cur_time).total_seconds()
