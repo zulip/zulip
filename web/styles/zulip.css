@@ -2729,6 +2729,10 @@ select.invite-as {
     & i.fa-copy {
         cursor: pointer;
     }
+
+    .fa-copy:hover {
+        color: hsl(170deg 48% 54%);
+    }
 }
 
 @media (width < $xl_min) {
