@@ -38,11 +38,11 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("push__delete_branch", "public-repo / feature", expected_message)
 
     def test_push_force_1_commit(self) -> None:
-        expected_message = "sbansal1999 [pushed](https://github.com/sbansal1999/zulip/compare/b6de8891fc10...971d76ca3094) 1 commit to branch temp.\n\n* log: Add important.txt which is useful for logging errors. ([971d76ca309](https://github.com/sbansal1999/zulip/commit/971d76ca309446a9c20381f6271cea8a59b4e40a))"
+        expected_message = "sbansal1999 [force pushed](https://github.com/sbansal1999/zulip/compare/b6de8891fc10...971d76ca3094) 1 commit to branch temp.\n\n* log: Add important.txt which is useful for logging errors. ([971d76ca309](https://github.com/sbansal1999/zulip/commit/971d76ca309446a9c20381f6271cea8a59b4e40a))"
         self.check_webhook("push__force_1_commit", "zulip / temp", expected_message)
 
     def test_push__force_remove_commits(self) -> None:
-        expected_message = "sbansal1999 [pushed](https://github.com/sbansal1999/zulip/compare/2084a91af9ca...9a8749ea8fe7) the branch temp."
+        expected_message = "sbansal1999 [force pushed](https://github.com/sbansal1999/zulip/compare/2084a91af9ca...9a8749ea8fe7) the branch temp."
         self.check_webhook("push__force_remove_commits", "zulip / temp", expected_message)
 
     def test_push_local_branch_without_commits(self) -> None:
