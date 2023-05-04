@@ -38,6 +38,12 @@ Usage: ./manage.py deliver_scheduled_messages
                         .first()
                     )
                     if scheduled_message is not None:
+                        logger.info(
+                            "Sending scheduled message %s with date %s (sender: %s)",
+                            scheduled_message.id,
+                            scheduled_message.scheduled_timestamp,
+                            scheduled_message.sender_id,
+                        )
                         send_scheduled_message(scheduled_message)
                         continue
 
