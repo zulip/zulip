@@ -480,6 +480,13 @@ export function initialize() {
             compose_validate.set_user_acknowledged_wildcard_flag(true);
             if (is_edit_input) {
                 message_edit.save_message_row_edit($row);
+            } else if (event.target.dataset.validationTrigger === "schedule") {
+                popover_menus.open_send_later_menu();
+
+                // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
+                // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
+                // would again show the wildcard warning banner when we actually send the message from 'send-later' modal.
+                compose_validate.set_user_acknowledged_wildcard_flag(true);
             } else {
                 finish();
             }
