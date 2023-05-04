@@ -3028,6 +3028,8 @@ select.invite-as {
     .message_row.unread {
         .date_row {
             position: relative;
+            border-left: 1px solid var(--color-message-list-border);
+            left: -1px;
             /* Needs to be lower than the z-index of message_header. */
             z-index: 3;
         }
