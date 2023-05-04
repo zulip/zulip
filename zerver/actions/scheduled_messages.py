@@ -164,17 +164,21 @@ def edit_scheduled_message(
     return scheduled_message_id
 
 
-def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
-    scheduled_message_object = access_scheduled_message(user_profile, scheduled_message_id)
-    scheduled_message_id = scheduled_message_object.id
-    scheduled_message_object.delete()
-
+def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
     event = {
         "type": "scheduled_messages",
         "op": "remove",
         "scheduled_message_id": scheduled_message_id,
     }
     send_event(user_profile.realm, event, [user_profile.id])
+
+
+def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
+    scheduled_message_object = access_scheduled_message(user_profile, scheduled_message_id)
+    scheduled_message_id = scheduled_message_object.id
+    scheduled_message_object.delete()
+
+    notify_remove_scheduled_message(user_profile, scheduled_message_id)
 
 
 def construct_send_request(scheduled_message: ScheduledMessage) -> SendMessageRequest:
@@ -205,3 +209,4 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     do_send_messages([message_send_request])
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered"])
+    notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)
