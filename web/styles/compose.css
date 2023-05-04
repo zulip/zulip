@@ -798,6 +798,17 @@ a.compose_control_button.hide {
     .dropup .dropdown-menu {
         bottom: 100%;
         margin-bottom: 17px;
+
+        @media (height <= 470px) {
+            /* To make the dropdown search visible, we move the dropdown
+               from above the compose to be inside it. This basically emulates
+               beviour for dropdown-menu when we have an expanded compose box.
+               470px was chosen based on manual testing. */
+            & {
+                top: 0;
+                bottom: auto;
+            }
+        }
     }
 
     #compose_select_recipient_name {
