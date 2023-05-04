@@ -251,6 +251,7 @@ function show_wildcard_warnings(opts) {
         button_text,
         hide_close_button: true,
         classname,
+        scheduling_message: opts.scheduling_message,
     });
 
     // only show one error for any number of @all or @everyone mentions
