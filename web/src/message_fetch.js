@@ -276,12 +276,24 @@ export function load_messages(opts, attempt = 1) {
                 // for a nonexistent stream or something.  We shouldn't
                 // retry or display a connection error.
                 //
-                // FIXME: Warn the user when this has happened?
+                // FIXME: This logic unconditionally ignores the actual JSON
+                // error in the xhr status. While we have empty narrow messages
+                // for many common errors, and those have nicer HTML formatting,
+                // we certainly don't for every possible 400 error.
                 message_scroll.hide_indicators();
-                const data = {
-                    messages: [],
-                };
-                process_result(data, opts);
+
+                if (
+                    opts.msg_list === message_lists.current &&
+                    opts.msg_list.narrowed &&
+                    opts.msg_list.visibly_empty()
+                ) {
+                    narrow_banner.show_empty_narrow_message();
+                }
+
+                // TODO: This should probably do something explicit with
+                // `FetchStatus` to mark the message list as not eligible for
+                // further fetches. Currently, that happens implicitly via
+                // failing to call finish_older_batch / finish_newer_batch
                 return;
             }
 
