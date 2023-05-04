@@ -234,6 +234,75 @@ export function toggle_message_actions_menu(message) {
     return true;
 }
 
+function set_compose_box_schedule(element) {
+    const selected_send_at_time = element.dataset.sendStamp / 1000;
+    return selected_send_at_time;
+}
+
+export function open_send_later_menu(instance) {
+    if (!compose_validate.validate(true)) {
+        return;
+    }
+
+    // Only show send later options that are possible today.
+    const date = new Date();
+    const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
+    $("body").append(render_send_later_modal(filtered_send_opts));
+
+    overlays.open_modal("send_later_modal", {
+        autoremove: true,
+        on_show() {
+            instance._interval = setInterval(
+                scheduled_messages.update_send_later_options,
+                scheduled_messages.SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
+            );
+
+            const $send_later_modal = $("#send_later_modal");
+            $send_later_modal.on("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.target.click();
+                }
+            });
+            $send_later_modal.on("click", ".send_later_custom", (e) => {
+                const $send_later_modal_content = $send_later_modal.find(".modal__content");
+                const current_time = new Date();
+                flatpickr.show_flatpickr(
+                    $(".send_later_custom")[0],
+                    do_schedule_message,
+                    new Date(current_time.getTime() + 60 * 60 * 1000),
+                    {
+                        minDate: new Date(
+                            current_time.getTime() +
+                                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
+                        ),
+                        onClose() {
+                            // Return to normal state.
+                            $send_later_modal_content.css("pointer-events", "all");
+                        },
+                    },
+                );
+                // Disable interaction with rest of the options in the modal.
+                $send_later_modal_content.css("pointer-events", "none");
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            $send_later_modal.one(
+                "click",
+                ".send_later_today, .send_later_tomorrow, .send_later_monday",
+                (e) => {
+                    const send_at_time = set_compose_box_schedule(e.currentTarget);
+                    do_schedule_message(send_at_time);
+                    e.preventDefault();
+                    e.stopPropagation();
+                },
+            );
+        },
+        on_hide() {
+            clearInterval(instance._interval);
+        },
+    });
+}
+
 export function do_schedule_message(send_at_time) {
     overlays.close_modal_if_open("send_later_modal");
 
@@ -791,11 +860,6 @@ export function initialize() {
         },
     });
 
-    function set_compose_box_schedule(element) {
-        const selected_send_at_time = element.dataset.sendStamp / 1000;
-        return selected_send_at_time;
-    }
-
     delegate("body", {
         ...default_popover_props,
         target: "#send_later i",
@@ -822,71 +886,7 @@ export function initialize() {
                 const send_at_timestamp = get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
             });
-            $popper.one("click", ".open_send_later_modal", () => {
-                if (!compose_validate.validate(true)) {
-                    return;
-                }
-
-                // Only show send later options that are possible today.
-                const date = new Date();
-                const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
-                $("body").append(render_send_later_modal(filtered_send_opts));
-
-                overlays.open_modal("send_later_modal", {
-                    autoremove: true,
-                    on_show() {
-                        instance._interval = setInterval(
-                            scheduled_messages.update_send_later_options,
-                            scheduled_messages.SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
-                        );
-
-                        const $send_later_modal = $("#send_later_modal");
-                        $send_later_modal.on("keydown", (e) => {
-                            if (e.key === "Enter") {
-                                e.target.click();
-                            }
-                        });
-                        $send_later_modal.on("click", ".send_later_custom", (e) => {
-                            const $send_later_modal_content =
-                                $send_later_modal.find(".modal__content");
-                            const current_time = new Date();
-                            flatpickr.show_flatpickr(
-                                $(".send_later_custom")[0],
-                                do_schedule_message,
-                                new Date(current_time.getTime() + 60 * 60 * 1000),
-                                {
-                                    minDate: new Date(
-                                        current_time.getTime() +
-                                            scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS *
-                                                1000,
-                                    ),
-                                    onClose() {
-                                        // Return to normal state.
-                                        $send_later_modal_content.css("pointer-events", "all");
-                                    },
-                                },
-                            );
-                            // Disable interaction with rest of the options in the modal.
-                            $send_later_modal_content.css("pointer-events", "none");
-                            e.preventDefault();
-                            e.stopPropagation();
-                        });
-                        $send_later_modal.one(
-                            "click",
-                            ".send_later_today, .send_later_tomorrow, .send_later_monday",
-                            (e) => {
-                                const send_at_time = set_compose_box_schedule(e.currentTarget);
-                                do_schedule_message(send_at_time);
-                                e.preventDefault();
-                                e.stopPropagation();
-                            },
-                        );
-                    },
-                    on_hide() {
-                        clearInterval(instance._interval);
-                    },
-                });
-            });
+            $popper.one("click", ".open_send_later_modal", () => open_send_later_menu(instance));
         },
         onHidden(instance) {
             instance.destroy();
