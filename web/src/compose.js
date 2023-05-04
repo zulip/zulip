@@ -292,7 +292,7 @@ export function enter_with_preview_open(ctrl_pressed = false) {
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export function finish(from_do_schedule_message = false) {
+export function finish(scheduling_message = false) {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -318,13 +318,13 @@ export function finish(from_do_schedule_message = false) {
 
     compose_ui.show_compose_spinner();
 
-    if (!compose_validate.validate()) {
+    if (!compose_validate.validate(scheduling_message)) {
         // If the message failed validation, hide compose spinner.
         compose_ui.hide_compose_spinner();
         return false;
     }
 
-    if (from_do_schedule_message) {
+    if (scheduling_message) {
         schedule_message_to_custom_date();
     } else {
         send_message();

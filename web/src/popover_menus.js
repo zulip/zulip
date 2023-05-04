@@ -823,7 +823,7 @@ export function initialize() {
                 do_schedule_message(send_at_timestamp);
             });
             $popper.one("click", ".open_send_later_modal", () => {
-                if (!compose_validate.validate()) {
+                if (!compose_validate.validate(true)) {
                     return;
                 }
 
