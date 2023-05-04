@@ -1,19 +1,55 @@
+import {format} from "date-fns";
 import $ from "jquery";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
+import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as stream_data from "./stream_data";
 
 export let scheduled_messages_data = [];
+
+const send_later_today = {
+    today_nine_am: {
+        text: $t({defaultMessage: "Today at 9:00 AM"}),
+        time: "9:00 am",
+    },
+    today_four_pm: {
+        text: $t({defaultMessage: "Today at 4:00 PM"}),
+        time: "4:00 pm",
+    },
+};
+
+const send_later_tomorrow = {
+    tomorrow_nine_am: {
+        text: $t({defaultMessage: "Tomorrow at 9:00 AM"}),
+        time: "9:00 am",
+    },
+    tomorrow_four_pm: {
+        text: $t({defaultMessage: "Tomorrow at 4:00 PM"}),
+        time: "4:00 pm",
+    },
+};
+
+const send_later_monday = {
+    monday_nine_am: {
+        text: $t({defaultMessage: "Monday at 9:00 AM"}),
+        time: "9:00 am",
+    },
+};
+
+const send_later_custom = {
+    text: $t({defaultMessage: "Custom"}),
+};
 
 function sort_scheduled_messages_data() {
     scheduled_messages_data.sort(
@@ -142,6 +178,60 @@ export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
 
 export function get_count() {
     return scheduled_messages_data.length;
+}
+
+export function get_filtered_send_opts(date) {
+    const day = date.getDay(); // Starts with 0 for Sunday.
+    const hours = date.getHours();
+    let possible_send_later_today = {};
+    let possible_send_later_monday = {};
+    if (hours <= 8) {
+        possible_send_later_today = send_later_today;
+    } else if (hours <= 15) {
+        possible_send_later_today.today_four_pm = send_later_today.today_four_pm;
+    } else {
+        possible_send_later_today = false;
+    }
+    // Show send_later_monday options only on Fridays and Saturdays.
+    if (day >= 5) {
+        possible_send_later_monday = send_later_monday;
+    } else {
+        possible_send_later_monday = false;
+    }
+
+    return {
+        possible_send_later_today,
+        send_later_tomorrow,
+        possible_send_later_monday,
+        send_later_custom,
+    };
+}
+
+export function get_send_at_time_from_opts(send_later_in, send_later_class, date) {
+    switch (send_later_class) {
+        case "send_later_tomorrow": {
+            const send_time = send_later_tomorrow[send_later_in].time;
+            const scheduled_date = date.setDate(date.getDate() + 1);
+            const send_at_time = format(scheduled_date, "MMM d yyyy ") + send_time;
+            return send_at_time;
+        }
+        case "send_later_today": {
+            const send_time = send_later_today[send_later_in].time;
+            const send_at_time = format(date.setDate(date.getDate()), "MMM d yyyy ") + send_time;
+            return send_at_time;
+        }
+        case "send_later_monday": {
+            const send_time = send_later_monday[send_later_in].time;
+            // Subtract from 8 to find the next Monday.
+            const monday_offset = 8 - date.getDay();
+            const scheduled_date = date.setDate(date.getDate() + monday_offset);
+            const send_at_time = format(scheduled_date, "MMM d yyyy ") + send_time;
+            return send_at_time;
+        }
+        // No default
+    }
+    blueslip.error("Not a valid time.");
+    return false;
 }
 
 export function initialize(scheduled_messages_params) {

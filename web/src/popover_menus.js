@@ -3,7 +3,6 @@
    popovers system in popovers.js. */
 
 import ClipboardJS from "clipboard";
-import {format} from "date-fns";
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
@@ -43,6 +42,7 @@ import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
+import * as scheduled_messages from "./scheduled_messages";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -789,70 +789,16 @@ export function initialize() {
         },
     });
 
-    const send_later_today = {
-        today_nine_am: {
-            text: $t({defaultMessage: "Today at 9:00 AM"}),
-            time: "9:00 am",
-        },
-        today_four_pm: {
-            text: $t({defaultMessage: "Today at 4:00 PM "}),
-            time: "4:00 pm",
-        },
-    };
-
-    const send_later_tomorrow = {
-        tomorrow_nine_am: {
-            text: $t({defaultMessage: "Tomorrow at 9:00 AM"}),
-            time: "9:00 am",
-        },
-        tomorrow_four_pm: {
-            text: $t({defaultMessage: "Tomorrow at 4:00 PM "}),
-            time: "4:00 pm",
-        },
-    };
-
-    const send_later_monday = {
-        monday_nine_am: {
-            text: $t({defaultMessage: "Monday at 9:00 AM"}),
-            time: "9:00 am",
-        },
-    };
-
-    const send_later_custom = {
-        text: $t({defaultMessage: "Custom"}),
-    };
-
     function set_compose_box_schedule(element) {
         const send_later_in = element.id;
         const send_later_class = element.classList[0];
-        switch (send_later_class) {
-            case "send_later_tomorrow": {
-                const send_time = send_later_tomorrow[send_later_in].time;
-                const date = new Date();
-                const scheduled_date = date.setDate(date.getDate() + 1);
-                const send_at_time = format(scheduled_date, "MMM d yyyy ") + send_time;
-                return send_at_time;
-            }
-            case "send_later_today": {
-                const send_time = send_later_today[send_later_in].time;
-                const date = new Date();
-                const send_at_time =
-                    format(date.setDate(date.getDate()), "MMM d yyyy ") + send_time;
-                return send_at_time;
-            }
-            case "send_later_monday": {
-                const send_time = send_later_monday[send_later_in].time;
-                const date = new Date();
-                // Subtract from 8 to find the next Monday.
-                const monday_offset = 8 - date.getDay();
-                const scheduled_date = date.setDate(date.getDate() + monday_offset);
-                const send_at_time = format(scheduled_date, "MMM d yyyy ") + send_time;
-                return send_at_time;
-            }
-            // No default
-        }
-        blueslip.error("Not a valid time.");
-        return false;
+        const date = new Date();
+        const selected_send_at_time = scheduled_messages.get_send_at_time_from_opts(
+            send_later_in,
+            send_later_class,
+            date,
+        );
+        return selected_send_at_time;
     }
 
     delegate("body", {
@@ -888,32 +834,9 @@ export function initialize() {
 
                 // Only show send later options that are possible today.
                 const date = new Date();
-                const day = date.getDay(); // Starts with 0 for Sunday.
-                const hours = date.getHours();
-                let possible_send_later_today = {};
-                let possible_send_later_monday = {};
-                if (hours <= 8) {
-                    possible_send_later_today = send_later_today;
-                } else if (hours <= 15) {
-                    possible_send_later_today.today_four_pm = send_later_today.today_four_pm;
-                } else {
-                    possible_send_later_today = false;
-                }
-                // Show send_later_monday options only on Fridays and Saturdays.
-                if (day >= 5) {
-                    possible_send_later_monday = send_later_monday;
-                } else {
-                    possible_send_later_monday = false;
-                }
+                const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
+                $("body").append(render_send_later_modal(filtered_send_opts));
 
-                $("body").append(
-                    render_send_later_modal({
-                        possible_send_later_today,
-                        send_later_tomorrow,
-                        possible_send_later_monday,
-                        send_later_custom,
-                    }),
-                );
                 overlays.open_modal("send_later_modal", {
                     autoremove: true,
                     on_show() {
