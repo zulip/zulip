@@ -4327,6 +4327,11 @@ class ScheduledMessage(models.Model):
     delivered = models.BooleanField(default=False)
     has_attachment = models.BooleanField(default=False, db_index=True)
 
+    # Metadata for messages that failed to send when their scheduled
+    # moment arrived.
+    failed = models.BooleanField(default=False)
+    failure_message = models.TextField(null=True)
+
     SEND_LATER = 1
     REMIND = 2
 
