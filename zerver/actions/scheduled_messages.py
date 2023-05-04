@@ -2,16 +2,25 @@ import datetime
 from typing import List, Optional, Sequence, Tuple, Union
 
 import orjson
+from django.conf import settings
 from django.db import transaction
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.actions.message_send import check_message
+from zerver.actions.message_send import build_message_send_dict, check_message, do_send_messages
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import SendMessageRequest, render_markdown
 from zerver.lib.scheduled_messages import access_scheduled_message
-from zerver.models import Client, Realm, ScheduledMessage, UserProfile
+from zerver.models import (
+    Client,
+    Message,
+    Realm,
+    ScheduledMessage,
+    UserProfile,
+    get_user_by_delivery_email,
+)
 from zerver.tornado.django_api import send_event
 
 
@@ -166,3 +175,33 @@ def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: in
         "scheduled_message_id": scheduled_message_id,
     }
     send_event(user_profile.realm, event, [user_profile.id])
+
+
+def construct_send_request(scheduled_message: ScheduledMessage) -> SendMessageRequest:
+    message = Message()
+    original_sender = scheduled_message.sender
+    message.content = scheduled_message.content
+    message.recipient = scheduled_message.recipient
+    message.realm = scheduled_message.realm
+    message.subject = scheduled_message.subject
+    message.date_sent = timezone_now()
+    message.sending_client = scheduled_message.sending_client
+
+    delivery_type = scheduled_message.delivery_type
+    if delivery_type == ScheduledMessage.SEND_LATER:
+        message.sender = original_sender
+    elif delivery_type == ScheduledMessage.REMIND:
+        message.sender = get_user_by_delivery_email(
+            settings.NOTIFICATION_BOT, original_sender.realm
+        )
+
+    return build_message_send_dict(
+        message=message, stream=scheduled_message.stream, realm=scheduled_message.realm
+    )
+
+
+def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
+    message_send_request = construct_send_request(scheduled_message)
+    do_send_messages([message_send_request])
+    scheduled_message.delivered = True
+    scheduled_message.save(update_fields=["delivered"])
