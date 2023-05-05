@@ -47,27 +47,15 @@ class zulip::profile::postgresql {
           |-EOT
       warning($message)
     }
-    if $zulip::postgresql_common::version in ['11'] {
-      # PostgreSQL 11 and below used a recovery.conf file for replication
-      file { "${zulip::postgresql_base::postgresql_datadir}/recovery.conf":
-        ensure  => file,
-        require => Package[$zulip::postgresql_base::postgresql],
-        owner   => 'postgres',
-        group   => 'postgres',
-        mode    => '0644',
-        content => template('zulip/postgresql/recovery.conf.template.erb'),
-      }
-    } else {
-      # PostgreSQL 12 and above use the presence of a standby.signal
-      # file to trigger replication
-      file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
-        ensure  => file,
-        require => Package[$zulip::postgresql_base::postgresql],
-        owner   => 'postgres',
-        group   => 'postgres',
-        mode    => '0644',
-        content => '',
-      }
+    # PostgreSQL uses the presence of a standby.signal file to trigger
+    # replication
+    file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
+      ensure  => file,
+      require => Package[$zulip::postgresql_base::postgresql],
+      owner   => 'postgres',
+      group   => 'postgres',
+      mode    => '0644',
+      content => '',
     }
   }
 

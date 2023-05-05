@@ -1,9 +1,0 @@
-standby_mode = on
-restore_command = '/usr/local/bin/env-wal-g wal-fetch "%f" "%p"'
-recovery_target_timeline = 'latest'
-<% if @replication_primary != '' && @replication_user != '' -%>
-primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user -%>
-<% if @replication_password != '' %> password=<%= @replication_password %><% end -%>
-<% if @ssl_mode != '' %> sslmode=<%= @ssl_mode %><% end -%>
-'
-<% end -%>
