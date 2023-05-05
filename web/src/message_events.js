@@ -306,7 +306,7 @@ export function update_messages(events) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
             }
 
-            for (const msg of event_messages) {
+            for (const moved_message of event_messages) {
                 if (page_params.realm_allow_edit_history) {
                     /* Simulate the format of server-generated edit
                      * history events. This logic ensures that all
@@ -324,12 +324,15 @@ export function update_messages(events) {
                         edit_history_entry.topic = new_topic;
                         edit_history_entry.prev_topic = orig_topic;
                     }
-                    if (msg.edit_history === undefined) {
-                        msg.edit_history = [];
+                    if (moved_message.edit_history === undefined) {
+                        moved_message.edit_history = [];
                     }
-                    msg.edit_history = [edit_history_entry, ...msg.edit_history];
+                    moved_message.edit_history = [
+                        edit_history_entry,
+                        ...moved_message.edit_history,
+                    ];
                 }
-                msg.last_edit_timestamp = event.edit_timestamp;
+                moved_message.last_edit_timestamp = event.edit_timestamp;
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
@@ -342,33 +345,33 @@ export function update_messages(events) {
                 // only messages in message_store, but that's been false
                 // since we added the server_history feature.
                 stream_topic_history.remove_messages({
-                    stream_id: msg.stream_id,
-                    topic_name: msg.topic,
+                    stream_id: moved_message.stream_id,
+                    topic_name: moved_message.topic,
                     num_messages: 1,
-                    max_removed_msg_id: msg.id,
+                    max_removed_msg_id: moved_message.id,
                 });
 
                 // Update the unread counts; again, this must be called
                 // before we modify the topic field on the message.
-                unread.update_unread_topics(msg, event);
+                unread.update_unread_topics(moved_message, event);
 
                 // Now edit the attributes of our message object.
                 if (topic_edited) {
-                    msg.topic = new_topic;
-                    msg.topic_links = event.topic_links;
+                    moved_message.topic = new_topic;
+                    moved_message.topic_links = event.topic_links;
                 }
                 if (stream_changed) {
                     const new_stream_name = sub_store.get(new_stream_id).name;
-                    msg.stream_id = new_stream_id;
-                    msg.stream = new_stream_name;
-                    msg.display_recipient = new_stream_name;
+                    moved_message.stream_id = new_stream_id;
+                    moved_message.stream = new_stream_name;
+                    moved_message.display_recipient = new_stream_name;
                 }
 
                 // Add the recent topics entry for the new stream/topics.
                 stream_topic_history.add_message({
-                    stream_id: msg.stream_id,
-                    topic_name: msg.topic,
-                    message_id: msg.id,
+                    stream_id: moved_message.stream_id,
+                    topic_name: moved_message.topic,
+                    message_id: moved_message.id,
                 });
             }
 
