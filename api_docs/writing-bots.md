@@ -212,6 +212,29 @@ None.
          content=new_content,
      ))
 ```
+
+### bot_handler.react
+
+*bot_handler.react(message, emoji_name)*
+
+will add a reaction to a message as the bot user.
+
+#### Arguments
+
+* message - a dictionary describing the message to be sent by the bot
+* emoji_name - the target emoji's human-readable name.
+
+To find an emoji's name, hover over a message to reveal three icons on the right, then click the smiley face icon. Images of available reaction emojis appear. Hover over the emoji you want, and note that emoji's text name.
+
+#### Example implementation
+
+```python
+bot_handler.react(
+    message={"id":42},
+    emoji_name="wave",
+)
+```
+
 ### bot_handler.send_message
 
 *bot_handler.send_message(message)*
