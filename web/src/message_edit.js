@@ -37,6 +37,7 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
+import { text } from "stream/consumers";
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
@@ -358,6 +359,42 @@ function handle_message_row_edit_keydown(e) {
     }
 }
 
+function show_over_limit_error(){
+    const max_length =  page_params.max_message_length;
+
+    compose_banner.show_error_message(
+            $t(
+                {
+                    defaultMessage:
+                        "Message length shouldn't be greater than {max_length} characters.",
+                },
+                {max_length},
+            ),
+            compose_banner.CLASSNAMES.message_too_long,
+            $("#edit_form_banners"),
+        );
+        $("#message_edit_save").prop("disabled", true);
+}
+
+function check_message_edit_overflow_text(e, $row){
+    // on change event. Checks if the text limit is exceeded inside the edit message textarea
+    
+    const $indicator = $row.find(".message_edit_limit_indicator");
+    const $textarea = $row.find(".message_edit_content");
+    const text = $textarea.val().trimEnd();
+
+    const show_error_function = () => {
+        show_over_limit_error();
+    };
+
+    const hide_error_function = () => {
+        $("#compose-message_edit_save-button").prop("disabled", false);
+        $(`#edit_form_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
+    }
+
+    compose_validate.check_overflow_text_helper($textarea, $indicator, text, show_error_function, hide_error_function)
+}
+
 function handle_inline_topic_edit_keydown(e) {
     if (keydown_util.is_enter_event(e)) {
         // Handle Enter key in the recipient bar/inline topic edit form
@@ -476,6 +513,10 @@ function edit_message($row, raw_content) {
     message_lists.current.show_edit_message($row, edit_obj);
 
     $form.on("keydown", handle_message_row_edit_keydown);
+    $form.on("input propertychange", (e) => {
+        check_message_edit_overflow_text(e, $row);
+    });
+    
 
     $form
         .find(".message-edit-feature-group .video_link")

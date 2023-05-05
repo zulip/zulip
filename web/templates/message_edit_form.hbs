@@ -4,7 +4,7 @@
     <div class="edit_form_banners"></div>
     <div class="edit-controls">
         {{> copy_message_button message_id=this.message_id}}
-        <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
+        <textarea class="message_edit_content">{{content}}</textarea>
         <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
             <div class="markdown_preview_spinner"></div>
             <div class="preview_content rendered_markdown"></div>
@@ -33,6 +33,7 @@
             {{/if}}
             {{#if is_editable}}
             <div class="message-edit-timer">
+                <span class="message_edit_limit_indicator"></span>
                 <span class="message_edit_countdown_timer"></span>
                 <span>
                     <i id="message_edit_tooltip" class="tippy-zulip-tooltip message_edit_tooltip fa fa-question-circle" aria-hidden="true"
