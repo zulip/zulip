@@ -130,7 +130,7 @@ jobs:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
           - docker_image: zulip/ci:focal
-            name: Ubuntu 20.04 production install
+            name: Ubuntu 20.04 production install and PostgreSQL upgrade with pgroonga
             os: focal
             extra-args: ""
 
