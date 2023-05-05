@@ -4346,6 +4346,32 @@ class ScheduledMessage(models.Model):
         default=SEND_LATER,
     )
 
+    class Meta:
+        indexes = [
+            # We expect a large number of delivered scheduled messages
+            # to accumulate over time. This first index is for the
+            # deliver_scheduled_messages worker.
+            models.Index(
+                name="zerver_unsent_scheduled_messages_by_time",
+                fields=["scheduled_timestamp"],
+                condition=Q(
+                    delivered=False,
+                    failed=False,
+                ),
+            ),
+            # This index is for displaying scheduled messages to the
+            # user themself via the API; we don't filter failed
+            # messages since we will want to display those so that
+            # failures don't just disappear into a black hole.
+            models.Index(
+                name="zerver_unsent_scheduled_messages_by_user",
+                fields=["sender", "delivery_type", "scheduled_timestamp"],
+                condition=Q(
+                    delivered=False,
+                ),
+            ),
+        ]
+
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
         return f"{display_recipient} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
