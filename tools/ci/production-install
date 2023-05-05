@@ -75,9 +75,9 @@ else
     "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email ci@example.com --postgresql-database-user zulipcustomuser --postgresql-database-name zulipcustomdb
 fi
 
-if [ "$os_id $os_version_id" = 'ubuntu 20.04' ]; then
-    if [ "$(crudini --get /etc/zulip/zulip.conf postgresql version)" != "12" ]; then
-        echo "Installer did not install the PostgreSQL 12 that we asked for!"
+if [ -n "${POSTGRESQL_VERSION:-}" ]; then
+    if [ "$(crudini --get /etc/zulip/zulip.conf postgresql version)" != "$POSTGRESQL_VERSION" ]; then
+        echo "Installer did not install the PostgreSQL $POSTGRESQL_VERSION that we asked for!"
         exit 1
     fi
 fi
