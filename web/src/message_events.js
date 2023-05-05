@@ -168,7 +168,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
 }
 
 export function update_messages(events) {
-    const msgs_to_rerender = [];
+    const messages_to_rerender = [];
     let any_topic_edited = false;
     let changed_narrow = false;
     let changed_compose = false;
@@ -183,7 +183,7 @@ export function update_messages(events) {
 
             delete anchor_message.local_edit_timestamp;
 
-            msgs_to_rerender.push(anchor_message);
+            messages_to_rerender.push(anchor_message);
 
             message_store.update_booleans(anchor_message, event.flags);
 
@@ -549,7 +549,7 @@ export function update_messages(events) {
         // passing two sets to rerender_messages; the set of all that
         // are changed, and the set with content changes.
         for (const list of message_lists.all_rendered_message_lists()) {
-            list.view.rerender_messages(msgs_to_rerender, any_message_content_edited);
+            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
         }
     }
 
