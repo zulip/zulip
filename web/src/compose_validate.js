@@ -573,18 +573,53 @@ function validate_private_message() {
     return true;
 }
 
+export function check_overflow_text_helper(
+    textarea,
+    indicator,
+    text,
+    show_error_function,
+    hide_error_function
+){
+    // helper function for generalising the code responsible for
+    // showing and hiding errors on the compose box.
+    // this is also used by the edit message UI
+    const max_length = page_params.max_message_length;
+
+    // show error depending on text length
+    if(text.length > max_length){
+        indicator.addClass('over_limit');
+        textarea.addClass('over_limit');
+        indicator.text(text.length + "/" + max_length);
+        
+        show_error_function();
+    } // show limit when nearing max_length
+    else if(text.length > 0.9 * max_length){
+        indicator.removeClass('over_limit');
+        textarea.removeClass('over_limit');
+        indicator.text(text.length + "/" + max_length);
+        
+        hide_error_function();
+    }
+    else {
+        indicator.text("");
+        textarea.removeClass("over_limit");
+        
+        hide_error_function();
+    }
+    
+    return text.length;
+}
+
 export function check_overflow_text() {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
     // expensive.
     const text = compose_state.message_content();
-    const max_length = page_params.max_message_length;
     const $indicator = $("#compose_limit_indicator");
-
-    if (text.length > max_length) {
-        $indicator.addClass("over_limit");
-        $("#compose-textarea").addClass("over_limit");
-        $indicator.text(text.length + "/" + max_length);
+    const $textarea = $("#compose-textarea");
+    const max_length = page_params.max_message_length;
+    
+    const show_error_function = () => { 
         compose_banner.show_error_message(
             $t(
                 {
@@ -597,22 +632,14 @@ export function check_overflow_text() {
             $("#compose_banners"),
         );
         $("#compose-send-button").prop("disabled", true);
-    } else if (text.length > 0.9 * max_length) {
-        $indicator.removeClass("over_limit");
-        $("#compose-textarea").removeClass("over_limit");
-        $indicator.text(text.length + "/" + max_length);
+    }
 
-        $("#compose-send-button").prop("disabled", false);
-        $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
-    } else {
-        $indicator.text("");
-        $("#compose-textarea").removeClass("over_limit");
-
+    const hide_error_function = () => { 
         $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     }
 
-    return text.length;
+    return check_overflow_text_helper($textarea, $indicator, text, show_error_function, hide_error_function);
 }
 
 export function validate_message_length() {
