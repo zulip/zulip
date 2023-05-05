@@ -25,7 +25,12 @@ set -x
 
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
 apt-get install -y "postgresql-$UPGRADE_TO" "postgresql-client-$UPGRADE_TO"
-if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
+drop_main_cluster="$(
+    pg_lsclusters --json \
+        | jq --arg pg_version "$UPGRADE_TO" -r \
+            '.[] | select((.version|tostring == $ARGS.named.pg_version) and (.cluster == "main")) | .cluster'
+)"
+if [ -n "$drop_main_cluster" ]; then
     pg_dropcluster "$UPGRADE_TO" main --stop
 fi
 
