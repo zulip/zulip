@@ -80,6 +80,10 @@ if [ -n "${POSTGRESQL_VERSION:-}" ]; then
         echo "Installer did not install the PostgreSQL $POSTGRESQL_VERSION that we asked for!"
         exit 1
     fi
+    if ! su - zulip -c "psql -tc 'select version()'" | grep -q "^ PostgreSQL $POSTGRESQL_VERSION\."; then
+        echo "Installed PostgreSQL is not actually PostgreSQL $POSTGRESQL_VERSION!"
+        exit 1
+    fi
 fi
 
 echo "Production installation complete!"
