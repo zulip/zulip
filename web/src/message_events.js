@@ -176,31 +176,31 @@ export function update_messages(events) {
     let any_stream_changed = false;
 
     for (const event of events) {
-        const msg = message_store.get(event.message_id);
-        if (msg === undefined) {
+        const anchor_message = message_store.get(event.message_id);
+        if (anchor_message === undefined) {
             continue;
         }
 
-        delete msg.local_edit_timestamp;
+        delete anchor_message.local_edit_timestamp;
 
-        msgs_to_rerender.push(msg);
+        msgs_to_rerender.push(anchor_message);
 
-        message_store.update_booleans(msg, event.flags);
+        message_store.update_booleans(anchor_message, event.flags);
 
-        condense.un_cache_message_content_height(msg.id);
+        condense.un_cache_message_content_height(anchor_message.id);
 
         if (event.rendered_content !== undefined) {
-            msg.content = event.rendered_content;
+            anchor_message.content = event.rendered_content;
         }
 
         if (event.is_me_message !== undefined) {
-            msg.is_me_message = event.is_me_message;
+            anchor_message.is_me_message = event.is_me_message;
         }
 
         // mark the current message edit attempt as complete.
         message_edit.end_message_edit(event.message_id);
 
-        // Save the content edit to the front end msg.edit_history
+        // Save the content edit to the front end anchor_message.edit_history
         // before topic edits to ensure that combined topic / content
         // edits have edit_history logged for both before any
         // potential narrowing as part of the topic edit loop.
@@ -219,19 +219,22 @@ export function update_messages(events) {
                 // Add message's edit_history in message dict
                 // For messages that are edited, edit_history needs to
                 // be added to message in frontend.
-                if (msg.edit_history === undefined) {
-                    msg.edit_history = [];
+                if (anchor_message.edit_history === undefined) {
+                    anchor_message.edit_history = [];
                 }
-                msg.edit_history = [edit_history_entry, ...msg.edit_history];
+                anchor_message.edit_history = [edit_history_entry, ...anchor_message.edit_history];
             }
             any_message_content_edited = true;
 
             // Update raw_content, so that editing a few times in a row is fast.
-            msg.raw_content = event.content;
+            anchor_message.raw_content = event.content;
         }
 
-        if (unread.update_message_for_mention(msg, any_message_content_edited)) {
-            const topic_key = recent_topics_util.get_topic_key(msg.stream_id, msg.topic);
+        if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
+            const topic_key = recent_topics_util.get_topic_key(
+                anchor_message.stream_id,
+                anchor_message.topic,
+            );
             recent_topics_ui.inplace_rerender(topic_key);
         }
 
@@ -471,11 +474,11 @@ export function update_messages(events) {
         // triggered by server latency optimizations, not user
         // interactions; these should not generate edit history updates.
         if (!event.rendering_only) {
-            msg.last_edit_timestamp = event.edit_timestamp;
+            anchor_message.last_edit_timestamp = event.edit_timestamp;
         }
 
-        notifications.received_messages([msg]);
-        alert_words.process_message(msg);
+        notifications.received_messages([anchor_message]);
+        alert_words.process_message(anchor_message);
 
         if (topic_edited || stream_changed) {
             // if topic is changed
@@ -483,7 +486,7 @@ export function update_messages(events) {
             let post_edit_topic = new_topic;
 
             if (!topic_edited) {
-                pre_edit_topic = msg.topic;
+                pre_edit_topic = anchor_message.topic;
                 post_edit_topic = pre_edit_topic;
             }
 
@@ -505,9 +508,9 @@ export function update_messages(events) {
         // Rerender "Message edit history" if it was open to the edited message.
         if (
             $("#message-edit-history").parents(".micromodal").hasClass("modal--open") &&
-            msg.id === Number.parseInt($("#message-history").attr("data-message-id"), 10)
+            anchor_message.id === Number.parseInt($("#message-history").attr("data-message-id"), 10)
         ) {
-            message_edit_history.fetch_and_render_message_history(msg);
+            message_edit_history.fetch_and_render_message_history(anchor_message);
         }
     }
 
