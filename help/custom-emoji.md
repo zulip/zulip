@@ -51,7 +51,7 @@ while the search box is empty (you may have to scroll down a bit to find it).
 
 {settings_tab|emoji-settings}
 
-1. Click the trash icon (<i class="fa fa-trash-o"></i>) next to the
+1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon next to the
    emoji that you would like to deactivate.
 
 {end_tabs}
