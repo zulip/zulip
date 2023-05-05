@@ -147,6 +147,9 @@ log][commit-log] for an up-to-date list of all changes.
   linkifiers correctly in the vast majority of cases, but some fancier
   linkfiers may require manual adjustment to generate correct URLs
   following this upgrade.
+- PostgreSQL 11 is no longer supported; if you are currently using it, you will
+  need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
+  before upgrading Zulip.
 
 ## Zulip 6.x series
 
