@@ -24,7 +24,14 @@ const me = {
     user_id: 30,
     full_name: "Me Myself",
 };
+
+const anybody = {
+    email: "anybody@example.com",
+    user_id: 999,
+    full_name: "Any Body",
+};
 people.add_active_user(me);
+people.add_active_user(anybody);
 people.initialize_current_user(me.user_id);
 
 const social = {
@@ -382,13 +389,6 @@ test("private_messages", () => {
     let counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
 
-    const anybody = {
-        email: "anybody@example.com",
-        user_id: 999,
-        full_name: "Any Body",
-    };
-    people.add_active_user(anybody);
-
     const message = {
         id: 15,
         type: "private",
@@ -527,32 +527,45 @@ test("mentions", () => {
         unread: true,
     };
 
+    const private_mention_me_message = {
+        id: 19,
+        type: "private",
+        display_recipient: [{id: anybody.user_id}],
+        mentioned: true,
+        mentioned_me_directly: true,
+        unread: true,
+    };
+
     unread.process_loaded_messages([
         already_read_message,
         mention_me_message,
         mention_all_message,
         muted_mention_all_message,
         muted_direct_mention_message,
+        private_mention_me_message,
     ]);
 
     counts = unread.get_counts();
-    assert.equal(counts.mentioned_message_count, 3);
+    assert.equal(counts.mentioned_message_count, 4);
     assert.deepEqual(unread.get_msg_ids_for_mentions(), [
         mention_me_message.id,
         mention_all_message.id,
         muted_direct_mention_message.id,
+        private_mention_me_message.id,
     ]);
     assert.deepEqual(unread.get_all_msg_ids(), [
         mention_me_message.id,
         mention_all_message.id,
         muted_mention_all_message.id,
         muted_direct_mention_message.id,
+        private_mention_me_message.id,
     ]);
-    test_notifiable_count(counts.home_unread_messages, 3);
+    test_notifiable_count(counts.home_unread_messages, 5);
 
     unread.mark_as_read(mention_me_message.id);
     unread.mark_as_read(mention_all_message.id);
     unread.mark_as_read(muted_direct_mention_message.id);
+    unread.mark_as_read(private_mention_me_message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
     test_notifiable_count(counts.home_unread_messages, 0);
