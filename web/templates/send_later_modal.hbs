@@ -13,19 +13,19 @@
                         {{#if possible_send_later_today}}
                             {{#each possible_send_later_today}}
                                 <li>
-                                    <a id="{{@key}}" class="send_later_today" tabindex="0">{{this.text}}</a>
+                                    <a id="{{@key}}" class="send_later_today" data-send-stamp="{{this.stamp}}" tabindex="0">{{this.text}}</a>
                                 </li>
                             {{/each}}
                         {{/if}}
                         {{#each send_later_tomorrow}}
                             <li>
-                                <a id="{{@key}}" class="send_later_tomorrow" tabindex="0">{{this.text}}</a>
+                                <a id="{{@key}}" class="send_later_tomorrow" data-send-stamp="{{this.stamp}}" tabindex="0">{{this.text}}</a>
                             </li>
                         {{/each}}
                         {{#if possible_send_later_monday }}
                             {{#each possible_send_later_monday}}
                                 <li>
-                                    <a id="{{@key}}" class="send_later_monday" tabindex="0">{{this.text}}</a>
+                                    <a id="{{@key}}" class="send_later_monday" data-send-stamp="{{this.stamp}}" tabindex="0">{{this.text}}</a>
                                 </li>
                             {{/each}}
                         {{/if}}

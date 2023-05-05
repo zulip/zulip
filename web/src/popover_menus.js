@@ -790,14 +790,7 @@ export function initialize() {
     });
 
     function set_compose_box_schedule(element) {
-        const send_later_in = element.id;
-        const send_later_class = element.classList[0];
-        const date = new Date();
-        const selected_send_at_time = scheduled_messages.get_send_at_time_from_opts(
-            send_later_in,
-            send_later_class,
-            date,
-        );
+        const selected_send_at_time = element.dataset.sendStamp / 1000;
         return selected_send_at_time;
     }
 

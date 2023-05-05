@@ -12,11 +12,11 @@ function get_expected_send_opts(expecteds) {
         send_later_tomorrow: {
             tomorrow_nine_am: {
                 text: "translated: Tomorrow at 9:00 AM",
-                time: "9:00 am",
+                stamp: 1683363600000,
             },
             tomorrow_four_pm: {
                 text: "translated: Tomorrow at 4:00 PM",
-                time: "4:00 pm",
+                stamp: 1683388800000,
             },
         },
         send_later_custom: {
@@ -29,17 +29,17 @@ function get_expected_send_opts(expecteds) {
         send_later_today: {
             today_nine_am: {
                 text: "translated: Today at 9:00 AM",
-                time: "9:00 am",
+                stamp: 1683277200000,
             },
             today_four_pm: {
                 text: "translated: Today at 4:00 PM",
-                time: "4:00 pm",
+                stamp: 1683302400000,
             },
         },
         send_later_monday: {
             monday_nine_am: {
                 text: "translated: Monday at 9:00 AM",
-                time: "9:00 am",
+                stamp: 1683536400000,
             },
         },
     };
@@ -90,25 +90,4 @@ run_test("scheduled_modal_opts", () => {
             assert.deepEqual(modal_opts, expected_opts);
         }
     }
-});
-
-run_test("scheduled_selected_times", () => {
-    // When scheduling a message on a Monday at 6:00am
-    // that will be sent tomorrow at 4pm
-    let date = new Date("2023-05-01T06:00:00");
-    let send_at_time = scheduled_messages.get_send_at_time_from_opts(
-        "tomorrow_four_pm",
-        "send_later_tomorrow",
-        date,
-    );
-    assert.equal(send_at_time, "May 2 2023 4:00 pm");
-    // When scheduling a message on a Friday at 5:00pm
-    // that will be sent Monday at 9am
-    date = new Date("2023-05-05T17:00:00");
-    send_at_time = scheduled_messages.get_send_at_time_from_opts(
-        "monday_nine_am",
-        "send_later_monday",
-        date,
-    );
-    assert.equal(send_at_time, "May 8 2023 9:00 am");
 });
