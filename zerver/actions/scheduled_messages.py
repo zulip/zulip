@@ -2,12 +2,10 @@ import datetime
 from typing import List, Optional, Sequence, Tuple, Union
 
 import orjson
-from django.conf import settings
 from django.db import transaction
-from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.actions.message_send import build_message_send_dict, check_message, do_send_messages
+from zerver.actions.message_send import check_message, do_send_messages
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
@@ -15,11 +13,10 @@ from zerver.lib.message import SendMessageRequest, render_markdown
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.models import (
     Client,
-    Message,
     Realm,
     ScheduledMessage,
+    Subscription,
     UserProfile,
-    get_user_by_delivery_email,
 )
 from zerver.tornado.django_api import send_event
 
@@ -181,32 +178,12 @@ def delete_scheduled_message(user_profile: UserProfile, scheduled_message_id: in
     notify_remove_scheduled_message(user_profile, scheduled_message_id)
 
 
-def construct_send_request(scheduled_message: ScheduledMessage) -> SendMessageRequest:
-    message = Message()
-    original_sender = scheduled_message.sender
-    message.content = scheduled_message.content
-    message.recipient = scheduled_message.recipient
-    message.realm = scheduled_message.realm
-    message.subject = scheduled_message.subject
-    message.date_sent = timezone_now()
-    message.sending_client = scheduled_message.sending_client
-
-    delivery_type = scheduled_message.delivery_type
-    if delivery_type == ScheduledMessage.SEND_LATER:
-        message.sender = original_sender
-    elif delivery_type == ScheduledMessage.REMIND:
-        message.sender = get_user_by_delivery_email(
-            settings.NOTIFICATION_BOT, original_sender.realm
-        )
-
-    return build_message_send_dict(
-        message=message, stream=scheduled_message.stream, realm=scheduled_message.realm
-    )
-
-
 def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     assert not scheduled_message.delivered
     assert not scheduled_message.failed
+
+    # It's currently not possible to use the reminder feature.
+    assert scheduled_message.delivery_type == ScheduledMessage.SEND_LATER
 
     # Repeat the checks from validate_account_and_subdomain, in case
     # the state changed since the message as scheduled.
@@ -216,8 +193,34 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     if not scheduled_message.sender.is_active:
         raise UserDeactivatedError
 
-    message_send_request = construct_send_request(scheduled_message)
-    do_send_messages([message_send_request])
+    # Recheck that we have permission to send this message, in case
+    # permissions have changed since the message was scheduled.
+    if scheduled_message.stream is not None:
+        addressee = Addressee.for_stream(scheduled_message.stream, scheduled_message.topic_name())
+    else:
+        subscriber_ids = list(
+            Subscription.objects.filter(recipient=scheduled_message.recipient).values_list(
+                "user_profile_id", flat=True
+            )
+        )
+        addressee = Addressee.for_user_ids(subscriber_ids, scheduled_message.realm)
+
+    # Calling check_message again is important because permissions may
+    # have changed since the message was originally scheduled. This
+    # means that Markdown syntax referencing mutable organization data
+    # (for example, mentioning a user by name) will work (or not) as
+    # if the message was sent at the delviery time, not the sending
+    # time.
+    send_request = check_message(
+        scheduled_message.sender,
+        scheduled_message.sending_client,
+        addressee,
+        scheduled_message.content,
+        scheduled_message.realm,
+    )
+
+    # TODO: Store the resulting message ID on the scheduled_message object.
+    do_send_messages([send_request])
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered"])
     notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)
