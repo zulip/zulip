@@ -10,12 +10,11 @@ import render_settings_edit_embedded_bot_service from "../templates/settings/edi
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
 
 import * as avatar from "./avatar";
-import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget} from "./dropdown_list_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -342,6 +341,8 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
 
 export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
     const bot = people.get_by_user_id(user_id);
+    const owner_id = bot_data.get(user_id).owner_id;
+    const owner_full_name = people.get_full_name(owner_id);
 
     if (!bot) {
         return;
@@ -354,9 +355,9 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
         bot_avatar_url: bot.avatar_url,
+        owner_full_name,
     });
 
-    let owner_widget;
     let avatar_widget;
 
     const bot_type = bot.bot_type.toString();
@@ -371,13 +372,11 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val());
         formData.append("role", JSON.stringify(role));
-
-        if (owner_widget === undefined) {
-            blueslip.error("get_bot_owner_widget not called");
-        }
-        const human_user_id = owner_widget.value();
-        if (human_user_id) {
-            formData.append("bot_owner_id", human_user_id);
+        const new_bot_owner_id = $("#bot_owner_dropdown_widget .bot_owner_name").attr(
+            "data-user-id",
+        );
+        if (new_bot_owner_id) {
+            formData.append("bot_owner_id", new_bot_owner_id);
         }
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
@@ -416,27 +415,41 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
 
     function edit_bot_post_render() {
         $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
-        const owner_id = bot_data.get(user_id).owner_id;
 
-        const user_ids = people.get_active_human_ids();
-        const users_list = user_ids.map((user_id) => ({
-            name: people.get_full_name(user_id),
-            value: user_id.toString(),
-        }));
+        function get_options() {
+            const user_ids = people.get_active_human_ids();
+            // Remove current owner.
+            user_ids.splice(user_ids.indexOf(owner_id), 1);
+            return user_ids.map((user_id) => ({
+                name: people.get_full_name(user_id),
+                unique_id: user_id,
+            }));
+        }
 
-        const opts = {
-            widget_name: "edit_bot_owner",
-            data: users_list,
-            default_text: $t({defaultMessage: "No owner"}),
-            value: owner_id,
-            on_update(value) {
-                $("#edit_bot_modal .dialog_submit_button").prop("disabled", value === null);
+        function item_click_callback(event, dropdown) {
+            const $user = $(event.currentTarget);
+            const user_full_name = $user.attr("data-name");
+            const new_bot_owner_id = Number.parseInt($user.attr("data-unique-id"), 10);
+            const $bot_owner = $("#bot_owner_dropdown_widget .bot_owner_name");
+            $bot_owner.text(user_full_name);
+            $bot_owner.attr("data-user-id", new_bot_owner_id);
+            $("#edit_bot_modal .dialog_submit_button").prop("disabled", user_full_name === null);
+            dropdown.hide();
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        dropdown_widget.setup(
+            {
+                target: "#bot_owner_dropdown_widget",
+                placement: "bottom-start",
             },
-        };
-        // Note: Rendering this is quite expensive in
-        // organizations with 10Ks of users.
-        owner_widget = new DropdownListWidget(opts);
-        owner_widget.setup();
+            get_options,
+            item_click_callback,
+            {
+                show_on_target_enter_keypress: true,
+            },
+        );
 
         $("#bot-role-select").val(bot.role);
         if (!page_params.is_owner) {
