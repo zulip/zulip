@@ -1546,6 +1546,10 @@ def import_attachments(data: TableData) -> None:
             m2m_row[child_singular] = ID_MAP["message"][fk_id]
             m2m_rows.append(m2m_row)
 
+        # TODO: Import of scheduled messages is not implemented yet.
+        if "scheduled_messages" in parent_row:
+            del parent_row["scheduled_messages"]
+
     # Create our table data for insert.
     m2m_data: TableData = {m2m_table_name: m2m_rows}
     convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)

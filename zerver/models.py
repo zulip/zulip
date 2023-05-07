@@ -3554,8 +3554,12 @@ class ArchivedAttachment(AbstractAttachment):
 class Attachment(AbstractAttachment):
     messages = models.ManyToManyField(Message)
 
+    # This is only present for Attachment and not ArchiveAttachment.
+    # because ScheduledMessage is not subject to archiving.
+    scheduled_messages = models.ManyToManyField("ScheduledMessage")
+
     def is_claimed(self) -> bool:
-        return self.messages.count() > 0
+        return self.messages.count() > 0 or self.scheduled_messages.count() > 0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -3691,7 +3695,7 @@ def get_old_unclaimed_attachments(
     """
     The logic in this function is fairly tricky. The essence is that
     a file should be cleaned up if and only if it not referenced by any
-    Message or ArchivedMessage. The way to find that out is through the
+    Message, ScheduledMessage or ArchivedMessage. The way to find that out is through the
     Attachment and ArchivedAttachment tables.
     The queries are complicated by the fact that an uploaded file
     may have either only an Attachment row, only an ArchivedAttachment row,
@@ -3699,14 +3703,24 @@ def get_old_unclaimed_attachments(
     linking to it have been archived.
     """
     delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
+
+    # The Attachment vs ArchivedAttachment queries are asymmetric because only
+    # Attachment has the scheduled_messages relation.
     old_attachments = Attachment.objects.annotate(
         has_other_messages=Exists(
             ArchivedAttachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
         )
-    ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
+    ).filter(
+        messages=None,
+        scheduled_messages=None,
+        create_time__lt=delta_weeks_ago,
+        has_other_messages=False,
+    )
     old_archived_attachments = ArchivedAttachment.objects.annotate(
         has_other_messages=Exists(
-            Attachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
+            Attachment.objects.filter(id=OuterRef("id"))
+            .exclude(messages=None)
+            .exclude(scheduled_messages=None)
         )
     ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
 
@@ -4311,6 +4325,7 @@ class ScheduledMessage(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     scheduled_timestamp = models.DateTimeField(db_index=True)
     delivered = models.BooleanField(default=False)
+    has_attachment = models.BooleanField(default=False, db_index=True)
 
     SEND_LATER = 1
     REMIND = 2
@@ -4334,6 +4349,9 @@ class ScheduledMessage(models.Model):
 
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
+
+    def is_stream_message(self) -> bool:
+        return self.recipient.type == Recipient.STREAM
 
     def to_dict(self) -> Union[StreamScheduledMessageAPI, DirectScheduledMessageAPI]:
         recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
