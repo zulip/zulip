@@ -14,7 +14,8 @@
         <div class="message_edit_spinner"></div>
         <div class="controls edit-controls">
             {{#if is_editable}}
-                <div class="btn-wrapper inline-block">
+                <div class="btn-wrapper inline-block message_edit_save_container"
+                  data-tippy-content="{{t 'You can no longer save changes to this message.' }}">
                     <button type="button" class="button small rounded sea-green message_edit_save">
                         <img class="loader" alt="" src="" />
                         <span>{{t "Save" }}</span>
