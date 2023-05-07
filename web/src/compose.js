@@ -153,17 +153,16 @@ export function create_message_object() {
     } else {
         const stream_name = compose_state.stream_name();
         message.stream = stream_name;
-        const sub = stream_data.get_sub(stream_name);
-        if (sub) {
-            message.stream_id = sub.stream_id;
-            message.to = sub.stream_id;
+        if (stream_name) {
+            message.stream_id = compose_recipient.selected_recipient_id;
+            message.to = compose_recipient.selected_recipient_id;
         } else {
             // We should be validating streams in calling code.  We'll
             // try to fall back to stream_name here just in case the
             // user started composing to the old stream name and
             // manually entered the stream name, and it got past
             // validation. We should try to kill this code off eventually.
-            blueslip.error("Trying to send message with bad stream name", {stream_name});
+            blueslip.error("Trying to send message with bad stream name");
             message.to = stream_name;
         }
         message.topic = topic;

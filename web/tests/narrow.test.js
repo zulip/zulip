@@ -27,16 +27,6 @@ const recent_topics_util = mock_esm("../src/recent_topics_util", {
     is_visible() {},
 });
 
-let stream_value = "";
-compose_recipient.compose_recipient_widget = {
-    value() {
-        return stream_value;
-    },
-    render(val) {
-        stream_value = val;
-    },
-};
-
 function empty_narrow_html(title, html, search_data) {
     const opts = {
         title,
@@ -668,8 +658,8 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     );
 });
 
-run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
-    compose_recipient.on_compose_select_recipient_update = () => {};
+run_test("narrow_to_compose_target errors", ({override_rewire, disallow_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     disallow_rewire(narrow, "activate");
 
     // No-op when not composing.
@@ -683,6 +673,7 @@ run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
 });
 
 run_test("narrow_to_compose_target streams", ({override_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const args = {called: false};
     override_rewire(narrow, "activate", (operators, opts) => {
         args.operators = operators;

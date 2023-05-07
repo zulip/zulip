@@ -55,12 +55,15 @@
                             <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
                         </div>
                         <div id="compose-recipient" class="order-1">
-                            <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip" tabindex="0"></a>
-                            <div id="compose_recipient_selection_dropdown" class="new-style">
+                            <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip"></a>
+                            <div id="compose_recipient_selection_dropdown" class="new-style" tabindex="0">
                                 <div class="stream_header_colorblock"></div>
-                                {{> settings/dropdown_list_widget
-                                  widget_name="compose_select_recipient"
-                                  list_placeholder=(t 'Filter')}}
+                                <div id="compose_select_recipient_widget" class="dropdown-widget-button" role="button">
+                                    <span id="compose_select_recipient_name">
+                                        {{t 'Select a stream'}}
+                                    </span>
+                                    <i class="fa fa-chevron-down"></i>
+                                </div>
                             </div>
                             <i class="fa fa-angle-right" aria-hidden="true"></i>
                             <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />

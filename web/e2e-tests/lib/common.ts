@@ -384,24 +384,23 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
     await scroll_delay;
 }
 
-export async function select_item_via_dropdown(
+export async function select_stream_in_compose_via_dropdown(
     page: Page,
-    dropdown_selector: string,
-    item: string,
+    stream_name: string,
 ): Promise<void> {
-    console.log(`Clicking on ${dropdown_selector} to select ${item}`);
-    const menu_visible = (await page.$(`${dropdown_selector} .open`)) !== null;
+    console.log(`Clicking on 'compose_select_recipient_widget' to select ${stream_name}`);
+    const menu_visible = (await page.$(".dropdown-list-container")) !== null;
     if (!menu_visible) {
-        await page.waitForSelector(dropdown_selector, {visible: true});
-        await page.click(`${dropdown_selector} .dropdown-toggle`);
-        await page.waitForSelector(`${dropdown_selector} .dropdown-menu`, {visible: true});
+        await page.waitForSelector("#compose_select_recipient_widget", {visible: true});
+        await page.click("#compose_select_recipient_widget");
+        await page.waitForSelector(".dropdown-list-container .list-item", {
+            visible: true,
+        });
     }
-    const entry_selector = `xpath///*[${has_class_x(
-        "list_item",
-    )} and contains(normalize-space(), "${item}")]`;
-    await page.waitForSelector(entry_selector, {visible: true});
-    await page.click(entry_selector);
-    await page.waitForSelector(`.dropdown-menu`, {visible: false});
+    const stream_to_select = `.dropdown-list-container .list-item[data-name="${stream_name}"]`;
+    await page.waitForSelector(stream_to_select, {visible: true});
+    await page.click(stream_to_select);
+    assert((await page.$(".dropdown-list-container")) === null);
 }
 
 // Wait for any previous send to finish, then send a message.
@@ -432,7 +431,7 @@ export async function send_message(
     }
 
     if (params.stream) {
-        await select_item_via_dropdown(page, "#compose_select_recipient_widget", params.stream);
+        await select_stream_in_compose_via_dropdown(page, params.stream);
         delete params.stream;
     }
 

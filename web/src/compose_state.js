@@ -1,7 +1,9 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
+import * as stream_data from "./stream_data";
 
 let message_type = false; // 'stream', 'private', or false-y
 let recipient_edited_manually = false;
@@ -67,15 +69,40 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
     };
 }
 
+// NOTE: See `selected_recipient_id` in compose_recipient to for
+// documentation on the variable and how it is used.
 export function stream_name() {
-    return compose_recipient.compose_recipient_widget.value();
+    const stream_id = compose_recipient.selected_recipient_id;
+    if (typeof stream_id === "number") {
+        return stream_data.maybe_get_stream_name(stream_id) || "";
+    }
+    return "";
 }
 
-export function set_stream_name(newval) {
-    if (newval !== undefined && newval !== "" && compose_recipient.compose_recipient_widget) {
-        compose_recipient.compose_recipient_widget.render(newval);
-        compose_recipient.on_compose_select_recipient_update(newval);
+export function set_stream_name(stream_name) {
+    if (!stream_name) {
+        compose_recipient.set_selected_recipient_id("");
+        return;
     }
+
+    // If we fail to select a stream that the caller expects
+    // us to do successfully, we should throw an error.
+    const stream_id = stream_data.get_stream_id(stream_name);
+    if (stream_id === undefined) {
+        blueslip.error("Unable to select stream: " + stream_name);
+        compose_recipient.set_selected_recipient_id("");
+        return;
+    }
+    compose_recipient.set_selected_recipient_id(stream_id);
+}
+
+export function set_compose_recipient_id(value) {
+    let recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
+    if (typeof value === "number") {
+        // value is stream name
+        recipient_id = stream_data.maybe_get_stream_name(value) || "";
+    }
+    compose_recipient.set_selected_recipient_id(recipient_id);
 }
 
 // TODO: Break out setter and getter into their own functions.

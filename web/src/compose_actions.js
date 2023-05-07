@@ -208,20 +208,19 @@ export function start(msg_type, opts) {
         clear_box();
     }
 
-    compose_recipient.compose_recipient_widget.render(opts.stream);
     const $stream_header_colorblock = $(
         "#compose_recipient_selection_dropdown .stream_header_colorblock",
     );
     stream_bar.decorate(opts.stream, $stream_header_colorblock);
 
-    // We set the stream/topic/private_message_recipient
-    // unconditionally here, which assumes the caller will have passed
-    // '' or undefined for these values if they are not appropriate
-    // for this message.
-    //
-    // TODO: Move these into a conditional on message_type, using an
-    // explicit "clear" function for compose_state.
-    compose_state.set_stream_name(opts.stream);
+    if (msg_type === "private") {
+        compose_state.set_compose_recipient_id(compose_recipient.DIRECT_MESSAGE_ID);
+    } else if (opts.stream) {
+        compose_state.set_stream_name(opts.stream);
+    } else {
+        // Open stream selection dropdown if no stream is selected.
+        compose_recipient.open_compose_recipient_dropdown();
+    }
     compose_state.topic(opts.topic);
 
     // Set the recipients with a space after each comma, so it looks nice.

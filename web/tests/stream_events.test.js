@@ -88,8 +88,8 @@ function test(label, f) {
 }
 
 test("update_property", ({override, override_rewire}) => {
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
-    override_rewire(compose_recipient, "possibly_update_dropdown_selection", noop);
+    override_rewire(compose_recipient, "possibly_update_stream_name_in_compose", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     const sub = {...frontend};
     stream_data.add_sub(sub);
@@ -280,11 +280,10 @@ test("marked_subscribed (error)", () => {
     blueslip.reset();
 });
 
-test("marked_subscribed (normal)", ({override, override_rewire}) => {
+test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color, "update_stream_color", noop);
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
 
     narrow_to_frontend();
 
@@ -319,11 +318,10 @@ test("marked_subscribed (normal)", ({override, override_rewire}) => {
     narrow_state.reset_current_filter();
 });
 
-test("marked_subscribed (color)", ({override, override_rewire}) => {
+test("marked_subscribed (color)", ({override}) => {
     override(stream_list, "add_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(unread_ui, "update_unread_counts", noop);
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
 
     const sub = {
         subscribed: false,
@@ -352,11 +350,10 @@ test("marked_subscribed (color)", ({override, override_rewire}) => {
     }
 });
 
-test("marked_subscribed (emails)", ({override, override_rewire}) => {
+test("marked_subscribed (emails)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_color, "update_stream_color", noop);
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
 
     // Test assigning subscriber emails
     // narrow state is undefined
@@ -380,7 +377,7 @@ test("marked_subscribed (emails)", ({override, override_rewire}) => {
     assert.deepEqual(sub, args.sub);
 });
 
-test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override, override_rewire}) => {
+test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     // Test unsubscribe
     const sub = {...dev_help};
     stream_data.add_sub(sub);
@@ -395,13 +392,12 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override, overrid
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
     stream_events.mark_unsubscribed(sub);
     const args = stub.get_args("sub");
     assert.deepEqual(args.sub, sub);
 });
 
-test("mark_unsubscribed (render_title_area)", ({override, override_rewire}) => {
+test("mark_unsubscribed (render_title_area)", ({override}) => {
     const sub = {...frontend, subscribed: true};
     stream_data.add_sub(sub);
 
@@ -422,7 +418,6 @@ test("mark_unsubscribed (render_title_area)", ({override, override_rewire}) => {
 
     $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
 
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
     stream_events.mark_unsubscribed(sub);
 
     assert.equal(message_view_header_stub.num_calls, 1);

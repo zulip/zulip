@@ -32,6 +32,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,
     is_full_size: () => false,
     set_focus: noop,
+    compute_placeholder_text: noop,
 });
 const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
@@ -68,16 +69,6 @@ const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 
-let stream_value = "";
-compose_recipient.compose_recipient_widget = {
-    value() {
-        return stream_value;
-    },
-    render(val) {
-        stream_value = val;
-    },
-};
-
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
 const respond_to_message = compose_actions.respond_to_message;
@@ -85,6 +76,7 @@ const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
 compose_recipient.update_narrow_to_recipient_visibility = noop;
+compose_recipient.on_compose_select_recipient_update = noop;
 
 function assert_visible(sel) {
     assert.ok($(sel).visible());
@@ -120,7 +112,7 @@ test("initial_state", () => {
     assert.equal(compose_state.has_message_content(), false);
 });
 
-test("start", ({override, override_rewire}) => {
+test("start", ({override, override_rewire, mock_template}) => {
     mock_banners();
     override_private_message_recipient({override});
     override_rewire(compose_actions, "autosize_message_content", () => {});
@@ -130,6 +122,7 @@ test("start", ({override, override_rewire}) => {
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", () => {});
+    mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
 
     let compose_defaults;
@@ -137,7 +130,7 @@ test("start", ({override, override_rewire}) => {
 
     // Start stream message
     compose_defaults = {
-        stream: "stream1",
+        stream: "",
         topic: "topic1",
     };
 
@@ -147,7 +140,7 @@ test("start", ({override, override_rewire}) => {
     assert_visible("#stream_message_recipient_topic");
     assert_hidden("#compose-direct-recipient");
 
-    assert.equal(compose_state.stream_name(), "stream1");
+    assert.equal(compose_state.stream_name(), "");
     assert.equal(compose_state.topic(), "topic1");
     assert.equal(compose_state.get_message_type(), "stream");
     assert.ok(compose_state.composing());
@@ -187,6 +180,7 @@ test("start", ({override, override_rewire}) => {
     };
     stream_data.add_sub(social);
 
+    compose_state.set_stream_name("");
     // More than 1 subscription, do not autofill
     opts = {};
     start("stream", opts);
@@ -246,12 +240,14 @@ test("start", ({override, override_rewire}) => {
     assert.ok(!compose_state.composing());
 });
 
-test("respond_to_message", ({override, override_rewire}) => {
+test("respond_to_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", noop);
     override_private_message_recipient({override});
+    mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
 
     // Test PM
@@ -278,17 +274,24 @@ test("respond_to_message", ({override, override_rewire}) => {
     // Test stream
     msg = {
         type: "stream",
-        stream: "devel",
+        stream: "Denmark",
         topic: "python",
     };
 
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+    };
+    stream_data.add_sub(denmark);
     opts = {};
 
     respond_to_message(opts);
-    assert.equal(compose_state.stream_name(), "devel");
+    assert.equal(compose_state.stream_name(), "Denmark");
 });
 
-test("reply_with_mention", ({override, override_rewire}) => {
+test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     mock_banners();
     mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
@@ -296,10 +299,20 @@ test("reply_with_mention", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
+    override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", noop);
+    mock_template("inline_decorated_stream_name.hbs", false, () => {});
+
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+    };
+    stream_data.add_sub(denmark);
 
     const msg = {
         type: "stream",
-        stream: "devel",
+        stream: "Denmark",
         topic: "python",
         sender_full_name: "Bob Roberts",
         sender_id: 40,
@@ -314,7 +327,7 @@ test("reply_with_mention", ({override, override_rewire}) => {
     const opts = {};
 
     reply_with_mention(opts);
-    assert.equal(compose_state.stream_name(), "devel");
+    assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(syntax_to_insert, "@**Bob Roberts**");
 
     // Test for extended mention syntax
@@ -332,7 +345,7 @@ test("reply_with_mention", ({override, override_rewire}) => {
     people.add_active_user(bob_2);
 
     reply_with_mention(opts);
-    assert.equal(compose_state.stream_name(), "devel");
+    assert.equal(compose_state.stream_name(), "Denmark");
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
@@ -364,7 +377,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     selected_message = {
         type: "stream",
-        stream: "devel",
+        stream: "Denmark",
         topic: "python",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
@@ -403,7 +416,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     selected_message = {
         type: "stream",
-        stream: "devel",
+        stream: "Denmark",
         topic: "test",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
@@ -417,7 +430,7 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
 
     selected_message = {
         type: "stream",
-        stream: "devel",
+        stream: "Denmark",
         topic: "test",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
