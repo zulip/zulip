@@ -23,11 +23,9 @@
                 <div class="btn-wrapper inline-block">
                     <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
                 </div>
-                {{#if is_editable}}
                 <div class="message-edit-feature-group">
                     {{> compose_control_buttons }}
                 </div>
-                {{/if}}
             {{else}}
                 <button type="button" class="button small rounded message_edit_close">{{t "Close" }}</button>
             {{/if}}
