@@ -1,11 +1,13 @@
+import re
 import time
+from io import StringIO
 from typing import TYPE_CHECKING, List, Union
 
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import ScheduledMessage
+from zerver.models import Attachment, ScheduledMessage
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -199,3 +201,90 @@ class ScheduledMessageTest(ZulipTestCase):
         # Already deleted.
         result = self.client_delete(f"/json/scheduled_messages/{scheduled_message.id}")
         self.assert_json_error(result, "Scheduled message does not exist", 404)
+
+    def test_attachment_handling(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        verona_stream_id = self.get_stream_id("Verona")
+
+        attachment_file1 = StringIO("zulip!")
+        attachment_file1.name = "dummy_1.txt"
+        result = self.client_post("/json/user_uploads", {"file": attachment_file1})
+        path_id1 = re.sub("/user_uploads/", "", result.json()["uri"])
+        attachment_object1 = Attachment.objects.get(path_id=path_id1)
+
+        attachment_file2 = StringIO("zulip!")
+        attachment_file2.name = "dummy_1.txt"
+        result = self.client_post("/json/user_uploads", {"file": attachment_file2})
+        path_id2 = re.sub("/user_uploads/", "", result.json()["uri"])
+        attachment_object2 = Attachment.objects.get(path_id=path_id2)
+
+        content = f"Test [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id1})"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        # Test sending with attachment
+        self.do_schedule_message("stream", verona_stream_id, content, scheduled_delivery_timestamp)
+        scheduled_message = self.last_scheduled_message()
+        self.assertEqual(
+            list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message.id],
+        )
+        self.assertEqual(scheduled_message.has_attachment, True)
+
+        # Test editing to change attachmment
+        edited_content = f"Test [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id2})"
+        result = self.do_schedule_message(
+            "stream",
+            verona_stream_id,
+            edited_content,
+            scheduled_delivery_timestamp,
+            scheduled_message_id=str(scheduled_message.id),
+        )
+        scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
+        self.assertEqual(
+            list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)), []
+        )
+        self.assertEqual(
+            list(attachment_object2.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message.id],
+        )
+        self.assertEqual(scheduled_message.has_attachment, True)
+
+        # Test editing to no longer reference any attachments
+        edited_content = "No more attachments"
+        result = self.do_schedule_message(
+            "stream",
+            verona_stream_id,
+            edited_content,
+            scheduled_delivery_timestamp,
+            scheduled_message_id=str(scheduled_message.id),
+        )
+        scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
+        self.assertEqual(
+            list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)), []
+        )
+        self.assertEqual(
+            list(attachment_object2.scheduled_messages.all().values_list("id", flat=True)), []
+        )
+        self.assertEqual(scheduled_message.has_attachment, False)
+
+        # Test editing to now have an attachment again
+        edited_content = (
+            f"Attachment is back! [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id2})"
+        )
+        result = self.do_schedule_message(
+            "stream",
+            verona_stream_id,
+            edited_content,
+            scheduled_delivery_timestamp,
+            scheduled_message_id=str(scheduled_message.id),
+        )
+        scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
+        self.assertEqual(
+            list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)), []
+        )
+        self.assertEqual(
+            list(attachment_object2.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message.id],
+        )
+        self.assertEqual(scheduled_message.has_attachment, True)

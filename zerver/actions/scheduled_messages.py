@@ -1,10 +1,11 @@
 import datetime
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import check_message
+from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import SendMessageRequest, render_markdown
@@ -45,7 +46,7 @@ def check_schedule_message(
 def do_schedule_messages(
     send_message_requests: Sequence[SendMessageRequest], sender: UserProfile
 ) -> List[int]:
-    scheduled_messages: List[ScheduledMessage] = []
+    scheduled_messages: List[Tuple[ScheduledMessage, SendMessageRequest]] = []
 
     for send_request in send_message_requests:
         scheduled_message = ScheduledMessage()
@@ -65,18 +66,28 @@ def do_schedule_messages(
         scheduled_message.scheduled_timestamp = send_request.deliver_at
         scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
 
-        scheduled_messages.append(scheduled_message)
+        scheduled_messages.append((scheduled_message, send_request))
 
-    ScheduledMessage.objects.bulk_create(scheduled_messages)
+    with transaction.atomic():
+        ScheduledMessage.objects.bulk_create(
+            [scheduled_message for scheduled_message, ignored in scheduled_messages]
+        )
+        for scheduled_message, send_request in scheduled_messages:
+            if do_claim_attachments(
+                scheduled_message, send_request.rendering_result.potential_attachment_path_ids
+            ):
+                scheduled_message.has_attachment = True
+                scheduled_message.save(update_fields=["has_attachment"])
+
     event = {
         "type": "scheduled_messages",
         "op": "add",
         "scheduled_messages": [
-            scheduled_message.to_dict() for scheduled_message in scheduled_messages
+            scheduled_message.to_dict() for scheduled_message, ignored in scheduled_messages
         ],
     }
     send_event(sender.realm, event, [sender.id])
-    return [scheduled_message.id for scheduled_message in scheduled_messages]
+    return [scheduled_message.id for scheduled_message, ignored in scheduled_messages]
 
 
 def edit_scheduled_message(
@@ -102,6 +113,11 @@ def edit_scheduled_message(
         scheduled_message_object.stream = send_request.stream
         assert send_request.deliver_at is not None
         scheduled_message_object.scheduled_timestamp = send_request.deliver_at
+
+        scheduled_message_object.has_attachment = check_attachment_reference_change(
+            scheduled_message_object, rendering_result
+        )
+
         scheduled_message_object.save()
 
     event = {

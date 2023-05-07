@@ -24,6 +24,7 @@ from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.avatar import avatar_url, get_avatar_field
@@ -48,6 +49,7 @@ from zerver.models import (
     Realm,
     RealmDomain,
     UserProfile,
+    get_client,
     get_realm,
     get_system_bot,
     get_user_by_delivery_email,
@@ -372,6 +374,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": d3})
         d3_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
 
+        d4 = StringIO("zulip!")
+        d4.name = "dummy_4.txt"
+        result = self.client_post("/json/user_uploads", {"file": d4})
+        d4_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
+
         two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
         # This Attachment will have a message linking to it:
         d1_attachment = Attachment.objects.get(path_id=d1_path_id)
@@ -387,6 +394,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d3_attachment = Attachment.objects.get(path_id=d3_path_id)
         d3_attachment.create_time = two_week_ago
         d3_attachment.save()
+
+        # This Attachment will just have a ScheduledMessage referencing it. It should not be deleted
+        # until the ScheduledMessage is deleted.
+        d4_attachment = Attachment.objects.get(path_id=d4_path_id)
+        d4_attachment.create_time = two_week_ago
+        d4_attachment.save()
 
         # Send message referencing only dummy_1
         self.subscribe(hamlet, "Denmark")
@@ -407,6 +420,29 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         assert settings.LOCAL_FILES_DIR
         d3_local_path = os.path.join(settings.LOCAL_FILES_DIR, d3_path_id)
         self.assertTrue(os.path.exists(d3_local_path))
+
+        body = (
+            f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
+            + d4_path_id
+            + ")"
+        )
+        scheduled_message_d4_id = check_schedule_message(
+            hamlet,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            body,
+            None,
+            timezone_now() + datetime.timedelta(days=365),
+            hamlet.realm,
+        )
+        self.assertEqual(
+            list(d4_attachment.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message_d4_id],
+        )
+        d4_local_path = os.path.join(settings.LOCAL_FILES_DIR, d4_path_id)
+        self.assertTrue(os.path.exists(d4_local_path))
 
         do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
         # dummy_2 should not exist in database or the uploads folder
@@ -430,6 +466,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertFalse(os.path.exists(d3_local_path))
         self.assertTrue(not Attachment.objects.filter(path_id=d3_path_id).exists())
         self.assertTrue(not ArchivedAttachment.objects.filter(path_id=d3_path_id).exists())
+
+        # dummy_4 only get deleted after the scheduled message is deleted.
+        self.assertTrue(os.path.exists(d4_local_path))
+        delete_scheduled_message(hamlet, scheduled_message_d4_id)
+        do_delete_old_unclaimed_attachments(2)
+        self.assertFalse(os.path.exists(d4_local_path))
+        self.assertTrue(not Attachment.objects.filter(path_id=d4_path_id).exists())
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
