@@ -388,7 +388,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d3_attachment.create_time = two_week_ago
         d3_attachment.save()
 
-        # Send message referring only dummy_1
+        # Send message referencing only dummy_1
         self.subscribe(hamlet, "Denmark")
         body = (
             f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
@@ -397,7 +397,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         )
         self.send_stream_message(hamlet, "Denmark", body, "test")
 
-        # Send message referecing dummy_3 - it will be archived next.
+        # Send message referencing dummy_3 - it will be archived next.
         body = (
             f"Some more files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
             + d3_path_id
