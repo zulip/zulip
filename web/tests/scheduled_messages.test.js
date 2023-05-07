@@ -7,16 +7,60 @@ const {run_test} = require("./lib/test");
 
 const scheduled_messages = zrequire("scheduled_messages");
 
-function get_expected_send_opts(expecteds) {
+function get_expected_send_opts(day, expecteds) {
+    const per_day_stamps = {
+        "2023-04-30": {
+            today_nine_am: 1682845200000,
+            today_four_pm: 1682870400000,
+            tomorrow_nine_am: 1682931600000,
+            tomorrow_four_pm: 1682956800000,
+        },
+        "2023-05-01": {
+            today_nine_am: 1682931600000,
+            today_four_pm: 1682956800000,
+            tomorrow_nine_am: 1683018000000,
+            tomorrow_four_pm: 1683043200000,
+        },
+        "2023-05-02": {
+            today_nine_am: 1683018000000,
+            today_four_pm: 1683043200000,
+            tomorrow_nine_am: 1683104400000,
+            tomorrow_four_pm: 1683129600000,
+        },
+        "2023-05-03": {
+            today_nine_am: 1683104400000,
+            today_four_pm: 1683129600000,
+            tomorrow_nine_am: 1683190800000,
+            tomorrow_four_pm: 1683216000000,
+        },
+        "2023-05-04": {
+            today_nine_am: 1683190800000,
+            today_four_pm: 1683216000000,
+            tomorrow_nine_am: 1683277200000,
+            tomorrow_four_pm: 1683302400000,
+        },
+        "2023-05-05": {
+            today_nine_am: 1683277200000,
+            today_four_pm: 1683302400000,
+            tomorrow_nine_am: 1683363600000,
+            tomorrow_four_pm: 1683388800000,
+        },
+        "2023-05-06": {
+            today_nine_am: 1683363600000,
+            today_four_pm: 1683388800000,
+            tomorrow_nine_am: 1683450000000,
+            tomorrow_four_pm: 1683475200000,
+        },
+    };
     const modal_opts = {
         send_later_tomorrow: {
             tomorrow_nine_am: {
                 text: "translated: Tomorrow at 9:00 AM",
-                stamp: 1683363600000,
+                stamp: per_day_stamps[day].tomorrow_nine_am,
             },
             tomorrow_four_pm: {
                 text: "translated: Tomorrow at 4:00 PM",
-                stamp: 1683388800000,
+                stamp: per_day_stamps[day].tomorrow_four_pm,
             },
         },
         send_later_custom: {
@@ -29,17 +73,17 @@ function get_expected_send_opts(expecteds) {
         send_later_today: {
             today_nine_am: {
                 text: "translated: Today at 9:00 AM",
-                stamp: 1683277200000,
+                stamp: per_day_stamps[day].today_nine_am,
             },
             today_four_pm: {
                 text: "translated: Today at 4:00 PM",
-                stamp: 1683302400000,
+                stamp: per_day_stamps[day].today_four_pm,
             },
         },
         send_later_monday: {
             monday_nine_am: {
                 text: "translated: Monday at 9:00 AM",
-                stamp: 1683536400000,
+                stamp: 1683536400000, // this is always the Monday 9:00 AM time for the week of 2023-04-30
             },
         },
     };
@@ -86,7 +130,7 @@ run_test("scheduled_modal_opts", () => {
                 opts.extras.push("monday_nine_am");
             }
             const modal_opts = scheduled_messages.get_filtered_send_opts(date);
-            const expected_opts = get_expected_send_opts(opts.extras);
+            const expected_opts = get_expected_send_opts(day, opts.extras);
             assert.deepEqual(modal_opts, expected_opts);
         }
     }
