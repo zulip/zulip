@@ -10,6 +10,10 @@ mock_esm("../src/resize", {
     resize_stream_filters_container() {},
 });
 
+const scheduled_messages = mock_esm("../src/scheduled_messages");
+
+scheduled_messages.get_count = () => 555;
+
 const {Filter} = zrequire("../src/filter");
 const top_left_corner = zrequire("top_left_corner");
 
@@ -68,18 +72,27 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_starred_messages"), "<starred-count>");
 
-    top_left_corner.update_dom_with_unread_counts(counts);
+    make_elem($(".top_left_scheduled_messages"), "<scheduled-count>");
+
+    top_left_corner.update_dom_with_unread_counts(counts, false);
     top_left_corner.update_starred_count(444);
+    // Calls top_left_corner.update_scheduled_messages_row
+    top_left_corner.initialize();
 
     assert.equal($("<mentioned-count>").text(), "222");
     assert.equal($("<home-count>").text(), "333");
     assert.equal($("<starred-count>").text(), "444");
+    assert.equal($("<scheduled-count>").text(), "555");
 
     counts.mentioned_message_count = 0;
-    top_left_corner.update_dom_with_unread_counts(counts);
+    scheduled_messages.get_count = () => 0;
+
+    top_left_corner.update_dom_with_unread_counts(counts, false);
     top_left_corner.update_starred_count(0);
+    top_left_corner.update_scheduled_messages_row();
 
     assert.ok(!$("<mentioned-count>").visible());
     assert.equal($("<mentioned-count>").text(), "");
     assert.equal($("<starred-count>").text(), "");
+    assert.ok(!$(".top_left_scheduled_messages").visible());
 });

@@ -264,7 +264,7 @@ class UnreadTopicCounter {
         const res = {};
         res.stream_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
-        for (const [stream_id, per_stream_bucketer] of this.bucketer) {
+        for (const [stream_id] of this.bucketer) {
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
@@ -274,29 +274,8 @@ class UnreadTopicCounter {
                 continue;
             }
 
-            let unmuted_count = 0;
-            let muted_count = 0;
-            for (const [topic, msgs] of per_stream_bucketer) {
-                const topic_count = msgs.size;
-
-                if (user_topics.is_topic_unmuted(stream_id, topic)) {
-                    unmuted_count += topic_count;
-                } else if (user_topics.is_topic_muted(stream_id, topic)) {
-                    muted_count += topic_count;
-                } else if (sub.is_muted) {
-                    muted_count += topic_count;
-                } else {
-                    unmuted_count += topic_count;
-                }
-            }
-
-            res.stream_count.set(stream_id, {
-                unmuted_count,
-                muted_count,
-                stream_is_muted: sub.is_muted,
-            });
-
-            res.stream_unread_messages += unmuted_count;
+            res.stream_count.set(stream_id, this.get_stream_count(stream_id));
+            res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
         }
 
         return res;
@@ -432,6 +411,10 @@ class UnreadTopicCounter {
 
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            if (stream_id === undefined) {
+                // This is a private message containing a mention.
+                continue;
+            }
             streams_with_mentions.add(stream_id);
         }
 
@@ -444,6 +427,11 @@ class UnreadTopicCounter {
         // in an unmuted topic within a muted stream.
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            if (stream_id === undefined) {
+                // This is a private message containing a mention.
+                continue;
+            }
+
             const stream_bucketer = this.bucketer.get_bucket(stream_id);
             const topic = stream_bucketer.reverse_lookup.get(message_id);
             if (user_topics.is_topic_unmuted(stream_id, topic)) {

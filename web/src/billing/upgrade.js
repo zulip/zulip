@@ -50,7 +50,7 @@ export const initialize = () => {
     });
 
     $("select[name=organization-type]").on("change", (e) => {
-        const string_value = $(e.currentTarget).find(":selected").attr("data-string-value");
+        const string_value = $(e.currentTarget.selectedOptions).attr("data-string-value");
         helpers.update_discount_details(string_value);
     });
 

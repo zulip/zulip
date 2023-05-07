@@ -919,6 +919,7 @@ td.pointer {
 
         vertical-align: top;
         line-height: 0;
+        margin-top: 4px !important;
 
         .message_edit_notice {
             line-height: 0;

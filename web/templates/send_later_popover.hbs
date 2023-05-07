@@ -2,10 +2,10 @@
     <li>
         <a class="open_send_later_modal" tabindex="0">{{t "Schedule message" }}</a>
     </li>
-    {{#if formatted_send_later_time }}
-    <li>
-        <a id="clear_compose_schedule_state" tabindex="0">{{t "Cancel scheduling" }}</a>
-    </li>
+    {{#if formatted_send_later_time}}
+        <li>
+            <a class="send_later_selected_send_later_time" tabindex="0">{{t 'Schedule for {formatted_send_later_time}' }}</a>
+        </li>
     {{/if}}
     <hr />
     <li>

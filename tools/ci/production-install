@@ -61,9 +61,9 @@ os_info="$(
     read -r os_version_id
 } <<<"$os_info"
 
-# Pin to PostgreSQL 10 on Ubuntu 20.04, so we can test upgrading it
+# Pin PostgreSQL on Ubuntu 20.04, so we can test upgrading it
 if [ "$os_id $os_version_id" = 'ubuntu 20.04' ]; then
-    export POSTGRESQL_VERSION=10
+    export POSTGRESQL_VERSION=12
 fi
 
 # Install
@@ -75,9 +75,13 @@ else
     "$ZULIP_PATH"/scripts/setup/install --self-signed-cert --hostname 127.0.0.1 --email ci@example.com --postgresql-database-user zulipcustomuser --postgresql-database-name zulipcustomdb
 fi
 
-if [ "$os_id $os_version_id" = 'ubuntu 20.04' ]; then
-    if [ "$(crudini --get /etc/zulip/zulip.conf postgresql version)" != "10" ]; then
-        echo "Installer did not install the PostgreSQL 10 that we asked for!"
+if [ -n "${POSTGRESQL_VERSION:-}" ]; then
+    if [ "$(crudini --get /etc/zulip/zulip.conf postgresql version)" != "$POSTGRESQL_VERSION" ]; then
+        echo "Installer did not install the PostgreSQL $POSTGRESQL_VERSION that we asked for!"
+        exit 1
+    fi
+    if ! su - zulip -c "psql -tc 'select version()'" | grep -q "^ PostgreSQL $POSTGRESQL_VERSION\."; then
+        echo "Installed PostgreSQL is not actually PostgreSQL $POSTGRESQL_VERSION!"
         exit 1
     fi
 fi

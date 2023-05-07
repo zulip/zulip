@@ -39,7 +39,6 @@ const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
-const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 const stream_list_sort = zrequire("stream_list_sort");
 const compose = zrequire("compose");
@@ -1580,7 +1579,7 @@ test("typeahead_results", () => {
     function assert_slash_matches(input, expected) {
         const returned = compose_typeahead_results(
             "slash",
-            composebox_typeahead.slash_commands,
+            composebox_typeahead.all_slash_commands,
             input,
         );
         assert.deepEqual(returned, expected);
@@ -1764,8 +1763,7 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
     );
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(stream_bar, "decorate", noop);
-    override_rewire(compose_recipient, "update_on_recipient_change", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_name("");
@@ -1784,8 +1782,8 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
         (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
     );
 
-    // When viewing denmark stream to which alice is subscribed, ali is still
-    // 1st by virtue of the name being an exact match with the query.
+    // When viewing denmark stream to which alice is subscribed, ali is not
+    // 1st despite having an exact name match with the query.
     results = ct.get_pm_people("ali");
-    assert.deepEqual(results, [ali, alice]);
+    assert.deepEqual(results, [alice, ali]);
 });

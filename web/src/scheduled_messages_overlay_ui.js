@@ -1,24 +1,15 @@
-import * as date_fns from "date-fns";
 import $ from "jquery";
 
 import render_scheduled_message from "../templates/scheduled_message.hbs";
 import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
 
-import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
-import * as channel from "./channel";
-import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
-
-function hide_loading_indicator() {
-    loading.destroy_indicator($("#scheduled_messages_overlay .loading-indicator"));
-    $(".scheduled-messages-loading").hide();
-}
 
 function format(scheduled_messages) {
     const formatted_msgs = [];
@@ -39,8 +30,7 @@ function format(scheduled_messages) {
             msg_render_context.recipients = people.get_recipients(msg.to.join(","));
         }
         const time = new Date(msg.scheduled_delivery_timestamp * 1000);
-        msg_render_context.full_date_time = timerender.get_full_datetime(time);
-        msg_render_context.formatted_send_at_time = date_fns.format(time, "MMM d yyyy h:mm a");
+        msg_render_context.formatted_send_at_time = timerender.get_full_datetime(time, "time");
         formatted_msgs.push(msg_render_context);
     }
     return formatted_msgs;
@@ -56,43 +46,42 @@ export function launch() {
             browser_history.exit_overlay();
         },
     });
-    loading.make_indicator($("#scheduled_messages_overlay .loading-indicator"), {
-        abs_positioned: true,
-    });
 
-    channel.get({
-        url: "/json/scheduled_messages",
-        success(data) {
-            hide_loading_indicator();
-            if (data.scheduled_messages.length === 0) {
-                $(".no-overlay-messages").show();
-            } else {
-                // Saving formatted data is helpful when user is trying to edit a scheduled message.
-                scheduled_messages.override_scheduled_messages_data(
-                    format(data.scheduled_messages),
-                );
-                const rendered_list = render_scheduled_message({
-                    scheduled_messages_data: scheduled_messages.scheduled_messages_data,
-                });
-                const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
-                $messages_list.append(rendered_list);
-            }
-        },
-        error(xhr) {
-            hide_loading_indicator();
-            blueslip.error(xhr);
-        },
+    const rendered_list = render_scheduled_message({
+        scheduled_messages_data: format(scheduled_messages.scheduled_messages_data),
     });
+    const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
+    $messages_list.append(rendered_list);
+}
+
+export function rerender() {
+    if (!overlays.scheduled_messages_open()) {
+        return;
+    }
+    const rendered_list = render_scheduled_message({
+        scheduled_messages_data: format(scheduled_messages.scheduled_messages_data),
+    });
+    const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
+    $messages_list.find(".scheduled-message-row").remove();
+    $messages_list.append(rendered_list);
+}
+
+export function remove_scheduled_message_id(scheduled_msg_id) {
+    if (overlays.scheduled_messages_open()) {
+        $(
+            `#scheduled_messages_overlay .scheduled-message-row[data-scheduled-message-id=${scheduled_msg_id}]`,
+        ).remove();
+    }
 }
 
 export function initialize() {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
         let scheduled_msg_id = $(e.currentTarget)
             .closest(".scheduled-message-row")
-            .attr("data-message-id");
+            .attr("data-scheduled-message-id");
         scheduled_msg_id = Number.parseInt(scheduled_msg_id, 10);
         scheduled_messages.edit_scheduled_message(scheduled_msg_id);
-
+        overlays.close_overlay("scheduled");
         e.stopPropagation();
         e.preventDefault();
     });
@@ -100,7 +89,7 @@ export function initialize() {
     $("body").on("click", ".scheduled-message-row .delete-overlay-message", (e) => {
         const scheduled_msg_id = $(e.currentTarget)
             .closest(".scheduled-message-row")
-            .attr("data-message-id");
+            .attr("data-scheduled-message-id");
         scheduled_messages.delete_scheduled_message(scheduled_msg_id);
 
         e.stopPropagation();

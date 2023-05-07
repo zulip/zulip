@@ -81,11 +81,16 @@ export function keyed_topic_li(conversation) {
     };
 }
 
-export function more_li(more_topics_unreads, more_topics_have_unread_mention_messages) {
+export function more_li(
+    more_topics_unreads,
+    more_topics_have_unread_mention_messages,
+    more_topics_unread_count_muted,
+) {
     const render = () =>
         render_more_topics({
             more_topics_unreads,
             more_topics_have_unread_mention_messages,
+            more_topics_unread_count_muted,
         });
 
     const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
@@ -147,7 +152,13 @@ export class TopicListWidget {
         if (spinner) {
             nodes.push(spinner_li());
         } else if (!is_showing_all_possible_topics) {
-            nodes.push(more_li(more_topics_unreads, more_topics_have_unread_mention_messages));
+            nodes.push(
+                more_li(
+                    more_topics_unreads,
+                    more_topics_have_unread_mention_messages,
+                    list_info.more_topics_unread_count_muted,
+                ),
+            );
         }
 
         const dom = vdom.ul({

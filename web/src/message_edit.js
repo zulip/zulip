@@ -12,6 +12,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
@@ -826,7 +827,7 @@ export function save_inline_topic_edit($row) {
     const request = {
         message_id: message.id,
         topic: new_topic,
-        propagate_mode: "change_later",
+        propagate_mode: "change_all",
         send_notification_to_old_thread: false,
         send_notification_to_new_thread: false,
     };
@@ -840,6 +841,34 @@ export function save_inline_topic_edit($row) {
         },
         error(xhr) {
             const $spinner = $row.find(".topic_edit_spinner");
+            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
+                const send_notification_to_old_thread = false;
+                const send_notification_to_new_thread = false;
+                // We are not changing stream in this UI.
+                const new_stream_id = undefined;
+                function handle_confirm() {
+                    move_topic_containing_message_to_stream(
+                        allowed_message_id,
+                        new_stream_id,
+                        new_topic,
+                        send_notification_to_new_thread,
+                        send_notification_to_old_thread,
+                        "change_later",
+                    );
+                }
+                const on_hide_callback = () => {
+                    loading.destroy_indicator($spinner);
+                    end_inline_topic_edit($row);
+                };
+
+                handle_message_move_failure_due_to_time_limit(
+                    xhr,
+                    handle_confirm,
+                    on_hide_callback,
+                );
+                return;
+            }
             loading.destroy_indicator($spinner);
             if (msg_list === message_lists.current) {
                 message_id = rows.id_for_recipient_row($row);
@@ -967,11 +996,15 @@ export function save_message_row_edit($row) {
                 }
 
                 hide_message_edit_spinner($row);
-                const message = channel.xhr_error_message(
-                    $t({defaultMessage: "Error saving edit"}),
-                    xhr,
+                const message = channel.xhr_error_message(null, xhr);
+                const $container = compose_banner.get_compose_banner_container(
+                    $row.find("textarea"),
                 );
-                $row.find(".edit_error").text(message).show();
+                compose_banner.show_error_message(
+                    message,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $container,
+                );
             }
         },
     });
@@ -1092,7 +1125,7 @@ export function handle_narrow_deactivated() {
     }
 }
 
-function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm) {
+function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm, on_hide_callback) {
     const total_messages_allowed_to_move = xhr.responseJSON.total_messages_allowed_to_move;
     const messages_allowed_to_move_text = $t(
         {
@@ -1121,6 +1154,7 @@ function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm) {
         html_body,
         on_click: handle_confirm,
         loading_spinner: true,
+        on_hide: on_hide_callback,
     });
 }
 

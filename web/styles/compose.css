@@ -325,6 +325,19 @@
                 color: hsl(147deg 57% 25% / 75%);
             }
         }
+
+        .compose_banner_action_button {
+            background-color: hsl(147deg 57% 25% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(147deg 57% 25% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(147deg 57% 25% / 15%);
+            }
+        }
     }
 
     /* warning and warning-style classes have the same CSS; this is since
@@ -525,7 +538,6 @@ input.recipient_box {
     width: 100%;
 }
 
-#compose-schedule-confirm-button,
 #compose-send-button {
     padding: 3px 12px;
     margin-bottom: 0;
@@ -854,21 +866,22 @@ a.compose_control_button.hide {
 /* `^` icon located next to `Send` / `Scheduled` button which shows
    options to schedule the message. */
 #send_later {
+    display: flex;
+    align-items: center;
     float: right;
     color: hsl(0deg 0% 100%);
     border-radius: 0 4px 4px 0;
-    border-left: 1px solid hsl(0deg 0% 100% / 65%);
     padding: 0;
     margin: 0;
 
     .zulip-icon {
-        vertical-align: middle;
+        padding: 5px 9px;
+    }
 
-        &::before {
-            padding: 5px 9px;
-            position: relative;
-            top: -1px;
-        }
+    .separator-line {
+        background-color: hsl(0deg 0% 100% / 65%);
+        height: 70%;
+        width: 1px;
     }
 
     &:hover,

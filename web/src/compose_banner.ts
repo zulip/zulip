@@ -17,7 +17,7 @@ export const ERROR = "error";
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
     narrow_to_recipient: "narrow_to_recipient",
-    scheduled_message_banner: "scheduled_message_banner",
+    message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
 };
 // Technically, unmute_topic_notification is a message sent banner, but
 // it has distinct behavior / look - it has an associated action button,
@@ -51,10 +51,20 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
+export function get_compose_banner_container($textarea: JQuery): JQuery {
+    return $textarea.attr("id") === "compose-textarea"
+        ? $("#compose_banners")
+        : $textarea.closest(".message_edit_form").find(".edit_form_banners");
+}
+
+// This function provides a convenient way to add new elements
+// to a banner container. The function accepts a container element
+// as a parameter, to which a banner should be appended.
 export function append_compose_banner_to_banner_list(
-    new_row: HTMLElement | JQuery.htmlString,
+    banner: HTMLElement | JQuery.htmlString,
+    $list_container: JQuery,
 ): void {
-    scroll_util.get_content_element($("#compose_banners")).append(new_row);
+    scroll_util.get_content_element($list_container).append(banner);
 }
 
 export function clear_message_sent_banners(include_unmute_banner = true): void {
@@ -90,7 +100,12 @@ export function clear_all(): void {
     $(`#compose_banners`).empty();
 }
 
-export function show_error_message(message: string, classname: string, $bad_input?: JQuery): void {
+export function show_error_message(
+    message: string,
+    classname: string,
+    $container: JQuery,
+    $bad_input?: JQuery,
+): void {
     $(`#compose_banners .${CSS.escape(classname)}`).remove();
 
     const new_row = render_compose_banner({
@@ -101,7 +116,7 @@ export function show_error_message(message: string, classname: string, $bad_inpu
         button_text: null,
         classname,
     });
-    append_compose_banner_to_banner_list(new_row);
+    append_compose_banner_to_banner_list(new_row, $container);
 
     hide_compose_spinner();
 
@@ -119,7 +134,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
         stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
-    append_compose_banner_to_banner_list(new_row);
+    append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
     hide_compose_spinner();
 
     // A copy of `compose_recipient.open_compose_stream_dropup()` that

@@ -5211,7 +5211,7 @@ paths:
           in: query
           description: |
             The topic of the message. Only required for stream messages
-            (`type="stream"`).
+            (`type="stream"`), ignored otherwise.
 
             Clients should use the `max_topic_length` returned by the
             [`POST /register`](/api/register-queue) endpoint to determine
@@ -5844,7 +5844,7 @@ paths:
 
             Clients should use the `max_topic_length` returned by the
             [`POST /register`](/api/register-queue) endpoint to determine
-            the maximum topic length
+            the maximum topic length.
 
             **Changes**: New in Zulip 2.0.0. Previous Zulip releases encoded
             this as `subject`, which is currently a deprecated alias.

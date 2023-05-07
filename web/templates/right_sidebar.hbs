@@ -37,11 +37,13 @@
                     {{tooltip_hotkey_hints "?"}}
                 </template>
             </a>
+            {{#if realm_rendered_description}}
             <div class="only-visible-for-spectators">
                 <div class="realm-description">
                     <div class="rendered_markdown">{{rendered_markdown realm_rendered_description }}</div>
                 </div>
             </div>
+            {{/if}}
         </div>
     </div>
 </div>

@@ -33,10 +33,6 @@ const consts = {
 function process_result(data, opts) {
     let messages = data.messages;
 
-    if (!$("#connection-error").hasClass("get-events-error")) {
-        ui_report.hide_error($("#connection-error"));
-    }
-
     messages = messages.map((message) => message_helper.process_new_message(message));
 
     // In some rare situations, we expect to discover new unread
@@ -54,21 +50,37 @@ function process_result(data, opts) {
         message_util.add_old_messages(messages, opts.msg_list);
     }
 
+    huddle_data.process_loaded_messages(messages);
+    recent_topics_ui.process_messages(messages);
+    stream_list.update_streams_sidebar();
+    stream_list.maybe_scroll_narrow_into_view();
+
     if (
         opts.msg_list === message_lists.current &&
         opts.msg_list.narrowed &&
-        opts.msg_list.empty()
+        opts.msg_list.visibly_empty()
     ) {
-        // Even after loading more messages, we have
-        // no messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message();
+        // The view appears to be empty. However, because in stream
+        // narrows, we fetch messages including those that might be
+        // hidden by topic muting, it's possible that we received all
+        // the messages we requested, and all of them are in muted
+        // topics, but there are older messages for this stream that
+        // we need to ask the server for.
+        const has_found_oldest = opts.msg_list.data.fetch_status.has_found_oldest();
+        const has_found_newest = opts.msg_list.data.fetch_status.has_found_newest();
+        if (has_found_oldest && has_found_newest) {
+            // Even after loading more messages, we have
+            // no messages to display in this narrow.
+            narrow_banner.show_empty_narrow_message();
+        }
+
+        if (opts.num_before > 0 && !has_found_oldest) {
+            maybe_load_older_messages({msg_list: opts.msg_list});
+        }
+        if (opts.num_after > 0 && !has_found_newest) {
+            maybe_load_newer_messages({msg_list: opts.msg_list});
+        }
     }
-
-    huddle_data.process_loaded_messages(messages);
-    stream_list.update_streams_sidebar();
-    recent_topics_ui.process_messages(messages);
-
-    stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
         opts.cont(data, opts);
@@ -256,9 +268,20 @@ export function load_messages(opts, attempt = 1) {
         url: "/json/messages",
         data,
         success(data) {
+            if (!$("#connection-error").hasClass("get-events-error")) {
+                ui_report.hide_error($("#connection-error"));
+            }
+
             get_messages_success(data, opts);
         },
         error(xhr) {
+            if (xhr.status === 400 && !$("#connection-error").hasClass("get-events-error")) {
+                // We successfully reached the server, so hide the
+                // connection error notice, even if the request failed
+                // for other reasons.
+                ui_report.hide_error($("#connection-error"));
+            }
+
             if (opts.msg_list.narrowed && opts.msg_list !== message_lists.current) {
                 // We unnarrowed before getting an error so don't
                 // bother trying again or doing further processing.
@@ -269,12 +292,24 @@ export function load_messages(opts, attempt = 1) {
                 // for a nonexistent stream or something.  We shouldn't
                 // retry or display a connection error.
                 //
-                // FIXME: Warn the user when this has happened?
+                // FIXME: This logic unconditionally ignores the actual JSON
+                // error in the xhr status. While we have empty narrow messages
+                // for many common errors, and those have nicer HTML formatting,
+                // we certainly don't for every possible 400 error.
                 message_scroll.hide_indicators();
-                const data = {
-                    messages: [],
-                };
-                process_result(data, opts);
+
+                if (
+                    opts.msg_list === message_lists.current &&
+                    opts.msg_list.narrowed &&
+                    opts.msg_list.visibly_empty()
+                ) {
+                    narrow_banner.show_empty_narrow_message();
+                }
+
+                // TODO: This should probably do something explicit with
+                // `FetchStatus` to mark the message list as not eligible for
+                // further fetches. Currently, that happens implicitly via
+                // failing to call finish_older_batch / finish_newer_batch
                 return;
             }
 
@@ -303,19 +338,22 @@ export function load_messages_for_narrow(opts) {
 
 export function get_backfill_anchor(msg_list) {
     const oldest_msg =
-        msg_list === message_lists.home ? all_messages_data.first() : msg_list.first();
+        msg_list === message_lists.home
+            ? all_messages_data.first_including_muted()
+            : msg_list.data.first_including_muted();
 
     if (oldest_msg) {
         return oldest_msg.id;
     }
 
-    // msg_list is empty, which is an impossible
-    // case, raise a fatal error.
-    throw new Error("There are no message available to backfill.");
+    return "first_unread";
 }
 
 export function get_frontfill_anchor(msg_list) {
-    const last_msg = msg_list === message_lists.home ? all_messages_data.last() : msg_list.last();
+    const last_msg =
+        msg_list === message_lists.home
+            ? all_messages_data.last_including_muted()
+            : msg_list.data.last_including_muted();
 
     if (last_msg) {
         return last_msg.id;
@@ -410,7 +448,7 @@ export function initialize(home_view_loaded) {
     function load_more(data) {
         // If we haven't selected a message in the home view yet, and
         // the home view isn't empty, we select the anchor message here.
-        if (message_lists.home.selected_id() === -1 && !message_lists.home.empty()) {
+        if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
             // We fall back to the closest selected id, as the user
             // may have removed a stream from the home view while we
             // were loading data.

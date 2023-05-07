@@ -74,6 +74,7 @@ import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
@@ -99,6 +100,7 @@ import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
+import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
@@ -572,6 +574,7 @@ export function initialize_everything() {
     const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
+    const scheduled_messages_params = pop_fields("scheduled_messages");
 
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. */
@@ -588,6 +591,8 @@ export function initialize_everything() {
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
+    // This populates data for scheduled messages.
+    scheduled_messages.initialize(scheduled_messages_params);
     popovers.initialize();
     popover_menus.initialize();
 
@@ -645,6 +650,7 @@ export function initialize_everything() {
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
+    top_left_corner.initialize();
     stream_list.initialize();
     stream_list_sort.initialize();
     condense.initialize();

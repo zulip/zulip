@@ -123,13 +123,10 @@ function add_upload_banner(config, banner_type, banner_text, file_id) {
         banner_text,
         file_id,
     });
-    // TODO: Extend compose_banner.append_compose_banner_to_banner_list
-    // to support the message edit container too.
-    if (config.mode === "compose") {
-        compose_banner.append_compose_banner_to_banner_list(new_banner);
-    } else {
-        get_item("banner_container", config).append(new_banner);
-    }
+    compose_banner.append_compose_banner_to_banner_list(
+        new_banner,
+        get_item("banner_container", config),
+    );
 }
 
 export function show_error_message(
@@ -270,18 +267,8 @@ export function setup_upload(config) {
         event.target.value = "";
     });
 
-    // These are close-click handlers for error banners that aren't associated
-    // with a particular file.
-    $("#compose_banners").on(
-        "click",
-        ".upload_banner.file_generic_error .compose_banner_close_button",
-        (event) => {
-            event.preventDefault();
-            $(event.target).parents(".upload_banner").remove();
-        },
-    );
-
-    $("#edit_form_banners").on(
+    const $banner_container = get_item("banner_container", config);
+    $banner_container.on(
         "click",
         ".upload_banner.file_generic_error .compose_banner_close_button",
         (event) => {

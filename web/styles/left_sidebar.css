@@ -331,11 +331,22 @@ ul.filters {
 
     & a {
         color: inherit;
+
+        &:focus {
+            text-decoration: none;
+        }
     }
 
     & hr {
         margin-top: 10px;
         margin-bottom: 10px;
+    }
+
+    /* This is a noop in the current design, because unread counts for
+       muted streams have the same opacity, but the logic is here to
+       be explicit and because the design may change in the future. */
+    .more_topic_unreads_muted_only .unread_count {
+        opacity: 0.5;
     }
 
     & li.muted_topic,
@@ -429,7 +440,8 @@ li.active-sub-filter {
     }
 
     .top_left_starred_messages .unread_count,
-    .top_left_drafts .unread_count {
+    .top_left_drafts .unread_count,
+    .top_left_scheduled_messages .unread_count {
         background-color: inherit;
         color: inherit;
         border: 0.5px solid hsl(105deg 2% 50%);

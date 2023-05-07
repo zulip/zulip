@@ -186,6 +186,16 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".tippy-narrow-tooltip",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onCreate(instance) {
+            const content = instance.props.content + $("#narrow-hotkey-tooltip-template").html();
+            instance.setContent(parse_html(content));
+        },
+    });
+
+    delegate("body", {
         target: ".toggle-subscription-tooltip",
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -620,27 +630,6 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
         },
-    });
-
-    delegate("body", {
-        target: "#compose-schedule-confirm-button",
-        onShow(instance) {
-            if (popover_menus.get_scheduled_messages_popover()) {
-                return false;
-            }
-
-            const send_at_time = popover_menus.get_formatted_selected_send_later_time();
-            instance.setContent(
-                parse_html(
-                    $t(
-                        {defaultMessage: "Schedule message for <br/> {send_at_time}"},
-                        {send_at_time},
-                    ),
-                ),
-            );
-            return true;
-        },
-        appendTo: () => document.body,
     });
 
     delegate("body", {

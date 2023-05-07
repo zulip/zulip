@@ -17,7 +17,6 @@ const compose_fade = zrequire("compose_fade");
 const compose_state = zrequire("compose_state");
 const compose_recipient = zrequire("compose_recipient");
 const sub_store = zrequire("sub_store");
-const stream_bar = zrequire("stream_bar");
 const stream_data = zrequire("stream_data");
 
 let stream_value = "";
@@ -167,8 +166,8 @@ test("draft_model delete", ({override}) => {
 test("snapshot_message", ({override_rewire}) => {
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     mock_banners();
-    override_rewire(stream_bar, "decorate", noop);
 
     stream_data.get_sub = (stream_name) => {
         assert.equal(stream_name, "stream");

@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import * as blueslip from "./blueslip";
 import {page_params} from "./page_params";
@@ -150,7 +151,12 @@ export function xhr_error_message(message, xhr) {
     if (xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        message += ": " + JSON.parse(xhr.responseText).msg;
+        const server_response_html = _.escape(JSON.parse(xhr.responseText).msg);
+        if (message) {
+            message += ": " + server_response_html;
+        } else {
+            message = server_response_html;
+        }
     }
     return message;
 }

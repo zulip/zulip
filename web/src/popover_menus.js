@@ -3,7 +3,6 @@
    popovers system in popovers.js. */
 
 import ClipboardJS from "clipboard";
-import {format} from "date-fns";
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
@@ -25,6 +24,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
 import * as drafts from "./drafts";
@@ -42,6 +42,7 @@ import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
+import * as scheduled_messages from "./scheduled_messages";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -53,7 +54,7 @@ import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
-let selected_send_later_time;
+let selected_send_later_timestamp;
 
 const popover_instances = {
     compose_control_buttons: null,
@@ -80,26 +81,26 @@ export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
 
-export function is_time_selected_for_schedule() {
-    return selected_send_later_time !== undefined;
-}
-
-export function get_selected_send_later_time() {
-    if (!selected_send_later_time) {
+export function get_selected_send_later_timestamp() {
+    if (!selected_send_later_timestamp) {
         return undefined;
     }
-    return selected_send_later_time;
+    return selected_send_later_timestamp;
 }
 
 export function get_formatted_selected_send_later_time() {
-    if (!selected_send_later_time) {
+    if (!selected_send_later_timestamp) {
         return undefined;
     }
-    return timerender.get_full_datetime(new Date(selected_send_later_time), "time");
+    return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
 }
 
-export function reset_selected_schedule_time() {
-    selected_send_later_time = undefined;
+export function set_selected_schedule_timestamp(timestamp) {
+    selected_send_later_timestamp = timestamp;
+}
+
+export function reset_selected_schedule_timestamp() {
+    selected_send_later_timestamp = undefined;
 }
 
 export function get_scheduled_messages_popover() {
@@ -229,28 +230,17 @@ export function toggle_message_actions_menu(message) {
     return true;
 }
 
-export function show_schedule_confirm_button(send_at_time, not_from_flatpickr = false) {
-    // If no time was selected by the user, we don't show the schedule button.
-    if (!send_at_time) {
-        return;
+export function do_schedule_message(send_at_time) {
+    if (overlays.is_modal_open()) {
+        overlays.close_modal("send_later_modal");
     }
 
-    // flatpickr.show_flatpickr doesn't pass any value for not_from_flatpickr,
-    // making it false by default and we pass it as true in other cases.
-    // This is used to determine if flatpickr was used to select time for the
-    // message to be sent.
-    if (!not_from_flatpickr) {
-        send_at_time = format(new Date(send_at_time), "MMM d yyyy h:mm a");
+    if (!Number.isInteger(send_at_time)) {
+        // Convert to timestamp if this is not a timestamp.
+        send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
     }
-
-    selected_send_later_time = send_at_time;
-    $("#compose-schedule-confirm-button").show();
-    $("#compose-send-button").hide();
-}
-
-function update_scheduled_date_from_modal(send_at_time, not_from_flatpickr = false) {
-    overlays.close_active_modal();
-    show_schedule_confirm_button(send_at_time, not_from_flatpickr);
+    selected_send_later_timestamp = send_at_time;
+    compose.finish(true);
 }
 
 export function initialize() {
@@ -799,61 +789,9 @@ export function initialize() {
         },
     });
 
-    $("body").on("click", "#compose-schedule-confirm-button", (e) => {
-        compose.finish();
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    const send_later_today = {
-        today_nine_am: {
-            text: $t({defaultMessage: "Today at 9:00 AM"}),
-            time: "9:00 am",
-        },
-        today_four_pm: {
-            text: $t({defaultMessage: "Today at 4:00 PM "}),
-            time: "4:00 pm",
-        },
-    };
-
-    const send_later_tomorrow = {
-        tomorrow_nine_am: {
-            text: $t({defaultMessage: "Tomorrow at 9:00 AM"}),
-            time: "9:00 am",
-        },
-        tomorrow_four_pm: {
-            text: $t({defaultMessage: "Tomorrow at 4:00 PM "}),
-            time: "4:00 pm",
-        },
-    };
-
-    const send_later_custom = {
-        text: $t({defaultMessage: "Custom"}),
-    };
-
     function set_compose_box_schedule(element) {
-        const send_later_in = element.id;
-        const send_later_class = element.classList[0];
-        switch (send_later_class) {
-            case "send_later_tomorrow": {
-                const send_time = send_later_tomorrow[send_later_in].time;
-                const date = new Date();
-                const scheduled_date = date.setDate(date.getDate() + 1);
-                const send_at_time = format(scheduled_date, "MMM d yyyy ") + send_time;
-                return send_at_time;
-            }
-            case "send_later_today": {
-                const send_time = send_later_today[send_later_in].time;
-                const date = new Date();
-                const send_at_time =
-                    format(date.setDate(date.getDate()), "MMM d yyyy ") + send_time;
-                return send_at_time;
-            }
-            // No default
-        }
-        blueslip.error("Not a valid time.");
-        return false;
+        const selected_send_at_time = element.dataset.sendStamp / 1000;
+        return selected_send_at_time;
     }
 
     delegate("body", {
@@ -878,29 +816,20 @@ export function initialize() {
         },
         onMount(instance) {
             const $popper = $(instance.popper);
-
+            $popper.one("click", ".send_later_selected_send_later_time", () => {
+                const send_at_timestamp = get_selected_send_later_timestamp();
+                do_schedule_message(send_at_timestamp);
+            });
             $popper.one("click", ".open_send_later_modal", () => {
-                // Only show send later options that are possible today.
-                const date = new Date();
-                const hours = date.getHours();
-                let possible_send_later_today = {};
-                if (hours <= 8) {
-                    possible_send_later_today = send_later_today;
-                } else if (hours <= 15) {
-                    possible_send_later_today.today_four_pm = send_later_today.today_four_pm;
-                } else {
-                    possible_send_later_today = false;
+                if (!compose_validate.validate()) {
+                    return;
                 }
 
-                const formatted_send_later_time = get_selected_send_later_time();
-                $("body").append(
-                    render_send_later_modal({
-                        possible_send_later_today,
-                        send_later_tomorrow,
-                        send_later_custom,
-                        formatted_send_later_time,
-                    }),
-                );
+                // Only show send later options that are possible today.
+                const date = new Date();
+                const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
+                $("body").append(render_send_later_modal(filtered_send_opts));
+
                 overlays.open_modal("send_later_modal", {
                     autoremove: true,
                     on_show() {
@@ -911,36 +840,38 @@ export function initialize() {
                             }
                         });
                         $send_later_modal.on("click", ".send_later_custom", (e) => {
+                            const $send_later_modal_content =
+                                $send_later_modal.find(".modal__content");
                             const current_time = new Date();
                             flatpickr.show_flatpickr(
                                 $(".send_later_custom")[0],
-                                update_scheduled_date_from_modal,
+                                do_schedule_message,
                                 new Date(current_time.getTime() + 60 * 60 * 1000),
-                                {minDate: new Date(current_time.getTime() + 5 * 60 * 1000)},
+                                {
+                                    minDate: new Date(current_time.getTime() + 5 * 60 * 1000),
+                                    onClose() {
+                                        // Return to normal state.
+                                        $send_later_modal_content.css("pointer-events", "all");
+                                    },
+                                },
                             );
+                            // Disable interaction with rest of the options in the modal.
+                            $send_later_modal_content.css("pointer-events", "none");
                             e.preventDefault();
                             e.stopPropagation();
                         });
                         $send_later_modal.one(
                             "click",
-                            ".send_later_today, .send_later_tomorrow",
+                            ".send_later_today, .send_later_tomorrow, .send_later_monday",
                             (e) => {
                                 const send_at_time = set_compose_box_schedule(e.currentTarget);
-                                const not_from_flatpickr = true;
-                                update_scheduled_date_from_modal(send_at_time, not_from_flatpickr);
+                                do_schedule_message(send_at_time);
                                 e.preventDefault();
                                 e.stopPropagation();
                             },
                         );
                     },
                 });
-            });
-            $popper.one("click", "#clear_compose_schedule_state", (e) => {
-                compose.reset_compose_scheduling_state(false);
-                // Close the popper instance when clearing scheduling:
-                instance.hide();
-                e.preventDefault();
-                e.stopPropagation();
             });
         },
         onHidden(instance) {

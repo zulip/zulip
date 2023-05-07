@@ -1,5 +1,5 @@
 {{#each scheduled_messages_data}}
-    <div class="scheduled-message-row overlay-message-row" data-message-id="{{scheduled_message_id}}">
+    <div class="scheduled-message-row overlay-message-row" data-scheduled-message-id="{{scheduled_message_id}}">
         <div class="overlay-message-info-box" tabindex="0">
             {{#if is_stream}}
             <div class="message_header message_header_stream">
@@ -38,7 +38,7 @@
                             <div class="overlay_message_controls">
                                 <i class="fa fa-pencil fa-lg restore-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="restore-scheduled-message-tooltip-template"></i>
                                 <template id="restore-scheduled-message-tooltip-template">
-                                    {{t 'Edit or reschedule message' }}
+                                    {{t 'Edit and reschedule message' }}
                                 </template>
                                 <i class="fa fa-trash-o fa-lg delete-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="delete-scheduled-message-tooltip-template"></i>
                                 <template id="delete-scheduled-message-tooltip-template">

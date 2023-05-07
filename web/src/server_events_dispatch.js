@@ -39,6 +39,8 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as reload from "./reload";
+import * as scheduled_messages from "./scheduled_messages";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
@@ -67,6 +69,7 @@ import * as stream_topic_history from "./stream_topic_history";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
+import * as top_left_corner from "./top_left_corner";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -463,6 +466,32 @@ export function dispatch_normal_event(event) {
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);
                     break;
+            }
+            break;
+
+        case "scheduled_messages":
+            switch (event.op) {
+                case "add": {
+                    scheduled_messages.add_scheduled_messages(event.scheduled_messages);
+                    scheduled_messages_overlay_ui.rerender();
+                    top_left_corner.update_scheduled_messages_row();
+                    break;
+                }
+                case "remove": {
+                    scheduled_messages.remove_scheduled_message(event.scheduled_message_id);
+                    scheduled_messages_overlay_ui.remove_scheduled_message_id(
+                        event.scheduled_message_id,
+                    );
+                    top_left_corner.update_scheduled_messages_row();
+                    break;
+                }
+                case "update": {
+                    scheduled_messages.update_scheduled_message(event.scheduled_message);
+                    scheduled_messages_overlay_ui.rerender();
+                    top_left_corner.update_scheduled_messages_row();
+                    break;
+                }
+                // No default
             }
             break;
 

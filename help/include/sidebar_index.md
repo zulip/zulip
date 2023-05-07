@@ -81,6 +81,7 @@
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
+* [Schedule a message](/help/schedule-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Reading messages

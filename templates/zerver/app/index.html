@@ -79,6 +79,27 @@
     border-top-color: hsl(0,0%,52%);
     animation: zspinner 1s linear infinite;
     }
+
+    /* Bootstrap 'a' tag styles for styling reload link */
+    a#reload-lnk:focus {
+    outline: thin dotted #333;
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+    }
+    a#reload-lnk:hover,
+    a#reload-lnk:active {
+    outline: 0;
+    }
+    a#reload-lnk {
+    color: #0088cc;
+    text-decoration: none;
+    cursor: pointer;
+    }
+    a#reload-lnk:hover,
+    a#reload-lnk:focus {
+    color: #005580;
+    text-decoration: underline;
+    }
 </style>
 {% endblock %}
 
@@ -205,7 +226,7 @@
                         </div>
                         <div id="typing_notifications">
                         </div>
-                        <div id="mark_as_read_turned_off_banner" class="alert home-error-bar">
+                        <div id="mark_read_on_scroll_state_banner">
                         </div>
                         <div id="bottom_whitespace">
                         </div>

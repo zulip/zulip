@@ -14,7 +14,7 @@ export function get_recipient_label(message) {
     // passed in.
 
     if (message === undefined) {
-        if (message_lists.current.empty()) {
+        if (message_lists.current.visibly_empty()) {
             // For empty narrows where there's a clear reply target,
             // i.e. stream+topic or a single PM conversation, we label
             // the button as replying to the thread.

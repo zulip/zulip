@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as resize from "./resize";
+import * as scheduled_messages from "./scheduled_messages";
 import * as ui_util from "./ui_util";
 
 let last_mention_count = 0;
@@ -10,7 +11,18 @@ export function update_starred_count(count) {
     ui_util.update_unread_count_in_dom($starred_li, count);
 }
 
-export function update_dom_with_unread_counts(counts) {
+export function update_scheduled_messages_row() {
+    const $scheduled_li = $(".top_left_scheduled_messages");
+    const count = scheduled_messages.get_count();
+    if (count > 0) {
+        $scheduled_li.show();
+    } else {
+        $scheduled_li.hide();
+    }
+    ui_util.update_unread_count_in_dom($scheduled_li, count);
+}
+
+export function update_dom_with_unread_counts(counts, skip_animations) {
     // Note that "Private messages" counts are handled in pm_list.js.
 
     // mentioned/home have simple integer counts
@@ -20,7 +32,9 @@ export function update_dom_with_unread_counts(counts) {
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_li, counts.home_unread_messages);
 
-    animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+    if (!skip_animations) {
+        animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+    }
 }
 
 function remove($elem) {
@@ -98,4 +112,8 @@ function do_new_messages_animation($li) {
     }
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
+}
+
+export function initialize() {
+    update_scheduled_messages_row();
 }

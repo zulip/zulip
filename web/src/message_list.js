@@ -116,16 +116,20 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this.narrowed && !this.empty()) {
+        if (this.narrowed && !this.visibly_empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (this.narrowed && !this.empty() && this.selected_id() === -1) {
-            // And also select the newly arrived message.
-            this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
+        if (this.narrowed && !this.visibly_empty() && this.selected_id() === -1) {
+            // The message list was previously empty, but now isn't
+            // due to adding these messages, and we need to select a
+            // message. Regardless of whether the messages are new or
+            // old, we want to select a message as though we just
+            // entered this view.
+            this.select_id(this.first_unread_message_id(), {then_scroll: true, use_closest: true});
         }
 
         return render_info;
@@ -141,6 +145,10 @@ export class MessageList {
 
     empty() {
         return this.data.empty();
+    }
+
+    visibly_empty() {
+        return this.data.visibly_empty();
     }
 
     first() {
@@ -433,7 +441,14 @@ export class MessageList {
         this.view.update_render_window(this.selected_idx(), false);
 
         if (this.narrowed) {
-            if (this.empty()) {
+            if (
+                this.visibly_empty() &&
+                this.data.has_found_oldest() &&
+                this.data.has_found_newest()
+            ) {
+                // Show the empty narrow message only if we're certain
+                // that the view doesn't have messages that we're
+                // waiting for the server to send us.
                 narrow_banner.show_empty_narrow_message();
             } else {
                 narrow_banner.hide_empty_narrow_message();

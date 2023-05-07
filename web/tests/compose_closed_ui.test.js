@@ -113,7 +113,7 @@ run_test("test_custom_message_input", () => {
 });
 
 run_test("empty_narrow", () => {
-    message_lists.current.empty = () => true;
+    message_lists.current.visibly_empty = () => true;
     compose_closed_ui.update_reply_recipient_label();
     const label = $(".compose_reply_button_label").text();
     assert.equal(label, "translated: Compose message");

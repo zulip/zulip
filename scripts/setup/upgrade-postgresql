@@ -25,7 +25,12 @@ set -x
 
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
 apt-get install -y "postgresql-$UPGRADE_TO" "postgresql-client-$UPGRADE_TO"
-if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
+drop_main_cluster="$(
+    pg_lsclusters --json \
+        | jq --arg pg_version "$UPGRADE_TO" -r \
+            '.[] | select((.version|tostring == $ARGS.named.pg_version) and (.cluster == "main")) | .cluster'
+)"
+if [ -n "$drop_main_cluster" ]; then
     pg_dropcluster "$UPGRADE_TO" main --stop
 fi
 
@@ -54,7 +59,14 @@ SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPG
 crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
 
 # Make sure the new PostgreSQL is running
-pg_ctlcluster "$UPGRADE_TO" main start
+start_main_cluster="$(
+    pg_lsclusters --json \
+        | jq --arg pg_version "$UPGRADE_TO" -r \
+            '.[] | select((.version|tostring == $ARGS.named.pg_version) and (.cluster == "main") and (.running != 1)) | .cluster'
+)"
+if [ -n "$start_main_cluster" ]; then
+    pg_ctlcluster "$UPGRADE_TO" main start
+fi
 
 # Update the statistics
 su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"

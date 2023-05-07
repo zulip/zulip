@@ -225,6 +225,19 @@
                     color: hsl(147deg 51% 55% / 75%);
                 }
             }
+
+            .compose_banner_action_button {
+                background-color: hsl(147deg 51% 55% / 10%);
+                color: inherit;
+
+                &:hover {
+                    background-color: hsl(147deg 51% 55% / 15%);
+                }
+
+                &:active {
+                    background-color: hsl(147deg 51% 55% / 20%);
+                }
+            }
         }
 
         &.warning,
