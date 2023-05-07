@@ -185,10 +185,8 @@ export function initialize() {
         },
     });
 
-    delegate("body", {
-        target: ".tippy-narrow-tooltip",
+    message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
-        appendTo: () => document.body,
         onCreate(instance) {
             const content = instance.props.content + $("#narrow-hotkey-tooltip-template").html();
             instance.setContent(parse_html(content));
