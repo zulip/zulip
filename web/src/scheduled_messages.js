@@ -177,7 +177,7 @@ export function get_count() {
 }
 
 export function get_filtered_send_opts(date) {
-    const send_times = compute_send_times();
+    const send_times = compute_send_times(date);
 
     const day = date.getDay(); // Starts with 0 for Sunday.
     const hours = date.getHours();
