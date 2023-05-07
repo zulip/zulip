@@ -22,10 +22,13 @@
             </select>
         </div>
         <div class="input-group edit_bot_owner_container">
-            <label for="bot_owner_select">{{t "Owner" }}</label>
-            {{> dropdown_list_widget
-              widget_name="edit_bot_owner"
-              list_placeholder=(t 'Filter users')}}
+            <label for="bot_owner_dropdown_widget">{{t "Owner" }}</label>
+            <div id="bot_owner_dropdown_widget" class="dropdown-widget-button" role="button" tabindex="0">
+                <span class="bot_owner_name">
+                    {{owner_full_name}}
+                </span>
+                <i class="fa fa-chevron-down"></i>
+            </div>
         </div>
         <div id="service_data">
         </div>
