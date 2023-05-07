@@ -522,6 +522,7 @@ function edit_message($row, raw_content) {
         // I believe this needs to be defined outside the countdown_timer, since
         // row just refers to something like the currently selected message, and
         // can change out from under us
+        const $message_edit_save_container = $row.find(".message_edit_save_container");
         const $message_edit_save = $row.find("button.message_edit_save");
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
@@ -530,12 +531,13 @@ function edit_message($row, raw_content) {
             seconds_left -= 1;
             if (seconds_left <= 0) {
                 clearInterval(countdown_timer);
-                $message_edit_content.prop("readonly", "readonly");
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
-                $message_edit_save.addClass("disabled");
+                $message_edit_save.prop("disabled", true);
+                $message_edit_save_container.addClass("tippy-zulip-tooltip");
+                $message_edit_countdown_timer.addClass("expired");
                 $message_edit_countdown_timer.text($t({defaultMessage: "Time's up!"}));
             } else {
                 $message_edit_countdown_timer.text(timer_text(seconds_left));

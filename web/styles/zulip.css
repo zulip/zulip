@@ -1777,6 +1777,10 @@ div.focused_table {
     text-align: right;
     display: inline;
     color: hsl(0deg 0% 63%);
+
+    &.expired {
+        color: hsl(4deg 58% 33%);
+    }
 }
 
 .message_edit_tooltip {
