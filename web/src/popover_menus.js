@@ -137,7 +137,7 @@ function get_popover_items_for_instance(instance) {
     return $current_elem.find("li:not(.divider):visible a");
 }
 
-const default_popover_props = {
+export const default_popover_props = {
     delay: 0,
     appendTo: () => document.body,
     trigger: "click",

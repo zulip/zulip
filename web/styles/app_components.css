@@ -1010,3 +1010,19 @@ div.overlay {
         }
     }
 }
+
+.dropdown-widget-button {
+    background-color: hsl(0deg 0% 100%);
+    padding: 4px 6px;
+    border: 1px solid hsl(0deg 0% 80%);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    outline: none;
+
+    .fa-chevron-down {
+        position: relative;
+        top: -1px;
+    }
+}

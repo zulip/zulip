@@ -180,6 +180,27 @@
         }
     }
 
+    .tippy-box[data-theme="dropdown-widget"] {
+        background-color: hsl(240deg 5% 16%);
+        border: 1px solid hsl(0deg 0% 0%);
+        box-shadow: 0 7px 13px hsl(0deg 0% 0% / 35%),
+            0 5px 8px hsl(0deg 0% 0% / 32%), 0 2px 4px hsl(0deg 0% 0% / 20%);
+    }
+
+    .dropdown-list-container .dropdown-list .list-item {
+        &:focus {
+            background-color: hsl(220deg 12% 95.1% / 5%);
+        }
+
+        & > a {
+            color: hsl(0deg 0% 75%);
+
+            &:hover {
+                background-color: hsl(220deg 12% 95.1% / 5%);
+            }
+        }
+    }
+
     & body,
     .app-main,
     .header-main,
@@ -464,6 +485,17 @@
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;
+    }
+
+    .dropdown-list-search .dropdown-list-search-input:focus {
+        background-color: hsl(225deg 6% 7%);
+        border: 1px solid hsl(0deg 0% 100% / 50%);
+        box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
+    }
+
+    .dropdown-widget-button {
+        border-color: hsl(0deg 0% 0% / 60%);
+        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     & select option {

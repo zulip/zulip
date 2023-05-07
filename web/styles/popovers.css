@@ -25,6 +25,20 @@
     }
 }
 
+.tippy-box[data-theme="dropdown-widget"] {
+    border-radius: 6px;
+    background-color: hsl(240deg 20% 98%);
+    border: 1px solid hsl(0deg 0% 0% / 40%);
+    box-shadow: 0 7px 13px hsl(0deg 0% 0% / 15%),
+        0 5px 8px hsl(0deg 0% 0% / 12%), 0 2px 4px hsl(0deg 0% 0% / 10%);
+
+    .tippy-content {
+        font-size: 14px;
+        color: hsl(0deg 0% 75%);
+        padding: 0;
+    }
+}
+
 .popover {
     width: auto;
     max-width: 100%;

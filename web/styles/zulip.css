@@ -68,6 +68,8 @@ body,
     --color-background: hsl(0deg 0% 100%);
     --color-background-direct-mention: hsl(240deg 52% 95%);
     --color-background-group-mention: hsl(180deg 40% 94%);
+    --color-background-dropdown-input: hsl(0deg 0% 100%);
+    --color-text-dropdown-input: hsl(0deg 0% 13.33%);
 }
 
 %dark-theme {
@@ -83,6 +85,8 @@ body,
     --color-background: hsl(212deg 28% 18%);
     --color-background-direct-mention: hsl(240deg 13% 20%);
     --color-background-group-mention: hsl(180deg 13% 15%);
+    --color-background-dropdown-input: hsl(225deg 6% 10%);
+    --color-text-dropdown-input: hsl(0deg 0% 95%);
 }
 
 :root.dark-theme {
@@ -3028,4 +3032,66 @@ select.invite-as {
     /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
         but we don't want it to have an outline when focused anywhere in the app. */
     outline: none;
+}
+
+.dropdown-list-container {
+    .dropdown-list-search {
+        display: flex;
+
+        .dropdown-list-search-input {
+            background: var(--color-background-dropdown-input);
+            color: var(--color-text-dropdown-input);
+            width: 100%;
+            margin: 4px 4px 2px;
+
+            &:focus {
+                background: hsl(0deg 0% 100%);
+                border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
+                box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
+            }
+        }
+    }
+
+    .dropdown-list-wrapper {
+        /* Sync with `height` in dropdown_widget. */
+        height: 200px;
+        min-width: 200px;
+
+        .dropdown-list {
+            list-style: none;
+            margin: 0;
+
+            .list-item:focus {
+                background-color: hsl(220deg 12% 4.9% / 5%);
+                outline: none;
+            }
+
+            .list-item a {
+                display: block;
+                padding: 3px 10px 3px 8px;
+                clear: both;
+                font-weight: 400;
+                line-height: 20px;
+                color: hsl(0deg 0% 20%);
+                white-space: normal;
+
+                .stream-privacy-type-icon {
+                    font-size: 13px;
+                    width: 13px;
+                    height: 13px;
+                    padding-right: 2px;
+                }
+
+                &:hover {
+                    text-decoration: none;
+                    background-color: hsl(220deg 12% 4.9% / 5%);
+                }
+
+                &:focus {
+                    text-decoration: none;
+                    outline: none;
+                }
+            }
+        }
+    }
 }
