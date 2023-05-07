@@ -1062,8 +1062,8 @@ def fetch_attachment_data(
     values for response['zerver_attachment'][<n>]['messages'].
     """
     for row in response["zerver_attachment"]:
-        filterer_message_ids = set(row["messages"]).intersection(message_ids)
-        row["messages"] = sorted(filterer_message_ids)
+        filtered_message_ids = set(row["messages"]).intersection(message_ids)
+        row["messages"] = sorted(filtered_message_ids)
 
     return attachments
 
