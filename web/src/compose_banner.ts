@@ -137,12 +137,6 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
     hide_compose_spinner();
 
-    // A copy of `compose_recipient.open_compose_stream_dropup()` that
-    // can't be imported due to typescript and import circles.
-    // TODO: Once we use stream IDs, not names, as the fundamental
-    // compose_state storage for streams, this error will be impossible.
-    if ($("#id_compose_select_recipient").hasClass("open")) {
-        return;
-    }
-    $("#id_compose_select_recipient button").trigger("click");
+    // Open stream select dropdown.
+    $("#compose_select_recipient_widget").trigger("click");
 }

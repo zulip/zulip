@@ -12,18 +12,9 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose_fade = zrequire("compose_fade");
 const compose_recipient = zrequire("compose_recipient");
+const stream_data = zrequire("stream_data");
 
 const noop = () => {};
-
-let stream_value = "";
-compose_recipient.compose_recipient_widget = {
-    value() {
-        return stream_value;
-    },
-    render(val) {
-        stream_value = val;
-    },
-};
 
 run_test("private_message_recipient", ({override}) => {
     let emails;
@@ -59,6 +50,7 @@ run_test("has_full_recipient", ({override, override_rewire}) => {
     compose_state.topic("foo");
     assert.equal(compose_state.has_full_recipient(), false);
 
+    stream_data.add_sub({name: "bar", stream_id: 99});
     compose_state.set_stream_name("bar");
     assert.equal(compose_state.has_full_recipient(), true);
 

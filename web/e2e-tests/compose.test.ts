@@ -13,12 +13,11 @@ async function check_compose_form_empty(page: Page): Promise<void> {
 }
 
 async function close_compose_box(page: Page): Promise<void> {
-    const recipient_dropdown_visible =
-        (await page.$("#compose_select_recipient_widget .open")) !== null;
+    const recipient_dropdown_visible = (await page.$(".dropdown-list-container")) !== null;
 
     if (recipient_dropdown_visible) {
         await page.keyboard.press("Escape");
-        await page.waitForSelector("#id_compose_select_recipient.open", {hidden: true});
+        await page.waitForSelector(".dropdown-list-container", {hidden: true});
     }
     await page.keyboard.press("Escape");
     await page.waitForSelector("#compose-textarea", {hidden: true});
@@ -126,9 +125,7 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
 
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
-    await page.waitForSelector(".compose_table #id_compose_select_recipient.open", {
-        visible: true,
-    });
+    await page.waitForSelector(`.dropdown-list-container .list-item`, {visible: true});
     await close_compose_box(page);
 }
 

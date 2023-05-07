@@ -108,7 +108,7 @@
         flex: 1;
 
         &.compose-recipient-direct-selected {
-            #compose_recipient_selection_dropdown .dropdown-toggle {
+            #compose_select_recipient_widget {
                 border-radius: 4px !important;
             }
 
@@ -520,11 +520,9 @@ input.recipient_box {
     border-radius: 3px;
 }
 
-#compose_select_recipient_widget,
-#compose_select_recipient_widget .button {
-    margin: 0;
-    min-width: 0;
-    flex: 1;
+#compose_select_recipient_widget {
+    border-radius: 0 4px 4px 0;
+    width: auto;
 }
 
 #stream_message_recipient_topic.recipient_box {
@@ -826,10 +824,6 @@ a.compose_control_button.hide {
 
 #stream_message_recipient_topic {
     min-width: 0;
-}
-
-#id_compose_select_recipient {
-    display: flex;
 }
 
 .dropdown-menu {

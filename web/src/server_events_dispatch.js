@@ -523,17 +523,19 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
+                        if (is_narrowed_to_stream) {
+                            message_lists.current.update_trailing_bookend();
+                        }
                         stream_data.delete_sub(stream.stream_id);
                         stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
-                            compose_recipient.update_stream_dropdown_options();
+                            if (stream.stream_id === compose_recipient.selected_recipient_id) {
+                                compose_recipient.set_selected_recipient_id("");
+                            }
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream.stream_id);
-                        if (is_narrowed_to_stream) {
-                            message_lists.current.update_trailing_bookend();
-                        }
                         if (page_params.realm_notifications_stream_id === stream.stream_id) {
                             page_params.realm_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("notifications_stream_id");

@@ -24,6 +24,7 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 message_lists.current = {};
 
 const compose_recipient = zrequire("compose_recipient");
+const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
@@ -198,9 +199,7 @@ test("stream create", ({override}) => {
     assert.deepEqual(sub_store.get(102).name, "test");
 });
 
-test("stream delete (normal)", ({override, override_rewire}) => {
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
-
+test("stream delete (normal)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
     for (const stream of event.streams) {
@@ -241,9 +240,7 @@ test("stream delete (normal)", ({override, override_rewire}) => {
     assert.equal(removed_sidebar_rows, 1);
 });
 
-test("stream delete (special streams)", ({override, override_rewire}) => {
-    override_rewire(compose_recipient, "update_stream_dropdown_options", noop);
-
+test("stream delete (special streams)", ({override}) => {
     const event = event_fixtures.stream__delete;
 
     for (const stream of event.streams) {
@@ -266,4 +263,49 @@ test("stream delete (special streams)", ({override, override_rewire}) => {
 
     assert.equal(page_params.realm_notifications_stream_id, -1);
     assert.equal(page_params.realm_signup_notifications_stream_id, -1);
+});
+
+test("stream delete (stream is selected in compose)", ({override, override_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+
+    const event = event_fixtures.stream__delete;
+
+    for (const stream of event.streams) {
+        stream_data.add_sub(stream);
+    }
+
+    stream_data.subscribe_myself(event.streams[0]);
+    compose_state.set_stream_name(event.streams[0].name);
+
+    override(settings_streams, "update_default_streams_table", noop);
+
+    narrow_state.is_for_stream_id = () => true;
+
+    let bookend_updates = 0;
+    override(message_lists.current, "update_trailing_bookend", () => {
+        bookend_updates += 1;
+    });
+
+    const removed_stream_ids = [];
+
+    override(stream_settings_ui, "remove_stream", (stream_id) => {
+        removed_stream_ids.push(stream_id);
+    });
+
+    let removed_sidebar_rows = 0;
+    override(stream_list, "remove_sidebar_row", () => {
+        removed_sidebar_rows += 1;
+    });
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
+
+    dispatch(event);
+
+    assert.equal(compose_state.stream_name(), "");
+    assert.deepEqual(removed_stream_ids, [event.streams[0].stream_id, event.streams[1].stream_id]);
+
+    // We should possibly be able to make a single call to
+    // update_trailing_bookend, but we currently do it for each stream.
+    assert.equal(bookend_updates, 2);
+
+    assert.equal(removed_sidebar_rows, 1);
 });

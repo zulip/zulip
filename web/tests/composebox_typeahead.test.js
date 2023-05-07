@@ -56,16 +56,6 @@ const ct = composebox_typeahead;
 // broadcast-mentions/persons/groups.
 ct.__Rewire__("max_num_items", 15);
 
-let stream_value = "";
-compose_recipient.compose_recipient_widget = {
-    value() {
-        return stream_value;
-    },
-    render(val) {
-        stream_value = val;
-    },
-};
-
 run_test("verify wildcard mentions typeahead for stream message", () => {
     const mention_all = ct.broadcast_mentions()[0];
     const mention_everyone = ct.broadcast_mentions()[1];
