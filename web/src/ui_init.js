@@ -125,38 +125,45 @@ import * as user_topics from "./user_topics";
    things jumping around slightly when the email address is shown. */
 
 let $current_message_hover;
+let $current_message_hover_args;
 function message_unhover() {
     if ($current_message_hover === undefined) {
         return;
     }
     $current_message_hover.find("span.edit_content").empty();
     $current_message_hover = undefined;
+    $current_message_hover_args = undefined;
 }
 
 function message_hover($message_row) {
+    const message = message_lists.current.get(rows.id($message_row));
+    
+    // The message edit hover icon is determined by whether the message is still editable
+    const is_content_editable = message_edit.is_content_editable(message);
+    const can_move_message = message_edit.can_move_message(message);
     const id = rows.id($message_row);
-    if ($current_message_hover && rows.id($current_message_hover) === id) {
+    const args = {
+        is_content_editable: is_content_editable && !message.status_message,
+        can_move_message,
+        msg_id: id,
+    };
+    
+    if ($current_message_hover_args &&
+        $current_message_hover_args.is_content_editable === args.is_content_editable &&
+        $current_message_hover_args.can_move_message === args.can_move_message &&
+        $current_message_hover_args.msg_id === args.msg_id) {
         return;
     }
-
-    const message = message_lists.current.get(rows.id($message_row));
+    
     message_unhover();
     $current_message_hover = $message_row;
+    $current_message_hover_args = args;
 
     if (!message.sent_by_me) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }
 
-    // But the message edit hover icon is determined by whether the message is still editable
-    const is_content_editable = message_edit.is_content_editable(message);
-
-    const can_move_message = message_edit.can_move_message(message);
-    const args = {
-        is_content_editable: is_content_editable && !message.status_message,
-        can_move_message,
-        msg_id: id,
-    };
     const $edit_content = $message_row.find(".edit_content");
     $edit_content.html(render_edit_content_button(args));
 
