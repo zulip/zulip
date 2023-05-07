@@ -590,6 +590,10 @@ export function start($row, edit_box_open_callback) {
         return;
     }
 
+    if ($row.find(".message_edit_form form").length !== 0) {
+        return;
+    }
+
     if (message.raw_content) {
         start_edit_with_content($row, message.raw_content, edit_box_open_callback);
         return;
