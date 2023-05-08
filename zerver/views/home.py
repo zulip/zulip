@@ -54,7 +54,7 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     }
 
     if (
-        request.user.tos_version is None
+        request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
         and settings.FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE is not None
     ):
         context[

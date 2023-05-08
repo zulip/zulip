@@ -270,6 +270,7 @@ class ZulipSCIMUser(SCIMUser):
                 password,
                 realm,
                 full_name_new_value,
+                tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
                 acting_user=None,
             )
             return

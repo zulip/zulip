@@ -499,7 +499,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        for user_tos_version in [None, "1.1", "2.0.3.4"]:
+        for user_tos_version in [None, "-1", "1.1", "2.0.3.4"]:
             user.tos_version = user_tos_version
             user.save()
 
@@ -536,7 +536,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        user.tos_version = None
+        user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
         user.save()
 
         with self.settings(

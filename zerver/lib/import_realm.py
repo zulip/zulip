@@ -1059,6 +1059,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         validate_email(user_profile.delivery_email)
         validate_email(user_profile.email)
         user_profile.set_unusable_password()
+        user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     UserProfile.objects.bulk_create(user_profiles)
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
