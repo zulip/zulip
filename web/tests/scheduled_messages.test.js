@@ -121,8 +121,8 @@ run_test("scheduled_modal_opts", () => {
         {hour: "T08:54:00", extras: ["today_nine_am", "today_four_pm"]},
         {hour: "T08:57:00", extras: ["today_four_pm"]},
         {hour: "T11:00:00", extras: ["today_four_pm"]},
-        {hour: "T13:54:00", extras: ["today_four_pm"]},
-        {hour: "T13:57:00", extras: []},
+        {hour: "T15:54:00", extras: ["today_four_pm"]},
+        {hour: "T15:57:00", extras: []},
         {hour: "T17:00:00", extras: []},
     ];
 
