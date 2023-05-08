@@ -230,34 +230,36 @@ export function warn_if_topic_resolved(topic_changed) {
     }
 }
 
-function show_wildcard_warnings(stream_id) {
+function show_wildcard_warnings(stream_id, $banner_container) {
     const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
+    const stream_name = stream_data.maybe_get_stream_name(stream_id);
+    const is_edit_container = $banner_container.closest(".edit_form_banners").length > 0;
+    const button_text = is_edit_container
+        ? $t({defaultMessage: "Yes, save"})
+        : $t({defaultMessage: "Yes, send"});
 
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
     const wildcard_template = render_wildcard_warning({
         banner_type: compose_banner.WARNING,
         subscriber_count,
-        stream_name: compose_state.stream_name(),
+        stream_name,
         wildcard_mention,
-        button_text: $t({defaultMessage: "Yes, send"}),
+        button_text,
         hide_close_button: true,
         classname,
     });
 
     // only show one error for any number of @all or @everyone mentions
-    if ($(`#compose_banners .${CSS.escape(classname)}`).length === 0) {
-        compose_banner.append_compose_banner_to_banner_list(
-            wildcard_template,
-            $("#compose_banners"),
-        );
+    if ($banner_container.find(`.${CSS.escape(classname)}`).length === 0) {
+        compose_banner.append_compose_banner_to_banner_list(wildcard_template, $banner_container);
     }
 
     user_acknowledged_wildcard = false;
 }
 
-export function clear_wildcard_warnings() {
+export function clear_wildcard_warnings($banner_container) {
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
-    $(`#compose_banners .${CSS.escape(classname)}`).remove();
+    $banner_container.find(`.${CSS.escape(classname)}`).remove();
 }
 
 export function set_user_acknowledged_wildcard_flag(value) {
@@ -355,7 +357,7 @@ export function set_wildcard_mention_large_stream_threshold(value) {
     wildcard_mention_large_stream_threshold = value;
 }
 
-function validate_stream_message_mentions(stream_id) {
+export function validate_stream_message_mentions(stream_id, $banner_container) {
     const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
@@ -368,16 +370,13 @@ function validate_stream_message_mentions(stream_id) {
                         "You do not have permission to use wildcard mentions in this stream.",
                 }),
                 compose_banner.CLASSNAMES.wildcards_not_allowed,
-                // Since we don't trigger validation in edit mode, the only place where
-                // wildcard warnings will appear is the compose banners container.
-                $("#compose_banners"),
+                $banner_container,
             );
             return false;
         }
 
         if (user_acknowledged_wildcard === undefined || user_acknowledged_wildcard === false) {
-            // user has not seen a warning message yet if undefined
-            show_wildcard_warnings(stream_id);
+            show_wildcard_warnings(stream_id, $banner_container);
 
             $("#compose-send-button").prop("disabled", false);
             compose_ui.hide_compose_spinner();
@@ -385,7 +384,7 @@ function validate_stream_message_mentions(stream_id) {
         }
     } else {
         // the message no longer contains @all or @everyone
-        clear_wildcard_warnings();
+        clear_wildcard_warnings($banner_container);
     }
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
     user_acknowledged_wildcard = undefined;
@@ -496,7 +495,7 @@ function validate_stream_message() {
 
     if (
         !validate_stream_message_address_info(stream_name) ||
-        !validate_stream_message_mentions(sub.stream_id)
+        !validate_stream_message_mentions(sub.stream_id, $banner_container)
     ) {
         return false;
     }

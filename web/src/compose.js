@@ -474,7 +474,8 @@ export function initialize() {
         `.${CSS.escape(compose_banner.CLASSNAMES.wildcard_warning)} .compose_banner_action_button`,
         (event) => {
             event.preventDefault();
-            compose_validate.clear_wildcard_warnings();
+            const {$banner_container} = get_input_info(event);
+            compose_validate.clear_wildcard_warnings($banner_container);
             compose_validate.set_user_acknowledged_wildcard_flag(true);
             finish();
         },

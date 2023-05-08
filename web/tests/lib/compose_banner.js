@@ -12,4 +12,23 @@ exports.mock_banners = () => {
     }
     $("#compose_banners .warning").remove = () => {};
     $("#compose_banners .error").remove = () => {};
+
+    const $stub = $.create("stub_to_remove");
+    const $cb = $("#compose_banners");
+
+    $stub.remove = () => {};
+    $stub.length = 0;
+
+    $cb.closest = () => [];
+    $cb.set_find_results(".no_post_permissions", $stub);
+    $cb.set_find_results(".message_too_long", $stub);
+    $cb.set_find_results(".wildcards_not_allowed", $stub);
+    $cb.set_find_results(".wildcard_warning", $stub);
+    $cb.set_find_results(".topic_missing", $stub);
+    $cb.set_find_results(".missing_stream", $stub);
+    $cb.set_find_results(".zephyr_not_running", $stub);
+    $cb.set_find_results(".deactivated_user", $stub);
+    $cb.set_find_results(".missing_private_message_recipient", $stub);
+    $cb.set_find_results(".subscription_error", $stub);
+    $cb.set_find_results(".generic_compose_error", $stub);
 };

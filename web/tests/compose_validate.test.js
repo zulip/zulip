@@ -366,7 +366,6 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     // of execution should not be changed.
     mock_banners();
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
-    $("#compose_banners .wildcard_warning").length = 0;
     page_params.user_id = me.user_id;
     page_params.realm_mandatory_topics = false;
     const sub = {
