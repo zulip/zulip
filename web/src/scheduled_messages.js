@@ -196,7 +196,6 @@ export function get_filtered_send_opts(date) {
     const send_times = compute_send_times(date);
 
     const day = date.getDay(); // Starts with 0 for Sunday.
-    const hours = date.getHours();
 
     const send_later_today = {
         today_nine_am: {
@@ -273,9 +272,14 @@ export function get_filtered_send_opts(date) {
 
     let possible_send_later_today = {};
     let possible_send_later_monday = {};
-    if (hours <= 8) {
+
+    const minutes_into_day = date.getHours() * 60 + date.getMinutes();
+    // Show Today send options based on time of day
+    if (minutes_into_day < 9 * 60 - MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60) {
+        // Allow Today at 9:00am only up to minimum scheduled message delay
         possible_send_later_today = send_later_today;
-    } else if (hours <= 15) {
+    } else if (minutes_into_day < (12 + 2) * 60 - MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60) {
+        // Allow Today at 4:00pm only up to minimum scheduled message delay
         possible_send_later_today.today_four_pm = send_later_today.today_four_pm;
     } else {
         possible_send_later_today = false;
