@@ -460,6 +460,15 @@ export function initialize() {
 
     upload.feature_check($("#compose .compose_upload_file"));
 
+    function get_input_info(event) {
+        const $edit_banners_container = $(event.target).closest(".edit_form_banners");
+        const is_edit_input = Boolean($edit_banners_container.length);
+        const $banner_container = $edit_banners_container.length
+            ? $edit_banners_container
+            : $("#compose_banners");
+        return {is_edit_input, $banner_container};
+    }
+
     $("body").on(
         "click",
         `.${CSS.escape(compose_banner.CLASSNAMES.wildcard_warning)} .compose_banner_action_button`,
@@ -536,9 +545,7 @@ export function initialize() {
         )} .compose_banner_action_button`,
         (event) => {
             event.preventDefault();
-            const $edit_form = $(event.target)
-                .closest(".message_edit_form")
-                .find(".edit_form_banners");
+            const {$banner_container} = get_input_info(event);
             const $invite_row = $(event.target).parents(".compose_banner");
 
             const user_id = Number.parseInt($invite_row.data("user-id"), 10);
@@ -553,7 +560,7 @@ export function initialize() {
                 compose_banner.show_error_message(
                     error_msg,
                     compose_banner.CLASSNAMES.generic_compose_error,
-                    $edit_form.length ? $edit_form : $("#compose_banners"),
+                    $banner_container,
                     $("#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
