@@ -21,7 +21,6 @@ import * as stream_data from "./stream_data";
 import * as util from "./util";
 
 let user_acknowledged_wildcard = false;
-let wildcard_mention;
 
 export let wildcard_mention_large_stream_threshold = 15;
 
@@ -230,7 +229,7 @@ export function warn_if_topic_resolved(topic_changed) {
     }
 }
 
-function show_wildcard_warnings(stream_id, $banner_container) {
+function show_wildcard_warnings(stream_id, $banner_container, wildcard_mention) {
     const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
     const stream_name = stream_data.maybe_get_stream_name(stream_id);
     const is_edit_container = $banner_container.closest(".edit_form_banners").length > 0;
@@ -357,7 +356,7 @@ export function set_wildcard_mention_large_stream_threshold(value) {
     wildcard_mention_large_stream_threshold = value;
 }
 
-export function validate_stream_message_mentions(stream_id, $banner_container) {
+export function validate_stream_message_mentions(stream_id, $banner_container, wildcard_mention) {
     const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
@@ -376,7 +375,7 @@ export function validate_stream_message_mentions(stream_id, $banner_container) {
         }
 
         if (user_acknowledged_wildcard === undefined || user_acknowledged_wildcard === false) {
-            show_wildcard_warnings(stream_id, $banner_container);
+            show_wildcard_warnings(stream_id, $banner_container, wildcard_mention);
 
             $("#compose-send-button").prop("disabled", false);
             compose_ui.hide_compose_spinner();
@@ -488,14 +487,11 @@ function validate_stream_message() {
         return false;
     }
 
-    /* Note: This is a global and thus accessible in the functions
-       below; it's important that we update this state here before
-       proceeding with further validation. */
-    wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
+    const wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
     if (
         !validate_stream_message_address_info(stream_name) ||
-        !validate_stream_message_mentions(sub.stream_id, $banner_container)
+        !validate_stream_message_mentions(sub.stream_id, $banner_container, wildcard_mention)
     ) {
         return false;
     }
