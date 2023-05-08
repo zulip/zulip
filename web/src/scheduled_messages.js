@@ -180,7 +180,8 @@ export function get_filtered_send_opts(date) {
     const send_times = compute_send_times(date);
 
     const day = date.getDay(); // Starts with 0 for Sunday.
-    const hours = date.getHours();
+    // Construct an HHMM integer of the time for comparison below
+    const hhmm = date.getHours() * 100 + date.getMinutes(); // e.g., 1806 at 6:06pm
 
     const send_later_today = {
         today_nine_am: {
@@ -257,9 +258,12 @@ export function get_filtered_send_opts(date) {
 
     let possible_send_later_today = {};
     let possible_send_later_monday = {};
-    if (hours <= 8) {
+    // Show Today send options based on time of day
+    if (hhmm <= 854) {
+        // Allow Today at 9:00am scheduling thru 8:54am
         possible_send_later_today = send_later_today;
-    } else if (hours <= 15) {
+    } else if (hhmm <= 1554) {
+        // Allow Today at 4:00pm scheduling thru 3:54pm
         possible_send_later_today.today_four_pm = send_later_today.today_four_pm;
     } else {
         possible_send_later_today = false;
