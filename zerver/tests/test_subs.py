@@ -4760,6 +4760,31 @@ class SubscriptionAPITest(ZulipTestCase):
                 acting_user=None,
             )
 
+    def test_subscribe_others_to_public_stream_in_zephyr_realm(self) -> None:
+        """
+        Users cannot be subscribed to public streams by other users in zephyr realm.
+        """
+        starnine = self.mit_user("starnine")
+        espuser = self.mit_user("espuser")
+
+        realm = get_realm("zephyr")
+        stream = self.make_stream("stream_1", realm=realm)
+        stream.is_in_zephyr_realm = True
+        stream.save()
+
+        result = self.common_subscribe_to_streams(
+            starnine,
+            ["stream_1"],
+            dict(principals=orjson.dumps([starnine.id, espuser.id]).decode()),
+            subdomain="zephyr",
+            allow_fail=True,
+        )
+        self.assert_json_error(
+            result,
+            "You can only invite other Zephyr mirroring users to private streams.",
+            status_code=400,
+        )
+
     def test_bulk_subscribe_many(self) -> None:
         # Create a whole bunch of streams
         streams = [f"stream_{i}" for i in range(30)]
