@@ -3,6 +3,7 @@ class zulip::profile::postgresql {
   include zulip::profile::base
   include zulip::postgresql_base
 
+  $version = $zulip::postgresql_common::version
   $work_mem = $zulip::common::total_memory_mb / 512
   $shared_buffers = $zulip::common::total_memory_mb / 8
   $effective_cache_size = $zulip::common::total_memory_mb * 10 / 32
@@ -29,14 +30,28 @@ class zulip::profile::postgresql {
     group  => 'postgres',
   }
 
-  $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/postgresql.conf"
-  file { $postgresql_conf_file:
-    ensure  => file,
-    require => Package[$zulip::postgresql_base::postgresql],
-    owner   => 'postgres',
-    group   => 'postgres',
-    mode    => '0644',
-    content => template("zulip/postgresql/${zulip::postgresql_common::version}/postgresql.conf.template.erb"),
+  if $version in ['12','13','14'] {
+    $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/postgresql.conf"
+    file { $postgresql_conf_file:
+      ensure  => file,
+      require => Package[$zulip::postgresql_base::postgresql],
+      owner   => 'postgres',
+      group   => 'postgres',
+      mode    => '0644',
+      content => template("zulip/postgresql/${version}/postgresql.conf.template.erb"),
+    }
+  } elsif $version in ['15'] {
+    $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/conf.d/zulip.conf"
+    file { $postgresql_conf_file:
+      ensure  => file,
+      require => Package[$zulip::postgresql_base::postgresql],
+      owner   => 'postgres',
+      group   => 'postgres',
+      mode    => '0644',
+      content => template('zulip/postgresql/zulip.conf.template.erb'),
+    }
+  } else {
+    fail("PostgreSQL ${version} not supported")
   }
 
   if $replication_primary != '' and $replication_user != '' {
@@ -47,8 +62,7 @@ class zulip::profile::postgresql {
           |-EOT
       warning($message)
     }
-    # PostgreSQL uses the presence of a standby.signal file to trigger
-    # replication
+    # The presence of a standby.signal file triggers replication
     file { "${zulip::postgresql_base::postgresql_datadir}/standby.signal":
       ensure  => file,
       require => Package[$zulip::postgresql_base::postgresql],
@@ -57,11 +71,11 @@ class zulip::profile::postgresql {
       mode    => '0644',
       content => '',
     }
-  }
+    }
 
-  exec { $zulip::postgresql_base::postgresql_restart:
-    require     => Package[$zulip::postgresql_base::postgresql],
-    refreshonly => true,
-    subscribe   => [ File[$postgresql_conf_file] ],
-  }
+    exec { $zulip::postgresql_base::postgresql_restart:
+      require     => Package[$zulip::postgresql_base::postgresql],
+      refreshonly => true,
+      subscribe   => [ File[$postgresql_conf_file] ],
+    }
 }
