@@ -89,7 +89,13 @@ export function get_selected_send_later_timestamp() {
 }
 
 export function get_formatted_selected_send_later_time() {
-    if (!selected_send_later_timestamp) {
+    const current_time = Date.now() / 1000; // seconds, like selected_send_later_timestamp
+    if (
+        scheduled_messages.is_send_later_timestamp_missing_or_expired(
+            selected_send_later_timestamp,
+            current_time,
+        )
+    ) {
         return undefined;
     }
     return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");

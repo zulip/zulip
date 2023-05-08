@@ -15,6 +15,7 @@ import * as popover_menus from "./popover_menus";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 
+export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 export let scheduled_messages_data = [];
 
 function compute_send_times(now = new Date()) {
@@ -39,6 +40,21 @@ function compute_send_times(now = new Date()) {
     // next Monday at 9am
     send_times.monday_nine_am = monday.setHours(9, 0, 0, 0);
     return send_times;
+}
+
+export function is_send_later_timestamp_missing_or_expired(
+    timestamp_in_seconds,
+    current_time_in_seconds,
+) {
+    if (!timestamp_in_seconds) {
+        return true;
+    }
+    // Determine if the selected timestamp is less than the minimum
+    // scheduled message delay
+    if (timestamp_in_seconds - current_time_in_seconds < MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS) {
+        return true;
+    }
+    return false;
 }
 
 function sort_scheduled_messages_data() {
