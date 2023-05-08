@@ -7,6 +7,7 @@ import render_stream_settings_tip from "../templates/stream_settings/stream_sett
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -252,11 +253,22 @@ export function update_add_subscriptions_elements(sub) {
     enable_or_disable_add_subscribers_elements($add_subscribers_container, allow_user_to_add_subs);
 
     if (!allow_user_to_add_subs) {
+        let tooltip_message;
+        if (!settings_data.user_can_subscribe_other_users()) {
+            tooltip_message = $t({
+                defaultMessage:
+                    "You do not have permission to add other users to streams in this organization.",
+            });
+        } else {
+            tooltip_message = $t({
+                defaultMessage: "Only stream members can add users to a private stream.",
+            });
+        }
         initialize_disable_btn_hint_popover(
             $add_subscribers_container,
             $input_element,
             $button_element,
-            $t({defaultMessage: "Only stream members can add users to a private stream"}),
+            tooltip_message,
         );
     }
 }

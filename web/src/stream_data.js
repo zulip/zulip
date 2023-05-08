@@ -6,6 +6,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as sub_store from "./sub_store";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
@@ -516,8 +517,13 @@ export function can_view_subscribers(sub) {
 }
 
 export function can_subscribe_others(sub) {
-    // User can add other users to stream if stream is public or user is subscribed to stream.
-    return !page_params.is_guest && (!sub.invite_only || sub.subscribed);
+    // User can add other users to stream if stream is public or user is subscribed to stream
+    // and realm level setting allows user to add subscribers.
+    return (
+        !page_params.is_guest &&
+        (!sub.invite_only || sub.subscribed) &&
+        settings_data.user_can_subscribe_other_users()
+    );
 }
 
 export function can_unsubscribe_others(sub) {
