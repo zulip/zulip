@@ -443,8 +443,8 @@ export class MessageList {
         if (this.narrowed) {
             if (
                 this.visibly_empty() &&
-                this.data.has_found_oldest() &&
-                this.data.has_found_newest()
+                this.data.fetch_status.has_found_oldest() &&
+                this.data.fetch_status.has_found_newest()
             ) {
                 // Show the empty narrow message only if we're certain
                 // that the view doesn't have messages that we're
