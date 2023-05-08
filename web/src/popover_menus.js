@@ -523,9 +523,9 @@ export function initialize() {
     });
 
     tippy_no_propagation(".actions_hover .zulip-icon-ellipsis-v-solid", {
-        // The is our minimum supported width for mobile. We shouldn't
-        // make the popover wider than this.
-        maxWidth: "320px",
+        // 320px is our minimum supported width for mobile. We will allow the value to flex
+        // to a max of 350px but we shouldn't make the popover wider than this.
+        maxWidth: "min(max(320px, 100vw), 350px)",
         placement: "bottom",
         popperOptions: {
             modifiers: [
