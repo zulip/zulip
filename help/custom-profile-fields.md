@@ -41,21 +41,6 @@ methods][authentication-production] documentation for details.
 
 {end_tabs}
 
-## Profile field types
-
-There are several different types of fields available.
-
-* **Short text**: For one line responses, like
-    "Job title". Responses are limited to 50 characters.
-* **Long text**: For multiline responses, like "Biography".
-* **Date picker**: For dates, like "Birthday".
-* **Link**: For links to websites.
-* **External account**: For linking to GitHub, Twitter, etc.
-* **Pronouns**: What pronouns should people use to refer to the user?
-* **List of options**: Creates a dropdown with a list of options.
-* **Person picker**: For selecting one or more users, like "Manager" or
-    "Direct reports".
-
 ## Display custom fields on user card
 
 Organizations may find it useful to display additional fields on the
@@ -105,6 +90,21 @@ if syncing profile fields from an employee directory.
 4. Click **Save changes**.
 
 {end_tabs}
+
+## Profile field types
+
+There are several different types of fields available.
+
+* **Short text**: For one line responses, like
+    "Job title". Responses are limited to 50 characters.
+* **Long text**: For multiline responses, like "Biography".
+* **Date picker**: For dates, like "Birthday".
+* **Link**: For links to websites.
+* **External account**: For linking to GitHub, Twitter, etc.
+* **Pronouns**: What pronouns should people use to refer to the user?
+* **List of options**: Creates a dropdown with a list of options.
+* **Person picker**: For selecting one or more users, like "Manager" or
+    "Direct reports".
 
 ## Related articles
 
