@@ -14,6 +14,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
@@ -883,6 +884,13 @@ export function save_inline_topic_edit($row) {
 }
 
 export function save_message_row_edit($row) {
+    const $banner_container = compose_banner.get_compose_banner_container(
+        $row.find(".message_edit_form textarea"),
+    );
+    const stream_id = Number.parseInt(
+        rows.get_message_recipient_header($row).attr("data-stream-id"),
+        10,
+    );
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
     const message = message_lists.current.get(message_id);
@@ -892,14 +900,24 @@ export function save_message_row_edit($row) {
     let new_content;
     const old_content = message.raw_content;
 
-    show_message_edit_spinner($row);
-
     const $edit_content_input = $row.find(".message_edit_content");
     const can_edit_content = $edit_content_input.attr("readonly") !== "readonly";
     if (can_edit_content) {
         new_content = $edit_content_input.val();
         changed = old_content !== new_content;
     }
+
+    const wildcard_mention = util.find_wildcard_mentions(new_content);
+    const is_stream_message_mentions_valid = compose_validate.validate_stream_message_mentions(
+        stream_id,
+        $banner_container,
+        wildcard_mention,
+    );
+    if (!is_stream_message_mentions_valid) {
+        return;
+    }
+
+    show_message_edit_spinner($row);
 
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed

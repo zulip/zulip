@@ -474,10 +474,15 @@ export function initialize() {
         `.${CSS.escape(compose_banner.CLASSNAMES.wildcard_warning)} .compose_banner_action_button`,
         (event) => {
             event.preventDefault();
-            const {$banner_container} = get_input_info(event);
+            const {$banner_container, is_edit_input} = get_input_info(event);
+            const $row = $(event.target).closest(".message_row");
             compose_validate.clear_wildcard_warnings($banner_container);
             compose_validate.set_user_acknowledged_wildcard_flag(true);
-            finish();
+            if (is_edit_input) {
+                message_edit.save_message_row_edit($row);
+            } else {
+                finish();
+            }
         },
     );
 
