@@ -106,7 +106,9 @@ export function show_error_message(
     $container: JQuery,
     $bad_input?: JQuery,
 ): void {
-    $(`#compose_banners .${CSS.escape(classname)}`).remove();
+    // To prevent the same banner from appearing twice,
+    // we remove the banner with a matched classname.
+    $container.find(`.${CSS.escape(classname)}`).remove();
 
     const new_row = render_compose_banner({
         banner_type: ERROR,
