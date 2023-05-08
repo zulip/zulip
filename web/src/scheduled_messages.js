@@ -278,7 +278,7 @@ export function get_filtered_send_opts(date) {
     if (minutes_into_day < 9 * 60 - MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60) {
         // Allow Today at 9:00am only up to minimum scheduled message delay
         possible_send_later_today = send_later_today;
-    } else if (minutes_into_day < (12 + 2) * 60 - MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60) {
+    } else if (minutes_into_day < (12 + 4) * 60 - MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60) {
         // Allow Today at 4:00pm only up to minimum scheduled message delay
         possible_send_later_today.today_four_pm = send_later_today.today_four_pm;
     } else {
