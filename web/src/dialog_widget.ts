@@ -147,7 +147,14 @@ export function launch(conf: WidgetConfig): void {
         const current_values: Record<string, unknown> = {};
         $inputs.each(function () {
             const property_name = $(this).attr("name")!;
-            current_values[property_name] = $(this).val();
+            if (property_name) {
+                if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
+                    // If the input is a file input and a file has been selected, set value to file object
+                    current_values[property_name] = $(this).prop("files")[0];
+                } else {
+                    current_values[property_name] = $(this).val();
+                }
+            }
         });
         return current_values;
     }
