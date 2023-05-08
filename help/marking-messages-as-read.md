@@ -21,7 +21,9 @@ are at your computer. You will still be able to
 
 {settings_tab|display-settings}
 
-1. Under **Advanced**, select **Always**, **Never** or **Only in conversation views**.
+1. Under **Advanced**, click on the **Automatically mark messages as
+   read** dropdown, and select **Always**, **Never** or **Only in
+   conversation views**.
 
 {tab|mobile}
 
