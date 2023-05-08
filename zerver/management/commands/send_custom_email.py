@@ -3,6 +3,7 @@ from typing import Any, Collection, List
 
 from django.conf import settings
 from django.core.management.base import CommandError
+from django.db.models import Q
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.send_email import send_custom_email
@@ -130,7 +131,9 @@ class Command(ZulipBaseCommand):
             users = (
                 UserProfile.objects.select_related()
                 .filter(id__in=[u.id for u in users])
-                .exclude(tos_version=None)
+                .exclude(
+                    Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
+                )
             )
         send_custom_email(users, target_emails=target_emails, options=options)
 

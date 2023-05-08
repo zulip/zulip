@@ -53,12 +53,14 @@ workflow as `./manage.py create_user`.
             create_user_params.password,
             realm,
             create_user_params.full_name,
-            # Explicitly set tos_version=None. For servers that
-            # have configured Terms of Service, this means that
-            # users created via this mechanism will be prompted to
-            # accept the Terms of Service on first login.
+            # Explicitly set tos_version=-1. This means that users
+            # created via this mechanism would be prompted to set
+            # the email_address_visibility setting on first login.
+            # For servers that have configured Terms of Service,
+            # users will also be prompted to accept the Terms of
+            # Service on first login.
             role=UserProfile.ROLE_REALM_OWNER,
             realm_creation=True,
-            tos_version=None,
+            tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
             acting_user=None,
         )

@@ -1814,6 +1814,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)
 
     date_joined = models.DateTimeField(default=timezone_now)
+
+    # Terms of Service version number that this user has accepted. We
+    # use the special value TOS_VERSION_BEFORE_FIRST_LOGIN for users
+    # whose account was created without direct user interaction (via
+    # the API or a data import), and null for users whose account is
+    # fully created on servers that do not have a configured ToS.
+    TOS_VERSION_BEFORE_FIRST_LOGIN = "-1"
     tos_version = models.CharField(null=True, max_length=10)
     api_key = models.CharField(max_length=API_KEY_LENGTH)
 

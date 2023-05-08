@@ -957,6 +957,7 @@ class AdminCreateUserTest(ZulipTestCase):
         result = orjson.loads(result.content)
         self.assertEqual(new_user.full_name, "Romeo Montague")
         self.assertEqual(new_user.id, result["user_id"])
+        self.assertEqual(new_user.tos_version, UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(
