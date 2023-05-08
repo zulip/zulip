@@ -15,6 +15,7 @@ import * as settings_data from "./settings_data";
 import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import {parse_html} from "./ui_util";
 
@@ -360,6 +361,15 @@ export function show_new_stream_modal() {
             });
         }
     }
+    const $add_subscribers_container = $(
+        "#stream_creation_form .subscriber_list_settings",
+    ).expectOne();
+
+    stream_ui_updates.enable_or_disable_add_subscribers_elements(
+        $add_subscribers_container,
+        settings_data.user_can_subscribe_other_users(),
+        true,
+    );
 
     // set default state for "announce stream" option.
     update_announce_stream_state();

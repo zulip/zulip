@@ -282,7 +282,11 @@ export function update_setting_element(sub, setting_name) {
     settings_org.discard_property_element_changes($elem, false, sub);
 }
 
-export function enable_or_disable_add_subscribers_elements($container_elem, enable_elem) {
+export function enable_or_disable_add_subscribers_elements(
+    $container_elem,
+    enable_elem,
+    stream_creation = false,
+) {
     const $input_element = $container_elem.find(".input").expectOne();
     const $add_subscribers_button = $container_elem
         .find('button[name="add_subscriber"]')
@@ -297,5 +301,20 @@ export function enable_or_disable_add_subscribers_elements($container_elem, enab
         $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
     } else {
         $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");
+    }
+
+    if (stream_creation) {
+        const $subscribe_all_users_button = $container_elem.find("button.add_all_users_to_stream");
+        $subscribe_all_users_button.prop("disabled", !enable_elem);
+
+        if (enable_elem) {
+            $container_elem
+                .find(".add_all_users_to_stream_btn_container")
+                .removeClass("add_subscribers_disabled");
+        } else {
+            $container_elem
+                .find(".add_all_users_to_stream_btn_container")
+                .addClass("add_subscribers_disabled");
+        }
     }
 }

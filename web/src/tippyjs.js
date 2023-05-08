@@ -647,6 +647,18 @@ export function initialize() {
             instance.destroy();
         },
     });
+
+    delegate("body", {
+        target: ["#stream_creation_form .add_subscribers_disabled"],
+        content: $t({
+            defaultMessage:
+                "You do not have permission to add other users to streams in this organization.",
+        }),
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
 }
 
 export function show_copied_confirmation($copy_button) {
