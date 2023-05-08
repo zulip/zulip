@@ -386,6 +386,11 @@
                 margin-right: 5px;
                 font-size: 15px;
             }
+
+            .table_fix_head {
+                /* 165px = 100px (in normal cases) + 65px for wrapped items. */
+                max-height: calc(100vh - 165px);
+            }
         }
 
         .private_conversation_row {
