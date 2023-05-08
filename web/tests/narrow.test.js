@@ -801,7 +801,7 @@ run_test("narrow_compute_title", ({override}) => {
     assert.equal(narrow.compute_narrow_title(filter), "translated: Search results");
 
     filter = new Filter([{operator: "sender", operand: "me"}]);
-    assert.equal(narrow.compute_narrow_title(filter), "translated: Search results");
+    assert.equal(narrow.compute_narrow_title(filter), "translated: Messages sent by you");
 
     // Stream narrows
     const sub = {

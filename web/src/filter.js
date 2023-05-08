@@ -535,6 +535,11 @@ export class Filter {
             return true;
         }
 
+        // Also check if a real user exists with the provided email.
+        if (_.isEqual(term_types, ["sender"]) && people.get_by_email(this.operands("sender")[0])) {
+            return true;
+        }
+
         if (_.isEqual(term_types, [])) {
             // All view
             return true;
@@ -745,6 +750,20 @@ export class Filter {
                     return $t({defaultMessage: "Alerted messages"});
                 case "is-unread":
                     return $t({defaultMessage: "Unread messages"});
+                case "sender": {
+                    const user = people.get_by_email(this.operands("sender")[0]);
+                    if (user) {
+                        if (people.is_my_user_id(user.user_id)) {
+                            return $t({defaultMessage: "Messages sent by you"});
+                        }
+                        return $t(
+                            {defaultMessage: "Messages sent by {sender}"},
+                            {
+                                sender: user.full_name,
+                            },
+                        );
+                    }
+                }
             }
         }
         /* istanbul ignore next */

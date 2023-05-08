@@ -1514,6 +1514,7 @@ test("navbar_helpers", () => {
         test_redirect_url_with_search(test_case);
     }
 
+    const sender = [{operator: "sender", operand: joe.email}];
     const in_home = [{operator: "in", operand: "home"}];
     const in_all = [{operator: "in", operand: "all"}];
     const is_starred = [{operator: "is", operand: "starred"}];
@@ -1555,6 +1556,13 @@ test("navbar_helpers", () => {
     ];
 
     const test_cases = [
+        {
+            operator: sender,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages sent by " + joe.full_name,
+            redirect_url_with_search: "/#narrow/sender/" + joe.user_id + "-joe",
+        },
         {
             operator: is_starred,
             is_common_narrow: true,
