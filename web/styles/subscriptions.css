@@ -677,6 +677,20 @@ h4.user_group_setting_subsection_title {
     color: hsl(0deg 0% 67%);
 }
 
+.subscriber_list_settings {
+    .add_subscribers_disabled {
+        cursor: not-allowed;
+
+        .pill-container {
+            cursor: not-allowed;
+        }
+    }
+
+    & button[disabled] {
+        pointer-events: none;
+    }
+}
+
 #groups_overlay,
 #subscription_overlay {
     #user-group-creation,

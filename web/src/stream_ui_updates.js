@@ -233,7 +233,7 @@ export function update_add_subscriptions_elements(sub) {
     }
 
     // We are only concerned with the Subscribers tab for editing streams.
-    const $add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
     if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_subscribers feature.
@@ -249,15 +249,9 @@ export function update_add_subscriptions_elements(sub) {
         .expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
 
-    if (allow_user_to_add_subs) {
-        $input_element.prop("disabled", false);
-        $button_element.prop("disabled", false);
-        $button_element.css("pointer-events", "");
-        $input_element.popover("destroy");
-    } else {
-        $input_element.prop("disabled", true);
-        $button_element.prop("disabled", true);
+    enable_or_disable_add_subscribers_elements($add_subscribers_container, allow_user_to_add_subs);
 
+    if (!allow_user_to_add_subs) {
         initialize_disable_btn_hint_popover(
             $add_subscribers_container,
             $input_element,
@@ -274,4 +268,22 @@ export function update_setting_element(sub, setting_name) {
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
     settings_org.discard_property_element_changes($elem, false, sub);
+}
+
+export function enable_or_disable_add_subscribers_elements($container_elem, enable_elem) {
+    const $input_element = $container_elem.find(".input").expectOne();
+    const $add_subscribers_button = $container_elem
+        .find('button[name="add_subscriber"]')
+        .expectOne();
+
+    $input_element.prop("contenteditable", enable_elem);
+    $add_subscribers_button.prop("disabled", !enable_elem);
+
+    if (enable_elem) {
+        $add_subscribers_button.css("pointer-events", "");
+        $input_element.popover("destroy");
+        $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
+    } else {
+        $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");
+    }
 }
