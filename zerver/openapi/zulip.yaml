@@ -5189,17 +5189,13 @@ paths:
           description: |
             The scheduled message's tentative target audience.
 
-            For stream messages, integer ID of the stream. For direct messages,
-            either a list containing integer user IDs or a list containing string
-            email addresses.
+            For stream messages, the integer ID of the stream.
+            For direct messages, a list containing integer user IDs.
           content:
             application/json:
               schema:
                 oneOf:
                   - type: integer
-                  - type: array
-                    items:
-                      type: string
                   - type: array
                     items:
                       type: integer

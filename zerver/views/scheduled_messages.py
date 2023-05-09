@@ -1,13 +1,14 @@
-from typing import Optional, Sequence, Union
+from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.actions.message_send import extract_private_recipients
 from zerver.actions.scheduled_messages import (
     check_schedule_message,
     delete_scheduled_message,
+    extract_direct_message_recipient_ids,
+    extract_stream_id,
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -61,10 +62,9 @@ def scheduled_messages_backend(
     assert client is not None
 
     if recipient_type_name == "stream":
-        # req_to is ID of the recipient stream.
-        message_to: Union[Sequence[str], Sequence[int]] = [int(req_to)]
+        message_to = extract_stream_id(req_to)
     else:
-        message_to = extract_private_recipients(req_to)
+        message_to = extract_direct_message_recipient_ids(req_to)
 
     scheduled_message_id = check_schedule_message(
         sender,
