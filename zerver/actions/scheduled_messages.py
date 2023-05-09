@@ -3,6 +3,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import orjson
 from django.db import transaction
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import check_message, do_send_messages
@@ -19,6 +20,8 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.tornado.django_api import send_event
+
+SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10
 
 
 def extract_stream_id(req_to: str) -> List[int]:
@@ -192,6 +195,13 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
 
     if not scheduled_message.sender.is_active:
         raise UserDeactivatedError
+
+    # Limit how late we're willing to send a scheduled message.
+    latest_send_time = scheduled_message.scheduled_timestamp + datetime.timedelta(
+        minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES
+    )
+    if timezone_now() > latest_send_time:
+        raise JsonableError(_("Scheduled send time has already passed."))
 
     # Recheck that we have permission to send this message, in case
     # permissions have changed since the message was scheduled.
