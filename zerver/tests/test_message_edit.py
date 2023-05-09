@@ -518,6 +518,17 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_error(result, "You don't have permission to edit this message")
 
+        self.login("iago")
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "allow_message_editing", False, acting_user=None)
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "content after edit",
+            },
+        )
+        self.assert_json_error(result, "Your organization has turned off message editing")
+
     def test_edit_message_no_content(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
@@ -2287,6 +2298,52 @@ class EditMessageTest(EditMessageTestCase):
 
         # Test editing both topic and stream together.
         test_moving_all_topic_messages(new_topic="edited", new_stream=verona)
+
+        # Move these messages to the original stream and topic to test the next case.
+        self.client_patch(
+            f"/json/messages/{id4}",
+            {
+                "stream_id": denmark.id,
+                "topic": old_topic,
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        # Test editing both topic and stream with no limit set.
+        self.login("hamlet")
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_within_stream_limit_seconds",
+            None,
+            acting_user=None,
+        )
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_limit_seconds",
+            None,
+            acting_user=None,
+        )
+
+        new_stream = verona
+        new_topic = "edited"
+        result = self.client_patch(
+            f"/json/messages/{id4}",
+            {
+                "topic": new_topic,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+        self.assert_json_success(result)
+        # Check message count in old topic and/or stream.
+        messages = get_topic_messages(user_profile, old_stream, old_topic)
+        self.assert_length(messages, 0)
+
+        # Check message count in new topic and/or stream.
+        messages = get_topic_messages(user_profile, new_stream, new_topic)
+        self.assert_length(messages, 5)
 
     def test_change_all_propagate_mode_for_moving_from_stream_with_restricted_history(self) -> None:
         self.make_stream("privatestream", invite_only=True, history_public_to_subscribers=False)
