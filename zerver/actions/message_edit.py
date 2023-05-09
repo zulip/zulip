@@ -832,25 +832,25 @@ def do_update_message(
         user_profiles_for_visibility_policy_pair: Dict[
             Tuple[int, int], List[UserProfile]
         ] = defaultdict(list)
-        for user_profile in user_profiles_having_visibility_policy:
-            if user_profile not in target_topic_user_profile_to_visibility_policy:
+        for user_profile_with_policy in user_profiles_having_visibility_policy:
+            if user_profile_with_policy not in target_topic_user_profile_to_visibility_policy:
                 target_topic_user_profile_to_visibility_policy[
-                    user_profile
+                    user_profile_with_policy
                 ] = UserTopic.VisibilityPolicy.INHERIT
             elif user_profile not in orig_topic_user_profile_to_visibility_policy:
                 orig_topic_user_profile_to_visibility_policy[
-                    user_profile
+                    user_profile_with_policy
                 ] = UserTopic.VisibilityPolicy.INHERIT
 
             orig_topic_visibility_policy = orig_topic_user_profile_to_visibility_policy[
-                user_profile
+                user_profile_with_policy
             ]
             target_topic_visibility_policy = target_topic_user_profile_to_visibility_policy[
-                user_profile
+                user_profile_with_policy
             ]
             user_profiles_for_visibility_policy_pair[
                 (orig_topic_visibility_policy, target_topic_visibility_policy)
-            ].append(user_profile)
+            ].append(user_profile_with_policy)
 
         # If the messages are being moved to a stream the user
         # cannot access, then we treat this as the
