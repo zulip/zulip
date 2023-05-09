@@ -36,15 +36,7 @@
                     <div class="message_top_line">
                         <div class="draft_controls overlay_message_controls">
                             <i class="fa fa-pencil fa-lg restore-draft restore-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="restore-draft-tooltip-template"></i>
-                            <template id="restore-draft-tooltip-template">
-                                {{t 'Restore draft' }}
-                                {{tooltip_hotkey_hints "Enter"}}
-                            </template>
                             <i class="fa fa-trash-o fa-lg delete-draft delete-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="delete-draft-tooltip-template"></i>
-                            <template id="delete-draft-tooltip-template">
-                                {{t 'Delete draft' }}
-                                {{tooltip_hotkey_hints "Backspace"}}
-                            </template>
                         </div>
                     </div>
                     <div class="message_content rendered_markdown restore-draft restore-overlay-message" title="{{t 'Restore draft' }}">{{rendered_markdown content}}</div>

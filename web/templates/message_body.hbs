@@ -63,14 +63,6 @@
 <div class="message_expander message_length_controller tippy-zulip-delayed-tooltip" data-tooltip-template-id="message-expander-tooltip-template">{{t "[More…]" }}</div>
 <div class="message_condenser message_length_controller tippy-zulip-delayed-tooltip" data-tooltip-template-id="message-condenser-tooltip-template">[{{t "Show less" }}]</div>
 
-<template id="message-expander-tooltip-template">
-    {{t 'Show more' }}
-    {{tooltip_hotkey_hints "-"}}
-</template>
-<template id="message-condenser-tooltip-template">
-    {{t 'Show less' }}
-    {{tooltip_hotkey_hints "-"}}
-</template>
 {{#unless is_hidden}}
 <div class="message_reactions">{{> message_reactions }}</div>
 {{/unless}}

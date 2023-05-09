@@ -11,10 +11,6 @@
                     <span>{{t 'All messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
-                <template id="all-message-tooltip-template">
-                    {{t 'All messages' }}
-                    {{tooltip_hotkey_hints "A"}}
-                </template>
                 <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_recent_topics top_left_row tippy-left-sidebar-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
@@ -25,10 +21,6 @@
                     {{~!-- squash whitespace --~}}
                     <span>{{t 'Recent conversations' }}</span>
                 </a>
-                <template id="recent-conversations-tooltip-template">
-                    {{t 'Recent conversations' }}
-                    {{tooltip_hotkey_hints "T"}}
-                </template>
             </li>
             <li class="top_left_mentions top_left_row hidden-for-spectators">
                 <a href="#narrow/is/mentioned">
@@ -60,10 +52,6 @@
                     <span>{{t 'Drafts' }}</span>
                     <span class="unread_count"></span>
                 </a>
-                <template id="drafts-tooltip-template">
-                    {{t 'Drafts' }}
-                    {{tooltip_hotkey_hints "D"}}
-                </template>
                 <span class="arrow drafts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
             <li class="top_left_scheduled_messages top_left_row hidden-for-spectators">
@@ -90,10 +78,6 @@
                 <a id="show_all_private_messages" href="#narrow/is/dm" data-tooltip-template-id="show-all-pms-template">
                     <i class="fa fa-align-right" aria-label="{{t 'All direct messages' }}"></i>
                 </a>
-                <template id="show-all-pms-template">
-                    {{t 'All direct messages' }}
-                    {{tooltip_hotkey_hints "Shift" "P"}}
-                </template>
             </div>
         </div>
         <a class="zoom-out-hide" id="hide_more_private_messages">
@@ -118,10 +102,6 @@
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
                 </div>
-                <template id="filter-streams-tooltip-template">
-                    {{t 'Filter streams' }}
-                    {{tooltip_hotkey_hints "Q"}}
-                </template>
             </div>
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0">{{t 'Back to streams' }}</a>
