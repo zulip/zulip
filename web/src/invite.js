@@ -45,11 +45,17 @@ function get_common_invitation_data() {
         expires_in = Number.parseFloat($("#expires_in").val());
     }
 
-    const stream_ids = [];
-    $("#invite-stream-checkboxes input:checked").each(function () {
-        const stream_id = Number.parseInt($(this).val(), 10);
-        stream_ids.push(stream_id);
-    });
+    let stream_ids = [];
+    const default_stream_ids = stream_data.get_default_stream_ids();
+    if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
+        stream_ids = default_stream_ids;
+    } else {
+        $("#invite-stream-checkboxes input:checked").each(function () {
+            const stream_id = Number.parseInt($(this).val(), 10);
+            stream_ids.push(stream_id);
+        });
+    }
+
     const data = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
@@ -231,6 +237,17 @@ function set_custom_time_inputs_visibility() {
     }
 }
 
+function set_streams_to_join_list_visibility() {
+    const default_streams_selected = $("#invite_select_default_streams").prop("checked");
+    if (default_streams_selected) {
+        $("#streams_to_add .invite-stream-controls").hide();
+        $("#invite-stream-checkboxes").hide();
+    } else {
+        $("#streams_to_add .invite-stream-controls").show();
+        $("#invite-stream-checkboxes").show();
+    }
+}
+
 function open_invite_user_modal(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -247,6 +264,7 @@ function open_invite_user_modal(e) {
         time_choices: time_unit_choices,
         streams: get_invite_streams(),
         notifications_stream: stream_data.get_notifications_stream(),
+        show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
     });
 
     function invite_user_modal_post_render() {
@@ -256,6 +274,7 @@ function open_invite_user_modal(e) {
 
         set_custom_time_inputs_visibility();
         set_expires_on_text();
+        set_streams_to_join_list_visibility();
 
         function toggle_invite_submit_button() {
             $("#invite-user-modal .dialog_submit_button").prop(
@@ -319,12 +338,16 @@ function open_invite_user_modal(e) {
         });
 
         $("#invite_check_all_button").on("click", () => {
-            $("#streams_to_add input[type=checkbox]").prop("checked", true);
+            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
             toggle_invite_submit_button();
         });
 
         $("#invite_uncheck_all_button").on("click", () => {
-            $("#streams_to_add input[type=checkbox]").prop("checked", false);
+            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
+        });
+
+        $("#invite_select_default_streams").on("change", () => {
+            set_streams_to_join_list_visibility();
         });
     }
 
