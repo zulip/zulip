@@ -25,6 +25,7 @@ from confirmation.models import (
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import do_create_user, process_new_human_user
+from zerver.actions.default_streams import get_default_streams_for_realm
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -2230,8 +2231,10 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_multiuse_link_with_specified_streams(self) -> None:
         name1 = "newuser"
         name2 = "bob"
+        name3 = "alice"
         email1 = self.nonreg_email(name1)
         email2 = self.nonreg_email(name2)
+        email3 = self.nonreg_email(name3)
 
         stream_names = ["Rome", "Scotland", "Venice"]
         streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
@@ -2244,6 +2247,13 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email2, invite_link)
         self.check_user_subscribed_only_to_streams(name2, streams)
+
+        streams = []
+        invite_link = self.generate_multiuse_invite_link(streams=streams)
+        self.check_user_able_to_register(email3, invite_link)
+        # User is not subscribed to default streams as well.
+        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.check_user_subscribed_only_to_streams(name3, [])
 
     def test_multiuse_link_different_realms(self) -> None:
         """
@@ -2298,6 +2308,21 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
         self.check_user_subscribed_only_to_streams("test", streams)
+
+        self.login("iago")
+        stream_ids = []
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
+        # User is not subscribed to default streams as well.
+        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.check_user_subscribed_only_to_streams("alice", [])
 
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
         self.login("iago")
