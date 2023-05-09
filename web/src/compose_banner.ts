@@ -67,6 +67,19 @@ export function append_compose_banner_to_banner_list(
     scroll_util.get_content_element($list_container).append(banner);
 }
 
+export function update_or_append_banner(
+    banner: HTMLElement | JQuery.htmlString,
+    banner_classname: string,
+    $list_container: JQuery,
+): void {
+    const $banner = $list_container.find(`.${CSS.escape(banner_classname)}`);
+    if ($banner.length === 0) {
+        append_compose_banner_to_banner_list(banner, $list_container);
+    } else {
+        $banner.replaceWith(banner);
+    }
+}
+
 export function clear_message_sent_banners(include_unmute_banner = true): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         $(`#compose_banners .${CSS.escape(classname)}`).remove();

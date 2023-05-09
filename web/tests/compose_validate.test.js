@@ -389,6 +389,8 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(data.subscriber_count, 16);
     });
 
+    compose_banner.update_or_append_banner = () => {};
+
     override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());

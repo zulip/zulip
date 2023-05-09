@@ -262,7 +262,11 @@ function show_wildcard_warnings(opts) {
         );
     } else {
         // if there is already a banner, replace it with the new one
-        opts.$banner_container.find(`.${CSS.escape(classname)}`).replaceWith(wildcard_template);
+        compose_banner.update_or_append_banner(
+            wildcard_template,
+            classname,
+            opts.$banner_container,
+        );
     }
 
     user_acknowledged_wildcard = false;
