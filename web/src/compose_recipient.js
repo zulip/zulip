@@ -285,7 +285,7 @@ function compose_recipient_dropdown_on_show(dropdown) {
         Math.max(top_space, bottom_space),
     );
     const $popper = $(dropdown.popper);
-    $popper.find(".dropdown-list-wrapper").css("height", height + "px");
+    $popper.find(".dropdown-list-wrapper").css("max-height", height + "px");
 }
 
 export function open_compose_recipient_dropdown() {
