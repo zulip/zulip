@@ -2,7 +2,9 @@
 
 const path = require("path");
 
-const {media_breakpoints} = require("./src/css_variables");
+const _ = require("lodash");
+
+const {media_breakpoints, size_constants} = require("./src/css_variables");
 
 module.exports = ({file}) => ({
     plugins: [
@@ -14,7 +16,7 @@ module.exports = ({file}) => ({
                 plugins: [require("postcss-prefixwrap")("%dark-theme")],
             }),
         require("postcss-extend-rule"),
-        require("postcss-simple-vars")({variables: media_breakpoints}),
+        require("postcss-simple-vars")({variables: _.merge(media_breakpoints, size_constants)}),
         require("postcss-preset-env")({
             features: {
                 "nesting-rules": true,

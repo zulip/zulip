@@ -14,6 +14,8 @@ const ml = 425; // Mobile large
 const mm = 375; // Mobile medium
 const ms = 320; // Mobile small
 
+const scrollbar_width = 7;
+
 module.exports = {
     media_breakpoints: {
         xs_min: xs + "px",
@@ -36,4 +38,13 @@ module.exports = {
         mm,
         ms,
     },
+
+    size_constants: {
+        scrollbar_width: scrollbar_width + "px",
+    },
+
+    size_constants_num: {
+        scrollbar_width,
+    },
+
 };

@@ -298,7 +298,7 @@ p.n-margin {
 .header {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
-    width: 100%;
+    width: calc(100% - $scrollbar_width);
     height: var(--header-height);
     /* Since the headers are sticky, we need non-transparent background. */
     background-color: hsl(0deg 0% 100%);
@@ -417,6 +417,21 @@ p.n-margin {
     overflow-y: scroll;
     z-index: 99;
     -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        appearance: none;
+        width: $scrollbar_width;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background-color: hsl(0deg 0% 75%);
+        transition: background-color 2s;
+
+        &:hover {
+            background-color: hsl(0deg 0% 30%);
+        }
+    }
 }
 
 .app-main,
