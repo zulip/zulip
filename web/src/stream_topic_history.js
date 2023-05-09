@@ -138,6 +138,9 @@ export class PerStreamHistory {
 
         if (!existing.historical) {
             existing.count += 1;
+        } else {
+            existing.historical = false;
+            existing.count = 1;
         }
 
         if (message_id > existing.message_id) {

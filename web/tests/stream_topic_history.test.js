@@ -197,11 +197,6 @@ test("server_history", () => {
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["hist1", "local", "hist2"]);
 
-    // server history is allowed to backdate hist1
-    add_server_history();
-    history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["local", "hist2", "hist1"]);
-
     // Removing a local message removes the topic if we have
     // our counts right.
     stream_topic_history.remove_messages({
@@ -210,7 +205,7 @@ test("server_history", () => {
         num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["hist2", "hist1"]);
+    assert.deepEqual(history, ["hist1", "hist2"]);
 
     // We can try to remove a historical message, but it should
     // have no effect.
@@ -220,7 +215,7 @@ test("server_history", () => {
         num_messages: 1,
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["hist2", "hist1"]);
+    assert.deepEqual(history, ["hist1", "hist2"]);
 
     // If we call back to the server for history, the
     // effect is always additive.  We may decide to prune old
