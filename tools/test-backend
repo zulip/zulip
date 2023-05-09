@@ -75,7 +75,6 @@ not_yet_fully_covered = [
     "analytics/views/stats.py",
     "analytics/views/support.py",
     # Major lib files should have 100% coverage
-    "zerver/actions/create_realm.py",
     "zerver/actions/message_edit.py",
     "zerver/actions/presence.py",
     "zerver/actions/scheduled_messages.py",
