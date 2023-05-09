@@ -2512,6 +2512,14 @@ class NormalActionsTest(BaseAction):
         result = fetch_initial_state_data(user_profile)
         self.assertEqual(result["max_message_id"], -1)
 
+    def test_do_delete_message_with_no_messages(self) -> None:
+        events = self.verify_action(
+            lambda: do_delete_messages(self.user_profile.realm, []),
+            num_events=0,
+            state_change_expected=False,
+        )
+        self.assertEqual(events, [])
+
     def test_add_attachment(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
