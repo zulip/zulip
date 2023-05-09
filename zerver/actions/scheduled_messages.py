@@ -1,6 +1,7 @@
 import datetime
 from typing import List, Optional, Sequence, Tuple, Union
 
+import orjson
 from django.db import transaction
 from django.utils.translation import gettext as _
 
@@ -12,6 +13,31 @@ from zerver.lib.message import SendMessageRequest, render_markdown
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.models import Client, Realm, ScheduledMessage, UserProfile
 from zerver.tornado.django_api import send_event
+
+
+def extract_stream_id(req_to: str) -> List[int]:
+    # Recipient should only be a single stream ID.
+    try:
+        stream_id = int(req_to)
+    except ValueError:
+        raise JsonableError(_("Invalid data type for stream ID"))
+    return [stream_id]
+
+
+def extract_direct_message_recipient_ids(req_to: str) -> List[int]:
+    try:
+        user_ids = orjson.loads(req_to)
+    except orjson.JSONDecodeError:
+        user_ids = req_to
+
+    if not isinstance(user_ids, list):
+        raise JsonableError(_("Invalid data type for recipients"))
+
+    for user_id in user_ids:
+        if not isinstance(user_id, int):
+            raise JsonableError(_("Recipient list may only contain user IDs"))
+
+    return list(set(user_ids))
 
 
 def check_schedule_message(
