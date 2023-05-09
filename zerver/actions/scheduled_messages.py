@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import List, Optional, Sequence, Tuple, Union
 
 import orjson
@@ -234,3 +235,52 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered"])
     notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)
+
+
+@transaction.atomic
+def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
+    # Returns whether there was a scheduled message to attempt
+    # delivery on, regardless of whether delivery succeeded.
+    scheduled_message = (
+        ScheduledMessage.objects.filter(
+            scheduled_timestamp__lte=timezone_now(),
+            delivered=False,
+            failed=False,
+        )
+        .select_for_update()
+        .first()
+    )
+
+    if scheduled_message is None:
+        return False
+
+    logger.info(
+        "Sending scheduled message %s with date %s (sender: %s)",
+        scheduled_message.id,
+        scheduled_message.scheduled_timestamp,
+        scheduled_message.sender_id,
+    )
+
+    try:
+        send_scheduled_message(scheduled_message)
+    except JsonableError as e:
+        scheduled_message.failed = True
+        scheduled_message.failure_message = e.msg
+        scheduled_message.save(update_fields=["failed", "failure_message"])
+        logger.info("Failed with message: %s", scheduled_message.failure_message)
+    except Exception:
+        # An unexpected failure; store as a generic 500 error.
+        scheduled_message.refresh_from_db()
+        was_delivered = scheduled_message.delivered
+        scheduled_message.failed = True
+        scheduled_message.failure_message = _("Internal server error")
+        scheduled_message.save(update_fields=["failed", "failure_message"])
+
+        logger.exception(
+            "Unexpected error sending scheduled message %s (sent: %s)",
+            scheduled_message.id,
+            was_delivered,
+            stack_info=True,
+        )
+
+    return True
