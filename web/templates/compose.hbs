@@ -120,12 +120,17 @@
                                 <div class="compose_bottom_top_container">
                                     <div class="compose_right_float_container order-3">
                                         <button type="submit" id="compose-send-button" class="button small send_message compose-submit-button animated-purple-button">
-                                            <img class="loader" alt="" src="" />
-                                            <span>{{t 'Send' }}</span>
+                                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M17.5249 9.13256C17.5249 9.7409 17.1324 10.2826 16.4499 10.6242L2.76657 17.4659C2.43323 17.6326 2.10823 17.7159 1.80823 17.7159C1.37407 17.7159 0.991566 17.5326 0.749066 17.2084C0.541566 16.9242 0.341566 16.4326 0.583233 15.6326L2.1249 10.4909C2.1749 10.3409 2.20823 10.1584 2.2249 9.9659H10.6666C11.1249 9.9659 11.4999 9.5909 11.4999 9.13256C11.4999 8.67423 11.1249 8.29923 10.6666 8.29923H2.2249C2.2074 8.10756 2.17407 7.92423 2.1249 7.77423L0.583233 2.63256C0.341566 1.83256 0.541566 1.3409 0.749899 1.05756C1.15823 0.507564 1.93323 0.382564 2.76657 0.799231L16.4507 7.6409C17.1332 7.98256 17.5249 8.52423 17.5249 9.13256Z" fill="white"/>
+                                            </svg>
                                         </button>
                                         <button class="animated-purple-button message-control-button" id="send_later" tabindex=0 type="button" data-tippy-content="{{t 'Send later' }}">
                                             <div class="separator-line"></div>
-                                            <i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>
+                                            <div class="zulip-icon">
+                                                <svg width="7" height="5" viewBox="0 0 7 5" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M6.72991 0.331613C6.72991 0.331613 6.75112 0.352818 6.79353 0.395229C6.83594 0.437639 6.85714 0.516881 6.85714 0.632952C6.85714 0.749023 6.81473 0.84947 6.72991 0.934291L3.72991 3.93429C3.64509 4.01911 3.54464 4.06152 3.42857 4.06152C3.3125 4.06152 3.21205 4.01911 3.12723 3.93429L0.127232 0.934291C0.0424107 0.84947 0 0.749023 0 0.632952C0 0.516881 0.0424107 0.416434 0.127232 0.331613C0.212054 0.246791 0.3125 0.204381 0.428571 0.204381H6.42857C6.54464 0.204381 6.64509 0.246791 6.72991 0.331613Z" fill="white"/>
+                                                </svg>
+                                            </div>
                                         </button>
                                         <template id="send-enter-tooltip-template">
                                             {{t 'Send' }}
