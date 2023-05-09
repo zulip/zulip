@@ -141,7 +141,6 @@ def do_create_realm(
     name: str,
     *,
     emails_restricted_to_domains: Optional[bool] = None,
-    email_address_visibility: Optional[int] = None,
     description: Optional[str] = None,
     invite_required: Optional[bool] = None,
     plan_type: Optional[int] = None,
@@ -163,8 +162,6 @@ def do_create_realm(
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
-    if email_address_visibility is not None:
-        kwargs["email_address_visibility"] = email_address_visibility
     if description is not None:
         kwargs["description"] = description
     if invite_required is not None:
