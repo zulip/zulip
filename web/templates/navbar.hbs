@@ -8,10 +8,6 @@
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
                 <div id="streamlist-toggle" class="tippy-zulip-delayed-tooltip {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" data-tooltip-template-id="streamlist-toggle-tooltip-template">
-                    <template id="streamlist-toggle-tooltip-template" >
-                        {{t 'View streams' }}
-                        {{tooltip_hotkey_hints "Q"}}
-                    </template>
                     <a id="streamlist-toggle-button" role="button" tabindex="0"><i class="fa fa-reorder" aria-hidden="true"></i>
                         <span id="streamlist-toggle-unreadcount">0</span>
                     </a>
@@ -69,10 +65,6 @@
                 <a id="userlist-toggle-button" role="button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
-                <template id="userlist-tooltip-template">
-                    {{t 'User list' }}
-                    {{tooltip_hotkey_hints "W"}}
-                </template>
             </div>
             <div id="navbar-buttons" {{#if embedded}}class="hide-navbar-buttons-visibility"{{/if}}>
             </div>

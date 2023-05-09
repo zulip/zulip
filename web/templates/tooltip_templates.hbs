@@ -5,3 +5,174 @@
 <template id="narrow-hotkey-tooltip-template">
     {{tooltip_hotkey_hints "S"}}
 </template>
+<template id="compose_draft_tooltip_template">
+    {{t 'Drafts' }}
+    {{tooltip_hotkey_hints "D"}}
+</template>
+<template id="scroll-to-bottom-button-tooltip-template">
+    {{t 'Scroll to bottom' }}
+    {{tooltip_hotkey_hints "End"}}
+</template>
+<template id="compose_reply_message_button_tooltip_template">
+    {{t 'Reply to selected message' }}
+    {{tooltip_hotkey_hints "R"}}
+</template>
+<template id="compose_reply_selected_topic_button_tooltip_template">
+    {{t 'Reply to selected conversation' }}
+    {{tooltip_hotkey_hints "R"}}
+</template>
+<template id="compose_reply_button_disabled_tooltip_template">
+    {{t 'You are not allowed to send direct messages in this organization.' }}
+</template>
+<template id="left_bar_compose_mobile_button_tooltip_template">
+    {{t 'New message' }}
+    {{tooltip_hotkey_hints "C"}}
+</template>
+<template id="new_topic_message_button_tooltip_template">
+    {{t 'New topic' }}
+    {{tooltip_hotkey_hints "C"}}
+</template>
+<template id="new_stream_message_button_tooltip_template">
+    {{t 'New stream message' }}
+    {{tooltip_hotkey_hints "C"}}
+</template>
+<template id="new_direct_message_button_tooltip_template">
+    {{t 'New direct message' }}
+    {{tooltip_hotkey_hints "X"}}
+</template>
+<template id="compose_close_tooltip_template">
+    {{t 'Cancel compose' }}
+    {{tooltip_hotkey_hints "Esc"}}
+</template>
+<template id="compose_close_and_save_tooltip_template">
+    {{t 'Cancel compose and save draft' }}
+    {{tooltip_hotkey_hints "Esc"}}
+</template>
+<template id="send-enter-tooltip-template">
+    {{t 'Send' }}
+    {{tooltip_hotkey_hints "Enter"}}
+</template>
+<template id="send-ctrl-enter-tooltip-template">
+    {{t 'Send' }}
+    {{tooltip_hotkey_hints "Ctrl" "Enter"}}
+</template>
+<template id="add-global-time-tooltip">
+    <div>
+        <span>{{t "Add global time" }}</span><br/>
+        <span class="tooltip-inner-content italic">{{t "Everyone sees global times in their own time zone." }}</span>
+    </div>
+</template>
+<template id="delete-draft-tooltip-template">
+    {{t 'Delete draft' }}
+    {{tooltip_hotkey_hints "Backspace"}}
+</template>
+<template id="restore-draft-tooltip-template">
+    {{t 'Restore draft' }}
+    {{tooltip_hotkey_hints "Enter"}}
+</template>
+<template id="gear-menu-tooltip-template">
+    {{t 'Menu' }}
+    {{tooltip_hotkey_hints "G"}}
+</template>
+<template id="all-message-tooltip-template">
+    {{t 'All messages' }}
+    {{tooltip_hotkey_hints "A"}}
+</template>
+<template id="recent-conversations-tooltip-template">
+    {{t 'Recent conversations' }}
+    {{tooltip_hotkey_hints "T"}}
+</template>
+<template id="drafts-tooltip-template">
+    {{t 'Drafts' }}
+    {{tooltip_hotkey_hints "D"}}
+</template>
+<template id="show-all-pms-template">
+    {{t 'All direct messages' }}
+    {{tooltip_hotkey_hints "Shift" "P"}}
+</template>
+<template id="filter-streams-tooltip-template">
+    {{t 'Filter streams' }}
+    {{tooltip_hotkey_hints "Q"}}
+</template>
+<template id="message-expander-tooltip-template">
+    {{t 'Show more' }}
+    {{tooltip_hotkey_hints "-"}}
+</template>
+<template id="message-condenser-tooltip-template">
+    {{t 'Show less' }}
+    {{tooltip_hotkey_hints "-"}}
+</template>
+<template id="edit-content-tooltip-template">
+    {{t "Edit message" }}
+    {{tooltip_hotkey_hints "E"}}
+</template>
+<template id="move-message-tooltip-template">
+    {{t "Move message" }}
+    {{tooltip_hotkey_hints "M"}}
+</template>
+<template id="view-source-tooltip-template">
+    {{t "View message source" }}
+    {{tooltip_hotkey_hints "E"}}
+</template>
+<template id="add-emoji-tooltip-template">
+    {{t "Add emoji reaction" }}
+    {{tooltip_hotkey_hints ":"}}
+</template>
+<template id="message-actions-tooltip-template">
+    {{t "Message actions" }}
+    {{tooltip_hotkey_hints "I"}}
+</template>
+<template id="star-message-tooltip-template">
+    <span class="starred-status">{{t "Star this message" }}</span>
+    {{tooltip_hotkey_hints "Ctrl" "S"}}
+</template>
+<template id="unstar-message-tooltip-template">
+    <span class="starred-status">{{t "Unstar this message" }}</span>
+    {{tooltip_hotkey_hints "Ctrl" "S"}}
+</template>
+<template id="search-query-tooltip-template">
+    {{t 'Search' }}
+    {{tooltip_hotkey_hints "/"}}
+</template>
+<template id="streamlist-toggle-tooltip-template" >
+    {{t 'View streams' }}
+    {{tooltip_hotkey_hints "Q"}}
+</template>
+<template id="userlist-tooltip-template">
+    {{t 'User list' }}
+    {{tooltip_hotkey_hints "W"}}
+</template>
+<template id="topic-unmute-tooltip-template">
+    {{t "Unmute topic" }}
+    {{tooltip_hotkey_hints "Shift" "M"}}
+</template>
+<template id="topic-mute-tooltip-template">
+    {{t "Mute topic" }}
+    {{tooltip_hotkey_hints "Shift" "M"}}
+</template>
+<template id="search-people-tooltip-template">
+    {{t 'Search people' }}
+    {{tooltip_hotkey_hints "W"}}
+</template>
+<template id="keyboard-icon-tooltip-template">
+    {{t 'Keyboard shortcuts' }}
+    {{tooltip_hotkey_hints "?"}}
+</template>
+<template id="restore-scheduled-message-tooltip-template">
+    {{t 'Edit and reschedule message' }}
+</template>
+<template id="delete-scheduled-message-tooltip-template">
+    {{t 'Delete scheduled message' }}
+</template>
+<template id="create-new-stream-tooltip-template">
+    {{t 'Create new stream' }}
+    {{tooltip_hotkey_hints "N"}}
+</template>
+<template id="toggle-subscription-tooltip-template">
+    {{t 'Toggle subscription' }}
+    {{tooltip_hotkey_hints "Shift" "S"}}
+</template>
+<template id="view-stream-tooltip-template">
+    {{t 'View stream' }}
+    {{tooltip_hotkey_hints "Shift" "V"}}
+</template>

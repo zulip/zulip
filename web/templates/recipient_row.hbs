@@ -65,14 +65,6 @@
                   {{#if topic_muted}} data-tooltip-template-id="topic-unmute-tooltip-template" aria-label="{{t 'Unmute topic' }}" {{else}} data-tooltip-template-id="topic-mute-tooltip-template" aria-label="{{t 'Mute topic' }}" {{/if}}></i>
             {{/if}}
 
-            <template id="topic-unmute-tooltip-template">
-                {{t "Unmute topic" }}
-                {{tooltip_hotkey_hints "Shift" "M"}}
-            </template>
-            <template id="topic-mute-tooltip-template">
-                {{t "Mute topic" }}
-                {{tooltip_hotkey_hints "Shift" "M"}}
-            </template>
         </span>
         <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>

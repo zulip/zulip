@@ -9,10 +9,6 @@
                 <i class="fa fa-chevron-down"></i>
             </div>
         </div>
-        <template id="scroll-to-bottom-button-tooltip-template">
-            {{t 'Scroll to bottom' }}
-            {{tooltip_hotkey_hints "End"}}
-        </template>
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
@@ -21,17 +17,6 @@
                   id="left_bar_compose_reply_button_big">
                     <span class="compose_reply_button_label">{{t 'Compose message' }}</span>
                 </button>
-                <template id="compose_reply_message_button_tooltip_template">
-                    {{t 'Reply to selected message' }}
-                    {{tooltip_hotkey_hints "R"}}
-                </template>
-                <template id="compose_reply_selected_topic_button_tooltip_template">
-                    {{t 'Reply to selected conversation' }}
-                    {{tooltip_hotkey_hints "R"}}
-                </template>
-                <template id="compose_reply_button_disabled_tooltip_template">
-                    {{t 'You are not allowed to send direct messages in this organization.' }}
-                </template>
             </span>
             <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"
@@ -39,10 +24,6 @@
                   data-tooltip-template-id="left_bar_compose_mobile_button_tooltip_template">
                     <span>+</span>
                 </button>
-                <template id="left_bar_compose_mobile_button_tooltip_template">
-                    {{t 'New message' }}
-                    {{tooltip_hotkey_hints "C"}}
-                </template>
             </span>
             <span class="new_message_button stream_button_container">
                 <button type="button" class="button small rounded compose_stream_button"
@@ -50,14 +31,6 @@
                   data-tooltip-template-id="new_topic_message_button_tooltip_template">
                     <span class="compose_stream_button_label">{{t 'New topic' }}</span>
                 </button>
-                <template id="new_topic_message_button_tooltip_template">
-                    {{t 'New topic' }}
-                    {{tooltip_hotkey_hints "C"}}
-                </template>
-                <template id="new_stream_message_button_tooltip_template">
-                    {{t 'New stream message' }}
-                    {{tooltip_hotkey_hints "C"}}
-                </template>
             </span>
             {{#unless embedded }}
             <span class="new_message_button private_button_container">
@@ -66,10 +39,6 @@
                   data-tooltip-template-id="new_direct_message_button_tooltip_template">
                     <span class="compose_private_button_label">{{t 'New direct message' }}</span>
                 </button>
-                <template id="new_direct_message_button_tooltip_template">
-                    {{t 'New direct message' }}
-                    {{tooltip_hotkey_hints "X"}}
-                </template>
             </span>
             {{/unless}}
         </div>
@@ -84,14 +53,6 @@
                             <button type="button" class="expand_composebox_button fa fa-chevron-up" aria-label="{{t 'Expand compose' }}" data-tippy-content="{{t 'Expand compose' }}"></button>
                             <button type="button" class="collapse_composebox_button fa fa-chevron-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
                             <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip_template"></button>
-                            <template id="compose_close_tooltip_template">
-                                {{t 'Cancel compose' }}
-                                {{tooltip_hotkey_hints "Esc"}}
-                            </template>
-                            <template id="compose_close_and_save_tooltip_template">
-                                {{t 'Cancel compose and save draft' }}
-                                {{tooltip_hotkey_hints "Esc"}}
-                            </template>
                         </div>
                         <div id="compose-recipient" class="order-1">
                             <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip" tabindex="0"></a>
@@ -127,14 +88,6 @@
                                             <div class="separator-line"></div>
                                             <i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>
                                         </button>
-                                        <template id="send-enter-tooltip-template">
-                                            {{t 'Send' }}
-                                            {{tooltip_hotkey_hints "Enter"}}
-                                        </template>
-                                        <template id="send-ctrl-enter-tooltip-template">
-                                            {{t 'Send' }}
-                                            {{tooltip_hotkey_hints "Ctrl" "Enter"}}
-                                        </template>
                                     </div>
                                     {{> compose_control_buttons }}
                                 </div>
@@ -164,10 +117,3 @@
         </div>
     </div>
 </div>
-
-<template id="add-global-time-tooltip">
-    <div>
-        <span>{{t "Add global time" }}</span><br/>
-        <span class="tooltip-inner-content italic">{{t "Everyone sees global times in their own time zone." }}</span>
-    </div>
-</template>
