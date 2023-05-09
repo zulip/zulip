@@ -47,12 +47,15 @@
     animation-fill-mode: forwards;
     visibility: hidden;
     }
-    :root.color-scheme-automatic #app-loading {
-    color: hsl(0, 0%, 20%);
-    }
     :root.dark-theme #app-loading {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
+    }
+    @media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic #app-loading {
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
+    }
     }
 
     .app-loading-spinner-container {
