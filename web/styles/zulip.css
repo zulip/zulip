@@ -301,7 +301,7 @@ p.n-margin {
     width: 100%;
     height: var(--header-height);
     /* Since the headers are sticky, we need non-transparent background. */
-    background-color: hsl(0deg 0% 100%);
+    background-color: #F0F0F0;
 }
 
 #top_navbar {
@@ -328,7 +328,7 @@ p.n-margin {
         color: hsl(0deg 0% 100%);
 
         &.alert-info {
-            background-color: hsl(170deg 46% 54%);
+            background-color: #007AFF;
 
             &.red {
                 background-color: hsl(0deg 46% 54%);
@@ -433,6 +433,10 @@ p.n-margin {
     background-color: hsl(0deg 0% 100%);
 }
 
+.header-main {
+    background-color: #f0f0f0;
+}
+
 .column-right {
     width: var(--right-sidebar-width);
     max-width: var(--right-sidebar-width);
@@ -519,9 +523,16 @@ p.n-margin {
         z-index: 100;
     }
 
+    .left-sidebar {
+        margin-top: var(--header-height) !important;
+        padding-top: var(--header-padding-bottom);
+    }
+
     .column-left .left-sidebar {
         width: var(--left-sidebar-width);
         padding-left: var(--left-sidebar-collapse-widget-gutter);
+        min-height: 100%;
+        background-color: #f0f0f0;
     }
 
     .column-right .right-sidebar {
@@ -531,7 +542,12 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
+        border-left: 1px solid hsl(0, 0%, 88%);
         /* We need `overflow-y: visible` for sticky headers to work. */
+    }
+
+    .column-left {
+        min-height: 100%;
     }
 }
 
@@ -2164,7 +2180,8 @@ div.focused_table {
 
 nav {
     .column-left {
-        text-align: center;
+        text-align: left;
+        padding-left: var(--left-sidebar-collapse-widget-gutter);
 
         .nav-logo {
             display: inline-block;
@@ -2587,6 +2604,8 @@ select.invite-as {
 
 #message_feed_container {
     padding-top: var(--sidebar-top);
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .screen {
@@ -2808,6 +2827,7 @@ select.invite-as {
     .app-main .column-middle {
         margin-left: 7px;
         margin-right: 7px;
+        border-left: none;
     }
 
     .header-main .column-middle {

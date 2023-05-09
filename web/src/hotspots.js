@@ -270,7 +270,7 @@ export function load_new(new_hotspots) {
     close_read_hotspots(new_hotspots);
     for (const hotspot of new_hotspots) {
         hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
-        insert_hotspot_into_DOM(hotspot);
+        // insert_hotspot_into_DOM(hotspot);
     }
 }
 
