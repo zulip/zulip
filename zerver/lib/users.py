@@ -440,6 +440,7 @@ def format_user_row(
     result = dict(
         email=row["email"],
         user_id=row["id"],
+        avatar_source=row["avatar_source"],
         avatar_version=row["avatar_version"],
         is_admin=is_admin,
         is_owner=is_owner,

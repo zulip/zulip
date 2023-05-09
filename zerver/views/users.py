@@ -23,6 +23,7 @@ from zerver.actions.user_settings import (
     check_change_bot_full_name,
     check_change_full_name,
     do_change_avatar_fields,
+    do_delete_avatar_image,
     do_regenerate_api_key,
 )
 from zerver.actions.users import (
@@ -342,6 +343,7 @@ def patch_bot_backend(
     user_profile: UserProfile,
     bot_id: int,
     full_name: Optional[str] = REQ(default=None),
+    avatar_source: Optional[str] = REQ(default=None),
     role: Optional[int] = REQ(
         default=None,
         json_validator=check_int_in(
@@ -412,7 +414,8 @@ def patch_bot_backend(
         do_update_bot_config_data(bot, config_data)
 
     if len(request.FILES) == 0:
-        pass
+        if avatar_source is not None and avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+            do_delete_avatar_image(bot, acting_user=user_profile)
     elif len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
         assert isinstance(user_file, UploadedFile)

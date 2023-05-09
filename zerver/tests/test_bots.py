@@ -1120,6 +1120,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
         self.assertTrue(os.path.exists(avatar_disk_path(profile)))
 
+        # Test if no files are uploaded and avatar_source is from Gravatar
+        result = self.client_patch(
+            f"/json/bots/{self.get_bot_user(email).id}", {"avatar_source": "G"}
+        )
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(profile.avatar_version, 3)
+
     def test_patch_bot_to_stream(self) -> None:
         self.login("hamlet")
         bot_info = {
