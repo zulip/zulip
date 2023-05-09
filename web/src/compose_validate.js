@@ -374,7 +374,7 @@ export function validate_stream_message_mentions(stream_id, $banner_container, w
             return false;
         }
 
-        if (user_acknowledged_wildcard === undefined || user_acknowledged_wildcard === false) {
+        if (!user_acknowledged_wildcard) {
             show_wildcard_warnings(stream_id, $banner_container, wildcard_mention);
 
             $("#compose-send-button").prop("disabled", false);
@@ -386,7 +386,7 @@ export function validate_stream_message_mentions(stream_id, $banner_container, w
         clear_wildcard_warnings($banner_container);
     }
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
-    user_acknowledged_wildcard = undefined;
+    user_acknowledged_wildcard = false;
 
     return true;
 }
