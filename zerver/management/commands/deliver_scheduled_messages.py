@@ -5,14 +5,10 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 
-from zerver.actions.scheduled_messages import send_scheduled_message
-from zerver.lib.exceptions import JsonableError
+from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
 from zerver.lib.logging_util import log_to_file
-from zerver.models import ScheduledMessage
 
 ## Setup ##
 logger = logging.getLogger(__name__)
@@ -31,47 +27,8 @@ Usage: ./manage.py deliver_scheduled_messages
     def handle(self, *args: Any, **options: Any) -> None:
         try:
             while True:
-                with transaction.atomic():
-                    scheduled_message = (
-                        ScheduledMessage.objects.filter(
-                            scheduled_timestamp__lte=timezone_now(),
-                            delivered=False,
-                            failed=False,
-                        )
-                        .select_for_update()
-                        .first()
-                    )
-                    if scheduled_message is not None:
-                        logger.info(
-                            "Sending scheduled message %s with date %s (sender: %s)",
-                            scheduled_message.id,
-                            scheduled_message.scheduled_timestamp,
-                            scheduled_message.sender_id,
-                        )
-                        try:
-                            send_scheduled_message(scheduled_message)
-                        except JsonableError as e:
-                            scheduled_message.failed = True
-                            scheduled_message.failure_message = e.msg
-                            scheduled_message.save(update_fields=["failed", "failure_message"])
-                            logging.info(
-                                "Failed with message: %s", scheduled_message.failure_message
-                            )
-                        except Exception:
-                            # An unexpected failure; store as a generic 500 error.
-                            scheduled_message.refresh_from_db()
-                            was_delivered = scheduled_message.delivered
-                            scheduled_message.failed = True
-                            scheduled_message.failure_message = _("Internal server error")
-                            scheduled_message.save(update_fields=["failed", "failure_message"])
-
-                            logging.exception(
-                                "Unexpected error sending scheduled message %s (sent: %s)",
-                                scheduled_message.id,
-                                was_delivered,
-                                stack_info=True,
-                            )
-                        continue
+                if try_deliver_one_scheduled_message(logger):
+                    continue
 
                 # If there's no overdue scheduled messages, go to sleep until the next minute.
                 cur_time = timezone_now()
