@@ -1010,3 +1010,7 @@ div.overlay {
         }
     }
 }
+
+.break_all_words {
+    word-break: break-all;
+}

@@ -258,7 +258,10 @@ export function initialize() {
                 const local_id = $elem.attr("data-reaction-id");
                 const message_id = rows.get_message_id(instance.reference);
                 const title = reactions.get_reaction_title_data(message_id, local_id);
-                instance.setContent(title);
+                instance.setContent(parse_html(title));
+                instance.popper
+                    .querySelector(".tippy-content > div > span")
+                    .classList.add("break_all_words");
             }
 
             const config = {attributes: false, childList: true, subtree: true};
