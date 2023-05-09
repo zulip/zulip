@@ -1840,7 +1840,7 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assert_json_error(error_result, "Invitation has already been revoked")
 
-        # Test deleting owner mutiuse_invite.
+        # Test deleting owner multiuse_invite.
         multiuse_invite = MultiuseInvite.objects.create(
             referred_by=self.example_user("desdemona"),
             realm=zulip_realm,
