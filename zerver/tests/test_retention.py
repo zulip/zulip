@@ -1073,7 +1073,7 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(0, 10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 

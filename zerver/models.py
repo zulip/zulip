@@ -4325,6 +4325,7 @@ class ScheduledMessage(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     scheduled_timestamp = models.DateTimeField(db_index=True)
     delivered = models.BooleanField(default=False)
+    delivered_message = models.ForeignKey(Message, null=True, on_delete=CASCADE)
     has_attachment = models.BooleanField(default=False, db_index=True)
 
     # Metadata for messages that failed to send when their scheduled

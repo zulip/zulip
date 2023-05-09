@@ -230,10 +230,10 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
         scheduled_message.realm,
     )
 
-    # TODO: Store the resulting message ID on the scheduled_message object.
-    do_send_messages([send_request])
+    message_id = do_send_messages([send_request])[0]
+    scheduled_message.delivered_message_id = message_id
     scheduled_message.delivered = True
-    scheduled_message.save(update_fields=["delivered"])
+    scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
     notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)
 
 
