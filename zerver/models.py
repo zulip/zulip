@@ -4295,7 +4295,7 @@ class ScheduledMessageNotificationEmail(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)
 
 
-class StreamScheduledMessageAPI(TypedDict):
+class APIScheduledStreamMessageDict(TypedDict):
     scheduled_message_id: int
     to: int
     type: str
@@ -4305,7 +4305,7 @@ class StreamScheduledMessageAPI(TypedDict):
     scheduled_delivery_timestamp: int
 
 
-class DirectScheduledMessageAPI(TypedDict):
+class APIScheduledDirectMessageDict(TypedDict):
     scheduled_message_id: int
     to: List[int]
     type: str
@@ -4353,14 +4353,14 @@ class ScheduledMessage(models.Model):
     def is_stream_message(self) -> bool:
         return self.recipient.type == Recipient.STREAM
 
-    def to_dict(self) -> Union[StreamScheduledMessageAPI, DirectScheduledMessageAPI]:
+    def to_dict(self) -> Union[APIScheduledStreamMessageDict, APIScheduledDirectMessageDict]:
         recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
 
         if recipient_type_str == "private":
             # The topic for direct messages should always be an empty string.
             assert self.topic_name() == ""
 
-            return DirectScheduledMessageAPI(
+            return APIScheduledDirectMessageDict(
                 scheduled_message_id=self.id,
                 to=recipient,
                 type=recipient_type_str,
@@ -4372,7 +4372,7 @@ class ScheduledMessage(models.Model):
         # The recipient for stream messages should always just be the unique stream ID.
         assert len(recipient) == 1
 
-        return StreamScheduledMessageAPI(
+        return APIScheduledStreamMessageDict(
             scheduled_message_id=self.id,
             to=recipient[0],
             type=recipient_type_str,

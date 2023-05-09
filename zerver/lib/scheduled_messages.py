@@ -4,9 +4,9 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import ResourceNotFoundError
 from zerver.models import (
-    DirectScheduledMessageAPI,
+    APIScheduledDirectMessageDict,
+    APIScheduledStreamMessageDict,
     ScheduledMessage,
-    StreamScheduledMessageAPI,
     UserProfile,
 )
 
@@ -22,11 +22,11 @@ def access_scheduled_message(
 
 def get_undelivered_scheduled_messages(
     user_profile: UserProfile,
-) -> List[Union[DirectScheduledMessageAPI, StreamScheduledMessageAPI]]:
+) -> List[Union[APIScheduledDirectMessageDict, APIScheduledStreamMessageDict]]:
     scheduled_messages = ScheduledMessage.objects.filter(
         sender=user_profile, delivered=False, delivery_type=ScheduledMessage.SEND_LATER
     ).order_by("scheduled_timestamp")
-    scheduled_message_dicts: List[Union[DirectScheduledMessageAPI, StreamScheduledMessageAPI]] = [
-        scheduled_message.to_dict() for scheduled_message in scheduled_messages
-    ]
+    scheduled_message_dicts: List[
+        Union[APIScheduledDirectMessageDict, APIScheduledStreamMessageDict]
+    ] = [scheduled_message.to_dict() for scheduled_message in scheduled_messages]
     return scheduled_message_dicts
