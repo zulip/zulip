@@ -71,8 +71,9 @@ $user_status_emoji_width: 24px;
         }
 
         &:hover,
-        &.highlighted_user {
+        &:focus {
             background-color: hsl(120deg 12.3% 71.4% / 38%);
+            outline: none;
         }
     }
 

@@ -467,13 +467,6 @@ test_ui("narrowing", ({mock_template}) => {
     assert.ok(topics_closed);
 });
 
-test_ui("focusout_user_filter", () => {
-    stream_list.set_event_handlers();
-    const e = {};
-    const click_handler = $(".stream-list-filter").get_on_handler("focusout");
-    click_handler(e);
-});
-
 test_ui("focus_user_filter", () => {
     stream_list.set_event_handlers();
 

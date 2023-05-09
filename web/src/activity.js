@@ -5,7 +5,6 @@ import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import {buddy_list} from "./buddy_list";
 import * as channel from "./channel";
-import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
@@ -129,7 +128,7 @@ function do_update_users_for_search() {
     // when the user is searching.
     popovers.hide_all_except_sidebars();
     build_user_sidebar();
-    user_cursor.reset();
+    user_cursor.clear();
 }
 
 const update_users_for_search = _.throttle(do_update_users_for_search, 50);
@@ -237,6 +236,7 @@ export function initialize() {
     build_user_sidebar();
 
     buddy_list.start_scroll_handler();
+    user_cursor.handle_navigation();
 
     function get_full_presence_list_update() {
         send_presence_to_server(true);
@@ -282,48 +282,21 @@ export function narrow_for_user_id(opts) {
     user_filter.clear_and_hide_search();
 }
 
-function keydown_enter_key() {
-    const user_id = user_cursor.get_key();
-    if (user_id === undefined) {
-        return;
-    }
-
+function keydown_enter_key(user_id) {
     narrow_for_user_id({user_id});
     popovers.hide_all();
 }
 
 export function set_cursor_and_filter() {
-    user_cursor = new ListCursor({
-        list: buddy_list,
-        highlight_class: "highlighted_user",
-    });
-
     user_filter = new UserSearch({
         update_list: update_users_for_search,
         reset_items: reset_users,
-        on_focus: () => user_cursor.reset(),
     });
 
-    const $input = user_filter.input_field();
-
-    $input.on("blur", () => user_cursor.clear());
-
-    keydown_util.handle({
-        $elem: $input,
-        handlers: {
-            Enter() {
-                keydown_enter_key();
-                return true;
-            },
-            ArrowUp() {
-                user_cursor.prev();
-                return true;
-            },
-            ArrowDown() {
-                user_cursor.next();
-                return true;
-            },
-        },
+    user_cursor = new ListCursor({
+        list: buddy_list,
+        $search_input: user_filter.input_field(),
+        on_select: keydown_enter_key,
     });
 }
 

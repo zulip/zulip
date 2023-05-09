@@ -794,7 +794,7 @@
     }
 
     #user_presences li:hover,
-    #user_presences li.highlighted_user {
+    #user_presences li:focus {
         background-color: hsl(136deg 25% 73% / 20%);
     }
 

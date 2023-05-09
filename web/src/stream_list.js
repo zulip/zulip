@@ -10,7 +10,6 @@ import render_subscribe_to_more_streams from "../templates/subscribe_to_more_str
 import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
-import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -616,18 +615,11 @@ export function handle_narrow_deactivated() {
 }
 
 function focus_stream_filter(e) {
-    stream_cursor.reset();
+    stream_cursor.clear();
     e.stopPropagation();
 }
 
-function keydown_enter_key() {
-    const stream_id = stream_cursor.get_key();
-
-    if (stream_id === undefined) {
-        // This can happen for empty searches, no need to warn.
-        return;
-    }
-
+function keydown_enter_key(stream_id) {
     const sub = sub_store.get(stream_id);
 
     if (sub === undefined) {
@@ -642,7 +634,7 @@ function keydown_enter_key() {
 function actually_update_streams_for_search() {
     update_streams_sidebar();
     resize.resize_page_components();
-    stream_cursor.reset();
+    stream_cursor.clear();
 }
 
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
@@ -711,6 +703,7 @@ export function set_event_handlers() {
 
     stream_cursor = new ListCursor({
         list: {
+            $container: $("#stream_filters"),
             scroll_container_sel: "#left_sidebar_scroll_container",
             find_li(opts) {
                 const stream_id = opts.key;
@@ -721,32 +714,16 @@ export function set_event_handlers() {
             prev_key: stream_list_sort.prev_stream_id,
             next_key: stream_list_sort.next_stream_id,
         },
-        highlight_class: "highlighted_stream",
+        $search_input: $(".stream-list-filter").expectOne(),
+        on_select: keydown_enter_key,
     });
 
     const $search_input = $(".stream-list-filter").expectOne();
 
-    keydown_util.handle({
-        $elem: $search_input,
-        handlers: {
-            Enter() {
-                keydown_enter_key();
-                return true;
-            },
-            ArrowUp() {
-                stream_cursor.prev();
-                return true;
-            },
-            ArrowDown() {
-                stream_cursor.next();
-                return true;
-            },
-        },
-    });
-
     $search_input.on("click", focus_stream_filter);
-    $search_input.on("focusout", () => stream_cursor.clear());
     $search_input.on("input", update_streams_for_search);
+
+    stream_cursor.handle_navigation();
 }
 
 export function searching() {
@@ -800,7 +777,7 @@ export function initiate_search() {
     }
     $filter.trigger("focus");
 
-    stream_cursor.reset();
+    stream_cursor.clear();
 }
 
 export function clear_and_hide_search() {
