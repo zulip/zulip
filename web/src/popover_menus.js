@@ -237,6 +237,9 @@ export function toggle_message_actions_menu(message) {
 }
 
 export function do_schedule_message(send_at_time) {
+    // Ensure current_time in seconds is an integer, rounded down
+    const current_time = Math.floor(Date.now() / 1000);
+
     if (overlays.is_modal_open()) {
         overlays.close_modal("send_later_modal");
     }
@@ -245,6 +248,18 @@ export function do_schedule_message(send_at_time) {
         // Convert to timestamp if this is not a timestamp.
         send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
     }
+
+    // Ensure send_at_time is always at least MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS
+    // in the future plus a 5-second buffer, to handle cases where send_at_time is very
+    // near the minimum delay
+    if (send_at_time - current_time < scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS) {
+        const buffer_in_seconds = 5;
+        send_at_time =
+            current_time +
+            scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS +
+            buffer_in_seconds;
+    }
+
     selected_send_later_timestamp = send_at_time;
     compose.finish(true);
 }

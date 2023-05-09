@@ -49,6 +49,10 @@ export function is_send_later_timestamp_missing_or_expired(
     if (!timestamp_in_seconds) {
         return true;
     }
+    // Ensure comparison of integer representations of time values,
+    // in seconds
+    timestamp_in_seconds = Math.floor(timestamp_in_seconds);
+    current_time_in_seconds = Math.floor(current_time_in_seconds);
     // Determine if the selected timestamp is less than the minimum
     // scheduled message delay
     if (timestamp_in_seconds - current_time_in_seconds < MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS) {
