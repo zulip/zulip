@@ -897,6 +897,7 @@ class RealmTest(ZulipTestCase):
             invite_required=False,
             plan_type=Realm.PLAN_TYPE_STANDARD_FREE,
             org_type=Realm.ORG_TYPES["community"]["id"],
+            enable_read_receipts=True,
         )
         self.assertEqual(realm.string_id, "realm_string_id")
         self.assertEqual(realm.name, "realm name")
@@ -906,6 +907,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["community"]["id"])
         self.assertEqual(realm.date_created, date_created)
+        self.assertEqual(realm.enable_read_receipts, True)
 
         self.assertTrue(
             RealmAuditLog.objects.filter(
