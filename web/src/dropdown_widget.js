@@ -8,7 +8,7 @@ import * as ListWidget from "./list_widget";
 import {default_popover_props} from "./popover_menus";
 import {parse_html} from "./ui_util";
 
-/* Sync with height set in zulip.css */
+/* Sync with max-height set in zulip.css */
 export const DEFAULT_DROPDOWN_HEIGHT = 200;
 const noop = () => {};
 

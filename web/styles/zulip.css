@@ -3054,7 +3054,7 @@ select.invite-as {
 
     .dropdown-list-wrapper {
         /* Sync with `height` in dropdown_widget. */
-        height: 200px;
+        max-height: 200px;
         min-width: 200px;
 
         .dropdown-list {
