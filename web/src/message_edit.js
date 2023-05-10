@@ -37,7 +37,6 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
-import { text } from "stream/consumers";
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
@@ -371,9 +370,9 @@ function show_over_limit_error(){
                 {max_length},
             ),
             compose_banner.CLASSNAMES.message_too_long,
-            $("#edit_form_banners"),
+            $(".edit_form_banners"),
         );
-        $("#message_edit_save").prop("disabled", true);
+        $(".message_edit_save").prop("disabled", true);
 }
 
 function check_message_edit_overflow_text(e, $row){
@@ -388,8 +387,8 @@ function check_message_edit_overflow_text(e, $row){
     };
 
     const hide_error_function = () => {
-        $("#compose-message_edit_save-button").prop("disabled", false);
-        $(`#edit_form_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
+        $(".message_edit_save").prop("disabled", false);
+        $(`#edit_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
     }
 
     compose_validate.check_overflow_text_helper($textarea, $indicator, text, show_error_function, hide_error_function)
