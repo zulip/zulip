@@ -134,3 +134,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
 
     return instance;
 }
+
+export function close_all() {
+    $(".flatpickr-calendar").removeClass("open");
+}
