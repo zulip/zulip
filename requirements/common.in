@@ -51,7 +51,8 @@ python-gcm
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
-https://github.com/zulip/talon/archive/137ea31ca506069f9a8bbddde0d0174f395a6893.zip#egg=talon-core==1.6.0.zulip1&subdirectory=talon-core
+# and to use a maintained cchardet fork: https://github.com/mailgun/talon/pull/233
+https://github.com/zulip/talon/archive/5529af43ff5172ff30c1a7b99111a68dcd997810.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
 css-inline
