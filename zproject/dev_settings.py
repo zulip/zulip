@@ -47,6 +47,8 @@ FAKE_EMAIL_DOMAIN = "zulipdev.com"
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = ['https://*.practicechat.app']
+
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
 AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
