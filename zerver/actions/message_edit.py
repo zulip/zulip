@@ -837,7 +837,7 @@ def do_update_message(
                 target_topic_user_profile_to_visibility_policy[
                     user_profile_with_policy
                 ] = UserTopic.VisibilityPolicy.INHERIT
-            elif user_profile not in orig_topic_user_profile_to_visibility_policy:
+            elif user_profile_with_policy not in orig_topic_user_profile_to_visibility_policy:
                 orig_topic_user_profile_to_visibility_policy[
                     user_profile_with_policy
                 ] = UserTopic.VisibilityPolicy.INHERIT
@@ -917,11 +917,12 @@ def do_update_message(
                 )
             else:
                 # This corresponds to the case when messages are moved
-                # to a stream-topic pair that didn't exist.
-                if new_visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
+                # to a stream-topic pair that didn't exist. There can
+                # still be UserTopic rows for the stream-topic pair
+                # that didn't exist if the messages in that topic had
+                # been deleted.
+                if new_visibility_policy == target_topic_visibility_policy:
                     # This avoids unnecessary db operations and INFO logs.
-                    # As INHERIT is the default visibility_policy in the new
-                    # stream-topic pair for users.
                     continue
                 bulk_do_set_user_topic_visibility_policy(
                     user_profiles,
