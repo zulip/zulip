@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-02 18:58+0000\n"
+"POT-Creation-Date: 2023-05-10 21:27+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: FaZang, 2022\n"
 "Language-Team: Chinese Simplified (http://app.transifex.com/zulip/zulip/language/zh-Hans/)\n"
@@ -265,7 +265,8 @@ msgid ""
 "                        "
 msgstr ""
 
-#: templates/500.html:4 templates/500.html:21 zerver/middleware.py:433
+#: templates/500.html:4 templates/500.html:21
+#: zerver/actions/scheduled_messages.py:276 zerver/middleware.py:433
 msgid "Internal server error"
 msgstr "服务器内部错误"
 
@@ -883,29 +884,29 @@ msgstr "还没有收到邮件？ 点击<a href=\"#\" id=\"resend_email_link\">�
 msgid "Just in case, take a look at your Spam folder."
 msgstr "也有可能在您的垃圾邮件夹中"
 
-#: templates/zerver/app/index.html:118
+#: templates/zerver/app/index.html:121
 msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
 msgstr ""
 
-#: templates/zerver/app/index.html:145
+#: templates/zerver/app/index.html:148
 msgid "Unable to connect to Zulip."
 msgstr "无法连接到 Zulip。"
 
-#: templates/zerver/app/index.html:146
+#: templates/zerver/app/index.html:149
 msgid "Updates may be delayed."
 msgstr "更新可能会延迟。"
 
-#: templates/zerver/app/index.html:147
+#: templates/zerver/app/index.html:150
 msgid "Retrying soon…"
 msgstr "即将重试…"
 
-#: templates/zerver/app/index.html:148
+#: templates/zerver/app/index.html:151
 msgid "Try now."
 msgstr "立即连接"
 
-#: templates/zerver/app/index.html:223 templates/zerver/app/index.html:225
+#: templates/zerver/app/index.html:226 templates/zerver/app/index.html:228
 msgid "Messages"
 msgstr "消息"
 
@@ -2889,7 +2890,7 @@ msgstr "注册"
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} 刚刚注册了 Zulip。 （总计：{user_count}）"
 
-#: zerver/actions/create_user.py:218
+#: zerver/actions/create_user.py:221
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} 接受了您加入 Zulip 的邀请！"
@@ -3112,6 +3113,7 @@ msgid "Invalid data type for stream"
 msgstr "频道的数据类型无效"
 
 #: zerver/actions/message_send.py:1013 zerver/actions/message_send.py:1023
+#: zerver/actions/scheduled_messages.py:44
 msgid "Invalid data type for recipients"
 msgstr "收件人的数据类型无效"
 
@@ -3165,8 +3167,20 @@ msgstr "反应已经存在"
 msgid "A custom emoji with this name already exists."
 msgstr "自定义表情名称已经存在"
 
-#: zerver/actions/scheduled_messages.py:90
+#: zerver/actions/scheduled_messages.py:33
+msgid "Invalid data type for stream ID"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:48
+msgid "Recipient list may only contain user IDs"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:137
 msgid "Scheduled message was already sent"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:205
+msgid "Scheduled send time has already passed."
 msgstr ""
 
 #: zerver/actions/streams.py:836
@@ -3595,7 +3609,7 @@ msgid "Must be an organization member"
 msgstr "必须是社群成员"
 
 #: zerver/lib/exceptions.py:256 zerver/views/invite.py:70
-#: zerver/views/invite.py:131 zerver/views/invite.py:177
+#: zerver/views/invite.py:129 zerver/views/invite.py:175
 msgid "Must be an organization administrator"
 msgstr "必须是社群管理员"
 
@@ -4257,7 +4271,7 @@ msgstr "无效的机器人类型"
 msgid "Invalid interface type"
 msgstr "无效的接口类型"
 
-#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4583
+#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4633
 msgid "Invalid user ID: {}"
 msgstr "无效的用户 ID：{}"
 
@@ -4589,43 +4603,43 @@ msgstr "自定义表情"
 msgid "Zulip extra emoji"
 msgstr "Zulip额外表情"
 
-#: zerver/models.py:4586
+#: zerver/models.py:4636
 msgid "User with ID {} is deactivated"
 msgstr "ID 为 {} 的用户已停用"
 
-#: zerver/models.py:4589
+#: zerver/models.py:4639
 msgid "User with ID {} is a bot"
 msgstr "ID 为 {} 的用户是机器人"
 
-#: zerver/models.py:4629
+#: zerver/models.py:4679
 msgid "List of options"
 msgstr "选项列表"
 
-#: zerver/models.py:4632
+#: zerver/models.py:4682
 msgid "Person picker"
 msgstr "用户选择"
 
-#: zerver/models.py:4644
+#: zerver/models.py:4694
 msgid "Short text"
 msgstr "短文本"
 
-#: zerver/models.py:4645
+#: zerver/models.py:4695
 msgid "Long text"
 msgstr "长文本"
 
-#: zerver/models.py:4646
+#: zerver/models.py:4696
 msgid "Date picker"
 msgstr "日期选择"
 
-#: zerver/models.py:4647
+#: zerver/models.py:4697
 msgid "Link"
 msgstr "链接"
 
-#: zerver/models.py:4650
+#: zerver/models.py:4700
 msgid "External account"
 msgstr "外部帐户"
 
-#: zerver/models.py:4655
+#: zerver/models.py:4705
 msgid "Pronouns"
 msgstr ""
 
@@ -4742,25 +4756,21 @@ msgstr "未知热点：{}"
 msgid "You must specify at least one email address."
 msgstr "必须指定至少一个邮箱地址"
 
-#: zerver/views/invite.py:74
-msgid "You must specify at least one stream for invitees to join."
-msgstr "必须为被邀请者指定至少一个要订阅的频道"
-
-#: zerver/views/invite.py:84
+#: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr "ID为 {}的频道不存在，邀请未被发送"
 
-#: zerver/views/invite.py:123 zerver/views/invite.py:126
-#: zerver/views/invite.py:145 zerver/views/invite.py:148
-#: zerver/views/invite.py:167 zerver/views/invite.py:172
+#: zerver/views/invite.py:121 zerver/views/invite.py:124
+#: zerver/views/invite.py:143 zerver/views/invite.py:146
+#: zerver/views/invite.py:165 zerver/views/invite.py:170
 msgid "No such invitation"
 msgstr "没有这个邀请"
 
-#: zerver/views/invite.py:153
+#: zerver/views/invite.py:151
 msgid "Invitation has already been revoked"
 msgstr ""
 
-#: zerver/views/invite.py:206
+#: zerver/views/invite.py:204
 msgid "Invalid stream ID {}. No invites were sent."
 msgstr ""
 
@@ -4945,7 +4955,7 @@ msgstr "您必须上传一个Logo"
 msgid "Invalid playground"
 msgstr "无效的代码游乐场"
 
-#: zerver/views/scheduled_messages.py:57
+#: zerver/views/scheduled_messages.py:58
 msgid "Scheduled delivery time must be in the future."
 msgstr ""
 

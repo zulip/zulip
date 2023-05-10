@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-02 18:58+0000\n"
+"POT-Creation-Date: 2023-05-10 21:27+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Iorek Byrnison <bojanmaksimovic@gmail.com>, 2023\n"
 "Language-Team: Serbian (http://app.transifex.com/zulip/zulip/language/sr/)\n"
@@ -257,7 +257,8 @@ msgid ""
 "                        "
 msgstr "\n                        Ако ова грешка није очекивана, можете\n                        <a href=\"mailto:%(support_email)s\">контактирати подршку</a>.\n                        "
 
-#: templates/500.html:4 templates/500.html:21 zerver/middleware.py:433
+#: templates/500.html:4 templates/500.html:21
+#: zerver/actions/scheduled_messages.py:276 zerver/middleware.py:433
 msgid "Internal server error"
 msgstr "Интерна грешка сервера"
 
@@ -875,29 +876,29 @@ msgstr "И даље нема е-поруке? Можемо је <a href=\"#\" id
 msgid "Just in case, take a look at your Spam folder."
 msgstr "За сваки случај, погледајте у фолдеру нежељене поште."
 
-#: templates/zerver/app/index.html:118
+#: templates/zerver/app/index.html:121
 msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
 msgstr "Уколико се ова порука не уклони, покушајте да <a id=\"reload-lnk\">поново учитате</a> страницу."
 
-#: templates/zerver/app/index.html:145
+#: templates/zerver/app/index.html:148
 msgid "Unable to connect to Zulip."
 msgstr "Није могуће повезивање на Зулип."
 
-#: templates/zerver/app/index.html:146
+#: templates/zerver/app/index.html:149
 msgid "Updates may be delayed."
 msgstr "Исправке су можда одложене."
 
-#: templates/zerver/app/index.html:147
+#: templates/zerver/app/index.html:150
 msgid "Retrying soon…"
 msgstr "Ускоро покушавам поново..."
 
-#: templates/zerver/app/index.html:148
+#: templates/zerver/app/index.html:151
 msgid "Try now."
 msgstr "Покушајте сада."
 
-#: templates/zerver/app/index.html:223 templates/zerver/app/index.html:225
+#: templates/zerver/app/index.html:226 templates/zerver/app/index.html:228
 msgid "Messages"
 msgstr "Поруке"
 
@@ -2881,7 +2882,7 @@ msgstr "регистрације"
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} се управо регистровао на Зулип. (укупно: {user_count})"
 
-#: zerver/actions/create_user.py:218
+#: zerver/actions/create_user.py:221
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} је прихватио ваш позив да се придружи Зулипу!"
@@ -3104,6 +3105,7 @@ msgid "Invalid data type for stream"
 msgstr "Неисправан тип података за ток"
 
 #: zerver/actions/message_send.py:1013 zerver/actions/message_send.py:1023
+#: zerver/actions/scheduled_messages.py:44
 msgid "Invalid data type for recipients"
 msgstr "Неисправан тип података за примаоце"
 
@@ -3157,8 +3159,20 @@ msgstr "Реаговање већ постоји."
 msgid "A custom emoji with this name already exists."
 msgstr "Већ постоји прилагођени емотикон са овим именом."
 
-#: zerver/actions/scheduled_messages.py:90
+#: zerver/actions/scheduled_messages.py:33
+msgid "Invalid data type for stream ID"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:48
+msgid "Recipient list may only contain user IDs"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:137
 msgid "Scheduled message was already sent"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:205
+msgid "Scheduled send time has already passed."
 msgstr ""
 
 #: zerver/actions/streams.py:836
@@ -3587,7 +3601,7 @@ msgid "Must be an organization member"
 msgstr "Морате бити члан организације"
 
 #: zerver/lib/exceptions.py:256 zerver/views/invite.py:70
-#: zerver/views/invite.py:131 zerver/views/invite.py:177
+#: zerver/views/invite.py:129 zerver/views/invite.py:175
 msgid "Must be an organization administrator"
 msgstr "Морате бити администратор организације"
 
@@ -4249,7 +4263,7 @@ msgstr "Неисправан тип бота"
 msgid "Invalid interface type"
 msgstr "Неисправан тип интерфејса"
 
-#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4583
+#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4633
 msgid "Invalid user ID: {}"
 msgstr "Неисправан ИД корисника: {}"
 
@@ -4581,43 +4595,43 @@ msgstr "Прилагођени емотикон"
 msgid "Zulip extra emoji"
 msgstr "Зулип додатни емотикон"
 
-#: zerver/models.py:4586
+#: zerver/models.py:4636
 msgid "User with ID {} is deactivated"
 msgstr "Корисник са ИД {} је декативиран"
 
-#: zerver/models.py:4589
+#: zerver/models.py:4639
 msgid "User with ID {} is a bot"
 msgstr "Корисник са ИД {} је бот"
 
-#: zerver/models.py:4629
+#: zerver/models.py:4679
 msgid "List of options"
 msgstr "Листа опција"
 
-#: zerver/models.py:4632
+#: zerver/models.py:4682
 msgid "Person picker"
 msgstr "Бирач особе"
 
-#: zerver/models.py:4644
+#: zerver/models.py:4694
 msgid "Short text"
 msgstr "Кратки текст"
 
-#: zerver/models.py:4645
+#: zerver/models.py:4695
 msgid "Long text"
 msgstr "Дуги текст"
 
-#: zerver/models.py:4646
+#: zerver/models.py:4696
 msgid "Date picker"
 msgstr "Бирач датума"
 
-#: zerver/models.py:4647
+#: zerver/models.py:4697
 msgid "Link"
 msgstr "Веза"
 
-#: zerver/models.py:4650
+#: zerver/models.py:4700
 msgid "External account"
 msgstr "Екстерни налог"
 
-#: zerver/models.py:4655
+#: zerver/models.py:4705
 msgid "Pronouns"
 msgstr "Заменице"
 
@@ -4734,25 +4748,21 @@ msgstr ""
 msgid "You must specify at least one email address."
 msgstr "Морате навести барем једну адресу е-поште."
 
-#: zerver/views/invite.py:74
-msgid "You must specify at least one stream for invitees to join."
-msgstr "Морате навести барем један ток којем ће позвани приступити."
-
-#: zerver/views/invite.py:84
+#: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr "Не постоји ток са ИД: {}. Ниједна позивница није послата."
 
-#: zerver/views/invite.py:123 zerver/views/invite.py:126
-#: zerver/views/invite.py:145 zerver/views/invite.py:148
-#: zerver/views/invite.py:167 zerver/views/invite.py:172
+#: zerver/views/invite.py:121 zerver/views/invite.py:124
+#: zerver/views/invite.py:143 zerver/views/invite.py:146
+#: zerver/views/invite.py:165 zerver/views/invite.py:170
 msgid "No such invitation"
 msgstr "Нема такве позивнице"
 
-#: zerver/views/invite.py:153
+#: zerver/views/invite.py:151
 msgid "Invitation has already been revoked"
 msgstr "Позивница је већ опозвана"
 
-#: zerver/views/invite.py:206
+#: zerver/views/invite.py:204
 msgid "Invalid stream ID {}. No invites were sent."
 msgstr "Неисправан ИД тока {}. Ниједна позивница није послата."
 
@@ -4937,7 +4947,7 @@ msgstr "Морате поставити тачно један лого."
 msgid "Invalid playground"
 msgstr "Неисправно игралиште"
 
-#: zerver/views/scheduled_messages.py:57
+#: zerver/views/scheduled_messages.py:58
 msgid "Scheduled delivery time must be in the future."
 msgstr ""
 
