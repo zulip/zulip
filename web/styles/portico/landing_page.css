@@ -222,6 +222,23 @@ button {
     &.show {
         opacity: 1;
     }
+
+    &.why-page,
+    &.case-studies-page {
+        .padded-content {
+            padding-top: 0; /* No padded content on portico why and case-studies pages... */
+        }
+
+        .inner-content {
+            padding-top: 50px; /* ...instead, pad inner content to aid with proper scroll positions on URL fragments. */
+        }
+    }
+
+    :target {
+        /* Keep elements targeted by URL fragments visible below the
+        floating top menu; coordinate the value here with the menu's height. */
+        scroll-margin-top: 60px;
+    }
 }
 
 .portico-landing.features-app {
@@ -2044,7 +2061,7 @@ button {
 
 .portico-landing.why-page .photo-description {
     position: relative;
-    top: -40px;
+    top: 10px; /* Place in padding gap below photo */
     height: 0;
 
     font-size: 0.8em;
