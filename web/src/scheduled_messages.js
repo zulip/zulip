@@ -63,6 +63,12 @@ function sort_scheduled_messages_data() {
     );
 }
 
+function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
+    $(
+        `.message_scheduled_success_compose_banner[data-scheduled-message-id=${scheduled_message_id}]`,
+    ).hide();
+}
+
 export function add_scheduled_messages(scheduled_messages) {
     scheduled_messages_data.push(...scheduled_messages);
     sort_scheduled_messages_data();
@@ -74,6 +80,7 @@ export function remove_scheduled_message(scheduled_message_id) {
     );
     if (msg_index !== undefined) {
         scheduled_messages_data.splice(msg_index, 1);
+        hide_scheduled_message_success_compose_banner(scheduled_message_id);
     }
 }
 
