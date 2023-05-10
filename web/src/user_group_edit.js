@@ -199,10 +199,14 @@ export function is_editing_group(desired_group_id) {
 }
 
 export function handle_deleted_group(group_id) {
-    if (!is_editing_group(group_id)) {
+    if (!overlays.groups_open()) {
         return;
     }
-    open_right_panel_empty();
+
+    if (is_editing_group(group_id)) {
+        open_right_panel_empty();
+    }
+    user_group_settings_ui.redraw_user_group_list();
 }
 
 export function open_group_edit_panel_for_row(group_row) {
