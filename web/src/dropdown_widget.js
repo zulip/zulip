@@ -16,7 +16,7 @@ export function setup(tippy_props, get_options, item_click_callback, dropdown_pr
     // Define all possible `dropdown_props` here so that they are easy to track.
     const on_show_callback = dropdown_props.on_show_callback || noop;
     const on_exit_with_escape_callback = dropdown_props.on_exit_with_escape_callback || noop;
-    // Used focus the `target` after dropdown is closed. This is important since the dropdown is
+    // Used to focus the `target` after dropdown is closed. This is important since the dropdown is
     // appended to `body` and hence `body` is focused when the dropdown is closed, which makes
     // it hard for the user to get focus back to the `target`.
     const focus_target_on_hidden = dropdown_props.focus_target_on_hidden || true;
