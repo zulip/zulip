@@ -89,7 +89,7 @@ function enable_group_edit_settings(group) {
         return;
     }
     const $edit_container = get_edit_container(group);
-    $edit_container.find("#open_group_info_modal").show();
+    $edit_container.find(".group-header .button-group").show();
     $edit_container.find(".member-list .actions").show();
     user_group_ui_updates.update_add_members_elements(group);
 }
@@ -99,7 +99,7 @@ function disable_group_edit_settings(group) {
         return;
     }
     const $edit_container = get_edit_container(group);
-    $edit_container.find("#open_group_info_modal").hide();
+    $edit_container.find(".group-header .button-group").hide();
     $edit_container.find(".member-list .actions").hide();
     user_group_ui_updates.update_add_members_elements(group);
 }
