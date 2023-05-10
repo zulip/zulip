@@ -22,6 +22,7 @@ mock_esm("../src/spectators", {
 set_global("window", {
     location: {
         replace() {},
+        href: "http://example.com",
     },
 });
 
@@ -68,7 +69,7 @@ function test(label, f) {
 test("post", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.post({});
+            channel.post({url: "/json/endpoint"});
         },
 
         check_ajax_options(options) {
@@ -85,7 +86,7 @@ test("post", () => {
 test("patch", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.patch({});
+            channel.patch({url: "/json/endpoint"});
         },
 
         check_ajax_options(options) {
@@ -103,7 +104,7 @@ test("patch", () => {
 test("put", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.put({});
+            channel.put({url: "/json/endpoint"});
         },
 
         check_ajax_options(options) {
@@ -120,7 +121,7 @@ test("put", () => {
 test("delete", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.del({});
+            channel.del({url: "/json/endpoint"});
         },
 
         check_ajax_options(options) {
@@ -137,7 +138,7 @@ test("delete", () => {
 test("get", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.get({});
+            channel.get({url: "/json/endpoint"});
         },
 
         check_ajax_options(options) {
@@ -211,6 +212,7 @@ test("patch_with_form_data", () => {
         run_code() {
             channel.patch({
                 data,
+                url: "/json/endpoint",
                 processData: false,
             });
             assert.ok(appended);
@@ -231,7 +233,7 @@ test("authentication_error_401_is_spectator", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
         run_code() {
-            channel.post({});
+            channel.post({url: "/json/endpoint"});
         },
 
         // is_spectator = true
@@ -250,7 +252,7 @@ test("authentication_error_401_password_change_in_progress", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
         run_code() {
-            channel.post({});
+            channel.post({url: "/json/endpoint"});
         },
 
         // is_spectator = true
@@ -273,7 +275,7 @@ test("authentication_error_401_not_spectator", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
         run_code() {
-            channel.post({});
+            channel.post({url: "/json/endpoint"});
         },
 
         // is_spectator = false
@@ -296,7 +298,7 @@ test("reload_on_403_error", () => {
         },
 
         run_code() {
-            channel.post({});
+            channel.post({url: "/json/endpoint"});
         },
 
         check_ajax_options(options) {
@@ -319,7 +321,7 @@ test("unexpected_403_response", () => {
         },
 
         run_code() {
-            channel.post({});
+            channel.post({url: "/json/endpoint"});
         },
 
         check_ajax_options(options) {

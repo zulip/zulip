@@ -25,6 +25,11 @@ export function normalize_path(path: string, is_portico = false): string {
     return path;
 }
 
+export function shouldCreateSpanForRequest(url: string): boolean {
+    const parsed = new URL(url, window.location.href);
+    return !["/json/events", "/json/users/me/presence"].includes(parsed.pathname);
+}
+
 if (page_params.server_sentry_dsn) {
     const url_matches = [/^\//, new RegExp("^" + _.escapeRegExp(page_params.webpack_public_path))];
     if (page_params.realm_uri !== undefined) {
@@ -76,10 +81,7 @@ if (page_params.server_sentry_dsn) {
                         name: normalize_path(location.pathname, sentry_key === "www"),
                     };
                 },
-                shouldCreateSpanForRequest(url) {
-                    const parsed = new URL(url, window.location.href);
-                    return !["/json/events", "/json/users/me/presence"].includes(parsed.pathname);
-                },
+                shouldCreateSpanForRequest,
             }),
         ],
         allowUrls: url_matches,
