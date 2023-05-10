@@ -186,18 +186,21 @@ test("message_booleans_parity", () => {
     assert_bool_match(["wildcard_mentioned"], {
         mentioned: true,
         mentioned_me_directly: false,
+        wildcard_mentioned: true,
         alerted: false,
     });
 
     assert_bool_match(["mentioned"], {
         mentioned: true,
         mentioned_me_directly: true,
+        wildcard_mentioned: false,
         alerted: false,
     });
 
     assert_bool_match(["has_alert_word"], {
         mentioned: false,
         mentioned_me_directly: false,
+        wildcard_mentioned: false,
         alerted: true,
     });
 });
@@ -247,24 +250,28 @@ test("update_booleans", () => {
     // First, test fields that we do actually want to update.
     message.mentioned = false;
     message.mentioned_me_directly = false;
+    message.wildcard_mentioned = false;
     message.alerted = false;
 
     let flags = ["mentioned", "has_alert_word", "read"];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, true);
+    assert.equal(message.wildcard_mentioned, false);
     assert.equal(message.alerted, true);
 
     flags = ["wildcard_mentioned", "unread"];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.wildcard_mentioned, true);
 
     flags = ["read"];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, false);
     assert.equal(message.mentioned_me_directly, false);
     assert.equal(message.alerted, false);
+    assert.equal(message.wildcard_mentioned, false);
 
     // Make sure we don't muck with unread.
     message.unread = false;
