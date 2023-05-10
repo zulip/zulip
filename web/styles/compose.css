@@ -806,6 +806,14 @@ a.compose_control_button.hide {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+
+        .stream-privacy-type-icon {
+            font-size: 13px;
+            width: 13px;
+            height: 13px;
+            position: relative;
+            top: 2px;
+        }
     }
 
     .dropdown-list-body .list_item a {
