@@ -670,7 +670,12 @@ export function user_info_popover_manage_menu_handle_keyboard(key) {
 
 export function show_sender_info() {
     const $message = $(".selected_message");
-    const $sender = $message.find(".sender_info_hover");
+    let $sender = $message.find(".inline_profile_picture");
+    if ($sender.length === 0) {
+        // Messages without an avatar have an invisible message_sender
+        // element that's roughly in the right place.
+        $sender = $message.find(".message_sender");
+    }
 
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
