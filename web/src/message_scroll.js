@@ -3,7 +3,6 @@ import _ from "lodash";
 
 import * as compose_banner from "./compose_banner";
 import * as hash_util from "./hash_util";
-import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
@@ -30,44 +29,6 @@ let keyboard_triggered_current_scroll = false;
 
 export function mark_keyboard_triggered_current_scroll() {
     keyboard_triggered_current_scroll = true;
-}
-
-let loading_older_messages_indicator_showing = false;
-let loading_newer_messages_indicator_showing = false;
-
-export function show_loading_older() {
-    if (!loading_older_messages_indicator_showing) {
-        loading.make_indicator($("#loading_older_messages_indicator"), {abs_positioned: true});
-        loading_older_messages_indicator_showing = true;
-    }
-}
-
-export function hide_loading_older() {
-    if (loading_older_messages_indicator_showing) {
-        loading.destroy_indicator($("#loading_older_messages_indicator"));
-        loading_older_messages_indicator_showing = false;
-    }
-}
-
-export function show_loading_newer() {
-    if (!loading_newer_messages_indicator_showing) {
-        $(".bottom-messages-logo").show();
-        loading.make_indicator($("#loading_newer_messages_indicator"), {abs_positioned: true});
-        loading_newer_messages_indicator_showing = true;
-    }
-}
-
-export function hide_loading_newer() {
-    if (loading_newer_messages_indicator_showing) {
-        $(".bottom-messages-logo").hide();
-        loading.destroy_indicator($("#loading_newer_messages_indicator"));
-        loading_newer_messages_indicator_showing = false;
-    }
-}
-
-export function hide_indicators() {
-    hide_loading_older();
-    hide_loading_newer();
 }
 
 export function show_history_limit_notice() {

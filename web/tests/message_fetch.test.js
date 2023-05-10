@@ -41,11 +41,13 @@ const stream_list = mock_esm("../src/stream_list", {
     maybe_scroll_narrow_into_view() {},
 });
 mock_esm("../src/message_scroll", {
+    update_top_of_narrow_notices() {},
+});
+mock_esm("../src/message_feed_loading", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
-    update_top_of_narrow_notices() {},
 });
 set_global("document", "document-stub");
 
