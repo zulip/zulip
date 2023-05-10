@@ -85,6 +85,14 @@ export function setup(tippy_props, get_options, item_click_callback, dropdown_pr
                     return $popper.find(`.list-item[data-unique-id="${last_item.unique_id}"]`);
                 }
 
+                function render_all_items_and_focus_last_item() {
+                    // List widget doesn't render all items by default, so we need to render all
+                    // the items and focus on the last element.
+                    const list_items = list_widget.get_current_list();
+                    list_widget.render(list_items.length);
+                    trigger_element_focus(last_item());
+                }
+
                 switch (e.key) {
                     case "Enter":
                         if (e.target === $search_input.get(0)) {
@@ -124,8 +132,7 @@ export function setup(tippy_props, get_options, item_click_callback, dropdown_pr
                                 trigger_element_focus($search_input);
                                 break;
                             case $search_input.get(0):
-                                // Can't focus on the last element since it is
-                                // most likely not rendered.
+                                render_all_items_and_focus_last_item();
                                 break;
                             default:
                                 trigger_element_focus($(e.target).prev());
