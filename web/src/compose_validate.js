@@ -578,35 +578,34 @@ export function check_overflow_text_helper(
     indicator,
     text,
     show_error_function,
-    hide_error_function
-){
+    hide_error_function,
+) {
     // helper function for generalising the code responsible for
     // showing and hiding errors on the compose box.
     // this is also used by the edit message UI
     const max_length = page_params.max_message_length;
 
     // show error depending on text length
-    if(text.length > max_length){
-        indicator.addClass('over_limit');
-        textarea.addClass('over_limit');
+    if (text.length > max_length) {
+        indicator.addClass("over_limit");
+        textarea.addClass("over_limit");
         indicator.text(text.length + "/" + max_length);
-        
+
         show_error_function();
     } // show limit when nearing max_length
-    else if(text.length > 0.9 * max_length){
-        indicator.removeClass('over_limit');
-        textarea.removeClass('over_limit');
+    else if (text.length > 0.9 * max_length) {
+        indicator.removeClass("over_limit");
+        textarea.removeClass("over_limit");
         indicator.text(text.length + "/" + max_length);
-        
+
         hide_error_function();
-    }
-    else {
+    } else {
         indicator.text("");
         textarea.removeClass("over_limit");
-        
+
         hide_error_function();
     }
-    
+
     return text.length;
 }
 
@@ -618,8 +617,8 @@ export function check_overflow_text() {
     const $indicator = $("#compose_limit_indicator");
     const $textarea = $("#compose-textarea");
     const max_length = page_params.max_message_length;
-    
-    const show_error_function = () => { 
+
+    const show_error_function = () => {
         compose_banner.show_error_message(
             $t(
                 {
@@ -632,14 +631,20 @@ export function check_overflow_text() {
             $("#compose_banners"),
         );
         $("#compose-send-button").prop("disabled", true);
-    }
+    };
 
-    const hide_error_function = () => { 
+    const hide_error_function = () => {
         $("#compose-send-button").prop("disabled", false);
         $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
-    }
+    };
 
-    return check_overflow_text_helper($textarea, $indicator, text, show_error_function, hide_error_function);
+    return check_overflow_text_helper(
+        $textarea,
+        $indicator,
+        text,
+        show_error_function,
+        hide_error_function,
+    );
 }
 
 export function validate_message_length() {

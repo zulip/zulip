@@ -358,26 +358,25 @@ function handle_message_row_edit_keydown(e) {
     }
 }
 
-function show_over_limit_error(){
-    const max_length =  page_params.max_message_length;
+function show_over_limit_error() {
+    const max_length = page_params.max_message_length;
 
     compose_banner.show_error_message(
-            $t(
-                {
-                    defaultMessage:
-                        "Message length shouldn't be greater than {max_length} characters.",
-                },
-                {max_length},
-            ),
-            compose_banner.CLASSNAMES.message_too_long,
-            $(".edit_form_banners"),
-        );
-        $(".message_edit_save").prop("disabled", true);
+        $t(
+            {
+                defaultMessage: "Message length shouldn't be greater than {max_length} characters.",
+            },
+            {max_length},
+        ),
+        compose_banner.CLASSNAMES.message_too_long,
+        $(".edit_form_banners"),
+    );
+    $(".message_edit_save").prop("disabled", true);
 }
 
-function check_message_edit_overflow_text(e, $row){
+function check_message_edit_overflow_text(e, $row) {
     // on change event. Checks if the text limit is exceeded inside the edit message textarea
-    
+
     const $indicator = $row.find(".message_edit_limit_indicator");
     const $textarea = $row.find(".message_edit_content");
     const text = $textarea.val().trimEnd();
@@ -389,9 +388,15 @@ function check_message_edit_overflow_text(e, $row){
     const hide_error_function = () => {
         $(".message_edit_save").prop("disabled", false);
         $(`#edit_banners .${CSS.escape(compose_banner.CLASSNAMES.message_too_long)}`).remove();
-    }
+    };
 
-    compose_validate.check_overflow_text_helper($textarea, $indicator, text, show_error_function, hide_error_function)
+    compose_validate.check_overflow_text_helper(
+        $textarea,
+        $indicator,
+        text,
+        show_error_function,
+        hide_error_function,
+    );
 }
 
 function handle_inline_topic_edit_keydown(e) {
@@ -515,7 +520,6 @@ function edit_message($row, raw_content) {
     $form.on("input propertychange", (e) => {
         check_message_edit_overflow_text(e, $row);
     });
-    
 
     $form
         .find(".message-edit-feature-group .video_link")
