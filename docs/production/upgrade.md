@@ -484,6 +484,52 @@ instructions for other supported platforms.
    18.04](#upgrading-from-ubuntu-1604-xenial-to-1804-bionic), so
    that you are running a supported operating system.
 
+### Upgrading from Debian 11 to 12
+
+1. Upgrade your server to the latest `7.x` release.
+
+2. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/stop-server
+   /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+   ```
+
+3. Follow [Debian's instructions to upgrade the OS][bookworm-upgrade].
+
+   [bookworm-upgrade]: https://www.debian.org/releases/bookworm/amd64/release-notes/ch-upgrading.html
+
+   When prompted for you how to upgrade configuration
+   files for services that Zulip manages like Redis, PostgreSQL,
+   nginx, and memcached, the best choice is `N` to keep the
+   currently installed version. But it's not important; the next
+   step will re-install Zulip's configuration in any case.
+
+4. As root, run the following steps to regenerate configurations
+   for services used by Zulip:
+
+   ```bash
+   apt remove upstart -y
+   /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+   ```
+
+5. Reinstall the current version of Zulip, which among other things
+   will recompile Zulip's Python module dependencies for your new
+   version of Python:
+
+   ```bash
+   rm -rf /srv/zulip-venv-cache/*
+   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+       /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
+   ```
+
+   This will finish by restarting your Zulip server; you should now
+   be able to navigate to its URL and confirm everything is working
+   correctly.
+
+6. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
+
 ### Upgrading from Debian 10 to 11
 
 1. Upgrade your server to the latest `5.x` release. You can only

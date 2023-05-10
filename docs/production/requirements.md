@@ -7,6 +7,7 @@ To run a Zulip server, you will need:
   - Ubuntu 20.04
   - Ubuntu 22.04
   - Debian 11
+  - Debian 12
 - A supported CPU architecture:
   - x86-64
   - aarch64
@@ -36,7 +37,7 @@ on issues you'll encounter](install-existing-server.md).
 
 #### Operating system
 
-Ubuntu 20.04, Ubuntu 22.04, and Debian 11
+Ubuntu 20.04, Ubuntu 22.04, Debian 11, and Debian 12
 are supported for running Zulip in production. You can also
 run Zulip on other platforms that support Docker using
 [docker-zulip][docker-zulip-homepage].

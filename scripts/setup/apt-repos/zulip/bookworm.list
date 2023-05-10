@@ -1,0 +1,2 @@
+deb http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main
+deb-src http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main
