@@ -1,6 +1,5 @@
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
-import {Filter} from "./filter";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as unread from "./unread";
@@ -15,7 +14,7 @@ export class MessageListData {
     // See also MessageList and MessageListView, which are important
     // to actually display a message list.
 
-    constructor({excludes_muted_topics, filter = new Filter()}) {
+    constructor({excludes_muted_topics, filter}) {
         // The Filter object defines which messages match the narrow,
         // and defines most of the configuration for the MessageListData.
         this.filter = filter;

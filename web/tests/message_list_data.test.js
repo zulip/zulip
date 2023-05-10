@@ -39,6 +39,7 @@ function assert_msg_ids(messages, msg_ids) {
 run_test("basics", () => {
     const mld = new MessageListData({
         excludes_muted_topics: false,
+        filter: new Filter(),
     });
 
     assert.equal(mld.is_search(), false);
@@ -205,6 +206,7 @@ run_test("muting", () => {
     // and keep `_all_items` up-to-date.
     mld = new MessageListData({
         excludes_muted_topics: true,
+        filter: new Filter(),
     });
     assert.deepEqual(mld._all_items, []);
 
@@ -239,6 +241,7 @@ run_test("muting", () => {
     // filtering the messages.
     mld = new MessageListData({
         excludes_muted_topics: true,
+        filter: new Filter(),
     });
 
     const orig_messages = [
@@ -286,6 +289,7 @@ run_test("muting", () => {
 run_test("errors", () => {
     const mld = new MessageListData({
         excludes_muted_topics: false,
+        filter: new Filter(),
     });
     assert.equal(mld.get("bogus-id"), undefined);
 

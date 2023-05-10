@@ -135,7 +135,9 @@ run_test("basics", ({override}) => {
 });
 
 run_test("prev_next", () => {
-    const list = new MessageList({});
+    const list = new MessageList({
+        filter: new Filter(),
+    });
 
     assert.equal(list.prev(), undefined);
     assert.equal(list.next(), undefined);
@@ -174,7 +176,9 @@ run_test("prev_next", () => {
 });
 
 run_test("message_range", () => {
-    const list = new MessageList({});
+    const list = new MessageList({
+        filter: new Filter(),
+    });
 
     const messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
     list.append(messages, true);
@@ -188,7 +192,9 @@ run_test("message_range", () => {
 });
 
 run_test("nth_most_recent_id", () => {
-    const list = new MessageList({});
+    const list = new MessageList({
+        filter: new Filter(),
+    });
     list.append([{id: 10}, {id: 20}, {id: 30}]);
     assert.equal(list.nth_most_recent_id(1), 30);
     assert.equal(list.nth_most_recent_id(2), 20);
@@ -197,7 +203,9 @@ run_test("nth_most_recent_id", () => {
 });
 
 run_test("change_message_id", () => {
-    const list = new MessageList({});
+    const list = new MessageList({
+        filter: new Filter(),
+    });
     list.data._add_to_hash([
         {id: 10.5, content: "good job"},
         {id: 20.5, content: "ok!"},
@@ -218,7 +226,9 @@ run_test("change_message_id", () => {
 });
 
 run_test("last_sent_by_me", () => {
-    const list = new MessageList({});
+    const list = new MessageList({
+        filter: new Filter(),
+    });
     const items = [
         {
             id: 1,
@@ -241,7 +251,9 @@ run_test("last_sent_by_me", () => {
 });
 
 run_test("local_echo", () => {
-    let list = new MessageList({});
+    let list = new MessageList({
+        filter: new Filter(),
+    });
     list.append([
         {id: 10},
         {id: 20},
@@ -271,7 +283,9 @@ run_test("local_echo", () => {
     assert.equal(list.closest_id(54), 50);
     assert.equal(list.closest_id(58), 60);
 
-    list = new MessageList({});
+    list = new MessageList({
+        filter: new Filter(),
+    });
     list.append([
         {id: 10},
         {id: 20},
@@ -311,7 +325,9 @@ run_test("local_echo", () => {
 });
 
 run_test("bookend", ({override}) => {
-    const list = new MessageList({});
+    const list = new MessageList({
+        filter: new Filter(),
+    });
 
     list.view.clear_trailing_bookend = noop;
     list.narrowed = true;
