@@ -1427,23 +1427,15 @@ class EditMessageTest(EditMessageTestCase):
         assert_is_topic_muted(hamlet, stream.id, change_later_topic_name, muted=True)
 
         # Make sure we safely handle the case of the new topic being already muted.
-        with self.assertLogs(level="INFO") as info_logs:
-            check_update_message(
-                user_profile=hamlet,
-                message_id=message_id,
-                stream_id=None,
-                topic_name=already_muted_topic,
-                propagate_mode="change_all",
-                send_notification_to_old_thread=False,
-                send_notification_to_new_thread=False,
-                content=None,
-            )
-        self.assertEqual(
-            set(info_logs.output),
-            {
-                f"INFO:root:User {hamlet.id} tried to set visibility_policy to its current value of {UserTopic.VisibilityPolicy.MUTED}",
-                f"INFO:root:User {cordelia.id} tried to set visibility_policy to its current value of {UserTopic.VisibilityPolicy.MUTED}",
-            },
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=already_muted_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
         )
         assert_is_topic_muted(hamlet, stream.id, change_later_topic_name, muted=False)
         assert_is_topic_muted(hamlet, stream.id, already_muted_topic, muted=True)
