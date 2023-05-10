@@ -3077,6 +3077,13 @@ select.invite-as {
         }
     }
 
+    .dropdown-list-item-common-styles {
+        padding: 3px 10px 3px 8px;
+        font-weight: 400;
+        line-height: 20px;
+        white-space: normal;
+    }
+
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -3093,12 +3100,7 @@ select.invite-as {
 
             .list-item a {
                 display: block;
-                padding: 3px 10px 3px 8px;
-                clear: both;
-                font-weight: 400;
-                line-height: 20px;
                 color: hsl(0deg 0% 20%);
-                white-space: normal;
 
                 .stream-privacy-type-icon {
                     font-size: 13px;
@@ -3118,5 +3120,10 @@ select.invite-as {
                 }
             }
         }
+    }
+
+    .no-dropdown-items {
+        color: hsl(0deg 0% 60%);
+        display: none;
     }
 }

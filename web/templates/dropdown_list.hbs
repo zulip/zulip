@@ -1,6 +1,6 @@
 {{#with item}}
     <li class="list-item" role="presentation" data-unique-id="{{unique_id}}" data-name="{{name}}" tabindex="0">
-        <a role="menuitem">
+        <a class="dropdown-list-item-common-styles" role="menuitem">
             {{#if stream}}
                 {{> inline_decorated_stream_name stream=stream show_colored_icon=true}}
             {{else if is_direct_message}}
