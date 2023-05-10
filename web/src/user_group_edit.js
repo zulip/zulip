@@ -163,10 +163,32 @@ export function setup_group_settings(node) {
     show_settings_for(node);
 }
 
+export function setup_group_list_tab_hash(tab_key_value) {
+    /*
+        We do not update the hash based on tab switches if
+        a group is currently being edited.
+    */
+    if (user_group_settings_ui.get_active_data().id !== undefined) {
+        return;
+    }
+
+    if (tab_key_value === "all-groups") {
+        browser_history.update("#groups/all");
+    } else if (tab_key_value === "your-groups") {
+        browser_history.update("#groups/your");
+    } else {
+        blueslip.debug(`Unknown tab_key_value: ${tab_key_value} for groups overlay.`);
+    }
+}
+
 function open_right_panel_empty() {
     $(".group-row.active").removeClass("active");
     user_group_settings_ui.show_user_group_settings_pane.nothing_selected();
-    browser_history.update("#groups");
+    const tab_key = $(".user-groups-container")
+        .find("div.ind-tab.selected")
+        .first()
+        .attr("data-tab-key");
+    setup_group_list_tab_hash(tab_key);
 }
 
 export function handle_deleted_group(group_id) {
