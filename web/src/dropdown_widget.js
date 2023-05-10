@@ -9,7 +9,7 @@ import {default_popover_props} from "./popover_menus";
 import {parse_html} from "./ui_util";
 
 /* Sync with max-height set in zulip.css */
-export const DEFAULT_DROPDOWN_HEIGHT = 200;
+export const DEFAULT_DROPDOWN_HEIGHT = 210;
 const noop = () => {};
 
 export function setup(tippy_props, get_options, item_click_callback, dropdown_props = {}) {
