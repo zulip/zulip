@@ -441,10 +441,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: You have no direct messages including Example Bot yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
-        ),
+        empty_narrow_html("translated: You have no direct messages including Example Bot yet."),
     );
 
     // sending direct messages enabled
@@ -454,10 +451,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            "translated: You have no direct messages including Alice Smith yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
-        ),
+        empty_narrow_html("translated: You have no direct messages including Alice Smith yet."),
     );
 
     set_filter([["dm-including", me.email]]);
