@@ -835,6 +835,11 @@ export function initialize() {
                 overlays.open_modal("send_later_modal", {
                     autoremove: true,
                     on_show() {
+                        instance._interval = setInterval(
+                            scheduled_messages.update_send_later_options,
+                            scheduled_messages.SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
+                        );
+
                         const $send_later_modal = $("#send_later_modal");
                         $send_later_modal.on("keydown", (e) => {
                             if (e.key === "Enter") {
@@ -876,6 +881,9 @@ export function initialize() {
                                 e.stopPropagation();
                             },
                         );
+                    },
+                    on_hide() {
+                        clearInterval(instance._interval);
                     },
                 });
             });
