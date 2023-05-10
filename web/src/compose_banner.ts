@@ -110,7 +110,7 @@ export function clear_unmute_topic_notifications(): void {
 }
 
 export function clear_all(): void {
-    $(`#compose_banners`).empty();
+    scroll_util.get_content_element($(`#compose_banners`)).empty();
 }
 
 export function show_error_message(
