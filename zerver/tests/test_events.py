@@ -621,8 +621,8 @@ class NormalActionsTest(BaseAction):
         )
 
         # Verify move topic to different stream.
-
-        # Send 2 messages in "test" topic.
+        self.subscribe(self.user_profile, "Verona")
+        self.subscribe(self.user_profile, "Denmark")
         self.send_stream_message(self.user_profile, "Verona")
         message_id = self.send_stream_message(self.user_profile, "Verona")
         message = Message.objects.get(id=message_id)
@@ -656,6 +656,48 @@ class NormalActionsTest(BaseAction):
             is_stream_message=True,
             has_content=False,
             has_topic=False,
+            has_new_stream_id=True,
+            is_embedded_update_only=False,
+        )
+
+        # Move both stream and topic, with update_message_flags
+        # excluded from event types.
+        self.send_stream_message(self.user_profile, "Verona")
+        message_id = self.send_stream_message(self.user_profile, "Verona")
+        message = Message.objects.get(id=message_id)
+        stream = get_stream("Denmark", self.user_profile.realm)
+        propagate_mode = "change_all"
+        prior_mention_user_ids = set()
+
+        events = self.verify_action(
+            lambda: do_update_message(
+                self.user_profile,
+                message,
+                stream,
+                "final_topic",
+                propagate_mode,
+                True,
+                True,
+                None,
+                None,
+                set(),
+                None,
+            ),
+            state_change_expected=True,
+            # Skip "update_message_flags" to exercise the code path
+            # where raw_unread_msgs does not exist in the state.
+            event_types=["message", "update_message"],
+            # There are 3 events generated for this action
+            # * update_message: For updating existing messages
+            # * 2 new message events: Breadcrumb messages in the new and old topics.
+            num_events=3,
+        )
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=True,
+            has_content=False,
+            has_topic=True,
             has_new_stream_id=True,
             is_embedded_update_only=False,
         )
