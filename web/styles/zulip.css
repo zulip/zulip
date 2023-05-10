@@ -2219,7 +2219,7 @@ nav {
 
 #loading_older_messages_indicator,
 #loading_newer_messages_indicator {
-    margin: 10px;
+    margin: 1px 10px;
 }
 
 #loading_older_messages_indicator_box_container,
@@ -2238,7 +2238,7 @@ nav {
 }
 
 #page_loading_indicator {
-    margin: 10px auto;
+    margin: 1px auto;
 }
 
 #page_loading_indicator_box_container {
@@ -2602,7 +2602,7 @@ select.invite-as {
 }
 
 #message_feed_container {
-    padding-top: var(--sidebar-top);
+    padding-top: var(--header-height);
     padding-left: 10px;
     padding-right: 10px;
 }
