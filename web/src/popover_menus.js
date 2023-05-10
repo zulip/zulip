@@ -235,9 +235,7 @@ export function toggle_message_actions_menu(message) {
 }
 
 export function do_schedule_message(send_at_time) {
-    if (overlays.is_modal_open()) {
-        overlays.close_modal("send_later_modal");
-    }
+    overlays.close_modal_if_open("send_later_modal");
 
     if (!Number.isInteger(send_at_time)) {
         // Convert to timestamp if this is not a timestamp.

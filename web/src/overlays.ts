@@ -323,6 +323,27 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
     Micromodal.close(modal_id);
 }
 
+export function close_modal_if_open(modal_id: string): void {
+    if (modal_id === undefined) {
+        blueslip.error("Undefined id was passed into close_modal_if_open");
+        return;
+    }
+
+    if (!is_modal_open()) {
+        return;
+    }
+
+    const $micromodal = $(".micromodal.modal--open");
+    const active_modal_id = CSS.escape(`${CSS.escape($micromodal.attr("id") ?? "")}`);
+    if (active_modal_id === `${CSS.escape(modal_id)}`) {
+        Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
+    } else {
+        blueslip.info(
+            `${active_modal_id} is the currently active modal and ${modal_id} is already closed.`,
+        );
+    }
+}
+
 export function close_active_modal(): void {
     if (!is_modal_open()) {
         blueslip.warn("close_active_modal() called without checking is_modal_open()");
