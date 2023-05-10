@@ -104,7 +104,7 @@ function disable_group_edit_settings(group) {
     user_group_ui_updates.update_add_members_elements(group);
 }
 
-export function handle_member_edit_event(group_id) {
+export function handle_member_edit_event(group_id, user_ids) {
     if (!overlays.groups_open()) {
         return;
     }
@@ -113,6 +113,31 @@ export function handle_member_edit_event(group_id) {
     // update members list.
     const members = [...group.members];
     user_group_edit_members.update_member_list_widget(group_id, members);
+
+    // update display of group-rows on left panel.
+    // We need this update only if your-groups tab is active
+    // and current user is among the affect users as in that
+    // case the group widget list need to be updated and show
+    // or remove the group-row on the left panel accordingly.
+    const tab_key = user_group_settings_ui.get_active_data().$tabs.first().attr("data-tab-key");
+    if (tab_key === "your-groups" && user_ids.includes(people.my_current_user_id())) {
+        user_group_settings_ui.redraw_user_group_list();
+    }
+
+    // update display of check-mark.
+    if (user_group_settings_ui.is_group_already_present(group)) {
+        const is_member = user_groups.is_user_in_group(group_id, people.my_current_user_id());
+        const $sub_unsub_button = user_group_settings_ui
+            .row_for_group_id(group_id)
+            .find(".sub_unsub_button");
+        if (is_member) {
+            $sub_unsub_button.removeClass("disabled");
+            $sub_unsub_button.addClass("checked");
+        } else {
+            $sub_unsub_button.removeClass("checked");
+            $sub_unsub_button.addClass("disabled");
+        }
+    }
 
     // update_settings buttons.
     if (can_edit(group_id)) {
