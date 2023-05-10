@@ -96,12 +96,6 @@
     }
 }
 
-.create_user_group_button {
-    position: relative;
-    top: 7px;
-    margin: 0 7px 0 0;
-}
-
 #create_user_group_description,
 #create_stream_description {
     width: calc(100% - 15px);
@@ -483,15 +477,6 @@ h4.user_group_setting_subsection_title {
     -webkit-overflow-scrolling: touch;
     height: calc(100% - 85px);
     width: 100%;
-}
-
-.user-groups-list {
-    /*
-        This height rule is temporary for this preparatory commit and
-        will be removed as we add other components widgets in groups list
-        and its styling similar to streams list.
-    */
-    height: calc(100% - 42px) !important;
 }
 
 #clear_search_stream_name,
