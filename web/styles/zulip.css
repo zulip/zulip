@@ -532,7 +532,6 @@ p.n-margin {
         width: var(--left-sidebar-width);
         padding-left: var(--left-sidebar-collapse-widget-gutter);
         min-height: 100%;
-        background-color: #f0f0f0;
     }
 
     .column-right .right-sidebar {
