@@ -162,7 +162,7 @@ export function get_custom_profile_field_data(user, field, field_types) {
 }
 
 export function hide_user_profile() {
-    overlays.close_modal("user-profile-modal");
+    overlays.close_modal_if_open("user-profile-modal");
 }
 
 function initialize_user_type_fields(user) {
