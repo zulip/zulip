@@ -69,6 +69,7 @@ if (page_params.server_sentry_dsn) {
         ["call GET /json/events", 0],
         // These requests are high-volume and do not add much data
         ["call POST /json/users/me/presence", 0.01],
+        ["call POST /json/typing", 0.05],
     ]);
 
     Sentry.init({
