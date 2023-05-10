@@ -5,7 +5,7 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
-import {normalize_path} from "./sentry";
+import {normalize_path, shouldCreateSpanForRequest} from "./sentry";
 import * as spectators from "./spectators";
 
 let password_change_in_progress = false;
@@ -37,7 +37,7 @@ function call(args) {
         },
     };
     let span;
-    if (args.type === "GET" && args.url === "/json/events") {
+    if (!shouldCreateSpanForRequest(args.url)) {
         // Leave the span unset, so we don't record a transaction
     } else {
         if (!existing_span) {
