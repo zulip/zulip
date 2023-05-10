@@ -28,6 +28,7 @@ check_version() {
 }
 
 if ! check_version 2>/dev/null; then
+    set -x
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
