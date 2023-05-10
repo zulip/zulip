@@ -1,4 +1,13 @@
 {{! Client-side Mustache template for rendering subscriptions in the "invite user" form.}}
+{{#if show_select_default_streams_option}}
+<div class="select_default_streams new-style">
+    <label class="checkbox display-block">
+        <input type="checkbox" id="invite_select_default_streams" checked="checked" />
+        <span></span>
+        {{t 'Default streams for this organization'}}
+    </label>
+</div>
+{{/if}}
 <div class="invite-stream-controls">
     <button class="btn btn-link" type="button" id="invite_check_all_button">{{t "Check all" }}</button> |
     <button class="btn btn-link" type="button" id="invite_uncheck_all_button">{{t "Uncheck all" }}</button>
