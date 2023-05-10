@@ -304,9 +304,9 @@ p.n-margin {
     background-color: #F0F0F0;
 }
 
-#top_navbar {
+/* #top_navbar {
     border-bottom: 1px solid hsl(0deg 0% 0% / 20%);
-}
+} */
 
 #navbar_alerts_wrapper {
     font-size: 1rem;
@@ -542,7 +542,7 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
-        border-left: 1px solid hsl(0, 0%, 88%);
+        border-left: 1px solid hsl(0deg 0% 88%);
         /* We need `overflow-y: visible` for sticky headers to work. */
     }
 
@@ -2187,7 +2187,7 @@ nav {
             display: inline-block;
             vertical-align: top;
             margin-top: 8px;
-            height: 25px;
+            height: 27px;
             max-width: 200px;
         }
     }
