@@ -207,7 +207,11 @@ function redraw_left_panel(tab_name) {
             user_groups.get_user_groups_of_user(people.my_current_user_id()),
         );
     }
-    // TODO: If possible persist selection of active group in the left panel.
+}
+
+export function redraw_user_group_list() {
+    const tab_name = get_active_data().$tabs.first().attr("data-tab-key");
+    redraw_left_panel(tab_name);
 }
 
 export function switch_group_tab(tab_name) {
