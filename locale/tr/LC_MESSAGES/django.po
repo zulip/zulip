@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-02 18:58+0000\n"
+"POT-Creation-Date: 2023-05-10 21:27+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Oktay, 2022\n"
 "Language-Team: Turkish (http://app.transifex.com/zulip/zulip/language/tr/)\n"
@@ -264,7 +264,8 @@ msgid ""
 "                        "
 msgstr ""
 
-#: templates/500.html:4 templates/500.html:21 zerver/middleware.py:433
+#: templates/500.html:4 templates/500.html:21
+#: zerver/actions/scheduled_messages.py:276 zerver/middleware.py:433
 msgid "Internal server error"
 msgstr "Dahili sunucu hatası"
 
@@ -882,29 +883,29 @@ msgstr "Hala e-posta almadınız mı? <a href=\"#\" id=\"resend_email_link\">Yen
 msgid "Just in case, take a look at your Spam folder."
 msgstr "Her ihtimale karşı, istenmeyen e-posta klasörüne bakın."
 
-#: templates/zerver/app/index.html:118
+#: templates/zerver/app/index.html:121
 msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
 msgstr ""
 
-#: templates/zerver/app/index.html:145
+#: templates/zerver/app/index.html:148
 msgid "Unable to connect to Zulip."
 msgstr "Zulip'e bağlanılanamadı."
 
-#: templates/zerver/app/index.html:146
+#: templates/zerver/app/index.html:149
 msgid "Updates may be delayed."
 msgstr "Güncellemeler gecikebilir."
 
-#: templates/zerver/app/index.html:147
+#: templates/zerver/app/index.html:150
 msgid "Retrying soon…"
 msgstr "Yakından tekrar denenecek..."
 
-#: templates/zerver/app/index.html:148
+#: templates/zerver/app/index.html:151
 msgid "Try now."
 msgstr "Şimdi dene."
 
-#: templates/zerver/app/index.html:223 templates/zerver/app/index.html:225
+#: templates/zerver/app/index.html:226 templates/zerver/app/index.html:228
 msgid "Messages"
 msgstr "İletiler"
 
@@ -2888,7 +2889,7 @@ msgstr "kaydolmalar"
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} Zulip'e giriş yaptı. (toplam: {user_count})"
 
-#: zerver/actions/create_user.py:218
+#: zerver/actions/create_user.py:221
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} Zulip'e katılma davetinizi kabul etti!"
@@ -3111,6 +3112,7 @@ msgid "Invalid data type for stream"
 msgstr "Kanal için geçersiz veri tipi"
 
 #: zerver/actions/message_send.py:1013 zerver/actions/message_send.py:1023
+#: zerver/actions/scheduled_messages.py:44
 msgid "Invalid data type for recipients"
 msgstr "Alıcılar için geçersiz veri tipi"
 
@@ -3164,8 +3166,20 @@ msgstr "Tepki halihazırda mevcut."
 msgid "A custom emoji with this name already exists."
 msgstr "Bu isimle bir özel emoji hali hazırda mevcut."
 
-#: zerver/actions/scheduled_messages.py:90
+#: zerver/actions/scheduled_messages.py:33
+msgid "Invalid data type for stream ID"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:48
+msgid "Recipient list may only contain user IDs"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:137
 msgid "Scheduled message was already sent"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:205
+msgid "Scheduled send time has already passed."
 msgstr ""
 
 #: zerver/actions/streams.py:836
@@ -3594,7 +3608,7 @@ msgid "Must be an organization member"
 msgstr "Organizasyon üyesi olmak zorunda"
 
 #: zerver/lib/exceptions.py:256 zerver/views/invite.py:70
-#: zerver/views/invite.py:131 zerver/views/invite.py:177
+#: zerver/views/invite.py:129 zerver/views/invite.py:175
 msgid "Must be an organization administrator"
 msgstr "Organizasyon yöneticisi olmalı"
 
@@ -4256,7 +4270,7 @@ msgstr "Geçersiz bot türü"
 msgid "Invalid interface type"
 msgstr "Geçersiz arayüz türü"
 
-#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4583
+#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4633
 msgid "Invalid user ID: {}"
 msgstr "Geçersiz kullanıcı ID: {}"
 
@@ -4588,43 +4602,43 @@ msgstr "Özel emoji"
 msgid "Zulip extra emoji"
 msgstr "Zulip ekstra emoji"
 
-#: zerver/models.py:4586
+#: zerver/models.py:4636
 msgid "User with ID {} is deactivated"
 msgstr "{} Kimliğine sahip kullanıcı devre dışı bırakıldı"
 
-#: zerver/models.py:4589
+#: zerver/models.py:4639
 msgid "User with ID {} is a bot"
 msgstr "{} Kimliğine sahip kullanıcı bir bottur"
 
-#: zerver/models.py:4629
+#: zerver/models.py:4679
 msgid "List of options"
 msgstr "Seçenekler listesi"
 
-#: zerver/models.py:4632
+#: zerver/models.py:4682
 msgid "Person picker"
 msgstr "Kişi seçicisi"
 
-#: zerver/models.py:4644
+#: zerver/models.py:4694
 msgid "Short text"
 msgstr "Kısa metin"
 
-#: zerver/models.py:4645
+#: zerver/models.py:4695
 msgid "Long text"
 msgstr "Uzun metin"
 
-#: zerver/models.py:4646
+#: zerver/models.py:4696
 msgid "Date picker"
 msgstr "Tarih seçicisi"
 
-#: zerver/models.py:4647
+#: zerver/models.py:4697
 msgid "Link"
 msgstr "Link"
 
-#: zerver/models.py:4650
+#: zerver/models.py:4700
 msgid "External account"
 msgstr "Dış hesap"
 
-#: zerver/models.py:4655
+#: zerver/models.py:4705
 msgid "Pronouns"
 msgstr ""
 
@@ -4741,25 +4755,21 @@ msgstr "Bilinmeyen hotspot: {}"
 msgid "You must specify at least one email address."
 msgstr "En az bir e-posta adresi belirtmelisiniz."
 
-#: zerver/views/invite.py:74
-msgid "You must specify at least one stream for invitees to join."
-msgstr "Davet edilenlerin katılması için en az bir kanal belirtmelisiniz."
-
-#: zerver/views/invite.py:84
+#: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr "{} Kimlik numaralı kanal bulunmamaktadır. Davetler gönderilmedi."
 
-#: zerver/views/invite.py:123 zerver/views/invite.py:126
-#: zerver/views/invite.py:145 zerver/views/invite.py:148
-#: zerver/views/invite.py:167 zerver/views/invite.py:172
+#: zerver/views/invite.py:121 zerver/views/invite.py:124
+#: zerver/views/invite.py:143 zerver/views/invite.py:146
+#: zerver/views/invite.py:165 zerver/views/invite.py:170
 msgid "No such invitation"
 msgstr "Böyle bir davetiye yok"
 
-#: zerver/views/invite.py:153
+#: zerver/views/invite.py:151
 msgid "Invitation has already been revoked"
 msgstr ""
 
-#: zerver/views/invite.py:206
+#: zerver/views/invite.py:204
 msgid "Invalid stream ID {}. No invites were sent."
 msgstr ""
 
@@ -4944,7 +4954,7 @@ msgstr "Sadece bir logo yükleyebilirsin."
 msgid "Invalid playground"
 msgstr "Hatalı oyun alanı"
 
-#: zerver/views/scheduled_messages.py:57
+#: zerver/views/scheduled_messages.py:58
 msgid "Scheduled delivery time must be in the future."
 msgstr ""
 

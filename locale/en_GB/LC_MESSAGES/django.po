@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-02 18:58+0000\n"
+"POT-Creation-Date: 2023-05-10 21:27+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: David Wood <heavy.spot0252@fuligin.ink>, 2022-2023\n"
 "Language-Team: English (United Kingdom) (http://app.transifex.com/zulip/zulip/language/en_GB/)\n"
@@ -258,7 +258,8 @@ msgid ""
 "                        "
 msgstr "\n                        If this error is unexpected, you can\n                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n                        "
 
-#: templates/500.html:4 templates/500.html:21 zerver/middleware.py:433
+#: templates/500.html:4 templates/500.html:21
+#: zerver/actions/scheduled_messages.py:276 zerver/middleware.py:433
 msgid "Internal server error"
 msgstr "Internal server error"
 
@@ -876,29 +877,29 @@ msgstr "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it<
 msgid "Just in case, take a look at your Spam folder."
 msgstr "Just in case, take a look at your Spam folder."
 
-#: templates/zerver/app/index.html:118
+#: templates/zerver/app/index.html:121
 msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
 msgstr "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the page."
 
-#: templates/zerver/app/index.html:145
+#: templates/zerver/app/index.html:148
 msgid "Unable to connect to Zulip."
 msgstr "Unable to connect to Zulip."
 
-#: templates/zerver/app/index.html:146
+#: templates/zerver/app/index.html:149
 msgid "Updates may be delayed."
 msgstr "Updates may be delayed."
 
-#: templates/zerver/app/index.html:147
+#: templates/zerver/app/index.html:150
 msgid "Retrying soon…"
 msgstr "Retrying soon…"
 
-#: templates/zerver/app/index.html:148
+#: templates/zerver/app/index.html:151
 msgid "Try now."
 msgstr "Try now."
 
-#: templates/zerver/app/index.html:223 templates/zerver/app/index.html:225
+#: templates/zerver/app/index.html:226 templates/zerver/app/index.html:228
 msgid "Messages"
 msgstr "Messages"
 
@@ -2882,7 +2883,7 @@ msgstr "signups"
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} just signed up for Zulip. (total: {user_count})"
 
-#: zerver/actions/create_user.py:218
+#: zerver/actions/create_user.py:221
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} accepted your invitation to join Zulip!"
@@ -3105,6 +3106,7 @@ msgid "Invalid data type for stream"
 msgstr "Invalid data type for stream"
 
 #: zerver/actions/message_send.py:1013 zerver/actions/message_send.py:1023
+#: zerver/actions/scheduled_messages.py:44
 msgid "Invalid data type for recipients"
 msgstr "Invalid data type for recipients"
 
@@ -3158,9 +3160,21 @@ msgstr "Reaction already exists."
 msgid "A custom emoji with this name already exists."
 msgstr "A custom emoji with this name already exists."
 
-#: zerver/actions/scheduled_messages.py:90
+#: zerver/actions/scheduled_messages.py:33
+msgid "Invalid data type for stream ID"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:48
+msgid "Recipient list may only contain user IDs"
+msgstr ""
+
+#: zerver/actions/scheduled_messages.py:137
 msgid "Scheduled message was already sent"
 msgstr "Scheduled message was already sent"
+
+#: zerver/actions/scheduled_messages.py:205
+msgid "Scheduled send time has already passed."
+msgstr ""
 
 #: zerver/actions/streams.py:836
 #, python-brace-format
@@ -3588,7 +3602,7 @@ msgid "Must be an organization member"
 msgstr "Must be an organisation member"
 
 #: zerver/lib/exceptions.py:256 zerver/views/invite.py:70
-#: zerver/views/invite.py:131 zerver/views/invite.py:177
+#: zerver/views/invite.py:129 zerver/views/invite.py:175
 msgid "Must be an organization administrator"
 msgstr "Must be an organisation administrator"
 
@@ -4250,7 +4264,7 @@ msgstr "Invalid bot type"
 msgid "Invalid interface type"
 msgstr "Invalid interface type"
 
-#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4583
+#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4633
 msgid "Invalid user ID: {}"
 msgstr "Invalid user ID: {}"
 
@@ -4582,43 +4596,43 @@ msgstr "Custom emoji"
 msgid "Zulip extra emoji"
 msgstr "Zulip extra emoji"
 
-#: zerver/models.py:4586
+#: zerver/models.py:4636
 msgid "User with ID {} is deactivated"
 msgstr "User with ID {} is deactivated"
 
-#: zerver/models.py:4589
+#: zerver/models.py:4639
 msgid "User with ID {} is a bot"
 msgstr "User with ID {} is a bot"
 
-#: zerver/models.py:4629
+#: zerver/models.py:4679
 msgid "List of options"
 msgstr "List of options"
 
-#: zerver/models.py:4632
+#: zerver/models.py:4682
 msgid "Person picker"
 msgstr "Person picker"
 
-#: zerver/models.py:4644
+#: zerver/models.py:4694
 msgid "Short text"
 msgstr "Short text"
 
-#: zerver/models.py:4645
+#: zerver/models.py:4695
 msgid "Long text"
 msgstr "Long text"
 
-#: zerver/models.py:4646
+#: zerver/models.py:4696
 msgid "Date picker"
 msgstr "Date picker"
 
-#: zerver/models.py:4647
+#: zerver/models.py:4697
 msgid "Link"
 msgstr "Link"
 
-#: zerver/models.py:4650
+#: zerver/models.py:4700
 msgid "External account"
 msgstr "External account"
 
-#: zerver/models.py:4655
+#: zerver/models.py:4705
 msgid "Pronouns"
 msgstr "Pronouns"
 
@@ -4735,25 +4749,21 @@ msgstr "Unknown hotspot: {}"
 msgid "You must specify at least one email address."
 msgstr "You must specify at least one email address."
 
-#: zerver/views/invite.py:74
-msgid "You must specify at least one stream for invitees to join."
-msgstr "You must specify at least one stream for invitees to join."
-
-#: zerver/views/invite.py:84
+#: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr "Stream does not exist with id: {}. No invites were sent."
 
-#: zerver/views/invite.py:123 zerver/views/invite.py:126
-#: zerver/views/invite.py:145 zerver/views/invite.py:148
-#: zerver/views/invite.py:167 zerver/views/invite.py:172
+#: zerver/views/invite.py:121 zerver/views/invite.py:124
+#: zerver/views/invite.py:143 zerver/views/invite.py:146
+#: zerver/views/invite.py:165 zerver/views/invite.py:170
 msgid "No such invitation"
 msgstr "No such invitation"
 
-#: zerver/views/invite.py:153
+#: zerver/views/invite.py:151
 msgid "Invitation has already been revoked"
 msgstr "Invitation has already been revoked"
 
-#: zerver/views/invite.py:206
+#: zerver/views/invite.py:204
 msgid "Invalid stream ID {}. No invites were sent."
 msgstr "Invalid stream ID {}. No invites were sent."
 
@@ -4938,7 +4948,7 @@ msgstr "You must upload exactly one logo."
 msgid "Invalid playground"
 msgstr "Invalid playground"
 
-#: zerver/views/scheduled_messages.py:57
+#: zerver/views/scheduled_messages.py:58
 msgid "Scheduled delivery time must be in the future."
 msgstr ""
 
