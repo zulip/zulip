@@ -1216,14 +1216,14 @@ def apply_event(
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
         # the unread_msgs data if the topic of an unread message changed.
-        if "new_stream_id" in event:
+        if "raw_unread_msgs" in state and "new_stream_id" in event:
             stream_dict = state["raw_unread_msgs"]["stream_dict"]
             stream_id = event["new_stream_id"]
             for message_id in event["message_ids"]:
                 if message_id in stream_dict:
                     stream_dict[message_id]["stream_id"] = stream_id
 
-        if TOPIC_NAME in event:
+        if "raw_unread_msgs" in state and TOPIC_NAME in event:
             stream_dict = state["raw_unread_msgs"]["stream_dict"]
             topic = event[TOPIC_NAME]
             for message_id in event["message_ids"]:
@@ -1275,7 +1275,7 @@ def apply_event(
         if "raw_unread_msgs" in state and event["flag"] == "read" and event["op"] == "add":
             for remove_id in event["messages"]:
                 remove_message_id_from_unread_mgs(state["raw_unread_msgs"], remove_id)
-        if event["flag"] == "read" and event["op"] == "remove":
+        if "raw_unread_msgs" in state and event["flag"] == "read" and event["op"] == "remove":
             for message_id_str, message_details in event["message_details"].items():
                 add_message_to_unread_msgs(
                     user_profile.id,
