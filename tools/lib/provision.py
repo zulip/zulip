@@ -78,6 +78,8 @@ vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "11":  # bullseye
     POSTGRESQL_VERSION = "13"
+elif vendor == "debian" and os_version == "12":  # bookworm
+    POSTGRESQL_VERSION = "15"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
 elif vendor == "ubuntu" and os_version == "21.10":  # impish
@@ -159,7 +161,7 @@ COMMON_YUM_DEPENDENCIES = [
 ]
 
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version in []:
+if vendor == "debian" and os_version in ["12"] or vendor == "ubuntu" and os_version in []:
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -180,7 +182,7 @@ elif "debian" in os_families():
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
-    if vendor == "debian" and os_version == "11":
+    if vendor == "debian":
         DEBIAN_DEPENDENCIES.remove("libappindicator1")
         DEBIAN_DEPENDENCIES.append("libgroonga0")
 

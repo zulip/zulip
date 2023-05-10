@@ -51,7 +51,7 @@ a proxy to access the internet.)
   [GitHub account](#step-0-set-up-git--github).
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 22.04
-- **Debian**: 11
+- **Debian**: 11 or 12
 - **Fedora**: tested for 36
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.

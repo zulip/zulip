@@ -144,6 +144,11 @@ jobs:
             os: bullseye
             extra-args: --test-custom-db
 
+          - docker_image: zulip/ci:bookworm
+            name: Debian 12 production install
+            os: bookworm
+            extra-args: ""
+
     name: ${{ matrix.name  }}
     container:
       image: ${{ matrix.docker_image }}

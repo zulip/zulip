@@ -48,6 +48,12 @@ jobs:
             os: jammy
             include_documentation_tests: false
             include_frontend_tests: false
+          # Debian 12 ships with Python 3.11.2.
+          - docker_image: zulip/ci:bookworm
+            name: Debian 12 (Python 3.11, backend)
+            os: bookworm
+            include_documentation_tests: false
+            include_frontend_tests: false
 
     runs-on: ubuntu-latest
     name: ${{ matrix.name }}
