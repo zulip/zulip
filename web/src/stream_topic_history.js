@@ -1,7 +1,10 @@
 import {all_messages_data} from "./all_messages_data";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
+import * as stream_list from "./stream_list";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as sub_store from "./sub_store";
+import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
@@ -149,10 +152,15 @@ export class PerStreamHistory {
         }
     }
 
-    maybe_remove(topic_name, num_messages) {
+    maybe_remove(topic_name, num_messages, removing_all_messages) {
         const existing = this.topics.get(topic_name);
 
         if (!existing) {
+            return;
+        }
+
+        if (removing_all_messages) {
+            this.topics.delete(topic_name);
             return;
         }
 
@@ -164,7 +172,7 @@ export class PerStreamHistory {
         }
 
         if (existing.count <= num_messages) {
-            this.topics.delete(topic_name);
+            existing.count = 0;
             return;
         }
 
@@ -231,6 +239,7 @@ export function remove_messages(opts) {
     const num_messages = opts.num_messages;
     const max_removed_msg_id = opts.max_removed_msg_id;
     const history = stream_dict.get(stream_id);
+    const removing_all_messages = opts.propagate_mode === "change_all";
 
     // This is the special case of "removing" a message from
     // a topic, which happens when we edit topics.
@@ -240,11 +249,36 @@ export function remove_messages(opts) {
     }
 
     // This is the normal case of an incoming message.
-    history.maybe_remove(topic_name, num_messages);
+    history.maybe_remove(topic_name, num_messages, removing_all_messages);
 
     const existing_topic = history.topics.get(topic_name);
     if (!existing_topic) {
+        if (history.max_message_id <= max_removed_msg_id) {
+            history.max_message_id = message_util.get_max_message_id_in_stream(stream_id);
+        }
         return;
+    }
+
+    if (!existing_topic.historical && existing_topic.count === 0) {
+        clear_history_for_stream(stream_id);
+        if (topic_list.active_stream_id() === stream_id) {
+            stream_topic_history_util.get_server_history(
+                stream_id,
+                stream_list.update_streams_sidebar,
+            );
+            return;
+        }
+    }
+
+    if (existing_topic.historical && existing_topic.message_id <= max_removed_msg_id) {
+        clear_history_for_stream(stream_id);
+        if (topic_list.active_stream_id() === stream_id) {
+            stream_topic_history_util.get_server_history(
+                stream_id,
+                stream_list.update_streams_sidebar,
+            );
+            return;
+        }
     }
 
     // Update max_message_id in topic
@@ -309,6 +343,11 @@ export function get_max_message_id(stream_id) {
     const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
+}
+
+export function clear_history_for_stream(stream_id) {
+    fetched_stream_ids.delete(stream_id);
+    stream_dict.delete(stream_id);
 }
 
 export function reset() {

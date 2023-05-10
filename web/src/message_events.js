@@ -349,6 +349,7 @@ export function update_messages(events) {
                     topic_name: moved_message.topic,
                     num_messages: 1,
                     max_removed_msg_id: moved_message.id,
+                    propagate_mode: event.propagate_mode,
                 });
 
                 // Update the unread counts; again, this must be called

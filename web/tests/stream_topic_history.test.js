@@ -7,6 +7,7 @@ const {run_test} = require("./lib/test");
 
 const channel = mock_esm("../src/channel");
 const message_util = mock_esm("../src/message_util");
+const topic_list = mock_esm("../src/topic_list");
 
 const all_messages_data = zrequire("all_messages_data");
 const unread = zrequire("unread");
@@ -25,6 +26,7 @@ function test(label, f) {
 
 test("basics", () => {
     const stream_id = 55;
+    topic_list.active_stream_id = () => stream_id;
 
     stream_topic_history.add_message({
         stream_id,
@@ -94,6 +96,12 @@ test("basics", () => {
     assert.deepEqual(history, ["topic2", "Topic1"]);
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
+
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/json/users/me/55/topics");
+        assert.deepEqual(opts.data, {});
+        stream_topic_history.add_history(stream_id, [{name: "topic2", max_id: 103}]);
+    };
 
     // Removing second topic1 message removes the topic.
     stream_topic_history.remove_messages({
@@ -196,6 +204,20 @@ test("server_history", () => {
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["hist1", "local", "hist2"]);
+
+    topic_list.active_stream_id = () => stream_id;
+    function add_server_history_callback() {
+        stream_topic_history.add_history(stream_id, [
+            {name: "hist2", max_id: 31},
+            {name: "hist1", max_id: 502},
+        ]);
+    }
+
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/json/users/me/66/topics");
+        assert.deepEqual(opts.data, {});
+        add_server_history_callback();
+    };
 
     // Removing a local message removes the topic if we have
     // our counts right.
@@ -373,4 +395,150 @@ test("all_topics_in_cache", ({override}) => {
 
     sub.first_message_id = 2;
     assert.equal(stream_topic_history.all_topics_in_cache(sub), true);
+});
+
+test("remove_messages", () => {
+    const stream_id = 55;
+    topic_list.active_stream_id = () => stream_id;
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 101,
+        topic_name: "Topic0",
+    });
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 102,
+        topic_name: "Topic1",
+    });
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 103,
+        topic_name: "topic2",
+    });
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 104,
+        topic_name: "Topic1",
+    });
+
+    stream_topic_history.add_history(stream_id, [
+        {name: "topic3", max_id: 99},
+        {name: "topic4", max_id: 98},
+    ]);
+
+    let history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["Topic1", "topic2", "Topic0", "topic3", "topic4"]);
+    let max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.equal(max_message_id, 104);
+
+    message_util.get_messages_in_topic = () => [{id: 102}];
+    message_util.get_max_message_id_in_stream = () => 103;
+
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "Topic1",
+        num_messages: 1,
+        max_removed_msg_id: 104,
+    });
+
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["topic2", "Topic1", "Topic0", "topic3", "topic4"]);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 103);
+
+    message_util.get_max_message_id_in_stream = () => 102;
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "topic2",
+        num_messages: 1,
+        propagate_mode: "change_all",
+        max_removed_msg_id: 103,
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["Topic1", "Topic0", "topic3", "topic4"]);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 102);
+
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/json/users/me/55/topics");
+        assert.deepEqual(opts.data, {});
+        stream_topic_history.add_history(stream_id, [
+            {name: "topic0", max_id: 101},
+            {name: "topic3", max_id: 99},
+            {name: "topic4", max_id: 98},
+        ]);
+    };
+
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "topic1",
+        num_messages: 1,
+        max_removed_msg_id: 102,
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["topic0", "topic3", "topic4"]);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 101);
+
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "topic3",
+        num_messages: 1,
+        max_removed_msg_id: 97,
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["topic0", "topic3", "topic4"]);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 101);
+
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/json/users/me/55/topics");
+        assert.deepEqual(opts.data, {});
+        stream_topic_history.add_history(stream_id, [
+            {name: "topic0", max_id: 101},
+            {name: "topic3", max_id: 96},
+            {name: "topic4", max_id: 98},
+        ]);
+    };
+
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "topic3",
+        num_messages: 1,
+        max_removed_msg_id: 99,
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["topic0", "topic4", "topic3"]);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 101);
+
+    // historical topic is also removed completely if all messages
+    // are removed from a topic by moving messages using "change_all"
+    // propagate mode.
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "topic3",
+        num_messages: 1,
+        max_removed_msg_id: 96,
+        propagate_mode: "change_all",
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["topic0", "topic4"]);
+    max_message_id = stream_topic_history.get_max_message_id(stream_id);
+    assert.deepEqual(max_message_id, 101);
+
+    topic_list.active_stream_id = () => 99;
+
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "topic0",
+        num_messages: 1,
+        max_removed_msg_id: 101,
+    });
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, []);
 });
