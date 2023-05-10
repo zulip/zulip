@@ -18,6 +18,15 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 6.2
+
+**Feature level 157**
+
+* `POST /invites`: Added support for invitations specifying the empty
+  list as the user's initial stream subscriptions. Previously, this
+  returned an error. This change was backported from the Zulip 7.0
+  branch, and thus is available at feature levels 157-158 and 180+.
+
 ## Changes in Zulip 6.0
 
 **Feature level 156**
