@@ -58,6 +58,16 @@ export function setup(tippy_props, get_options, item_click_callback, dropdown_pr
                 $simplebar_container: $popper.find(".dropdown-list-wrapper"),
             });
 
+            $search_input.on("input.list_widget_filter", () => {
+                const list_items = list_widget.get_current_list();
+                const $no_search_results = $popper.find(".no-dropdown-items");
+                if (list_items.length === 0) {
+                    $no_search_results.show();
+                } else {
+                    $no_search_results.hide();
+                }
+            });
+
             // Keyboard handler
             $popper.on("keydown", (e) => {
                 function trigger_element_focus($element) {
