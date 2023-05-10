@@ -10,13 +10,18 @@
 
 {!compose-and-send-message.md!}
 
+!!! tip ""
+
+    You can change the destination stream for your message using the dropdown
+    in the top left of the compose box.
+
 {tab|not-stream}
 
 1. Click the **New topic** button at the bottom of the app, or
    use the <kbd>C</kbd> keyboard shortcut.
 
-1. Enter a stream name. Auto-complete will provide suggestions for streams you
-   can send to.
+1. Select a stream from the dropdown in the top left of the compose box. You can
+   start typing to filter streams.
 
 1. Enter a topic name. Auto-complete will provide suggestions for previously
    used topics.
