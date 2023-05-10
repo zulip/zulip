@@ -6,6 +6,7 @@ import render_user_group_settings_overlay from "../templates/user_group_settings
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
+import * as components from "./components";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as overlays from "./overlays";
@@ -17,6 +18,7 @@ import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
 
 let group_list_widget;
+let group_list_toggler;
 
 // Ideally this should be included in page params.
 // Like we have page_params.max_stream_name_length` and
@@ -158,28 +160,77 @@ export function update_group(group_id) {
 }
 
 export function change_state(section) {
-    if (!section) {
-        show_user_group_settings_pane.nothing_selected();
-        return;
-    }
     if (section === "new") {
         do_open_create_user_group();
+        return;
+    }
+
+    if (section === "all") {
+        group_list_toggler.goto("all-groups");
+        return;
+    }
+
+    if (section === "your") {
+        group_list_toggler.goto("your-groups");
         return;
     }
 
     // if the section is a valid number.
     if (/\d+/.test(section)) {
         const group_id = Number.parseInt(section, 10);
-        show_right_section();
-        switch_to_group_row(group_id);
+        const group = user_groups.get_user_group_from_id(group_id);
+        if (!group) {
+            // Some users can type random url of the form
+            // /#groups/<random-group-id> we need to handle that.
+            group_list_toggler.goto("your-groups");
+        } else {
+            show_right_section();
+            switch_to_group_row(group_id);
+        }
         return;
     }
 
-    blueslip.warn("invalid section for groups: " + section);
-    show_user_group_settings_pane.nothing_selected();
+    blueslip.info("invalid section for groups: " + section);
+    group_list_toggler.goto("your-groups");
+}
+
+function redraw_left_panel(tab_name) {
+    if (tab_name === "all-groups") {
+        group_list_widget.replace_list_data(user_groups.get_realm_user_groups());
+    } else if (tab_name === "your-groups") {
+        group_list_widget.replace_list_data(
+            user_groups.get_user_groups_of_user(people.my_current_user_id()),
+        );
+    }
+    // TODO: If possible persist selection of active group in the left panel.
+}
+
+export function switch_group_tab(tab_name) {
+    /*
+        This switches the groups list tab, but it doesn't update
+        the group_list_toggler widget.  You may instead want to
+        use `group_list_toggler.goto`.
+    */
+    redraw_left_panel(tab_name);
+    user_group_edit.setup_group_list_tab_hash(tab_name);
 }
 
 export function setup_page(callback) {
+    function initialize_components() {
+        group_list_toggler = components.toggle({
+            child_wants_focus: true,
+            values: [
+                {label: $t({defaultMessage: "Your groups"}), key: "your-groups"},
+                {label: $t({defaultMessage: "All groups"}), key: "all-groups"},
+            ],
+            callback(_label, key) {
+                switch_group_tab(key);
+            },
+        });
+
+        $("#groups_overlay_container .search-container").prepend(group_list_toggler.get());
+    }
+
     function populate_and_fill() {
         const template_data = {
             can_create_or_edit_user_groups: settings_data.user_can_edit_user_groups(),
@@ -220,6 +271,8 @@ export function setup_page(callback) {
             init_sort: ["alphabetic", "name"],
             $simplebar_container: $container,
         });
+
+        initialize_components();
 
         set_up_click_handlers();
         user_group_create.set_up_handlers();
