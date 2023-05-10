@@ -50,21 +50,21 @@ export function set_up_click_handlers() {
 
 export const show_user_group_settings_pane = {
     nothing_selected() {
-        $(".settings, #user-group-creation").hide();
+        $("#groups_overlay .settings, #user-group-creation").hide();
         reset_active_group_id();
-        $(".nothing-selected").show();
+        $("#groups_overlay .nothing-selected").show();
         $("#groups_overlay .user-group-info-title").text(
             $t({defaultMessage: "User group settings"}),
         );
     },
     settings(group) {
-        $(".settings, #user-group-creation").hide();
+        $("#groups_overlay .nothing-selected, #user-group-creation").hide();
         $("#groups_overlay .settings").show();
         set_active_group_id(group.id);
         $("#groups_overlay .user-group-info-title").text(group.name);
     },
     create_user_group() {
-        $(".nothing-selected, .settings, #user-group-creation").hide();
+        $("#groups_overlay .nothing-selected, #groups_overlay .settings").hide();
         reset_active_group_id();
         $("#user-group-creation").show();
         $("#groups_overlay .user-group-info-title").text($t({defaultMessage: "Create user group"}));
