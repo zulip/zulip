@@ -4,6 +4,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
+import * as message_feed_loading from "./message_feed_loading";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
@@ -296,7 +297,7 @@ export function load_messages(opts, attempt = 1) {
                 // error in the xhr status. While we have empty narrow messages
                 // for many common errors, and those have nicer HTML formatting,
                 // we certainly don't for every possible 400 error.
-                message_scroll.hide_indicators();
+                message_feed_loading.hide_indicators();
 
                 if (
                     opts.msg_list === message_lists.current &&

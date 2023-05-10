@@ -1,4 +1,4 @@
-import * as message_scroll from "./message_scroll";
+import * as message_feed_loading from "./message_feed_loading";
 
 function max_id_for_messages(messages) {
     let max_id = 0;
@@ -32,7 +32,7 @@ export class FetchStatus {
     start_older_batch(opts) {
         this._loading_older = true;
         if (opts.update_loading_indicator) {
-            message_scroll.show_loading_older();
+            message_feed_loading.show_loading_older();
         }
     }
 
@@ -41,7 +41,7 @@ export class FetchStatus {
         this._found_oldest = opts.found_oldest;
         this._history_limited = opts.history_limited;
         if (opts.update_loading_indicator) {
-            message_scroll.hide_loading_older();
+            message_feed_loading.hide_loading_older();
         }
     }
 
@@ -60,7 +60,7 @@ export class FetchStatus {
     start_newer_batch(opts) {
         this._loading_newer = true;
         if (opts.update_loading_indicator) {
-            message_scroll.show_loading_newer();
+            message_feed_loading.show_loading_newer();
         }
     }
 
@@ -71,7 +71,7 @@ export class FetchStatus {
         this._loading_newer = false;
         this._found_newest = opts.found_newest;
         if (opts.update_loading_indicator) {
-            message_scroll.hide_loading_newer();
+            message_feed_loading.hide_loading_newer();
         }
         if (this._found_newest && this._expected_max_message_id > found_max_message_id) {
             // This expected_max_message_id logic is designed to

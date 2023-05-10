@@ -16,6 +16,7 @@ import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
+import * as message_feed_loading from "./message_feed_loading";
 import * as message_fetch from "./message_fetch";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
@@ -127,7 +128,7 @@ export function reset_ui_state() {
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
-    message_scroll.hide_indicators();
+    message_feed_loading.hide_indicators();
     unread_ui.reset_unread_banner();
 }
 

@@ -25,6 +25,7 @@ const message_lists = mock_esm("../src/message_lists", {
     },
 });
 const message_scroll = mock_esm("../src/message_scroll");
+const message_feed_loading = mock_esm("../src/message_feed_loading");
 const message_view_header = mock_esm("../src/message_view_header");
 const notifications = mock_esm("../src/notifications");
 const search = mock_esm("../src/search");
@@ -83,8 +84,8 @@ function test_helper() {
     stub(compose_actions, "on_narrow");
     stub(compose_closed_ui, "update_reply_recipient_label");
     stub(hashchange, "save_narrow");
-    stub(message_scroll, "hide_indicators");
-    stub(message_scroll, "show_loading_older");
+    stub(message_feed_loading, "hide_indicators");
+    stub(message_feed_loading, "show_loading_older");
     stub(message_scroll, "hide_top_of_narrow_notices");
     stub(notifications, "redraw_title");
     stub(search, "update_button_visibility");
@@ -185,7 +186,7 @@ run_test("basics", () => {
 
     helper.assert_events([
         [message_scroll, "hide_top_of_narrow_notices"],
-        [message_scroll, "hide_indicators"],
+        [message_feed_loading, "hide_indicators"],
         [compose_banner, "clear_message_sent_banners"],
         [notifications, "redraw_title"],
         [unread_ops, "process_visible"],
