@@ -61,7 +61,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     "zproject.backends.GenericOpenIdConnectBackend",
 )
 
-EXTERNAL_URI_SCHEME = "http://" if external_host_env is None else "https://"
+EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST_WITHOUT_PORT
 NOTIFICATION_BOT = "notification-bot@zulip.com"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
