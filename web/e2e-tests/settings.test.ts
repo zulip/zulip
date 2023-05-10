@@ -34,6 +34,16 @@ async function open_settings(page: Page): Promise<void> {
     );
 }
 
+async function close_settings_and_date_picker(page: Page): Promise<void> {
+    const date_picker_selector = ".custom_user_field_value.datepicker.form-control";
+    await page.click(date_picker_selector);
+
+    await page.waitForSelector(".flatpickr-calendar", {visible: true});
+
+    await page.keyboard.press("Escape");
+    await page.waitForSelector(".flatpickr-calendar", {hidden: true});
+}
+
 async function test_change_full_name(page: Page): Promise<void> {
     await page.click("#full_name");
 
@@ -438,6 +448,8 @@ async function test_notifications_section(page: Page): Promise<void> {
 
 async function settings_tests(page: Page): Promise<void> {
     await common.log_in(page);
+    await open_settings(page);
+    await close_settings_and_date_picker(page);
     await open_settings(page);
     await test_change_full_name(page);
     await test_alert_words_section(page);
