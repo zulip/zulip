@@ -89,7 +89,7 @@ class zulip::common {
     'sentry-cli' => {
       'version' => '2.17.5',
       'sha256'  => {
-        'amd64'   => 'c20df0c10eecedd0eaf14bbdc052c1dc2e999797c896a40e3ae9390223bd4d4f',
+        'amd64'   => '8200b8f0831535d5c21adfde947ca6d30930619eae36a650cbcf1005c68cd6dd',
         'aarch64' => '2071c03f870fcce6f9e82cefcff004e92f6d1af250a31d157ba921c671a5f9ec',
       },
     },
