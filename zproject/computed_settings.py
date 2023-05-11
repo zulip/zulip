@@ -7,7 +7,7 @@ from typing import Any, Dict, Final, List, Tuple, Union
 from urllib.parse import urljoin
 
 from scripts.lib.zulip_tools import get_tornado_ports
-from zerver.lib.db import TimeTrackingConnection
+from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
 
 from .config import (
     DEPLOY_ROOT,
@@ -281,6 +281,7 @@ DATABASES: Dict[str, Dict[str, Any]] = {
         "CONN_MAX_AGE": 600,
         "OPTIONS": {
             "connection_factory": TimeTrackingConnection,
+            "cursor_factory": TimeTrackingCursor,
         },
     }
 }
