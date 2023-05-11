@@ -21,6 +21,11 @@ can schedule a message for next morning to avoid disturbing others.
 
 1. Select one of the suggested scheduling options, or pick a custom time.
 
+!!! keyboard_tip ""
+
+    From the compose box, you can use <kbd>Tab</kbd>, <kbd>Tab</kbd>,
+    <kbd>Enter</kbd> to open the compose menu and start scheduling a message.
+
 {end_tabs}
 
 ## Edit or reschedule a message
