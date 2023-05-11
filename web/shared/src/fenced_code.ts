@@ -68,7 +68,7 @@ export function wrap_code(code: string, lang?: string): string {
     }
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    return header + _.escape(code.replace(/^\n+|\n+$/g, "")) + "\n</code></pre></div>";
+    return header + _.escape(code.replaceAll(/^\n+|\n+$/g, "")) + "\n</code></pre></div>";
 }
 
 function wrap_quote(text: string): string {

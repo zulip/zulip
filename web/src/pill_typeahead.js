@@ -76,7 +76,7 @@ export function set_up($input, pills, opts) {
         },
         matcher(item) {
             let query = this.query.toLowerCase();
-            query = query.replace(/\u00A0/g, " ");
+            query = query.replaceAll("\u00A0", " ");
 
             if (include_streams(query)) {
                 query = query.trim().slice(1);

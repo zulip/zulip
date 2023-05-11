@@ -356,7 +356,7 @@ function update_emoji_showcase($focused_emoji) {
 
     const emoji_dict = {
         ...focused_emoji_dict,
-        name: focused_emoji_name.replace(/_/g, " "),
+        name: focused_emoji_name.replaceAll("_", " "),
     };
     const rendered_showcase = render_emoji_showcase({
         emoji_dict,

@@ -271,7 +271,7 @@ export class Filter {
                 operand = operand
                     .toString()
                     .toLowerCase()
-                    .replace(/[\u201C\u201D]/g, '"');
+                    .replaceAll(/[\u201C\u201D]/g, '"');
                 break;
             default:
                 operand = operand.toString().toLowerCase();
@@ -294,20 +294,20 @@ export class Filter {
        URI encoding to avoid problematic characters. */
     static encodeOperand(operand) {
         return operand
-            .replace(/%/g, "%25")
-            .replace(/\+/g, "%2B")
-            .replace(/ /g, "+")
-            .replace(/"/g, "%22");
+            .replaceAll("%", "%25")
+            .replaceAll("+", "%2B")
+            .replaceAll(" ", "+")
+            .replaceAll('"', "%22");
     }
 
     static decodeOperand(encoded, operator) {
-        encoded = encoded.replace(/"/g, "");
+        encoded = encoded.replaceAll('"', "");
         if (
             ["dm-including", "dm", "sender", "from", "pm-with", "group-pm-with"].includes(
                 operator,
             ) === false
         ) {
-            encoded = encoded.replace(/\+/g, " ");
+            encoded = encoded.replaceAll("+", " ");
         }
         return util.robust_url_decode(encoded).trim();
     }

@@ -45,7 +45,7 @@ type UnicodeEmoji = {
 };
 
 export function remove_diacritics(s: string): string {
-    return s.normalize("NFKD").replace(unicode_marks, "");
+    return s.normalize("NFKD").replaceAll(unicode_marks, "");
 }
 
 // This function attempts to match a query with a source text.
@@ -79,7 +79,7 @@ function clean_query(query: string): string {
     // contenteditable widget such as the composebox PM section, the
     // space at the end was a `no break-space (U+00A0)` instead of
     // `space (U+0020)`, which lead to no matches in those cases.
-    query = query.replace(/\u00A0/g, " ");
+    query = query.replaceAll("\u00A0", " ");
 
     return query;
 }
@@ -98,7 +98,7 @@ export const parse_unicode_emoji_code = (code: string): string =>
 
 export function get_emoji_matcher(query: string): (emoji: Emoji) => boolean {
     // replace spaces with underscores for emoji matching
-    query = query.replace(/ /g, "_");
+    query = query.replaceAll(" ", "_");
     query = clean_query_lowercase(query);
 
     return function (emoji) {
@@ -166,7 +166,7 @@ export function triage<T>(
 
 export function sort_emojis<T extends Emoji>(objs: T[], query: string): T[] {
     // replace spaces with underscores for emoji matching
-    query = query.replace(/ /g, "_");
+    query = query.replaceAll(" ", "_");
     query = query.toLowerCase();
 
     function decent_match(name: string): boolean {

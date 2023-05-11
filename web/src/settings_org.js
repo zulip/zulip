@@ -190,7 +190,7 @@ export function extract_property_name($elem, for_realm_default_settings) {
         // "realm_{settings_name}}" because both user and realm default
         // settings use the same template and each element should have
         // unique id.
-        return /^realm_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
+        return /^realm_(.*)$/.exec($elem.attr("id").replaceAll("-", "_"))[1];
     }
 
     if ($elem.attr("id").startsWith("id_authmethod")) {
@@ -203,7 +203,7 @@ export function extract_property_name($elem, for_realm_default_settings) {
         return /^id_authmethod[\da-z]+_(.*)$/.exec($elem.attr("id"))[1];
     }
 
-    return /^id_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
+    return /^id_(.*)$/.exec($elem.attr("id").replaceAll("-", "_"))[1];
 }
 
 export function get_subsection_property_elements(subsection) {
@@ -545,7 +545,7 @@ export function populate_auth_methods(auth_methods) {
             // As a result, the only two "incoming" assumptions on the auth method name are:
             // 1) It contains at least one allowed symbol
             // 2) No two auth method names are identical after this allowlist filtering
-            prefix: "id_authmethod" + auth_method.toLowerCase().replace(/[^\da-z]/g, "") + "_",
+            prefix: "id_authmethod" + auth_method.toLowerCase().replaceAll(/[^\da-z]/g, "") + "_",
         });
     }
     $auth_methods_list.html(rendered_auth_method_rows);
@@ -1230,7 +1230,7 @@ export function register_save_discard_widget_handlers(
             // fields that must be submitted together, which is
             // managed by the get_complete_data_for_subsection function.
             const [, subsection_id] = /^org-(.*)$/.exec($subsection_elem.attr("id"));
-            const subsection = subsection_id.replace(/-/g, "_");
+            const subsection = subsection_id.replaceAll("-", "_");
             extra_data = get_complete_data_for_subsection(subsection);
         }
 
