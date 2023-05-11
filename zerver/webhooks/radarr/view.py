@@ -4,7 +4,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_bool, check_string, to_wild_value
+from zerver.lib.validator import WildValue, check_bool, check_string, check_string_in, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
@@ -26,6 +26,9 @@ RADARR_MESSAGE_TEMPLATE_MOVIE_GRABBED = "The movie {movie_title} has been grabbe
 RADARR_MESSAGE_TEMPLATE_MOVIE_DELETED = (
     "The movie {movie_title} was deleted; its files were {deleted_files} deleted."
 )
+RADARR_MESSAGE_TEMPLATE_MOVIE_FILE_DELETED = (
+    "A file with quality {quality} for the movie {movie_title} was deleted, {reason}."
+)
 
 ALL_EVENT_TYPES = [
     "ApplicationUpdate",
@@ -35,6 +38,7 @@ ALL_EVENT_TYPES = [
     "Health",
     "Grab",
     "MovieDelete",
+    "MovieFileDelete",
 ]
 
 
@@ -116,6 +120,21 @@ def get_body_for_movie_deleted_event(payload: WildValue) -> str:
     )
 
 
+def get_body_for_movie_file_deleted_event(payload: WildValue) -> str:
+    reasons = {
+        "missingFromDisk": "because it is missing from disk",
+        "manual": "manually",
+        "upgrade": "because an upgraded version exists",
+        "noLinkedEpisodes": "because it has no linked episodes",
+        "manualOverride": "via manual override",
+    }
+    return RADARR_MESSAGE_TEMPLATE_MOVIE_FILE_DELETED.format(
+        movie_title=payload["movie"]["title"].tame(check_string),
+        quality=payload["movieFile"]["quality"].tame(check_string),
+        reason=reasons[payload["deleteReason"].tame(check_string_in(reasons.keys()))],
+    )
+
+
 def get_body_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
     if event_type == "Test":
@@ -135,5 +154,7 @@ def get_body_for_http_request(payload: WildValue) -> str:
         return get_body_for_movie_grabbed_event(payload)
     elif event_type == "MovieDelete":
         return get_body_for_movie_deleted_event(payload)
+    elif event_type == "MovieFileDelete":
+        return get_body_for_movie_file_deleted_event(payload)
     else:
         raise UnsupportedWebhookEventTypeError(event_type)
