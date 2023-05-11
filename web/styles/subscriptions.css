@@ -685,12 +685,15 @@ h4.user_group_setting_subsection_title {
         outline: none;
         -webkit-overflow-scrolling: touch;
 
+        .stream-creation-simplebar-container {
+            /*
+                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer)
+            */
+            height: calc(95vh - 149px);
+        }
+
         .user-group-creation-body,
         .stream-creation-body {
-            /*
-                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer) + 15px (padding for .simplebar-content)
-            */
-            height: calc(95vh - 164px);
             padding: 15px 15px 0;
         }
 
@@ -699,6 +702,12 @@ h4.user_group_setting_subsection_title {
             bottom: 0;
             width: calc(100% - 27px);
             padding-top: 9px;
+        }
+
+        @media (width > $md_min) {
+            .modal-footer {
+                border-radius: 0 0 6px;
+            }
         }
 
         .add_all_users_to_user_group,
