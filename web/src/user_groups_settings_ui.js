@@ -71,6 +71,9 @@ export const show_user_group_settings_pane = {
 };
 
 export function do_open_create_user_group() {
+    // Only call this directly for hash changes.
+    // Prefer open_create_user_group().
+    show_right_section();
     user_group_create.create_user_group_clicked();
 }
 
