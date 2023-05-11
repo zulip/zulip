@@ -1,0 +1,11 @@
+{
+  "movie": {
+    "id": 796,
+    "title": "Batman v Superman: Dawn of Justice",
+    "releaseDate": "2016-06-24",
+    "folderPath": "/home36/adbtech/media/Movies/Batman v Superman- Dawn of Justice (2016)",
+    "tmdbId": 209112,
+    "imdbId": "tt2975590"
+  },
+  "eventType": "MovieAdded"
+}
