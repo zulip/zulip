@@ -69,3 +69,13 @@ class RadarrHookTests(WebhookTestCase):
         expected_topic = "Greenland"
         expected_message = "The movie Greenland has been grabbed."
         self.check_webhook("radarr_movie_grabbed", expected_topic, expected_message)
+
+    def test_radarr_movie_deleted(self) -> None:
+        """
+        Tests if radarr movie deleted payload is handled correctly
+        """
+        expected_topic = "Batman v Superman: Dawn of Justice"
+        expected_message = (
+            "The movie Batman v Superman: Dawn of Justice was deleted; its files were also deleted."
+        )
+        self.check_webhook("radarr_movie_deleted", expected_topic, expected_message)

@@ -4,7 +4,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
+from zerver.lib.validator import WildValue, check_bool, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
@@ -23,6 +23,9 @@ RADARR_MESSAGE_TEMPLATE_MOVIE_IMPORTED_UPGRADE = (
     "The movie {movie_title} has been upgraded from {old_quality} to {new_quality}.".strip()
 )
 RADARR_MESSAGE_TEMPLATE_MOVIE_GRABBED = "The movie {movie_title} has been grabbed.".strip()
+RADARR_MESSAGE_TEMPLATE_MOVIE_DELETED = (
+    "The movie {movie_title} was deleted; its files were {deleted_files} deleted."
+)
 
 ALL_EVENT_TYPES = [
     "ApplicationUpdate",
@@ -31,6 +34,7 @@ ALL_EVENT_TYPES = [
     "Download",
     "Health",
     "Grab",
+    "MovieDelete",
 ]
 
 
@@ -105,6 +109,13 @@ def get_body_for_movie_grabbed_event(payload: WildValue) -> str:
     )
 
 
+def get_body_for_movie_deleted_event(payload: WildValue) -> str:
+    return RADARR_MESSAGE_TEMPLATE_MOVIE_DELETED.format(
+        movie_title=payload["movie"]["title"].tame(check_string),
+        deleted_files="also" if payload["deletedFiles"].tame(check_bool) else "not",
+    )
+
+
 def get_body_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
     if event_type == "Test":
@@ -122,5 +133,7 @@ def get_body_for_http_request(payload: WildValue) -> str:
             return get_body_for_movie_imported_event(payload)
     elif event_type == "Grab":
         return get_body_for_movie_grabbed_event(payload)
+    elif event_type == "MovieDelete":
+        return get_body_for_movie_deleted_event(payload)
     else:
         raise UnsupportedWebhookEventTypeError(event_type)
