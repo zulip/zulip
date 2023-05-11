@@ -14,9 +14,9 @@ log][commit-log] for an up-to-date list of all changes.
 #### Highlights
 
 - Many significant visual changes as part of Zulip's ongoing redesign
-  project, including message feed headers, mention colors, dates and
-  times, compose box banners, icons, and tooltips. Many further
-  improvements are planned for future releases.
+  project, including message feed headers, background color, mention
+  colors, dates and times, compose box banners, icons, and
+  tooltips. Many further improvements are planned for future releases.
 - Added support for unmuting a topic in a muted stream, previously the
   4th most upvoted GitHub issue.
 - Redesigned the permissions settings for message editing, topic
@@ -54,6 +54,7 @@ log][commit-log] for an up-to-date list of all changes.
   private stream, and disabling all notifications for direct messages.
 - Added support for deployment hooks to be run whenever the Zulip
   server is upgraded.
+- Added support for Postgres 15, and removed support for Postgres 11.
 - Added new `z` keyboard shortcut to view a message in context.
 - Added new `=` keyboard shortcut to upvote an existing emoji reaction.
 - Changed the `s` keyboard shortcut to be a toggle, replacing the
@@ -100,6 +101,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Fixed a subtle compose box issue that could cause a message to be
   sent twice.
 - Fixed several subtle bugs involving messages that failed to send.
+- Fixed several subtle bugs in message feed loading and rendering.
+- Fixed several subtle live-update bugs involving moving messages.
+- Fixed several error handling bugs in the message edit UI.
 - Fixed an issue where newly created users could get email
   notifications for messages from Welcome Bot.
 - Fixed an issue the management command to garbage-collect uploaded
