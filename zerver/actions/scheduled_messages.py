@@ -3,11 +3,17 @@ import logging
 from typing import List, Optional, Sequence, Tuple, Union
 
 import orjson
+from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
-from zerver.actions.message_send import check_message, do_send_messages
+from zerver.actions.message_send import (
+    check_message,
+    do_send_messages,
+    internal_send_private_message,
+)
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
@@ -19,6 +25,7 @@ from zerver.models import (
     ScheduledMessage,
     Subscription,
     UserProfile,
+    get_system_bot,
 )
 from zerver.tornado.django_api import send_event
 
@@ -202,7 +209,7 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
         minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES
     )
     if timezone_now() > latest_send_time:
-        raise JsonableError(_("Scheduled send time has already passed."))
+        raise JsonableError(_("Message could not be sent at the scheduled time."))
 
     # Recheck that we have permission to send this message, in case
     # permissions have changed since the message was scheduled.
@@ -237,6 +244,41 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)
 
 
+def send_failed_scheduled_message_notification(
+    user_profile: UserProfile, scheduled_message_id: int
+) -> None:
+    scheduled_message = access_scheduled_message(user_profile, scheduled_message_id)
+    delivery_datetime_string = str(scheduled_message.scheduled_timestamp)
+
+    with override_language(user_profile.default_language):
+        error_string = scheduled_message.failure_message
+        delivery_time_markdown = f"<time:{delivery_datetime_string}> "
+
+        content = "".join(
+            [
+                _(
+                    "The message you scheduled for {delivery_datetime} was not sent because of the following error:"
+                ),
+                "\n\n",
+                "> {error_message}",
+                "\n\n",
+                _("[View scheduled messages](#scheduled)"),
+                "\n\n",
+            ]
+        )
+
+    content = content.format(
+        delivery_datetime=delivery_time_markdown,
+        error_message=error_string,
+    )
+
+    internal_send_private_message(
+        get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id),
+        user_profile,
+        content,
+    )
+
+
 @transaction.atomic
 def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
     # Returns whether there was a scheduled message to attempt
@@ -261,26 +303,39 @@ def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
         scheduled_message.sender_id,
     )
 
-    try:
-        send_scheduled_message(scheduled_message)
-    except JsonableError as e:
-        scheduled_message.failed = True
-        scheduled_message.failure_message = e.msg
-        scheduled_message.save(update_fields=["failed", "failure_message"])
-        logger.info("Failed with message: %s", scheduled_message.failure_message)
-    except Exception:
-        # An unexpected failure; store as a generic 500 error.
-        scheduled_message.refresh_from_db()
-        was_delivered = scheduled_message.delivered
-        scheduled_message.failed = True
-        scheduled_message.failure_message = _("Internal server error")
-        scheduled_message.save(update_fields=["failed", "failure_message"])
+    with override_language(scheduled_message.sender.default_language):
+        try:
+            send_scheduled_message(scheduled_message)
+        except Exception as e:
+            scheduled_message.refresh_from_db()
+            was_delivered = scheduled_message.delivered
+            scheduled_message.failed = True
 
-        logger.exception(
-            "Unexpected error sending scheduled message %s (sent: %s)",
-            scheduled_message.id,
-            was_delivered,
-            stack_info=True,
-        )
+            if isinstance(e, JsonableError):
+                scheduled_message.failure_message = e.msg
+                logger.info("Failed with message: %s", e.msg)
+            else:
+                # An unexpected failure; store and send user a generic
+                # internal server error in notification message.
+                scheduled_message.failure_message = _("Internal server error")
+                logger.exception(
+                    "Unexpected error sending scheduled message %s (sent: %s)",
+                    scheduled_message.id,
+                    was_delivered,
+                    stack_info=True,
+                )
+
+            scheduled_message.save(update_fields=["failed", "failure_message"])
+
+            if (
+                not was_delivered
+                # Do not send notification if either the realm or
+                # the sending user account has been deactivated.
+                and not isinstance(e, RealmDeactivatedError)
+                and not isinstance(e, UserDeactivatedError)
+            ):
+                send_failed_scheduled_message_notification(
+                    scheduled_message.sender, scheduled_message.id
+                )
 
     return True
