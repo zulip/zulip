@@ -17,6 +17,7 @@ from zerver.actions.scheduled_messages import (
 from zerver.actions.users import change_user_is_active
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Attachment, Message, ScheduledMessage
 
@@ -224,7 +225,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertTrue(scheduled_message.failed)
 
     def test_too_late_to_deliver_scheduled_message(self) -> None:
-        expected_failure_message = "Scheduled send time has already passed."
+        expected_failure_message = "Message could not be sent at the scheduled time."
         logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
@@ -241,11 +242,24 @@ class ScheduledMessageTest(ZulipTestCase):
                 scheduled_message, logger, expected_failure_message
             )
 
+        # Verify that the user was sent a message informing them about
+        # the failed scheduled message.
+        realm = scheduled_message.sender.realm
+        msg = most_recent_message(scheduled_message.sender)
+        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
+        self.assertIn(expected_failure_message, msg.content)
+
     def test_realm_deactivated_failed_to_deliver_scheduled_message(self) -> None:
         expected_failure_message = "This organization has been deactivated"
         logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
+
+        # Verify realm isn't deactivated and get user's most recent
+        # message.
+        self.assertFalse(scheduled_message.sender.realm.deactivated)
+        message_before_deactivation = most_recent_message(scheduled_message.sender)
 
         more_than_scheduled_delivery_datetime = (
             scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
@@ -261,11 +275,22 @@ class ScheduledMessageTest(ZulipTestCase):
                 scheduled_message, logger, expected_failure_message
             )
 
+        # Verify that no failed scheduled message notification was sent.
+        self.assertTrue(scheduled_message.sender.realm.deactivated)
+        message_after_deactivation = most_recent_message(scheduled_message.sender)
+        self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
+        self.assertNotIn(expected_failure_message, message_after_deactivation.content)
+
     def test_sender_deactivated_failed_to_deliver_scheduled_message(self) -> None:
         expected_failure_message = "Account is deactivated"
         logger = mock.Mock()
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
+
+        # Verify user isn't deactivated and get user's most recent
+        # message.
+        self.assertTrue(scheduled_message.sender.is_active)
+        message_before_deactivation = most_recent_message(scheduled_message.sender)
 
         more_than_scheduled_delivery_datetime = (
             scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
@@ -279,6 +304,12 @@ class ScheduledMessageTest(ZulipTestCase):
             self.verify_deliver_scheduled_message_failure(
                 scheduled_message, logger, expected_failure_message
             )
+
+        # Verify that no failed scheduled message notification was sent.
+        self.assertFalse(scheduled_message.sender.is_active)
+        message_after_deactivation = most_recent_message(scheduled_message.sender)
+        self.assertEqual(message_after_deactivation.content, message_before_deactivation.content)
+        self.assertNotIn(expected_failure_message, message_after_deactivation.content)
 
     def test_delivery_type_reminder_failed_to_deliver_scheduled_message_unknown_exception(
         self,
@@ -313,6 +344,14 @@ class ScheduledMessageTest(ZulipTestCase):
                 stack_info=True,
             )
             self.assertTrue(scheduled_message.failed)
+
+        # Verify that the user was sent a message informing them about
+        # the failed scheduled message.
+        realm = scheduled_message.sender.realm
+        msg = most_recent_message(scheduled_message.sender)
+        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
+        self.assertIn("Internal server error", msg.content)
 
     def test_scheduling_in_past(self) -> None:
         # Scheduling a message in past should fail.
