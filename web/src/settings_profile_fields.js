@@ -182,7 +182,7 @@ function get_value_for_new_option(container) {
         existing_option_values.push(Number.parseInt($(this).attr("data-value"), 10));
     });
     existing_option_values.sort();
-    return existing_option_values[existing_option_values.length - 1] + 1;
+    return existing_option_values.at(-1) + 1;
 }
 
 function create_choice_row(container) {

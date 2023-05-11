@@ -720,7 +720,7 @@ export function get_search_result(base_query, query) {
     const search_operators = Filter.parse(query);
     let last = {operator: "", operand: "", negated: false};
     if (search_operators.length > 0) {
-        last = search_operators.slice(-1)[0];
+        last = search_operators.at(-1);
     } else if (page_params.search_pills_enabled) {
         // We push an empty term so that we can get suggestions
         // on the empty string based on the base query which is

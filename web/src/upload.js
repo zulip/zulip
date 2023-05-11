@@ -344,7 +344,7 @@ export function setup_upload(config) {
         // TODO: Ideally, we'd be using the `.error()` hook or
         // something, not parsing error message strings.
         const infoList = uppy.getState().info;
-        const info = infoList[infoList.length - 1];
+        const info = infoList.at(-1);
         if (info.type === "error" && info.message === "No Internet connection") {
             // server_events already handles the case of no internet.
             return;
