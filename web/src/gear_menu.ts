@@ -115,6 +115,7 @@ export function initialize(): void {
         realm_name: page_params.realm_name,
         realm_uri: new URL(page_params.realm_uri).hostname,
         is_owner: page_params.is_owner,
+        is_moderator: page_params.is_moderator,
         is_admin: page_params.is_admin,
         is_self_hosted: page_params.realm_plan_type === 1,
         is_plan_limited: page_params.realm_plan_type === 2,

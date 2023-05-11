@@ -106,12 +106,15 @@ ExtraContext = Optional[Dict[str, Any]]
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = url_has_allowed_host_and_scheme(url=url, allowed_hosts=None)
+    print(is_url_safe)
     if is_url_safe:
         # Mark as safe to prevent Pysa from surfacing false positives for
         # open redirects. In this branch, we have already checked that the URL
         # points to the specified 'redirect_host', or is relative.
+        print(mark_sanitized(url))
         return urllib.parse.urljoin(redirect_host, mark_sanitized(url))
     else:
+        print("print ", redirect_host)
         return redirect_host
 
 
@@ -342,14 +345,15 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
         return finish_desktop_flow(request, user_profile, desktop_flow_otp)
 
     do_login(request, user_profile)
+    redirect_to = request.POST.get("redirect_to", None)
+    if not redirect_to:
+        redirect_to = result.data_dict.get("redirect_to", "")
 
-    redirect_to = result.data_dict.get("redirect_to", "")
     if is_realm_creation is not None and settings.BILLING_ENABLED:
         from corporate.lib.stripe import is_free_trial_offer_enabled
 
         if is_free_trial_offer_enabled():
             redirect_to = "{}?onboarding=true".format(reverse("initial_upgrade"))
-
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
 
