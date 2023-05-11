@@ -356,6 +356,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
         bot_avatar_url: bot.avatar_url,
         owner_full_name,
+        current_bot_owner: bot.bot_owner_id,
     });
 
     let avatar_widget;
@@ -433,7 +434,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
             const $bot_owner = $("#bot_owner_dropdown_widget .bot_owner_name");
             $bot_owner.text(user_full_name);
             $bot_owner.attr("data-user-id", new_bot_owner_id);
-            $("#edit_bot_modal .dialog_submit_button").prop("disabled", user_full_name === null);
+            $("#edit_bot_modal .bot_owner_id").val(new_bot_owner_id).trigger("input");
             dropdown.hide();
             event.stopPropagation();
             event.preventDefault();
@@ -484,6 +485,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         // Show the avatar if the user has cleared the image
         $("#bot-edit-form").on("click", ".edit_bot_avatar_clear_button", () => {
             $("#current_bot_avatar_image").show();
+            $(".edit_bot_avatar_file_input").trigger("input");
         });
 
         $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
@@ -498,16 +500,6 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
                 confirm_bot_deactivation(bot_id, handle_confirm, true);
             dialog_widget.close_modal(open_deactivate_modal_callback);
         });
-
-        $("#bot-edit-form").on("input", "input, select", (e) => {
-            if ($(e.target).hasClass("no-input-change-detection")) {
-                // Don't enable the save button if the target element is a
-                // dropdown_list_widget, since it is handled by the dropdown_list_widget's
-                // `on_update` function.
-                return;
-            }
-            $("#edit_bot_modal .dialog_submit_button").prop("disabled", false);
-        });
     }
 
     dialog_widget.launch({
@@ -517,6 +509,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         on_click: submit_bot_details,
         post_render: edit_bot_post_render,
         loading_spinner: from_user_info_popover,
+        update_submit_disabled_state_on_change: true,
     });
 }
 

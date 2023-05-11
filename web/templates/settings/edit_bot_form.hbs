@@ -24,6 +24,7 @@
         <div class="input-group edit_bot_owner_container">
             <label for="bot_owner_dropdown_widget">{{t "Owner" }}</label>
             <div id="bot_owner_dropdown_widget" class="dropdown-widget-button" role="button" tabindex="0">
+                <input type="hidden" name="bot_owner_id" class="bot_owner_id" value="{{current_bot_owner}}"/>
                 <span class="bot_owner_name">
                     {{owner_full_name}}
                 </span>
