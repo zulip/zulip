@@ -36,6 +36,7 @@ from typing import (
     Any,
     Callable,
     Collection,
+    Container,
     Dict,
     Iterator,
     List,
@@ -83,7 +84,7 @@ def check_required_string(var_name: str, val: object) -> str:
     return s
 
 
-def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator[str]:
+def check_string_in(possible_values: Container[str]) -> Validator[str]:
     def validator(var_name: str, val: object) -> str:
         s = check_string(var_name, val)
         if s not in possible_values:
