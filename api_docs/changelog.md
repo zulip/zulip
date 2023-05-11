@@ -20,17 +20,27 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 181**
+
+* [`GET /scheduled_messages`](/api/get-scheduled-messages), [`GET
+  /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Added `failed` boolean field to scheduled message objects to
+  indicate if the server tried to send the scheduled message and was
+  unsuccessful. Clients that support unscheduling and editing
+  scheduled messages should use this field to indicate to the user
+  when a scheduled message failed to send at the appointed time.
+
 **Feature level 180**
 
 * `POST /invites`: Added support for invitations specifying the empty
   list as the user's initial stream subscriptions. Previously, this
   returned an error.
 
-**Feature level 179**:
+**Feature level 179**
 
 * [`POST /scheduled_messages`](/api/create-or-update-scheduled-message):
   Added new endpoint to create and edit scheduled messages.
-* [`GET /events`](/api/get-events)
+* [`GET /events`](/api/get-events):
   Added `scheduled_messages` events sent to clients when a user creates,
   edits or deletes scheduled messages.
 * [`POST /register`](/api/register-queue):

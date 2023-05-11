@@ -4303,6 +4303,7 @@ class APIScheduledStreamMessageDict(TypedDict):
     rendered_content: str
     topic: str
     scheduled_delivery_timestamp: int
+    failed: bool
 
 
 class APIScheduledDirectMessageDict(TypedDict):
@@ -4312,6 +4313,7 @@ class APIScheduledDirectMessageDict(TypedDict):
     content: str
     rendered_content: str
     scheduled_delivery_timestamp: int
+    failed: bool
 
 
 class ScheduledMessage(models.Model):
@@ -4399,6 +4401,7 @@ class ScheduledMessage(models.Model):
                 content=self.content,
                 rendered_content=self.rendered_content,
                 scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+                failed=self.failed,
             )
 
         # The recipient for stream messages should always just be the unique stream ID.
@@ -4412,6 +4415,7 @@ class ScheduledMessage(models.Model):
             rendered_content=self.rendered_content,
             topic=self.topic_name(),
             scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+            failed=self.failed,
         )
 
 
