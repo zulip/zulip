@@ -3,7 +3,7 @@ import re
 import secrets
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Dict, List, Match, Optional, Tuple, cast
+from typing import Dict, List, Match, Optional, Tuple
 
 from django.conf import settings
 
@@ -215,9 +215,7 @@ def send_mm_reply_to_stream(
 
 
 def get_message_part_by_type(message: EmailMessage, content_type: str) -> Optional[str]:
-    charsets = cast(  # https://github.com/python/typeshed/pull/9944
-        List[Optional[str]], message.get_charsets()
-    )
+    charsets = message.get_charsets()
 
     for idx, part in enumerate(message.walk()):
         if part.get_content_type() == content_type:

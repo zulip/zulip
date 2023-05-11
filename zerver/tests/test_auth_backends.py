@@ -3306,7 +3306,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             m.output,
             [
                 self.logger_output(
-                    "/complete/apple/: Authentication failed: Token validation failed by Invalid audience",
+                    "/complete/apple/: Authentication failed: Token validation failed by Audience doesn't match",
                     "info",
                 )
             ],
