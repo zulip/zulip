@@ -446,7 +446,7 @@ performing selective data exports. This can be done with the
 following parameters when exporting messages:
 
 - Search keywords in the message text.
-- Message sender.
+- Message sender or recipient.
 - Time range for when messages were sent.
 
 For example, to search for messages containing the word "wonderland"
@@ -460,9 +460,9 @@ $ /home/zulip/deployments/current/manage.py export_search --output compliance-ex
     wonderland
 ```
 
-The results are written to a JSON file. The contents of previous
-versions of edited messages are not searched, nor are deleted
-messages.
+The results are written to a JSON or CSV file. The contents of previous versions
+of edited messages are not searched, nor are deleted messages. Attachments
+associated with the resulting messages can optionally also be exported.
 
 See `/home/zulip/deployments/current/manage.py export_search --help`
 for more details on supported options.
