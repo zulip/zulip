@@ -11,6 +11,10 @@
         width: 100%;
     }
 
+    .page-content {
+        padding: 100px 0 30px;
+    }
+
     .small-hero {
         padding: 120px 50px 0;
     }
