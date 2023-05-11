@@ -232,13 +232,13 @@ function parse_with_options({raw_content, helper_config, options}) {
         },
         silencedMentionHandler(quote) {
             // Silence quoted mentions.
-            quote = quote.replace(
+            quote = quote.replaceAll(
                 /(<span class="user-mention)(" data-user-id="(\d+|\*)">)@/g,
                 "$1 silent$2",
             );
 
             // Silence quoted user group mentions.
-            quote = quote.replace(
+            quote = quote.replaceAll(
                 /(<span class="user-group-mention)(" data-user-group-id="\d+">)@/g,
                 "$1 silent$2",
             );
@@ -375,7 +375,7 @@ function handleUnicodeEmoji({unicode_emoji, get_emoji_name}) {
 
     if (emoji_name) {
         const alt_text = ":" + emoji_name + ":";
-        const title = emoji_name.replace(/_/g, " ");
+        const title = emoji_name.replaceAll("_", " ");
         return make_emoji_span(codepoint, title, alt_text);
     }
 
@@ -384,7 +384,7 @@ function handleUnicodeEmoji({unicode_emoji, get_emoji_name}) {
 
 function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
     const alt_text = ":" + emoji_name + ":";
-    const title = emoji_name.replace(/_/g, " ");
+    const title = emoji_name.replaceAll("_", " ");
 
     // Zulip supports both standard/Unicode emoji, served by a
     // spritesheet and custom realm-specific emoji (served by URL).

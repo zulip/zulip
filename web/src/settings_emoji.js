@@ -79,7 +79,7 @@ function sort_author_full_name(a, b) {
 function is_default_emoji(emoji_name) {
     // Spaces are replaced with `_` to match how the emoji name will
     // actually be stored in the backend.
-    return emoji_codes.names.includes(emoji_name.replace(/ /g, "_"));
+    return emoji_codes.names.includes(emoji_name.replaceAll(" ", "_"));
 }
 
 function is_custom_emoji(emoji_name) {
@@ -116,7 +116,7 @@ export function populate_emoji() {
                 return render_admin_emoji_list({
                     emoji: {
                         name: item.name,
-                        display_name: item.name.replace(/_/g, " "),
+                        display_name: item.name.replaceAll("_", " "),
                         source_url: item.source_url,
                         author: item.author || "",
                         can_delete_emoji: can_delete_emoji(item),

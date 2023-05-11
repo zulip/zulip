@@ -530,7 +530,7 @@ export function pm_with_url(message) {
     } else {
         const person = get_by_user_id(user_ids[0]);
         if (person && person.full_name) {
-            suffix = person.full_name.replace(/[ "%/<>`\p{C}]+/gu, "-");
+            suffix = person.full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
         } else {
             blueslip.error("Unknown people in message");
             suffix = "unk";
@@ -605,7 +605,7 @@ export function emails_to_slug(emails_string) {
 
     if (emails.length === 1) {
         const name = get_by_email(emails[0]).full_name;
-        slug += name.replace(/[ "%/<>`\p{C}]+/gu, "-");
+        slug += name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
     } else {
         slug += "group";
     }
