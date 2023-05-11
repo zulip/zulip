@@ -430,6 +430,26 @@
         }
     }
 
+    & a,
+    & a:link,
+    & a:visited {
+        color: hsl(210deg 94% 42%);
+        text-decoration: underline;
+        text-decoration-color: hsl(210deg 94% 42% / 20%);
+        text-decoration-style: solid;
+        text-underline-offset: 3px;
+    }
+
+    & a:hover {
+        color: hsl(212deg 100% 50%);
+        text-decoration-color: hsl(210deg 100% 50% / 70%);
+    }
+
+    & a:active {
+        color: hsl(212deg 100% 30%);
+        text-decoration-color: hsl(210deg 100% 30%);
+    }
+
     .main-view-banner-action-button,
     .upload_banner_cancel_button {
         border: none;

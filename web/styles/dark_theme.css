@@ -1217,6 +1217,47 @@
         }
     }
 
+    .tabs-container {
+        background-color: hsl(0deg 0% 0% / 30%);
+
+        & i {
+            color: hsl(0deg 0% 80%);
+
+            .rendered_markdown,
+            .compose_banner,
+            #mark_read_on_scroll_state_banner {
+                & a,
+                & a:link,
+                & a:visited {
+                    color: hsl(200deg 100% 43%);
+                    text-decoration-color: hsl(200deg 100% 43% / 30%);
+                }
+
+                & a:hover {
+                    color: hsl(200deg 100% 60%);
+                    text-decoration-color: hsl(200deg 100% 60%);
+                }
+
+                & a:active {
+                    color: hsl(200deg 100% 43%);
+                    text-decoration-color: hsl(200deg 100% 40%);
+                }
+            }
+        }
+
+        .selected-tab {
+            background-color: hsl(0deg 0% 17% / 50%);
+            border: 1px solid hsl(0deg 0% 100% / 12%);
+        }
+
+        .tab-option {
+            &:hover:not(.selected-tab) {
+                background-color: hsl(0deg 0% 17% / 50%);
+                border: 1px solid hsl(0deg 0% 100% / 12%);
+            }
+        }
+    }
+
     .help_link_widget:hover {
         color: inherit;
     }
