@@ -1542,6 +1542,27 @@
 
         & i {
             color: hsl(0deg 0% 80%);
+
+            .rendered_markdown,
+            .compose_banner,
+            #mark_read_on_scroll_state_banner {
+                & a,
+                & a:link,
+                & a:visited {
+                    color: hsl(200deg 100% 43%);
+                    text-decoration-color: hsl(200deg 100% 43% / 30%);
+                }
+
+                & a:hover {
+                    color: hsl(200deg 100% 60%);
+                    text-decoration-color: hsl(200deg 100% 60%);
+                }
+
+                & a:active {
+                    color: hsl(200deg 100% 43%);
+                    text-decoration-color: hsl(200deg 100% 40%);
+                }
+            }
         }
 
         .selected-tab {
