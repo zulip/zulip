@@ -79,3 +79,11 @@ class RadarrHookTests(WebhookTestCase):
             "The movie Batman v Superman: Dawn of Justice was deleted; its files were also deleted."
         )
         self.check_webhook("radarr_movie_deleted", expected_topic, expected_message)
+
+    def test_radarr_movie_file_deleted(self) -> None:
+        """
+        Tests if radarr movie file deleted payload is handled correctly
+        """
+        expected_topic = "Marley & Me"
+        expected_message = "A file with quality Bluray-1080p for the movie Marley & Me was deleted, because it is missing from disk."
+        self.check_webhook("radarr_movie_file_deleted", expected_topic, expected_message)
