@@ -104,13 +104,6 @@ function get_expected_send_opts(day, expecteds) {
     return modal_opts;
 }
 
-function get_minutes_to_hour(minutes) {
-    const date = new Date();
-    date.setMinutes(minutes);
-    date.setSeconds(0);
-    return date;
-}
-
 run_test("scheduled_modal_opts", () => {
     // Sunday thru Saturday
     const days = [
@@ -168,6 +161,19 @@ run_test("missing_or_expired_timestamps", () => {
 });
 
 run_test("should_update_send_later_options", () => {
+    // We should rerender at midnight
+    const start_of_the_day = new Date();
+    start_of_the_day.setHours(0, 0);
+    assert.ok(scheduled_messages.should_update_send_later_options(start_of_the_day));
+
+    function get_minutes_to_hour(minutes) {
+        const date = new Date();
+        date.setHours(4);
+        date.setMinutes(minutes);
+        date.setSeconds(0);
+        return date;
+    }
+
     // We should rerender if it is 5 minutes before the hour
     for (let minute = 0; minute < 60; minute += 1) {
         const current_time = get_minutes_to_hour(minute);
@@ -179,9 +185,4 @@ run_test("should_update_send_later_options", () => {
             assert.ok(!scheduled_messages.should_update_send_later_options(current_time));
         }
     }
-
-    // We should rerender at midnight
-    const start_of_the_day = new Date();
-    start_of_the_day.setHours(0, 0);
-    assert.ok(scheduled_messages.should_update_send_later_options(start_of_the_day));
 });
