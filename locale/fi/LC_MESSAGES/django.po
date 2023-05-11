@@ -45,7 +45,7 @@ msgstr "Yksityiset kanavat"
 
 #: analytics/views/stats.py:296
 msgid "Direct messages"
-msgstr ""
+msgstr "Suoraviestit"
 
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
@@ -3143,7 +3143,7 @@ msgstr "Bottisi {bot_identity} yritti lähettää viestiä kanavalle {stream_nam
 
 #: zerver/actions/message_send.py:1254
 msgid "Direct messages are disabled in this organization."
-msgstr ""
+msgstr "Suoraviestit on poistettu käytöstä tässä organisaatiossa"
 
 #: zerver/actions/message_send.py:1331
 msgid "Topics are required in this organization"

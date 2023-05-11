@@ -27,7 +27,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-10 21:27+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Lev Shereshevsky, 2022-2023\n"
+"Last-Translator: Sergey Korablin <s.korablin@gmail.com>, 2018-2023\n"
 "Language-Team: Russian (http://app.transifex.com/zulip/zulip/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3177,11 +3177,11 @@ msgstr "Пользовательский эмодзи с таким именем
 
 #: zerver/actions/scheduled_messages.py:33
 msgid "Invalid data type for stream ID"
-msgstr ""
+msgstr "Неверный тип данных для идентификатора канала"
 
 #: zerver/actions/scheduled_messages.py:48
 msgid "Recipient list may only contain user IDs"
-msgstr ""
+msgstr "Список получателей может содержать только идентификаторы пользователей."
 
 #: zerver/actions/scheduled_messages.py:137
 msgid "Scheduled message was already sent"
@@ -3189,7 +3189,7 @@ msgstr "Запланированное сообщение уже отправл�
 
 #: zerver/actions/scheduled_messages.py:205
 msgid "Scheduled send time has already passed."
-msgstr ""
+msgstr "Запланированное время отправки уже прошло."
 
 #: zerver/actions/streams.py:836
 #, python-brace-format

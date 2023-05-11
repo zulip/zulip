@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-10 21:28+0000\n"
+"POT-Creation-Date: 2023-05-11 19:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3048,72 +3048,72 @@ msgstr ""
 msgid "{user} has marked this topic as unresolved."
 msgstr ""
 
-#: zerver/actions/message_edit.py:966
+#: zerver/actions/message_edit.py:967
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:970
+#: zerver/actions/message_edit.py:971
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:974
+#: zerver/actions/message_edit.py:975
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1029
+#: zerver/actions/message_edit.py:1030
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1034
+#: zerver/actions/message_edit.py:1035
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1038
+#: zerver/actions/message_edit.py:1039
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1166
+#: zerver/actions/message_edit.py:1167
 msgid "Your organization has turned off message editing"
 msgstr ""
 
-#: zerver/actions/message_edit.py:1184 zerver/actions/message_edit.py:1187
+#: zerver/actions/message_edit.py:1185 zerver/actions/message_edit.py:1188
 msgid "You don't have permission to edit this message"
 msgstr ""
 
-#: zerver/actions/message_edit.py:1198
+#: zerver/actions/message_edit.py:1199
 msgid "The time limit for editing this message has passed"
 msgstr ""
 
-#: zerver/actions/message_edit.py:1213
+#: zerver/actions/message_edit.py:1214
 msgid "The time limit for editing this message's topic has passed"
 msgstr ""
 
-#: zerver/actions/message_edit.py:1247 zerver/actions/message_send.py:1417
+#: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1417
 msgid "You do not have permission to use wildcard mentions in this stream."
 msgstr ""
 
-#: zerver/actions/message_edit.py:1256
+#: zerver/actions/message_edit.py:1257
 msgid "You don't have permission to move this message"
 msgstr ""
 
-#: zerver/actions/message_edit.py:1262
+#: zerver/actions/message_edit.py:1263
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
 msgstr ""
 
-#: zerver/actions/message_edit.py:1279
+#: zerver/actions/message_edit.py:1280
 msgid "The time limit for editing this message's stream has passed"
 msgstr ""
 
@@ -3636,7 +3636,7 @@ msgid "API usage exceeded rate limit"
 msgstr ""
 
 #: zerver/lib/exceptions.py:234 zerver/lib/request.py:442
-#: zerver/lib/validator.py:754
+#: zerver/lib/validator.py:755
 msgid "Malformed JSON"
 msgstr ""
 
@@ -4322,145 +4322,145 @@ msgstr ""
 msgid "User is deactivated"
 msgstr ""
 
-#: zerver/lib/validator.py:75 zerver/lib/validator.py:148
+#: zerver/lib/validator.py:76 zerver/lib/validator.py:149
 #, python-brace-format
 msgid "{var_name} is not a string"
 msgstr ""
 
-#: zerver/lib/validator.py:82
+#: zerver/lib/validator.py:83
 #, python-brace-format
 msgid "{item} cannot be blank."
 msgstr ""
 
-#: zerver/lib/validator.py:90 zerver/lib/validator.py:175
+#: zerver/lib/validator.py:91 zerver/lib/validator.py:176
 #, python-brace-format
 msgid "Invalid {var_name}"
 msgstr ""
 
-#: zerver/lib/validator.py:105
+#: zerver/lib/validator.py:106
 #, python-brace-format
 msgid "{var_name} is too long (limit: {max_length} characters)"
 msgstr ""
 
-#: zerver/lib/validator.py:120
+#: zerver/lib/validator.py:121
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
 msgstr ""
 
-#: zerver/lib/validator.py:141
+#: zerver/lib/validator.py:142
 #, python-brace-format
 msgid "{var_name} is not a recognized time zone"
 msgstr ""
 
-#: zerver/lib/validator.py:154 zerver/lib/validator.py:156
+#: zerver/lib/validator.py:155 zerver/lib/validator.py:157
 #, python-brace-format
 msgid "{var_name} is not a date"
 msgstr ""
 
-#: zerver/lib/validator.py:162
+#: zerver/lib/validator.py:163
 #, python-brace-format
 msgid "{var_name} is not an integer"
 msgstr ""
 
-#: zerver/lib/validator.py:186
+#: zerver/lib/validator.py:187
 #, python-brace-format
 msgid "{var_name} is too small"
 msgstr ""
 
-#: zerver/lib/validator.py:188
+#: zerver/lib/validator.py:189
 #, python-brace-format
 msgid "{var_name} is too large"
 msgstr ""
 
-#: zerver/lib/validator.py:196
+#: zerver/lib/validator.py:197
 #, python-brace-format
 msgid "{var_name} is not a float"
 msgstr ""
 
-#: zerver/lib/validator.py:202
+#: zerver/lib/validator.py:203
 #, python-brace-format
 msgid "{var_name} is not a boolean"
 msgstr ""
 
-#: zerver/lib/validator.py:212
+#: zerver/lib/validator.py:213
 #, python-brace-format
 msgid "{var_name} is not a valid hex color code"
 msgstr ""
 
-#: zerver/lib/validator.py:232 zerver/lib/validator.py:651
+#: zerver/lib/validator.py:233 zerver/lib/validator.py:652
 #, python-brace-format
 msgid "{var_name} is not a list"
 msgstr ""
 
-#: zerver/lib/validator.py:236
+#: zerver/lib/validator.py:237
 #, python-brace-format
 msgid "{container} should have exactly {length} items"
 msgstr ""
 
-#: zerver/lib/validator.py:283 zerver/lib/validator.py:654
+#: zerver/lib/validator.py:284 zerver/lib/validator.py:655
 #, python-brace-format
 msgid "{var_name} is not a dict"
 msgstr ""
 
-#: zerver/lib/validator.py:291
+#: zerver/lib/validator.py:292
 #, python-brace-format
 msgid "{key_name} key is missing from {var_name}"
 msgstr ""
 
-#: zerver/lib/validator.py:316
+#: zerver/lib/validator.py:317
 msgid "Unexpected arguments: {}"
 msgstr ""
 
-#: zerver/lib/validator.py:349
+#: zerver/lib/validator.py:350
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr ""
 
-#: zerver/lib/validator.py:358
+#: zerver/lib/validator.py:359
 #, python-brace-format
 msgid "{variable} != {expected_value} ({value} is wrong)"
 msgstr ""
 
-#: zerver/lib/validator.py:385
+#: zerver/lib/validator.py:386
 #, python-brace-format
 msgid "{var_name} is not a URL"
 msgstr ""
 
-#: zerver/lib/validator.py:392
+#: zerver/lib/validator.py:393
 #, python-format
 msgid "URL pattern must contain '%(username)s'."
 msgstr ""
 
-#: zerver/lib/validator.py:416
+#: zerver/lib/validator.py:417
 #, python-brace-format
 msgid "'{item}' cannot be blank."
 msgstr ""
 
-#: zerver/lib/validator.py:425
+#: zerver/lib/validator.py:426
 msgid "Field must not have duplicate choices."
 msgstr ""
 
-#: zerver/lib/validator.py:438
+#: zerver/lib/validator.py:439
 #, python-brace-format
 msgid "'{value}' is not a valid choice for '{field_name}'."
 msgstr ""
 
-#: zerver/lib/validator.py:616
+#: zerver/lib/validator.py:617
 #, python-brace-format
 msgid "{var_name} is not a string or an integer list"
 msgstr ""
 
-#: zerver/lib/validator.py:626
+#: zerver/lib/validator.py:627
 #, python-brace-format
 msgid "{var_name} is not a string or integer"
 msgstr ""
 
-#: zerver/lib/validator.py:643
+#: zerver/lib/validator.py:644
 #, python-brace-format
 msgid "{var_name} does not have a length"
 msgstr ""
 
-#: zerver/lib/validator.py:700 zerver/lib/validator.py:720
+#: zerver/lib/validator.py:701 zerver/lib/validator.py:721
 #, python-brace-format
 msgid "{var_name} is missing"
 msgstr ""
@@ -5312,7 +5312,7 @@ msgstr ""
 msgid "Invalid payload"
 msgstr ""
 
-#: zerver/webhooks/front/view.py:149
+#: zerver/webhooks/front/view.py:155
 msgid "Unknown webhook request"
 msgstr ""
 

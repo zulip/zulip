@@ -765,7 +765,7 @@ msgstr "Avatar"
 
 #: templates/corporate/try-zulip.html:36
 msgid "Try Zulip now"
-msgstr ""
+msgstr "Essayer Zulip maintenant"
 
 #: templates/corporate/upgrade.html:5
 msgid "Upgrade"
@@ -844,7 +844,7 @@ msgstr "Adresse courriel"
 msgid ""
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
+msgstr "J'accepte les <a href=\"%(root_domain_url)s/policies/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Conditions d'utilisation</a>."
 
 #: templates/zerver/accounts_accept_terms.html:61
 msgid "Accept"
@@ -1009,7 +1009,7 @@ msgstr "Entrer votre adresse courriel"
 
 #: templates/zerver/create_realm.html:29
 msgid "Your email"
-msgstr ""
+msgstr "Votre adresse e-mail"
 
 #: templates/zerver/create_realm.html:43
 msgid ""
@@ -1394,7 +1394,7 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day1.html:45
 msgid "Go to organization"
-msgstr ""
+msgstr "Aller à l'organisation"
 
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
@@ -1531,11 +1531,11 @@ msgstr "Aller sur Zulip"
 #: templates/zerver/emails/onboarding_zulip_guide.txt:27
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
-msgstr ""
+msgstr "Se désabonner des mails de bienvenue pour %(realm_name)s"
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
-msgstr ""
+msgstr "Organisez vos conversations à l'aide de sujets."
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
@@ -1907,65 +1907,65 @@ msgstr ""
 #: templates/zerver/emails/onboarding_zulip_guide.html:13
 #: templates/zerver/emails/onboarding_zulip_guide.txt:4
 msgid "View Zulip guide for businesses"
-msgstr ""
+msgstr "Voir le guide Zulip pour les entreprises"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:15
 #: templates/zerver/emails/onboarding_zulip_guide.txt:6
 msgid "View Zulip guide for open-source projects"
-msgstr ""
+msgstr "Voir le guide Zulip pour les projets open-source"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:17
 #: templates/zerver/emails/onboarding_zulip_guide.txt:8
 msgid "View Zulip guide for education"
-msgstr ""
+msgstr "Voir le guide Zulip pour l'éducation"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:19
 #: templates/zerver/emails/onboarding_zulip_guide.txt:10
 msgid "View Zulip guide for research"
-msgstr ""
+msgstr "Voir le guide Zulip pour la recherche"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:21
 #: templates/zerver/emails/onboarding_zulip_guide.txt:12
 msgid "View Zulip guide for events and conferences"
-msgstr ""
+msgstr "Voir le guide Zulip pour les événements et les conférences"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:23
 #: templates/zerver/emails/onboarding_zulip_guide.txt:14
 msgid "View Zulip guide for non-profits"
-msgstr ""
+msgstr "Voir le guide Zulip pour les organisations à but non lucratif"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:25
 #: templates/zerver/emails/onboarding_zulip_guide.txt:16
 msgid "View Zulip guide for communities"
-msgstr ""
+msgstr "Voir le guide Zulip pour les communautés"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:2
 msgid "Zulip guide for businesses"
-msgstr ""
+msgstr "Guide Zulip pour les entreprises"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:4
 msgid "Zulip guide for open-source projects"
-msgstr ""
+msgstr "Guide Zulip pour les projets open-source"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:6
 msgid "Zulip guide for education"
-msgstr ""
+msgstr "Guide Zulip pour l'éducation"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:8
 msgid "Zulip guide for research"
-msgstr ""
+msgstr "Guide Zulip pour la recherche"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:10
 msgid "Zulip guide for events and conferences"
-msgstr ""
+msgstr "Guide Zulip pour les événements et les conférences"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:12
 msgid "Zulip guide for non-profits"
-msgstr ""
+msgstr "Guide Zulip pour les organisations à but non lucratif"
 
 #: templates/zerver/emails/onboarding_zulip_guide.subject.txt:14
 msgid "Zulip guide for communities"
-msgstr ""
+msgstr "Guide Zulip pour les communautés"
 
 #: templates/zerver/emails/password_reset.html:9
 #: templates/zerver/emails/password_reset.txt:1
@@ -2142,7 +2142,7 @@ msgstr "Fonctionnalités"
 
 #: templates/zerver/footer.html:11
 msgid "Plans & pricing"
-msgstr ""
+msgstr "Tarifs"
 
 #: templates/zerver/footer.html:12
 msgid "Self-hosting"
@@ -2238,7 +2238,7 @@ msgstr "Mettre à niveau un serveur Zulip"
 
 #: templates/zerver/footer.html:63
 msgid "Contributing"
-msgstr ""
+msgstr "Contribuer"
 
 #: templates/zerver/footer.html:68
 msgid "Contributing guide"
@@ -2286,7 +2286,7 @@ msgstr "A propos de Zulip"
 
 #: templates/zerver/footer.html:105
 msgid "Powered by <a href=\"https://zulip.com\">Zulip</a>"
-msgstr ""
+msgstr "Propulsé par <a href=\"https://zulip.com\">Zulip</a>"
 
 #: templates/zerver/footer.html:111
 msgid "Terms of Service"
@@ -2720,7 +2720,7 @@ msgstr ""
 
 #: templates/zerver/register.html:274
 msgid "Who can access your email address"
-msgstr "Qui peut accéder à votre adresse e-mail ?"
+msgstr "Qui peut accéder à votre adresse e-mail"
 
 #: templates/zerver/register.html:281
 #, python-format
@@ -2728,7 +2728,7 @@ msgid ""
 "You can also change this setting <a "
 "href=\"%(root_domain_url)s/help/configure-email-visibility\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">after you join</a>."
-msgstr ""
+msgstr "Vous pouvez également modifier ce paramètre <a href=\"%(root_domain_url)s/help/configure-email-visibility\" target=\"_blank\" rel=\"noopener noreferrer\">après votre inscription</a>."
 
 #: templates/zerver/register.html:285
 msgid "Cancel"
@@ -2746,7 +2746,7 @@ msgstr "Réinitialiser votre mot de passe"
 msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
-msgstr ""
+msgstr "Vous avez oublié votre mot de passe ? Pas de problème, nous vous enverrons un lien pour réinitialiser votre mot de passe à l'adresse e-mail avec laquelle vous vous êtes inscrit."
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
@@ -3187,15 +3187,15 @@ msgstr ""
 
 #: zerver/actions/scheduled_messages.py:48
 msgid "Recipient list may only contain user IDs"
-msgstr ""
+msgstr "La liste des destinataires ne peut contenir que des identifiants d'utilisateurs"
 
 #: zerver/actions/scheduled_messages.py:137
 msgid "Scheduled message was already sent"
-msgstr ""
+msgstr "Le message programmé a déjà été envoyé"
 
 #: zerver/actions/scheduled_messages.py:205
 msgid "Scheduled send time has already passed."
-msgstr ""
+msgstr "L'heure d'envoi prévue est déjà passée."
 
 #: zerver/actions/streams.py:836
 #, python-brace-format
@@ -3870,7 +3870,7 @@ msgstr "Bonjour, et bienvenue sur Zulip!"
 
 #: zerver/lib/onboarding.py:107
 msgid "This is a direct message from me, Welcome Bot."
-msgstr ""
+msgstr "Ceci est un message direct de ma part, Welcome Bot."
 
 #: zerver/lib/onboarding.py:112
 msgid ""
@@ -4069,7 +4069,7 @@ msgstr "'{email}' n'utilise plus Zulip."
 
 #: zerver/lib/recipient_users.py:77
 msgid "You can't send direct messages outside of your organization."
-msgstr ""
+msgstr "Vous ne pouvez pas envoyer de messages directs en dehors de votre organisation."
 
 #: zerver/lib/remote_server.py:93
 msgid "Push notifications bouncer error: {}"
@@ -4101,7 +4101,7 @@ msgstr "L'argument \"{}\" n'est pas du JSON valide. "
 
 #: zerver/lib/scheduled_messages.py:20
 msgid "Scheduled message does not exist"
-msgstr ""
+msgstr "Le message programmé n'existe pas"
 
 #: zerver/lib/send_email.py:72
 msgid "Zulip Account Security"
@@ -4477,27 +4477,27 @@ msgstr "Disponible sur Zulip Cloud Standard. Mettre à niveau pour accéder."
 
 #: zerver/models.py:691
 msgid "GIPHY integration disabled"
-msgstr ""
+msgstr "Intégration GIPHY désactivée"
 
 #: zerver/models.py:696
 msgid "Allow GIFs rated Y (Very young audience)"
-msgstr ""
+msgstr "Autoriser les GIF classés Y (Public très jeune)"
 
 #: zerver/models.py:700
 msgid "Allow GIFs rated G (General audience)"
-msgstr ""
+msgstr "Autoriser les GIF classés G (Public général)"
 
 #: zerver/models.py:704
 msgid "Allow GIFs rated PG (Parental guidance)"
-msgstr ""
+msgstr "Autoriser les GIF classés PG (Conseil parental)"
 
 #: zerver/models.py:708
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
-msgstr ""
+msgstr "Autoriser les GIF classés PG-13 (Conseil parental - moins de 13 ans)"
 
 #: zerver/models.py:712
 msgid "Allow GIFs rated R (Restricted)"
-msgstr ""
+msgstr "Autoriser les GIF classés R (Restreint)"
 
 #: zerver/models.py:1138
 msgid "Invalid characters in emoji name"
@@ -4975,11 +4975,11 @@ msgstr "La date de livraison prévue doit se situer dans le futur."
 
 #: zerver/views/sentry.py:30
 msgid "Invalid request format"
-msgstr ""
+msgstr "Format de requête non valide"
 
 #: zerver/views/sentry.py:33
 msgid "Invalid DSN"
-msgstr ""
+msgstr "DSN non valide"
 
 #: zerver/views/streams.py:121
 #, python-brace-format
@@ -5075,7 +5075,7 @@ msgstr "L'utilisateur a désactivé les notifications de saisie pour les message
 
 #: zerver/views/typing.py:56
 msgid "User has disabled typing notifications for direct messages"
-msgstr ""
+msgstr "L'utilisateur a désactivé les notifications de frappe pour les messages directs"
 
 #: zerver/views/upload.py:202
 msgid "<p>File not found.</p>"
