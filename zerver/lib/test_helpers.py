@@ -262,7 +262,7 @@ def find_key_by_email(address: str) -> Optional[str]:
     key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
-            match = key_regex.search(message.body)
+            match = key_regex.search(str(message.body))
             assert match is not None
             [key] = match.groups()
             return key
