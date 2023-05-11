@@ -2,7 +2,7 @@ import random
 import re
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Union
 from unittest import mock
 from unittest.mock import patch
 
@@ -15,6 +15,7 @@ from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
+from django_stubs_ext import StrPromise
 
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
@@ -426,7 +427,7 @@ class TestMissedMessages(ZulipTestCase):
             )
         m.assert_not_called()
 
-    def normalize_string(self, s: str) -> str:
+    def normalize_string(self, s: Union[str, StrPromise]) -> str:
         s = s.strip()
         return re.sub(r"\s+", " ", s)
 

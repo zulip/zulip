@@ -391,7 +391,7 @@ class PasswordResetTest(ZulipTestCase):
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
-        return message.body
+        return str(message.body)
 
     def test_password_reset(self) -> None:
         user = self.example_user("hamlet")
@@ -4866,7 +4866,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break
@@ -4949,7 +4949,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break
@@ -5631,7 +5631,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break
@@ -5692,7 +5692,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break

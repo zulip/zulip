@@ -5,7 +5,7 @@ from typing import Any
 
 from django.contrib.sessions.backends.base import SessionBase
 from django.core.management.base import CommandParser
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponseBase
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.request import RequestNotes
@@ -20,8 +20,8 @@ class MockSession(SessionBase):
         self.modified = False
 
 
-def profile_request(request: HttpRequest) -> HttpResponse:
-    def get_response(request: HttpRequest) -> HttpResponse:
+def profile_request(request: HttpRequest) -> HttpResponseBase:
+    def get_response(request: HttpRequest) -> HttpResponseBase:
         return prof.runcall(get_messages_backend, request, request.user, apply_markdown=True)
 
     prof = cProfile.Profile()
