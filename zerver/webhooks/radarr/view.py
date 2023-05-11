@@ -29,6 +29,7 @@ RADARR_MESSAGE_TEMPLATE_MOVIE_DELETED = (
 RADARR_MESSAGE_TEMPLATE_MOVIE_FILE_DELETED = (
     "A file with quality {quality} for the movie {movie_title} was deleted, {reason}."
 )
+RADARR_MESSAGE_TEMPLATE_MOVIE_ADDED = "The movie {movie_title} was added."
 
 ALL_EVENT_TYPES = [
     "ApplicationUpdate",
@@ -39,6 +40,7 @@ ALL_EVENT_TYPES = [
     "Grab",
     "MovieDelete",
     "MovieFileDelete",
+    "MovieAdded",
 ]
 
 
@@ -135,6 +137,12 @@ def get_body_for_movie_file_deleted_event(payload: WildValue) -> str:
     )
 
 
+def get_body_for_movie_added_event(payload: WildValue) -> str:
+    return RADARR_MESSAGE_TEMPLATE_MOVIE_ADDED.format(
+        movie_title=payload["movie"]["title"].tame(check_string)
+    )
+
+
 def get_body_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
     if event_type == "Test":
@@ -156,5 +164,7 @@ def get_body_for_http_request(payload: WildValue) -> str:
         return get_body_for_movie_deleted_event(payload)
     elif event_type == "MovieFileDelete":
         return get_body_for_movie_file_deleted_event(payload)
+    elif event_type == "MovieAdded":
+        return get_body_for_movie_added_event(payload)
     else:
         raise UnsupportedWebhookEventTypeError(event_type)
