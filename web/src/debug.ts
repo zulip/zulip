@@ -4,25 +4,11 @@
 // the browser console, run:
 //   var debug = require("./src/debug");
 
-/*
-      debug.print_elapsed_time("foo", foo)
-
-    evaluates to foo() and prints the elapsed time
-    to the console along with the name "foo". */
-
 type Collision = {
     id: string;
     count: number;
     node: string;
 };
-
-export function print_elapsed_time<T>(name: string, fun: () => T): T {
-    const t0 = Date.now();
-    const out = fun();
-    const t1 = Date.now();
-    console.log(`${name} : ${t1 - t0} ms`);
-    return out;
-}
 
 export function check_duplicate_ids(): {collisions: Collision[]; total_collisions: number} {
     const ids = new Set<string>();
