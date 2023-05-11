@@ -433,6 +433,21 @@ export function initialize() {
         target: "#user_info_popover .status-emoji",
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        /*
+            The tooltip for new user group button (+) icon button on #groups
+            overlay was not mounted correctly as its sibling element (search bar)
+            is inserted dynamically after handlebar got rendered. So we append the
+            tooltip element to the body itself with target as the + button.
+        */
+        target: "#groups_overlay .create_user_group_plus_button",
+        content: $t({
+            defaultMessage: "Create new user group",
+        }),
+        placement: "bottom",
+        appendTo: () => document.body,
+    });
 }
 
 export function show_copied_confirmation($copy_button, on_hide_callback, timeout_in_ms = 1000) {
