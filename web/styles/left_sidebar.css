@@ -624,7 +624,7 @@ li.topic-list-item {
 
 .pm-box {
     margin-right: 16px;
-    align-items: center;
+    align-items: baseline; /* Sets .user_circle alignment relative to text; standard icons do not participate in flex. */
 
     .user_circle {
         min-width: 8px;
@@ -637,7 +637,8 @@ li.topic-list-item {
     }
 
     .zulip-icon.zulip-icon-bot {
-        padding: 3px 0;
+        font-size: 90%; /* Reduce the bulkiness of this icon */
+        padding: 3px 0 3px 1px; /* Shift reduced icon a pixel left to maintain horizontal centering. */
     }
 }
 
