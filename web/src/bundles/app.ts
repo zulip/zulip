@@ -7,7 +7,7 @@ import "jquery-caret-plugin/dist/jquery.caret";
 import "../../third/jquery-idle/jquery.idle";
 import "spectrum-colorpicker";
 import "jquery-validation";
-import "flatpickr/dist/flatpickr";
+import "flatpickr";
 
 // Import app JS
 import "../setup";
