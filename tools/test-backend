@@ -78,7 +78,6 @@ not_yet_fully_covered = [
     "zerver/actions/create_realm.py",
     "zerver/actions/message_edit.py",
     "zerver/actions/presence.py",
-    "zerver/actions/scheduled_messages.py",
     "zerver/lib/addressee.py",
     "zerver/lib/markdown/__init__.py",
     "zerver/lib/cache.py",

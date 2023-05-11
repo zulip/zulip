@@ -190,6 +190,19 @@ class ScheduledMessageTest(ZulipTestCase):
                 )
                 self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
+        # Check error is sent if an edit happens after the scheduled
+        # message is successfully sent.
+        new_delivery_datetime = timezone_now() + datetime.timedelta(minutes=7)
+        new_delivery_timestamp = int(new_delivery_datetime.timestamp())
+        updated_response = self.do_schedule_message(
+            "direct",
+            [othello.id],
+            "New content!",
+            new_delivery_timestamp,
+            scheduled_message_id=str(scheduled_message.id),
+        )
+        self.assert_json_error(updated_response, "Scheduled message was already sent")
+
     def verify_deliver_scheduled_message_failure(
         self, scheduled_message: ScheduledMessage, logger: mock.Mock, expected_failure_message: str
     ) -> None:
