@@ -4469,6 +4469,7 @@ paths:
                                         "content": "Hello there!",
                                         "rendered_content": "<p>Hello there!</p>",
                                         "scheduled_delivery_timestamp": 1681662420,
+                                        "failed": false,
                                       },
                                     ],
                                 }
@@ -4505,6 +4506,7 @@ paths:
                                       "content": "Hello there!",
                                       "rendered_content": "<p>Hello there!</p>",
                                       "scheduled_delivery_timestamp": 1681662420,
+                                      "failed": false,
                                     },
                                 }
                             - type: object
@@ -5146,6 +5148,7 @@ paths:
                               "rendered_content": "<p>Hi</p>",
                               "topic": "Introduction",
                               "scheduled_delivery_timestamp": 1681662420,
+                              "failed": false,
                             },
                           ],
                       }
@@ -17648,6 +17651,19 @@ components:
             The UNIX timestamp for when the message will be sent
             by the server, in UTC seconds.
           example: 1595479019
+        failed:
+          type: boolean
+          description: |
+            Whether the server has tried to send the scheduled message
+            and it failed to successfully send.
+
+            Clients that support unscheduling and editing scheduled messages
+            should display scheduled messages with `failed = true` with an
+            indicator that the server failed to send the message at the
+            scheduled time, so that the user is aware of the failure and can
+            get the content of the scheduled message.
+
+            **Changes**: New in Zulip 7.0 (feature level 181).
       additionalProperties: false
       required:
         - scheduled_message_id
@@ -17656,6 +17672,7 @@ components:
         - content
         - rendered_content
         - scheduled_delivery_timestamp
+        - failed
     User:
       allOf:
         - $ref: "#/components/schemas/UserBase"
