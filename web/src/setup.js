@@ -22,19 +22,6 @@ $(() => {
         });
     }
 
-    // This is an issue fix where in jQuery v3 the result of outerHeight on a node
-    // that doesn’t exist is now “undefined” rather than “null”, which means it
-    // will no longer cast to a Number but rather NaN. For this, we create the
-    // `safeOuterHeight` and `safeOuterWidth` functions to safely return a result
-    // (or 0).
-    $.fn.safeOuterHeight = function (...args) {
-        return this.outerHeight(...args) || 0;
-    };
-
-    $.fn.safeOuterWidth = function (...args) {
-        return this.outerWidth(...args) || 0;
-    };
-
     $.fn.expectOne = function () {
         if (blueslip && this.length !== 1) {
             blueslip.error("Expected one element in jQuery set, found more", {length: this.length});

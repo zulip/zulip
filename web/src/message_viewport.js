@@ -60,11 +60,11 @@ export function message_viewport_info() {
     const $element_just_below_us = $("#compose");
 
     res.visible_top =
-        $element_just_above_us.offset().top + $element_just_above_us.safeOuterHeight();
+        $element_just_above_us.offset().top + ($element_just_above_us.outerHeight() ?? 0);
 
     const $sticky_header = $(".sticky_header");
     if ($sticky_header.length) {
-        res.visible_top += $sticky_header.safeOuterHeight();
+        res.visible_top += $sticky_header.outerHeight ?? 0;
     }
 
     res.visible_bottom = $element_just_below_us.position().top;
@@ -189,11 +189,11 @@ function add_to_visible(
 const top_of_feed = new util.CachedValue({
     compute_value() {
         const $header = $("#navbar-container .header");
-        let visible_top = $header.offset().top + $header.safeOuterHeight();
+        let visible_top = $header.offset().top + ($header.outerHeight() ?? 0);
 
         const $sticky_header = $(".sticky_header");
         if ($sticky_header.length) {
-            visible_top += $sticky_header.safeOuterHeight();
+            visible_top += $sticky_header.outerHeight() ?? 0;
         }
         return visible_top;
     },
@@ -363,7 +363,7 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
     const bottom_threshold = viewport_info.visible_bottom;
 
     const message_top = $message.offset().top;
-    const message_height = $message.safeOuterHeight(true);
+    const message_height = $message.outerHeight(true) ?? 0;
     const message_bottom = message_top + message_height;
 
     const is_above = message_top < top_threshold;
@@ -396,7 +396,7 @@ export function maybe_scroll_to_show_message_top() {
     const $selected_message = message_lists.current.selected_row();
     const viewport_info = message_viewport_info();
     const message_top = $selected_message.offset().top;
-    const message_height = $selected_message.safeOuterHeight(true);
+    const message_height = $selected_message.outerHeight(true) ?? 0;
     if (message_top < viewport_info.visible_top) {
         set_message_position(message_top, message_height, viewport_info, 0);
         popovers.set_suppress_scroll_hide();
@@ -443,7 +443,7 @@ export function keep_pointer_in_view() {
 
         // If at least part of the message is below top_threshold (10% from
         // the top), then we also leave it alone.
-        const bottom_offset = message_top + $next_row.safeOuterHeight(true);
+        const bottom_offset = message_top + ($next_row.outerHeight(true) ?? 0);
         if (bottom_offset >= top_threshold) {
             return true;
         }
