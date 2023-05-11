@@ -10,9 +10,13 @@ from zerver.models import UserProfile
 
 RADARR_TOPIC_TEMPLATE = "{movie_title}".strip()
 RADARR_TOPIC_TEMPLATE_TEST = "Radarr - Test".strip()
+RADARR_TOPIC_TEMPLATE_APPLICATION_UPDATE = "Radarr - Application update"
 RADARR_TOPIC_TEMPLATE_HEALTH_CHECK = "Health {level}".strip()
 
 RADARR_MESSAGE_TEMPLATE_HEALTH_CHECK = "{message}.".strip()
+RADARR_MESSAGE_TEMPLATE_APPLICATION_UPDATE = (
+    "Radarr was updated from {previous_version} to {new_version}."
+)
 RADARR_MESSAGE_TEMPLATE_MOVIE_RENAMED = "The movie {movie_title} has been renamed.".strip()
 RADARR_MESSAGE_TEMPLATE_MOVIE_IMPORTED = "The movie {movie_title} has been imported.".strip()
 RADARR_MESSAGE_TEMPLATE_MOVIE_IMPORTED_UPGRADE = (
@@ -20,7 +24,14 @@ RADARR_MESSAGE_TEMPLATE_MOVIE_IMPORTED_UPGRADE = (
 )
 RADARR_MESSAGE_TEMPLATE_MOVIE_GRABBED = "The movie {movie_title} has been grabbed.".strip()
 
-ALL_EVENT_TYPES = ["Rename", "Test", "Download", "Health", "Grab"]
+ALL_EVENT_TYPES = [
+    "ApplicationUpdate",
+    "Test",
+    "Rename",
+    "Download",
+    "Health",
+    "Grab",
+]
 
 
 @webhook_view("Radarr", all_event_types=ALL_EVENT_TYPES)
@@ -41,21 +52,28 @@ def api_radarr_webhook(
 
 def get_subject_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
-    if event_type != "Test" and event_type != "Health":
-        topic = RADARR_TOPIC_TEMPLATE.format(
+    if event_type == "Test":
+        return RADARR_TOPIC_TEMPLATE_TEST
+    elif event_type == "ApplicationUpdate":
+        return RADARR_TOPIC_TEMPLATE_APPLICATION_UPDATE
+    elif event_type == "Health":
+        return RADARR_TOPIC_TEMPLATE_HEALTH_CHECK.format(level=payload["level"].tame(check_string))
+    else:
+        return RADARR_TOPIC_TEMPLATE.format(
             movie_title=payload["movie"]["title"].tame(check_string)
         )
-    elif event_type == "Test":
-        topic = RADARR_TOPIC_TEMPLATE_TEST
-    elif event_type == "Health":
-        topic = RADARR_TOPIC_TEMPLATE_HEALTH_CHECK.format(level=payload["level"].tame(check_string))
-
-    return topic
 
 
 def get_body_for_health_check_event(payload: WildValue) -> str:
     return RADARR_MESSAGE_TEMPLATE_HEALTH_CHECK.format(
         message=payload["message"].tame(check_string)
+    )
+
+
+def get_body_for_application_update_event(payload: WildValue) -> str:
+    return RADARR_MESSAGE_TEMPLATE_APPLICATION_UPDATE.format(
+        previous_version=payload["previousVersion"].tame(check_string),
+        new_version=payload["newVersion"].tame(check_string),
     )
 
 
@@ -91,6 +109,8 @@ def get_body_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
     if event_type == "Test":
         return get_setup_webhook_message("Radarr")
+    elif event_type == "ApplicationUpdate":
+        return get_body_for_application_update_event(payload)
     elif event_type == "Health":
         return get_body_for_health_check_event(payload)
     elif event_type == "Rename":

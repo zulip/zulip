@@ -14,6 +14,14 @@ class RadarrHookTests(WebhookTestCase):
         expected_message = "Radarr webhook has been successfully configured."
         self.check_webhook("radarr_test", expected_topic, expected_message)
 
+    def test_radarr_application_update(self) -> None:
+        """
+        Tests if radarr application update payload is handled correctly
+        """
+        expected_topic = "Radarr - Application update"
+        expected_message = "Radarr was updated from 4.2.0.6370 to 4.2.0.6372."
+        self.check_webhook("radarr_application_update", expected_topic, expected_message)
+
     def test_radarr_health_check_warning(self) -> None:
         """
         Tests if radarr health check warning payload is handled correctly
