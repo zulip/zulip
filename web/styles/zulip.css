@@ -1359,8 +1359,11 @@ td.pointer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 8px 8px 14px;
-    column-gap: 10px;
+    border-radius: 5px;
+    border: 1px solid;
+    font-size: 15px;
+    line-height: 18px;
+    margin-bottom: 20px;
 
     #mark_as_read_turned_off_content {
         margin: 0;
@@ -1371,13 +1374,90 @@ td.pointer {
         display: flex;
     }
 
+    .banner-action-button {
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-weight: 600;
+        margin-left: 10px;
+        margin-top: 4.5px;
+        margin-bottom: 4.5px;
+        height: 32px;
+        white-space: nowrap;
+    }
+
+    & p {
+        margin: 0; /* override bootstrap */
+        /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
+        padding: 8px 5px 8px 15px;
+    }
+
     #mark_as_read_close {
-        align-self: flex-start;
-        margin-top: -5px;
-        /* override bootstrap */
-        top: 0;
-        right: 0;
-        position: static;
+        font-size: 16px;
+        text-decoration: none;
+        padding: 9px 8px;
+    }
+
+    &.warning {
+        background-color: hsl(50deg 75% 92%);
+        border-color: hsl(38deg 44% 27% / 40%);
+        color: hsl(38deg 44% 27%);
+
+        #mark_as_read_close {
+            color: hsl(38deg 44% 27% / 50%);
+
+            &:hover {
+                color: hsl(38deg 44% 27%);
+            }
+
+            &:active {
+                color: hsl(38deg 44% 27% / 75%);
+            }
+        }
+
+        .banner-action-button {
+            background-color: hsl(38deg 44% 27% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(38deg 44% 27% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(38deg 44% 27% / 15%);
+            }
+        }
+    }
+
+    &.info {
+        background-color: hsl(204deg 58% 92%);
+        border-color: hsl(204deg 49% 29% / 40%);
+        color: hsl(204deg 49% 29%);
+
+        #mark_as_read_close {
+            color: hsl(204deg 49% 29% / 50%);
+
+            &:hover {
+                color: hsl(204deg 49% 29%);
+            }
+
+            &:active {
+                color: hsl(204deg 49% 29% / 75%);
+            }
+        }
+
+        .banner-action-button {
+            background-color: hsl(204deg 49% 29% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(204deg 49% 29% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(204deg 49% 29% / 15%);
+            }
+        }
     }
 }
 
