@@ -418,8 +418,6 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
 
         function get_options() {
             const user_ids = people.get_active_human_ids();
-            // Remove current owner.
-            user_ids.splice(user_ids.indexOf(owner_id), 1);
             return user_ids.map((user_id) => ({
                 name: people.get_full_name(user_id),
                 unique_id: user_id,
