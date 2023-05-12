@@ -2,8 +2,8 @@
     <div class="narrows_panel">
         <ul id="global_filters" class="filters">
             {{!-- Special-case this link so we don't actually go to page top. --}}
-            <li class="top_left_all_messages top_left_row tippy-left-sidebar-tooltip" data-tooltip-template-id="all-message-tooltip-template">
-                <a href="#all_messages" class="home-link">
+            <li class="top_left_all_messages top_left_row">
+                <a href="#all_messages" class="home-link tippy-left-sidebar-tooltip" data-tooltip-template-id="all-message-tooltip-template">
                     <span class="filter-icon">
                         <i class="fa fa-align-left" aria-hidden="true"></i>
                     </span>
@@ -13,8 +13,8 @@
                 </a>
                 <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_recent_topics top_left_row tippy-left-sidebar-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
-                <a href="#recent">
+            <li class="top_left_recent_topics top_left_row">
+                <a href="#recent" class="tippy-left-sidebar-tooltip" data-tooltip-template-id="recent-conversations-tooltip-template">
                     <span class="filter-icon">
                         <i class="fa fa-clock-o" aria-hidden="true"></i>
                     </span>
@@ -43,8 +43,8 @@
                 </a>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_drafts top_left_row hidden-for-spectators tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template">
-                <a href="#drafts">
+            <li class="top_left_drafts top_left_row hidden-for-spectators">
+                <a href="#drafts" class="tippy-left-sidebar-tooltip" data-tooltip-template-id="drafts-tooltip-template">
                     <span class="filter-icon">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </span>
