@@ -161,6 +161,13 @@ def edit_scheduled_message(
             scheduled_message_object, rendering_result
         )
 
+        # If the user is editing a scheduled message that the server tried
+        # and failed to send, we need to update the `failed` boolean field
+        # as well as the associated `failure_message` field.
+        if scheduled_message_object.failed:
+            scheduled_message_object.failed = False
+            scheduled_message_object.failure_message = None
+
         scheduled_message_object.save()
 
     event = {

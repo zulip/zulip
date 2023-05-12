@@ -353,6 +353,46 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         self.assertIn("Internal server error", msg.content)
 
+    def test_editing_failed_send_scheduled_message(self) -> None:
+        expected_failure_message = "Message could not be sent at the scheduled time."
+        logger = mock.Mock()
+        self.create_scheduled_message()
+        scheduled_message = self.last_scheduled_message()
+
+        too_late_to_send_message_datetime = (
+            scheduled_message.scheduled_timestamp
+            + datetime.timedelta(minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1)
+        )
+        with mock.patch(
+            "zerver.actions.scheduled_messages.timezone_now",
+            return_value=too_late_to_send_message_datetime,
+        ):
+            self.verify_deliver_scheduled_message_failure(
+                scheduled_message, logger, expected_failure_message
+            )
+
+        # After verifying the scheduled message failed to be sent, confirm
+        # editing the scheduled message with that ID for a future time is
+        # successful and resets the `failed` and `failure_message` fields.
+        new_delivery_datetime = timezone_now() + datetime.timedelta(minutes=60)
+        new_delivery_timestamp = int(new_delivery_datetime.timestamp())
+        content = "Test message"
+        verona_stream_id = self.get_stream_id("Verona")
+        scheduled_message_id = scheduled_message.id
+        response = self.do_schedule_message(
+            "stream",
+            verona_stream_id,
+            content + " 1",
+            new_delivery_timestamp,
+            scheduled_message_id=str(scheduled_message_id),
+        )
+        self.assert_json_success(response)
+
+        scheduled_message = self.last_scheduled_message()
+        self.assertEqual(scheduled_message.id, scheduled_message_id)
+        self.assertFalse(scheduled_message.failed)
+        self.assertIsNone(scheduled_message.failure_message)
+
     def test_scheduling_in_past(self) -> None:
         # Scheduling a message in past should fail.
         content = "Test message"
