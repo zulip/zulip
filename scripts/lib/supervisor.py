@@ -56,6 +56,7 @@ def list_supervisor_processes(
 
         if only_running is None:
             results.append(name)
-        elif only_running == (process["statename"] == "RUNNING"):
+        elif only_running == (process["statename"] in ("RUNNING", "STARTING")):
             results.append(name)
+
     return results
