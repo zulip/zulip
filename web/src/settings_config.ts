@@ -697,7 +697,6 @@ const email_message_notification_settings = ["message_content_in_email_notificat
 const other_email_settings = [
     "enable_digest_emails",
     "enable_login_emails",
-    "enable_marketing_emails",
 ];
 
 const email_notification_settings = [

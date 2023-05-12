@@ -111,7 +111,7 @@
             <li role="presentation" id="gear_menu_about_zulip">
                 <a href="#about-zulip" role="menuitem" class="menuitem-version">
                     <span class="white_zulip_icon_without_text"></span>
-                    <span class="about_zulip_text">{{t "About Zulip" }}</span>
+                    <span class="about_zulip_text">{{t "About Practice Chat" }}</span>
                 </a>
             </li>
             {{#if corporate_enabled}}
@@ -121,33 +121,10 @@
                 </a>
             </li>
             {{/if}}
-            <li class="divider" role="presentation"></li>
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-desktop" aria-hidden="true"></i> {{t 'Desktop & mobile apps' }}
-                </a>
-            </li>
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="/integrations/" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-github" aria-hidden="true"></i> {{t 'Integrations' }}
-                </a>
-            </li>
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="/api" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-sitemap" aria-hidden="true"></i> {{t 'API documentation' }}
-                </a>
-            </li>
-            {{#if show_billing}}
-            <li role="presentation" class="hidden-for-spectators">
-                <a href="/billing/" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-credit-card" aria-hidden="true"></i> {{t 'Billing' }}
-                </a>
-            </li>
-            {{/if}}
             {{#if promote_sponsoring_zulip}}
             <li role="presentation" class="hidden-for-spectators">
                 <a href="https://zulip.com/help/support-zulip-project" target="_blank" rel="noopener noreferrer" role="menuitem">
-                    <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
+                    <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Practice Chat' }}
                 </a>
             </li>
             {{/if}}

@@ -63,8 +63,12 @@
     box-sizing: border-box;
 }
 
-.message_comp {
+#compose_controls {
     display: none;
+}
+
+.message_comp {
+    /* display: none; */
     padding: 5px 10px 0 5px;
 
     #compose_banners {

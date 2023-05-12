@@ -85,7 +85,7 @@ export function version_display_string(): string {
 
     if (page_params.zulip_version.endsWith("-dev+git")) {
         // The development environment uses this version string format.
-        return $t({defaultMessage: "Zulip Server dev environment"});
+        return $t({defaultMessage: "Practice Chat Server dev environment"});
     }
 
     if (is_fork) {
@@ -94,7 +94,7 @@ export function version_display_string(): string {
         const display_version = page_params.zulip_merge_base
             .replace(/\+git.*/, "")
             .replace(/-dev.*/, "-dev");
-        return $t({defaultMessage: "Zulip Server {display_version} (modified)"}, {display_version});
+        return $t({defaultMessage: "Practice Chat Server {display_version} (modified)"}, {display_version});
     }
 
     // The below cases are all for official versions; either a
@@ -103,11 +103,11 @@ export function version_display_string(): string {
     if (version.includes("+git")) {
         // A version from a Zulip official maintenance branch such as 5.x.
         const display_version = version.replace(/\+git.*/, "");
-        return $t({defaultMessage: "Zulip Server {display_version} (patched)"}, {display_version});
+        return $t({defaultMessage: "Practice Chat Server {display_version} (patched)"}, {display_version});
     }
 
     const display_version = version.replace(/\+git.*/, "").replace(/-dev.*/, "-dev");
-    return $t({defaultMessage: "Zulip Server {display_version}"}, {display_version});
+    return $t({defaultMessage: "Practice Chat Server {display_version}"}, {display_version});
 }
 
 export function initialize(): void {
