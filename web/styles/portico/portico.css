@@ -248,6 +248,19 @@ html {
     background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
+
+    & :target {
+        /* Match to where simplebar scrolls */
+        scroll-margin-top: 20px;
+        /* Increase the highlighted space around the text... */
+        padding: 6px 8px;
+        border-radius: 7px 7px 0 0;
+        /* ...but maintain apparent top and bottom margin;
+        pull left and right into the gutter. */
+        margin: 20px -8px 10px;
+        /* Derive highlight color from sidebar, here with 30% alpha */
+        background-color: hsl(152deg 70% 50% / 25%);
+    }
 }
 
 .help-center ol,
