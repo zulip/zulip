@@ -590,6 +590,7 @@ def create_user_messages(
     mentioned_user_ids: AbstractSet[int],
     mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
+    scheduled_message_to_self: bool,
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
@@ -626,7 +627,14 @@ def create_user_messages(
     for user_profile_id in um_eligible_user_ids:
         flags = base_flags
         if (
-            (user_profile_id == sender_id and message.sent_by_human())
+            (
+                # Messages you sent from a non-API client are
+                # automatically marked as read for yourself; scheduled
+                # messages to yourself only are not.
+                user_profile_id == sender_id
+                and message.sent_by_human()
+                and not scheduled_message_to_self
+            )
             or user_profile_id in mark_as_read_user_ids
             or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
         ):
@@ -707,6 +715,7 @@ def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
     email_gateway: bool = False,
+    scheduled_message_to_self: bool = False,
     mark_as_read: Sequence[int] = [],
 ) -> List[int]:
     """See
@@ -754,6 +763,7 @@ def do_send_messages(
                 mentioned_user_ids=mentioned_user_ids,
                 mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
+                scheduled_message_to_self=scheduled_message_to_self,
             )
 
             for um in user_messages:
