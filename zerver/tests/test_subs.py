@@ -2293,6 +2293,11 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, f"Unable to access stream ({deactivated_stream_name}).")
 
+        # You cannot re-archive the stream
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.client_delete("/json/streams/" + str(stream_id))
+        self.assert_json_error(result, "Stream is already deactivated")
+
     def test_you_must_be_realm_admin(self) -> None:
         """
         You must be on the realm to create a stream.
@@ -2327,14 +2332,17 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.set_up_stream_for_archiving("newstream", invite_only=True)
         self.archive_stream(stream)
 
-    def test_archive_streams_youre_not_on(self) -> None:
+    def test_archive_stream_youre_not_on(self) -> None:
         """
-        Administrators can delete public streams they aren't on, including
-        private streams in their realm.
+        Administrators can delete public streams they aren't on
         """
         pub_stream = self.set_up_stream_for_archiving("pubstream", subscribed=False)
         self.archive_stream(pub_stream)
 
+    def test_archive_invite_only_stream_youre_not_on(self) -> None:
+        """
+        Administrators can delete invite-only streams they aren't on
+        """
         priv_stream = self.set_up_stream_for_archiving(
             "privstream", subscribed=False, invite_only=True
         )
