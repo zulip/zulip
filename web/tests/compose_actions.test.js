@@ -121,7 +121,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
-    override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", () => {});
+    override_rewire(compose_recipient, "check_posting_policy_for_compose_box", () => {});
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
 
@@ -245,7 +245,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
-    override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", noop);
+    override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     override_private_message_recipient({override});
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
@@ -299,7 +299,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
-    override_rewire(compose_recipient, "check_stream_posting_policy_for_compose_box", noop);
+    override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
 
     const denmark = {

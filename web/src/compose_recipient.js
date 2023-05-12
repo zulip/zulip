@@ -18,6 +18,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
@@ -108,25 +109,42 @@ export function update_on_recipient_change() {
     update_narrow_to_recipient_visibility();
 }
 
-export function check_stream_posting_policy_for_compose_box(stream_name) {
-    const stream = stream_data.get_sub_by_name(stream_name);
-    if (!stream) {
-        return;
+export function get_posting_policy_error_message() {
+    if (selected_recipient_id === "direct") {
+        if (
+            page_params.realm_private_message_policy ===
+            settings_config.private_message_policy_values.disabled.code
+        ) {
+            return $t({
+                defaultMessage: "Direct messages are disabled in this organization.",
+            });
+        }
+        return "";
     }
-    const can_post_messages_in_stream = stream_data.can_post_messages_in_stream(stream);
-    if (!can_post_messages_in_stream) {
-        $(".compose_right_float_container").addClass("disabled-compose-send-button-container");
-        compose_banner.show_error_message(
-            $t({
-                defaultMessage: "You do not have permission to post in this stream.",
-            }),
-            compose_banner.CLASSNAMES.no_post_permissions,
-            $("#compose_banners"),
-        );
-    } else {
+
+    const stream = sub_store.get(selected_recipient_id);
+    if (stream && !stream_data.can_post_messages_in_stream(stream)) {
+        return $t({
+            defaultMessage: "You do not have permission to post in this stream.",
+        });
+    }
+    return "";
+}
+
+export function check_posting_policy_for_compose_box() {
+    const banner_text = get_posting_policy_error_message();
+    if (banner_text === "") {
         $(".compose_right_float_container").removeClass("disabled-compose-send-button-container");
         compose_banner.clear_errors();
+        return;
     }
+
+    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
+    if (selected_recipient_id === "direct") {
+        banner_classname = compose_banner.CLASSNAMES.private_messages_disabled;
+    }
+    $(".compose_right_float_container").addClass("disabled-compose-send-button-container");
+    compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
 }
 
 function switch_message_type(message_type) {
@@ -205,8 +223,8 @@ export function on_compose_select_recipient_update() {
         // since it's likely the user will want to update the topic
         // after updating the stream.
         ui_util.place_caret_at_end($("#stream_message_recipient_topic")[0]);
-        check_stream_posting_policy_for_compose_box(stream_name);
     }
+    check_posting_policy_for_compose_box();
     update_on_recipient_change();
 }
 
