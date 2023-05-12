@@ -768,7 +768,7 @@ function recenter_focus_if_off_screen() {
     const table_wrapper_element = document.querySelector("#recent_topics_table .table_fix_head");
     const $topic_rows = $("#recent_topics_table table tbody tr");
 
-    if (row_focus > $topic_rows.length) {
+    if (row_focus >= $topic_rows.length) {
         // User used a filter which reduced
         // the number of visible rows.
         return;
