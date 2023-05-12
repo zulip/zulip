@@ -1,3 +1,7 @@
+:root {
+    --padded-content-padding: 50px;
+}
+
 html {
     width: 100vw;
     overflow-x: hidden;
@@ -125,7 +129,7 @@ ol a:hover {
 }
 
 .padded-content {
-    padding: 50px;
+    padding: var(--padded-content-padding);
 }
 
 .clear-float {
@@ -225,12 +229,13 @@ button {
 
     &.why-page,
     &.case-studies-page {
+        /* Move top padding to inner-content for better scroll positions on URL fragments. */
         .padded-content {
-            padding-top: 0; /* No padded content on portico why and case-studies pages... */
+            padding-top: 0;
         }
 
         .inner-content {
-            padding-top: 50px; /* ...instead, pad inner content to aid with proper scroll positions on URL fragments. */
+            padding-top: var(--padded-content-padding);
         }
     }
 
