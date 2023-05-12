@@ -443,7 +443,7 @@ export function process_enter_key(e) {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
-        drafts.drafts_handle_events(e, "enter");
+        drafts.handle_keyboard_events(e, "enter");
         return true;
     }
 
@@ -650,7 +650,7 @@ export function process_hotkey(e, hotkey) {
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
-                drafts.drafts_handle_events(e, event_name);
+                drafts.handle_keyboard_events(e, event_name);
                 return true;
             }
     }

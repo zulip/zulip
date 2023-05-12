@@ -524,8 +524,8 @@ run_test("motion_keys", () => {
 
     delete overlays.is_active;
     overlays.drafts_open = () => true;
-    assert_mapping("up_arrow", drafts, "drafts_handle_events");
-    assert_mapping("down_arrow", drafts, "drafts_handle_events");
+    assert_mapping("up_arrow", drafts, "handle_keyboard_events");
+    assert_mapping("down_arrow", drafts, "handle_keyboard_events");
     delete overlays.is_active;
     delete overlays.drafts_open;
 });
