@@ -111,11 +111,12 @@ blockquote p {
 }
 
 a {
+    color: #007AFF;
     cursor: pointer;
 
     &.message_label_clickable:hover {
         cursor: pointer;
-        color: hsl(200deg 100% 40%);
+        color: #007AFF;
     }
 }
 
@@ -616,6 +617,10 @@ li,
     line-height: 100%;
 }
 
+.btn.btn-link {
+    color: #007AFF;
+}
+
 /* Classes which style copy buttons */
 .copy_button_base {
     outline-color: hsl(0deg 0% 73%);
@@ -633,7 +638,7 @@ li,
     z-index: 2;
 
     &:hover svg path {
-        fill: hsl(200deg 100% 40%);
+        fill: #007AFF;
     }
 }
 
@@ -1033,7 +1038,7 @@ td.pointer {
 
     > .reaction_button {
         &:hover {
-            color: hsl(200deg 100% 40%);
+            color: #007AFF;
         }
     }
 
@@ -1042,7 +1047,7 @@ td.pointer {
         height: 16px;
 
         &:hover {
-            color: hsl(200deg 100% 40%);
+            color: #007AFF;
         }
     }
 
@@ -1051,7 +1056,7 @@ td.pointer {
 
         &:hover {
             cursor: pointer;
-            color: hsl(200deg 100% 40%);
+            color: #007AFF;
         }
     }
 
@@ -1508,12 +1513,12 @@ td.pointer {
 .sender_name_hovered {
     .sender_name,
     .sender_name-in-status {
-        color: hsl(200deg 100% 40%);
+        color: #007AFF;
     }
 }
 
 .actions_hover:hover {
-    color: hsl(200deg 100% 40%);
+    color: #007AFF;
 }
 
 .always_visible_topic_edit,
@@ -1776,7 +1781,7 @@ div.focused_table {
 .message_length_controller {
     display: none;
     text-align: center;
-    color: hsl(200deg 100% 40%);
+    color: #007AFF;
 
     /* to make message-uncollapse easier */
     margin-top: 10px;

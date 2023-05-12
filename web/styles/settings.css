@@ -1708,7 +1708,7 @@ $option_title_width: 180px;
 
 .collapse-settings-btn {
     margin: 10px 0 0 10px;
-    color: hsl(200deg 100% 40%);
+    color: #007AFF;
 
     &:hover {
         cursor: pointer;
