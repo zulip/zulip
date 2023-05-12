@@ -521,11 +521,11 @@
     }
 
     & a {
-        color: hsl(200deg 100% 40%);
+        color: #007AFF;
         text-decoration: none;
 
         & code {
-            color: hsl(200deg 100% 40%);
+            color: #007AFF;
         }
 
         &:hover,
@@ -606,7 +606,7 @@
         color: hsl(0deg 0% 47%);
 
         &:hover {
-            color: hsl(200deg 100% 40%);
+            color: #007AFF;
         }
     }
 }

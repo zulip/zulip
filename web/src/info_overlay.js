@@ -33,10 +33,6 @@ const markdown_help_rows = [
         markdown: "~~strikethrough~~",
     },
     {
-        markdown: "[Zulip website](https://zulip.org)",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
-    },
-    {
         markdown: `\
 * Milk
 * Tea

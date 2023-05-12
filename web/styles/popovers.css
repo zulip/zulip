@@ -248,7 +248,7 @@ ul {
             font-size: 11px;
             font-weight: 550;
             margin-right: 2px;
-            background-color: hsl(200deg 100% 40%);
+            background-color: #007AFF;
             /* Override random undesired bootstrap style */
             text-shadow: none;
             /* Not center aligned but looks better. */
@@ -336,7 +336,7 @@ ul {
 
     &:hover {
         cursor: pointer;
-        color: hsl(200deg 100% 40%);
+        color: #007AFF;
     }
 }
 

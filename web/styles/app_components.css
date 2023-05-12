@@ -230,7 +230,7 @@ input::placeholder {
         }
 
         &.btn-link {
-            color: hsl(208deg 56% 53%);
+            color: #007AFF;
             text-decoration: none;
 
             &:hover,

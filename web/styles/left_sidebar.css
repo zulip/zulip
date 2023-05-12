@@ -420,7 +420,7 @@ li.active-sub-filter {
     /* background-color: #007AFF; */
     position: relative;
     border-radius: 4px;
-    color: #0088CC;
+    color: #007AFF;
 }
 
 #stream_filters .narrow-filter.active-filter {
@@ -460,6 +460,14 @@ li.active-sub-filter {
     & i {
         opacity: 0.7;
     }
+}
+
+#global_filters i.zulip-icon {
+    opacity: 1;
+}
+
+i.zulip-icon {
+    color: white;
 }
 
 li.top_left_all_messages,
