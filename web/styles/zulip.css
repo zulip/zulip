@@ -69,10 +69,8 @@ body,
 
     /* Colors used across the app */
     --color-background-private-message-header: hsl(46deg 35% 93%);
-    --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-background-stream-message-content: hsl(0deg 0% 100%);
-    --color-text-message-header: hsl(0deg 0% 15%);
     --color-message-list-border: hsl(0deg 0% 0% / 16%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 10%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 10%);
@@ -82,23 +80,25 @@ body,
     --color-background-direct-mention: hsl(240deg 52% 95%);
     --color-background-group-mention: hsl(180deg 40% 94%);
     --color-background-dropdown-input: hsl(0deg 0% 100%);
-    --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-background-navbar: hsl(0deg 0% 96%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 100% 50%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
+
+    /* Text colors */
+    --color-text-message-header: hsl(0deg 0% 15%);
+    --color-text-private-message-header: hsl(0deg 0% 100%);
+    --color-text-dropdown-input: hsl(0deg 0% 13.33%);
 }
 
 %dark-theme {
     --color-default-text: hsl(0deg 0% 100%);
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
-    --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-background-private-message-content: hsl(46deg 10% 15%);
     --color-background-stream-message-content: hsl(0deg 0% 14%);
-    --color-text-message-header: hsl(0deg 0% 100%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 60%);
@@ -108,12 +108,16 @@ body,
     --color-background-direct-mention: hsl(240deg 13% 20%);
     --color-background-group-mention: hsl(180deg 13% 15%);
     --color-background-dropdown-input: hsl(225deg 6% 10%);
-    --color-text-dropdown-input: hsl(0deg 0% 95%);
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 100% 60%);
+
+    /* Text colors */
+    --color-text-message-header: hsl(0deg 0% 100%);
+    --color-text-private-message-header: hsl(0deg 0% 100%);
+    --color-text-dropdown-input: hsl(0deg 0% 95%);
 }
 
 :root.dark-theme {
