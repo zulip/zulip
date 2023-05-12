@@ -128,8 +128,7 @@ export function update_settings_pane(group) {
     $edit_container.find(".group-description").text(group.description);
 }
 
-export function show_settings_for(node) {
-    const group = get_user_group_for_target(node);
+export function show_settings_for(group) {
     const html = render_user_group_settings({
         group,
         can_edit: can_edit(group.id),
@@ -146,7 +145,7 @@ export function show_settings_for(node) {
     show_membership_settings(group);
 }
 
-export function setup_group_settings(node) {
+export function setup_group_settings(group) {
     toggler = components.toggle({
         child_wants_focus: true,
         values: [
@@ -160,7 +159,7 @@ export function setup_group_settings(node) {
         },
     });
 
-    show_settings_for(node);
+    show_settings_for(group);
 }
 
 export function setup_group_list_tab_hash(tab_key_value) {
@@ -209,14 +208,17 @@ export function handle_deleted_group(group_id) {
     user_group_settings_ui.redraw_user_group_list();
 }
 
-export function open_group_edit_panel_for_row(group_row) {
-    const group = get_user_group_for_target(group_row);
-
+export function show_group_settings(group) {
     $(".group-row.active").removeClass("active");
     user_group_settings_ui.show_user_group_settings_pane.settings(group);
-    $(group_row).addClass("active");
+    user_group_settings_ui.row_for_group_id(group.id).addClass("active");
     setup_group_edit_hash(group);
-    setup_group_settings(group_row);
+    setup_group_settings(group);
+}
+
+export function open_group_edit_panel_for_row(group_row) {
+    const group = get_user_group_for_target(group_row);
+    show_group_settings(group);
 }
 
 export function initialize() {

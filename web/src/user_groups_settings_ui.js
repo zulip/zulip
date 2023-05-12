@@ -129,19 +129,18 @@ export function add_group_to_table(group) {
         can_edit: user_group_edit.can_edit(group.id),
     });
 
-    group_list_widget.replace_list_data(user_groups.get_realm_user_groups());
+    redraw_user_group_list();
     scroll_util
         .get_content_element($("#groups_overlay_container .settings"))
         .append($(settings_html));
 
-    // TODO: Address issue for visibility of newely created group.
     if (user_group_create.get_name() === group.name) {
         // This `user_group_create.get_name()` check tells us whether the
         // group was just created in this browser window; it's a hack
         // to work around the server_events code flow not having a
         // good way to associate with this request because the group
         // ID isn't known yet.
-        row_for_group_id(group.id).trigger("click");
+        user_group_edit.show_group_settings(group);
         user_group_create.reset_name();
     }
 }
