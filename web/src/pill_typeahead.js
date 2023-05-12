@@ -46,7 +46,13 @@ export function set_up($input, pills, opts) {
             }
 
             if (include_user_groups) {
-                source = [...source, ...user_group_pill.typeahead_source(pills)];
+                source = [
+                    ...source,
+                    ...user_group_pill.typeahead_source(
+                        pills,
+                        opts.only_show_user_groups_editable_by_user,
+                    ),
+                ];
             }
 
             if (include_users) {

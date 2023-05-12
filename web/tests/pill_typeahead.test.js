@@ -80,6 +80,15 @@ const testers = {
     members: [mark.user_id, fred.user_id, me.user_id],
 };
 
+mock_esm("../src/settings_data", {
+    can_edit_user_group(group_id) {
+        if (group_id === admins.id) {
+            return true;
+        }
+        return false;
+    },
+});
+
 const groups = [admins, testers];
 for (const group of groups) {
     user_groups.add(group);
@@ -263,7 +272,11 @@ run_test("set_up", ({mock_template}) => {
                 })
                 .filter(Boolean);
             if (opts.user_group) {
-                expected_result = [...expected_result, ...groups];
+                if (!opts.only_show_user_groups_editable_by_user) {
+                    expected_result = [...expected_result, ...groups];
+                } else {
+                    expected_result = [...expected_result, admins];
+                }
             }
             if (opts.user) {
                 if (opts.user_source) {
@@ -328,6 +341,7 @@ run_test("set_up", ({mock_template}) => {
         {user: true, user_source: () => [fred, mark]},
         {stream: true},
         {user_group: true},
+        {user_group: true, only_show_user_groups_editable_by_user: true},
         {user_group: true, stream: true},
         {user_group: true, user: true},
         {user: true, stream: true},
