@@ -323,9 +323,9 @@ class Command(BaseCommand):
             create_internal_realm()
             zulip_realm = do_create_realm(
                 string_id="zulip",
-                name="Zulip Dev",
+                name="Practice Chat",
                 emails_restricted_to_domains=False,
-                description="The Zulip development environment default organization."
+                description="The Practice Chat development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,
                 plan_type=Realm.PLAN_TYPE_SELF_HOSTED,

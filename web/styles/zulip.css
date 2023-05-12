@@ -707,8 +707,9 @@ strong {
 .sidebar-title {
     color: hsl(0deg 0% 43%);
     font-size: inherit;
-    font-weight: normal;
+    font-weight: bold;
     display: inline;
+    text-decoration: underline;
 }
 
 .tooltip {
@@ -866,8 +867,8 @@ li.actual-dropdown-menu i {
         width: 14px;
         height: 14px;
         margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
+        /* filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
+            brightness(20%) contrast(95%); */
     }
 
     .about_zulip_text {

@@ -93,26 +93,6 @@
                 </select>
             </div>
         </div>
-
-        <hr class="settings_separator" />
-
-        <div id="api_key_button_box">
-            <h3>{{t "API key" }}</h3>
-
-            <div class="input-group">
-                <p class="api-key-note">
-                    {{#tr}}
-                    An API key can be used to programmatically access a Zulip account.
-                    Anyone with access to your API key has the ability to read your messages, send
-                    messages on your behalf, and otherwise impersonate you on Zulip, so you should
-                    guard your API key as carefully as you guard your password. <br />
-                    We recommend creating bots and using the bots' accounts and API keys to access
-                    the Zulip API, unless the task requires access to your account.
-                    {{/tr}}
-                </p>
-                <button class="button rounded" id="api_key_button">{{t "Show/change your API key" }}</button>
-            </div>
-        </div>
         <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked
         to avoid password being inserted by password manager too aggressively. -->
     </div>

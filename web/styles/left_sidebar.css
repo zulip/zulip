@@ -127,6 +127,11 @@ li.show-more-topics {
             &.topic-list li {
                 padding: 2px 0 2px calc($topic_indent - $topic_resolve_width);
 
+                &:hover {
+                    color: white;
+                    background-color: #007AFF;
+                }
+
                 &.filter-topics {
                     padding-bottom: 0;
                     position: sticky;
@@ -188,7 +193,7 @@ li.show-more-topics {
 }
 
 .private_messages_container {
-    background: #f0f0f0;
+    /* background: #f0f0f0; */
     margin-right: 16px;
     margin-left: 6px;
     z-index: 1;
@@ -412,16 +417,16 @@ ul.filters {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background-color: #007AFF;
+    /* background-color: #007AFF; */
     position: relative;
     border-radius: 4px;
-    color: white;
+    color: #0088CC;
 }
 
 #stream_filters .narrow-filter.active-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
-        background-color: hsl(202deg 56% 91%);
+        /* background-color: hsl(202deg 56% 91%); */
         border-radius: 4px;
     }
 }
@@ -691,7 +696,7 @@ li.topic-list-item {
     /* Ideally, 0px should work here, but maybe simplebar is doing something
        that is creating `0.5px` extra gap in zoomed-in windows. */
     top: -0.5px;
-    background-color: #f0f0f0;
+    /* background-color: #f0f0f0; */
     z-index: 1;
 
     & input {

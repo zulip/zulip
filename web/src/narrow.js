@@ -586,6 +586,7 @@ export function activate(raw_operators, opts) {
     search.update_button_visibility();
 
     compose_actions.on_narrow(opts);
+    compose_actions.respond_to_message({trigger: "reply button"});
 
     const current_filter = narrow_state.filter();
 

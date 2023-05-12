@@ -924,7 +924,7 @@ export function initialize() {
                 // of overlays or selecting text (for copy+paste) trigger cancelling.
                 // Check if the click is within the body to prevent extensions from
                 // interfering with the compose box.
-                compose_actions.cancel();
+                // compose_actions.cancel();
             }
         }
     });
