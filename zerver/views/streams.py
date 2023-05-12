@@ -39,6 +39,7 @@ from zerver.actions.streams import (
     do_deactivate_stream,
     do_rename_stream,
     get_subscriber_ids,
+    get_moderators_stream_ids,
 )
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import (
@@ -819,6 +820,23 @@ def get_subscribers_backend(
     subscribers = get_subscriber_ids(stream, user_profile)
 
     return json_success(request, data={"subscribers": list(subscribers)})
+
+
+@has_request_variables
+def get_moderators_stream_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ("stream", converter=to_non_negative_int, path_only=True),
+    with_admins: bool = REQ("with_admins", json_validator=check_bool, default=True),
+) -> HttpResponse:
+    (stream, sub) = access_stream_by_id(
+        user_profile,
+        stream_id,
+        allow_realm_admin=True,
+    )
+    subscribers = get_moderators_stream_ids(stream, user_profile, with_admins)
+
+    return json_success(request, data={"moderators": list(subscribers)})
 
 
 # By default, lists all streams that the user has access to --

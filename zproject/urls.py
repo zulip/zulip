@@ -149,6 +149,7 @@ from zerver.views.streams import (
     get_stream_backend,
     get_streams_backend,
     get_subscribers_backend,
+    get_moderators_stream_backend,
     get_topics_backend,
     json_get_stream_id,
     list_subscriptions_backend,
@@ -450,6 +451,7 @@ v1_api_and_json_patterns = [
     rest_path("get_stream_id", GET=json_get_stream_id),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
     rest_path("streams/<int:stream_id>/members", GET=get_subscribers_backend),
+    rest_path("streams/<int:stream_id>/moderators", GET=get_moderators_stream_backend),
     rest_path(
         "streams/<int:stream_id>",
         GET=get_stream_backend,
