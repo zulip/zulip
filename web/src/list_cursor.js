@@ -5,7 +5,7 @@ import * as keydown_util from "./keydown_util";
 import * as scroll_util from "./scroll_util";
 
 export class ListCursor {
-    constructor({list, $search_input, on_select}) {
+    constructor({list, $search_input, on_select, vdot_icon_class}) {
         const config_ok =
             list &&
             list.scroll_container_sel &&
@@ -20,7 +20,8 @@ export class ListCursor {
 
         this.list = list;
         this.$search_input = $search_input;
-        this.on_select = on_select;
+        this._on_select = on_select;
+        this.vdot_icon_class = vdot_icon_class;
     }
 
     clear() {
@@ -53,6 +54,7 @@ export class ListCursor {
         }
 
         return {
+            $li,
             highlight: () => {
                 $li.trigger("focus");
                 this.adjust_scroll($li);
@@ -133,6 +135,31 @@ export class ListCursor {
         this.go_to(key);
     }
 
+    focus_vdot_icon() {
+        if (this.curr_key !== undefined && this.vdot_icon_class !== undefined) {
+            const row = this.get_row(this.curr_key);
+            const $vdot_icon = row.$li.find(`.${CSS.escape(this.vdot_icon_class)}`);
+
+            $vdot_icon.trigger("focus");
+        }
+    }
+
+    on_select(key) {
+        const row = this.get_row(key);
+        let is_vdot_icon_focused = false;
+        let $vdot_icon;
+        if (this.vdot_icon_class !== undefined) {
+            $vdot_icon = row.$li.find(`.${CSS.escape(this.vdot_icon_class)}`);
+            is_vdot_icon_focused = $vdot_icon.is(":focus");
+        }
+
+        if (is_vdot_icon_focused) {
+            $vdot_icon.trigger("click");
+        } else {
+            this._on_select(key);
+        }
+    }
+
     handle_navigation() {
         this.$search_input.on("focus", () => this.clear());
 
@@ -161,6 +188,10 @@ export class ListCursor {
                     if (this.curr_key !== undefined) {
                         this.on_select(this.curr_key);
                     }
+                    return true;
+                },
+                Tab: () => {
+                    this.focus_vdot_icon();
                     return true;
                 },
             },

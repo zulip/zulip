@@ -44,10 +44,12 @@ $user_status_emoji_width: 24px;
                 vertical-align: middle;
             }
 
-            &:hover {
+            &:hover,
+            &:focus {
                 display: inline;
                 cursor: pointer;
                 color: hsl(0deg 0% 0%) !important;
+                outline-offset: -1.5px;
             }
 
             /*
@@ -62,7 +64,11 @@ $user_status_emoji_width: 24px;
             }
         }
 
-        &:hover {
+        &:hover,
+        &:focus {
+            background-color: hsl(120deg 12.3% 71.4% / 38%);
+            outline: none;
+
             .user-list-sidebar-menu-icon {
                 display: inline;
                 cursor: pointer;
@@ -70,10 +76,11 @@ $user_status_emoji_width: 24px;
             }
         }
 
-        &:hover,
-        &:focus {
-            background-color: hsl(120deg 12.3% 71.4% / 38%);
-            outline: none;
+        &:focus-within {
+            .user-list-sidebar-menu-icon {
+                display: inline;
+                cursor: pointer;
+            }
         }
     }
 

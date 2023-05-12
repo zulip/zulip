@@ -335,6 +335,7 @@ function render_user_info_popover(
         $bot_owner_element.addClass("tippy-zulip-tooltip");
     }
 
+    $("#user_info_popover").trigger("focus");
     // Note: We pass the normal-size avatar in initial rendering, and
     // then query the server to replace it with the medium-size
     // avatar.  The purpose of this double-fetch approach is to take

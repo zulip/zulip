@@ -299,15 +299,22 @@ li.show-more-topics {
 
 :not(.active-sub-filter) {
     &.top_left_row:hover,
-    &.bottom_left_row:hover,
-    &#stream_filters li:focus {
+    &.bottom_left_row:hover {
         background-color: var(--color-background-hover-narrow-filter);
         border-radius: 4px;
+    }
+
+    #stream_filters .narrow-filter:focus {
         outline: none;
+
+        & .bottom_left_row {
+            background-color: var(--color-background-hover-narrow-filter);
+            border-radius: 4px;
+        }
     }
 }
 
-#stream_filters .narrow-filter.highlighted_stream {
+#stream_filters .narrow-filter:focus {
     &.active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
     }
@@ -561,7 +568,8 @@ li.top_left_scheduled_messages {
         show it in black.
     */
 
-    &:hover {
+    &:hover,
+    &:focus {
         color: hsl(0deg 0% 0%) !important;
     }
 

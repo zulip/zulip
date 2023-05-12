@@ -716,6 +716,7 @@ export function set_event_handlers() {
         },
         $search_input: $(".stream-list-filter").expectOne(),
         on_select: keydown_enter_key,
+        vdot_icon_class: "stream-sidebar-menu-icon",
     });
 
     const $search_input = $(".stream-list-filter").expectOne();

@@ -242,6 +242,8 @@ function buddy_list_add(user_id, $stub) {
         $stub.attr("data-user-id", user_id);
     }
     $stub.length = 1;
+    $stub.set_find_results(".user-list-sidebar-menu-icon", $.create(`menu-icon-${user_id}`));
+
     const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
     $("#user_presences").set_find_results(sel, $stub);
 }
@@ -359,6 +361,14 @@ test("handlers", ({override, mock_template}) => {
 
         // get line coverage for cleared case
         activity.user_cursor.clear();
+        filter_key_handlers.Enter();
+    })();
+
+    (function test_tab_handler() {
+        init();
+
+        activity.user_cursor.go_to(alice.user_id);
+        filter_key_handlers.Tab();
         filter_key_handlers.Enter();
     })();
 

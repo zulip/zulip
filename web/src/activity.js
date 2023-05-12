@@ -297,6 +297,7 @@ export function set_cursor_and_filter() {
         list: buddy_list,
         $search_input: user_filter.input_field(),
         on_select: keydown_enter_key,
+        vdot_icon_class: "user-list-sidebar-menu-icon",
     });
 }
 

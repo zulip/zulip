@@ -754,12 +754,18 @@
     }
 
     #user_presences li .user-list-sidebar-menu-icon:hover,
+    #user_presences li .user-list-sidebar-menu-icon:focus,
     .all-messages-sidebar-menu-icon:hover,
     .starred-messages-sidebar-menu-icon:hover,
     .drafts-sidebar-menu-icon:hover,
     .stream-sidebar-menu-icon:hover,
+    .stream-sidebar-menu-icon:focus,
     .topic-sidebar-menu-icon:hover {
         color: hsl(0deg 0% 100%) !important;
+    }
+
+    .stream-sidebar-menu-icon:focus {
+        outline: 1px solid hsl(0deg 0% 100%);
     }
 
     #streamlist-toggle,
