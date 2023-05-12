@@ -164,6 +164,11 @@ test("basics", () => {
 
     assert.equal(stream_data.slug_to_name("99-whatever"), "99-whatever");
     assert.equal(stream_data.slug_to_name("99whatever"), "99whatever");
+
+    // sub_store
+    assert.equal(sub_store.get(-3), undefined);
+    assert.equal(sub_store.get(undefined), undefined);
+    assert.equal(sub_store.get(1), denmark);
 });
 
 test("get_subscribed_streams_for_user", () => {

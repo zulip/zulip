@@ -6,6 +6,7 @@ import render_message_inline_image_tooltip from "../templates/message_inline_ima
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -640,9 +641,7 @@ export function initialize() {
 
     delegate("body", {
         target: [".disabled-compose-send-button-container"],
-        content: $t({
-            defaultMessage: "You do not have permission to post in this stream.",
-        }),
+        content: () => compose_recipient.get_posting_policy_error_message(),
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
