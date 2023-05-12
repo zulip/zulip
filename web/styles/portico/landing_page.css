@@ -2576,11 +2576,7 @@ button {
     margin: 20px 0 7px;
 }
 
-.portico-landing.jobs .open-positions-top .padded-content {
-    padding-bottom: 0;
-}
-
-.portico-landing.jobs .how-we-work .padded-content {
+.portico-landing.jobs .how-we-work {
     padding-top: 25px;
 }
 
