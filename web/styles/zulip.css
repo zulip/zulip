@@ -61,6 +61,12 @@ body,
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
 
+    /*
+    Left position of unread marker. Only needs to be tracked if it is negative so that
+    it doesn't leak through message header.
+    */
+    --unread-marker-left: -1px;
+
     /* Colors used across the app */
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
@@ -1253,6 +1259,8 @@ td.pointer {
         box-shadow: 0 -1px 0 0 var(--color-background);
 
         &.sticky_header {
+            box-shadow: var(--unread-marker-left) 0 0 0 var(--color-background);
+
             .recipient_row_date {
                 display: block;
             }
@@ -1476,7 +1484,7 @@ td.pointer {
     z-index: 2;
     bottom: 1px;
     transition: all 0.3s ease-out;
-    left: -1px;
+    left: var(--unread-marker-left);
 
     &.slow_fade {
         transition: all 2s ease-out;
