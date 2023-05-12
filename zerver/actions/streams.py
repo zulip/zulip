@@ -25,6 +25,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish
@@ -70,6 +71,10 @@ from zerver.tornado.django_api import send_event
 def do_deactivate_stream(
     stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
+    # If the stream is already deactivated, this is a no-op
+    if stream.deactivated is True:
+        raise JsonableError(_("Stream is already deactivated"))
+
     # We want to mark all messages in the to-be-deactivated stream as
     # read for all users; otherwise they will pollute queries like
     # "Get the user's first unread message".  Since this can be an
