@@ -3,10 +3,6 @@
 %dark-theme {
     color-scheme: dark;
 
-    & body {
-        color: hsl(236deg 33% 90%);
-    }
-
     .placeholder {
         color: hsl(0deg 0% 55%);
         opacity: 1;

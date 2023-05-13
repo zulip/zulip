@@ -21,6 +21,7 @@ body {
     font-size: 14px;
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
+    color: var(--color-text-default);
     background-color: var(--color-background);
     transition: background-color 200ms linear;
 }
@@ -84,6 +85,7 @@ body {
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
 
     /* Text colors */
+    --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-header: hsl(0deg 0% 15%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
@@ -109,8 +111,9 @@ body {
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 100% 60%);
-
+    
     /* Text colors */
+    --color-text-default: hsl(0deg 0% 100% / 75%);
     --color-text-message-header: hsl(0deg 0% 100%);
     --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-text-dropdown-input: hsl(0deg 0% 95%);
