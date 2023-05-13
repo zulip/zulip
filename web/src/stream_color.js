@@ -47,8 +47,8 @@ export function get_recipient_bar_color(color) {
     // Mixes 50% of color to 40% of white (light theme) / black (dark theme).
     const using_dark_theme = settings_data.using_dark_theme();
     color = get_stream_privacy_icon_color(color);
-    return colord(using_dark_theme ? "#000000" : "#ffffff")
-        .mix(color, using_dark_theme ? 0.43 : 0.35)
+    return colord(using_dark_theme ? "#000000" : "#f9f9f9")
+        .mix(color, using_dark_theme ? 0.38 : 0.22)
         .toHex();
 }
 
