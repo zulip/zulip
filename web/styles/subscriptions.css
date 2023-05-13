@@ -530,7 +530,7 @@ h4.user_group_setting_subsection_title {
         }
 
         &.checked:hover svg {
-            opacity: 0.5;
+            fill: hsl(240deg 41% 50%);
         }
 
         &.disabled svg {
@@ -556,7 +556,7 @@ h4.user_group_setting_subsection_title {
     }
 
     .checked svg {
-        fill: hsl(170deg 48% 54%);
+        fill: hsl(240deg 96% 68%);
     }
 
     .icon {
