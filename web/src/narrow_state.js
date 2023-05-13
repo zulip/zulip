@@ -88,7 +88,13 @@ export function set_compose_defaults() {
     // if they are uniquely specified in the narrow view.
 
     if (single.has("stream")) {
-        opts.stream = stream_data.get_name(single.get("stream"));
+        // The raw stream name from collect_single may be an arbitrary
+        // unvalidated string from the URL fragment and thus not be valid.
+        // So we look up the resolved stream and return that if appropriate.
+        const sub = stream_sub();
+        if (sub !== undefined) {
+            opts.stream = sub.name;
+        }
     }
 
     if (single.has("topic")) {

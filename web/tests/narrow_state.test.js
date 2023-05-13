@@ -174,7 +174,14 @@ test("set_compose_defaults", () => {
         ["topic", "Bar"],
     ]);
 
-    const stream_and_topic = narrow_state.set_compose_defaults();
+    // First try with a stream that doesn't exist.
+    let stream_and_topic = narrow_state.set_compose_defaults();
+    assert.equal(stream_and_topic.stream, undefined);
+    assert.equal(stream_and_topic.topic, "Bar");
+
+    const test_stream = {name: "Foo", stream_id: 72};
+    stream_data.add_sub(test_stream);
+    stream_and_topic = narrow_state.set_compose_defaults();
     assert.equal(stream_and_topic.stream, "Foo");
     assert.equal(stream_and_topic.topic, "Bar");
 
