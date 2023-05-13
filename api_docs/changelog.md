@@ -34,7 +34,8 @@ format used by the Zulip server that they are interacting with.
 
 * `POST /invites`: Added support for invitations specifying the empty
   list as the user's initial stream subscriptions. Previously, this
-  returned an error.
+  returned an error. This change was also backported to Zulip 6.2, and
+  is available at feature levels 157-158 as well.
 
 **Feature level 179**
 
@@ -234,8 +235,17 @@ format used by the Zulip server that they are interacting with.
 * [`PATCH /messages/{message_id}`](/api/update-message): Message senders are not
   allowed to edit topics indefinitely now.
 
-Feature levels 157-158 are reserved for future use in 6.x maintenance
+Feature level 158 is reserved for future use in 6.x maintenance
 releases.
+
+## Changes in Zulip 6.2
+
+**Feature level 157**
+
+* `POST /invites`: Added support for invitations specifying the empty
+  list as the user's initial stream subscriptions. Previously, this
+  returned an error. This change was backported from the Zulip 7.0
+  branch, and thus is available at feature levels 157-158 and 180+.
 
 ## Changes in Zulip 6.0
 
