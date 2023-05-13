@@ -1,9 +1,10 @@
+require "shellwords"
+
 module Puppet::Parser::Functions
   newfunction(:zulipconf, :type => :rvalue, :arity => -2) do |args|
     default = args.pop
-    joined = args.join(" ")
     zulip_conf_path = lookupvar("zulip_conf_path")
-    output = `/usr/bin/crudini --get #{zulip_conf_path} #{joined} 2>&1`; result = $?.success?
+    output = `/usr/bin/crudini --get -- #{[zulip_conf_path, *args].shelljoin} 2>&1`; result = $?.success?
     if result
       if [true, false].include? default
         # If the default is a bool, coerce into a bool.  This list is also
@@ -19,7 +20,7 @@ module Puppet::Parser::Functions
 
   newfunction(:zulipconf_keys, :type => :rvalue, :arity => 1) do |args|
     zulip_conf_path = lookupvar("zulip_conf_path")
-    output = `/usr/bin/crudini --get #{zulip_conf_path} #{args[0]} 2>&1`; result = $?.success?
+    output = `/usr/bin/crudini --get -- #{[zulip_conf_path, args[0]].shelljoin} 2>&1`; result = $?.success?
     if result
       return output.lines.map { |l| l.strip }
     else
@@ -31,12 +32,12 @@ module Puppet::Parser::Functions
     section = "nagios"
     prefix = "hosts_"
     zulip_conf_path = lookupvar("zulip_conf_path")
-    keys = `/usr/bin/crudini --get #{zulip_conf_path} #{section} 2>&1`; result = $?.success?
+    keys = `/usr/bin/crudini --get -- #{[zulip_conf_path, section].shelljoin} 2>&1`; result = $?.success?
     if result
       filtered_keys = keys.lines.map { |l| l.strip }.select { |l| l.start_with?(prefix) }
       all_values = []
       filtered_keys.each do |key|
-        values = `/usr/bin/crudini --get #{zulip_conf_path} #{section} #{key} 2>&1`; result = $?.success?
+        values = `/usr/bin/crudini --get -- #{[zulip_conf_path, section, key].shelljoin} 2>&1`; result = $?.success?
         if result
           all_values += values.strip.split(/,\s*/)
         end
