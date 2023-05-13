@@ -350,6 +350,7 @@ def try_deliver_one_scheduled_message(logger: logging.Logger) -> bool:
                 and not isinstance(e, RealmDeactivatedError)
                 and not isinstance(e, UserDeactivatedError)
             ):
+                notify_update_scheduled_message(scheduled_message.sender, scheduled_message)
                 send_failed_scheduled_message_notification(
                     scheduled_message.sender, scheduled_message.id
                 )
