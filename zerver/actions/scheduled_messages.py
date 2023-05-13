@@ -133,6 +133,17 @@ def do_schedule_messages(
     return [scheduled_message.id for scheduled_message, ignored in scheduled_messages]
 
 
+def notify_update_scheduled_message(
+    user_profile: UserProfile, scheduled_message: ScheduledMessage
+) -> None:
+    event = {
+        "type": "scheduled_messages",
+        "op": "update",
+        "scheduled_message": scheduled_message.to_dict(),
+    }
+    send_event(user_profile.realm, event, [user_profile.id])
+
+
 def edit_scheduled_message(
     scheduled_message_id: int, send_request: SendMessageRequest, sender: UserProfile
 ) -> int:
@@ -170,12 +181,7 @@ def edit_scheduled_message(
 
         scheduled_message_object.save()
 
-    event = {
-        "type": "scheduled_messages",
-        "op": "update",
-        "scheduled_message": scheduled_message_object.to_dict(),
-    }
-    send_event(sender.realm, event, [sender.id])
+    notify_update_scheduled_message(sender, scheduled_message_object)
     return scheduled_message_id
 
 
