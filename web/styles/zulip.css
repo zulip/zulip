@@ -21,10 +21,6 @@ body {
     font-size: 14px;
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
-}
-
-body,
-#message_view_header_underpadding {
     background-color: var(--color-background);
     transition: background-color 200ms linear;
 }
