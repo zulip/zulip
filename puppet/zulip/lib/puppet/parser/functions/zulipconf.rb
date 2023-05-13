@@ -8,7 +8,7 @@ module Puppet::Parser::Functions
       if [true, false].include? default
         # If the default is a bool, coerce into a bool.  This list is also
         # maintained in scripts/lib/zulip_tools.py
-        ['1','y','t','true','yes','enable','enabled'].include? output.strip.downcase
+        ["1", "y", "t", "true", "yes", "enable", "enabled"].include? output.strip.downcase
       else
         output.strip
       end
