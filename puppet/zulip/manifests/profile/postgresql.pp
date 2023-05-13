@@ -54,7 +54,7 @@ class zulip::profile::postgresql {
     fail("PostgreSQL ${version} not supported")
   }
 
-  if $replication_primary != '' and $replication_user != '' {
+  if $replication_primary != undef and $replication_user != undef {
     if $s3_backups_bucket == '' {
       $message = @(EOT/L)
           Replication is enabled, but s3_backups_bucket is not set in zulip-secrets.conf!  \
