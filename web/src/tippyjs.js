@@ -405,6 +405,7 @@ export function initialize() {
             "#stream-specific-notify-table .unmute_stream",
             "#add_streams_tooltip",
             "#filter_streams_tooltip",
+            ".error-icon-message-recipient .zulip-icon",
         ],
         appendTo: () => document.body,
     });

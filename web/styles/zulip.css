@@ -88,6 +88,7 @@ body,
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 100% 50%);
+    --color-failed-message-send-icon: hsl(0deg 100% 50%);
 }
 
 %dark-theme {
@@ -227,7 +228,6 @@ p.n-margin {
     display: none;
 }
 
-.scheduled-messages-loading-logo,
 .alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
@@ -1096,7 +1096,7 @@ td.pointer {
 
         .failed_message_action {
             opacity: 1 !important;
-            color: hsl(0deg 100% 50%);
+            color: var(--color-failed-message-send-icon);
             font-weight: bold;
             padding: 1px;
         }
@@ -3133,5 +3133,19 @@ select.invite-as {
     .no-dropdown-items {
         color: hsl(0deg 0% 60%);
         display: none;
+    }
+}
+
+#scheduled_messages_overlay .error-icon-message-recipient {
+    width: 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1;
+    color: var(--color-failed-message-send-icon);
+
+    .zulip-icon {
+        padding: 5px;
     }
 }
