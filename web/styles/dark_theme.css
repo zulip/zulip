@@ -21,8 +21,9 @@
         }
     }
 
+    & ul.pm-list,
     & ul.filters {
-        color: hsl(236deg 33% 90%);
+        color: hsl(0deg 0% 100% / 80%);
 
         & a:hover {
             color: inherit;
@@ -605,7 +606,7 @@
     .message_row,
     .draft-row .draft-info-box,
     .preview_message_area {
-        border-color: hsl(0deg 0% 0% / 20%);
+        border-color: hsl(0deg 0% 0% / 40%);
     }
 
     .preview_message_area {
@@ -622,15 +623,6 @@
         &::after {
             color: hsl(0deg 0% 100% / 50%);
         }
-    }
-
-    #message_view_header .stream {
-        color: hsl(236deg 33% 90%);
-    }
-
-    #message_view_header .sub_count,
-    #message_view_header .narrow_description {
-        color: hsl(0deg 0% 90%);
     }
 
     & div.overlay,

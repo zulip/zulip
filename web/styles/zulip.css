@@ -81,27 +81,26 @@ body {
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
-    --color-unread-marker: hsl(217deg 100% 50%);
+    --color-unread-marker: hsl(217deg 64% 59%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
+    --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
-    --color-text-private-message-header: hsl(0deg 0% 100%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
 }
 
 %dark-theme {
-    --color-default-text: hsl(0deg 0% 100%);
     --color-date: hsl(0deg 0% 100% / 75%);
     --color-background-private-message-header: hsl(46deg 15% 20%);
-    --color-background-private-message-content: hsl(46deg 10% 15%);
-    --color-background-stream-message-content: hsl(0deg 0% 14%);
+    --color-background-private-message-content: hsl(46deg 7% 16%);
+    --color-background-stream-message-content: hsl(0deg 0% 15%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 100% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 60%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 48%);
-    --color-message-list-border: hsl(0deg 0% 0% / 30%);
+    --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-direct-mention: hsl(240deg 13% 20%);
     --color-background-group-mention: hsl(180deg 13% 15%);
@@ -110,12 +109,13 @@ body {
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
-    --color-unread-marker: hsl(217deg 100% 60%);
-    
+    --color-unread-marker: hsl(217deg 64% 59%);
+
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
-    --color-text-message-header: hsl(0deg 0% 100%);
-    --color-text-private-message-header: hsl(0deg 0% 100%);
+    --color-text-message-view-header: hsl(0deg 0% 100% / 80%);
+    --color-text-message-header: hsl(0deg 0% 100% / 80%);
+    --color-text-sender-name: hsl(0deg 0% 100% / 85%);
     --color-text-dropdown-input: hsl(0deg 0% 95%);
 }
 
@@ -978,13 +978,13 @@ td.pointer {
     font-weight: normal;
     text-align: right;
     opacity: 0.6;
-    color: var(--color-default-text);
+    color: var(--color-text-default);
     font-feature-settings: "pnum" on, "lnum" on;
     letter-spacing: 0.02em;
     /* Disable blue link styling for the message timestamp link. */
     &:hover {
         text-decoration: none;
-        color: var(--color-default-text);
+        color: var(--color-text-default);
     }
 }
 
@@ -993,7 +993,7 @@ td.pointer {
     font-size: 12px;
     text-align: right;
     opacity: 0.6;
-    color: var(--color-default-text);
+    color: var(--color-text-default);
     animation: rotate 1s infinite linear;
 }
 
@@ -1535,6 +1535,11 @@ td.pointer {
     font-weight: 700;
 }
 
+.sender_name,
+.sender_name-in-status {
+    color: var(--color-text-sender-name);
+}
+
 .sender_name_hovered {
     .sender_name,
     .sender_name-in-status {
@@ -1861,6 +1866,7 @@ div.focused_table {
 }
 
 #message_view_header {
+    color: var(--color-text-message-view-header);
     z-index: 2;
     float: left;
     height: var(--header-height);
@@ -1941,7 +1947,7 @@ div.focused_table {
     .narrow_description {
         background: none;
         font-size: 14px;
-        color: hsl(0deg 0% 40%);
+        color: inherit;
         font-weight: 400;
         line-height: 20px;
     }
