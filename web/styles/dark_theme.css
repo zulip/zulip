@@ -788,6 +788,25 @@
         background-color: hsl(0deg 0% 0% / 20%);
     }
 
+    .stream-row,
+    .group-row {
+        /* This is for coluring the plus sign SVGs in stream-list UI */
+        /* public */
+        .check:not(.checked) svg {
+            fill: hsl(218deg 14% 33%);
+        }
+
+        /* private */
+        .disabled svg {
+            opacity: 0.5;
+        }
+
+        /* public :hover */
+        .check:not(.checked, .disabled):hover svg {
+            fill: hsl(230deg 11% 67%);
+        }
+    }
+
     .recent_view_participant_overflow {
         color: hsl(0deg 0% 100%) !important;
         background-color: hsl(211deg 18% 25%) !important;

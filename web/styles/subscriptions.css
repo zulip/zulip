@@ -524,7 +524,7 @@ h4.user_group_setting_subsection_title {
         background-position: center center;
 
         & svg {
-            fill: transparent;
+            fill: hsl(0deg 0% 72%);
             width: 70%;
             margin: 0% 15%;
         }
@@ -533,9 +533,9 @@ h4.user_group_setting_subsection_title {
             opacity: 0.5;
         }
 
-        &.disabled {
-            pointer-events: none;
-            visibility: hidden;
+        &.disabled svg {
+            fill: hsl(0deg 0% 87%);
+            cursor: not-allowed;
         }
 
         .sub_unsub_status {
@@ -641,19 +641,26 @@ h4.user_group_setting_subsection_title {
         vertical-align: top;
     }
 
-    &:hover .check:not(.checked) svg,
-    &.active:hover .check:not(.checked) svg {
-        fill: hsl(0deg 0% 87%);
-    }
-
-    .check:not(.checked):hover svg,
-    &.active .check:not(.checked):hover svg {
-        fill: hsl(0deg 0% 72%);
+    .check:not(.checked, .disabled):hover svg,
+    &.active .check:not(.checked, .disabled):hover svg {
+        fill: hsl(0deg 0% 27%);
     }
 
     &::selection,
     .icon .hashtag::selection {
         background-color: transparent;
+    }
+}
+
+.group-row {
+    /*
+        These are temporary rules and would get removed with
+        the completion of https://github.com/zulip/zulip/issues/25538
+        as these check buttons become functional for user groups.
+    */
+    .check.disabled {
+        pointer-events: none !important;
+        visibility: hidden !important;
     }
 }
 
