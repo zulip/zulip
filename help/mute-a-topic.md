@@ -85,6 +85,32 @@
 
 {end_tabs}
 
+## Unmute a topic in a muted stream
+
+{start_tabs}
+
+{tab|mobile}
+
+1. Tap the **Streams**
+   (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="mobile-icon"/>)
+   tab at the bottom of the app.
+
+1. Select a grayed-out stream from the streams list.
+
+1. Tap the **Topics list**
+   (<img src="/static/images/help/mobile-list-icon.svg" alt="list" class="mobile-icon"/>)
+   icon in the upper right corner of the app.
+
+{!topic-long-press-menu.md!}
+
+1. Tap **Unmute topic**.
+
+!!! tip ""
+
+    Muted topics are grayed out in the topics list.
+
+{end_tabs}
+
 ## Related articles
 
 * [Mute or unmute a stream](/help/mute-a-stream)
