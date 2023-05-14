@@ -48,9 +48,9 @@ Like your email inbox, Zulip works best if you read it topic-by-topic.
 
 {!how-to-start-a-new-topic.md!}
 
-### Starting a new private thread
+### Starting a new direct message
 
-{!starting-a-new-private-thread.md!}
+{!starting-a-new-direct-message.md!}
 
 ### Responding to an existing thread
 
