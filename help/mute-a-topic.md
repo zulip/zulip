@@ -2,7 +2,7 @@
 
 {!mute-unmute-intro.md!}
 
-## Mute a topic
+## Configure topic notifications in unmuted streams
 
 {start_tabs}
 
@@ -10,7 +10,7 @@
 
 {!topic-actions.md!}
 
-1. Select **Mute topic**.
+1. Select **Mute topic** or **Unmute topic**.
 
 !!! tip ""
 
@@ -21,13 +21,13 @@
 
 {!topic-long-press-menu.md!}
 
-1. Tap **Mute topic**.
+1. Tap **Mute topic** or **Unmute topic**.
 
 {!topic-long-press-menu-tip.md!}
 
 {end_tabs}
 
-## Unmute a topic
+## Configure topic notifications in muted streams
 
 {start_tabs}
 
@@ -35,7 +35,7 @@
 
 {!topic-actions.md!}
 
-1. Select **Unmute topic**.
+1. Select **Unmute topic** or **Mute topic**.
 
 !!! tip ""
 
@@ -44,9 +44,19 @@
 
 {tab|mobile}
 
+1. Tap the **Streams**
+   (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="mobile-icon"/>)
+   tab at the bottom of the app.
+
+1. Select a grayed-out (muted) stream from the streams list.
+
+1. Tap the **Topics list**
+   (<img src="/static/images/help/mobile-list-icon.svg" alt="list" class="mobile-icon"/>)
+   icon in the upper right corner of the app.
+
 {!topic-long-press-menu.md!}
 
-1. Tap **Unmute topic**.
+1. Tap **Unmute topic** or **Mute topic**.
 
 {!topic-long-press-menu-tip.md!}
 
