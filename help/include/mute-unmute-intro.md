@@ -9,14 +9,15 @@ Muting has the following effects:
   word](/help/dm-mention-alert-notifications#alert-words) notifications), unless
   you are [mentioned](/help/mention-a-user-or-group).
 - Messages in muted topics do not appear in the [**All messages**
-  view](/help/all-messages).
+  view](/help/all-messages) or the mobile **Inbox** view.
 - Muted topics appear in the [**Recent conversations**
   view](/help/recent-conversations) only if the **Include muted** filter is
   enabled.
 - Unread messages in muted topics do not contribute to stream unread counts.
-- In the left sidebar, muted topics and streams are grayed out. They are also
-  sorted to the bottom of their stream (for topics) or stream section (for
-  streams).
+- Muted topics and streams are grayed out in the left sidebar of the desktop/web
+  app, and in the mobile app.
+- In the desktop/web app, muted topics are sorted to the bottom of their stream,
+  and muted streams are sorted to the bottom of their stream section.
 
 !!! warn ""
 
