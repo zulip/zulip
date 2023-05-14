@@ -13,7 +13,7 @@
 
 !!! tip ""
 
-    You can switch from composing a stream message to a composing a direct
+    You can switch from composing a stream message to composing a direct
     message by selecting **Direct message** from the dropdown in the upper left
     of the compose box.
 

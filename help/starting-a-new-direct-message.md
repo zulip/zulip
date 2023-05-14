@@ -1,6 +1,6 @@
-# Starting a new private thread
+# Starting a new direct message
 
-{!starting-a-new-private-thread.md!}
+{!starting-a-new-direct-message.md!}
 
 ## Related articles
 
