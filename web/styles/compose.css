@@ -526,6 +526,7 @@ input.recipient_box {
 #compose_select_recipient_widget {
     border-radius: 0 4px 4px 0;
     width: auto;
+    outline: none;
 }
 
 #stream_message_recipient_topic.recipient_box {
