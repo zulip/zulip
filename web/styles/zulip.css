@@ -88,7 +88,7 @@ body,
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 100% 50%);
-    --color-failed-message-send-icon: hsl(0deg 100% 50%);
+    --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
 }
 
 %dark-theme {
