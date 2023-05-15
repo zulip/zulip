@@ -1837,6 +1837,10 @@ div.focused_table {
     &:hover {
         opacity: 1;
     }
+
+    & > i.zulip-icon {
+        color: #333;
+    }
 }
 
 #message_view_header {
