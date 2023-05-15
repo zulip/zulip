@@ -523,12 +523,12 @@ paths:
                                           description: |
                                             The new delivery email of the user.
 
-                                            This value can be `None` if user changes the
+                                            This value can be `null` if user changes the
                                             `email_address_visibility` value such that
                                             you cannot access user's real email.
 
                                             **Changes**: As of Zulip 7.0 (feature level 163),
-                                            `None` is a possible value as this event is also
+                                            `null` is a possible value as this event is also
                                             sent on changing `email_address_visibility` setting.
                                     - type: object
                                       additionalProperties: false
@@ -7707,7 +7707,7 @@ paths:
                         type: string
                         nullable: true
                         description: |
-                          The user's real email address. This value will be `None` if you cannot
+                          The user's real email address. This value will be `null` if you cannot
                           access this user's real email address. For bot users, this field is
                           always set to the real email of the bot, because bot users always have
                           `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
@@ -7716,7 +7716,7 @@ paths:
                           only when `email_address_visibility` was restricted and you had access to
                           the user's real email. Now, this field is always present, including the case
                           when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
-                          with the value being `None` if you don't have access to the user's real email.
+                          with the value being `null` if you don't have access to the user's real email.
                           For bot users, this field is now always set to the real email irrespective of
                           `email_address_visibility` setting.
                       profile_data:
@@ -10622,7 +10622,7 @@ paths:
             Same as the `event_types` parameter except that the values in
             `fetch_event_types` are used to fetch initial data. If
             `fetch_event_types` is not provided, `event_types` is used and if
-            `event_types` is not provided, this parameter defaults to `None`.
+            `event_types` is not provided, this parameter defaults to `null`.
 
             Event types not supported by the server are ignored, in order to simplify
             the implementation of client apps that support multiple server versions.
@@ -10654,7 +10654,7 @@ paths:
                         description: |
                           The ID of the queue that has been allocated for your client.
 
-                          Will be None only for unauthenticated access in realms that have
+                          Will be `null` only for unauthenticated access in realms that have
                           enabled the [public access option](/help/public-access-option).
                       last_event_id:
                         type: integer
@@ -17713,7 +17713,7 @@ components:
           type: string
           nullable: true
           description: |
-            The user's real email address. This value will be `None` if you cannot
+            The user's real email address. This value will be `null` if you cannot
             access user's real email address. For bot users, this field is always
             set to the real email of the bot, because bot users always have
             `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
@@ -17722,7 +17722,7 @@ components:
             only when `email_address_visibility` was restricted and you had access to the
             user's real email. Now, this field is always present, including the case when
             `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
-            with the value being `None` if you don't have access the user's real email.
+            with the value being `null` if you don't have access the user's real email.
             For bot users, this field is now always set to the real email irrespective of
             `email_address_visibility` setting.
         email:
