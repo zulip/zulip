@@ -292,7 +292,7 @@
         flex-grow: 1;
     }
 
-    .compose_banner_action_button {
+    .main-view-banner-action-button {
         border: none;
         border-radius: 4px;
         padding: 5px 10px;
@@ -333,7 +333,7 @@
             }
         }
 
-        .compose_banner_action_button {
+        .main-view-banner-action-button {
             background-color: hsl(147deg 57% 25% / 10%);
             color: inherit;
 
@@ -368,7 +368,7 @@
             }
         }
 
-        .compose_banner_action_button {
+        .main-view-banner-action-button {
             background-color: hsl(38deg 44% 27% / 10%);
             color: inherit;
 
@@ -399,7 +399,7 @@
             }
         }
 
-        .compose_banner_action_button {
+        .main-view-banner-action-button {
             background-color: hsl(3deg 57% 33% / 10%);
             color: inherit;
 

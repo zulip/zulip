@@ -470,7 +470,9 @@ export function initialize() {
 
     $("body").on(
         "click",
-        `.${CSS.escape(compose_banner.CLASSNAMES.wildcard_warning)} .compose_banner_action_button`,
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.wildcard_warning,
+        )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
             const {$banner_container, is_edit_input} = get_input_info(event);
@@ -497,7 +499,7 @@ export function initialize() {
     )}`;
     $("body").on(
         "click",
-        `${user_not_subscribed_selector} .compose_banner_action_button`,
+        `${user_not_subscribed_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
 
@@ -513,7 +515,7 @@ export function initialize() {
 
     $("body").on(
         "click",
-        `.${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)} .compose_banner_action_button`,
+        `.${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
 
@@ -532,7 +534,7 @@ export function initialize() {
         "click",
         `.${CSS.escape(
             compose_banner.CLASSNAMES.unmute_topic_notification,
-        )} .compose_banner_action_button`,
+        )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
 
@@ -554,7 +556,7 @@ export function initialize() {
         "click",
         `.${CSS.escape(
             compose_banner.CLASSNAMES.recipient_not_subscribed,
-        )} .compose_banner_action_button`,
+        )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
             const {$banner_container} = get_input_info(event);
