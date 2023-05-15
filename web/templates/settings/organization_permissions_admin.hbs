@@ -132,6 +132,32 @@
             </div>
         </div>
 
+        <div id="org-direct-message-permissions" class="settings-subsection-parent hide">
+            <div class="subsection-header">
+                <h3>{{t "Direct message permissions" }}</h3>
+                {{> settings_save_discard_widget section_name="direct-message-permissions" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group new-style">
+                    <label class="dropdown-title">{{t 'All direct message and group direct messages must include as sender or recipient at least one member of'}}
+                    </label>
+                    {{> ../settings/dropdown_list_widget
+                      widget_name="realm_direct_message_permission_group_id"
+                      list_placeholder=(t 'Filter roles')
+                      value_type="number" }}
+                </div>
+
+                <div class="input-group new-style">
+                    <label class="dropdown-title">{{t 'Who can start a direct message thread?'}}
+                    </label>
+                    {{> ../settings/dropdown_list_widget
+                      widget_name="realm_direct_message_initiator_group_id"
+                      list_placeholder=(t 'Filter roles')
+                      value_type="number" }}
+                </div>
+            </div>
+        </div>
+
         <div id="org-msg-editing" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Message editing" }}

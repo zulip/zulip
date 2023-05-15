@@ -128,6 +128,10 @@ export function build_page() {
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
+        realm_direct_message_initiator_group_id:
+            page_params.realm_direct_message_initiator_group_id,
+        realm_direct_message_permission_group_id:
+            page_params.realm_direct_message_permission_group_id,
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
         is_owner: page_params.is_owner,

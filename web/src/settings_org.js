@@ -25,6 +25,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
+import * as user_groups from "./user_groups";
 
 const meta = {
     loaded: false,
@@ -591,6 +592,24 @@ function update_dependent_subsettings(property_name) {
 export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
+export const realm_group_dropdown_mapping = new Map([
+    [
+        "realm_direct_message_initiator_group_id",
+        {
+            widget: null,
+            setting_name: "direct_message_initiator_group",
+            subsection: "org-direct-message-permissions",
+        },
+    ],
+    [
+        "realm_direct_message_permission_group_id",
+        {
+            widget: null,
+            setting_name: "direct_message_permission_group",
+            subsection: "org-direct-message-permissions",
+        },
+    ],
+]);
 
 export function get_widget_for_dropdown_list_settings(property_name) {
     switch (property_name) {
@@ -603,6 +622,9 @@ export function get_widget_for_dropdown_list_settings(property_name) {
         case "can_remove_subscribers_group_id":
             return stream_edit.can_remove_subscribers_group_widget;
         default:
+            if (realm_group_dropdown_mapping.has(property_name)) {
+                return realm_group_dropdown_mapping.get(property_name).widget;
+            }
             blueslip.error("No dropdown list widget for property", {property_name});
             return null;
     }
@@ -692,6 +714,10 @@ export function discard_property_element_changes(elem, for_realm_default_setting
             set_realm_waiting_period_setting();
             break;
         default:
+            if (realm_group_dropdown_mapping.has(property_name)) {
+                set_dropdown_list_widget_setting_value(property_name, property_value);
+                break;
+            }
             if (property_value !== undefined) {
                 set_input_element_value($elem, property_value);
             } else {
@@ -985,6 +1011,10 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
             proposed_val = get_input_element_value($elem, "radio-group");
             break;
         default:
+            if (realm_group_dropdown_mapping.has(property_name)) {
+                proposed_val = get_dropdown_list_widget_setting_value($elem, false);
+                break;
+            }
             if (current_val !== undefined) {
                 proposed_val = get_input_element_value($elem, typeof current_val);
             } else {
@@ -1047,6 +1077,22 @@ export function init_dropdown_widgets() {
         default_text: $t({defaultMessage: "No language set"}),
     });
     default_code_language_widget.setup();
+    for (const [property_name, dropdown_config] of realm_group_dropdown_mapping.entries()) {
+        const property_dropdown_widget = new DropdownListWidget({
+            widget_name: property_name,
+            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                dropdown_config.setting_name,
+            ),
+            default_text: $t({defaultMessage: "No user groups"}),
+            include_current_item: false,
+            value: page_params[property_name],
+            on_update() {
+                save_discard_widget_status_handler($(`#${dropdown_config.subsection}`));
+            },
+        });
+        property_dropdown_widget.setup();
+        dropdown_config.widget = property_dropdown_widget;
+    }
 }
 
 function check_maximum_valid_value($custom_input_elem, property_name) {
