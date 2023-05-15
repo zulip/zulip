@@ -5210,7 +5210,7 @@ paths:
           in: query
           description: |
             The topic of the message. Only required for stream messages
-            (`type="stream"`), ignored otherwise.
+            (`"type": "stream"`), ignored otherwise.
 
             Clients should use the `max_topic_length` returned by the
             [`POST /register`](/api/register-queue) endpoint to determine
@@ -5452,7 +5452,7 @@ paths:
         whether there are more messages matching the query that were not
         returned due to the `num_before` and `num_after` limits.
 
-        We recommend using `num_before <= 1000` and `num_after <= 1000` to
+        We recommend setting `num_before` and `num_after` to no more than 1000, to
         avoid generating very large HTTP responses. A maximum of 5000 messages
         can be obtained per request; attempting to exceed this will result in an
         error.
@@ -5483,7 +5483,7 @@ paths:
             and older by not sending `anchor` and using `use_first_unread_anchor`.
 
             In Zulip 2.1.x and older, `oldest` can be emulated with
-            `anchor=0`, and `newest` with `anchor=10000000000000000`
+            `"anchor": 0`, and `newest` with `"anchor": 10000000000000000`
             (that specific large value works around a bug in Zulip
             2.1.x and older in the `found_newest` return value).
           schema:
@@ -5595,13 +5595,13 @@ paths:
           in: query
           deprecated: true
           description: |
-            Legacy way to specify `anchor="first_unread"` in Zulip 2.1.x and older.
+            Legacy way to specify `"anchor": "first_unread"` in Zulip 2.1.x and older.
 
             Whether to use the (computed by the server) first unread message
             matching the narrow as the `anchor`. Mutually exclusive with `anchor`.
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1) and replaced by
-            `anchor="first_unread"`.
+            `"anchor": "first_unread"`.
           schema:
             type: boolean
             default: false
@@ -5644,7 +5644,7 @@ paths:
                           response. If the message with the ID specified
                           in the request does not exist, did not match
                           the narrow, or was excluded via
-                          `include_anchor=false`, this will be false.
+                          `"include_anchor": false`, this will be false.
                       history_limited:
                         type: boolean
                         description: |
@@ -5839,7 +5839,7 @@ paths:
           in: query
           description: |
             The topic of the message. Only required for stream messages
-            (`type="stream"`), ignored otherwise.
+            (`"type": "stream"`), ignored otherwise.
 
             Clients should use the `max_topic_length` returned by the
             [`POST /register`](/api/register-queue) endpoint to determine
@@ -6591,7 +6591,7 @@ paths:
                           read and whose read status is available to the current user.
 
                           The IDs of users who have disabled sending read receipts
-                          (`send_read_receipts=false`) will never appear in the response,
+                          (`"send_read_receipts": false`) will never appear in the response,
                           nor will the message's sender. Additionally, the IDs of any users
                           who have been muted by the current user or who have muted the
                           current user will not be included in the response.
@@ -6776,7 +6776,7 @@ paths:
 
                           **Deprecated** and to be removed once no longer required for
                           legacy clients. Modern clients should prefer passing
-                          `apply_markdown=false` to request raw message content.
+                          `"apply_markdown": false` to request raw message content.
                       message:
                         description: |
                           An object containing details of the message.
@@ -7072,7 +7072,7 @@ paths:
                           A client is recommended to either just present the error to the user, or
                           if `first_message_id_allowed_to_move` is not `null`, prompt the user with
                           this information. Clients should support this error code with
-                          `first_message_id_allowed_to_move=null` for forwards compatibility
+                          `"first_message_id_allowed_to_move": null` for forwards compatibility
                           with future server versions that may use this error code in other
                           propagation modes where it is possible that the user does not have
                           permission to move any messages, or where the server did not calculate the
@@ -7696,7 +7696,7 @@ paths:
                           The integer ID of the last message received by your account.
 
                           **Deprecated**. We plan to remove this in favor of recommending
-                          using `GET /messages` with `anchor="newest"`.
+                          using `GET /messages` with `"anchor": "newest"`.
                         example: 30
                       user_id:
                         type: integer
@@ -10786,7 +10786,7 @@ paths:
 
                           **Deprecated**: This field may be removed in future versions as it no
                           longer has a clear purpose. Clients wishing to fetch the latest messages
-                          should pass `anchor="latest"` to `GET /messages`.
+                          should pass `"anchor": "latest"` to `GET /messages`.
                       max_stream_name_length:
                         type: integer
                         description: |
@@ -15484,20 +15484,20 @@ paths:
 
         Clients implementing Zulip's typing notifications protocol should work as follows:
 
-        - Send a request to this endpoint with `op = "start"` when a user starts typing a message,
-          and also every `TYPING_STARTED_WAIT_PERIOD = 10` seconds that the user continues to
+        - Send a request to this endpoint with `"op": "start"` when a user starts typing a message,
+          and also every 10 seconds (`TYPING_STARTED_WAIT_PERIOD`) that the user continues to
           actively type or otherwise interact with the compose UI (e.g. interacting with the
           compose box emoji picker).
-        - Send a request to this endpoint with `op = "stop"` when a user pauses using the
-          compose UI for at least `TYPING_STOPPED_WAIT_PERIOD = 5` seconds or cancels
+        - Send a request to this endpoint with `"op": "stop"` when a user pauses using the
+          compose UI for at least 5 seconds (`TYPING_STOPPED_WAIT_PERIOD`) or cancels
           the compose action (if it had previously sent a "start" operation for that
           compose action).
         - Start displaying "Sender is typing" for a given conversation when the client
-          receives an `op = "start"` event from the [`GET /events`](/api/get-events#typing-start)
+          receives an `"op": "start"` event from the [`GET /events`](/api/get-events#typing-start)
           endpoint.
-        - Continue displaying "Sender is typing" until they receive an `op = "stop"` event
+        - Continue displaying "Sender is typing" until they receive an `"op": "stop"` event
           from the [`GET /events`](/api/get-events#typing-stop) endpoint or
-          `TYPING_STARTED_EXPIRY_PERIOD = 15` seconds have passed without a new `op = "start"`
+          15 seconds (`TYPING_STARTED_EXPIRY_PERIOD`) have passed without a new `"op": "start"`
           event for that conversation.
         - Support for displaying stream typing notifications was new in Zulip 4.0
           (feature level 58). Clients should indicate they support processing stream typing
@@ -17658,7 +17658,7 @@ components:
             and it failed to successfully send.
 
             Clients that support unscheduling and editing scheduled messages
-            should display scheduled messages with `failed = true` with an
+            should display scheduled messages with `"failed": true` with an
             indicator that the server failed to send the message at the
             scheduled time, so that the user is aware of the failure and can
             get the content of the scheduled message.
@@ -18125,7 +18125,7 @@ components:
                 type: string
               description: |
                 A list of names of streams that the requesting user/bot was not
-                authorized to subscribe to. Only present if `authorization_errors_fatal=false`.
+                authorized to subscribe to. Only present if `"authorization_errors_fatal": false`.
     InvalidApiKeyError:
       allOf:
         - $ref: "#/components/schemas/JsonError"
@@ -18270,7 +18270,7 @@ components:
         events, and have to filter out the events not relevant to
         your client in your client code. For most applications, one
         is only interested in messages, so one specifies:
-        `event_types=['message']`
+        `"event_types": ["message"]`
 
         Event types not supported by the server are ignored, in order to simplify
         the implementation of client apps that support multiple server versions.
@@ -18292,7 +18292,7 @@ components:
 
         For example, to receive events for direct messages (including
         group direct messages) received by the user, one can use
-        `narrow=[["is", "dm"]]`.
+        `"narrow": [["is", "dm"]]`.
 
         Unlike the API for [fetching messages](/api/get-messages),
         this narrow parameter is simply a filter on messages that the
