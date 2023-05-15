@@ -333,6 +333,45 @@ test("update_property", () => {
     assert.equal(message2.display_recipient, denmark.name);
 });
 
+test("remove", () => {
+    const message1 = {
+        type: "stream",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        stream_id: devel.stream_id,
+        stream: devel.name,
+        display_recipient: devel.name,
+        id: 100,
+    };
+    const message2 = {
+        type: "stream",
+        sender_full_name: bob.full_name,
+        sender_id: bob.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        display_recipient: denmark.name,
+        id: 101,
+    };
+    const message3 = {
+        type: "stream",
+        sender_full_name: cindy.full_name,
+        sender_id: cindy.user_id,
+        stream_id: denmark.stream_id,
+        stream: denmark.name,
+        display_recipient: denmark.name,
+        id: 102,
+    };
+    for (const message of [message1, message2]) {
+        message_helper.process_new_message(message);
+    }
+
+    const deleted_message_ids = [message1.id, message3.id, 104];
+    message_store.remove(deleted_message_ids);
+    assert.equal(message_store.get(message1.id), undefined);
+    assert.equal(message_store.get(message2.id), message2);
+    assert.equal(message_store.get(message3.id), undefined);
+});
+
 test("errors", () => {
     blueslip.expect("error", "message_store.get got bad value");
     message_store.get(undefined);

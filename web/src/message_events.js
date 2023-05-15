@@ -569,6 +569,7 @@ export function update_messages(events) {
 
 export function remove_messages(message_ids) {
     all_messages_data.remove(message_ids);
+    message_store.remove(message_ids);
     for (const list of message_lists.all_rendered_message_lists()) {
         list.remove_and_rerender(message_ids);
     }

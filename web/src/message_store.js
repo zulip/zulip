@@ -128,3 +128,11 @@ export function reify_message_id({old_id, new_id}) {
         stored_messages.delete(old_id);
     }
 }
+
+export function remove(message_ids) {
+    for (const message_id of message_ids) {
+        if (stored_messages.has(message_id)) {
+            stored_messages.delete(message_id);
+        }
+    }
+}
