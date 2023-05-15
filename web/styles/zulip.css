@@ -71,6 +71,8 @@ body {
     --color-message-list-border: hsl(0deg 0% 0% / 16%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 10%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 10%);
+    --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 5%);
+    --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 7%);
     --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 94%);
@@ -100,6 +102,8 @@ body {
     --color-message-header-icon-interactive: hsl(0deg 0% 100%);
     --color-message-header-contents-border: hsl(0deg 0% 0% / 60%);
     --color-private-message-header-border: hsl(0deg 0% 0% / 48%);
+    --color-message-header-contents-border-bottom: hsl(0deg 0% 0% / 50%);
+    --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
     --color-background-direct-mention: hsl(240deg 13% 20%);
@@ -1169,6 +1173,7 @@ td.pointer {
         justify-content: space-between;
         height: 28px;
         border: 1px solid var(--color-message-header-contents-border);
+        border-bottom-color: var(--color-message-header-contents-border-bottom);
         border-radius: 7px 7px 0 0;
     }
 
@@ -1510,6 +1515,7 @@ td.pointer {
 
     .message-header-contents {
         border-color: var(--color-private-message-header-border);
+        border-bottom-color: var(--color-private-message-header-border-bottom);
         background-color: var(--color-background-private-message-header);
     }
 
