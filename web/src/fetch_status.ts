@@ -1,6 +1,7 @@
 import * as message_feed_loading from "./message_feed_loading";
+import type {RawMessage} from "./types";
 
-function max_id_for_messages(messages) {
+function max_id_for_messages(messages: RawMessage[]): number {
     let max_id = 0;
     for (const msg of messages) {
         max_id = Math.max(max_id, msg.id);
@@ -29,14 +30,18 @@ export class FetchStatus {
     // (described in detail below).
     _expected_max_message_id = 0;
 
-    start_older_batch(opts) {
+    start_older_batch(opts: {update_loading_indicator: boolean}): void {
         this._loading_older = true;
         if (opts.update_loading_indicator) {
             message_feed_loading.show_loading_older();
         }
     }
 
-    finish_older_batch(opts) {
+    finish_older_batch(opts: {
+        found_oldest: boolean;
+        history_limited: boolean;
+        update_loading_indicator: boolean;
+    }): void {
         this._loading_older = false;
         this._found_oldest = opts.found_oldest;
         this._history_limited = opts.history_limited;
@@ -45,26 +50,29 @@ export class FetchStatus {
         }
     }
 
-    can_load_older_messages() {
+    can_load_older_messages(): boolean {
         return !this._loading_older && !this._found_oldest;
     }
 
-    has_found_oldest() {
+    has_found_oldest(): boolean {
         return this._found_oldest;
     }
 
-    history_limited() {
+    history_limited(): boolean {
         return this._history_limited;
     }
 
-    start_newer_batch(opts) {
+    start_newer_batch(opts: {update_loading_indicator: boolean}): void {
         this._loading_newer = true;
         if (opts.update_loading_indicator) {
             message_feed_loading.show_loading_newer();
         }
     }
 
-    finish_newer_batch(messages, opts) {
+    finish_newer_batch(
+        messages: RawMessage[],
+        opts: {update_loading_indicator: boolean; found_newest: boolean},
+    ): boolean {
         // Returns true if and only if the caller needs to trigger an
         // additional fetch due to the race described below.
         const found_max_message_id = max_id_for_messages(messages);
@@ -119,15 +127,15 @@ export class FetchStatus {
         return false;
     }
 
-    can_load_newer_messages() {
+    can_load_newer_messages(): boolean {
         return !this._loading_newer && !this._found_newest;
     }
 
-    has_found_newest() {
+    has_found_newest(): boolean {
         return this._found_newest;
     }
 
-    update_expected_max_message_id(messages) {
+    update_expected_max_message_id(messages: RawMessage[]): void {
         this._expected_max_message_id = Math.max(
             this._expected_max_message_id,
             max_id_for_messages(messages),
