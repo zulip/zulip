@@ -15,7 +15,7 @@ Jinja2
 Markdown
 importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
-jsx-lexer
+https://github.com/fcurella/jsx-lexer/archive/bb15e40854724b40c85c079ea851ec26fcc0393a.zip#egg=jsx-lexer==2.0.0+git  # https://github.com/fcurella/jsx-lexer/pull/20
 uri-template
 
 # Needed for manage.py

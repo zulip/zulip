@@ -844,9 +844,8 @@ jsonschema-spec==0.1.4 \
     # via
     #   openapi-core
     #   openapi-spec-validator
-jsx-lexer==2.0.0 \
-    --hash=sha256:bff51c2a2faa2c682cbc9a0f360b8c65e4153eb1df06988e8dad34373d3f9995 \
-    --hash=sha256:ca22483ced80a92e45fa1855da7cf99309852c0637842a79a759e10ea57b904d
+https://github.com/fcurella/jsx-lexer/archive/bb15e40854724b40c85c079ea851ec26fcc0393a.zip#egg=jsx-lexer==2.0.0+git \
+    --hash=sha256:8a051f1480da5b1efb3734521c5291a656170eda6258fb4a714cdf4921d79c47
     # via -r requirements/common.in
 lazy-object-proxy==1.9.0 \
     --hash=sha256:09763491ce220c0299688940f8dc2c5d05fd1f45af1e42e636b2e8b2303e4382 \
