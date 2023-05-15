@@ -240,6 +240,20 @@ with the exception of passwords and API keys.
 We recommend using the [backup tool](#backups) if your primary goal is
 backups.
 
+### Upgrade if exporting for import into Zulip Cloud
+
+If you are exporting data from a self-hosted version of Zulip for purposes of
+importing into Zulip Cloud, you should first [upgrade your server to the
+`zulip-cloud-current` branch][upgrade-zulip-from-git]:
+
+```bash
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
+```
+
+It is not sufficient to be on the latest stable release, as zulip.com runs
+pre-release versions of Zulip that are often several months of development ahead
+of the latest release.
+
 ### Preventing changes during the export
 
 For best results, you'll want to shut down access to the organization
