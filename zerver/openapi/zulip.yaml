@@ -3927,12 +3927,12 @@ paths:
                                       description: |
                                         The [policy][permission-level] for which users can edit topics of any message.
 
-                                        - 1 = members only
-                                        - 2 = admins only
-                                        - 3 = [full members][calc-full-member] only
-                                        - 4 = moderators only
-                                        - 5 = everyone
-                                        - 6 = nobody
+                                        - 1 = Members only
+                                        - 2 = Admins only
+                                        - 3 = [Full members][calc-full-member] only
+                                        - 4 = Moderators only
+                                        - 5 = Everyone
+                                        - 6 = Nobody
 
                                         **Changes**: New in Zulip 5.0 (feature level 75), replacing the
                                         previous `allow_community_topic_editing` boolean. Nobody added
@@ -12466,11 +12466,11 @@ paths:
                           The [policy][permission-level] defining which users can delete
                           messages that they had sent.
 
-                          - 1 = members only
-                          - 2 = admins only
-                          - 3 = [full members][calc-full-member] only
-                          - 4 = admins and moderators only
-                          - 5 = everyone
+                          - 1 = Members only
+                          - 2 = Admins only
+                          - 3 = [Full members][calc-full-member] only
+                          - 4 = Admins and moderators only
+                          - 5 = Everyone
 
                           **Changes**: New in Zulip 5.0 (feature level 101), replacing the
                           previous `allow_message_deleting` boolean;
@@ -12493,10 +12493,10 @@ paths:
                           The [policy][permission-level] for which users can create public streams
                           in this organization.
 
-                          - 1 = members only
-                          - 2 = admins only
-                          - 3 = [full members][calc-full-member] only
-                          - 4 = admins and moderators only
+                          - 1 = Members only
+                          - 2 = Admins only
+                          - 3 = [Full members][calc-full-member] only
+                          - 4 = Admins and moderators only
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
                           create streams was controlled by the `realm_create_stream_policy` setting.
@@ -12511,10 +12511,10 @@ paths:
                           The [policy][permission-level] for which users can create private streams
                           in this organization.
 
-                          - 1 = members only
-                          - 2 = admins only
-                          - 3 = [full members][calc-full-member] only
-                          - 4 = admins and moderators only
+                          - 1 = Members only
+                          - 2 = Admins only
+                          - 3 = [Full members][calc-full-member] only
+                          - 4 = Admins and moderators only
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
                           create streams was controlled by the `realm_create_stream_policy` setting.
@@ -12535,10 +12535,10 @@ paths:
                           public streams in this organization. Allowed
                           values are:
 
-                          - 2 = admins only
-                          - 4 = admins and moderators only
-                          - 6 = nobody
-                          - 7 = owners only
+                          - 2 = Admins only
+                          - 4 = Admins and moderators only
+                          - 6 = Nobody
+                          - 7 = Owners only
 
                           **Changes**: Added in Zulip 5.0 (feature level 103).
 
@@ -12887,12 +12887,12 @@ paths:
 
                           The [policy][permission-level] for which users can edit topics of any message.
 
-                          - 1 = members only
-                          - 2 = admins only
-                          - 3 = [full members][calc-full-member] only
-                          - 4 = moderators only
-                          - 5 = everyone
-                          - 6 = nobody
+                          - 1 = Members only
+                          - 2 = Admins only
+                          - 3 = [Full members][calc-full-member] only
+                          - 4 = Moderators only
+                          - 5 = Everyone
+                          - 6 = Nobody
 
                           **Changes**: New in Zulip 5.0 (feature level 75), replacing the
                           previous `allow_community_topic_editing` boolean. Nobody added as
