@@ -106,7 +106,6 @@ ExtraContext = Optional[Dict[str, Any]]
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = url_has_allowed_host_and_scheme(url=url, allowed_hosts=None)
-    print(is_url_safe)
     if is_url_safe:
         # Mark as safe to prevent Pysa from surfacing false positives for
         # open redirects. In this branch, we have already checked that the URL
@@ -114,7 +113,6 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
         print(mark_sanitized(url))
         return urllib.parse.urljoin(redirect_host, mark_sanitized(url))
     else:
-        print("print ", redirect_host)
         return redirect_host
 
 
@@ -345,7 +343,7 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
         return finish_desktop_flow(request, user_profile, desktop_flow_otp)
 
     do_login(request, user_profile)
-    redirect_to = request.POST.get("redirect_to", None)
+    redirect_to = request.headers.get("redirect_to")
     if not redirect_to:
         redirect_to = result.data_dict.get("redirect_to", "")
 
@@ -515,12 +513,59 @@ def get_email_and_realm_from_jwt_authentication_request(
     return remote_email, realm
 
 
+def get_email_and_realm_from_jwt_authentication(
+    request: HttpRequest,
+) -> Tuple[str, Realm]:
+    realm = get_realm_from_request(request)
+    if realm is None:
+        raise InvalidSubdomainError
+
+    try:
+        key = settings.JWT_AUTH_KEYS[realm.subdomain]["key"]
+        algorithms = settings.JWT_AUTH_KEYS[realm.subdomain]["algorithms"]
+    except KeyError:
+        raise JsonableError(_("JWT authentication is not enabled for this organization"))
+
+    token = request.headers.get('token')
+
+    if not token:
+        raise JsonableError(_("No JSON web token passed in request"))
+
+    try:
+        options = {"verify_signature": True}
+        payload = jwt.decode(token, key, algorithms=algorithms, options=options)
+    except jwt.InvalidTokenError:
+        raise JsonableError(_("Bad JSON web token"))
+
+    remote_email = payload.get("email", None)
+    if remote_email is None:
+        raise JsonableError(_("No email specified in JSON web token claims"))
+
+    return remote_email, realm
+
+
 @csrf_exempt
 @require_post
 @log_view_func
 def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+    user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
+    if user_profile is None:
+        result = ExternalAuthResult(
+            data_dict={"email": email, "full_name": "", "subdomain": realm.subdomain}
+        )
+    else:
+        assert isinstance(user_profile, UserProfile)
+        result = ExternalAuthResult(user_profile=user_profile)
 
+    return login_or_register_remote_user(request, result)
+
+
+@csrf_exempt
+@require_post
+@log_view_func
+def remote_user_jwt_fom_headers(request: HttpRequest) -> HttpResponse:
+    email, realm = get_email_and_realm_from_jwt_authentication(request)
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
         result = ExternalAuthResult(

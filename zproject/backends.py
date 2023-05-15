@@ -399,7 +399,6 @@ class ZulipDummyBackend(ZulipAuthMixin):
         use_dummy_backend: bool = False,
         return_data: Optional[Dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
-        print('ZulipDummyBackend', 11111111111111111111111111111111111111111111111111111111, realm)
         if use_dummy_backend:
             return common_get_active_user(username, realm, return_data)
         return None
