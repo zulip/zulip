@@ -44,7 +44,7 @@ export function get_item(key, config, file_id) {
                 return $(
                     `#compose_banners .upload_banner.file_${CSS.escape(
                         file_id,
-                    )} .compose_banner_close_button`,
+                    )} .main-view-banner-close-button`,
                 );
             case "upload_banner_message":
                 return $(`#compose_banners .upload_banner.file_${CSS.escape(file_id)} .upload_msg`);
@@ -86,7 +86,7 @@ export function get_item(key, config, file_id) {
                 return $(
                     `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
                         file_id,
-                    )} .compose_banner_close_button`,
+                    )} .main-view-banner-close-button`,
                 );
             case "upload_banner_message":
                 return $(
@@ -270,7 +270,7 @@ export function setup_upload(config) {
     const $banner_container = get_item("banner_container", config);
     $banner_container.on(
         "click",
-        ".upload_banner.file_generic_error .compose_banner_close_button",
+        ".upload_banner.file_generic_error .main-view-banner-close-button",
         (event) => {
             event.preventDefault();
             $(event.target).parents(".upload_banner").remove();

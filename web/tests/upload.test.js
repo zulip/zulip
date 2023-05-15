@@ -51,7 +51,7 @@ test("get_item", () => {
     );
     assert.equal(
         upload.get_item("upload_banner_close_button", {mode: "compose"}, "id_2"),
-        $("#compose_banners .upload_banner.file_id_2 .compose_banner_close_button"),
+        $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
     );
     assert.equal(
         upload.get_item("file_input_identifier", {mode: "compose"}),
@@ -85,12 +85,12 @@ test("get_item", () => {
     );
 
     $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
-        ".compose_banner_close_button",
-        $(".compose_banner_close_button"),
+        ".main-view-banner-close-button",
+        $(".main-view-banner-close-button"),
     );
     assert.equal(
         upload.get_item("upload_banner_close_button", {mode: "edit", row: 2}, "id_34"),
-        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .compose_banner_close_button`),
+        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`),
     );
 
     $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234`).set_find_results(
@@ -240,7 +240,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
 
     page_params.max_file_upload_size_mib = 25;
     let on_click_close_button_callback;
-    $("#compose_banners .upload_banner.file_id_123 .compose_banner_close_button").one = (
+    $("#compose_banners .upload_banner.file_id_123 .main-view-banner-close-button").one = (
         event,
         callback,
     ) => {
