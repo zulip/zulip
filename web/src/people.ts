@@ -141,7 +141,7 @@ export function validate_user_ids(user_ids: number[]): number[] {
     }
 
     if (bad_ids.length > 0) {
-        blueslip.warn(`We have untracked user_ids: ${bad_ids}`);
+        blueslip.warn("We have untracked user_ids", {bad_ids});
     }
 
     return good_ids;
@@ -396,7 +396,7 @@ export function email_list_to_user_ids_string(emails: string[]): string | undefi
     );
 
     if (user_ids === undefined) {
-        blueslip.warn("Unknown emails: " + emails);
+        blueslip.warn("Unknown emails", {emails});
         return undefined;
     }
 
@@ -923,7 +923,7 @@ export function is_active_user_for_popover(user_id: number): boolean {
     // TODO: We can report errors here once we start loading
     //       deactivated users at page-load time. For now just warn.
     if (!people_by_user_id_dict.has(user_id)) {
-        blueslip.warn("Unexpectedly invalid user_id in user popover query: " + user_id);
+        blueslip.warn("Unexpectedly invalid user_id in user popover query", {user_id});
     }
 
     return false;

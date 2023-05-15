@@ -340,7 +340,7 @@ test_people("basics", () => {
     assert.equal(people.get_active_human_count(), 1);
 
     // Invalid user ID returns false and warns.
-    blueslip.expect("warn", "Unexpectedly invalid user_id in user popover query: 123412");
+    blueslip.expect("warn", "Unexpectedly invalid user_id in user popover query");
     assert.equal(people.is_active_user_for_popover(123412), false);
 
     // We can still get their info for non-realm needs.
@@ -1203,7 +1203,7 @@ test_people("emails_strings_to_user_ids_array", () => {
     let user_ids = people.emails_strings_to_user_ids_array(`${steven.email},${maria.email}`);
     assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
 
-    blueslip.expect("warn", "Unknown emails: dummyuser@example.com");
+    blueslip.expect("warn", "Unknown emails");
     user_ids = people.emails_strings_to_user_ids_array("dummyuser@example.com");
     assert.equal(user_ids, undefined);
 });
