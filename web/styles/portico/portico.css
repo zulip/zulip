@@ -249,7 +249,8 @@ html {
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
 
-    & :target {
+    & :target,
+    & .scroll-target {
         /* Match to where simplebar scrolls */
         scroll-margin-top: 20px;
         /* Increase the highlighted space around the text... */
