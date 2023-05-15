@@ -26,6 +26,7 @@ from zerver.actions.realm_settings import (
     do_scrub_realm,
     do_send_realm_reactivation_email,
 )
+from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin
 from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
@@ -42,6 +43,7 @@ from zerver.models import (
     UserProfile,
     get_org_type_display_name,
     get_realm,
+    get_user_profile_by_id,
 )
 from zerver.views.invite import get_invitee_emails_set
 
@@ -166,6 +168,7 @@ def support(
         default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
     scrub_realm: bool = REQ(default=False, json_validator=check_bool),
+    delete_user_by_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     query: Optional[str] = REQ("q", default=None),
     org_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
 ) -> HttpResponse:
@@ -276,6 +279,12 @@ def support(
         elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)
             context["success_message"] = f"{realm.string_id} scrubbed."
+        elif delete_user_by_id:
+            user_profile_for_deletion = get_user_profile_by_id(delete_user_by_id)
+            user_email = user_profile_for_deletion.delivery_email
+            assert user_profile_for_deletion.realm == realm
+            do_delete_user_preserving_messages(user_profile_for_deletion)
+            context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
 
     if query:
         key_words = get_invitee_emails_set(query)
