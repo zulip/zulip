@@ -64,6 +64,7 @@ user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
+const messages_overlay_ui = zrequire("messages_overlay_ui");
 const timerender = zrequire("timerender");
 
 const draft_1 = {
@@ -610,7 +611,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override_rewire(drafts, "set_initial_element", noop);
+    override_rewire(messages_overlay_ui, "set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
@@ -762,7 +763,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override_rewire(drafts, "set_initial_element", noop);
+    override_rewire(messages_overlay_ui, "set_initial_element", noop);
 
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
