@@ -239,7 +239,7 @@
                 }
             }
 
-            .compose_banner_action_button {
+            .main-view-banner-action-button {
                 background-color: hsl(147deg 51% 55% / 10%);
                 color: inherit;
 
@@ -271,7 +271,7 @@
                 }
             }
 
-            .compose_banner_action_button {
+            .main-view-banner-action-button {
                 background-color: hsl(50deg 45% 61% / 10%);
                 color: hsl(50deg 45% 61%);
 
@@ -302,7 +302,7 @@
                 }
             }
 
-            .compose_banner_action_button {
+            .main-view-banner-action-button {
                 background-color: hsl(3deg 73% 74% / 10%);
                 color: hsl(3deg 73% 74%);
 
