@@ -567,7 +567,7 @@ paths:
                                                 using the same CSS and client-side security protections
                                                 as are used for message content.
                                     - type: object
-                                      additionalProperties: False
+                                      additionalProperties: false
                                       description: |
                                         When the Zulip display email address of a user changes,
                                         either due to the user's email address changing, or
@@ -1275,8 +1275,8 @@ paths:
 
                                     Whether the history of the stream is public to its subscribers.
 
-                                    Currently always true for public streams (i.e. invite_only=False implies
-                                    history_public_to_subscribers=True), but clients should not make that
+                                    Currently always true for public streams (i.e. `"invite_only": false` implies
+                                    `"history_public_to_subscribers": true`), but clients should not make that
                                     assumption, as we may change that behavior in the future.
                                 is_web_public:
                                   type: boolean
@@ -2136,7 +2136,7 @@ paths:
                                   description: |
                                     The ID of the user who sent the message.
 
-                                    Null when event is for a rendering update of the original message,
+                                    Is `null` when event is for a rendering update of the original message,
                                     such as for an [inline URL preview][inline-url-previews].
 
                                     **Changes**: As of Zulip 5.0 (feature level 114), this field
@@ -2151,7 +2151,7 @@ paths:
                                     This field should be used by clients to determine if the event
                                     only provides a rendering update to the message content,
                                     such as for an [inline URL preview][inline-url-previews].
-                                    When `True`, the event does not reflect a user-generated edit
+                                    When `true`, the event does not reflect a user-generated edit
                                     and does not modify the message history.
 
                                     **Changes**: New in Zulip 5.0 (feature level 114). Clients can
@@ -3777,7 +3777,7 @@ paths:
                               example:
                                 {
                                   "id": 0,
-                                  "immediate": True,
+                                  "immediate": true,
                                   "server_generation": 1619334181,
                                   "type": "restart",
                                   "zulip_feature_level": 57,
@@ -3899,7 +3899,7 @@ paths:
                                       nullable: true
                                       description: |
                                         The default pygments language code to be used for a code blocks
-                                        in this organization. Null if no default has been set.
+                                        in this organization. If `null`, no default has been set.
                                     default_language:
                                       type: string
                                       description: |
@@ -5039,7 +5039,7 @@ paths:
             type: integer
           description: |
             The ID of the draft to be edited.
-          required: True
+          required: true
           example: 2
         - name: draft
           in: query
@@ -5057,7 +5057,7 @@ paths:
                 }
           description: |
             A JSON-encoded object containing a replacement draft object for this ID.
-          required: True
+          required: true
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -5085,7 +5085,7 @@ paths:
             type: integer
           description: |
             The ID of the draft you want to delete.
-          required: True
+          required: true
           example: 1
       responses:
         "200":
@@ -5316,7 +5316,7 @@ paths:
 
             This is different from the unique ID that a message would have
             after it was sent.
-          required: True
+          required: true
           example: 1
       responses:
         "200":
@@ -6147,7 +6147,7 @@ paths:
                     <tr>
                         <td><code>historical</code></td>
                         <td>
-                            True for messages that the user did not receive
+                            Is `true` for messages that the user did not receive
                             at the time they were sent but later was added to
                             the user's history (E.g. because they starred or
                             reacted to a message sent to a public stream
@@ -8338,8 +8338,8 @@ paths:
           description: |
             A boolean specifying whether authorization errors (such as when the
             requesting user is not authorized to access a private stream) should be
-            considered fatal or not. When `True`, an authorization error is reported
-            as such. When set to `False`, the response will be a 200 and any streams
+            considered fatal or not. When `true`, an authorization error is reported
+            as such. When set to `false`, the response will be a 200 and any streams
             where the request encountered an authorization error will be listed
             in the `unauthorized` key.
           schema:
@@ -8426,7 +8426,7 @@ paths:
                           }
                         description: |
                           A typical response for when the requesting user does not have access to
-                          a private stream and `authorization_errors_fatal` is `True`:
+                          a private stream and `"authorization_errors_fatal": true`:
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
                       - example:
@@ -8439,7 +8439,7 @@ paths:
                           }
                         description: |
                           A typical response for when the requesting user does not have access to
-                          a private stream and `authorization_errors_fatal` is `False`:
+                          a private stream and `"authorization_errors_fatal": false`:
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
@@ -11200,7 +11200,7 @@ paths:
                                     The average number of messages sent to the stream in recent weeks,
                                     rounded to the nearest integer.
 
-                                    Null means the stream was recently created and there is
+                                    If `null`, the stream was recently created and there is
                                     insufficient data to estimate the average traffic.
                                 subscribers:
                                   type: array
@@ -11346,10 +11346,10 @@ paths:
                           old_unreads_missing:
                             type: boolean
                             description: |
-                              True if this data set was truncated because the user has too many
+                              Whether this data set was truncated because the user has too many
                               unread messages. When truncation occurs, only the most recent
                               `MAX_UNREAD_MESSAGES` (currently 50000) messages will be considered
-                              when forming this response. When true, we recommend that clients
+                              when forming this response. When `true`, we recommend that clients
                               display a warning, as they are likely to produce erroneous results
                               until reloaded with the user having fewer than `MAX_UNREAD_MESSAGES`
                               unread messages.
@@ -12844,7 +12844,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The default pygments language code to be used for a code blocks
-                          in this organization. Null if no default has been set.
+                          in this organization. If `null`, no default has been set.
                       realm_message_content_delete_limit_seconds:
                         type: integer
                         nullable: true
@@ -13147,7 +13147,7 @@ paths:
                           Clients are not responsible for checking this quota; it is included
                           in the API only for display purposes.
 
-                          Null if there is no limit.
+                          If `null`, there is no limit.
 
                           **Changes**: New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
@@ -13367,7 +13367,7 @@ paths:
                           The value of the `WEB_PUBLIC_STREAMS_ENABLED` Zulip server level
                           setting. A server that has disabled this setting intends to not offer [web
                           public streams](/help/public-access-option) to realms it hosts. (Zulip Cloud
-                          defaults to `True`; self-hosted servers default to `False`).
+                          defaults to `true`; self-hosted servers default to `false`).
 
                           Clients should use this to determine whether to offer UI for the
                           realm-level setting for enabling web-public streams
@@ -15206,10 +15206,10 @@ paths:
                           {
                             "description": "A Scandinavian country",
                             "first_message_id": 1,
-                            "history_public_to_subscribers": True,
-                            "invite_only": False,
-                            "is_announcement_only": False,
-                            "is_web_public": False,
+                            "history_public_to_subscribers": true,
+                            "invite_only": false,
+                            "is_announcement_only": false,
+                            "is_web_public": false,
                             "message_retention_days": null,
                             "name": "Denmark",
                             "rendered_description": "<p>A Scandinavian country</p>",
@@ -16425,8 +16425,8 @@ components:
           description: |
             Whether the history of the stream is public to its subscribers.
 
-            Currently always true for public streams (i.e. invite_only=False implies
-            history_public_to_subscribers=True), but clients should not make that
+            Currently always true for public streams (i.e. `"invite_only": false` implies
+            `"history_public_to_subscribers": true`), but clients should not make that
             assumption, as we may change that behavior in the future.
         first_message_id:
           type: integer
@@ -16438,7 +16438,7 @@ components:
             UI like the "more topics" widget that would suggest the stream
             has older history that can be accessed.
 
-            Null is used for streams with no message history.
+            Is `null` for streams with no message history.
         is_announcement_only:
           type: boolean
           deprecated: true
@@ -16490,14 +16490,14 @@ components:
           type: string
           nullable: true
           description: |
-            The default sending stream of the bot. Null if the bot doesn't
+            The default sending stream of the bot. If `null`, the bot doesn't
             have a default sending stream.
         default_events_register_stream:
           type: string
           nullable: true
           description: |
-            The default stream for which the bot receives events/register data. Null if
-            the bot doesn't have such a default stream.
+            The default stream for which the bot receives events/register data.
+            If `null`, the bot doesn't have such a default stream.
         default_all_public_streams:
           type: boolean
           description: |
@@ -16512,7 +16512,7 @@ components:
           description: |
             The user ID of the bot's owner.
 
-            Null if the bot has no owner.
+            If `null`, the bot has no owner.
         services:
           type: array
           description: |
@@ -16810,13 +16810,13 @@ components:
           nullable: true
           description: |
             The timestamp of when the export was deleted.
-            Null if it wasn't.
+            If `null`, it wasn't deleted.
         failed_timestamp:
           type: number
           nullable: true
           description: |
             The timestamp of when the export failed.
-            Null if it didn't.
+            If `null`, it didn't fail.
         export_url:
           type: string
           nullable: true
@@ -17057,8 +17057,8 @@ components:
           description: |
             Whether the history of the stream is public to its subscribers.
 
-            Currently always true for public streams (i.e. invite_only=False implies
-            history_public_to_subscribers=True), but clients should not make that
+            Currently always true for public streams (i.e. `"invite_only": false` implies
+            `"history_public_to_subscribers": true`), but clients should not make that
             assumption, as we may change that behavior in the future.
         first_message_id:
           type: integer
@@ -17070,7 +17070,7 @@ components:
             UI like the "more topics" widget that would suggest the stream
             has older history that can be accessed.
 
-            Null is used for streams with no message history.
+            Is `null` for streams with no message history.
         stream_weekly_traffic:
           type: integer
           nullable: true
@@ -17078,7 +17078,7 @@ components:
             The average number of messages sent to the stream in recent weeks,
             rounded to the nearest integer.
 
-            Null means the stream was recently created and there is
+            If `null`, the stream was recently created and there is
             insufficient data to estimate the average traffic.
         can_remove_subscribers_group_id:
           type: integer
@@ -17820,7 +17820,7 @@ components:
           nullable: true
           description: |
             URL for the user's avatar. Will be `null` if the `client_gravatar`
-            query parameter was set to `True` and the user's avatar is hosted by
+            query parameter was set to `true` and the user's avatar is hosted by
             the Gravatar provider (i.e. the user has never uploaded an avatar).
 
             **Changes**: In Zulip 3.0 (feature level 18), if the client has the
@@ -18653,7 +18653,7 @@ components:
       in: query
       description: |
         Whether to consider only the direct members of user group and not members
-        of its subgroups. Default is `False`.
+        of its subgroups. Default is `false`.
       schema:
         type: boolean
       example: false

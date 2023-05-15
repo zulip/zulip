@@ -904,6 +904,18 @@ puppet_rules = RuleList(
     ],
 )
 
+openapi_rules = RuleList(
+    langs=["yaml"],
+    rules=[
+        *whitespace_rules,
+        {
+            "pattern": "True|TRUE|False|FALSE|Null|NULL",
+            "include_only": {"zerver/openapi/"},
+            "description": "Use lowercase for true, false and null in API documentation.",
+        },
+    ],
+)
+
 txt_rules = RuleList(
     langs=["txt", "text", "yaml", "rst", "yml"],
     rules=whitespace_rules,
@@ -919,4 +931,5 @@ non_py_rules = [
     bash_rules,
     txt_rules,
     puppet_rules,
+    openapi_rules,
 ]
