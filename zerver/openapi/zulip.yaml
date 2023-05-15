@@ -4044,7 +4044,7 @@ paths:
                                         with this organization's
                                         [message deletion policy](/help/restrict-message-editing-and-deletion).
 
-                                        Will not be 0. A 'null' value means no limit: messages can be deleted
+                                        Will not be 0. A `null` value means no limit: messages can be deleted
                                         regardless of how long ago they were sent.
 
                                         **Changes**: No limit was represented using the
@@ -4068,7 +4068,7 @@ paths:
                                         policy](/help/restrict-moving-messages). This setting does not
                                         affect moderators and administrators.
 
-                                        Will not be 0. A 'null' value means no limit: messages can be moved
+                                        Will not be 0. A `null` value means no limit: messages can be moved
                                         regardless of how long ago they were sent.
 
                                         **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
@@ -4082,7 +4082,7 @@ paths:
                                         policy](/help/restrict-moving-messages). This setting does not
                                         affect moderators and administrators.
 
-                                        Will not be 0. A 'null' value means no limit: messages can be moved
+                                        Will not be 0. A `null` value means no limit: messages can be moved
                                         regardless of how long ago they were sent.
 
                                         **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
@@ -6015,11 +6015,11 @@ paths:
                               description: |
                                 The ID of the user that made the edit.
 
-                                Will be null only for edit history
+                                Will be `null` only for edit history
                                 events predating March 2017.
 
                                 Clients can display edit history events where this
-                                is null as modified by either the sender (for content
+                                is `null` as modified by either the sender (for content
                                 edits) or an unknown user (for topic edits).
                             content_html_diff:
                               type: string
@@ -10552,7 +10552,7 @@ paths:
             relevant to the format of responses sent by the server.
 
             - `notification_settings_null`: Boolean for whether the
-              client can handle the current API with null values for
+              client can handle the current API with `null` values for
               stream-level notification settings (which means the stream
               is not customized and should inherit the user's global
               notification settings for stream messages).
@@ -12855,7 +12855,7 @@ paths:
                           with this organization's
                           [message deletion policy](/help/restrict-message-editing-and-deletion).
 
-                          Will not be 0. A 'null' value means no limit: messages can be deleted
+                          Will not be 0. A `null` value means no limit: messages can be deleted
                           regardless of how long ago they were sent.
 
                           **Changes**: No limit was represented using the
@@ -12910,7 +12910,7 @@ paths:
                           with this organization's
                           [message edit policy](/help/restrict-message-editing-and-deletion).
 
-                          Will not be 0. A 'null' value means no limit: messages can be edited
+                          Will not be 0. A `null` value means no limit: messages can be edited
                           regardless of how long ago they were sent.
 
                           **Changes**: No limit was represented using the
@@ -12926,7 +12926,7 @@ paths:
                           policy](/help/restrict-moving-messages). This setting does not
                           affect moderators and administrators.
 
-                          Will not be 0. A 'null' value means no limit: messages can be moved
+                          Will not be 0. A `null` value means no limit: messages can be moved
                           regardless of how long ago they were sent.
 
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
@@ -12942,7 +12942,7 @@ paths:
                           policy](/help/restrict-moving-messages). This setting does not
                           affect moderators and administrators.
 
-                          Will not be 0. A 'null' value means no limit: messages can be moved
+                          Will not be 0. A `null` value means no limit: messages can be moved
                           regardless of how long ago they were sent.
 
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
@@ -14163,7 +14163,7 @@ paths:
                                 URL for an image to be displayed as an icon in all buttons for
                                 the external authentication method.
 
-                                When null, no icon should be displayed.
+                                When `null`, no icon should be displayed.
                             login_url:
                               type: string
                               description: |
@@ -16740,7 +16740,7 @@ components:
           nullable: true
           description: |
             The user ID of the user who uploaded the custom emoji.
-            Will be null if the uploader is unknown.
+            Will be `null` if the uploader is unknown.
 
             **Changes**: New in Zulip 3.0 (feature level 7). Previously
             was accessible via an `author` object with an `id` field.
@@ -16930,7 +16930,7 @@ components:
             A boolean specifying whether desktop notifications
             are enabled for the given stream.
 
-            A null value means the value of this setting
+            A `null` value means the value of this setting
             should be inherited from the user-level default
             setting, enable_stream_desktop_notifications, for
             this stream.
@@ -16941,7 +16941,7 @@ components:
             A boolean specifying whether email notifications
             are enabled for the given stream.
 
-            A null value means the value of this setting
+            A `null` value means the value of this setting
             should be inherited from the user-level default
             setting, enable_stream_email_notifications, for
             this stream.
@@ -16953,7 +16953,7 @@ components:
             trigger notifications as though they were personal
             mentions in this stream.
 
-            A null value means the value of this setting
+            A `null` value means the value of this setting
             should be inherited from the user-level default
             setting, wildcard_mentions_notify, for
             this stream.
@@ -16964,7 +16964,7 @@ components:
             A boolean specifying whether push notifications
             are enabled for the given stream.
 
-            A null value means the value of this setting
+            A `null` value means the value of this setting
             should be inherited from the user-level default
             setting, enable_stream_push_notifications, for
             this stream.
@@ -16975,7 +16975,7 @@ components:
             A boolean specifying whether audible notifications
             are enabled for the given stream.
 
-            A null value means the value of this setting
+            A `null` value means the value of this setting
             should be inherited from the user-level default
             setting, enable_stream_audible_notifications, for
             this stream.
@@ -17253,7 +17253,7 @@ components:
           type: string
           nullable: true
           description: |
-            The URL of the user's avatar. Can be null only if client_gravatar was passed,
+            The URL of the user's avatar. Can be `null` only if client_gravatar was passed,
             which means that the user has not uploaded an avatar in Zulip, and the
             client should compute the gravatar URL by hashing the
             user's email address itself for this user.
@@ -17373,11 +17373,11 @@ components:
                 description: |
                   The ID of the user that made the edit.
 
-                  Will be null only for edit history
+                  Will be `null` only for edit history
                   events predating March 2017.
 
                   Clients can display edit history events where this
-                  is null as modified by either the sender (for content
+                  is `null` as modified by either the sender (for content
                   edits) or an unknown user (for topic edits).
             required:
               - user_id
@@ -17787,7 +17787,7 @@ components:
             If the user is a bot (i.e. `is_bot` is true), then `bot_owner_id`
             is the user ID of the bot's owner (usually, whoever created the bot).
 
-            Will be null for legacy bots that do not have an owner.
+            Will be `null` for legacy bots that do not have an owner.
 
             **Changes**: New in Zulip 3.0 (feature level 1). In previous
             versions, there was a `bot_owner` field containing the email
