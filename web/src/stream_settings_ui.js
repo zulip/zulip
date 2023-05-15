@@ -457,7 +457,7 @@ export function update_empty_left_panel_message() {
         // displayed in panel or not.
         has_streams =
             stream_data.subscribed_subs().length ||
-            $("#manage_streams_container .stream-row:not(.notdisplayed)").length;
+            $("#streams_overlay_container .stream-row:not(.notdisplayed)").length;
     } else {
         has_streams = stream_data.get_unsorted_subs().length;
     }
