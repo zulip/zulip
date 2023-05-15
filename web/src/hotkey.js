@@ -642,7 +642,8 @@ export function process_hotkey(e, hotkey) {
         return emoji_picker.navigate(event_name);
     }
 
-    if (overlays.is_modal_open()) {
+    // `list_util` will process the event in send later modal.
+    if (overlays.is_modal_open() && overlays.active_modal() !== "#send_later_modal") {
         return false;
     }
 
