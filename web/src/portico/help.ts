@@ -6,18 +6,21 @@ import * as common from "../common";
 import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 
-function registerCodeSection($codeSection) {
+function registerCodeSection($codeSection: JQuery): void {
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
 
     $li.on("click", function () {
         const language = this.dataset.language;
+        if (language === undefined) {
+            throw new Error("Element's data-language attribute must be defined.");
+        }
 
         $li.removeClass("active");
-        $li.filter("[data-language=" + language + "]").addClass("active");
+        $li.filter(`[data-language=${language}]`).addClass("active");
 
         $blocks.removeClass("active");
-        $blocks.filter("[data-language=" + language + "]").addClass("active");
+        $blocks.filter(`[data-language=${language}]`).addClass("active");
     });
 
     $li.on("keydown", (e) => {
@@ -27,7 +30,7 @@ function registerCodeSection($codeSection) {
     });
 }
 
-function highlight_current_article() {
+function highlight_current_article(): void {
     $(".help .sidebar a").removeClass("highlighted");
     $(".help .sidebar a").attr("tabindex", "0");
     const path = window.location.pathname;
@@ -50,12 +53,11 @@ function highlight_current_article() {
     $article.attr("tabindex", "-1");
 }
 
-function render_code_sections() {
+function render_code_sections(): void {
     $(".code-section").each(function () {
         activate_correct_tab($(this));
         registerCodeSection($(this));
     });
-
     highlight_current_article();
 
     common.adjust_mac_kbd_tags(".markdown kbd");
@@ -65,10 +67,17 @@ function render_code_sections() {
     });
 }
 
-function scrollToHash(simplebar) {
+function scrollToHash(simplebar: SimpleBar): void {
     const hash = window.location.hash;
     const scrollbar = simplebar.getScrollElement();
+    if (scrollbar === null) {
+        throw new Error("scrollbar must be defined.");
+    }
+
     if (hash !== "" && $(hash).length > 0) {
+        if (scrollbar.firstChild === null) {
+            throw new Error("scrollbar must have a non-null child");
+        }
         const position = $(hash).position().top - $(scrollbar.firstChild).position().top;
         scrollbar.scrollTop = position;
     } else {
@@ -76,15 +85,22 @@ function scrollToHash(simplebar) {
     }
 }
 
-const cache = new Map();
-const loading = {
+type Article = {
+    html: string;
+    title: string;
+};
+
+const cache = new Map<string, Article>();
+const loading: {
+    name: string | null;
+} = {
     name: null,
 };
 
 const markdownSB = new SimpleBar($(".markdown")[0]);
 
-const fetch_page = function (path, callback) {
-    $.get(path, (res) => {
+const fetch_page = function (path: string, callback: (article: Article) => void): void {
+    void $.get(path, (res) => {
         const $html = $(res).find(".markdown .content");
         const title = $(res).filter("title").text();
 
@@ -93,10 +109,10 @@ const fetch_page = function (path, callback) {
     });
 };
 
-const update_page = function (cache, path) {
+const update_page = function (cache: Map<string, Article>, path: string): void {
     if (cache.has(path)) {
-        $(".markdown .content").html(cache.get(path).html);
-        document.title = cache.get(path).title;
+        $(".markdown .content").html(cache.get(path)!.html);
+        document.title = cache.get(path)!.title;
         render_code_sections();
         scrollToHash(markdownSB);
     } else {
@@ -116,6 +132,9 @@ new SimpleBar($(".sidebar")[0]);
 
 $(".sidebar a").on("click", function (e) {
     const path = $(this).attr("href");
+    if (path === undefined) {
+        throw new Error("path must be defined");
+    }
     const path_dir = path.split("/")[1];
     const current_dir = window.location.pathname.split("/")[1];
 
@@ -151,7 +170,11 @@ $(document).on(
     "click",
     ".markdown .content h1, .markdown .content h2, .markdown .content h3",
     function () {
-        window.location.hash = $(this).attr("id");
+        const hash = $(this).attr("id");
+        if (hash === undefined) {
+            throw new Error("hash must be defined");
+        }
+        window.location.hash = hash;
         scrollToHash(markdownSB);
     },
 );
@@ -180,5 +203,4 @@ window.addEventListener("popstate", () => {
 });
 
 $("body").addClass("noscroll");
-
 $(".highlighted")[0]?.scrollIntoView({block: "center"});

@@ -11,6 +11,7 @@ export const page_params: {
         percent_translated: number | undefined;
     }[];
     development_environment: boolean;
+    google_analytics_id: string | undefined;
     is_admin: boolean;
     is_guest: boolean;
     is_moderator: boolean;
