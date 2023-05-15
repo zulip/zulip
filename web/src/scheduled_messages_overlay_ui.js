@@ -4,12 +4,51 @@ import render_scheduled_message from "../templates/scheduled_message.hbs";
 import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
 
 import * as browser_history from "./browser_history";
+import * as messages_overlay_ui from "./messages_overlay_ui";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
+
+export const keyboard_handling_context = {
+    get_items_ids() {
+        const scheduled_messages_ids = [];
+        for (const message of scheduled_messages.scheduled_messages_data) {
+            scheduled_messages_ids.push(message.scheduled_message_id);
+        }
+        return scheduled_messages_ids;
+    },
+    on_enter() {
+        const focused_element_id = Number.parseInt(
+            messages_overlay_ui.get_focused_element_id(this),
+            10,
+        );
+        scheduled_messages.edit_scheduled_message(focused_element_id);
+        overlays.close_overlay("scheduled");
+    },
+    on_delete() {
+        const focused_element_id = messages_overlay_ui.get_focused_element_id(this);
+        if (focused_element_id === undefined) {
+            return;
+        }
+        const $focused_row = messages_overlay_ui.row_with_focus(this);
+        messages_overlay_ui.focus_on_sibling_element(this);
+        // We need to have a super responsive UI feedback here, so we remove the row from the DOM manually
+        $focused_row.remove();
+        scheduled_messages.delete_scheduled_message(focused_element_id);
+    },
+    items_container_selector: "overlay-messages-container",
+    items_list_selector: "overlay-messages-list",
+    row_item_selector: "scheduled-message-row",
+    box_item_selector: "overlay-message-info-box",
+    id_attribute_name: "data-scheduled-message-id",
+};
+
+export function handle_keyboard_events(e, event_key) {
+    messages_overlay_ui.modals_handle_events(e, event_key, keyboard_handling_context);
+}
 
 function format(scheduled_messages) {
     const formatted_msgs = [];
@@ -52,6 +91,9 @@ export function launch() {
     });
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.append(rendered_list);
+
+    const first_element_id = keyboard_handling_context.get_items_ids()[0];
+    messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
 }
 
 export function rerender() {
@@ -94,5 +136,9 @@ export function initialize() {
 
         e.stopPropagation();
         e.preventDefault();
+    });
+
+    $("body").on("focus", ".overlay-message-info-box", (e) => {
+        messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
     });
 }

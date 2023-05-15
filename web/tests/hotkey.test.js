@@ -57,6 +57,7 @@ const overlays = mock_esm("../src/overlays", {
     streams_open: () => false,
     lightbox_open: () => false,
     drafts_open: () => false,
+    scheduled_messages_open: () => false,
     info_overlay_open: () => false,
     is_modal_open: () => false,
     is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),

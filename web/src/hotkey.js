@@ -38,6 +38,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
@@ -447,6 +448,11 @@ export function process_enter_key(e) {
         return true;
     }
 
+    if (overlays.scheduled_messages_open()) {
+        scheduled_messages_overlay_ui.handle_keyboard_events(e, "enter");
+        return true;
+    }
+
     // Transfer the enter keypress from button to the `<i>` tag inside
     // it since it is the trigger for the popover. <button> is already used
     // to trigger the tooltip so it cannot be used to trigger the popover.
@@ -651,6 +657,10 @@ export function process_hotkey(e, hotkey) {
         case "delete":
             if (overlays.drafts_open()) {
                 drafts.handle_keyboard_events(e, event_name);
+                return true;
+            }
+            if (overlays.scheduled_messages_open()) {
+                scheduled_messages_overlay_ui.handle_keyboard_events(e, event_name);
                 return true;
             }
     }

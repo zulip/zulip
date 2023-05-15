@@ -940,6 +940,7 @@ div.overlay {
             outline: 2px solid hsl(215deg 47% 50%);
             /* this offset ensures no gap between the blue box and the draft in active state */
             outline-offset: -1px;
+            border-radius: 7px;
         }
 
         .message_row {
