@@ -1,15 +1,16 @@
 # Add or remove users from a stream
 
-## Add users to a stream
-
 By default, anyone (other than guests) subscribed to a stream can add
 users to that stream. Additionally, anyone (other than guests) can add
 users to a public stream, whether or not they are subscribed to the
-stream.
+stream. Anyone can always [unsubscribe themselves from a stream](/help/unsubscribe-from-a-stream).
 
-Organization administrators can configure which
+Organization administrators can also unsubscribe *other* users from any stream,
+including streams the admin is not subscribed to. They can also configure which
 [roles](/help/roles-and-permissions) have access to [add other users
 to a stream][configure-invites].
+
+## Add users to a stream
 
 {start_tabs}
 
@@ -49,13 +50,6 @@ subscribe the user.
       the user to be subscribed this way.
 
 ## Remove users from a stream
-
-{!admin-only.md!}
-
-Anyone can always [unsubscribe themselves from a stream](/help/unsubscribe-from-a-stream).
-
-Organization administrators can also unsubscribe *other* users from any stream,
-including streams the admin is not subscribed to.
 
 {start_tabs}
 
