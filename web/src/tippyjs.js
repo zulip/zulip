@@ -641,6 +641,7 @@ export function initialize() {
 
     delegate("body", {
         target: [".disabled-compose-send-button-container"],
+        maxWidth: 350,
         content: () => compose_recipient.get_posting_policy_error_message(),
         appendTo: () => document.body,
         onHidden(instance) {
