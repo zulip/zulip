@@ -293,12 +293,13 @@ archive of all the organization's uploaded files.
    - Ensure that the Zulip server you're importing into is running the same
      version of Zulip as the server you're exporting from.
 
-   - For exports from Zulip Cloud (zulip.com), you need to [upgrade to
-     `main`][upgrade-zulip-from-git], since we run `main` on
-     Zulip Cloud:
+   - For exports created from Zulip Cloud (zulip.com), you need to [upgrade to
+     `zulip-cloud-current`][upgrade-zulip-from-git], which represents the
+     current version that Zulip Cloud is running; this is generally `main`
+     delayed by a week or two. To upgrade to that:
 
      ```bash
-     /home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
+     /home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
      ```
 
      It is not sufficient to be on the latest stable release, as
