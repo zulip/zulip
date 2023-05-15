@@ -9459,7 +9459,8 @@ paths:
             When enabled, clients should display the names of reacting users, rather than
             a count, for messages with few total reactions. The ideal cutoff may depend on
             the space available for displaying reactions; the official web application
-            displays names when <=3 total reactions are present with this setting enabled.
+            displays names when 3 or fewer total reactions are present with this setting
+            enabled.
 
             **Changes**: New in Zulip 6.0 (feature level 125).
           schema:
@@ -11547,8 +11548,8 @@ paths:
                               users, rather than a count, for messages with few total
                               reactions. The ideal cutoff may depend on the space
                               available for displaying reactions; the official web
-                              application displays names when <=3 total reactions are
-                              present with this setting enabled.
+                              application displays names when 3 or fewer total reactions
+                              are present with this setting enabled.
 
                               **Changes**: New in Zulip 6.0 (feature level 125).
                           default_language:
@@ -13512,8 +13513,8 @@ paths:
                               users, rather than a count, for messages with few total
                               reactions. The ideal cutoff may depend on the space
                               available for displaying reactions; the official web
-                              application displays names when <=3 total reactions are
-                              present with this setting enabled.
+                              application displays names when 3 or fewer total reactions
+                              are present with this setting enabled.
 
                               **Changes**: New in Zulip 6.0 (feature level 125).
                           default_language:
@@ -14523,7 +14524,8 @@ paths:
             When enabled, clients should display the names of reacting users, rather than
             a count, for messages with few total reactions. The ideal cutoff may depend on
             the space available for displaying reactions; the official web application
-            displays names when <=3 total reactions are present with this setting enabled.
+            displays names when 3 or fewer total reactions are present with this setting
+            enabled.
 
             **Changes**: New in Zulip 6.0 (feature level 125).
           schema:
