@@ -1343,6 +1343,10 @@
         background-color: var(--color-background);
     }
 
+    .top-messages-logo {
+        opacity: 0.7;
+    }
+
     .scheduled-messages-loading-logo,
     .alert-zulip-logo,
     .top-messages-logo,
