@@ -5272,21 +5272,21 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/NonExistingStreamError"
+                      - $ref: "#/components/schemas/NonExistingStreamIdError"
                       - description: |
-                          A typical failed JSON response for when a stream message is sent to a stream
-                          that does not exist:
+                          A typical failed JSON response for when a stream message is scheduled
+                          to be sent to a stream that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "Invalid email 'eeshan@zulip.com'",
+                            "msg": "Invalid user ID 10",
                             "result": "error",
                           }
                         description: |
-                          A typical failed JSON response for when a private message is sent to a user
-                          that does not exist:
+                          A typical failed JSON response for when a direct message is scheduled
+                          to be sent to a user that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - description: |
@@ -5901,7 +5901,7 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/NonExistingStreamError"
+                      - $ref: "#/components/schemas/NonExistingStreamNameError"
                       - description: |
                           A typical failed JSON response for when a stream message is sent to a stream
                           that does not exist:
@@ -8655,7 +8655,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/NonExistingStreamError"
+                  - $ref: "#/components/schemas/NonExistingStreamNameError"
                   - description: |
                       A typical failed JSON response for when the target stream does not exist:
   /users/me/subscriptions/muted_topics:
@@ -18068,7 +18068,7 @@ components:
               "code": "BAD_REQUEST",
               "result": "error",
             }
-    NonExistingStreamError:
+    NonExistingStreamNameError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
@@ -18086,6 +18086,25 @@ components:
               "msg": "Stream 'nonexistent_stream' does not exist",
               "result": "error",
               "stream": "nonexistent_stream",
+            }
+    NonExistingStreamIdError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            stream_id:
+              type: integer
+              description: |
+                The stream ID that could not be found.
+          example:
+            {
+              "code": "STREAM_DOES_NOT_EXIST",
+              "msg": "Stream with ID '9' does not exist",
+              "result": "error",
+              "stream_id": 9,
             }
     AddSubscriptionsResponse:
       allOf:
