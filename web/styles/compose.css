@@ -310,7 +310,7 @@
         }
     }
 
-    .compose_banner_close_button {
+    .main-view-banner-close-button {
         font-size: 16px;
         text-decoration: none;
         padding: 9px 8px;
@@ -321,7 +321,7 @@
         border: 1px solid hsl(147deg 57% 25% / 40%);
         color: hsl(147deg 57% 25%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(147deg 57% 25% / 50%);
 
             &:hover {
@@ -356,7 +356,7 @@
         border-color: hsl(38deg 44% 27% / 40%);
         color: hsl(38deg 44% 27%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(38deg 44% 27% / 50%);
 
             &:hover {
@@ -387,7 +387,7 @@
         border-color: hsl(3deg 57% 33% / 40%);
         color: hsl(4deg 58% 33%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(4deg 58% 33% / 50%);
 
             &:hover {
@@ -419,7 +419,7 @@
         position: relative;
         color: hsl(204deg 49% 29%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(204deg 49% 29% / 50%);
 
             &:hover {
@@ -452,7 +452,7 @@
     }
 
     .upload_msg,
-    .compose_banner_close_button {
+    .main-view-banner-close-button {
         z-index: 1;
         position: relative;
     }

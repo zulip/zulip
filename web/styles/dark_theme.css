@@ -227,7 +227,7 @@
             border-color: hsl(149deg 48% 52% / 40%);
             color: hsl(147deg 51% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(147deg 51% 55% / 50%);
 
                 &:hover {
@@ -259,7 +259,7 @@
             border-color: hsl(38deg 44% 60% / 40%);
             color: hsl(50deg 45% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(50deg 45% 61% / 50%);
 
                 &:hover {
@@ -290,7 +290,7 @@
             border-color: hsl(3deg 73% 74% / 40%);
             color: hsl(3deg 73% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(3deg 73% 74% / 50%);
 
                 &:hover {
@@ -322,7 +322,7 @@
             position: relative;
             color: hsl(205deg 58% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(205deg 58% 69% / 50%);
 
                 &:hover {

@@ -591,7 +591,7 @@ export function initialize() {
 
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
-        $("body").on("click", `${classname_selector} .compose_banner_close_button`, (event) => {
+        $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {
             event.preventDefault();
             $(event.target).parents(classname_selector).remove();
         });
