@@ -60,12 +60,12 @@ the Zulip server itself (E.g. `https://zulip.example.com/help/`).
 Many Zulip servers run versions from Git that have not been published
 in a stable release.
 
-- [Zulip Cloud](https://zulip.com) essentially runs the `main`
-  branch. It is usually a few days behind `main` (with some
-  cherry-picked bug fixes), but can fall up to 2 weeks behind when
-  major UI or internals changes mean we'd like to bake changes longer
-  on chat.zulip.org before exposing them to the full Zulip Cloud
-  userbase.
+- [Zulip Cloud](https://zulip.com) runs the `zulip-cloud-current`
+  branch; this the `main` branch, with some cherry-picked bug fixes,
+  but delayed somewhat. It is usually one to two weeks behind `main`,
+  depending on the complexity of recent major UI or internals changes
+  that we'd like to bake longer on chat.zulip.org before exposing them
+  to the full Zulip Cloud userbase.
 - [chat.zulip.org][chat-zulip-org], the bleeding-edge server for the
   Zulip development community, is upgraded to `main` several times
   every week. We also often "test deploy" changes not yet in `main`
