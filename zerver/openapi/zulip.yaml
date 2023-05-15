@@ -2247,15 +2247,15 @@ paths:
                                     The choice the editing user made about which messages should be
                                     affected by a stream/topic edit:
 
-                                    - `change_one` => Just change the one indicated in `message_id`.
-                                    - `change_later` => Change messages in the same topic that had
+                                    - `"change_one"`: Just change the one indicated in `message_id`.
+                                    - `"change_later"`: Change messages in the same topic that had
                                       been sent after this one.
-                                    - `change_all`=> Change all messages in that topic.
+                                    - `"change_all"`: Change all messages in that topic.
 
                                     This parameter should be used to decide whether to change
                                     navigation and compose box state in response to the edit. For
                                     example, if the user was previously in topic narrow, and the
-                                    topic was edited with `change_later` or `change_all`, the Zulip
+                                    topic was edited with `"change_later"` or `"change_all"`, the Zulip
                                     web app will automatically navigate to the new topic narrow.
                                     Similarly, a message being composed to the old topic should
                                     have its recipient changed to the new topic.
@@ -4254,12 +4254,12 @@ paths:
                                         The [policy][permission-level] for who can use wildcard mentions in
                                         large streams.
 
-                                        - 1 => Any user can use wildcard mentions in large streams.
-                                        - 2 => Only members can use wildcard mentions in large streams.
-                                        - 3 => Only [full members][calc-full-member] can use wildcard mentions in large streams.
-                                        - 5 => Only organization administrators can use wildcard mentions in large streams.
-                                        - 6 => Nobody can use wildcard mentions in large streams.
-                                        - 7 => Only organization administrators and moderators can use wildcard mentions in large streams.
+                                        - 1 = Any user can use wildcard mentions in large streams.
+                                        - 2 = Only members can use wildcard mentions in large streams.
+                                        - 3 = Only [full members][calc-full-member] can use wildcard mentions in large streams.
+                                        - 5 = Only organization administrators can use wildcard mentions in large streams.
+                                        - 6 = Nobody can use wildcard mentions in large streams.
+                                        - 7 = Only organization administrators and moderators can use wildcard mentions in large streams.
 
                                         All users will receive a warning/reminder when using
                                         mentions in large streams, even when permitted to do so.
@@ -7649,11 +7649,11 @@ paths:
                           [Organization-level role](/api/roles-and-permissions) of the user.
                           Possible values are:
 
-                          - Organization owner => 100
-                          - Organization administrator => 200
-                          - Organization moderator => 300
-                          - Member => 400
-                          - Guest => 600
+                          - 100 = Organization owner
+                          - 200 = Organization administrator
+                          - 300 = Organization moderator
+                          - 400 = Member
+                          - 600 = Guest
 
                           **Changes**: New in Zulip 4.0 (feature level 59).
                       is_guest:
@@ -12558,12 +12558,12 @@ paths:
                           The [policy][permission-level] for who can use wildcard mentions
                           in large streams.
 
-                          - 1 => Any user can use wildcard mentions in large streams.
-                          - 2 => Only members can use wildcard mentions in large streams.
-                          - 3 => Only [full members][calc-full-member] can use wildcard mentions in large streams.
-                          - 5 => Only organization administrators can use wildcard mentions in large streams.
-                          - 6 => Nobody can use wildcard mentions in large streams.
-                          - 7 => Only organization administrators and moderators can use wildcard mentions in large streams.
+                          - 1 = Any user can use wildcard mentions in large streams.
+                          - 2 = Only members can use wildcard mentions in large streams.
+                          - 3 = Only [full members][calc-full-member] can use wildcard mentions in large streams.
+                          - 5 = Only organization administrators can use wildcard mentions in large streams.
+                          - 6 = Nobody can use wildcard mentions in large streams.
+                          - 7 = Only organization administrators and moderators can use wildcard mentions in large streams.
 
                           All users will receive a warning/reminder when using
                           mentions in large streams, even when permitted to do so.
@@ -16397,10 +16397,10 @@ components:
           description: |
             [Policy][permission-level] for which users can post messages to the stream.
 
-            - 1 => Any user can post.
-            - 2 => Only administrators can post.
-            - 3 => Only [full members][calc-full-member] can post.
-            - 4 => Only moderators can post.
+            - 1 = Any user can post.
+            - 2 = Only administrators can post.
+            - 3 = Only [full members][calc-full-member] can post.
+            - 4 = Only moderators can post.
 
             **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
             `is_announcement_only` boolean.
@@ -17029,10 +17029,10 @@ components:
           description: |
             [Policy][permission-level] for which users can post messages to the stream.
 
-            - 1 => Any user can post.
-            - 2 => Only administrators can post.
-            - 3 => Only [full members][calc-full-member] can post.
-            - 4 => Only moderators can post.
+            - 1 = Any user can post.
+            - 2 = Only administrators can post.
+            - 3 = Only [full members][calc-full-member] can post.
+            - 4 = Only moderators can post.
 
             **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
             `is_announcement_only` boolean.
@@ -17804,11 +17804,11 @@ components:
             [Organization-level role](/api/roles-and-permissions) of the user.
             Possible values are:
 
-            - Organization owner => 100
-            - Organization administrator => 200
-            - Organization moderator => 300
-            - Member => 400
-            - Guest => 600
+            - 100 = Organization owner
+            - 200 = Organization administrator
+            - 300 = Organization moderator
+            - 400 = Member
+            - 600 = Guest
 
             **Changes**: New in Zulip 4.0 (feature level 59).
         timezone:
@@ -18450,10 +18450,10 @@ components:
       description: |
         [Policy][permission-level] for which users can post messages to the stream.
 
-        - 1 => Any user can post.
-        - 2 => Only administrators can post.
-        - 3 => Only [full members][calc-full-member] can post.
-        - 4 => Only moderators can post.
+        - 1 = Any user can post.
+        - 2 = Only administrators can post.
+        - 3 = Only [full members][calc-full-member] can post.
+        - 4 = Only moderators can post.
 
         **Changes**: New in Zulip 3.0 (feature level 1), replacing the previous
         `is_announcement_only` boolean.
@@ -18590,8 +18590,8 @@ components:
         policy](/help/message-retention-policy). Two special string format
         values are supported:
 
-        - "realm_default" => Return to the organization-level setting.
-        - "unlimited" => Retain messages forever.
+        - `"realm_default"`: Return to the organization-level setting.
+        - `"unlimited"`: Retain messages forever.
 
         **Changes**: Prior to Zulip 5.0 (feature level 91), retaining
         messages forever was encoded using `"forever"` instead of
