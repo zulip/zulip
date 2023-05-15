@@ -1,6 +1,11 @@
 import $ from "jquery";
 
-const list_selectors = ["#stream_filters", "#global_filters", "#user_presences"];
+const list_selectors = [
+    "#stream_filters",
+    "#global_filters",
+    "#user_presences",
+    "#send_later_options",
+];
 
 export function inside_list(e: JQuery.KeyDownEvent | JQuery.KeyPressEvent): boolean {
     const $target = $(e.target);

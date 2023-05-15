@@ -258,11 +258,20 @@ export function open_send_later_menu(instance) {
             );
 
             const $send_later_modal = $("#send_later_modal");
-            $send_later_modal.on("keydown", (e) => {
-                if (e.key === "Enter") {
-                    e.target.click();
-                }
+
+            // Upon the first keydown event, we focus on the first element in the list,
+            // enabling keyboard navigation that is handled by `hotkey.js` and `list_util.ts`.
+            $send_later_modal.one("keydown", () => {
+                const $options = $send_later_modal.find("a");
+                $options[0].focus();
+
+                $send_later_modal.on("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.target.click();
+                    }
+                });
             });
+
             $send_later_modal.on("click", ".send_later_custom", (e) => {
                 const $send_later_modal_content = $send_later_modal.find(".modal__content");
                 const current_time = new Date();
@@ -296,6 +305,11 @@ export function open_send_later_menu(instance) {
                     e.stopPropagation();
                 },
             );
+        },
+        on_shown() {
+            // When shown, we should give the modal focus to correctly handle keyboard events.
+            const $send_later_modal_overlay = $("#send_later_modal .modal__overlay");
+            $send_later_modal_overlay.trigger("focus");
         },
         on_hide() {
             clearInterval(instance._interval);
