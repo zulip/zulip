@@ -702,3 +702,26 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
             self.assert_json_error(result, "Invalid parameters")
             m.assert_not_called()
+
+    def test_delete_user(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        hamlet_email = hamlet.delivery_email
+        realm = get_realm("zulip")
+        self.login_user(cordelia)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id}
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        self.login("iago")
+
+        with mock.patch("analytics.views.support.do_delete_user_preserving_messages") as m:
+            result = self.client_post(
+                "/activity/support",
+                {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
+            )
+            m.assert_called_once_with(hamlet)
+            self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)
