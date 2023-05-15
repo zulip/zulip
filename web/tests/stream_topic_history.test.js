@@ -403,6 +403,12 @@ test("remove_messages", () => {
 
     stream_topic_history.add_message({
         stream_id,
+        message_id: 100,
+        topic_name: "Topic",
+    });
+
+    stream_topic_history.add_message({
+        stream_id,
         message_id: 101,
         topic_name: "Topic0",
     });
@@ -431,9 +437,21 @@ test("remove_messages", () => {
     ]);
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, ["Topic1", "topic2", "Topic0", "topic3", "topic4"]);
+    assert.deepEqual(history, ["Topic1", "topic2", "Topic0", "Topic", "topic3", "topic4"]);
     let max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.equal(max_message_id, 104);
+
+    stream_topic_history.set_is_fully_loaded(stream_id, "Topic");
+
+    stream_topic_history.remove_messages({
+        stream_id,
+        topic_name: "Topic",
+        num_messages: 1,
+        max_removed_msg_id: 100,
+    });
+
+    history = stream_topic_history.get_recent_topic_names(stream_id);
+    assert.deepEqual(history, ["Topic1", "topic2", "Topic0", "topic3", "topic4"]);
 
     message_util.get_messages_in_topic = () => [{id: 102}];
     message_util.get_max_message_id_in_stream = () => 103;
@@ -541,4 +559,32 @@ test("remove_messages", () => {
     });
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, []);
+});
+
+test("set_is_fully_loaded", () => {
+    const stream_id = 55;
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 100,
+        topic_name: "topic",
+    });
+
+    stream_topic_history.add_history(stream_id, [{name: "topic1", max_id: 99}]);
+
+    stream_topic_history.set_is_fully_loaded(stream_id, "topic");
+    let history_topics = stream_topic_history.find_or_create(stream_id).topics;
+    let existing_topic = history_topics.get("topic");
+    assert.equal(existing_topic.is_fully_loaded, true);
+
+    stream_topic_history.set_is_fully_loaded(stream_id, "topic1");
+    history_topics = stream_topic_history.find_or_create(stream_id).topics;
+    existing_topic = history_topics.get("topic1");
+    assert.equal(existing_topic.is_fully_loaded, false);
+
+    // We safely handle the non-existent topic.
+    assert.equal(stream_topic_history.set_is_fully_loaded(stream_id, "test-topic"), undefined);
+
+    // We safely handle the stream which does not have history loaded.
+    assert.equal(stream_topic_history.set_is_fully_loaded(99, "topic"), undefined);
 });

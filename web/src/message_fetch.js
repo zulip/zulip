@@ -16,6 +16,7 @@ import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
+import * as stream_topic_history from "./stream_topic_history";
 import * as ui_report from "./ui_report";
 
 const consts = {
@@ -49,6 +50,24 @@ function process_result(data, opts) {
 
     if (messages.length !== 0) {
         message_util.add_old_messages(messages, opts.msg_list);
+    }
+
+    const msg_list_filter = opts.msg_list.data.filter;
+    if (
+        msg_list_filter.operators.length === 2 &&
+        msg_list_filter.has_operator("stream") &&
+        msg_list_filter.has_operator("topic") &&
+        opts.msg_list.data.fetch_status.has_found_oldest()
+    ) {
+        // We only do this change when the messages fetched are for
+        // the particular stream and topic and not include other
+        // filters like searching for a particular word.
+        const stream_name = msg_list_filter.operands("stream")[0];
+        const stream_id = stream_data.get_stream_id(stream_name);
+        if (stream_id !== undefined) {
+            const topic = msg_list_filter.operands("topic")[0];
+            stream_topic_history.set_is_fully_loaded(stream_id, topic);
+        }
     }
 
     huddle_data.process_loaded_messages(messages);

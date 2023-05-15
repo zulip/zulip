@@ -135,6 +135,7 @@ export class PerStreamHistory {
                 pretty_name: topic_name,
                 historical: false,
                 count: 1,
+                is_fully_loaded: false,
             });
             return;
         }
@@ -172,6 +173,10 @@ export class PerStreamHistory {
         }
 
         if (existing.count <= num_messages) {
+            if (existing.is_fully_loaded) {
+                this.topics.delete(topic_name);
+                return;
+            }
             existing.count = 0;
             return;
         }
@@ -204,6 +209,7 @@ export class PerStreamHistory {
                 message_id,
                 pretty_name: topic_name,
                 historical: true,
+                is_fully_loaded: false,
             });
             this.update_stream_max_message_id(message_id);
         }
@@ -230,6 +236,19 @@ export class PerStreamHistory {
 
     get_max_message_id() {
         return this.max_message_id;
+    }
+
+    set_is_fully_loaded(topic_name) {
+        const existing = this.topics.get(topic_name);
+        if (!existing) {
+            return;
+        }
+
+        if (existing.historical) {
+            return;
+        }
+
+        existing.is_fully_loaded = true;
     }
 }
 
@@ -343,6 +362,15 @@ export function get_max_message_id(stream_id) {
     const history = find_or_create(stream_id);
 
     return history.get_max_message_id();
+}
+
+export function set_is_fully_loaded(stream_id, topic) {
+    const history = stream_dict.get(stream_id);
+    if (!history) {
+        return;
+    }
+
+    history.set_is_fully_loaded(topic);
 }
 
 export function clear_history_for_stream(stream_id) {
