@@ -346,8 +346,6 @@ export function update_send_later_options() {
     const now = new Date();
     if (should_update_send_later_options(now)) {
         const filtered_send_opts = get_filtered_send_opts(now);
-        $("#send_later_modal .send_later_options").replaceWith(
-            render_send_later_modal_options(filtered_send_opts),
-        );
+        $("#send_later_options").replaceWith(render_send_later_modal_options(filtered_send_opts));
     }
 }
