@@ -2780,9 +2780,36 @@ class RealmPropertyActionTest(BaseAction):
         )
 
         vals = test_values.get(name)
+        group_permission_setting_name = name[:-3]
         property_type = Realm.property_types[name]
         if property_type is bool:
             vals = bool_tests
+
+        if group_permission_setting_name in Realm.realm_permission_group_settings:
+            group_tests: List[int] = []
+            group_names = [v["name"] for k, v in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP.items()]
+            permission_configuration = Realm.realm_permission_group_settings[
+                group_permission_setting_name
+            ]
+            for group_name in group_names:
+                if (
+                    group_name not in ["OWNERS_GROUP_NAME", "EVERYONE_GROUP_NAME"]
+                    or (
+                        group_name == "OWNERS_GROUP_NAME"
+                        and permission_configuration.allow_owners_group
+                    )
+                    or (
+                        group_name == "EVERYONE_GROUP_NAME"
+                        and permission_configuration.allow_internet_group
+                    )
+                ):
+                    user_group = UserGroup.objects.get(
+                        name=group_name,
+                        realm=self.user_profile.realm,
+                        is_system_group=True,
+                    )
+                    group_tests.append(user_group.id)
+            vals = group_tests
 
         if vals is None:
             raise AssertionError(f"No test created for {name}")

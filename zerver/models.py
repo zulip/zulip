@@ -397,6 +397,11 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         POLICY_NOBODY,
     ]
 
+    PERMISSION_DEFAULT_GROUP = {
+        "direct_message_initiator_group": "@role:everyone",
+        "direct_message_permission_group": "@role:everyone",
+    }
+
     MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
 
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
@@ -437,6 +442,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
 
     user_group_edit_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
+    # Group in the organization allowed to initiate direct message threads.
+    direct_message_initiator_group = models.ForeignKey(
+        "UserGroup", related_name="+", null=True, on_delete=models.SET_NULL
+    )
+
+    # Group in the organization whose members must be included as sender or
+    # recipient in all direct messages.
+    direct_message_permission_group = models.ForeignKey(
+        "UserGroup", related_name="+", null=True, on_delete=models.SET_NULL
+    )
 
     PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
     PRIVATE_MESSAGE_POLICY_DISABLED = 2
@@ -723,6 +739,21 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     # they will not be available regardless of users' personal settings.
     enable_read_receipts = models.BooleanField(default=False)
 
+    realm_permission_group_settings: Dict[str, GroupPermissionSetting] = {
+        "direct_message_initiator_group": GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+        ),
+        "direct_message_permission_group": GroupPermissionSetting(
+            require_system_group=True,
+            allow_internet_group=False,
+            allow_owners_group=True,
+            allow_nobody_group=True,
+        ),
+    }
+
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
@@ -739,6 +770,8 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         description=str,
         digest_emails_enabled=bool,
         digest_weekday=int,
+        direct_message_initiator_group_id=int,
+        direct_message_permission_group_id=int,
         disallow_disposable_email_addresses=bool,
         edit_topic_policy=int,
         email_changes_disabled=bool,

@@ -27,6 +27,7 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.user_groups import access_user_group_for_setting
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
@@ -88,6 +89,8 @@ def update_realm(
     authentication_methods: Optional[Dict[str, Any]] = REQ(
         json_validator=check_dict([]), default=None
     ),
+    direct_message_permission_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    direct_message_initiator_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
     notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
@@ -272,6 +275,22 @@ def update_realm(
     # further by some more advanced usage of the
     # `REQ/has_request_variables` extraction.
     req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
+
+    for setting_name, setting_config in Realm.realm_permission_group_settings.items():
+        setting_id_name = setting_name + "_id"
+        if setting_id_name not in req_vars:  # nocoverage
+            continue
+        if req_vars[setting_id_name] is not None:
+            user_group_id = req_vars[setting_id_name]
+            access_user_group_for_setting(
+                user_group_id,
+                user_profile,
+                setting_name=setting_name,
+                require_system_group=setting_config.require_system_group,
+                allow_internet_group=setting_config.allow_internet_group,
+                allow_owners_group=setting_config.allow_owners_group,
+                allow_nobody_group=setting_config.allow_nobody_group,
+            )
 
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:

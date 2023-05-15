@@ -25,6 +25,7 @@ from zerver.models import (
     RealmAuthenticationMethod,
     RealmUserDefault,
     Stream,
+    UserGroup,
     UserProfile,
     get_org_type_display_name,
     get_realm,
@@ -238,6 +239,17 @@ def do_create_realm(
                 for backend_name in all_implemented_backend_names()
             ]
         )
+
+    # Set default value for group permissions
+    for setting_name in Realm.realm_permission_group_settings:
+        default_group = UserGroup.objects.get(
+            name=Realm.PERMISSION_DEFAULT_GROUP[setting_name],
+            realm=realm,
+            is_system_group=True,
+        )
+        setattr(realm, setting_name, default_group)
+
+    realm.save(update_fields=list(Realm.realm_permission_group_settings.keys()))
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(

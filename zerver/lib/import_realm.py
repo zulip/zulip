@@ -899,6 +899,12 @@ def import_uploads(
                     future.result()
 
 
+def set_realm_property_to_none(realm: Realm, property_name: str) -> Optional[int]:
+    property_val = getattr(realm, property_name)
+    setattr(realm, property_name, None)
+    return int(property_val) if property_val is not None else None
+
+
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
 #
@@ -908,10 +914,10 @@ def import_uploads(
 # have to import the dependencies first.)
 #
 # * Client [no deps]
-# * Realm [-notifications_stream]
+# * Realm [-notifications_stream, -group permissions]
 # * UserGroup
 # * Stream [only depends on realm]
-# * Realm's notifications_stream
+# * Realm's notifications_stream and group permissions
 # * UserProfile, in order by ID to avoid bot loop issues
 # * Now can do all realm_tables
 # * Huddle
@@ -944,12 +950,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     bulk_import_client(data, Client, "zerver_client")
 
-    # We don't import the Stream model yet, since it depends on Realm,
-    # which isn't imported yet.  But we need the Stream model IDs for
-    # notifications_stream.
+    # We don't import the Stream and UserGroup models yet, since
+    # they depend on Realm, which isn't imported yet.
+    # But we need the Stream and UserGroup model IDs for
+    # notifications_stream and group permissions, respectively.
     update_model_ids(Stream, data, "stream")
     re_map_foreign_keys(data, "zerver_realm", "notifications_stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realm", "signup_notifications_stream", related_table="stream")
+    if "zerver_usergroup" in data:
+        update_model_ids(UserGroup, data, "usergroup")
+        for setting_name in Realm.realm_permission_group_settings:
+            re_map_foreign_keys(data, "zerver_realm", setting_name, related_table="usergroup")
 
     fix_datetime_fields(data, "zerver_realm")
     # Fix realm subdomain information
@@ -963,20 +974,20 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     realm_properties["deactivated"] = True
     realm = Realm(**realm_properties)
 
-    if realm.notifications_stream_id is not None:
-        notifications_stream_id: Optional[int] = int(realm.notifications_stream_id)
-    else:
-        notifications_stream_id = None
-    realm.notifications_stream_id = None
-    if realm.signup_notifications_stream_id is not None:
-        signup_notifications_stream_id: Optional[int] = int(realm.signup_notifications_stream_id)
-    else:
-        signup_notifications_stream_id = None
-    realm.signup_notifications_stream_id = None
+    realm_foreign_key_ids: Dict[str, Optional[int]] = {}
+    realm_foreign_key_ids["notifications_stream_id"] = set_realm_property_to_none(
+        realm, "notifications_stream_id"
+    )
+    realm_foreign_key_ids["signup_notifications_stream_id"] = set_realm_property_to_none(
+        realm, "signup_notifications_stream_id"
+    )
+    for setting_name in Realm.realm_permission_group_settings:
+        setting_id_name = setting_name + "_id"
+        realm_foreign_key_ids[setting_id_name] = set_realm_property_to_none(realm, setting_id_name)
+
     realm.save()
 
     if "zerver_usergroup" in data:
-        update_model_ids(UserGroup, data, "usergroup")
         re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
         bulk_import_model(data, UserGroup)
 
@@ -1001,8 +1012,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         stream["rendered_description"] = render_stream_description(stream["description"], realm)
     bulk_import_model(data, Stream)
 
-    realm.notifications_stream_id = notifications_stream_id
-    realm.signup_notifications_stream_id = signup_notifications_stream_id
+    for setting_id_name, val in realm_foreign_key_ids.items():
+        setattr(realm, setting_id_name, val)
+
     realm.save()
 
     # Remap the user IDs for notification_bot and friends to their

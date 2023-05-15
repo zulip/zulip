@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 182**:
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Added new `direct_message_initiator_group` setting.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Added new `direct_message_permission_group` setting.
+
 **Feature level 181**
 
 * [`GET /scheduled_messages`](/api/get-scheduled-messages), [`GET
