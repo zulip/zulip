@@ -1066,6 +1066,20 @@ class DeferredWorker(QueueProcessingWorker):
             extra_data = {}
             if export_event.extra_data is not None:
                 extra_data = orjson.loads(export_event.extra_data)
+            if extra_data.get("started_timestamp") is not None:
+                logger.error(
+                    "Marking export for realm %s as failed due to retry -- possible OOM during export?",
+                    realm.string_id,
+                )
+                extra_data["failed_timestamp"] = timezone_now().timestamp()
+                export_event.extra_data = orjson.dumps(extra_data).decode()
+                export_event.save(update_fields=["extra_data"])
+                notify_realm_export(user_profile)
+                return
+
+            extra_data["started_timestamp"] = timezone_now().timestamp()
+            export_event.extra_data = orjson.dumps(extra_data).decode()
+            export_event.save(update_fields=["extra_data"])
 
             logger.info(
                 "Starting realm export for realm %s into %s, initiated by user_profile_id %s",
