@@ -24,7 +24,7 @@ h3,
     .fa-question-circle-o {
         top: 1px;
         /* This should match .settings-info-icon. */
-        opacity: 0.6;
+        opacity: 0.7;
         position: relative;
 
         &:hover {
@@ -43,7 +43,7 @@ h3,
    fa-question-circle-o logic above. */
 .settings-info-icon {
     padding-left: 3px;
-    opacity: 0.6;
+    opacity: 0.7;
 
     &:hover {
         opacity: 1;

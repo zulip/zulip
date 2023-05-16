@@ -981,7 +981,7 @@ td.pointer {
     font-size: 12px;
     font-weight: normal;
     text-align: right;
-    opacity: 0.6;
+    opacity: 0.8;
     color: var(--color-text-default);
     font-feature-settings: "pnum" on, "lnum" on;
     letter-spacing: 0.02em;
@@ -996,7 +996,7 @@ td.pointer {
     display: block;
     font-size: 12px;
     text-align: right;
-    opacity: 0.6;
+    opacity: 0.8;
     color: var(--color-text-default);
     animation: rotate 1s infinite linear;
 }
