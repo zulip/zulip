@@ -94,7 +94,7 @@ export function get_actions_popover_content_context(message_id) {
 
     function is_add_reaction_icon_visible() {
         const $message_row = message_lists.current.get_row(message_id);
-        return $message_row.find(".message_controls.reaction_button").is(":visible");
+        return $message_row.find(".message_controls .reaction_button").is(":visible");
     }
 
     // Since we only display msg actions and star icons on windows smaller than
