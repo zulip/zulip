@@ -104,6 +104,8 @@ def process_users(
             realm_owners.append(id)
         elif "guest" in user_dict["roles"]:
             role = UserProfile.ROLE_GUEST
+        elif "bot" in user_dict["roles"]:
+            is_bot = True
 
         if is_bot:
             bots.append(id)
