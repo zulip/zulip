@@ -64,7 +64,7 @@ const animate = {
         }
 
         if (meta.$container) {
-            meta.$container.fadeOut(500).removeClass("show");
+            meta.$container.removeClass("show");
             meta.opened = false;
             meta.alert_hover_state = false;
         }
@@ -75,7 +75,7 @@ const animate = {
         }
 
         if (meta.$container) {
-            meta.$container.fadeIn(500).addClass("show");
+            meta.$container.addClass("show");
             meta.opened = true;
             setTimeout(() => animate.maybe_close(), 100);
         }

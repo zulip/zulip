@@ -259,7 +259,7 @@ p.n-margin {
 }
 
 #feedback_container {
-    display: none;
+    opacity: 0;
     position: absolute;
     width: 400px;
     top: 0;
@@ -275,11 +275,15 @@ p.n-margin {
     animation-iteration-count: infinite;
     animation-duration: 2s;
 
-    transition-property: top, bottom;
+    transition-property: top, opacity, visibility;
     transition-duration: 0.5s;
 
+    visibility: hidden;
+
     &.show {
+        opacity: 1;
         top: 50px;
+        visibility: visible;
     }
 
     & h3 {
