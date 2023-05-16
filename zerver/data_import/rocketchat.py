@@ -79,14 +79,14 @@ def process_users(
             else:
                 is_mirror_dummy = True
 
-            if not user_dict.get("emails"):
-                user_dict["emails"] = [
-                    {
-                        "address": "{}-{}@{}".format(
-                            user_dict["username"], user_dict["type"], domain_name
-                        )
-                    }
-                ]
+        if user_dict.get("emails") is None:
+            user_dict["emails"] = [
+                {
+                    "address": "{}-{}@{}".format(
+                        user_dict["username"], user_dict["type"], domain_name
+                    )
+                }
+            ]
 
         # TODO: Change this to use actual exported avatar
         avatar_source = "G"
