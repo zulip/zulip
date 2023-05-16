@@ -64,7 +64,6 @@ def check_schedule_message(
     message_to: List[int],
     topic_name: Optional[str],
     message_content: str,
-    scheduled_message_id: Optional[int],
     deliver_at: datetime.datetime,
     realm: Optional[Realm] = None,
     forwarder_user_profile: Optional[UserProfile] = None,
@@ -79,9 +78,6 @@ def check_schedule_message(
         forwarder_user_profile=forwarder_user_profile,
     )
     send_request.deliver_at = deliver_at
-
-    if scheduled_message_id is not None:
-        return edit_scheduled_message(scheduled_message_id, send_request, sender)
 
     return do_schedule_messages([send_request], sender)[0]
 

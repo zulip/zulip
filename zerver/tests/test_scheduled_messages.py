@@ -38,7 +38,6 @@ class ScheduledMessageTest(ZulipTestCase):
         to: Union[int, List[str], List[int]],
         msg: str,
         scheduled_delivery_timestamp: int,
-        scheduled_message_id: str = "",
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
@@ -53,9 +52,6 @@ class ScheduledMessageTest(ZulipTestCase):
             "topic": topic_name,
             "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
         }
-
-        if scheduled_message_id:
-            payload["scheduled_message_id"] = scheduled_message_id
 
         result = self.client_post("/json/scheduled_messages", payload)
         return result

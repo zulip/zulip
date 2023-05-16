@@ -3292,7 +3292,6 @@ class ScheduledMessagesEventsTest(BaseAction):
             [self.get_stream_id("Verona")],
             "Test topic",
             "Stream message",
-            None,
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
@@ -3307,7 +3306,6 @@ class ScheduledMessagesEventsTest(BaseAction):
             [self.get_stream_id("Verona")],
             "Test topic",
             "Stream message 1",
-            None,
             convert_to_UTC(dateparser("2023-04-19 17:24:56")),
             self.user_profile.realm,
         )
@@ -3320,7 +3318,6 @@ class ScheduledMessagesEventsTest(BaseAction):
             [self.get_stream_id("Verona")],
             "Test topic",
             "Stream message 2",
-            None,
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
@@ -3335,7 +3332,6 @@ class ScheduledMessagesEventsTest(BaseAction):
             [self.example_user("hamlet").id],
             None,
             "Private message",
-            None,
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
@@ -3349,7 +3345,6 @@ class ScheduledMessagesEventsTest(BaseAction):
             [self.get_stream_id("Verona")],
             "Test topic",
             "Stream message",
-            None,
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
@@ -3360,7 +3355,6 @@ class ScheduledMessagesEventsTest(BaseAction):
             [self.get_stream_id("Verona")],
             "Edited test topic",
             "Edited stream message",
-            scheduled_message_id,
             convert_to_UTC(dateparser("2023-04-20 18:24:56")),
             self.user_profile.realm,
         )
@@ -3374,7 +3368,6 @@ class ScheduledMessagesEventsTest(BaseAction):
             [self.get_stream_id("Verona")],
             "Test topic",
             "Stream message",
-            None,
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )

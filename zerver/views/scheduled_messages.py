@@ -43,7 +43,6 @@ def scheduled_messages_backend(
     req_to: str = REQ("to"),
     topic_name: Optional[str] = REQ_topic(),
     message_content: str = REQ("content"),
-    scheduled_message_id: Optional[int] = REQ(default=None, json_validator=check_int),
     scheduled_delivery_timestamp: int = REQ(json_validator=check_int),
 ) -> HttpResponse:
     recipient_type_name = req_type
@@ -73,7 +72,6 @@ def scheduled_messages_backend(
         message_to,
         topic_name,
         message_content,
-        scheduled_message_id,
         deliver_at,
         realm=user_profile.realm,
         forwarder_user_profile=user_profile,
