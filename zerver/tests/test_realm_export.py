@@ -179,6 +179,34 @@ class RealmExportTest(ZulipTestCase):
         result = self.client_delete("/json/export/realm/0")
         self.assert_json_error(result, "Invalid data export ID")
 
+    def test_export_failure(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        with patch(
+            "zerver.lib.export.do_export_realm", side_effect=Exception("failure")
+        ) as mock_export:
+            with stdout_suppressed(), self.assertLogs(level="INFO") as info_logs:
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_post("/json/export/realm")
+        self.assertTrue(
+            info_logs.output[0].startswith("ERROR:root:Data export for zulip failed after ")
+        )
+        mock_export.assert_called_once()
+        # This is a success because the failure is swallowed in the queue worker
+        self.assert_json_success(result)
+
+        # Check that the export shows up as failed
+        result = self.client_get("/json/export/realm")
+        response_dict = self.assert_json_success(result)
+        export_dict = response_dict["exports"]
+        self.assert_length(export_dict, 1)
+        self.assertEqual(export_dict[0]["pending"], False)
+        self.assertIsNone(export_dict[0]["export_url"])
+        self.assertIsNone(export_dict[0]["deleted_timestamp"])
+        self.assertIsNotNone(export_dict[0]["failed_timestamp"])
+        self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
+
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)
