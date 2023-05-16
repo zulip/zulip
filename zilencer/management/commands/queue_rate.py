@@ -57,7 +57,6 @@ class Command(BaseCommand):
                             f"    Skipping, as prefetch {prefetch} is less than batch size {worker.batch_size}"
                         )
                         continue
-                worker.ENABLE_TIMEOUTS = True
                 worker.setup()
 
                 assert worker.q is not None

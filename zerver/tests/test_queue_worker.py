@@ -717,7 +717,6 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = TimeoutWorker()
             worker.setup()
-            worker.ENABLE_TIMEOUTS = True
             with self.assertLogs(level="ERROR") as m:
                 worker.start()
                 self.assertEqual(
@@ -757,7 +756,6 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = TimeoutWorker()
             worker.setup()
-            worker.ENABLE_TIMEOUTS = True
             with self.assertLogs(level="WARNING") as m:
                 worker.start()
                 self.assertEqual(
