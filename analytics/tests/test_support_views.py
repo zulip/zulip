@@ -249,6 +249,12 @@ class TestSupportEndpoint(ZulipTestCase):
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
 
+        # Search should be case-insensitive:
+        assert self.example_email("hamlet") != self.example_email("hamlet").upper()
+        result = get_check_query_result(self.example_email("hamlet").upper(), 1)
+        check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
+
         result = get_check_query_result(lear_user.email, 1)
         check_lear_user_query_result(result)
         check_lear_realm_query_result(result)
