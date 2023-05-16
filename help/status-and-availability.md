@@ -62,7 +62,8 @@ and compose box. Status emoji and status messages are also shown on
 !!! tip ""
 
     You can also click on a user's profile picture or name on a message they
-    sent to view their status in their **user card**.
+    sent to view their status in their **user card**, or configure status text
+    to always be shown in the right sidebar.
 
 {tab|mobile}
 
@@ -72,6 +73,27 @@ and compose box. Status emoji and status messages are also shown on
    set.
 
 {!mobile-view-user-profile-tip.md!}
+
+{end_tabs}
+
+### Configure how statuses are displayed
+
+You can choose whether or not status text is displayed in the right sidebar.
+With the compact option, only status emoji are shown.
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|display-settings}
+
+1. Under **Advanced**, select **Compact** or **Show status and text** for the
+   user list style.
+
+!!! tip ""
+
+    You can always hover over a user's name in the right sidebar to view their
+    status message if they have one set.
 
 {end_tabs}
 
