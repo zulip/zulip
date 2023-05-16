@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -289,7 +290,10 @@ def support(
     if query:
         key_words = get_invitee_emails_set(query)
 
-        users = set(UserProfile.objects.filter(delivery_email__in=key_words))
+        case_insensitive_users_q = Q()
+        for key_word in key_words:
+            case_insensitive_users_q |= Q(delivery_email__iexact=key_word)
+        users = set(UserProfile.objects.filter(case_insensitive_users_q))
         realms = set(Realm.objects.filter(string_id__in=key_words))
 
         for key_word in key_words:
