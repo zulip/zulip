@@ -85,7 +85,7 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
         "id": row.id,
     }
     transaction.on_commit(lambda: queue_json_publish("deferred_work", event))
-    return json_success(request)
+    return json_success(request, data={"id": row.id})
 
 
 @require_realm_admin

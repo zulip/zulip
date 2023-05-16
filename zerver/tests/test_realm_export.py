@@ -159,7 +159,7 @@ class RealmExportTest(ZulipTestCase):
                     result = self.client_post("/json/export/realm")
             self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
         mock_export.assert_called_once()
-        self.assert_json_success(result)
+        data = self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
 
         # Get the entry and test that iago initiated it.
@@ -167,6 +167,7 @@ class RealmExportTest(ZulipTestCase):
             event_type=RealmAuditLog.REALM_EXPORTED
         ).first()
         assert audit_log_entry is not None
+        self.assertEqual(audit_log_entry.id, data["id"])
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
@@ -226,14 +227,15 @@ class RealmExportTest(ZulipTestCase):
         )
         mock_export.assert_called_once()
         # This is a success because the failure is swallowed in the queue worker
-        self.assert_json_success(result)
+        data = self.assert_json_success(result)
+        export_id = data["id"]
 
         # Check that the export shows up as failed
         result = self.client_get("/json/export/realm")
         response_dict = self.assert_json_success(result)
         export_dict = response_dict["exports"]
         self.assert_length(export_dict, 1)
-        export_id = export_dict[0]["id"]
+        self.assertEqual(export_dict[0]["id"], export_id)
         self.assertEqual(export_dict[0]["pending"], False)
         self.assertIsNone(export_dict[0]["export_url"])
         self.assertIsNone(export_dict[0]["deleted_timestamp"])
