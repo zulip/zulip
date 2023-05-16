@@ -1,28 +1,18 @@
 .recent_topics_container {
     padding: 0;
-    border-radius: 4px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: 100vh;
+    border-style: solid;
+    border-color: hsl(0deg 0% 88%);
+    border-width: 0 1px;
+    border-radius: 0;
 
     #recent_topics_table {
         max-width: 100%;
-        padding-top: 12px;
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
-        border-style: solid;
-        border-color: hsl(0deg 0% 88%);
-        border-width: 0 1px;
-        border-radius: 0;
-        margin-top: 40px;
-        /* To make the table span full height
-         * when rows don't reach bottom of the
-         * window. This makes the border span
-         * fully to bottom in that case.
-         */
-        min-height: 100vw;
 
         & td {
             vertical-align: middle;
@@ -75,10 +65,6 @@
 
         .table_fix_head {
             padding: 0 !important;
-            /* 100px = space occupied by `recent_topics_filter_buttons`( ~49px)
-                     + give user some extra space at the bottom so that last
-                       topic row is clearly visible. */
-            max-height: calc(100vh - 100px);
         }
 
         .table_fix_head table {
@@ -88,6 +74,7 @@
         }
 
         #recent_topics_filter_buttons {
+            padding-top: 12px;
             margin: 0 10px;
             display: flex;
             /* Search box has no height without this in safari. */

@@ -67,7 +67,7 @@ export function message_viewport_info() {
         res.visible_top += $sticky_header.safeOuterHeight();
     }
 
-    res.visible_bottom = $element_just_below_us.position().top;
+    res.visible_bottom = $element_just_below_us.offset().top;
 
     res.visible_height = res.visible_bottom - res.visible_top;
 
@@ -481,7 +481,7 @@ export function keep_pointer_in_view() {
 
 export function initialize() {
     $jwindow = $(window);
-    $message_pane = $(".app");
+    $message_pane = $("body");
     // This handler must be placed before all resize handlers in our application
     $jwindow.on("resize", () => {
         dimensions.height.reset();

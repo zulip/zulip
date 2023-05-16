@@ -35,6 +35,7 @@ import {
     is_visible,
     set_visible,
 } from "./recent_topics_util";
+import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
 import * as stream_data from "./stream_data";
@@ -903,6 +904,7 @@ export function show() {
     search.clear_search_form();
 
     complete_rerender();
+    resize.resize_recent_topics();
 }
 
 function filter_buttons() {

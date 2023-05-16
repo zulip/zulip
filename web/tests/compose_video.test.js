@@ -13,6 +13,7 @@ const compose_ui = mock_esm("../src/compose_ui");
 const upload = mock_esm("../src/upload");
 mock_esm("../src/resize", {
     watch_manual_resize() {},
+    compose_height_resize_handler() {},
 });
 set_global("document", {
     querySelector() {},

@@ -50,7 +50,6 @@
     }
 }
 
-/* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: hsl(232deg 30% 92%);
     transition: background-color 200ms linear;
@@ -218,9 +217,8 @@
 }
 
 #compose {
-    position: fixed;
+    position: sticky;
     bottom: 0;
-    left: 0;
     z-index: 4;
     width: 100%;
 }
@@ -229,8 +227,6 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    /* This should match the value for .app-main */
-    max-width: 1400px;
     margin: auto;
 }
 
@@ -893,26 +889,6 @@ a.compose_control_button.hide {
     &:hover,
     &:focus {
         box-shadow: none;
-    }
-}
-
-@media (width < $xl_min) {
-    #compose-content {
-        margin-right: 7px;
-    }
-}
-
-@media (width < $md_min) {
-    #compose-content {
-        margin-right: 7px;
-        margin-left: 7px;
-    }
-}
-
-@media (width < $mm_min) {
-    #compose-content {
-        margin-right: 5px;
-        margin-left: 5px;
     }
 }
 

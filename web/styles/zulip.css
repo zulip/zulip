@@ -2,10 +2,13 @@ body,
 html {
     width: 100%;
     height: 100%;
+    /* NOTE: Setting `overflow-x/y: hidden` on any element below this will be make
+       that element scrolling container of sticky element inside that element
+       and then the sticky behaviour of the element might not work. */
     overflow-x: hidden;
-    overflow-y: hidden;
-
     touch-action: manipulation;
+    /* Disable rubberband animation on overscrolling on mac. */
+    overscroll-behavior-y: none;
 }
 
 .column-middle,
@@ -18,6 +21,9 @@ html {
 }
 
 body {
+    overflow-y: scroll;
+    /* Allow momentum based scrolling on touch devices. */
+    -webkit-overflow-scrolling: touch;
     font-size: 14px;
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
@@ -53,7 +59,7 @@ body {
     Our sidebars (and anything that top-align
     with them) go beneath the header.
     */
-    --sidebar-top: calc(var(--header-height) + var(--header-padding-bottom));
+    --sidebar-top: var(--header-padding-bottom);
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
@@ -332,16 +338,15 @@ p.n-margin {
     opacity: 1;
 }
 
-.header {
-    position: fixed;
-    z-index: 102; /* Needs to be higher than .alert-bar-container */
-    width: 100%;
-    height: var(--header-height);
-    /* Since the headers are sticky, we need non-transparent background. */
-    background-color: var(--color-background);
-    /* Add 1px box-shadow below header so that if there is a gap between sticky header
-       and header at some zoom level, it is covered by this */
-    box-shadow: 0 1px 0 0 var(--color-background);
+#navbar-container {
+    .header {
+        height: var(--header-height);
+        /* Since the headers are sticky, we need non-transparent background. */
+        background-color: var(--color-background);
+        /* Add 1px box-shadow below header so that if there is a gap between sticky header
+        and header at some zoom level, it is covered by this */
+        box-shadow: 0 1px 0 0 var(--color-background);
+    }
 }
 
 #navbar-middle .column-middle-inner,
@@ -352,9 +357,16 @@ p.n-margin {
     box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
 }
 
+#navbar-sticky-container {
+    z-index: 102; /* Needs to be higher than .alert-bar-container */
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background-color: var(--color-background);
+}
+
 #navbar_alerts_wrapper {
     font-size: 1rem;
-    position: relative;
 
     .alert {
         /* Since alerts are only rendered into the DOM when they are first
@@ -383,8 +395,8 @@ p.n-margin {
             line-height: 24px;
             position: absolute;
             right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 0;
+            transform: translateY(50%);
         }
 
         .alert-link {
@@ -457,10 +469,8 @@ p.n-margin {
 
 .app {
     width: 100%;
-    height: 100%;
-    overflow-y: scroll;
+    position: relative;
     z-index: 99;
-    -webkit-overflow-scrolling: touch;
 }
 
 .app-main,
@@ -558,7 +568,7 @@ p.n-margin {
     .column-left .left-sidebar,
     .column-right .right-sidebar {
         position: fixed;
-        margin-top: var(--sidebar-top);
+        padding-top: var(--sidebar-top);
         z-index: 100;
     }
 
@@ -578,8 +588,7 @@ p.n-margin {
     }
 }
 
-.column-middle,
-#compose-content {
+.column-middle {
     margin-right: var(--right-sidebar-width);
     margin-left: calc(
         var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter)
@@ -2876,12 +2885,7 @@ select.invite-as {
             .right-sidebar {
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-left: 1px solid hsl(0deg 0% 87%);
-
-                /* We use both margin and padding to
-                   hide little artifacts from showing up in
-                   the gutter below the navbar. */
-                margin-top: var(--header-height);
-                padding: var(--header-padding-bottom) 15px 0 15px;
+                padding: var(--sidebar-top) 15px;
                 height: 100%;
                 right: 0;
                 background-color: var(--color-background);
@@ -2939,13 +2943,6 @@ select.invite-as {
                 background-color: var(--color-background);
                 box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-right: 1px solid hsl(0deg 0% 87%);
-
-                /* We use both margin and padding to
-                   hide little artifacts from showing up in
-                   the gutter below the navbar. */
-                margin-top: var(--header-height);
-                padding-top: var(--header-padding-bottom);
-
                 height: 100%;
                 padding-left: 10px;
                 width: var(--left-sidebar-width);
@@ -2992,11 +2989,6 @@ select.invite-as {
 }
 
 @media (width < $sm_min) {
-    .column-right.expanded .right-sidebar,
-    .column-left.expanded .left-sidebar {
-        margin-top: 31px;
-    }
-
     .column-left.expanded {
         .left-sidebar {
             /* For very small sizes, skip the relatively large top padding. */
