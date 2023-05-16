@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 182**
+
+* `POST /export/realm`: This endpoint now returns the ID of the data
+  export object created by the request.
+
 **Feature level 181**
 
 * [`GET /scheduled_messages`](/api/get-scheduled-messages), [`GET
