@@ -5169,19 +5169,18 @@ paths:
                           ],
                       }
     post:
-      operationId: create-or-update-scheduled-message
+      operationId: create-scheduled-message
       tags: ["scheduled_messages"]
-      summary: Create or edit scheduled message
+      summary: Create a scheduled message
       description: |
-        Create a new scheduled message or edit an existing scheduled message.
+        Create a new [scheduled message](/help/schedule-a-message).
 
-        The `scheduled_message_id` parameter determines whether a scheduled
-        message is created or updated. When it is omitted, a new scheduled
-        message is created. When it is specified, the existing scheduled
-        message with that unique ID is updated for the values passed to the
-        other endpoint parameters.
+        **Changes**: In Zulip 7.0 (feature level 184), moved support for
+        [editing a scheduled message](/api/update-scheduled-message) to a
+        separate API endpoint, which removed the `scheduled_message_id`
+        parameter from this endpoint.
 
-        **Changes**: New in Zulip 7.0 (feature level 179).
+        New in Zulip 7.0 (feature level 179).
       parameters:
         - name: type
           in: query
@@ -5235,16 +5234,6 @@ paths:
             type: string
           example: Castle
           allowEmptyValue: true
-        - name: scheduled_message_id
-          in: query
-          schema:
-            type: integer
-          description: |
-            The unique ID of the scheduled message to be updated.
-
-            If omitted, a new scheduled message will be created. Otherwise,
-            the existing scheduled message with this unique ID will be updated.
-          example: 1
         - name: scheduled_delivery_timestamp
           in: query
           schema:
@@ -5303,6 +5292,134 @@ paths:
                         description: |
                           A typical failed JSON response for when a direct message is scheduled
                           to be sent to a user that does not exist:
+  /scheduled_messages/{scheduled_message_id}:
+    patch:
+      operationId: update-scheduled-message
+      tags: ["scheduled_messages"]
+      summary: Edit a scheduled message
+      description: |
+        Edit an existing [scheduled message](/help/schedule-a-message).
+
+        **Changes**: New in Zulip 7.0 (feature level 184).
+      parameters:
+        - name: scheduled_message_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the scheduled message to update.
+
+            This is different from the unique ID that the message would have
+            after being sent.
+          required: true
+          example: 2
+        - name: type
+          in: query
+          description: |
+            The type of scheduled message to be sent. `"direct"` for a direct
+            message and `"stream"` for a stream message.
+
+            When updating the type of the scheduled message, the `to` parameter
+            is required. And, if updating the type of the scheduled message to
+            `"stream"`, then the `topic` parameter is also required.
+
+            In Zulip 7.0 (feature level 174), `"direct"` was added as the
+            preferred way to indicate the type of a direct message, deprecating
+            the original `"private"`. While `"private"` is supported for
+            scheduling direct messages, clients are encouraged to use to the
+            modern convention because support for `"private"` may eventually
+            be removed.
+          schema:
+            type: string
+            enum:
+              - direct
+              - stream
+              - private
+          example: stream
+        - name: to
+          in: query
+          description: |
+            The scheduled message's tentative target audience.
+
+            For stream messages, the integer ID of the stream.
+            For direct messages, a list containing integer user IDs.
+
+            Required when updating the `type` of the scheduled message.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: integer
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
+              example: 8
+        - name: content
+          in: query
+          description: |
+            The updated content of the scheduled message.
+
+            Clients should use the `max_message_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum message size.
+          schema:
+            type: string
+          example: Hello
+        - name: topic
+          in: query
+          description: |
+            The updated topic of the scheduled message.
+
+            Required when updating the `type` of the scheduled message to
+            `"stream"`. Ignored when the existing or updated `type` of the
+            scheduled message is `"direct"` (or `"private"`).
+
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length.
+          schema:
+            type: string
+          example: Castle
+        - name: scheduled_delivery_timestamp
+          in: query
+          schema:
+            type: integer
+          description: |
+            The UNIX timestamp for when the message will be sent,
+            in UTC seconds.
+
+            Required when updating a scheduled message that the server
+            has already tried and failed to send. This state is indicated
+            with `"failed": true` in `scheduled_messages` objects; see
+            response description at
+            [`GET /scheduled_messages`](/api/get-scheduled-messages#response).
+          example: 3165826990
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/NonExistingStreamIdError"
+                      - description: |
+                          A typical failed JSON response for when a stream message is scheduled
+                          to be sent to a stream that does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid user ID 10",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when a direct message is scheduled
+                          to be sent to a user that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - description: |
@@ -5313,7 +5430,6 @@ paths:
                             "result": "error",
                             "msg": "Scheduled message does not exist",
                           }
-  /scheduled_messages/{scheduled_message_id}:
     delete:
       operationId: delete-scheduled-message
       tags: ["scheduled_messages"]
@@ -5331,8 +5447,8 @@ paths:
           description: |
             The ID of the scheduled message to delete.
 
-            This is different from the unique ID that a message would have
-            after it was sent.
+            This is different from the unique ID that the message would have
+            after being sent.
           required: true
           example: 1
       responses:

@@ -20,7 +20,8 @@
 #### Scheduled messages
 
 * [Get scheduled messages](/api/get-scheduled-messages)
-* [Create or edit a scheduled message](/api/create-or-update-scheduled-message)
+* [Create a scheduled message](/api/create-scheduled-message)
+* [Edit a scheduled message](/api/update-scheduled-message)
 * [Delete a scheduled message](/api/delete-scheduled-message)
 
 #### Drafts

@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 184**
+
+* [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  Added new endpoint for editing an existing scheduled message.
+* [`POST /scheduled_messages`](/api/create-scheduled-message):
+  Removed optional `scheduled_message_id` parameter, which had
+  been a previous way for clients to support editing an existing
+  scheduled message.
+
 **Feature level 183**
 
 * [`POST /register`](/api/register-queue): Removed the
@@ -56,7 +65,7 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 179**
 
-* [`POST /scheduled_messages`](/api/create-or-update-scheduled-message):
+* [`POST /scheduled_messages`](/api/create-scheduled-message):
   Added new endpoint to create and edit scheduled messages.
 * [`GET /events`](/api/get-events):
   Added `scheduled_messages` events sent to clients when a user creates,
