@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
@@ -182,13 +183,32 @@ export function send_request_to_schedule_message(scheduled_message_data, deliver
     });
 }
 
+function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
+    const deliver_at = timerender.get_full_datetime(
+        new Date(scheduled_delivery_timestamp * 1000),
+        "time",
+    );
+    const unscheduled_banner = render_compose_banner({
+        banner_type: compose_banner.WARNING,
+        banner_text: $t(
+            {
+                defaultMessage: "This message is no longer scheduled for {deliver_at}.",
+            },
+            {deliver_at},
+        ),
+        classname: compose_banner.CLASSNAMES.unscheduled_message,
+    });
+    compose_banner.append_compose_banner_to_banner_list(unscheduled_banner, $("#compose_banners"));
+}
+
 export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
     const scheduled_msg = scheduled_messages_data.find(
         (msg) => msg.scheduled_message_id === scheduled_message_id,
     );
-    delete_scheduled_message(scheduled_message_id, () =>
-        open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient),
-    );
+    delete_scheduled_message(scheduled_message_id, () => {
+        open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
+        show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
+    });
 }
 
 export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
