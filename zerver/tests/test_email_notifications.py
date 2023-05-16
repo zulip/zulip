@@ -603,7 +603,7 @@ class TestMissedMessages(ZulipTestCase):
             reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
         assert isinstance(msg, EmailMultiAlternatives)
-        from_email = str(Address(display_name="Zulip notifications", addr_spec=FromAddress.NOREPLY))
+        from_email = str(Address(display_name="Practice Chat notifications", addr_spec=FromAddress.NOREPLY))
         self.assert_length(mail.outbox, 1)
         if send_as_user:
             from_email = f'"{othello.full_name}" <{othello.email}>'

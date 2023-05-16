@@ -8,8 +8,10 @@
 }
 
 #footer {
-    background: var(--color-footer-background);
+    /* background: var(--color-footer-background); */
+    background-color: #F9F9F9;
     box-sizing: border-box;
+    padding: 0 52px;
 
     & ul {
         /* Override bootstrap defaults */
@@ -70,13 +72,15 @@
     a:visited {
         font-weight: 400;
         font-size: 16px;
-        color: var(--color-links);
+        /* color: var(--color-links); */
+        color: #5F6368;
     }
 
     & a:hover,
     a:focus {
-        color: var(--color-links);
-        border-bottom: 1px solid var(--color-links);
+        /* color: var(--color-links);
+        border-bottom: 1px solid var(--color-links); */
+        color: #007AFF;
         transition: none;
         text-decoration: none;
         outline: none;
@@ -84,25 +88,28 @@
 
     .footer__legal {
         margin: 24px 0 5px;
-        padding: 0 52px;
         border-top: 1px solid hsl(0deg 0% 100% / 10%);
 
         & a {
             margin-bottom: 10px;
-            border-bottom: 1px solid var(--color-footer-background);
+            /* border-bottom: 1px solid var(--color-footer-background); */
 
             &:hover {
-                border-bottom: 1px solid var(--color-links);
+                /* border-bottom: 1px solid var(--color-links); */
             }
         }
 
         &.footer__legal_not_corporate {
-            margin-top: 0;
+            margin: 45px 0;
+        }
+
+        &.footer__legal_description {
+            margin: 25px 0;
         }
     }
 
     .footer__legal-container {
-        max-width: 1132px;
+        /* max-width: 1132px; */
         padding-top: 15px;
         display: flex;
         justify-content: space-between;
@@ -128,6 +135,13 @@
     .footer__legal-container a {
         font-size: 14px;
         line-height: 18px;
+
+        &.footer__legal_home_link {
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
     }
 
     .footer__legal-container a:not(:last-child) {
@@ -136,6 +150,10 @@
 
     .footer__section .extra_margin {
         margin-bottom: 40px;
+    }
+
+    .divider {
+        border-top: 1px solid #DADCE0;
     }
 
     /* #footer responsivity and global fixes */

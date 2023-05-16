@@ -284,9 +284,64 @@ html {
     width: 100%;
     top: 0;
 
-    .top-links a,
     .header-main .logo span {
-        color: hsl(0deg 0% 27%);
+        color: #5F6368;
+        font-size: 16px;
+        margin-right: 2rem;
+    }
+    .top-links a.book-demo-btn {
+        display: inline-block;
+        vertical-align: top;
+        padding: 1px 22px;
+        font-family: "Source Sans 3", sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        box-sizing: border-box;
+        outline: none;
+        color: hsl(0, 0%, 100%);
+        background-color: #007AFF;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        border: 2px solid #007AFF;
+        margin-left: 10px;
+    }
+
+    .top-links a.login-btn:hover {
+        background-color: #007AFF;
+        border: 2px solid #007AFF;
+        color: hsl(0, 0%, 100%);
+    }
+
+    .top-links a.book-demo-btn:hover {
+        background-color: hsl(0, 0%, 100%);
+        border: 2px solid #007AFF;
+        color: #007AFF;
+    }
+
+    .top-links a.login-btn {
+        display: inline-block;
+        vertical-align: top;
+        padding: 1px 22px;
+        font-family: "Source Sans 3", sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        box-sizing: border-box;
+        outline: none;
+        color: #007AFF;
+        background-color: hsl(0, 0%, 100%);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        border: 2px solid #007AFF;
+    }
+
+    .header-main .logo .logo-title {
+        font-size: 20px;
+        font-weight: 500;
+        margin-right: 50px;
+    }
+    .header-main .logo .logo-title img {
+        width: 35px;
+        height: 35px;
     }
 }
 
@@ -402,7 +457,7 @@ html {
         box-sizing: border-box;
         outline: none;
         color: hsl(0deg 0% 100%);
-        background-color: hsl(213deg 23% 25%);
+        background-color: #007AFF;
 
         margin: 25px 0 5px;
         height: 50px;
@@ -483,7 +538,7 @@ html {
     }
 
     .get-started {
-        font-size: 2.5rem;
+        font-size: 2rem;
         text-align: center;
         color: hsl(0deg 0% 40%);
         margin-bottom: 20px;
@@ -612,6 +667,13 @@ html {
 
     .lead {
         margin: 0;
+
+        & > .logo {
+            display: block;
+            margin: 0 auto;
+            width: 50px;
+            height: 50px;
+        }
     }
 
     .inline-block {
@@ -796,7 +858,7 @@ html {
 
     .organization-path {
         font-weight: 400;
-        color: hsl(0deg 0% 47%);
+        color: #007AFF;
         margin-top: 5px;
     }
 }
@@ -868,7 +930,7 @@ button#register_auth_button_gitlab {
 
 .split-view .actions a,
 .back-to-login {
-    color: hsl(164deg 100% 23%);
+    color: #007AFF;
     text-decoration: none;
     font-weight: 600;
     font-size: 0.8em;

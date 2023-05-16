@@ -69,7 +69,7 @@ class FromAddress:
             language = user_profile.default_language
 
         with override_language(language):
-            return _("Zulip Account Security")
+            return _("Practice Chat Account Security")
 
 
 def build_email(
@@ -167,7 +167,7 @@ def build_email(
         logger.warning("Missing language for email template '%s'", template_prefix)
 
     if from_name is None:
-        from_name = "Zulip"
+        from_name = "Practice Chat | Axe Software"
     if from_address is None:
         from_address = FromAddress.NOREPLY
     if from_address == FromAddress.tokenized_no_reply_placeholder:

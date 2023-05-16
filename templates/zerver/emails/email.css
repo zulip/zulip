@@ -42,7 +42,7 @@ table.layout > tbody > tr > td {
    .body element will be the equivalent of our outer element. */
 .body {
     width: 100%;
-    background-color: #f5f9f8;
+    background-color: #F8F9FA;
 }
 
 .container {
@@ -102,7 +102,7 @@ table.layout > tbody > tr > td {
 */
 .footer-content-block,
 .physical-address {
-    color: #5f5ec7;
+    color: #007AFF;
     font-size: 12px;
     text-align: center;
 }
@@ -138,7 +138,7 @@ p.digest_paragraph,
 .support_request_link,
 .email-preferences a,
 .missed_message.no-content-explanation a {
-    color: #5f5ec7;
+    color: #007AFF;
     text-decoration: underline;
 }
 
@@ -160,9 +160,8 @@ p.digest_paragraph,
     padding: 10px 0;
     margin: 20px auto;
     width: 200px;
-    color: #5f5ec7;
-    border: 2px solid #5f5ec7;
-    background-color: #fff;
+    color: white;
+    background-color: #007AFF;
     border-radius: 4px;
     font-size: 16px;
     outline: none;
@@ -173,9 +172,10 @@ p.digest_paragraph,
 }
 
 .body a.button:hover {
-    background-color: #5f5ec7;
-    color: #fff;
+    background-color: white;
+    color: #007AFF;
     text-decoration: none;
+    border: 2px solid #007AFF;
 }
 
 /* The preheader is an invisible region that is used to control what
