@@ -1,5 +1,6 @@
 import base64
 import datetime
+import itertools
 import os
 import signal
 import time
@@ -36,9 +37,7 @@ from zerver.models import (
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
-    EmailSendingWorker,
     FetchLinksEmbedData,
-    LoopQueueProcessingWorker,
     MissedMessageWorker,
     QueueProcessingWorker,
     get_active_worker_queues,
@@ -778,13 +777,20 @@ class WorkerTest(ZulipTestCase):
             TestWorker()
 
     def test_get_active_worker_queues(self) -> None:
-        test_queue_names = set(get_active_worker_queues(only_test_queues=True))
+        # Find all recursive subclasses of QueueProcessingWorker
+        base_classes = [QueueProcessingWorker]
+        all_classes = []
+        while base_classes:
+            new_subclasses = []
+            for base_class in base_classes:
+                new_subclasses.append(base_class.__subclasses__())
+            base_classes = list(itertools.chain(*new_subclasses))
+            all_classes += base_classes
         worker_queue_names = {
-            queue_class.queue_name
-            for base in [QueueProcessingWorker, EmailSendingWorker, LoopQueueProcessingWorker]
-            for queue_class in base.__subclasses__()
-            if not isabstract(queue_class)
+            queue_class.queue_name for queue_class in all_classes if not isabstract(queue_class)
         }
+
+        test_queue_names = set(get_active_worker_queues(only_test_queues=True))
 
         # Verify that the set of active worker queues equals the set
         # of subclasses without is_test_queue set.
