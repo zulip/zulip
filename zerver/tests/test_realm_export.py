@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.models import RealmCount
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -242,6 +243,31 @@ class RealmExportTest(ZulipTestCase):
         # Check that we can't delete it
         result = self.client_delete(f"/json/export/realm/{export_id}")
         self.assert_json_error(result, "Export failed, nothing to delete")
+
+        # If the queue worker sees the same export-id again, it aborts
+        # instead of retrying
+        with patch("zerver.lib.export.do_export_realm") as mock_export:
+            with self.assertLogs(level="INFO") as info_logs:
+                queue_json_publish(
+                    "deferred_work",
+                    {
+                        "type": "realm_export",
+                        "time": 42,
+                        "realm_id": admin.realm.id,
+                        "user_profile_id": admin.id,
+                        "id": export_id,
+                    },
+                )
+        mock_export.assert_not_called()
+        self.assertEqual(
+            info_logs.output,
+            [
+                (
+                    "ERROR:zerver.worker.queue_processors:Marking export for realm zulip "
+                    "as failed due to retry -- possible OOM during export?"
+                )
+            ],
+        )
 
     def test_realm_export_rate_limited(self) -> None:
         admin = self.example_user("iago")
