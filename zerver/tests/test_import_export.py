@@ -818,7 +818,6 @@ class RealmImportExportTest(ExportFile):
             message_to=[Stream.objects.get(name="Denmark", realm=original_realm).id],
             topic_name="test-import",
             message_content="test message",
-            scheduled_message_id=None,
             deliver_at=timezone_now() + datetime.timedelta(days=365),
             realm=original_realm,
         )
