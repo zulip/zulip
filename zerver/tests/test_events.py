@@ -80,6 +80,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.scheduled_messages import (
     check_schedule_message,
     delete_scheduled_message,
+    edit_scheduled_message,
 )
 from zerver.actions.streams import (
     bulk_add_subscriptions,
@@ -3348,11 +3349,12 @@ class ScheduledMessagesEventsTest(BaseAction):
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )
-        action = lambda: check_schedule_message(
+        action = lambda: edit_scheduled_message(
             self.user_profile,
             get_client("website"),
-            "stream",
-            [self.get_stream_id("Verona")],
+            scheduled_message_id,
+            None,
+            None,
             "Edited test topic",
             "Edited stream message",
             convert_to_UTC(dateparser("2023-04-20 18:24:56")),

@@ -134,9 +134,10 @@ from zerver.views.report import (
     report_csp_violations,
 )
 from zerver.views.scheduled_messages import (
+    create_scheduled_message_backend,
     delete_scheduled_messages,
     fetch_scheduled_messages,
-    scheduled_messages_backend,
+    update_scheduled_message_backend,
 )
 from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
@@ -324,8 +325,14 @@ v1_api_and_json_patterns = [
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
     # New scheduled messages are created via send_message_backend.
-    rest_path("scheduled_messages", GET=fetch_scheduled_messages, POST=scheduled_messages_backend),
-    rest_path("scheduled_messages/<int:scheduled_message_id>", DELETE=delete_scheduled_messages),
+    rest_path(
+        "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend
+    ),
+    rest_path(
+        "scheduled_messages/<int:scheduled_message_id>",
+        DELETE=delete_scheduled_messages,
+        PATCH=update_scheduled_message_backend,
+    ),
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     rest_path(

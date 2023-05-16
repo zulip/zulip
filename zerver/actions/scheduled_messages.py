@@ -17,14 +17,16 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import check_attachment_reference_change, do_claim_attachments
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
-from zerver.lib.message import SendMessageRequest, render_markdown
+from zerver.lib.message import SendMessageRequest, render_markdown, truncate_topic
 from zerver.lib.scheduled_messages import access_scheduled_message
+from zerver.lib.string_validation import check_stream_topic
 from zerver.models import (
     Client,
     Realm,
     ScheduledMessage,
     Subscription,
     UserProfile,
+    get_recipient_ids,
     get_system_bot,
 )
 from zerver.tornado.django_api import send_event
@@ -141,8 +143,16 @@ def notify_update_scheduled_message(
 
 
 def edit_scheduled_message(
-    scheduled_message_id: int, send_request: SendMessageRequest, sender: UserProfile
-) -> int:
+    sender: UserProfile,
+    client: Client,
+    scheduled_message_id: int,
+    recipient_type_name: Optional[str],
+    message_to: Optional[str],
+    topic_name: Optional[str],
+    message_content: Optional[str],
+    deliver_at: Optional[datetime.datetime],
+    realm: Realm,
+) -> None:
     with transaction.atomic():
         scheduled_message_object = access_scheduled_message(sender, scheduled_message_id)
 
@@ -150,23 +160,93 @@ def edit_scheduled_message(
         if scheduled_message_object.delivered is True:
             raise JsonableError(_("Scheduled message was already sent"))
 
-        # Only override fields that user can change.
-        scheduled_message_object.recipient = send_request.message.recipient
-        topic_name = send_request.message.topic_name()
-        scheduled_message_object.set_topic_name(topic_name=topic_name)
-        rendering_result = render_markdown(
-            send_request.message, send_request.message.content, send_request.realm
-        )
-        scheduled_message_object.content = send_request.message.content
-        scheduled_message_object.rendered_content = rendering_result.rendered_content
-        scheduled_message_object.sending_client = send_request.message.sending_client
-        scheduled_message_object.stream = send_request.stream
-        assert send_request.deliver_at is not None
-        scheduled_message_object.scheduled_timestamp = send_request.deliver_at
+        # If the server failed to send the scheduled message, a new scheduled
+        # delivery timestamp (`deliver_at`) is required.
+        if scheduled_message_object.failed and deliver_at is None:
+            raise JsonableError(_("Scheduled delivery time must be in the future."))
 
-        scheduled_message_object.has_attachment = check_attachment_reference_change(
-            scheduled_message_object, rendering_result
+        # Get existing scheduled message's recipient IDs and recipient_type_name.
+        existing_recipient, existing_recipient_type_name = get_recipient_ids(
+            scheduled_message_object.recipient, sender.id
         )
+
+        # If any recipient information or message content has been updated,
+        # we check the message again.
+        if recipient_type_name is not None or message_to is not None or message_content is not None:
+            # Update message type if changed.
+            if recipient_type_name is not None:
+                updated_recipient_type_name = recipient_type_name
+            else:
+                updated_recipient_type_name = existing_recipient_type_name
+
+            # Update message recipient if changed.
+            if message_to is not None:
+                if updated_recipient_type_name == "stream":
+                    updated_recipient = extract_stream_id(message_to)
+                else:
+                    updated_recipient = extract_direct_message_recipient_ids(message_to)
+            else:
+                updated_recipient = existing_recipient
+
+            # Update topic name if changed.
+            if topic_name is not None:
+                updated_topic = topic_name
+            else:
+                # This will be ignored in Addressee.legacy_build if type
+                # is being changed from stream to direct.
+                updated_topic = scheduled_message_object.topic_name()
+
+            # Update message content if changed.
+            if message_content is not None:
+                updated_content = message_content
+            else:
+                updated_content = scheduled_message_object.content
+
+            # Check message again.
+            addressee = Addressee.legacy_build(
+                sender, updated_recipient_type_name, updated_recipient, updated_topic
+            )
+            send_request = check_message(
+                sender,
+                client,
+                addressee,
+                updated_content,
+                realm=realm,
+                forwarder_user_profile=sender,
+            )
+
+        if recipient_type_name is not None or message_to is not None:
+            # User has updated the scheduled message's recipient.
+            scheduled_message_object.recipient = send_request.message.recipient
+            scheduled_message_object.stream = send_request.stream
+            # Update the topic based on the new recipient information.
+            new_topic_name = send_request.message.topic_name()
+            scheduled_message_object.set_topic_name(topic_name=new_topic_name)
+        elif topic_name is not None and existing_recipient_type_name == "stream":
+            # User has updated the scheduled message's topic, but not
+            # the existing recipient information. We ignore topics sent
+            # for scheduled direct messages.
+            check_stream_topic(topic_name)
+            new_topic_name = truncate_topic(topic_name)
+            scheduled_message_object.set_topic_name(topic_name=new_topic_name)
+
+        if message_content is not None:
+            # User has updated the scheduled messages's content.
+            rendering_result = render_markdown(
+                send_request.message, send_request.message.content, send_request.realm
+            )
+            scheduled_message_object.content = send_request.message.content
+            scheduled_message_object.rendered_content = rendering_result.rendered_content
+            scheduled_message_object.has_attachment = check_attachment_reference_change(
+                scheduled_message_object, rendering_result
+            )
+
+        if deliver_at is not None:
+            # User has updated the scheduled message's send timestamp.
+            scheduled_message_object.scheduled_timestamp = deliver_at
+
+        # Update for most recent Client information.
+        scheduled_message_object.sending_client = client
 
         # If the user is editing a scheduled message that the server tried
         # and failed to send, we need to update the `failed` boolean field
@@ -178,7 +258,6 @@ def edit_scheduled_message(
         scheduled_message_object.save()
 
     notify_update_scheduled_message(sender, scheduled_message_object)
-    return scheduled_message_id
 
 
 def notify_remove_scheduled_message(user_profile: UserProfile, scheduled_message_id: int) -> None:
