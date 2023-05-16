@@ -36,7 +36,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.service_name: str = service_name
         self.session: requests.Session = OutgoingSession(
             role="webhook",
-            timeout=10,
+            timeout=settings.OUTGOING_WEBHOOK_TIMEOUT_SECONDS,
             headers={"User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION},
         )
 
