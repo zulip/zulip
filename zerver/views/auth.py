@@ -343,7 +343,9 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
         return finish_desktop_flow(request, user_profile, desktop_flow_otp)
 
     do_login(request, user_profile)
-    redirect_to = request.headers.get("redirect_to")
+    redirect_to = request.headers.get("redirect_to", "")
+    if not redirect_to:
+        redirect_to = request.POST.get("redirect_to", "")
     if not redirect_to:
         redirect_to = result.data_dict.get("redirect_to", "")
 
