@@ -15,7 +15,7 @@ Twisted
 Scrapy
 
 # Needed to compute test coverage
-coverage<6.4.3  # undiagnosed bug
+https://github.com/andersk/coveragepy/archive/1ccddf9070d26b8837062197423429d2305f6385.zip#egg=coverage==7.2.5+git  # https://github.com/nedbat/coveragepy/issues/1586
 
 # fake for LDAP testing
 fakeldap
