@@ -560,7 +560,7 @@ def do_send_missedmessage_events_reply_in_zulip(
     )
 
     with override_language(user_profile.default_language):
-        from_name: str = _("Zulip notifications")
+        from_name: str = _("Practice Chat notifications")
     from_address = FromAddress.NOREPLY
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip

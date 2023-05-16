@@ -1,5 +1,5 @@
 body {
-    background-color: hsl(0deg 0% 98%);
+    /* background-color: hsl(0deg 0% 98%); */
     font-family: "Source Sans 3", sans-serif;
     line-height: 150%;
     height: 100%;
@@ -386,6 +386,7 @@ input.text-error {
         text-decoration: none;
         position: relative;
         line-height: 0.8;
+        padding-left: 1rem;
 
         & svg {
             vertical-align: -5px;

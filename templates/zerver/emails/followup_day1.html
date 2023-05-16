@@ -23,13 +23,12 @@
 {% else %}
 <p>{{ _('Welcome to Practice Chat!') }}</p>
 <p>
-    {% trans %}You've joined the Zulip organization <b>{{ realm_name }}</b>.
+    {% trans %}You've joined the Practice Chat organization <b>{{ realm_name }}</b>.
     {% endtrans %}
 </p>
 {% endif %}
 
 <p>
-    {% trans apps_page_link="https://zulip.com/apps/" %}You will use the following info to log into the Zulip web, <a href="{{ apps_page_link }}">mobile and desktop</a> apps:{% endtrans %}
     <ul>
         <li>{% trans organization_url=macros.link_tag(realm_uri) %}Organization URL: {{ organization_url }}{% endtrans %}<br /></li>
         {% if ldap %}
@@ -46,7 +45,6 @@
 </p>
 
 <p>
-    {% trans %}If you are new to Zulip, check out our <a href="{{ getting_user_started_link }}">Getting started guide</a>!{% endtrans %}
     {% if is_realm_admin %}
     {% trans %}We also have a guide for <a href="{{ getting_organization_started_link }}">Setting up your organization</a>.{% endtrans %}
     {% endif %}
