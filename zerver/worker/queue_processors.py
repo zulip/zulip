@@ -1063,6 +1063,10 @@ class DeferredWorker(QueueProcessingWorker):
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
             export_event = RealmAuditLog.objects.get(id=event["id"])
             user_profile = get_user_profile_by_id(event["user_profile_id"])
+            extra_data = {}
+            if export_event.extra_data is not None:
+                extra_data = orjson.loads(export_event.extra_data)
+
             logger.info(
                 "Starting realm export for realm %s into %s, initiated by user_profile_id %s",
                 realm.string_id,
@@ -1079,11 +1083,8 @@ class DeferredWorker(QueueProcessingWorker):
                     public_only=True,
                 )
             except Exception:
-                export_event.extra_data = orjson.dumps(
-                    dict(
-                        failed_timestamp=timezone_now().timestamp(),
-                    )
-                ).decode()
+                extra_data["failed_timestamp"] = timezone_now().timestamp()
+                export_event.extra_data = orjson.dumps(extra_data).decode()
                 export_event.save(update_fields=["extra_data"])
                 logging.exception(
                     "Data export for %s failed after %s",
@@ -1097,11 +1098,8 @@ class DeferredWorker(QueueProcessingWorker):
             assert public_url is not None
 
             # Update the extra_data field now that the export is complete.
-            export_event.extra_data = orjson.dumps(
-                dict(
-                    export_path=urllib.parse.urlparse(public_url).path,
-                )
-            ).decode()
+            extra_data["export_path"] = urllib.parse.urlparse(public_url).path
+            export_event.extra_data = orjson.dumps(extra_data).decode()
             export_event.save(update_fields=["extra_data"])
 
             # Send a private message notification letting the user who

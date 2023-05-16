@@ -2373,24 +2373,25 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
     )
     exports_dict = {}
     for export in all_exports:
-        pending = True
         export_url = None
         deleted_timestamp = None
         failed_timestamp = None
         acting_user = export.acting_user
 
+        export_data = {}
         if export.extra_data is not None:
-            pending = False
-
             export_data = orjson.loads(export.extra_data)
-            deleted_timestamp = export_data.get("deleted_timestamp")
-            failed_timestamp = export_data.get("failed_timestamp")
-            export_path = export_data.get("export_path")
 
-            if export_path and not deleted_timestamp:
-                export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(
-                    user.realm, export_path
-                )
+        deleted_timestamp = export_data.get("deleted_timestamp")
+        failed_timestamp = export_data.get("failed_timestamp")
+        export_path = export_data.get("export_path")
+
+        pending = deleted_timestamp is None and failed_timestamp is None and export_path is None
+
+        if export_path is not None and not deleted_timestamp:
+            export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(
+                user.realm, export_path
+            )
 
         assert acting_user is not None
         exports_dict[export.id] = dict(
