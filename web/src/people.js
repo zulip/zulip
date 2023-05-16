@@ -906,7 +906,7 @@ export function get_realm_users() {
     return [...active_user_dict.values()];
 }
 
-export function get_active_human_ids() {
+export function get_realm_active_human_user_ids() {
     const human_ids = [];
 
     for (const user of active_user_dict.values()) {

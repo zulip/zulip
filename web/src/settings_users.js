@@ -169,7 +169,7 @@ function failed_listing_users() {
 }
 
 function populate_users() {
-    const active_user_ids = people.get_active_human_ids();
+    const active_user_ids = people.get_realm_active_human_user_ids();
     const deactivated_user_ids = people.get_non_active_human_ids();
 
     if (active_user_ids.length === 0 && deactivated_user_ids.length === 0) {

@@ -262,7 +262,7 @@ test_people("basics", () => {
 
     realm_persons = people.get_realm_users();
     assert.equal(realm_persons.length, 1);
-    assert.equal(people.get_active_human_ids().length, 1);
+    assert.equal(people.get_realm_active_human_user_ids().length, 1);
 
     const full_name = "Isaac Newton";
     const email = "isaac@example.com";
@@ -361,7 +361,7 @@ test_people("basics", () => {
 
     // Reactivating issac
     people.add_active_user(isaac);
-    const active_humans = people.get_active_human_ids();
+    const active_humans = people.get_realm_active_human_user_ids();
     assert.equal(active_humans.length, 2);
     assert.deepEqual(
         active_humans.sort((p) => p.user_id),
