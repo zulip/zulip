@@ -107,7 +107,6 @@ class Command(BaseCommand):
                     signal.signal(signal.SIGTERM, signal_handler)
                     signal.signal(signal.SIGINT, signal_handler)
                     signal.signal(signal.SIGUSR1, signal_handler)
-                    worker.ENABLE_TIMEOUTS = True
                     worker.start()
 
 
@@ -118,7 +117,7 @@ class ThreadedWorker(threading.Thread):
         self.queue_name = queue_name
 
         with log_and_exit_if_exception(logger, queue_name, threaded=True):
-            self.worker = get_worker(queue_name)
+            self.worker = get_worker(queue_name, threaded=True)
 
     def run(self) -> None:
         with configure_scope() as scope, log_and_exit_if_exception(
