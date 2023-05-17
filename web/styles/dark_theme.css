@@ -934,21 +934,6 @@
             background-color: hsl(22deg 70% 35%);
         }
 
-        .user-mention,
-        .user-group-mention {
-            background: linear-gradient(
-                to bottom,
-                hsl(0deg 0% 0% / 20%) 0%,
-                hsl(0deg 0% 0% / 10%) 100%
-            );
-            box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
-        }
-
-        .user-mention-me :not(.silent) {
-            background-color: hsl(355deg 37% 31%);
-            box-shadow: 0 0 0 1px hsl(330deg 40% 20%);
-        }
-
         .codehilite code,
         .codehilite pre {
             color: hsl(212deg 98% 82%);
