@@ -171,13 +171,6 @@ p.digest_paragraph,
     text-shadow: none;
 }
 
-.body a.button:hover {
-    background-color: white;
-    color: #007AFF;
-    text-decoration: none;
-    border: 2px solid #007AFF;
-}
-
 /* The preheader is an invisible region that is used to control what
    email clients display as the textual preview of the email's content
    in inbox views. */

@@ -34,11 +34,11 @@ html {
 .header {
     position: relative;
 
-    padding: 15px 0;
-    height: 29px;
+    padding: 0.75rem 0;
+    height: 48px;
 
     background-color: hsl(0deg 0% 100%);
-    box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
+    box-shadow: 0px 1px 2px rgb(60 64 67 / 30%), 0px 1px 3px 1px rgb(60 64 67 / 15%);
 
     z-index: 100;
 }
@@ -386,7 +386,6 @@ input.text-error {
         text-decoration: none;
         position: relative;
         line-height: 0.8;
-        padding-left: 1rem;
 
         & svg {
             vertical-align: -5px;
@@ -398,12 +397,30 @@ input.text-error {
             text-decoration: none;
             color: hsl(0deg 0% 20%);
         }
+    }
 
+    .header-nav {
+        display: flex;
+        gap: 3rem;
+        flex: 1;
+
+        .header-nav-item {
+            display: flex;
+            align-items: center;
+        }
         .light {
             font-size: 1.2rem;
             font-weight: 400;
             color: hsl(0deg 0% 20%);
             opacity: 0.7;
+
+            & a,
+            a:focus,
+            a:hover {
+                line-height: 0.8;
+                text-decoration: none;
+                color: hsl(0deg 0% 20%);
+            }
         }
     }
 
@@ -785,6 +802,17 @@ input.new-organization-button {
     position: relative;
 }
 
+.header-main {
+    height: 48px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+
+    & > div {
+        display: flex;
+        align-items: center;
+    }
+}
+
 .hello-main {
     max-width: none;
     min-width: 0;
@@ -1013,6 +1041,13 @@ input.new-organization-button {
 .hourglass-img {
     width: initial !important;
     margin-bottom: 25px !important;
+}
+
+@media (width <= 1024px) {
+    .header-main {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 }
 
 @media (width <= 800px) {
