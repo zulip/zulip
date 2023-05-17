@@ -1252,6 +1252,23 @@ test_people("huddle_string", () => {
     assert.equal(huddle([me.user_id, maria.user_id, bob.user_id]), "203,302");
 });
 
+test_people("get_realm_active_human_users", () => {
+    let humans = people.get_realm_active_human_users();
+    assert.equal(humans.length, 1);
+    assert.deepEqual(humans, [me]);
+
+    people.add_active_user(maria);
+    people.add_active_user(bot_botson);
+    humans = people.get_realm_active_human_users();
+    assert.equal(humans.length, 2);
+    assert.deepEqual(humans, [me, maria]);
+
+    people.deactivate(maria);
+    humans = people.get_realm_active_human_users();
+    assert.equal(humans.length, 1);
+    assert.deepEqual(humans, [me]);
+});
+
 // reset to native Date()
 run_test("reset MockDate", () => {
     MockDate.reset();
