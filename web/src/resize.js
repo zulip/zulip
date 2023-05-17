@@ -42,6 +42,7 @@ function get_new_heights() {
         viewport_height -
         navbar_sticky_container_height -
         Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
+        Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
         right_sidebar_shortcuts_height;
