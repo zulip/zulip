@@ -55,6 +55,17 @@ class zulip::nginx {
     content => template('zulip/nginx.conf.template.erb'),
   }
 
+  $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
+  file { '/etc/nginx/zulip-include/trusted-proto':
+    ensure  => file,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    notify  => Service['nginx'],
+    content => template('zulip/nginx/trusted-proto.template.erb'),
+  }
+
   file { '/etc/nginx/uwsgi_params':
     ensure  => file,
     require => Package[$zulip::common::nginx],

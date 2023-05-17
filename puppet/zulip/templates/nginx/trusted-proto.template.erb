@@ -1,0 +1,21 @@
+<% if @loadbalancers.empty? %>
+# "set" is not supported at the server level, so use a map:
+map $remote_addr $trusted_x_forwarded_proto {
+    default $scheme;
+}
+<% else %>
+# We do this in two steps because `geo` does not support variable
+# interpolation in the value, but does support CIDR notation,
+# which the loadbalancer list may use.
+geo $realip_remote_addr $is_x_forwarded_proto_trusted {
+    default 0;
+<% @loadbalancers.each do |host| -%>
+    <%= host %> 1;
+<% end -%>
+}
+
+map $is_x_forwarded_proto_trusted $trusted_x_forwarded_proto {
+    0 $scheme;
+    1 $http_x_forwarded_proto;
+}
+<% end %>
