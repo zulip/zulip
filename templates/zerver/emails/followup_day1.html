@@ -8,7 +8,7 @@
 {% if realm_creation %}
 {% if is_demo_org %}
 <p>
-    {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %}Congratulations, you have created a new Zulip demo organization. Note
+    {% trans demo_organizations_help_link="https://zulip.com/help/demo-organizations" %}Congratulations, you have created a new Practice Chat demo organization. Note
     that this organization will be automatically deleted in 30 days. Learn more
     about demo organizations <a
     href="{{ demo_organizations_help_link }}">here</a>!
@@ -16,7 +16,7 @@
 </p>
 {% else %}
 <p>
-    {% trans %}Congratulations, you have created a new Zulip
+    {% trans %}Congratulations, you have created a new Practice Chat
     organization: <b>{{ realm_name }}</b>.{% endtrans %}
 </p>
 {% endif %}

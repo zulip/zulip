@@ -32,20 +32,20 @@ See {{ alert_notif_url }} for more details.
 {% endif %}
 
 {% if reply_to_zulip  %}
-{% trans %}Reply to this email directly, or view it in {{ realm_name }} Zulip:{% endtrans %}
+{% trans %}Reply to this email directly, or view it in {{ realm_name }} Practice Chat:{% endtrans %}
 
 {{ narrow_url }}
 {% elif not show_message_content %}
-{% trans %}View or reply in {{ realm_name }} Zulip:{% endtrans %}
+{% trans %}View or reply in {{ realm_name }} Practice Chat:{% endtrans %}
 
 {{ narrow_url }}
 {% else %}
-{% trans %}Reply in {{ realm_name }} Zulip:{% endtrans %}
+{% trans %}Reply in {{ realm_name }} Practice Chat:{% endtrans %}
 
 {{ narrow_url }}
 
 {% trans %}
-Do not reply to this email. This Zulip server is not configured to accept
+Do not reply to this email. This Practice Chat server is not configured to accept
 incoming emails. Help:
 {% endtrans %}
 https://zulip.readthedocs.io/en/latest/production/email-gateway.html

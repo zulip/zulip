@@ -1,7 +1,7 @@
 {{ _("Thanks for your request!") }}
 
 {% trans -%}
-Your email address {{ email }} has accounts with the following Zulip organizations hosted by {{ external_host }}:
+Your email address {{ email }} has accounts with the following Practice Chat organizations hosted by {{ external_host }}:
 {%- endtrans %}
 
 
@@ -9,7 +9,7 @@ Your email address {{ email }} has accounts with the following Zulip organizatio
 * {{ realm.name }}: {{ realm.uri }}
 {% endfor %}
 
-{% trans %}If you have trouble logging in, please contact Zulip support by replying to this email.{% endtrans %}
+{% trans %}If you have trouble logging in, please contact Practice Chat support by replying to this email.{% endtrans %}
 
 
-{{ _("Thanks for using Zulip!") }}
+{{ _("Thanks for using Practice Chat!") }}

@@ -1,1 +1,1 @@
-{% trans %}Reactivate your Zulip organization{% endtrans %}
+{% trans %}Reactivate your Practice Chat organization{% endtrans %}

@@ -6,14 +6,14 @@
 
 {% block content %}
     {% trans organization_name_with_link=macros.link_tag(realm.uri, realm.string_id) %}
-    Your organization, {{ organization_name_with_link }}, has been downgraded to the Zulip Cloud
+    Your organization, {{ organization_name_with_link }}, has been downgraded to the Practice Chat Cloud
     Free plan because of unpaid invoices. The unpaid invoices have been voided.
     {% endtrans %}
     <br/>
     <br/>
 
     {% trans upgrade_url=macros.link_tag(upgrade_url) %}
-    To continue on the Zulip Cloud Standard plan, please upgrade again by going to {{ upgrade_url }}.
+    To continue on the Practice Chat Cloud Standard plan, please upgrade again by going to {{ upgrade_url }}.
     {% endtrans %}
 
     <br/>
