@@ -347,13 +347,17 @@ export function initialize_custom_user_type_fields(
             if (is_editable) {
                 const $input = $pill_container.children(".input");
                 if (set_handler_on_update) {
-                    const opts = {update_func: update_custom_user_field, user: true};
+                    const opts = {
+                        update_func: update_custom_user_field,
+                        user: true,
+                        exclude_bots: true,
+                    };
                     pill_typeahead.set_up($input, pills, opts);
                     pills.onPillRemove(() => {
                         update_custom_user_field();
                     });
                 } else {
-                    pill_typeahead.set_up($input, pills, {user: true});
+                    pill_typeahead.set_up($input, pills, {user: true, exclude_bots: true});
                 }
             }
             user_pills.set(field.id, pills);
