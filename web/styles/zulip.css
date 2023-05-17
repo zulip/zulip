@@ -76,8 +76,6 @@ body {
     --color-message-header-icon-non-interactive: hsl(0deg 0% 0% / 30%);
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 94%);
-    --color-background-direct-mention: hsl(240deg 52% 95%);
-    --color-background-group-mention: hsl(180deg 40% 94%);
     --color-background-dropdown-input: hsl(0deg 0% 100%);
     --color-background-navbar: hsl(0deg 0% 96%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
@@ -85,12 +83,16 @@ body {
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
-
+    
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
+
+    /* Mention pill colors */
+    --color-background-direct-mention: hsl(240deg 52% 95%);
+    --color-background-group-mention: hsl(180deg 40% 94%);
 }
 
 %dark-theme {
@@ -106,8 +108,6 @@ body {
     --color-private-message-header-border-bottom: hsl(0deg 0% 0% / 37%);
     --color-message-list-border: hsl(0deg 0% 0% / 40%);
     --color-background: hsl(0deg 0% 11%);
-    --color-background-direct-mention: hsl(240deg 13% 20%);
-    --color-background-group-mention: hsl(180deg 13% 15%);
     --color-background-dropdown-input: hsl(225deg 6% 10%);
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
@@ -121,6 +121,10 @@ body {
     --color-text-message-header: hsl(0deg 0% 100% / 80%);
     --color-text-sender-name: hsl(0deg 0% 100% / 85%);
     --color-text-dropdown-input: hsl(0deg 0% 95%);
+
+    /* Mention pill colors */
+    --color-background-direct-mention: hsl(240deg 13% 20%);
+    --color-background-group-mention: hsl(180deg 13% 15%);
 }
 
 :root.dark-theme {
