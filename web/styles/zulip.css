@@ -339,6 +339,9 @@ p.n-margin {
     height: var(--header-height);
     /* Since the headers are sticky, we need non-transparent background. */
     background-color: var(--color-background);
+    /* Add 1px box-shadow below header so that if there is a gap between sticky header
+       and header at some zoom level, it is covered by this */
+    box-shadow: 0 1px 0 0 var(--color-background);
 }
 
 #navbar-middle .column-middle-inner,
