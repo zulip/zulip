@@ -2,7 +2,7 @@
 {% set entrypoint = "register" %}
 
 {% block title %}
-<title>{{ _("Registration") }} | Zulip</title>
+<title>{{ _("Registration") }} | Practice Chat</title>
 {% endblock %}
 
 {#
@@ -83,16 +83,16 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     <p id="new-user-email-address-visibility">
                         <span class="current-selected-option">
                             {% if default_email_address_visibility == email_address_visibility_admins_only %}
-                                {% trans %}Administrators of this Zulip organization will be able to see this email address.
+                                {% trans %}Administrators of this Practice Chat organization will be able to see this email address.
                                 {% endtrans %}
                             {% elif default_email_address_visibility == email_address_visibility_moderators %}
-                                {% trans %}Administrators and moderators of this Zulip organization will be able to see this email address.
+                                {% trans %}Administrators and moderators of this Practice Chat organization will be able to see this email address.
                                 {% endtrans %}
                             {% elif default_email_address_visibility == email_address_visibility_nobody %}
-                                {% trans %}Nobody in this Zulip organization will be able to see this email address.
+                                {% trans %}Nobody in this Practice Chat organization will be able to see this email address.
                                 {% endtrans %}
                             {% else %}
-                                {% trans %}Other users in this Zulip organization will be able to see this email address.
+                                {% trans %}Other users in this Practice Chat organization will be able to see this email address.
                                 {% endtrans %}
                             {% endif %}
                         </span>
@@ -118,7 +118,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                             {% endfor %}
                         </select>
                     </div>
-                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}
+                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Practice Chat account') }}
                         <a href="{{ root_domain_url }}/help/import-your-settings"><i class="fa fa-question-circle"></i></a>
                     </label>
                 </div>
@@ -239,7 +239,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                         <input id="id_enable_marketing_emails" type="checkbox" name="enable_marketing_emails"
                           checked="checked" />
                         <span></span>
-                        {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
+                        {% trans %}Subscribe me to Pratice Chat's low-traffic newsletter (a few emails a year).{% endtrans %}
                     </label>
                 </div>
                 {% endif %}
@@ -268,7 +268,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
             </header>
             <main class="modal__content">
                 <p>
-                    {{ _('Zulip lets you control which roles in the organization can view your email address.') }}
+                    {{ _('Practice Chat lets you control which roles in the organization can view your email address.') }}
                     {{ _('Do you want to change the privacy setting for your email from the default configuration for this organization?') }}
                 </p>
                 <label for="new_user_email_address_visibility">{{ _('Who can access your email address') }}</label>
