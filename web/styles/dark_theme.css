@@ -851,7 +851,7 @@
         }
     }
 
-    #recent_topics_table {
+    .recent_topics_container {
         border-color: hsl(0deg 0% 0% / 60%);
 
         .fa-envelope,
