@@ -631,6 +631,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                     get_subscriptions_for_send_message(
                         realm_id=realm_id,
                         stream_id=stream_id,
+                        topic_name=topic_name,
                         possible_wildcard_mention=possible_wildcard_mention,
                         possibly_mentioned_user_ids=possibly_mentioned_user_ids,
                     )

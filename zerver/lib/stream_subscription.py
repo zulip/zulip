@@ -7,7 +7,7 @@ from typing import AbstractSet, Any, Collection, Dict, List, Optional, Set
 from django.db.models import Q, QuerySet
 from django_stubs_ext import ValuesQuerySet
 
-from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile
+from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile, UserTopic
 
 
 @dataclass
@@ -305,6 +305,7 @@ def get_subscriptions_for_send_message(
     *,
     realm_id: int,
     stream_id: int,
+    topic_name: str,
     possible_wildcard_mention: bool,
     possibly_mentioned_user_ids: AbstractSet[int],
 ) -> QuerySet[Subscription]:
@@ -355,6 +356,13 @@ def get_subscriptions_for_send_message(
             user_profile_id__in=AlertWord.objects.filter(realm_id=realm_id).values_list(
                 "user_profile_id"
             )
+        )
+        | Q(
+            user_profile_id__in=UserTopic.objects.filter(
+                stream_id=stream_id,
+                topic_name__iexact=topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            ).values_list("user_profile_id")
         )
     )
     return query

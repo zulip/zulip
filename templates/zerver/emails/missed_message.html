@@ -33,6 +33,8 @@
     {% trans %}You are receiving this because everyone was mentioned in #{{ stream_name }}.{% endtrans %}<br />
     {% elif stream_email_notify %}
     {% trans %}You are receiving this because you have email notifications enabled for #{{ stream_name }}.{% endtrans %}<br />
+    {% elif followed_topic_email_notify %}
+    {% trans %}You are receiving this because you have email notifications enabled for topics you follow.{% endtrans %}<br />
     {% endif %}
     {% if reply_to_zulip %}
     {% trans notif_url=realm_uri + "/#settings/notifications" %}Reply to this email directly, <a href="{{ narrow_url }}">view it in {{ realm_name }} Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %}

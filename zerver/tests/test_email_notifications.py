@@ -1851,6 +1851,26 @@ class TestMissedMessages(ZulipTestCase):
                 ],
             )
 
+    def test_followed_topic_missed_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        msg_id = self.send_stream_message(othello, "Denmark")
+
+        handle_missedmessage_emails(
+            hamlet.id,
+            [
+                {"message_id": msg_id, "trigger": "followed_topic_email_notify"},
+            ],
+        )
+        self.assert_length(mail.outbox, 1)
+        email_subject = mail.outbox[0].subject
+        email_body = mail.outbox[0].body
+        self.assertEqual("#Denmark > test", email_subject)
+        self.assertIn(
+            "You are receiving this because you have email notifications enabled for topics you follow.",
+            email_body,
+        )
+
 
 class TestFollowupEmailDelay(ZulipTestCase):
     def test_get_onboarding_email_schedule(self) -> None:

@@ -1589,6 +1589,13 @@ class UserBaseSettings(models.Model):
     notification_sound = models.CharField(max_length=20, default="zulip")
     wildcard_mentions_notify = models.BooleanField(default=True)
 
+    # Followed Topics notifications.
+    enable_followed_topic_desktop_notifications = models.BooleanField(default=True)
+    enable_followed_topic_email_notifications = models.BooleanField(default=True)
+    enable_followed_topic_push_notifications = models.BooleanField(default=True)
+    enable_followed_topic_audible_notifications = models.BooleanField(default=True)
+    enable_followed_topic_wildcard_mentions_notify = models.BooleanField(default=True)
+
     # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)
     pm_content_in_desktop_notifications = models.BooleanField(default=True)
@@ -1716,6 +1723,7 @@ class UserBaseSettings(models.Model):
 
     modern_notification_settings: Dict[str, Any] = dict(
         # Add new notification settings here.
+        enable_followed_topic_email_notifications=bool,
     )
 
     notification_setting_types = {
@@ -4276,6 +4284,7 @@ class NotificationTriggers:
     WILDCARD_MENTION = "wildcard_mentioned"
     STREAM_PUSH = "stream_push_notify"
     STREAM_EMAIL = "stream_email_notify"
+    FOLLOWED_TOPIC_EMAIL = "followed_topic_email_notify"
 
 
 class ScheduledMessageNotificationEmail(models.Model):
@@ -4293,6 +4302,7 @@ class ScheduledMessageNotificationEmail(models.Model):
         (NotificationTriggers.MENTION, "Mention"),
         (NotificationTriggers.WILDCARD_MENTION, "Wildcard mention"),
         (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
+        (NotificationTriggers.FOLLOWED_TOPIC_EMAIL, "Followed topic notifications enabled"),
     ]
 
     trigger = models.TextField(choices=EMAIL_NOTIFICATION_TRIGGER_CHOICES)

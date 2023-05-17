@@ -1763,6 +1763,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
+            followed_topic_email_user_ids=set(),
             muted_sender_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
@@ -1978,6 +1979,39 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
         self.assertEqual(info.all_bot_user_ids, {normal_bot.id, service_bot.id})
+
+        # Now Hamlet follows the topic with the 'followed_topic_email_notifications'
+        # global setting enabled by default.
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info.followed_topic_email_user_ids, {hamlet.id})
+
+        # Omit Hamlet from followed_topic_email_user_ids
+        do_change_user_setting(
+            hamlet,
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info.followed_topic_email_user_ids, set())
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")

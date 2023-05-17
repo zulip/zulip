@@ -760,6 +760,56 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
+    def test_followed_topic_email_notify(self) -> None:
+        # By default, messages sent in followed topics should send email notifications.
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_email_notify=True,
+                already_notified={"email_notified": True, "push_notified": False},
+            )
+
+    def test_followed_topic_email_notify_global_setting(self) -> None:
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_email_notify=False,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
     def test_muted_sender(self) -> None:
         do_mute_user(self.user_profile, self.iago)
         msg_id = self.send_personal_message(self.iago, self.user_profile)
