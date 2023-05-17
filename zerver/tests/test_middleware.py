@@ -110,7 +110,7 @@ class OpenGraphTest(ZulipTestCase):
             "/help/deactivate-your-account",
             "Deactivate your account | Zulip help center",
             [
-                "Deactivating your Zulip account in one organization will have no effect "
+                "Deactivating your Practice Chat account in one organization will have no effect "
                 "on any other Zulip accounts you may have. | Once you deactivate your account"
             ],
             ["Approve by clicking", "  ", "\n"],
