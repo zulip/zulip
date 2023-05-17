@@ -1259,11 +1259,14 @@ td.pointer {
 
     .message_header {
         position: sticky;
-        padding-top: var(--header-padding-bottom);
         top: var(--header-height);
         /* Needs to be higher than the z-index of date_row. */
         z-index: 4;
         box-shadow: 0 -1px 0 0 var(--color-background);
+
+        .message-header-contents {
+            margin-top: var(--header-padding-bottom);
+        }
 
         &.sticky_header {
             box-shadow: var(--unread-marker-left) 0 0 0 var(--color-background);
