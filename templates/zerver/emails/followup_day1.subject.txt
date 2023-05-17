@@ -1,9 +1,9 @@
 {% if realm_creation %}
 {% trans -%}
-{{ realm_name }} on Zulip: Your new organization details
+{{ realm_name }} on Practice Chat: Your new organization details
 {%- endtrans %}
 {% else %}
 {% trans -%}
-{{ realm_name }} on Zulip: Your new account details
+{{ realm_name }} on Practice Chat: Your new account details
 {%- endtrans %}
 {% endif %}

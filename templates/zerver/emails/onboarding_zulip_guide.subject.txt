@@ -1,15 +1,15 @@
 {% if organization_type == "business" %}
-{{ _("Zulip guide for businesses") }}
+{{ _("Practice Chat guide for businesses") }}
 {% elif organization_type == "opensource" %}
-{{ _("Zulip guide for open-source projects") }}
+{{ _("Practice Chat guide for open-source projects") }}
 {% elif organization_type == "education" %}
-{{ _("Zulip guide for education") }}
+{{ _("Practice Chat guide for education") }}
 {% elif organization_type == "research" %}
-{{ _("Zulip guide for research") }}
+{{ _("Practice Chat guide for research") }}
 {% elif organization_type == "event" %}
-{{ _("Zulip guide for events and conferences") }}
+{{ _("Practice Chat guide for events and conferences") }}
 {% elif organization_type == "nonprofit" %}
-{{ _("Zulip guide for non-profits") }}
+{{ _("Practice Chat guide for non-profits") }}
 {% elif organization_type == "community" %}
-{{ _("Zulip guide for communities") }}
+{{ _("Practice Chat guide for communities") }}
 {% endif %}

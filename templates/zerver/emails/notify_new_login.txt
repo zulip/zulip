@@ -1,4 +1,4 @@
-{{ _("We noticed a recent login for the following Zulip account.") }}
+{{ _("We noticed a recent login for the following Practice Chat account.") }}
 
 {% trans organization_url=realm_uri %}Organization: {{ organization_url }}{% endtrans %}
 
@@ -19,4 +19,4 @@ If you do not recognize this login, or think your account may have been compromi
 
 
 {{ _("Thanks,") }}
-{{ _("Zulip Security") }}
+{{ _("Practice Chat Security") }}

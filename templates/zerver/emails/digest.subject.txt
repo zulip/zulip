@@ -1,1 +1,1 @@
-{% trans %}Zulip digest for {{ realm_name }}{% endtrans %}
+{% trans %}Practice Chat digest for {{ realm_name }}{% endtrans %}
