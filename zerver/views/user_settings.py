@@ -27,7 +27,7 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
     do_start_email_change_process,
 )
-from zerver.decorator import human_users_only
+from zerver.decorator import human_users_only, require_realm_admin
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
     get_realm_email_validator,
@@ -42,6 +42,7 @@ from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.users import access_user_by_id
 from zerver.lib.validator import (
     check_bool,
     check_int,
@@ -352,6 +353,42 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     upload_avatar_image(user_file, user_profile, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)
+
+    json_result = dict(
+        avatar_url=user_avatar_url,
+    )
+    return json_success(request, data=json_result)
+
+
+@require_realm_admin
+@has_request_variables
+def set_avatar_api_key(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_id: int,
+) -> HttpResponse:
+    target = access_user_by_id(
+        user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=True
+    )
+
+    if len(request.FILES) != 1:
+        raise JsonableError(_("You must upload exactly one avatar."))
+
+    if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
+        raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
+
+    user_file = list(request.FILES.values())[0]
+    assert isinstance(user_file, UploadedFile)
+    assert user_file.size is not None
+    if (settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024) < user_file.size:
+        raise JsonableError(
+            _("Uploaded file is larger than the allowed limit of {} MiB").format(
+                settings.MAX_AVATAR_FILE_SIZE_MIB,
+            )
+        )
+    upload_avatar_image(user_file, target, target)
+    do_change_avatar_fields(target, UserProfile.AVATAR_FROM_USER, acting_user=target)
+    user_avatar_url = avatar_url(target)
 
     json_result = dict(
         avatar_url=user_avatar_url,

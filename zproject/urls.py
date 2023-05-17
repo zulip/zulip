@@ -194,6 +194,7 @@ from zerver.views.user_settings import (
     json_change_settings,
     regenerate_api_key,
     set_avatar_backend,
+    set_avatar_api_key,
 )
 from zerver.views.user_topics import update_muted_topic
 from zerver.views.users import (
@@ -513,6 +514,7 @@ v1_api_and_json_patterns = [
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
+    rest_path("users/<int:user_id>/set_avatar/", POST=set_avatar_api_key),
 ]
 
 integrations_view = IntegrationView.as_view()
