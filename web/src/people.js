@@ -722,7 +722,14 @@ export function medium_avatar_url_for_person(person) {
         return medium_gravatar_url_for_email(person.email);
     }
 
-    return "/avatar/" + person.user_id + "/medium";
+    // We need to attach a version to the URL as a cache-breaker so that the browser
+    // will update the image in real time when user uploads a new avatar.
+    //
+    // TODO: Newly created users sometimes are first learned about via
+    // the report_late_add code path; these are missing the avatar_version
+    // metadata. Long term, we should clean up that possibility, but
+    // until it is, we fallback to using a version number of 0.
+    return `/avatar/${person.user_id}/medium?version=${person.avatar_version ?? 0}`;
 }
 
 export function sender_info_for_recent_topics_row(sender_ids) {
