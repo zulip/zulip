@@ -457,6 +457,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         personal_mentioned=personal_mentioned,
         wildcard_mentioned="wildcard_mentioned" in unique_triggers,
         stream_email_notify="stream_email_notify" in unique_triggers,
+        followed_topic_email_notify="followed_topic_email_notify" in unique_triggers,
         mention_count=triggers.count("mentioned") + triggers.count("wildcard_mentioned"),
         mentioned_user_group_name=mentioned_user_group_name,
     )
@@ -508,7 +509,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             context.update(huddle_display_name=huddle_display_name)
     elif missed_messages[0]["message"].recipient.type == Recipient.PERSONAL:
         context.update(private_message=True)
-    elif context["mention"] or context["stream_email_notify"]:
+    elif (
+        context["mention"]
+        or context["stream_email_notify"]
+        or context["followed_topic_email_notify"]
+    ):
         # Keep only the senders who actually mentioned the user
         if context["mention"]:
             senders = list(

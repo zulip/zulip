@@ -166,6 +166,7 @@ class RecipientInfoResult:
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
+    followed_topic_email_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
@@ -196,6 +197,7 @@ def get_recipient_info(
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
     wildcard_mention_user_ids: Set[int] = set()
+    followed_topic_email_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
 
     if recipient.type == Recipient.PERSONAL:
@@ -214,6 +216,7 @@ def get_recipient_info(
             get_subscriptions_for_send_message(
                 realm_id=realm_id,
                 stream_id=stream_topic.stream_id,
+                topic_name=stream_topic.topic_name,
                 possible_wildcard_mention=possible_wildcard_mention,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
@@ -223,12 +226,16 @@ def get_recipient_info(
                 ),
                 user_profile_push_notifications=F("user_profile__enable_stream_push_notifications"),
                 user_profile_wildcard_mentions_notify=F("user_profile__wildcard_mentions_notify"),
+                followed_topic_email_notifications=F(
+                    "user_profile__enable_followed_topic_email_notifications"
+                ),
             )
             .values(
                 "user_profile_id",
                 "push_notifications",
                 "email_notifications",
                 "wildcard_mentions_notify",
+                "followed_topic_email_notifications",
                 "user_profile_email_notifications",
                 "user_profile_push_notifications",
                 "user_profile_wildcard_mentions_notify",
@@ -256,6 +263,21 @@ def get_recipient_info(
 
         stream_push_user_ids = notification_recipients("push_notifications")
         stream_email_user_ids = notification_recipients("email_notifications")
+
+        def followed_topic_notification_recipients(setting: str) -> Set[int]:
+            return {
+                row["user_profile_id"]
+                for row in subscription_rows
+                if user_id_to_visibility_policy.get(
+                    row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
+                )
+                == UserTopic.VisibilityPolicy.FOLLOWED
+                and row["followed_topic_" + setting]
+            }
+
+        followed_topic_email_user_ids = followed_topic_notification_recipients(
+            "email_notifications"
+        )
 
         if possible_wildcard_mention:
             # We calculate `wildcard_mention_user_ids` only if there's a possible
@@ -381,6 +403,7 @@ def get_recipient_info(
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
+        followed_topic_email_user_ids=followed_topic_email_user_ids,
         muted_sender_user_ids=muted_sender_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
@@ -564,6 +587,7 @@ def build_message_send_dict(
         pm_mention_push_disabled_user_ids=info.pm_mention_push_disabled_user_ids,
         stream_push_user_ids=info.stream_push_user_ids,
         stream_email_user_ids=info.stream_email_user_ids,
+        followed_topic_email_user_ids=info.followed_topic_email_user_ids,
         muted_sender_user_ids=info.muted_sender_user_ids,
         um_eligible_user_ids=info.um_eligible_user_ids,
         long_term_idle_user_ids=info.long_term_idle_user_ids,
@@ -588,6 +612,7 @@ def create_user_messages(
     stream_push_user_ids: AbstractSet[int],
     stream_email_user_ids: AbstractSet[int],
     mentioned_user_ids: AbstractSet[int],
+    followed_topic_email_user_ids: AbstractSet[int],
     mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
     scheduled_message_to_self: bool,
@@ -648,6 +673,7 @@ def create_user_messages(
             user_profile_id in long_term_idle_user_ids
             and user_profile_id not in stream_push_user_ids
             and user_profile_id not in stream_email_user_ids
+            and user_profile_id not in followed_topic_email_user_ids
             and is_stream_message
             and int(flags) == 0
         ):
@@ -761,6 +787,7 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 mentioned_user_ids=mentioned_user_ids,
+                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
                 mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
                 scheduled_message_to_self=scheduled_message_to_self,
@@ -861,6 +888,7 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
+                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
             )
@@ -886,6 +914,7 @@ def do_send_messages(
             stream_push_user_ids=list(send_request.stream_push_user_ids),
             stream_email_user_ids=list(send_request.stream_email_user_ids),
             wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
+            followed_topic_email_user_ids=list(send_request.followed_topic_email_user_ids),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
             disable_external_notifications=send_request.disable_external_notifications,

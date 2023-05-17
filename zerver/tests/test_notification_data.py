@@ -182,6 +182,16 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
+        # Followed Topic notification
+        user_data = self.create_user_notifications_data_object(
+            user_id=user_id, followed_topic_email_notify=True
+        )
+        self.assertEqual(
+            user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
+            "followed_topic_email_notify",
+        )
+        self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
+
         # Test no notifications when not idle
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, pm_email_notify=True
@@ -267,6 +277,7 @@ class TestNotificationData(ZulipTestCase):
                 stream_email_user_ids=set(),
                 stream_push_user_ids=set(),
                 wildcard_mention_user_ids=set(),
+                followed_topic_email_user_ids=set(),
             )
             self.assertEqual(user_data.is_notifiable(acting_user_id=1000, idle=True), notifiable)
 

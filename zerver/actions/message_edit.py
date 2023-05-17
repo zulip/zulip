@@ -473,6 +473,7 @@ def do_update_message(
         event["pm_mention_email_disabled_user_ids"] = list(info.pm_mention_email_disabled_user_ids)
         event["stream_push_user_ids"] = list(info.stream_push_user_ids)
         event["stream_email_user_ids"] = list(info.stream_email_user_ids)
+        event["followed_topic_email_user_ids"] = list(info.followed_topic_email_user_ids)
         event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)

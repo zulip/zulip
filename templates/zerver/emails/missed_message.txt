@@ -29,6 +29,8 @@ See {{ alert_notif_url }} for more details.
 {% trans %}You are receiving this because everyone was mentioned in #{{ stream_name }}.{% endtrans %}
 {% elif stream_email_notify %}
 {% trans %}You are receiving this because you have email notifications enabled for #{{ stream_name }}.{% endtrans %}
+{% elif followed_topic_email_notify %}
+{% trans %}You are receiving this because you have email notifications enabled for topics you follow.{% endtrans %}
 {% endif %}
 
 {% if reply_to_zulip  %}

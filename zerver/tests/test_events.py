@@ -1946,6 +1946,17 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, notification_setting, False, acting_user=self.user_profile
             )
 
+            num_events = 2
+            is_modern_notification_setting = (
+                notification_setting in self.user_profile.modern_notification_settings
+            )
+            if is_modern_notification_setting:
+                # The legacy event format is not sent for modern_notification_settings
+                # as it exists only for backwards-compatibility with
+                # clients that don't support the new user_settings event type.
+                # We only send the legacy event for settings added before Feature level 89.
+                num_events = 1
+
             for setting_value in [True, False]:
                 events = self.verify_action(
                     lambda: do_change_user_setting(
@@ -1954,10 +1965,11 @@ class NormalActionsTest(BaseAction):
                         setting_value,
                         acting_user=self.user_profile,
                     ),
-                    num_events=2,
+                    num_events=num_events,
                 )
                 check_user_settings_update("events[0]", events[0])
-                check_update_global_notifications("events[1]", events[1], setting_value)
+                if not is_modern_notification_setting:
+                    check_update_global_notifications("events[1]", events[1], setting_value)
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
@@ -1969,10 +1981,11 @@ class NormalActionsTest(BaseAction):
                     ),
                     notification_settings_null=True,
                     state_change_expected=False,
-                    num_events=2,
+                    num_events=num_events,
                 )
                 check_user_settings_update("events[0]", events[0])
-                check_update_global_notifications("events[1]", events[1], setting_value)
+                if not is_modern_notification_setting:
+                    check_update_global_notifications("events[1]", events[1], setting_value)
 
     def test_change_presence_enabled(self) -> None:
         presence_enabled_setting = "presence_enabled"

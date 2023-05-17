@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 189**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added `enable_followed_topic_email_notifications` field to control
+  email notifications for messages sent to followed topics.
+
 **Feature level 188**
 
 * [`POST /users/me/muted_users/{muted_user_id}`](/api/mute-user),
