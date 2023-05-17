@@ -97,6 +97,7 @@ class zulip::supervisor {
     }
   }
 
+  $file_descriptor_limit = zulipconf('application_server', 'service_file_descriptor_limit', 40000)
   concat { $zulip::common::supervisor_conf_file:
     ensure  => 'present',
     require => Package[supervisor],
