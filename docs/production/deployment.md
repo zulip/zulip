@@ -760,6 +760,17 @@ once. This decreases the number of 502's served to clients, at the
 cost of slightly increased memory usage, and the possibility that
 different requests will be served by different versions of the code.
 
+#### `service_file_descriptor_limit`
+
+The number of file descriptors which [Supervisor is configured to allow
+processes to use][supervisor-minds]; defaults to 40000. If your Zulip deployment
+is very large (hundreds of thousands of concurrent users), your Django processes
+hit this limit and refuse connections to clients. Raising it above this default
+may require changing system-level limits, particularly if you are using a
+virtualized environment (e.g. Docker, or Proxmox LXC).
+
+[supervisor-minfds]: http://supervisord.org/configuration.html?highlight=minfds#supervisord-section-values
+
 #### `s3_memory_cache_size`
 
 Used only when the [S3 storage backend][s3-backend] is in use.
