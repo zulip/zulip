@@ -63,7 +63,7 @@
     /* Restate this here for more selector specificity */
     .modal-bg,
     .modal__container {
-        background-color: var(--color-background);
+        background-color: hsl(212deg 28% 18%);
     }
 
     .modal__close {
@@ -209,9 +209,6 @@
     & body,
     .app-main,
     .column-middle,
-    #groups_overlay .right,
-    #subscription_overlay .right,
-    #settings_page .right,
     #streams_header,
     .private_messages_container,
     .header {
@@ -884,7 +881,7 @@
     }
 
     .table-striped tbody tr:nth-child(odd) td {
-        background-color: var(--color-background);
+        background-color: hsl(212deg 28% 18%);
     }
 
     .user-groups-container .right .display-type,
