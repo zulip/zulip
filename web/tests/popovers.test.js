@@ -206,7 +206,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     handler.call($target, e);
 
     const avatar_img = image_stubber.get(0);
-    assert.equal(avatar_img.src.toString(), "/avatar/42/medium");
+    assert.equal(avatar_img.src.toString(), "/avatar/42/medium?version=5");
 
     // todo: load image
 });
