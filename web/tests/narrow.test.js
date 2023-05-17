@@ -513,7 +513,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            'translated: Search operator "is" cannot be used with "invalid"',
+            'translated: Search operator "is" cannot be used with "invalid".',
             'translated HTML: See <a href="/help/search-for-messages">searching for messages help page</a> for details.',
         ),
     );
@@ -544,7 +544,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            'translated: Search operator "has" cannot be used with "invalid"',
+            'translated: Search operator "has" cannot be used with "invalid".',
             'translated HTML: See <a href="/help/search-for-messages">searching for messages help page</a> for details.',
         ),
     );

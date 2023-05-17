@@ -236,7 +236,7 @@ function pick_empty_narrow_banner() {
                 title: $t(
                     {
                         defaultMessage:
-                            'Search operator "{operator}" cannot be used with "{operand}"',
+                            'Search operator "{operator}" cannot be used with "{operand}".',
                     },
                     {operator: first_operator, operand: first_operand},
                 ),
@@ -277,7 +277,7 @@ function pick_empty_narrow_banner() {
                 title: $t(
                     {
                         defaultMessage:
-                            'Search operator "{operator}" cannot be used with "{operand}"',
+                            'Search operator "{operator}" cannot be used with "{operand}".',
                     },
                     {operator: first_operator, operand: first_operand},
                 ),
