@@ -84,9 +84,9 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
         # kill it), just raise from here; the thread _may still be
         # running_ because it failed to see any of our exceptions, and
         # we just ignore it.
-        if thread.is_alive():
+        if thread.is_alive():  # nocoverage
             logging.warning("Failed to time out backend thread")
-        raise TimeoutExpiredError
+        raise TimeoutExpiredError  # nocoverage
 
     if thread.exc_info[1] is not None:
         # Died with some other exception; re-raise it
