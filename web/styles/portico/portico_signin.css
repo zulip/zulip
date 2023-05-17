@@ -284,11 +284,27 @@ html {
     width: 100%;
     top: 0;
 
-    .header-main .logo span {
+    .header-main {
+        display: flex;
+        gap: 3rem;
+
+        .action-btns-bar {
+            flex: 1;
+            height: 100%;
+
+            & > a {
+                display: inline-flex !important;
+                align-items: center;
+                height: 100%;
+            }
+        }
+    }
+
+    .header-main .header-nav > span {
         color: #5F6368;
         font-size: 16px;
-        margin-right: 2rem;
     }
+
     .top-links a.book-demo-btn {
         display: inline-block;
         vertical-align: top;
@@ -306,18 +322,6 @@ html {
         margin-left: 10px;
     }
 
-    .top-links a.login-btn:hover {
-        background-color: #007AFF;
-        border: 2px solid #007AFF;
-        color: hsl(0, 0%, 100%);
-    }
-
-    .top-links a.book-demo-btn:hover {
-        background-color: hsl(0, 0%, 100%);
-        border: 2px solid #007AFF;
-        color: #007AFF;
-    }
-
     .top-links a.login-btn {
         display: inline-block;
         vertical-align: top;
@@ -327,17 +331,20 @@ html {
         font-weight: 400;
         box-sizing: border-box;
         outline: none;
-        color: #007AFF;
+        color: rgb(95, 99, 104);
         background-color: hsl(0, 0%, 100%);
         border-radius: 4px;
         transition: all 0.3s ease;
-        border: 2px solid #007AFF;
+        border: 1px solid rgb(218, 220, 208);
     }
 
     .header-main .logo .logo-title {
         font-size: 20px;
         font-weight: 500;
         margin-right: 50px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
     .header-main .logo .logo-title img {
         width: 35px;
