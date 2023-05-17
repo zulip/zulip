@@ -162,19 +162,12 @@
 
     .user-group-mention,
     .user-mention {
+        font-size: 14px;
+        line-height: 17px;
+        padding: 0 3px;
         border-radius: 3px;
-        padding: 0 0.2em;
-        box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
-        margin-right: 2px;
-        margin-left: 2px;
         white-space: nowrap;
-        background: linear-gradient(
-            to bottom,
-            hsl(0deg 0% 0% / 10%) 0%,
-            hsl(0deg 0% 0% / 0%) 100%
-        );
         display: inline-block;
-        margin-bottom: 1px;
     }
 
     .alert-word {
