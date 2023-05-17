@@ -172,6 +172,9 @@ This text won't be visible until the user clicks.
 \`\`\``,
     },
     {
+        markdown: "---",
+    },
+    {
         note_html: $t_html(
             {
                 defaultMessage:
