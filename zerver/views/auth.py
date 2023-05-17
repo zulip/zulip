@@ -103,6 +103,8 @@ if TYPE_CHECKING:
 ParamT = ParamSpec("ParamT")
 ExtraContext = Optional[Dict[str, Any]]
 
+EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS = 3600
+
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = url_has_allowed_host_and_scheme(url=url, allowed_hosts=None)
@@ -184,11 +186,17 @@ def maybe_send_to_registration(
     assert not (mobile_flow_otp and desktop_flow_otp)
     if mobile_flow_otp:
         set_expirable_session_var(
-            request.session, "registration_mobile_flow_otp", mobile_flow_otp, expiry_seconds=3600
+            request.session,
+            "registration_mobile_flow_otp",
+            mobile_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
     elif desktop_flow_otp:
         set_expirable_session_var(
-            request.session, "registration_desktop_flow_otp", desktop_flow_otp, expiry_seconds=3600
+            request.session,
+            "registration_desktop_flow_otp",
+            desktop_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
 
     try:
