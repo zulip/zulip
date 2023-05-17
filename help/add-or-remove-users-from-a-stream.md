@@ -7,8 +7,11 @@ stream. Anyone can always [unsubscribe themselves from a stream](/help/unsubscri
 
 Organization administrators can also unsubscribe *other* users from any stream,
 including streams the admin is not subscribed to. They can also configure which
-[roles](/help/roles-and-permissions) have access to [add other users
-to a stream][configure-invites].
+[roles](/help/roles-and-permissions) have access to [add other users to a
+stream][add-users] or [remove other users from a stream][remove-users].
+
+[add-users]: /help/configure-who-can-invite-to-streams#configure-who-can-add-users
+[remove-users]: /help/configure-who-can-invite-to-streams#configure-who-can-remove-users
 
 ## Add users to a stream
 
@@ -65,8 +68,6 @@ subscribe the user.
 
 {end_tabs}
 
-[configure-invites]: /help/configure-who-can-invite-to-streams
-
 ### From a user's profile (alternate method)
 
 This method is useful if you need to remove one user from multiple streams.
@@ -81,29 +82,6 @@ This method is useful if you need to remove one user from multiple streams.
    to remove the user from.
 
 1. Click the **Unsubscribe** button in that row.
-
-{end_tabs}
-
-## Configure who can remove users
-
-{!admin-only.md!}
-
-Organization administrators can configure who can remove other users from a
-public stream. For private streams, administrators must be subscribed to the
-stream to configure this setting.
-
-{start_tabs}
-
-{relative|stream|all}
-
-1. Select a stream.
-
-{!select-stream-view-general.md!}
-
-1. Under **Stream permissions**, configure
-   **Who can unsubscribe others from this stream?**
-
-{!save-changes.md!}
 
 {end_tabs}
 
