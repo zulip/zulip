@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
+const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
@@ -27,6 +28,9 @@ const channel = mock_esm("../src/channel");
 const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
+mock_esm("../src/message_viewport", {
+    height: () => 500,
+});
 
 const alice = {
     email: "alice@zulip.com",
@@ -469,6 +473,10 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     override_rewire(compose_ui, "set_compose_box_top", (set_top) => {
         compose_box_top_set = set_top;
     });
+
+    const stub = make_stub();
+    $("#navbar-sticky-container").safeOuterHeight = stub.f;
+    $("#compose #compose-container").css = stub.f;
 
     compose_ui.make_compose_box_full_size();
     assert.ok($("#compose").hasClass("compose-fullscreen"));

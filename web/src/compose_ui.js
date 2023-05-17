@@ -8,6 +8,7 @@ import {insert, replace, set, wrapSelection} from "text-field-edit";
 import * as common from "./common";
 import {$t} from "./i18n";
 import * as loading from "./loading";
+import * as message_viewport from "./message_viewport";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
@@ -279,6 +280,10 @@ export function make_compose_box_full_size() {
 
     $("#compose").addClass("compose-fullscreen");
 
+    const viewport_height = message_viewport.height();
+    const navbar_sticky_height = $("#navbar-sticky-container").safeOuterHeight(true);
+    $("#compose #compose-container").css("height", viewport_height - navbar_sticky_height);
+
     // Set the `top` property of compose-box.
     set_compose_box_top(true);
 
@@ -295,6 +300,7 @@ export function make_compose_box_original_size() {
 
     // Unset the `top` property of compose-box.
     set_compose_box_top(false);
+    $("#compose #compose-container").css("height", "100%");
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
