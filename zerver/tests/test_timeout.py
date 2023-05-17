@@ -1,5 +1,7 @@
+import sys
 import time
 import traceback
+from unittest import skipIf
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timeout import TimeoutExpiredError, timeout
@@ -39,6 +41,7 @@ class TimeoutTestCase(ZulipTestCase):
             self.assertIn("in something_exceptional", tb[-1])
             self.assertIn("raise ValueError", tb[-1])
 
+    @skipIf(sys.version_info >= (3, 11), "https://github.com/nedbat/coveragepy/issues/1626")
     def test_timeout_warn(self) -> None:
         # If the sleep is long enough, it will outlast the attempts to
         # kill it
