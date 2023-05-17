@@ -1134,12 +1134,14 @@ td.pointer {
 }
 
 .messagebox {
-    position: relative;
+    grid-area: messagebox;
     word-wrap: break-word;
     cursor: pointer;
-    vertical-align: top;
     border: none;
-    padding: 0 5px;
+    /* The left padding value maintains the same amount
+      of space to the left of the message box from before
+      the unread marker was a grid item. */
+    padding: 0 5px 0 3px;
 
     &:hover .message_controls,
     &:focus-within .message_controls,
@@ -1565,20 +1567,11 @@ td.pointer {
     }
 }
 
-.recipient_row .message_row:first-child .unread_marker {
-    top: 0;
-}
-
 .unread_marker {
-    display: block;
-    position: absolute;
-    height: 100%;
-    top: 0;
+    grid-area: unread_marker;
+    margin-left: var(--unread-marker-left);
     opacity: 0;
-    z-index: 2;
-    bottom: 1px;
     transition: all 0.3s ease-out;
-    left: var(--unread-marker-left);
 
     &.slow_fade {
         transition: all 2s ease-out;
@@ -1709,7 +1702,11 @@ div.message_table {
 }
 
 .message_row {
-    position: relative;
+    display: grid;
+    /* 2x1 grid:
+      unread_marker date_row
+      unread_marker messagebox */
+    grid-template: "unread_marker date_row" auto "unread_marker messagebox" auto / 2px 1fr;
     border-left: 1px solid var(--color-message-list-border);
     border-right: 1px solid var(--color-message-list-border);
     background-color: var(--color-background-stream-message-content);
@@ -1723,6 +1720,7 @@ div.message_table {
     }
 
     .date_row {
+        grid-area: date_row;
         background-color: var(--color-background-stream-message-content);
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0;
@@ -3160,6 +3158,7 @@ select.invite-as {
     .message_row.unread ~ .message_row.unread {
         .date_row {
             position: unset;
+            border-left: none;
             z-index: 0;
         }
     }

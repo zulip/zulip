@@ -917,8 +917,12 @@
         text-shadow: none;
     }
 
+    /* With the unread marker as a grid item, there
+      is no lefthand border to cover in dark mode,
+      so don't apply negative margin to pull the
+      unread marker to the left. */
     .unread_marker {
-        left: 0;
+        margin-left: 0;
     }
 
     .selected_message .messagebox-content {
