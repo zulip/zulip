@@ -160,7 +160,7 @@ p.digest_paragraph,
     padding: 10px 0;
     margin: 20px auto;
     width: 200px;
-    color: white;
+    color: white !important;
     background-color: #007AFF;
     border-radius: 4px;
     font-size: 16px;
