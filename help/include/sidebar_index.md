@@ -186,7 +186,7 @@
 * [Public access option](/help/public-access-option)
 * [Stream posting policy](/help/stream-sending-policy)
 * [Restrict stream creation](/help/configure-who-can-create-streams)
-* [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
+* [Restrict stream membership management](/help/configure-who-can-invite-to-streams)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
