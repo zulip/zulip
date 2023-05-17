@@ -20,7 +20,7 @@ import * as settings_users from "./settings_users";
 const admin_settings_label = {
     // Organization profile
     realm_want_advertise_in_communities_directory: $t({
-        defaultMessage: "Advertise organization in the Zulip communities directory",
+        defaultMessage: "Advertise organization in the Practice Chat communities directory",
     }),
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
@@ -29,7 +29,7 @@ const admin_settings_label = {
     realm_signup_notifications_stream: $t({defaultMessage: "New user announcements"}),
     realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
-    realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
+    realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Practice Chat to new users"}),
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
     }),

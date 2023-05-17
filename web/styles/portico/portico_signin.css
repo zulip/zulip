@@ -25,7 +25,7 @@ html {
     min-width: 0;
 
     background-color: hsl(0deg 0% 100%);
-    box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
+    /* box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%); */
     border: 1px solid hsl(0deg 0% 87%);
     border-radius: 4px;
 }
