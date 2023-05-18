@@ -1060,42 +1060,45 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
-    try:
-        (message, user_message) = access_message(user_profile, missed_message["message_id"])
-    except JsonableError:
-        if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
-            # If the cause is a race with the message being deleted,
-            # that's normal and we have no need to log an error.
-            return
-        logging.info(
-            "Unexpected message access failure handling push notifications: %s %s",
-            user_profile.id,
-            missed_message["message_id"],
-        )
-        return
-
-    if user_message is not None:
-        # If the user has read the message already, don't push-notify.
-        if user_message.flags.read or user_message.flags.active_mobile_push_notification:
-            return
-
-        # Otherwise, we mark the message as having an active mobile
-        # push notification, so that we can send revocation messages
-        # later.
-        user_message.flags.active_mobile_push_notification = True
-        user_message.save(update_fields=["flags"])
-    else:
-        # Users should only be getting push notifications into this
-        # queue for messages they haven't received if they're
-        # long-term idle; anything else is likely a bug.
-        if not user_profile.long_term_idle:
-            logger.error(
-                "Could not find UserMessage with message_id %s and user_id %s",
+    with transaction.atomic(savepoint=False):
+        try:
+            (message, user_message) = access_message(
+                user_profile, missed_message["message_id"], lock_message=True
+            )
+        except JsonableError:
+            if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
+                # If the cause is a race with the message being deleted,
+                # that's normal and we have no need to log an error.
+                return
+            logging.info(
+                "Unexpected message access failure handling push notifications: %s %s",
+                user_profile.id,
                 missed_message["message_id"],
-                user_profile_id,
-                exc_info=True,
             )
             return
+
+        if user_message is not None:
+            # If the user has read the message already, don't push-notify.
+            if user_message.flags.read or user_message.flags.active_mobile_push_notification:
+                return
+
+            # Otherwise, we mark the message as having an active mobile
+            # push notification, so that we can send revocation messages
+            # later.
+            user_message.flags.active_mobile_push_notification = True
+            user_message.save(update_fields=["flags"])
+        else:
+            # Users should only be getting push notifications into this
+            # queue for messages they haven't received if they're
+            # long-term idle; anything else is likely a bug.
+            if not user_profile.long_term_idle:
+                logger.error(
+                    "Could not find UserMessage with message_id %s and user_id %s",
+                    missed_message["message_id"],
+                    user_profile_id,
+                    exc_info=True,
+                )
+                return
 
     trigger = missed_message["trigger"]
     mentioned_user_group_name = None
