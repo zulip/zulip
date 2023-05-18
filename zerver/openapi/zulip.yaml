@@ -5106,7 +5106,8 @@ paths:
       tags: ["scheduled_messages"]
       summary: Get scheduled messages
       description: |
-        Fetch all scheduled messages for the current user.
+        Fetch all [scheduled messages](/help/schedule-a-message) for
+        the current user.
 
         Scheduled messages are messages the user has scheduled to be
         sent in the future via the send later feature.
@@ -5303,7 +5304,8 @@ paths:
       tags: ["scheduled_messages"]
       summary: Delete a scheduled message
       description: |
-        Delete, and therefore cancel sending, a previously scheduled message.
+        Delete, and therefore cancel sending, a previously [scheduled
+        message](/help/schedule-a-message).
 
         **Changes**: New in Zulip 7.0 (feature level 173).
       parameters:
