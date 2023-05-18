@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple
 
 import orjson
 from django.conf import settings
@@ -61,7 +61,7 @@ def check_schedule_message(
     sender: UserProfile,
     client: Client,
     recipient_type_name: str,
-    message_to: Union[Sequence[str], Sequence[int]],
+    message_to: List[int],
     topic_name: Optional[str],
     message_content: str,
     scheduled_message_id: Optional[int],
