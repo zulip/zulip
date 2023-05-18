@@ -79,7 +79,7 @@ class ScheduledMessageTest(ZulipTestCase):
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
 
-        # Scheduling a private message is successful.
+        # Scheduling a direct message is successful.
         othello = self.example_user("othello")
         result = self.do_schedule_message(
             "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
@@ -145,7 +145,7 @@ class ScheduledMessageTest(ZulipTestCase):
                 self.assertEqual(delivered_message.topic_name(), scheduled_message.topic_name())
                 self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
-    def test_successful_deliver_private_scheduled_message(self) -> None:
+    def test_successful_deliver_direct_scheduled_message(self) -> None:
         logger = mock.Mock()
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message(logger))
@@ -209,7 +209,7 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(updated_response, "Scheduled message was already sent")
 
-    def test_successful_deliver_private_scheduled_message_to_self(self) -> None:
+    def test_successful_deliver_direct_scheduled_message_to_self(self) -> None:
         logger = mock.Mock()
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message(logger))
