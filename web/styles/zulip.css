@@ -542,7 +542,7 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
-        border-left: 1px solid hsl(0deg 0% 88%);
+        border: 1px solid hsl(0deg 0% 88%);
         /* We need `overflow-y: visible` for sticky headers to work. */
     }
 
