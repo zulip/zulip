@@ -80,7 +80,6 @@ import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui"
 import * as scroll_bar from "./scroll_bar";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
-import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
@@ -221,7 +220,6 @@ function initialize_right_sidebar() {
 function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
-        search_pills_enabled: page_params.search_pills_enabled,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -676,7 +674,6 @@ export function initialize_everything() {
     compose_recipient.initialize();
     compose_pm_pill.initialize();
     compose_closed_ui.initialize();
-    search_pill_widget.initialize();
     reload.initialize();
     user_groups.initialize(user_groups_params);
     unread.initialize(unread_params);

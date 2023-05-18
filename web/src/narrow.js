@@ -36,8 +36,6 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as resize from "./resize";
 import * as search from "./search";
-import * as search_pill from "./search_pill";
-import * as search_pill_widget from "./search_pill_widget";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
@@ -534,15 +532,6 @@ export function activate(raw_operators, opts) {
             hashchange.save_narrow(operators);
         }
 
-        if (page_params.search_pills_enabled && opts.trigger !== "search") {
-            search_pill_widget.widget.clear(true);
-
-            for (const operator of operators) {
-                const search_string = Filter.unparse([operator]);
-                search_pill.append_search_string(search_string, search_pill_widget.widget);
-            }
-        }
-
         if (filter.contains_only_private_messages()) {
             compose_closed_ui.update_buttons_for_private();
         } else {
@@ -994,11 +983,6 @@ export function to_compose_target() {
 
 function handle_post_narrow_deactivate_processes() {
     compose_fade.update_message_list();
-
-    // clear existing search pills
-    if (page_params.search_pills_enabled) {
-        search_pill_widget.widget.clear(true);
-    }
 
     top_left_corner.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();

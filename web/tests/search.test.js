@@ -5,9 +5,6 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
-
-page_params.search_pills_enabled = false;
 
 const narrow = mock_esm("../src/narrow");
 const narrow_state = mock_esm("../src/narrow_state");
@@ -386,20 +383,10 @@ run_test("initiate_search", () => {
         is_searchbox_text_selected = true;
     });
 
-    let searchbox_css_args;
-
-    $("#searchbox").css = (args) => {
-        searchbox_css_args = args;
-    };
-
     search.initiate_search();
     assert.ok(typeahead_forced_open);
     assert.ok(is_searchbox_text_selected);
     assert.equal($("#search_query").val(), "ver");
-
-    assert.deepEqual(searchbox_css_args, {
-        "box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)",
-    });
 
     // test that we append space for user convenience
     narrow_state.filter = () => ({is_search: () => false});

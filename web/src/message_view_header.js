@@ -4,7 +4,6 @@ import render_message_view_header from "../templates/message_view_header.hbs";
 
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as popovers from "./popovers";
 import * as recent_topics_util from "./recent_topics_util";
@@ -132,11 +131,7 @@ function build_message_view_header(filter) {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
         bind_title_area_handlers();
-        if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
-            open_search_bar_and_close_narrow_description();
-        } else {
-            close_search_bar_and_open_narrow_description();
-        }
+        close_search_bar_and_open_narrow_description();
     }
 }
 
@@ -145,7 +140,7 @@ function build_message_view_header(filter) {
 export function reset_searchbox_text() {
     let search_string = narrow_state.search_string();
     if (search_string !== "") {
-        if (!page_params.search_pills_enabled && !narrow_state.filter().is_search()) {
+        if (!narrow_state.filter().is_search()) {
             // saves the user a keystroke for quick searches
             search_string = search_string + " ";
         }

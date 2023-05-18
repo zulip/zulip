@@ -293,9 +293,6 @@ ALWAYS_SEND_ALL_HOTSPOTS = False
 # self-hosters who want to disable the tutorial entirely on their system.
 TUTORIAL_ENABLED = True
 
-# In-development search pills feature.
-SEARCH_PILLS_ENABLED = False
-
 # We log emails in development environment for accessing
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT

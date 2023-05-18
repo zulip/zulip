@@ -17,22 +17,7 @@
                     <div class="top-navbar-border top-header-container">
                         <div id="message_view_header" class="notdisplayed">
                         </div>
-                        {{#if search_pills_enabled }}
                         <div id="searchbox">
-                            <form id="searchbox_form" class="navbar-search">
-                                <div id="search_arrows" class="pill-container input-append">
-                                    <span class="search_icon search_open"><i class="zulip-icon zulip-icon-search tippy-zulip-delayed-tooltip" data-tooltip-template-id="search-query-tooltip-template"></i></span>
-                                    <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{t 'Search' }}"
-                                      autocomplete="off">
-                                    </div>
-                                    <button class="btn search_close_button tippy-zulip-delayed-tooltip" type="button" id="search_exit" aria-label="{{t 'Exit search' }}" data-tippy-content="Close">
-                                        <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                        {{else}}
-                        <div id="searchbox_legacy">
                             <form id="searchbox_form" class="navbar-search">
                                 <div id="search_arrows" class="input-append">
                                     <span class="search_icon search_open"><i class="zulip-icon zulip-icon-search tippy-zulip-delayed-tooltip" data-tooltip-template-id="search-query-tooltip-template"></i></span>
@@ -42,7 +27,6 @@
                                 </div>
                             </form>
                         </div>
-                        {{/if}}
                     </div>
                 </div>
             </div>

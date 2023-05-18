@@ -25,7 +25,6 @@ import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -317,17 +316,6 @@ export function process_escape_key(e) {
 
             // If the user hit the Esc key, cancel the current compose
             compose_actions.cancel();
-            return true;
-        }
-
-        if ($("#searchbox").has(":focus")) {
-            $("input:focus,textarea:focus").trigger("blur");
-            if (page_params.search_pills_enabled) {
-                $("#searchbox .pill").trigger("blur");
-                $("#searchbox #search_query").trigger("blur");
-            } else {
-                message_view_header.exit_search();
-            }
             return true;
         }
 
