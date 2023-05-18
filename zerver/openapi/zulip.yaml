@@ -1049,7 +1049,7 @@ paths:
                                 email:
                                   type: string
                                   description: |
-                                    The email of the user.
+                                    The Zulip display email of the user.
 
                                     **Deprecated**: This field will be removed in a future
                                     release as it is redundant with the `user_id`.
@@ -1067,19 +1067,24 @@ paths:
                                     type: object
                                     description: |
                                       `{client_name}`: Object containing the details of the user's
-                                      presence on a particular platform. The object key is the client's
-                                      platform name, for example `website` or `ZulipDesktop`.
+                                      presence.
 
                                       **Changes**: Starting with Zulip 7.0 (feature level 178), this
-                                      will always contain two keys, `website` and `aggregated`, with
-                                      identical data. The server no longer stores which client submitted
-                                      presence updates.
+                                      will always be `"website"` as the server no longer stores which
+                                      client submitted presence updates.
+
+                                      Previously, the object key was the client's platform name, for
+                                      example `website` or `ZulipDesktop`.
                                     additionalProperties: false
                                     properties:
                                       client:
                                         type: string
                                         description: |
                                           The client's platform name.
+
+                                          **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                                          will always be `"website"` as the server no longer stores which
+                                          client submitted presence updates.
                                       status:
                                         type: string
                                         enum:
@@ -1098,6 +1103,10 @@ paths:
                                         description: |
                                           Whether the client is capable of showing mobile/push notifications
                                           to the user.
+
+                                          **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                                          will always be `false` as the server no longer stores which
+                                          client submitted presence updates.
                               additionalProperties: false
                               example:
                                 {
@@ -1107,9 +1116,9 @@ paths:
                                   "server_timestamp": 1594825445.320078373,
                                   "presence":
                                     {
-                                      "ZulipAndroid/1.0":
+                                      "website":
                                         {
-                                          "client": "ZulipAndroid/1.0",
+                                          "client": "website",
                                           "status": "idle",
                                           "timestamp": 1594825445,
                                           "pushable": false,
@@ -7521,8 +7530,7 @@ paths:
                       presence:
                         type: object
                         description: |
-                          An object containing the presence details for every client the user has
-                          logged into.
+                          An object containing the presence details for the user.
                         additionalProperties:
                           type: object
                           additionalProperties: false
@@ -7538,31 +7546,24 @@ paths:
                                 Whether the user had recently interacted with Zulip at the time
                                 of the timestamp.
 
-                                Will be either `active` or `idle`
+                                Will be either `"active"` or `"idle"`
                           description: |
-                            `{client_name}` or `aggregated`: Object containing the details of the user's
-                            presence on a particular platform.
+                            `{client_name}` or `"aggregated"`: Object containing the details of the user's
+                            presence.
 
-                            Generally, the keys for these objects are the names of the different clients
-                            where this user is logged in, for example `website` or `ZulipDesktop`.
+                            **Changes**: Starting with Zulip 7.0 (feature level 178), this will always
+                            contain two keys, `"website"` and `"aggregated"`, with identical data. The
+                            server no longer stores which client submitted presence updates.
 
-                            There is also an `aggregated` key, which matches the contents of the object
-                            that has been updated most recently.
-
-                            For most applications, you'll just want to look at the `aggregated` key.
-
-                            **Changes**: Starting with Zulip 7.0 (feature level 178), this
-                            will always contain two keys, `website` and `aggregated`, with
-                            identical data. The server no longer stores which client submitted
-                            presence updates.
+                            Previously, the `{client_name}` keys for these objects were the names of the
+                            different clients where the user was logged in, for example `website` or
+                            `ZulipDesktop`.
                     example:
                       {
                         "presence":
                           {
                             "website":
                               {"timestamp": 1532697622, "status": "active"},
-                            "ZulipMobile":
-                              {"timestamp": 1522687421, "status": "active"},
                             "aggregated":
                               {"timestamp": 1532697622, "status": "active"},
                           },
@@ -9052,9 +9053,8 @@ paths:
                         additionalProperties:
                           type: object
                           description: |
-                            `{user_email}`: Object containing the details of a user's presence
-                            on every client the user is logged into. The object's key is the
-                            user's email.
+                            `{user_email}`: Object containing the details of a user's presence.
+                            The object's key is the user's Zulip display email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                     example:
@@ -9064,16 +9064,16 @@ paths:
                           {
                             "iago@zulip.com":
                               {
-                                "ZulipPython":
+                                "website":
                                   {
-                                    "client": "ZulipPython",
+                                    "client": "website",
                                     "pushable": false,
                                     "status": "active",
                                     "timestamp": 1656958485,
                                   },
                                 "aggregated":
                                   {
-                                    "client": "ZulipPython",
+                                    "client": "website",
                                     "status": "active",
                                     "timestamp": 1656958485,
                                   },
@@ -10931,8 +10931,8 @@ paths:
                           type: object
                           description: |
                             `{user_id}` or `{user_email}`: Object containing the details of a user's
-                            presence on every client the user is logged into. Depending on the value
-                            of `slim_presence`, the object's key is either the user's ID or email.
+                            presence . Depending on the value of `slim_presence`, the object's key is
+                            either the user's ID or the user's Zulip display email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                       server_timestamp:
@@ -17508,34 +17508,34 @@ components:
     Presence:
       type: object
       description: |
-        `{client_name}` or `aggregated`: Object containing the details of the user's
-        presence on a particular platform.
+        `{client_name}` or `"aggregated"`: Object containing the details of the user's
+        presence.
 
-        Generally, the keys for these objects are the names of the different clients
-        where this user is logged in, for example `website` or `ZulipDesktop`.
+        **Changes**: Starting with Zulip 7.0 (feature level 178), this will always
+        contain two keys, `"website"` and `"aggregated"`, with identical data. The
+        server no longer stores which client submitted presence updates.
 
-        There is also an `aggregated` key, which matches the contents of the object
-        that has been updated most recently (except for the `pushable` value which is
-        not present).
-
-        **Changes**: Starting with Zulip 7.0 (feature level 178), this
-        will always contain two keys, `website` and `aggregated`, with
-        identical data. The server no longer stores which client submitted
-        presence updates.
+        Previously, the `{client_name}` keys for these objects were the names of the
+        different clients where the user was logged in, for example `website` or
+        `ZulipDesktop`.
       additionalProperties: false
       properties:
         client:
           type: string
           description: |
             The client's platform name.
+
+            **Changes**: Starting with Zulip 7.0 (feature level 178), this will
+            always be `"website"` as the server no longer stores which client
+            submitted presence data.
         status:
           type: string
           enum:
             - idle
             - active
           description: |
-            The status of the user on this client. Will be either `idle`
-            or `active`.
+            The status of the user on this client. Will be either `"idle"`
+            or `"active"`.
         timestamp:
           type: integer
           description: |
@@ -17547,7 +17547,11 @@ components:
             Whether the client is capable of showing mobile/push notifications
             to the user.
 
-            Not present in objects with the `aggregated` key.
+            Not present in objects with the `"aggregated"` key.
+
+            **Changes**: Starting with Zulip 7.0 (feature level 178), always
+            `false` when present as the server no longer stores which client
+            submitted presence data.
     Draft:
       type: object
       description: |
