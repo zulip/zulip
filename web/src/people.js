@@ -1285,7 +1285,7 @@ export function report_late_add(user_id, email) {
     }
 }
 
-export function extract_people_from_message(message) {
+function get_involved_people(message) {
     let involved_people;
 
     switch (message.type) {
@@ -1293,7 +1293,7 @@ export function extract_people_from_message(message) {
             involved_people = [
                 {
                     full_name: message.sender_full_name,
-                    user_id: message.sender_id,
+                    id: message.sender_id,
                     email: message.sender_email,
                 },
             ];
@@ -1307,13 +1307,19 @@ export function extract_people_from_message(message) {
             involved_people = [];
     }
 
+    return involved_people;
+}
+
+export function extract_people_from_message(message) {
+    const involved_people = get_involved_people(message);
+
     // Add new people involved in this message to the people list
     for (const person of involved_people) {
         if (person.unknown_local_echo_user) {
             continue;
         }
 
-        const user_id = person.user_id || person.id;
+        const user_id = person.id;
 
         if (people_by_user_id_dict.has(user_id)) {
             continue;
