@@ -125,7 +125,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
 
 export function compose_height_resize_handler() {
     const resizeObserver = new ResizeObserver(() => {
-        resize_recent_topics();
+        resize_middle_column();
         $("#bottom_whitespace").height(get_bottom_space_height());
     });
     resizeObserver.observe(document.querySelector("#compose"));
@@ -159,18 +159,26 @@ export function resize_sidebars() {
     return h;
 }
 
-export function resize_recent_topics() {
+export function resize_middle_column() {
     const viewport_height = message_viewport.height();
     const navbar_sticky_container_height = $("#navbar-sticky-container").safeOuterHeight(true);
     const compose_height = $("#compose").safeOuterHeight(true);
-    const recent_topics_view_height =
-        viewport_height - navbar_sticky_container_height - compose_height;
+    const content_height = viewport_height - navbar_sticky_container_height - compose_height;
 
     const recent_topics_filters_height = $("#recent_topics_filter_buttons").safeOuterHeight(true);
-    const recent_topics_table_height = recent_topics_view_height - recent_topics_filters_height;
+    const recent_topics_table_height = content_height - recent_topics_filters_height;
 
-    $("#recent_topics_view").css("height", recent_topics_view_height);
+    // Resize recent topics.
+    $("#recent_topics_view").css("height", content_height);
     $(".table_fix_head").css("height", recent_topics_table_height);
+
+    const message_feed_padding = Number.parseInt(
+        $("#message_feed_container").css("paddingTop"),
+        10,
+    );
+    // Set minimum height for message feed to full available height
+    // so that compose can be sticky at the bottom.
+    $("#message_feed_container").css("min-height", content_height - message_feed_padding);
 }
 
 export function resize_message_header() {
@@ -185,20 +193,9 @@ export function resize_message_header() {
     document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 }
 
-export function resize_message_feed_container() {
-    const viewport_height = message_viewport.height();
-    const compose_height = $("#compose").safeOuterHeight(true);
-    const navbar_sticky_container_height = $("#navbar-sticky-container").safeOuterHeight(true);
-    $("#message_feed_container").css(
-        "min-height",
-        viewport_height - compose_height - navbar_sticky_container_height,
-    );
-}
-
 export function resize_app() {
-    resize_recent_topics();
     resize_message_header();
-    resize_message_feed_container();
+    resize_middle_column();
     // If the compose-box is in expanded state,
     // reset its height as well.
     if (compose_ui.is_full_size()) {
