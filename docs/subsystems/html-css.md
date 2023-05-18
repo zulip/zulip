@@ -2,14 +2,16 @@
 
 ## Zulip CSS organization
 
-The Zulip application's CSS can be found in the `web/styles/`
-directory. Zulip uses [Bootstrap](https://getbootstrap.com/) as its
-main third-party CSS library.
+There are two high-level sections of CSS: the "portico" (logged-out
+pages like `/help/`, `/login/`, etc.), and the app. The Zulip
+application's CSS can be found in the `web/styles/` directory, while
+the portico CSS lives under the `web/styles/portico/` subdirectory.
 
-Zulip uses PostCSS for its CSS files. There are two high-level sections
-of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
-and the app. The portico CSS lives under the `web/styles/portico`
-subdirectory.
+To generate its CSS files, Zulip uses [PostCSS](https://postcss.org/)
+and a number of PostCSS plugins, including
+[postcss-nesting](https://github.com/csstools/postcss-nesting#readme),
+whose rules are derived from the [CSS Nesting](https://drafts.csswg.org/css-nesting-1/)
+specification.
 
 ## Editing Zulip CSS
 
@@ -21,7 +23,7 @@ to learn about all the great tools that you can use to modify and test
 changes to CSS interactively in-browser (without even having the
 reload the page!).
 
-Zulip's development environment has hot code reloading configured, so
+Zulip's development environment has hot code-reloading configured, so
 changes made in source files will immediately take effect in open
 browser windows, either by live-updating the CSS or reloading the
 browser window (following backend changes).
