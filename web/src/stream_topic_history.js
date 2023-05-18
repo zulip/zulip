@@ -98,8 +98,8 @@ export class PerStreamHistory {
           topic would likely suffice, though we need to think about
           private stream corner cases).
         * pretty_name: The topic_name, with original case.
-        * historical: Whether the user actually received any messages in
-          the topic (has UserMessage rows) or is just viewing the stream.
+        * historical: Whether messages of the topic are available locally
+          or not.
         * count: Number of known messages in the topic.  Used to detect
           when the last messages in a topic were moved to other topics or
           deleted.
@@ -161,6 +161,9 @@ export class PerStreamHistory {
         }
 
         if (removing_all_messages) {
+            // We can remove the topic from sidebar if we know
+            // for sure that all messages are removed, like by
+            // moving messages with "change_all" propagate mode.
             this.topics.delete(topic_name);
             return;
         }
@@ -279,6 +282,10 @@ export function remove_messages(opts) {
     }
 
     if (!existing_topic.historical && existing_topic.count === 0) {
+        // We cannot be certain whether there are more messages in
+        // the topic or not as all the locally available messages are
+        // removed, so we just remove the history for the stream and
+        // fetch it again from server.
         clear_history_for_stream(stream_id);
         if (topic_list.active_stream_id() === stream_id) {
             stream_topic_history_util.get_server_history(
@@ -290,6 +297,9 @@ export function remove_messages(opts) {
     }
 
     if (existing_topic.historical && existing_topic.message_id <= max_removed_msg_id) {
+        // We cannot be certain whether there are more messages in
+        // the topic or not, so we just remove the history for the
+        // stream and fetch it again from server.
         clear_history_for_stream(stream_id);
         if (topic_list.active_stream_id() === stream_id) {
             stream_topic_history_util.get_server_history(
