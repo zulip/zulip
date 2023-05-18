@@ -14,6 +14,9 @@ import * as typeahead_helper from "./typeahead_helper";
 export const max_num_of_search_results = 12;
 
 function stream_matches_query(stream_name, q) {
+    if (q.startsWith("#") && stream_name.toLowerCase().startsWith(q.slice(1).toLowerCase())) {
+        return true;
+    }
     return common.phrase_match(q, stream_name);
 }
 

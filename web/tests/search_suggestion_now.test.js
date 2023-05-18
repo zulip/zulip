@@ -817,6 +817,16 @@ test("stream_completion", ({override}) => {
     suggestions = get_suggestions("", query);
     expected = ["hel", "stream:dev+help"];
     assert.deepEqual(suggestions.strings, expected);
+
+    query = "#de";
+    suggestions = get_suggestions("", query);
+    expected = ["#de", "stream:dev+help"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "#hel";
+    suggestions = get_suggestions("", query);
+    expected = ["#hel"];
+    assert.deepEqual(suggestions.strings, expected);
 });
 
 test("people_suggestions", ({override}) => {
