@@ -1576,7 +1576,8 @@ $option_title_width: 180px;
             color: hsl(0deg 0% 20%);
             white-space: nowrap;
 
-            &:hover {
+            &:hover,
+            &:focus {
                 color: hsl(0deg 0% 100%);
                 text-decoration: none;
                 background-color: hsl(200deg 100% 38%);
@@ -1585,10 +1586,6 @@ $option_title_width: 180px;
                     hsl(200deg 100% 40%),
                     hsl(200deg 100% 35%)
                 );
-            }
-
-            &:focus {
-                text-decoration: none;
             }
         }
     }
