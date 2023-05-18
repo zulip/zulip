@@ -713,9 +713,8 @@ def get_realm_config() -> Config:
 
     Config(
         table="zerver_realmauditlog",
-        model=RealmAuditLog,
-        normal_parent=realm_config,
-        include_rows="realm_id__in",
+        virtual_parent=realm_config,
+        custom_fetch=custom_fetch_realm_audit_logs_for_realm,
     )
 
     Config(
@@ -1150,6 +1149,30 @@ def custom_fetch_scheduled_messages(response: TableData, context: Context) -> No
     rows = make_raw(list(query))
 
     response["zerver_scheduledmessage"] = rows
+
+
+def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Context) -> None:
+    """
+    Simple custom fetch function to fix up .acting_user for some RealmAuditLog objects.
+
+    Certain RealmAuditLog objects have an acting_user that is in a different .realm, due to
+    the possibility of server administrators (typically with the .is_staff permission) taking
+    certain actions to modify UserProfiles or Realms, which will set the .acting_user to
+    the administrator's UserProfile, which can be in a different realm. Such an acting_user
+    cannot be imported during organization import on another server, so we need to just set it
+    to None.
+    """
+    realm = context["realm"]
+
+    query = RealmAuditLog.objects.filter(realm=realm).select_related("acting_user")
+    realmauditlog_objects = list(query)
+    for realmauditlog in realmauditlog_objects:
+        if realmauditlog.acting_user is not None and realmauditlog.acting_user.realm_id != realm.id:
+            realmauditlog.acting_user = None
+
+    rows = make_raw(realmauditlog_objects)
+
+    response["zerver_realmauditlog"] = rows
 
 
 def fetch_usermessages(
