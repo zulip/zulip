@@ -1,7 +1,8 @@
 import * as dialog_widget from "./dialog_widget";
+import type {DialogWidgetConfig} from "./dialog_widget";
 import {$t_html} from "./i18n";
 
-export function launch(conf) {
+export function launch(conf: DialogWidgetConfig): void {
     dialog_widget.launch({
         ...conf,
         close_on_submit: true,
