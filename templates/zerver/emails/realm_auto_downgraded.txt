@@ -5,4 +5,4 @@ To continue on the Practice Chat Cloud Standard plan, please upgrade again by go
 to {{ upgrade_url }}.
 
 If you think this was a mistake or need more details, please reach out
-to us at support@zulip.com.
+to us at hello@axe.software.
