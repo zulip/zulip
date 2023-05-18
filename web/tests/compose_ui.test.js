@@ -436,42 +436,10 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
     });
 });
 
-run_test("set_compose_box_top", () => {
-    $(".header").set_height(40);
-
-    const padding_bottom = 10;
-    $(".header").css = (arg) => {
-        assert.equal(arg, "paddingBottom");
-        return padding_bottom;
-    };
-
-    let compose_top = "";
-    $("#compose").css = (arg, val) => {
-        assert.equal(arg, "top");
-        compose_top = val;
-    };
-
-    $("#navbar_alerts_wrapper").set_height(0);
-    compose_ui.set_compose_box_top(true);
-    assert.equal(compose_top, "50px");
-
-    $("#navbar_alerts_wrapper").set_height(45);
-    compose_ui.set_compose_box_top(true);
-    assert.equal(compose_top, "95px");
-
-    compose_ui.set_compose_box_top(false);
-    assert.equal(compose_top, "");
-});
-
-run_test("test_compose_height_changes", ({override, override_rewire}) => {
+run_test("test_compose_height_changes", ({override}) => {
     let autosize_destroyed = false;
     override(autosize, "destroy", () => {
         autosize_destroyed = true;
-    });
-
-    let compose_box_top_set = false;
-    override_rewire(compose_ui, "set_compose_box_top", (set_top) => {
-        compose_box_top_set = set_top;
     });
 
     const stub = make_stub();
@@ -482,12 +450,10 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     assert.ok($("#compose").hasClass("compose-fullscreen"));
     assert.ok(compose_ui.is_full_size());
     assert.ok(autosize_destroyed);
-    assert.ok(compose_box_top_set);
 
     compose_ui.make_compose_box_original_size();
     assert.ok(!$("#compose").hasClass("compose-fullscreen"));
     assert.ok(!compose_ui.is_full_size());
-    assert.ok(!compose_box_top_set);
 });
 
 run_test("format_text", ({override}) => {

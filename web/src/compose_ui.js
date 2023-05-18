@@ -254,21 +254,10 @@ export function compute_placeholder_text(opts) {
     return $t({defaultMessage: "Compose your message here"});
 }
 
-export function set_compose_box_top(set_top) {
-    if (set_top) {
-        // As `#compose` has `position: fixed` property, we cannot
-        // make the compose-box to attain the correct height just by
-        // using CSS. If that wasn't the case, we could have somehow
-        // refactored the HTML so as to consider only the space below
-        // below the `#navbar_alerts` as `height: 100%` of `#compose`.
-        const compose_top =
-            $("#navbar_alerts_wrapper").height() +
-            $(".header").height() +
-            Number.parseInt($(".header").css("paddingBottom"), 10);
-        $("#compose").css("top", compose_top + "px");
-    } else {
-        $("#compose").css("top", "");
-    }
+export function resize_full_screen_compose_box() {
+    const viewport_height = message_viewport.height();
+    const navbar_sticky_height = $("#navbar-sticky-container").safeOuterHeight(true);
+    $("#compose #compose-container").css("height", viewport_height - navbar_sticky_height);
 }
 
 export function make_compose_box_full_size() {
@@ -280,12 +269,7 @@ export function make_compose_box_full_size() {
 
     $("#compose").addClass("compose-fullscreen");
 
-    const viewport_height = message_viewport.height();
-    const navbar_sticky_height = $("#navbar-sticky-container").safeOuterHeight(true);
-    $("#compose #compose-container").css("height", viewport_height - navbar_sticky_height);
-
-    // Set the `top` property of compose-box.
-    set_compose_box_top(true);
+    resize_full_screen_compose_box();
 
     $(".collapse_composebox_button").show();
     $(".expand_composebox_button").hide();
@@ -298,8 +282,6 @@ export function make_compose_box_original_size() {
 
     $("#compose").removeClass("compose-fullscreen");
 
-    // Unset the `top` property of compose-box.
-    set_compose_box_top(false);
     $("#compose #compose-container").css("height", "100%");
 
     // Again initialise the compose textarea as it was destroyed

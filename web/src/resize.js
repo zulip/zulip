@@ -199,7 +199,7 @@ export function resize_app() {
     // If the compose-box is in expanded state,
     // reset its height as well.
     if (compose_ui.is_full_size()) {
-        compose_ui.set_compose_box_top(true);
+        compose_ui.resize_full_screen_compose_box();
     }
 }
 
