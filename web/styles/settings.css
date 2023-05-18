@@ -1490,6 +1490,37 @@ $option_title_width: 180px;
     }
 }
 
+.dropdown-list-widget .dropdown-list-body,
+#gear-menu .dropdown-menu {
+    /* In bootstrap v2.3.2, we strictly need
+        .dropdown-menu > li > a as the order of the elements
+        for the bootstrap style to be applied.
+        Since we use a combination of dropdown + simplebar here,
+        the structure cannot be possible since simplebar inserts
+        elements of its own, so we copy over that style
+        from bootstrap to here. */
+    & li a {
+        display: block;
+        padding: 3px 20px;
+        clear: both;
+        font-weight: normal;
+        line-height: 20px;
+        white-space: nowrap;
+
+        &:hover,
+        &:focus {
+            color: hsl(0deg 0% 100%);
+            text-decoration: none;
+            background-color: hsl(200deg 100% 38%);
+            background-image: linear-gradient(
+                to bottom,
+                hsl(200deg 100% 40%),
+                hsl(200deg 100% 35%)
+            );
+        }
+    }
+}
+
 .dropdown-list-widget {
     & button.dropdown-toggle {
         text-align: left;
@@ -1560,33 +1591,8 @@ $option_title_width: 180px;
         margin-top: 0;
         display: block;
 
-        /* In bootstrap v2.3.2, we strictly need
-        .dropdown-menu > li > a as the order of the elements
-        for the bootstrap style to be applied.
-        Since we use a combination of dropdown + simplebar here,
-        the structure cannot be possible since simplebar inserts
-        elements of its own, so we copy over that style
-        from bootstrap to here. */
         & li a {
-            display: block;
-            padding: 3px 20px;
-            clear: both;
-            font-weight: normal;
-            line-height: 20px;
             color: hsl(0deg 0% 20%);
-            white-space: nowrap;
-
-            &:hover,
-            &:focus {
-                color: hsl(0deg 0% 100%);
-                text-decoration: none;
-                background-color: hsl(200deg 100% 38%);
-                background-image: linear-gradient(
-                    to bottom,
-                    hsl(200deg 100% 40%),
-                    hsl(200deg 100% 35%)
-                );
-            }
         }
     }
 }
@@ -1738,7 +1744,7 @@ $option_title_width: 180px;
         outline: 0;
 
         box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
-            0 0 8px hsl(206.5deg 80% 62% / 60%);
+        0 0 8px hsl(206.5deg 80% 62% / 60%);
     }
 
     &:disabled {

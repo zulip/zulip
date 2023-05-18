@@ -393,6 +393,12 @@ p.n-margin {
 }
 
 #gear-menu .dropdown-menu {
+    /*
+    If there is sufficient space, the `.dropdown-menu` will always have a height
+    based on its content. If the screen is small, it will have a height of 85vh.
+    */
+    max-height: 85vh;
+
     .org-name,
     .org-url {
         padding: 0 20px;
