@@ -79,7 +79,7 @@ class ScheduledMessageTest(ZulipTestCase):
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
 
-        # Scheduling a direct message is successful.
+        # Scheduling a direct message with user IDs is successful.
         othello = self.example_user("othello")
         result = self.do_schedule_message(
             "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
@@ -92,6 +92,12 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message.scheduled_timestamp,
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
+
+        # Cannot schedule a direct message with user emails.
+        result = self.do_schedule_message(
+            "direct", [othello.email], content + " 4", scheduled_delivery_timestamp
+        )
+        self.assert_json_error(result, "Recipient list may only contain user IDs")
 
     def create_scheduled_message(self) -> None:
         content = "Test message"
