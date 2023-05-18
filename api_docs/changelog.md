@@ -1408,11 +1408,12 @@ No changes; feature level used for Zulip 3.0 release.
   `POST /register` to make them accessible to all the clients;
   they were only internally available to Zulip's web app prior to this.
 
-**Feature level 3**:
+**Feature level 3**
 
-* `zulip_version` and `zulip_feature_level` are always returned
-  in `POST /register`; previously they were only returned if `event_types`
-  included `zulip_version`.
+* [`POST /register`](/api/register-queue): `zulip_version` and
+  `zulip_feature_level` are always returned in the endpoint response.
+  Previously, they were only present if `event_types` included
+  `zulip_version`.
 * Added new `presence_enabled` user notification setting; previously
   [presence](/help/status-and-availability) was always enabled.
 

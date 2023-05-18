@@ -10668,13 +10668,21 @@ paths:
                         description: |
                           The server's current [Zulip feature level](/api/changelog).
 
-                          **Changes**: New in Zulip 3.0 (feature level 1).
+                          **Changes**: As of Zulip 3.0 (feature level 3), this is always present
+                          in the endpoint's response. Previously, it was only present if
+                          `event_types` included `zulip_version`.
+
+                          New in Zulip 3.0 (feature level 1).
                       zulip_version:
                         type: string
                         description: |
                           The server's version number. This is often a release version number,
                           like `2.1.7`. But for a server running a [version from Git][git-release],
                           it will be a Git reference to the commit, like `5.0-dev-1650-gc3fd37755f`.
+
+                          **Changes**: As of Zulip 3.0 (feature level 3), this is always present
+                          in the endpoint's response. Previously, it was only present if
+                          `event_types` included `zulip_version`.
 
                           [git-release]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#git-versions
                       zulip_merge_base:
