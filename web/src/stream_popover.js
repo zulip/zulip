@@ -18,7 +18,6 @@ import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
-import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
@@ -172,7 +171,7 @@ export function build_move_topic_to_stream_popover(
     only_topic_edit,
     message,
 ) {
-    const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
+    const current_stream_name = sub_store.maybe_get_stream_name(current_stream_id);
     const args = {
         topic_name,
         current_stream_id,
@@ -424,7 +423,7 @@ export function register_click_handlers() {
         if (e.type === "keypress" && !keydown_util.is_enter_event(e)) {
             return;
         }
-        const stream_name = stream_data.maybe_get_stream_name(
+        const stream_name = sub_store.maybe_get_stream_name(
             Number.parseInt(stream_widget.value(), 10),
         );
 

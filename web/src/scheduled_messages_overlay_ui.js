@@ -10,6 +10,7 @@ import * as people from "./people";
 import * as scheduled_messages from "./scheduled_messages";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
 export const keyboard_handling_context = {
@@ -57,7 +58,7 @@ function format(scheduled_messages) {
         if (msg.type === "stream") {
             msg_render_context.is_stream = true;
             msg_render_context.stream_id = msg.to;
-            msg_render_context.stream_name = stream_data.maybe_get_stream_name(
+            msg_render_context.stream_name = sub_store.maybe_get_stream_name(
                 msg_render_context.stream_id,
             );
             const color = stream_data.get_color(msg_render_context.stream_name);

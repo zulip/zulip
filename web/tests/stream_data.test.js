@@ -145,9 +145,9 @@ test("basics", () => {
     assert.ok(!stream_data.is_muted(social.stream_id));
     assert.ok(stream_data.is_muted(denmark.stream_id));
 
-    assert.equal(stream_data.maybe_get_stream_name(), undefined);
-    assert.equal(stream_data.maybe_get_stream_name(social.stream_id), "social");
-    assert.equal(stream_data.maybe_get_stream_name(42), undefined);
+    assert.equal(sub_store.maybe_get_stream_name(), undefined);
+    assert.equal(sub_store.maybe_get_stream_name(social.stream_id), "social");
+    assert.equal(sub_store.maybe_get_stream_name(42), undefined);
 
     stream_data.set_realm_default_streams([denmark]);
     assert.ok(stream_data.is_default_stream_id(denmark.stream_id));

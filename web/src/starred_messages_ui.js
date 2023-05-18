@@ -4,7 +4,7 @@ import render_confirm_unstar_all_messages_in_topic from "../templates/confirm_di
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import * as message_flags from "./message_flags";
-import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 
 export function confirm_unstar_all_messages() {
     const html_body = render_confirm_unstar_all_messages();
@@ -21,7 +21,7 @@ export function confirm_unstar_all_messages_in_topic(stream_id, topic) {
         message_flags.unstar_all_messages_in_topic(stream_id, topic);
     }
 
-    const stream_name = stream_data.maybe_get_stream_name(stream_id);
+    const stream_name = sub_store.maybe_get_stream_name(stream_id);
     if (stream_name === undefined) {
         return;
     }

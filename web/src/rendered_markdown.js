@@ -11,7 +11,7 @@ import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rtl from "./rtl";
-import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import {show_copied_confirmation} from "./tippyjs";
 import * as user_groups from "./user_groups";
@@ -130,10 +130,10 @@ export const update_elements = ($content) => {
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
-            const stream_name = stream_data.maybe_get_stream_name(stream_id);
+            const stream_name = sub_store.maybe_get_stream_name(stream_id);
             if (stream_name !== undefined) {
                 // If the stream has been deleted,
-                // stream_data.maybe_get_stream_name might return
+                // sub_store.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
                 $(this).text("#" + stream_name);
             }
@@ -145,10 +145,10 @@ export const update_elements = ($content) => {
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
-            const stream_name = stream_data.maybe_get_stream_name(stream_id);
+            const stream_name = sub_store.maybe_get_stream_name(stream_id);
             if (stream_name !== undefined) {
                 // If the stream has been deleted,
-                // stream_data.maybe_get_stream_name might return
+                // sub_store.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
                 const text = $(this).text();
                 $(this).text("#" + stream_name + text.slice(text.indexOf(" > ")));
