@@ -14,10 +14,9 @@ subdirectory.
 ## Editing Zulip CSS
 
 If you aren't experienced with doing web development and want to make
-CSS changes, we recommend reading the excellent [Chrome web inspector
-guide on editing HTML/CSS](https://developer.chrome.com/devtools/docs/dom-and-styles),
-especially the [section on
-CSS](https://developer.chrome.com/devtools/docs/dom-and-styles#styles)
+CSS changes, we recommend reading the excellent [Chrome developer tools
+guide to the Elements panel and CSS](https://developer.chrome.com/docs/devtools/overview/#elements),
+as well as the [section on viewing and editing CSS](https://developer.chrome.com/docs/devtools/css/)
 to learn about all the great tools that you can use to modify and test
 changes to CSS interactively in-browser (without even having the
 reload the page!).
@@ -281,5 +280,5 @@ function in those scenarios, add it to `zulip_test`. This is also
 [handlebars]: https://handlebarsjs.com/
 [trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
-[hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
+[hconditionals]: https://handlebarsjs.com/guide/block-helpers.html#block-helpers
 [translation]: ../translating/translating.md
