@@ -83,6 +83,8 @@ from zerver.models import (
     get_huddle_hash,
     get_realm,
     get_stream,
+    get_system_bot,
+    get_user_by_delivery_email,
 )
 
 
@@ -708,6 +710,9 @@ class RealmImportExportTest(ExportFile):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+
         with get_test_image_file("img.png") as img_file:
             realm_emoji = check_add_realm_emoji(
                 realm=hamlet.realm, name="hawaii", author=hamlet, image_file=img_file
@@ -727,6 +732,18 @@ class RealmImportExportTest(ExportFile):
         do_set_realm_authentication_methods(
             original_realm, authentication_methods, acting_user=None
         )
+
+        # Set up an edge-case RealmAuditLog with acting_user in a different realm. Such an acting_user can't be covered
+        # by the export, so we'll test that it is handled by getting set to None.
+        self.assertTrue(
+            RealmAuditLog.objects.filter(
+                modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+            ).count(),
+            1,
+        )
+        RealmAuditLog.objects.filter(
+            modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+        ).update(acting_user_id=cross_realm_bot.id)
 
         # data to test import of huddles
         huddle = [
@@ -988,6 +1005,15 @@ class RealmImportExportTest(ExportFile):
             original_realm.authentication_methods_dict(),
             imported_realm.authentication_methods_dict(),
         )
+
+        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
+        realmauditlog = RealmAuditLog.objects.get(
+            modified_user=imported_hamlet, event_type=RealmAuditLog.USER_CREATED
+        )
+        self.assertEqual(realmauditlog.realm, imported_realm)
+        # As explained above when setting up the RealmAuditLog row, the .acting_user should have been
+        # set to None due to being unexportable.
+        self.assertEqual(realmauditlog.acting_user, None)
 
         self.assertEqual(
             Message.objects.filter(realm=original_realm).count(),
