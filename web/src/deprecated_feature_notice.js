@@ -1,3 +1,5 @@
+import z from "zod";
+
 import * as blueslip from "./blueslip";
 import * as common from "./common";
 import * as dialog_widget from "./dialog_widget";
@@ -37,9 +39,13 @@ export function maybe_show_deprecation_notice(key) {
     // Here we handle the tracking for showing deprecation notices,
     // whether or not local storage is available.
     if (localstorage.supported()) {
-        const notices_from_storage = JSON.parse(localStorage.getItem("shown_deprecation_notices"));
+        const notices_from_storage = localStorage.getItem("shown_deprecation_notices");
         if (notices_from_storage !== null) {
-            shown_deprecation_notices = notices_from_storage;
+            const parsed_notices_from_storage = z
+                .array(z.string())
+                .parse(JSON.parse(notices_from_storage));
+
+            shown_deprecation_notices = parsed_notices_from_storage;
         } else {
             shown_deprecation_notices = [];
         }
