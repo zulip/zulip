@@ -1479,6 +1479,8 @@ No changes; feature level used for Zulip 3.0 release.
 
 ## Changes in Zulip 2.1
 
+* [`POST /register`](/api/register-queue): Added
+  `realm_default_external_accounts` to endpoint response.
 * [`GET /messages`](/api/get-messages): Added support for
   [search/narrow options](/api/construct-narrow) that use stream/user
   IDs to specify a message's sender, its stream, and/or its recipient(s).

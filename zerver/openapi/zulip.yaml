@@ -13220,8 +13220,10 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Dictionary where each entry describes a default external
-                          account type that can be configured with Zulip's custom
-                          profile fields feature.
+                          account type that can be configured with Zulip's [custom
+                          profile fields feature](/help/custom-profile-fields).
+
+                          **Changes**: New in Zulip 2.1.0.
                         additionalProperties:
                           description: |
                             `{site_name}`: Dictionary containing the details of the
