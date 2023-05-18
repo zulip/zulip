@@ -49,10 +49,6 @@ else:
     CAMO_URI = "https://external-content.zulipcdn.net/external_content/"
     CAMO_KEY = "dummy"
 
-if PUPPETEER_TESTS:
-    # Disable search pills prototype for production use
-    SEARCH_PILLS_ENABLED = False
-
 if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
     RUNNING_OPENAPI_CURL_TEST = True
 

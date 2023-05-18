@@ -53,7 +53,6 @@ const example_avatar_url = "http://example.com/example.png";
 
 function init() {
     page_params.is_admin = true;
-    page_params.search_pills_enabled = false;
 
     people.init();
     people.add_active_user(bob);

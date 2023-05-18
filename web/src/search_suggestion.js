@@ -707,28 +707,14 @@ class Attacher {
 
 export function get_search_result(base_query, query) {
     let suggestion;
-    let all_operators;
 
     // search_operators correspond to the operators for the query in the input.
-    // For search_pills_enabled, this includes just editable query where search pills
-    // have not been created yet.
-    // And for this disabled case, this includes the entire query entered in the searchbox.
+    // This includes the entire query entered in the searchbox.
     // operators correspond to the operators for the entire query entered in the searchbox.
-    if (page_params.search_pills_enabled) {
-        all_operators = Filter.parse((base_query + " " + query).trim());
-    }
     const search_operators = Filter.parse(query);
     let last = {operator: "", operand: "", negated: false};
     if (search_operators.length > 0) {
         last = search_operators.at(-1);
-    } else if (page_params.search_pills_enabled) {
-        // We push an empty term so that we can get suggestions
-        // on the empty string based on the base query which is
-        // calculated from the created search pills.
-        // Else search results are returned as if the user is still
-        // typing the non-editable last search pill.
-        all_operators.push(last);
-        search_operators.push(last);
     }
 
     const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
@@ -751,10 +737,6 @@ export function get_search_result(base_query, query) {
                 operand: person_op.operand + " " + last.operand,
                 negated: person_op.negated,
             };
-            if (page_params.search_pills_enabled) {
-                all_operators.splice(-2);
-                all_operators.push(last);
-            }
             search_operators.splice(-2);
             search_operators.push(last);
         }
@@ -808,10 +790,7 @@ export function get_search_result(base_query, query) {
         ];
     }
 
-    if (!page_params.search_pills_enabled) {
-        all_operators = search_operators;
-    }
-    const base_operators = all_operators.slice(0, -1);
+    const base_operators = search_operators.slice(0, -1);
     const max_items = max_num_of_search_results;
 
     for (const filterer of filterers) {
@@ -821,15 +800,7 @@ export function get_search_result(base_query, query) {
         }
     }
 
-    if (
-        !page_params.search_pills_enabled &&
-        // This is unique to the legacy search system.  With pills
-        // it is difficult to "suggest" a subset of operators,
-        // and there's a more natural mechanism under that paradigm,
-        // where the user just deletes one or more pills.  So you
-        // won't see this is in the new code.
-        attacher.result.length < max_items
-    ) {
+    if (attacher.result.length < max_items) {
         const subset_suggestions = get_operator_subset_suggestions(search_operators);
         attacher.push_many(subset_suggestions);
     }

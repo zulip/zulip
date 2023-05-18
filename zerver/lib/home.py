@@ -187,7 +187,6 @@ def build_page_params_for_home_page_load(
         insecure_desktop_app=insecure_desktop_app,
         login_page=settings.HOME_NOT_LOGGED_IN,
         warn_no_email=settings.WARN_NO_EMAIL,
-        search_pills_enabled=settings.SEARCH_PILLS_ENABLED,
         # Only show marketing email settings if on Zulip Cloud
         corporate_enabled=settings.CORPORATE_ENABLED,
         ## Misc. extra data.
