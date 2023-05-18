@@ -4,6 +4,7 @@ import * as blueslip from "./blueslip";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 
 let message_type = false; // 'stream', 'private', or false-y
 let recipient_edited_manually = false;
@@ -74,7 +75,7 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
 export function stream_name() {
     const stream_id = compose_recipient.selected_recipient_id;
     if (typeof stream_id === "number") {
-        return stream_data.maybe_get_stream_name(stream_id) || "";
+        return sub_store.maybe_get_stream_name(stream_id) || "";
     }
     return "";
 }
@@ -100,7 +101,7 @@ export function set_compose_recipient_id(value) {
     let recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
     if (typeof value === "number") {
         // value is stream name
-        recipient_id = stream_data.maybe_get_stream_name(value) || "";
+        recipient_id = sub_store.maybe_get_stream_name(value) || "";
     }
     compose_recipient.set_selected_recipient_id(recipient_id);
 }

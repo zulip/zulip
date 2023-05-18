@@ -21,7 +21,7 @@ let filter_out_inactives = false;
 
 export function get_streams() {
     const sorted_streams = all_streams.map((stream_id) =>
-        stream_data.maybe_get_stream_name(stream_id),
+        sub_store.maybe_get_stream_name(stream_id),
     );
     return sorted_streams;
 }

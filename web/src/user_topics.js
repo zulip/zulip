@@ -7,7 +7,7 @@ import * as feedback_widget from "./feedback_widget";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
-import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import {get_time_from_date_muted} from "./util";
 
@@ -57,7 +57,7 @@ export function is_topic_muted(stream_id, topic) {
 export function get_user_topics_for_visibility_policy(visibility_policy) {
     const topics = [];
     for (const [stream_id, sub_dict] of all_user_topics) {
-        const stream = stream_data.maybe_get_stream_name(stream_id);
+        const stream = sub_store.maybe_get_stream_name(stream_id);
         for (const topic of sub_dict.keys()) {
             if (sub_dict.get(topic).visibility_policy === visibility_policy) {
                 const date_updated = sub_dict.get(topic).date_updated;
@@ -113,7 +113,7 @@ export function set_user_topic_visibility_policy(
             // know what you did if you triggered muting with the
             // mouse.
             if (visibility_policy === all_visibility_policies.MUTED) {
-                const stream_name = stream_data.maybe_get_stream_name(stream_id);
+                const stream_name = sub_store.maybe_get_stream_name(stream_id);
                 feedback_widget.show({
                     populate($container) {
                         const rendered_html = render_topic_muted();
@@ -141,7 +141,7 @@ export function set_user_topic(user_topic) {
     const topic = user_topic.topic_name;
     const date_updated = user_topic.last_updated;
 
-    const stream_name = stream_data.maybe_get_stream_name(stream_id);
+    const stream_name = sub_store.maybe_get_stream_name(stream_id);
 
     if (!stream_name) {
         blueslip.warn("Unknown stream ID in set_user_topic: " + stream_id);

@@ -3,6 +3,7 @@ import * as internal_url from "../shared/src/internal_url";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 
 export function get_hash_category(hash) {
     // given "#streams/subscribed", returns "streams"
@@ -91,12 +92,12 @@ export function decode_operand(operator, operand) {
 
 export function by_stream_url(stream_id) {
     // Wrapper for web use of internal_url.by_stream_url
-    return internal_url.by_stream_url(stream_id, stream_data.maybe_get_stream_name);
+    return internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);
 }
 
 export function by_stream_topic_url(stream_id, topic) {
     // Wrapper for web use of internal_url.by_stream_topic_url
-    return internal_url.by_stream_topic_url(stream_id, topic, stream_data.maybe_get_stream_name);
+    return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 }
 
 // Encodes an operator list into the

@@ -18,6 +18,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 let user_acknowledged_wildcard = false;
@@ -231,7 +232,7 @@ export function warn_if_topic_resolved(topic_changed) {
 
 function show_wildcard_warnings(opts) {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
-    const stream_name = stream_data.maybe_get_stream_name(opts.stream_id);
+    const stream_name = sub_store.maybe_get_stream_name(opts.stream_id);
     const is_edit_container = opts.$banner_container.closest(".edit_form_banners").length > 0;
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
 
