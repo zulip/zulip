@@ -37,6 +37,7 @@ export function update_count_in_dom(
     stream_counts,
     stream_has_any_unread_mention_messages,
     stream_has_any_unmuted_unread_mention,
+    stream_has_only_muted_unread_mention,
 ) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
@@ -50,8 +51,14 @@ export function update_count_in_dom(
 
     if (stream_has_any_unmuted_unread_mention) {
         $subscription_block.addClass("has-unmuted-mentions");
+        $subscription_block.removeClass("has-only-muted-mentions");
     } else {
         $subscription_block.removeClass("has-unmuted-mentions");
+        if (!stream_counts.stream_is_muted && stream_has_only_muted_unread_mention) {
+            $subscription_block.addClass("has-only-muted-mentions");
+        } else {
+            $subscription_block.removeClass("has-only-muted-mentions");
+        }
     }
 
     // Here we set the count and compute the values of two classes:
@@ -64,16 +71,32 @@ export function update_count_in_dom(
         ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
         $subscription_block.addClass("stream-with-count");
         $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
     } else if (stream_counts.unmuted_count > 0 && stream_counts.stream_is_muted) {
         // Muted stream, has unmuted unreads.
         ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
         $subscription_block.addClass("stream-with-count");
         $subscription_block.addClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
     } else if (stream_counts.muted_count > 0 && stream_counts.stream_is_muted) {
         // Muted stream, only muted unreads.
         ui_util.update_unread_count_in_dom($subscription_block, stream_counts.muted_count);
         $subscription_block.addClass("stream-with-count");
         $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
+    } else if (
+        stream_counts.muted_count > 0 &&
+        !stream_counts.stream_is_muted &&
+        stream_has_only_muted_unread_mention
+    ) {
+        // Normal stream, only muted unreads, including a mention:
+        // Display the mention, faded, and a faded unread count too,
+        // so that we don't weirdly show the mention indication
+        // without an unread count.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.muted_count);
+        $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.addClass("has-only-muted-unreads");
     } else if (stream_counts.muted_count > 0 && !stream_counts.stream_is_muted) {
         // Normal stream, only muted unreads: display nothing. The
         // current thinking is displaying those counts with muted
@@ -85,6 +108,7 @@ export function update_count_in_dom(
         // No unreads: display nothing.
         ui_util.update_unread_count_in_dom($subscription_block, 0);
         $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
         $subscription_block.removeClass("stream-with-count");
     }
 }
@@ -396,11 +420,16 @@ class StreamSidebarRow {
         const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
             this.sub.stream_id,
         );
+        const stream_has_only_muted_unread_mentions =
+            !this.sub.is_muted &&
+            stream_has_any_unread_mention_messages &&
+            !stream_has_any_unmuted_unread_mention;
         update_count_in_dom(
             this.$list_item,
             count,
             stream_has_any_unread_mention_messages,
             stream_has_any_unmuted_unread_mention,
+            stream_has_only_muted_unread_mentions,
         );
     }
 }
@@ -443,6 +472,7 @@ function set_stream_unread_count(
     count,
     stream_has_any_unread_mention_messages,
     stream_has_any_unmuted_unread_mention,
+    stream_has_only_muted_unread_mentions,
 ) {
     const $stream_li = get_stream_li(stream_id);
     if (!$stream_li) {
@@ -456,6 +486,7 @@ function set_stream_unread_count(
         count,
         stream_has_any_unread_mention_messages,
         stream_has_any_unmuted_unread_mention,
+        stream_has_only_muted_unread_mentions,
     );
 }
 
@@ -492,11 +523,16 @@ export function update_dom_with_unread_counts(counts) {
             counts.streams_with_mentions.includes(stream_id);
         const stream_has_any_unmuted_unread_mention =
             counts.streams_with_unmuted_mentions.includes(stream_id);
+        const stream_has_only_muted_unread_mentions =
+            !sub_store.get(stream_id).is_muted &&
+            stream_has_any_unread_mention_messages &&
+            !stream_has_any_unmuted_unread_mention;
         set_stream_unread_count(
             stream_id,
             count,
             stream_has_any_unread_mention_messages,
             stream_has_any_unmuted_unread_mention,
+            stream_has_only_muted_unread_mentions,
         );
     }
 }

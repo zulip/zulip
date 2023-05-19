@@ -403,11 +403,13 @@ class UnreadTopicCounter {
     }
 
     get_streams_with_unread_mentions() {
-        const streams_with_mentions = new Set();
-        // Collect the set of streams containing at least one mention.
+        // Collect the set of streams containing at least one unread
+        // mention, without considering muting.
+
         // We can do this efficiently, since unread_mentions_counter
         // contains all unread message IDs, and we use stream_ids as
         // bucket keys in our outer bucketer.
+        const streams_with_mentions = new Set();
 
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
@@ -422,9 +424,10 @@ class UnreadTopicCounter {
     }
 
     get_streams_with_unmuted_mentions() {
-        const streams_with_unmuted_mentions = new Set();
         // Collect the set of streams containing at least one mention
-        // in an unmuted topic within a muted stream.
+        // that is not in a muted topic or non-unmuted topic in a
+        // muted stream.
+        const streams_with_unmuted_mentions = new Set();
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
             if (stream_id === undefined) {
@@ -434,8 +437,15 @@ class UnreadTopicCounter {
 
             const stream_bucketer = this.bucketer.get_bucket(stream_id);
             const topic = stream_bucketer.reverse_lookup.get(message_id);
-            if (user_topics.is_topic_unmuted(stream_id, topic)) {
-                streams_with_unmuted_mentions.add(stream_id);
+            const stream_is_muted = sub_store.get(stream_id)?.is_muted;
+            if (stream_is_muted) {
+                if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                    streams_with_unmuted_mentions.add(stream_id);
+                }
+            } else {
+                if (!user_topics.is_topic_muted(stream_id, topic)) {
+                    streams_with_unmuted_mentions.add(stream_id);
+                }
             }
         }
         return streams_with_unmuted_mentions;
