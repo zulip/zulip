@@ -186,11 +186,9 @@ export function resize_message_header() {
     // need to adjust at what `top` position do `message-header` becomes `sticky`.
     // Best way to do this is via adding custom CSS to the DOM instead of running endless
     // javascript queries to find and update them on various re-renders.
-    // See: https://web.dev/constructable-stylesheets/
     const navbar_sticky_height = $("#navbar-sticky-container").safeOuterHeight(true);
-    const sheet = new CSSStyleSheet();
-    sheet.replace(`.message_list .message_header { top: ${navbar_sticky_height}px !important; }`);
-    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    const style = document.querySelector("#sticky_message_header_styles");
+    style.textContent = `.message_list .message_header { top: ${navbar_sticky_height}px !important; }`;
 }
 
 export function resize_app() {
