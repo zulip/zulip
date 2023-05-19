@@ -731,8 +731,19 @@ $(async () => {
             }),
             client_gravatar: false,
         };
-        const {result, msg, ...state} = await new Promise((success, error) => {
-            channel.post({url: "/json/register", data, success, error});
+        const {result, msg, ...state} = await new Promise((resolve, reject) => {
+            channel.post({
+                url: "/json/register",
+                data,
+                resolve,
+                error(xhr) {
+                    blueslip.error("Spectator failed to register", {
+                        status: xhr.status,
+                        bodt: xhr.responseText,
+                    });
+                    reject(new Error("Spectator failed to register"));
+                },
+            });
         });
         Object.assign(page_params, state);
     }
