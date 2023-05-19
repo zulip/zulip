@@ -3197,12 +3197,13 @@ paths:
                                         - type: integer
                                         - type: string
                                   description: |
-                                    An array of tuples, where each tuple described a linkifier.
-                                    The first element of the tuple was a string regex pattern which
-                                    represented the pattern to be linkified on matching. The second
-                                    element was the URL with which the pattern matching string
-                                    should be linkified with, and the third element was the ID of
-                                    the realm filter.
+                                    An array of tuples, where each tuple described a linkifier. The first
+                                    element of the tuple was a string regex pattern which represented the
+                                    pattern that to be linkified on matching, for example `"#(?P<id>[123])"`.
+                                    The second element was the URL with which the pattern matching string
+                                    should be linkified with, so with the above pattern an example URL would
+                                    be `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
+                                    was the ID of the realm filter.
                               example:
                                 {
                                   "type": "realm_filters",
@@ -11029,12 +11030,13 @@ paths:
 
                           When present, this is always an empty array.
 
-                          **Changes**: Prior to Zulip 7.0 (feature level 176), this was an
-                          array of tuples (fixed-length arrays), where each tuple described
-                          a single linkifier. The first element of the tuple was a string
-                          regex pattern which represented the pattern to be linkified on
-                          matching. The second element was the URL with which the pattern
-                          matching string should be linkified with, and the third element
+                          **Changes**: Prior to Zulip 7.0 (feature level 176), this was
+                          an array of tuples, where each tuple described a linkifier. The first
+                          element of the tuple was a string regex pattern which represented the
+                          pattern that to be linkified on matching, for example `"#(?P<id>[123])"`.
+                          The second element was the URL with which the pattern matching string
+                          should be linkified with, so with the above pattern an example URL would
+                          be `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
                           was the ID of the realm filter.
 
                           **Deprecated** in Zulip 4.0 (feature level 54), replaced by the
