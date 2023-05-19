@@ -20,13 +20,13 @@
                 {% else %}
                     {% if login_link_disabled %}
                     {% elif not only_sso %}
-                    <a class="login-btn" href="{{login_url}}">{{ _('Log in') }}</a>
+                    <a class="login-btn" href="{{login_url}}">{{ _('Log In') }}</a>
                     {% endif %}
                 {% endif %}
 
                 {% if register_link_disabled %}
                 {% elif only_sso %}
-                    <a class="login-btn" href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
+                    <a class="login-btn" href="{{ url('login-sso') }}">{{ _('Log In') }}</a>
                 {% else %}
                     {% if user_is_authenticated %}
                     {% else %}
