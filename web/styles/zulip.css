@@ -362,7 +362,7 @@ p.n-margin {
 }
 
 #navbar-sticky-container {
-    z-index: 102; /* Needs to be higher than .alert-bar-container */
+    z-index: 102;
     position: sticky;
     top: 0;
     width: 100%;
