@@ -353,6 +353,16 @@ ul.filters {
         margin-bottom: 10px;
     }
 
+    .has-only-muted-unreads {
+        .unread_count {
+            opacity: 0.5;
+        }
+    }
+
+    .has-only-muted-mentions .unread_mention_info {
+        opacity: 0.5;
+    }
+
     /* This is a noop in the current design, because unread counts for
        muted streams have the same opacity, but the logic is here to
        be explicit and because the design may change in the future. */
@@ -763,6 +773,10 @@ li.topic-list-item {
 
 .zero_count {
     visibility: hidden;
+}
+
+.zero-topic-unreads.show-more-topics .topic-box {
+    margin-right: 30px;
 }
 
 .searching-for-more-topics img {
