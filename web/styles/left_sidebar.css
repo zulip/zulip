@@ -590,7 +590,7 @@ li.top_left_scheduled_messages {
 .starred-messages-sidebar-menu-icon,
 .drafts-sidebar-menu-icon,
 .stream-sidebar-menu-icon {
-    top: 1px;
+    top: 5px;
     right: 0;
     font-size: 1em;
     text-align: center;
