@@ -42,8 +42,9 @@ p {
 
 .flex-container {
     display: flex;
-    flex-flow: wrap;
-    justify-content: space-around;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .chart-container {

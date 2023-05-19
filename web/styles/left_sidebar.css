@@ -117,8 +117,8 @@ li.show-more-topics {
     }
 
     & li {
-        padding-top: 5px;
-        padding-bottom: 5px;
+        padding-top: 4px;
+        padding-bottom: 4px;
 
         & a:hover {
             text-decoration: none;
@@ -254,7 +254,7 @@ li.show-more-topics {
 
         & li.pm-list-item {
             position: relative;
-            padding: 5px 10px 5px 4px;
+            padding: 4px 10px 3px 4px;
             margin-left: 2px;
 
             & a {
@@ -314,6 +314,10 @@ li.show-more-topics {
         background-color: #007AFF;
         color: white;
         border-radius: 4px;
+    }
+
+    &.bottom_left_row:hover i.zulip-icon {
+        color: white;
     }
 }
 
@@ -473,6 +477,10 @@ i.zulip-icon {
     color: white;
 }
 
+.bottom_left_row i.zulip-icon {
+    color: #333;
+}
+
 li.top_left_all_messages,
 li.top_left_mentions,
 li.top_left_starred_messages,
@@ -480,8 +488,8 @@ li.top_left_drafts,
 li.top_left_recent_topics,
 li.top_left_scheduled_messages {
     position: relative;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: 4px;
+    padding-bottom: 4px;
 
     & a {
         display: block;
