@@ -146,7 +146,18 @@
         </div>
     </div>
 </div>
+
 <div id="user-profile-modal-holder"></div>
+
+<audio id="user-notification-sound-audio">
+    <source class="notification-sound-source-ogg" type="audio/ogg" />
+    <source class="notification-sound-source-mp3" type="audio/mpeg" />
+</audio>
+<audio id="realm-default-notification-sound-audio">
+    <source class="notification-sound-source-ogg" type="audio/ogg" />
+    <source class="notification-sound-source-mp3" type="audio/mpeg" />
+</audio>
+
 <div class="alert-box">
     <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
         <div class="exit"></div>
@@ -249,13 +260,5 @@
         <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
         </form>
     </div>
-    <audio id="user-notification-sound-audio">
-        <source class="notification-sound-source-ogg" type="audio/ogg" />
-        <source class="notification-sound-source-mp3" type="audio/mpeg" />
-    </audio>
-    <audio id="realm-default-notification-sound-audio">
-        <source class="notification-sound-source-ogg" type="audio/ogg" />
-        <source class="notification-sound-source-mp3" type="audio/mpeg" />
-    </audio>
 </div>
 {% endblock %}
