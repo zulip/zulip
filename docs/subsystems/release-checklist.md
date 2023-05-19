@@ -46,8 +46,6 @@ preparing a new release.
   - Add the needed YAML frontmatter.
   - Move any images into `public` and update their references.
   - Proofread, especially for formatting.
-  - Tag the post with "Release announcements" _first_, then any other
-    tags (e.g. "Security").
   - If the draft post should remain secret until release, avoid using
     a guessable Git branch name for the pull request (the deployment
     preview URL is based on the branch name).
@@ -80,9 +78,10 @@ preparing a new release.
   - Also tag it with `latest`: `docker build . -t zulip/docker-zulip:latest`
   - Push those tags: `docker push zulip/docker-zulip:4.11-0; docker push zulip/docker-zulip:latest`
   - Push the commits to `main`.
-- Publish the blog post; check the box to "send by email."
+- Merge the blog post PR.
 - Announce the release, pointing to the blog post, via:
   - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
+  - Email to [zulip-blog-announce](https://groups.google.com/a/zulip.com/g/zulip-blog-announce)
   - Message in [#announce](https://chat.zulip.org/#narrow/stream/1-announce)
   - Tweet from [@zulip](https://twitter.com/zulip).
 
