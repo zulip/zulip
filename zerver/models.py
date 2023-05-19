@@ -1585,7 +1585,7 @@ class UserBaseSettings(models.Model):
     enable_stream_email_notifications = models.BooleanField(default=False)
     enable_stream_push_notifications = models.BooleanField(default=False)
     enable_stream_audible_notifications = models.BooleanField(default=False)
-    notification_sound = models.CharField(max_length=20, default="zulip")
+    notification_sound = models.CharField(max_length=20, default="practicechat")
     wildcard_mentions_notify = models.BooleanField(default=True)
 
     # PM + @-mention notifications.
