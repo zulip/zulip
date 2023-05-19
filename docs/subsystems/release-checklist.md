@@ -84,6 +84,7 @@ preparing a new release.
   - Email to [zulip-blog-announce](https://groups.google.com/a/zulip.com/g/zulip-blog-announce)
   - Message in [#announce](https://chat.zulip.org/#narrow/stream/1-announce)
   - Tweet from [@zulip](https://twitter.com/zulip).
+  - Toot from [fosstodon.org/@zulip](https://fosstodon.org/@zulip)
 
 ### Post-release
 
