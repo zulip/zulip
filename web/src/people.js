@@ -1,6 +1,7 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
 
+import * as internal_url from "../shared/src/internal_url";
 import * as typeahead from "../shared/src/typeahead";
 
 import * as blueslip from "./blueslip";
@@ -496,36 +497,10 @@ export function pm_with_user_ids(message) {
     return sorted_other_user_ids(user_ids);
 }
 
-export function pm_perma_link(message, user_ids, zulip_feature_level) {
-    if (!user_ids) {
-        return undefined;
-    }
-
-    let suffix;
-
-    if (user_ids.length >= 3) {
-        suffix = "group";
-    } else {
-        if (zulip_feature_level && zulip_feature_level < 177) {
-            suffix = "pm";
-        } else {
-            suffix = "dm";
-        }
-    }
-
-    let operator;
-
-    if (zulip_feature_level && zulip_feature_level < 177) {
-        operator = "pm-with";
-    } else {
-        operator = "dm";
-    }
-
-    const slug = user_ids.join(",") + "-" + suffix;
-    const url = "#narrow/" + operator + "/" + slug;
-    return url;
+export function pm_perma_link(message) {
+    // Wrapper for web use of internal_url.pm_perma_link
+    return internal_url.pm_perma_link(message, all_user_ids_in_pm(message), null);
 }
-
 
 export function pm_with_url(message) {
     const user_ids = pm_with_user_ids(message);

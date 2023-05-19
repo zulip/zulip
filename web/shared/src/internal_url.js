@@ -56,3 +56,33 @@ export function by_stream_topic_url(stream_id, topic, maybe_get_stream_name) {
         encodeHashComponent(topic)
     );
 }
+
+export function pm_perma_link(message, user_ids, zulip_feature_level) {
+    if (!user_ids) {
+        return undefined;
+    }
+
+    let suffix;
+
+    if (user_ids.length >= 3) {
+        suffix = "group";
+    } else {
+        if (zulip_feature_level && zulip_feature_level < 177) {
+            suffix = "pm";
+        } else {
+            suffix = "dm";
+        }
+    }
+
+    let operator;
+
+    if (zulip_feature_level && zulip_feature_level < 177) {
+        operator = "pm-with";
+    } else {
+        operator = "dm";
+    }
+
+    const slug = user_ids.join(",") + "-" + suffix;
+    const url = "#narrow/" + operator + "/" + slug;
+    return url;
+}
