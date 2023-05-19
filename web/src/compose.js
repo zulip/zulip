@@ -519,7 +519,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
 
-            const $target = $(event.target).parents(".compose_banner");
+            const $target = $(event.target).parents(".main-view-banner");
             const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
             const topic_name = $target.attr("data-topic-name");
 
@@ -538,7 +538,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
 
-            const $target = $(event.target).parents(".compose_banner");
+            const $target = $(event.target).parents(".main-view-banner");
             const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
             const topic_name = $target.attr("data-topic-name");
 
@@ -560,7 +560,7 @@ export function initialize() {
         (event) => {
             event.preventDefault();
             const {$banner_container} = get_input_info(event);
-            const $invite_row = $(event.target).parents(".compose_banner");
+            const $invite_row = $(event.target).parents(".main-view-banner");
 
             const user_id = Number.parseInt($invite_row.data("user-id"), 10);
             const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
