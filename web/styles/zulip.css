@@ -1751,6 +1751,11 @@ div.message_table {
         &.user-mention-me {
             color: var(--color-text-self-direct-mention);
             font-weight: 600;
+
+            &[data-user-id="*"] {
+                color: var(--color-text-self-group-mention);
+                background-color: var(--color-background-text-group-mention);
+            }
         }
 
         &:hover {
