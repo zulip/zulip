@@ -1,0 +1,21 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/registration_confirmation.png" alt="" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+{% endblock %}
+
+{% block content %}
+</p>
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% trans %}Dear former administrators of {{ realm_name }},{% endtrans %}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% trans realm_uri=macros.link_tag(realm_uri) %}One of your administrators requested reactivation of the previously deactivated Zulip organization hosted at {{ realm_uri }}.{% endtrans %}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {{ _('Click the button below to reactivate your organization.') }}
+    <a class="button" href="{{ confirmation_url }}" style="color:#5f5ec7; text-decoration:none; display:block; padding:10px 0; margin:20px auto; width:200px; border:2px solid #5f5ec7; background-color:#fff; border-radius:4px; font-size:16px; outline:none; font-family:sans-serif; text-align:center; text-shadow:none" width="200" bgcolor="#ffffff" align="center">{{ _('Reactivate organization') }}</a>
+</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% trans %}If the request was in error, you can take no action and this link will expire in 24 hours.{% endtrans %}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% trans support_email=macros.email_tag(support_email) %}Contact us any time at {{ support_email }} if you run into trouble, have any feedback, or just want to chat!{% endtrans %}</p>
+{% endblock %}

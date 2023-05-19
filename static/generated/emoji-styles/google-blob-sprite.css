@@ -1,0 +1,6524 @@
+div.emoji,
+span.emoji
+{
+    display: inline-block;
+    background-image: url(~emoji-datasource-google-blob/img/google/sheets-256/64.png);
+    background-size: 4900.000%;
+    background-repeat: no-repeat;
+
+    /* Hide the text. */
+    text-indent: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.emoji-1f419
+{
+    background-image: url(../emoji/images-google-64/1f419.png) !important;
+    background-position: 0% 0% !important;
+    background-size: contain !important;
+}
+
+.emoji-00a9 {
+    background-position: 0.000% 0.000%;
+}
+.emoji-00ae {
+    background-position: 0.000% 2.083%;
+}
+.emoji-203c {
+    background-position: 0.000% 4.167%;
+}
+.emoji-2049 {
+    background-position: 0.000% 6.250%;
+}
+.emoji-2122 {
+    background-position: 0.000% 8.333%;
+}
+.emoji-2139 {
+    background-position: 0.000% 10.417%;
+}
+.emoji-2194 {
+    background-position: 0.000% 12.500%;
+}
+.emoji-2195 {
+    background-position: 0.000% 14.583%;
+}
+.emoji-2196 {
+    background-position: 0.000% 16.667%;
+}
+.emoji-2197 {
+    background-position: 0.000% 18.750%;
+}
+.emoji-2198 {
+    background-position: 0.000% 20.833%;
+}
+.emoji-2199 {
+    background-position: 0.000% 22.917%;
+}
+.emoji-21a9 {
+    background-position: 0.000% 25.000%;
+}
+.emoji-21aa {
+    background-position: 0.000% 27.083%;
+}
+.emoji-231a {
+    background-position: 0.000% 29.167%;
+}
+.emoji-231b {
+    background-position: 0.000% 31.250%;
+}
+.emoji-2328 {
+    background-position: 0.000% 33.333%;
+}
+.emoji-23cf {
+    background-position: 0.000% 35.417%;
+}
+.emoji-23e9 {
+    background-position: 0.000% 37.500%;
+}
+.emoji-23ea {
+    background-position: 0.000% 39.583%;
+}
+.emoji-23eb {
+    background-position: 0.000% 41.667%;
+}
+.emoji-23ec {
+    background-position: 0.000% 43.750%;
+}
+.emoji-23ed {
+    background-position: 0.000% 45.833%;
+}
+.emoji-23ee {
+    background-position: 0.000% 47.917%;
+}
+.emoji-23ef {
+    background-position: 0.000% 50.000%;
+}
+.emoji-23f0 {
+    background-position: 0.000% 52.083%;
+}
+.emoji-23f1 {
+    background-position: 0.000% 54.167%;
+}
+.emoji-23f2 {
+    background-position: 0.000% 56.250%;
+}
+.emoji-23f3 {
+    background-position: 0.000% 58.333%;
+}
+.emoji-23f8 {
+    background-position: 0.000% 60.417%;
+}
+.emoji-23f9 {
+    background-position: 0.000% 62.500%;
+}
+.emoji-23fa {
+    background-position: 0.000% 64.583%;
+}
+.emoji-24c2 {
+    background-position: 0.000% 66.667%;
+}
+.emoji-25aa {
+    background-position: 0.000% 68.750%;
+}
+.emoji-25ab {
+    background-position: 0.000% 70.833%;
+}
+.emoji-25b6 {
+    background-position: 0.000% 72.917%;
+}
+.emoji-25c0 {
+    background-position: 0.000% 75.000%;
+}
+.emoji-25fb {
+    background-position: 0.000% 77.083%;
+}
+.emoji-25fc {
+    background-position: 0.000% 79.167%;
+}
+.emoji-25fd {
+    background-position: 0.000% 81.250%;
+}
+.emoji-25fe {
+    background-position: 0.000% 83.333%;
+}
+.emoji-2600 {
+    background-position: 0.000% 85.417%;
+}
+.emoji-2601 {
+    background-position: 0.000% 87.500%;
+}
+.emoji-2602 {
+    background-position: 0.000% 89.583%;
+}
+.emoji-2603 {
+    background-position: 0.000% 91.667%;
+}
+.emoji-2604 {
+    background-position: 0.000% 93.750%;
+}
+.emoji-260e {
+    background-position: 0.000% 95.833%;
+}
+.emoji-2611 {
+    background-position: 0.000% 97.917%;
+}
+.emoji-2614 {
+    background-position: 0.000% 100.000%;
+}
+.emoji-2615 {
+    background-position: 2.083% 0.000%;
+}
+.emoji-2618 {
+    background-position: 2.083% 2.083%;
+}
+.emoji-261d {
+    background-position: 2.083% 4.167%;
+}
+.emoji-2620 {
+    background-position: 2.083% 16.667%;
+}
+.emoji-2622 {
+    background-position: 2.083% 18.750%;
+}
+.emoji-2623 {
+    background-position: 2.083% 20.833%;
+}
+.emoji-2626 {
+    background-position: 2.083% 22.917%;
+}
+.emoji-262a {
+    background-position: 2.083% 25.000%;
+}
+.emoji-262e {
+    background-position: 2.083% 27.083%;
+}
+.emoji-262f {
+    background-position: 2.083% 29.167%;
+}
+.emoji-2638 {
+    background-position: 2.083% 31.250%;
+}
+.emoji-2639 {
+    background-position: 2.083% 33.333%;
+}
+.emoji-263a {
+    background-position: 2.083% 35.417%;
+}
+.emoji-2640 {
+    background-position: 2.083% 37.500%;
+}
+.emoji-2642 {
+    background-position: 2.083% 39.583%;
+}
+.emoji-2648 {
+    background-position: 2.083% 41.667%;
+}
+.emoji-2649 {
+    background-position: 2.083% 43.750%;
+}
+.emoji-264a {
+    background-position: 2.083% 45.833%;
+}
+.emoji-264b {
+    background-position: 2.083% 47.917%;
+}
+.emoji-264c {
+    background-position: 2.083% 50.000%;
+}
+.emoji-264d {
+    background-position: 2.083% 52.083%;
+}
+.emoji-264e {
+    background-position: 2.083% 54.167%;
+}
+.emoji-264f {
+    background-position: 2.083% 56.250%;
+}
+.emoji-2650 {
+    background-position: 2.083% 58.333%;
+}
+.emoji-2651 {
+    background-position: 2.083% 60.417%;
+}
+.emoji-2652 {
+    background-position: 2.083% 62.500%;
+}
+.emoji-2653 {
+    background-position: 2.083% 64.583%;
+}
+.emoji-2660 {
+    background-position: 2.083% 66.667%;
+}
+.emoji-2663 {
+    background-position: 2.083% 68.750%;
+}
+.emoji-2665 {
+    background-position: 2.083% 70.833%;
+}
+.emoji-2666 {
+    background-position: 2.083% 72.917%;
+}
+.emoji-2668 {
+    background-position: 2.083% 75.000%;
+}
+.emoji-267b {
+    background-position: 2.083% 77.083%;
+}
+.emoji-267f {
+    background-position: 2.083% 79.167%;
+}
+.emoji-2692 {
+    background-position: 2.083% 81.250%;
+}
+.emoji-2693 {
+    background-position: 2.083% 83.333%;
+}
+.emoji-2694 {
+    background-position: 2.083% 85.417%;
+}
+.emoji-2695 {
+    background-position: 2.083% 87.500%;
+}
+.emoji-2696 {
+    background-position: 2.083% 89.583%;
+}
+.emoji-2697 {
+    background-position: 2.083% 91.667%;
+}
+.emoji-2699 {
+    background-position: 2.083% 93.750%;
+}
+.emoji-269b {
+    background-position: 2.083% 95.833%;
+}
+.emoji-269c {
+    background-position: 2.083% 97.917%;
+}
+.emoji-26a0 {
+    background-position: 2.083% 100.000%;
+}
+.emoji-26a1 {
+    background-position: 4.167% 0.000%;
+}
+.emoji-26aa {
+    background-position: 4.167% 2.083%;
+}
+.emoji-26ab {
+    background-position: 4.167% 4.167%;
+}
+.emoji-26b0 {
+    background-position: 4.167% 6.250%;
+}
+.emoji-26b1 {
+    background-position: 4.167% 8.333%;
+}
+.emoji-26bd {
+    background-position: 4.167% 10.417%;
+}
+.emoji-26be {
+    background-position: 4.167% 12.500%;
+}
+.emoji-26c4 {
+    background-position: 4.167% 14.583%;
+}
+.emoji-26c5 {
+    background-position: 4.167% 16.667%;
+}
+.emoji-26c8 {
+    background-position: 4.167% 18.750%;
+}
+.emoji-26ce {
+    background-position: 4.167% 20.833%;
+}
+.emoji-26cf {
+    background-position: 4.167% 22.917%;
+}
+.emoji-26d1 {
+    background-position: 4.167% 25.000%;
+}
+.emoji-26d3 {
+    background-position: 4.167% 27.083%;
+}
+.emoji-26d4 {
+    background-position: 4.167% 29.167%;
+}
+.emoji-26e9 {
+    background-position: 4.167% 31.250%;
+}
+.emoji-26ea {
+    background-position: 4.167% 33.333%;
+}
+.emoji-26f0 {
+    background-position: 4.167% 35.417%;
+}
+.emoji-26f1 {
+    background-position: 4.167% 37.500%;
+}
+.emoji-26f2 {
+    background-position: 4.167% 39.583%;
+}
+.emoji-26f3 {
+    background-position: 4.167% 41.667%;
+}
+.emoji-26f4 {
+    background-position: 4.167% 43.750%;
+}
+.emoji-26f5 {
+    background-position: 4.167% 45.833%;
+}
+.emoji-26f7 {
+    background-position: 4.167% 47.917%;
+}
+.emoji-26f8 {
+    background-position: 4.167% 50.000%;
+}
+.emoji-26f9 {
+    background-position: 4.167% 52.083%;
+}
+.emoji-26fa {
+    background-position: 4.167% 64.583%;
+}
+.emoji-26fd {
+    background-position: 4.167% 66.667%;
+}
+.emoji-2702 {
+    background-position: 4.167% 68.750%;
+}
+.emoji-2705 {
+    background-position: 4.167% 70.833%;
+}
+.emoji-2708 {
+    background-position: 4.167% 72.917%;
+}
+.emoji-2709 {
+    background-position: 4.167% 75.000%;
+}
+.emoji-270a {
+    background-position: 4.167% 77.083%;
+}
+.emoji-270b {
+    background-position: 4.167% 89.583%;
+}
+.emoji-270c {
+    background-position: 6.250% 0.000%;
+}
+.emoji-270d {
+    background-position: 6.250% 12.500%;
+}
+.emoji-270f {
+    background-position: 6.250% 25.000%;
+}
+.emoji-2712 {
+    background-position: 6.250% 27.083%;
+}
+.emoji-2714 {
+    background-position: 6.250% 29.167%;
+}
+.emoji-2716 {
+    background-position: 6.250% 31.250%;
+}
+.emoji-271d {
+    background-position: 6.250% 33.333%;
+}
+.emoji-2721 {
+    background-position: 6.250% 35.417%;
+}
+.emoji-2728 {
+    background-position: 6.250% 37.500%;
+}
+.emoji-2733 {
+    background-position: 6.250% 39.583%;
+}
+.emoji-2734 {
+    background-position: 6.250% 41.667%;
+}
+.emoji-2744 {
+    background-position: 6.250% 43.750%;
+}
+.emoji-2747 {
+    background-position: 6.250% 45.833%;
+}
+.emoji-274c {
+    background-position: 6.250% 47.917%;
+}
+.emoji-274e {
+    background-position: 6.250% 50.000%;
+}
+.emoji-2753 {
+    background-position: 6.250% 52.083%;
+}
+.emoji-2754 {
+    background-position: 6.250% 54.167%;
+}
+.emoji-2755 {
+    background-position: 6.250% 56.250%;
+}
+.emoji-2757 {
+    background-position: 6.250% 58.333%;
+}
+.emoji-2763 {
+    background-position: 6.250% 60.417%;
+}
+.emoji-2764 {
+    background-position: 6.250% 62.500%;
+}
+.emoji-2795 {
+    background-position: 6.250% 64.583%;
+}
+.emoji-2796 {
+    background-position: 6.250% 66.667%;
+}
+.emoji-2797 {
+    background-position: 6.250% 68.750%;
+}
+.emoji-27a1 {
+    background-position: 6.250% 70.833%;
+}
+.emoji-27b0 {
+    background-position: 6.250% 72.917%;
+}
+.emoji-27bf {
+    background-position: 6.250% 75.000%;
+}
+.emoji-2934 {
+    background-position: 6.250% 77.083%;
+}
+.emoji-2935 {
+    background-position: 6.250% 79.167%;
+}
+.emoji-2b05 {
+    background-position: 6.250% 81.250%;
+}
+.emoji-2b06 {
+    background-position: 6.250% 83.333%;
+}
+.emoji-2b07 {
+    background-position: 6.250% 85.417%;
+}
+.emoji-2b1b {
+    background-position: 6.250% 87.500%;
+}
+.emoji-2b1c {
+    background-position: 6.250% 89.583%;
+}
+.emoji-2b50 {
+    background-position: 6.250% 91.667%;
+}
+.emoji-2b55 {
+    background-position: 6.250% 93.750%;
+}
+.emoji-3030 {
+    background-position: 6.250% 95.833%;
+}
+.emoji-303d {
+    background-position: 6.250% 97.917%;
+}
+.emoji-3297 {
+    background-position: 6.250% 100.000%;
+}
+.emoji-3299 {
+    background-position: 8.333% 0.000%;
+}
+.emoji-1f004 {
+    background-position: 8.333% 2.083%;
+}
+.emoji-1f0cf {
+    background-position: 8.333% 4.167%;
+}
+.emoji-1f170 {
+    background-position: 8.333% 6.250%;
+}
+.emoji-1f171 {
+    background-position: 8.333% 8.333%;
+}
+.emoji-1f17e {
+    background-position: 8.333% 10.417%;
+}
+.emoji-1f17f {
+    background-position: 8.333% 12.500%;
+}
+.emoji-1f18e {
+    background-position: 8.333% 14.583%;
+}
+.emoji-1f191 {
+    background-position: 8.333% 16.667%;
+}
+.emoji-1f192 {
+    background-position: 8.333% 18.750%;
+}
+.emoji-1f193 {
+    background-position: 8.333% 20.833%;
+}
+.emoji-1f194 {
+    background-position: 8.333% 22.917%;
+}
+.emoji-1f195 {
+    background-position: 8.333% 25.000%;
+}
+.emoji-1f196 {
+    background-position: 8.333% 27.083%;
+}
+.emoji-1f197 {
+    background-position: 8.333% 29.167%;
+}
+.emoji-1f198 {
+    background-position: 8.333% 31.250%;
+}
+.emoji-1f199 {
+    background-position: 8.333% 33.333%;
+}
+.emoji-1f19a {
+    background-position: 8.333% 35.417%;
+}
+.emoji-1f201 {
+    background-position: 8.333% 37.500%;
+}
+.emoji-1f202 {
+    background-position: 8.333% 39.583%;
+}
+.emoji-1f21a {
+    background-position: 8.333% 41.667%;
+}
+.emoji-1f22f {
+    background-position: 8.333% 43.750%;
+}
+.emoji-1f232 {
+    background-position: 8.333% 45.833%;
+}
+.emoji-1f233 {
+    background-position: 8.333% 47.917%;
+}
+.emoji-1f234 {
+    background-position: 8.333% 50.000%;
+}
+.emoji-1f235 {
+    background-position: 8.333% 52.083%;
+}
+.emoji-1f236 {
+    background-position: 8.333% 54.167%;
+}
+.emoji-1f237 {
+    background-position: 8.333% 56.250%;
+}
+.emoji-1f238 {
+    background-position: 8.333% 58.333%;
+}
+.emoji-1f239 {
+    background-position: 8.333% 60.417%;
+}
+.emoji-1f23a {
+    background-position: 8.333% 62.500%;
+}
+.emoji-1f250 {
+    background-position: 8.333% 64.583%;
+}
+.emoji-1f251 {
+    background-position: 8.333% 66.667%;
+}
+.emoji-1f300 {
+    background-position: 8.333% 68.750%;
+}
+.emoji-1f301 {
+    background-position: 8.333% 70.833%;
+}
+.emoji-1f302 {
+    background-position: 8.333% 72.917%;
+}
+.emoji-1f303 {
+    background-position: 8.333% 75.000%;
+}
+.emoji-1f304 {
+    background-position: 8.333% 77.083%;
+}
+.emoji-1f305 {
+    background-position: 8.333% 79.167%;
+}
+.emoji-1f306 {
+    background-position: 8.333% 81.250%;
+}
+.emoji-1f307 {
+    background-position: 8.333% 83.333%;
+}
+.emoji-1f308 {
+    background-position: 8.333% 85.417%;
+}
+.emoji-1f309 {
+    background-position: 8.333% 87.500%;
+}
+.emoji-1f30a {
+    background-position: 8.333% 89.583%;
+}
+.emoji-1f30b {
+    background-position: 8.333% 91.667%;
+}
+.emoji-1f30c {
+    background-position: 8.333% 93.750%;
+}
+.emoji-1f30d {
+    background-position: 8.333% 95.833%;
+}
+.emoji-1f30e {
+    background-position: 8.333% 97.917%;
+}
+.emoji-1f30f {
+    background-position: 8.333% 100.000%;
+}
+.emoji-1f310 {
+    background-position: 10.417% 0.000%;
+}
+.emoji-1f311 {
+    background-position: 10.417% 2.083%;
+}
+.emoji-1f312 {
+    background-position: 10.417% 4.167%;
+}
+.emoji-1f313 {
+    background-position: 10.417% 6.250%;
+}
+.emoji-1f314 {
+    background-position: 10.417% 8.333%;
+}
+.emoji-1f315 {
+    background-position: 10.417% 10.417%;
+}
+.emoji-1f316 {
+    background-position: 10.417% 12.500%;
+}
+.emoji-1f317 {
+    background-position: 10.417% 14.583%;
+}
+.emoji-1f318 {
+    background-position: 10.417% 16.667%;
+}
+.emoji-1f319 {
+    background-position: 10.417% 18.750%;
+}
+.emoji-1f31a {
+    background-position: 10.417% 20.833%;
+}
+.emoji-1f31b {
+    background-position: 10.417% 22.917%;
+}
+.emoji-1f31c {
+    background-position: 10.417% 25.000%;
+}
+.emoji-1f31d {
+    background-position: 10.417% 27.083%;
+}
+.emoji-1f31e {
+    background-position: 10.417% 29.167%;
+}
+.emoji-1f31f {
+    background-position: 10.417% 31.250%;
+}
+.emoji-1f320 {
+    background-position: 10.417% 33.333%;
+}
+.emoji-1f321 {
+    background-position: 10.417% 35.417%;
+}
+.emoji-1f324 {
+    background-position: 10.417% 37.500%;
+}
+.emoji-1f325 {
+    background-position: 10.417% 39.583%;
+}
+.emoji-1f326 {
+    background-position: 10.417% 41.667%;
+}
+.emoji-1f327 {
+    background-position: 10.417% 43.750%;
+}
+.emoji-1f328 {
+    background-position: 10.417% 45.833%;
+}
+.emoji-1f329 {
+    background-position: 10.417% 47.917%;
+}
+.emoji-1f32a {
+    background-position: 10.417% 50.000%;
+}
+.emoji-1f32b {
+    background-position: 10.417% 52.083%;
+}
+.emoji-1f32c {
+    background-position: 10.417% 54.167%;
+}
+.emoji-1f32d {
+    background-position: 10.417% 56.250%;
+}
+.emoji-1f32e {
+    background-position: 10.417% 58.333%;
+}
+.emoji-1f32f {
+    background-position: 10.417% 60.417%;
+}
+.emoji-1f330 {
+    background-position: 10.417% 62.500%;
+}
+.emoji-1f331 {
+    background-position: 10.417% 64.583%;
+}
+.emoji-1f332 {
+    background-position: 10.417% 66.667%;
+}
+.emoji-1f333 {
+    background-position: 10.417% 68.750%;
+}
+.emoji-1f334 {
+    background-position: 10.417% 70.833%;
+}
+.emoji-1f335 {
+    background-position: 10.417% 72.917%;
+}
+.emoji-1f336 {
+    background-position: 10.417% 75.000%;
+}
+.emoji-1f337 {
+    background-position: 10.417% 77.083%;
+}
+.emoji-1f338 {
+    background-position: 10.417% 79.167%;
+}
+.emoji-1f339 {
+    background-position: 10.417% 81.250%;
+}
+.emoji-1f33a {
+    background-position: 10.417% 83.333%;
+}
+.emoji-1f33b {
+    background-position: 10.417% 85.417%;
+}
+.emoji-1f33c {
+    background-position: 10.417% 87.500%;
+}
+.emoji-1f33d {
+    background-position: 10.417% 89.583%;
+}
+.emoji-1f33e {
+    background-position: 10.417% 91.667%;
+}
+.emoji-1f33f {
+    background-position: 10.417% 93.750%;
+}
+.emoji-1f340 {
+    background-position: 10.417% 95.833%;
+}
+.emoji-1f341 {
+    background-position: 10.417% 97.917%;
+}
+.emoji-1f342 {
+    background-position: 10.417% 100.000%;
+}
+.emoji-1f343 {
+    background-position: 12.500% 0.000%;
+}
+.emoji-1f344 {
+    background-position: 12.500% 2.083%;
+}
+.emoji-1f345 {
+    background-position: 12.500% 4.167%;
+}
+.emoji-1f346 {
+    background-position: 12.500% 6.250%;
+}
+.emoji-1f347 {
+    background-position: 12.500% 8.333%;
+}
+.emoji-1f348 {
+    background-position: 12.500% 10.417%;
+}
+.emoji-1f349 {
+    background-position: 12.500% 12.500%;
+}
+.emoji-1f34a {
+    background-position: 12.500% 14.583%;
+}
+.emoji-1f34b {
+    background-position: 12.500% 16.667%;
+}
+.emoji-1f34c {
+    background-position: 12.500% 18.750%;
+}
+.emoji-1f34d {
+    background-position: 12.500% 20.833%;
+}
+.emoji-1f34e {
+    background-position: 12.500% 22.917%;
+}
+.emoji-1f34f {
+    background-position: 12.500% 25.000%;
+}
+.emoji-1f350 {
+    background-position: 12.500% 27.083%;
+}
+.emoji-1f351 {
+    background-position: 12.500% 29.167%;
+}
+.emoji-1f352 {
+    background-position: 12.500% 31.250%;
+}
+.emoji-1f353 {
+    background-position: 12.500% 33.333%;
+}
+.emoji-1f354 {
+    background-position: 12.500% 35.417%;
+}
+.emoji-1f355 {
+    background-position: 12.500% 37.500%;
+}
+.emoji-1f356 {
+    background-position: 12.500% 39.583%;
+}
+.emoji-1f357 {
+    background-position: 12.500% 41.667%;
+}
+.emoji-1f358 {
+    background-position: 12.500% 43.750%;
+}
+.emoji-1f359 {
+    background-position: 12.500% 45.833%;
+}
+.emoji-1f35a {
+    background-position: 12.500% 47.917%;
+}
+.emoji-1f35b {
+    background-position: 12.500% 50.000%;
+}
+.emoji-1f35c {
+    background-position: 12.500% 52.083%;
+}
+.emoji-1f35d {
+    background-position: 12.500% 54.167%;
+}
+.emoji-1f35e {
+    background-position: 12.500% 56.250%;
+}
+.emoji-1f35f {
+    background-position: 12.500% 58.333%;
+}
+.emoji-1f360 {
+    background-position: 12.500% 60.417%;
+}
+.emoji-1f361 {
+    background-position: 12.500% 62.500%;
+}
+.emoji-1f362 {
+    background-position: 12.500% 64.583%;
+}
+.emoji-1f363 {
+    background-position: 12.500% 66.667%;
+}
+.emoji-1f364 {
+    background-position: 12.500% 68.750%;
+}
+.emoji-1f365 {
+    background-position: 12.500% 70.833%;
+}
+.emoji-1f366 {
+    background-position: 12.500% 72.917%;
+}
+.emoji-1f367 {
+    background-position: 12.500% 75.000%;
+}
+.emoji-1f368 {
+    background-position: 12.500% 77.083%;
+}
+.emoji-1f369 {
+    background-position: 12.500% 79.167%;
+}
+.emoji-1f36a {
+    background-position: 12.500% 81.250%;
+}
+.emoji-1f36b {
+    background-position: 12.500% 83.333%;
+}
+.emoji-1f36c {
+    background-position: 12.500% 85.417%;
+}
+.emoji-1f36d {
+    background-position: 12.500% 87.500%;
+}
+.emoji-1f36e {
+    background-position: 12.500% 89.583%;
+}
+.emoji-1f36f {
+    background-position: 12.500% 91.667%;
+}
+.emoji-1f370 {
+    background-position: 12.500% 93.750%;
+}
+.emoji-1f371 {
+    background-position: 12.500% 95.833%;
+}
+.emoji-1f372 {
+    background-position: 12.500% 97.917%;
+}
+.emoji-1f373 {
+    background-position: 12.500% 100.000%;
+}
+.emoji-1f374 {
+    background-position: 14.583% 0.000%;
+}
+.emoji-1f375 {
+    background-position: 14.583% 2.083%;
+}
+.emoji-1f376 {
+    background-position: 14.583% 4.167%;
+}
+.emoji-1f377 {
+    background-position: 14.583% 6.250%;
+}
+.emoji-1f378 {
+    background-position: 14.583% 8.333%;
+}
+.emoji-1f379 {
+    background-position: 14.583% 10.417%;
+}
+.emoji-1f37a {
+    background-position: 14.583% 12.500%;
+}
+.emoji-1f37b {
+    background-position: 14.583% 14.583%;
+}
+.emoji-1f37c {
+    background-position: 14.583% 16.667%;
+}
+.emoji-1f37d {
+    background-position: 14.583% 18.750%;
+}
+.emoji-1f37e {
+    background-position: 14.583% 20.833%;
+}
+.emoji-1f37f {
+    background-position: 14.583% 22.917%;
+}
+.emoji-1f380 {
+    background-position: 14.583% 25.000%;
+}
+.emoji-1f381 {
+    background-position: 14.583% 27.083%;
+}
+.emoji-1f382 {
+    background-position: 14.583% 29.167%;
+}
+.emoji-1f383 {
+    background-position: 14.583% 31.250%;
+}
+.emoji-1f384 {
+    background-position: 14.583% 33.333%;
+}
+.emoji-1f385 {
+    background-position: 14.583% 35.417%;
+}
+.emoji-1f386 {
+    background-position: 14.583% 47.917%;
+}
+.emoji-1f387 {
+    background-position: 14.583% 50.000%;
+}
+.emoji-1f388 {
+    background-position: 14.583% 52.083%;
+}
+.emoji-1f389 {
+    background-position: 14.583% 54.167%;
+}
+.emoji-1f38a {
+    background-position: 14.583% 56.250%;
+}
+.emoji-1f38b {
+    background-position: 14.583% 58.333%;
+}
+.emoji-1f38c {
+    background-position: 14.583% 60.417%;
+}
+.emoji-1f38d {
+    background-position: 14.583% 62.500%;
+}
+.emoji-1f38e {
+    background-position: 14.583% 64.583%;
+}
+.emoji-1f38f {
+    background-position: 14.583% 66.667%;
+}
+.emoji-1f390 {
+    background-position: 14.583% 68.750%;
+}
+.emoji-1f391 {
+    background-position: 14.583% 70.833%;
+}
+.emoji-1f392 {
+    background-position: 14.583% 72.917%;
+}
+.emoji-1f393 {
+    background-position: 14.583% 75.000%;
+}
+.emoji-1f396 {
+    background-position: 14.583% 77.083%;
+}
+.emoji-1f397 {
+    background-position: 14.583% 79.167%;
+}
+.emoji-1f399 {
+    background-position: 14.583% 81.250%;
+}
+.emoji-1f39a {
+    background-position: 14.583% 83.333%;
+}
+.emoji-1f39b {
+    background-position: 14.583% 85.417%;
+}
+.emoji-1f39e {
+    background-position: 14.583% 87.500%;
+}
+.emoji-1f39f {
+    background-position: 14.583% 89.583%;
+}
+.emoji-1f3a0 {
+    background-position: 14.583% 91.667%;
+}
+.emoji-1f3a1 {
+    background-position: 14.583% 93.750%;
+}
+.emoji-1f3a2 {
+    background-position: 14.583% 95.833%;
+}
+.emoji-1f3a3 {
+    background-position: 14.583% 97.917%;
+}
+.emoji-1f3a4 {
+    background-position: 14.583% 100.000%;
+}
+.emoji-1f3a5 {
+    background-position: 16.667% 0.000%;
+}
+.emoji-1f3a6 {
+    background-position: 16.667% 2.083%;
+}
+.emoji-1f3a7 {
+    background-position: 16.667% 4.167%;
+}
+.emoji-1f3a8 {
+    background-position: 16.667% 6.250%;
+}
+.emoji-1f3a9 {
+    background-position: 16.667% 8.333%;
+}
+.emoji-1f3aa {
+    background-position: 16.667% 10.417%;
+}
+.emoji-1f3ab {
+    background-position: 16.667% 12.500%;
+}
+.emoji-1f3ac {
+    background-position: 16.667% 14.583%;
+}
+.emoji-1f3ad {
+    background-position: 16.667% 16.667%;
+}
+.emoji-1f3ae {
+    background-position: 16.667% 18.750%;
+}
+.emoji-1f3af {
+    background-position: 16.667% 20.833%;
+}
+.emoji-1f3b0 {
+    background-position: 16.667% 22.917%;
+}
+.emoji-1f3b1 {
+    background-position: 16.667% 25.000%;
+}
+.emoji-1f3b2 {
+    background-position: 16.667% 27.083%;
+}
+.emoji-1f3b3 {
+    background-position: 16.667% 29.167%;
+}
+.emoji-1f3b4 {
+    background-position: 16.667% 31.250%;
+}
+.emoji-1f3b5 {
+    background-position: 16.667% 33.333%;
+}
+.emoji-1f3b6 {
+    background-position: 16.667% 35.417%;
+}
+.emoji-1f3b7 {
+    background-position: 16.667% 37.500%;
+}
+.emoji-1f3b8 {
+    background-position: 16.667% 39.583%;
+}
+.emoji-1f3b9 {
+    background-position: 16.667% 41.667%;
+}
+.emoji-1f3ba {
+    background-position: 16.667% 43.750%;
+}
+.emoji-1f3bb {
+    background-position: 16.667% 45.833%;
+}
+.emoji-1f3bc {
+    background-position: 16.667% 47.917%;
+}
+.emoji-1f3bd {
+    background-position: 16.667% 50.000%;
+}
+.emoji-1f3be {
+    background-position: 16.667% 52.083%;
+}
+.emoji-1f3bf {
+    background-position: 16.667% 54.167%;
+}
+.emoji-1f3c0 {
+    background-position: 16.667% 56.250%;
+}
+.emoji-1f3c1 {
+    background-position: 16.667% 58.333%;
+}
+.emoji-1f3c2 {
+    background-position: 16.667% 60.417%;
+}
+.emoji-1f3c3 {
+    background-position: 16.667% 72.917%;
+}
+.emoji-1f3c4 {
+    background-position: 16.667% 85.417%;
+}
+.emoji-1f3c5 {
+    background-position: 16.667% 97.917%;
+}
+.emoji-1f3c6 {
+    background-position: 16.667% 100.000%;
+}
+.emoji-1f3c7 {
+    background-position: 18.750% 0.000%;
+}
+.emoji-1f3c8 {
+    background-position: 18.750% 12.500%;
+}
+.emoji-1f3c9 {
+    background-position: 18.750% 14.583%;
+}
+.emoji-1f3ca {
+    background-position: 18.750% 16.667%;
+}
+.emoji-1f3cb {
+    background-position: 18.750% 29.167%;
+}
+.emoji-1f3cc {
+    background-position: 18.750% 41.667%;
+}
+.emoji-1f3cd {
+    background-position: 18.750% 54.167%;
+}
+.emoji-1f3ce {
+    background-position: 18.750% 56.250%;
+}
+.emoji-1f3cf {
+    background-position: 18.750% 58.333%;
+}
+.emoji-1f3d0 {
+    background-position: 18.750% 60.417%;
+}
+.emoji-1f3d1 {
+    background-position: 18.750% 62.500%;
+}
+.emoji-1f3d2 {
+    background-position: 18.750% 64.583%;
+}
+.emoji-1f3d3 {
+    background-position: 18.750% 66.667%;
+}
+.emoji-1f3d4 {
+    background-position: 18.750% 68.750%;
+}
+.emoji-1f3d5 {
+    background-position: 18.750% 70.833%;
+}
+.emoji-1f3d6 {
+    background-position: 18.750% 72.917%;
+}
+.emoji-1f3d7 {
+    background-position: 18.750% 75.000%;
+}
+.emoji-1f3d8 {
+    background-position: 18.750% 77.083%;
+}
+.emoji-1f3d9 {
+    background-position: 18.750% 79.167%;
+}
+.emoji-1f3da {
+    background-position: 18.750% 81.250%;
+}
+.emoji-1f3db {
+    background-position: 18.750% 83.333%;
+}
+.emoji-1f3dc {
+    background-position: 18.750% 85.417%;
+}
+.emoji-1f3dd {
+    background-position: 18.750% 87.500%;
+}
+.emoji-1f3de {
+    background-position: 18.750% 89.583%;
+}
+.emoji-1f3df {
+    background-position: 18.750% 91.667%;
+}
+.emoji-1f3e0 {
+    background-position: 18.750% 93.750%;
+}
+.emoji-1f3e1 {
+    background-position: 18.750% 95.833%;
+}
+.emoji-1f3e2 {
+    background-position: 18.750% 97.917%;
+}
+.emoji-1f3e3 {
+    background-position: 18.750% 100.000%;
+}
+.emoji-1f3e4 {
+    background-position: 20.833% 0.000%;
+}
+.emoji-1f3e5 {
+    background-position: 20.833% 2.083%;
+}
+.emoji-1f3e6 {
+    background-position: 20.833% 4.167%;
+}
+.emoji-1f3e7 {
+    background-position: 20.833% 6.250%;
+}
+.emoji-1f3e8 {
+    background-position: 20.833% 8.333%;
+}
+.emoji-1f3e9 {
+    background-position: 20.833% 10.417%;
+}
+.emoji-1f3ea {
+    background-position: 20.833% 12.500%;
+}
+.emoji-1f3eb {
+    background-position: 20.833% 14.583%;
+}
+.emoji-1f3ec {
+    background-position: 20.833% 16.667%;
+}
+.emoji-1f3ed {
+    background-position: 20.833% 18.750%;
+}
+.emoji-1f3ee {
+    background-position: 20.833% 20.833%;
+}
+.emoji-1f3ef {
+    background-position: 20.833% 22.917%;
+}
+.emoji-1f3f0 {
+    background-position: 20.833% 25.000%;
+}
+.emoji-1f3f3 {
+    background-position: 20.833% 27.083%;
+}
+.emoji-1f3f4 {
+    background-position: 20.833% 29.167%;
+}
+.emoji-1f3f5 {
+    background-position: 20.833% 31.250%;
+}
+.emoji-1f3f7 {
+    background-position: 20.833% 33.333%;
+}
+.emoji-1f3f8 {
+    background-position: 20.833% 35.417%;
+}
+.emoji-1f3f9 {
+    background-position: 20.833% 37.500%;
+}
+.emoji-1f3fa {
+    background-position: 20.833% 39.583%;
+}
+.emoji-1f3fb {
+    background-position: 20.833% 41.667%;
+}
+.emoji-1f3fc {
+    background-position: 20.833% 43.750%;
+}
+.emoji-1f3fd {
+    background-position: 20.833% 45.833%;
+}
+.emoji-1f3fe {
+    background-position: 20.833% 47.917%;
+}
+.emoji-1f3ff {
+    background-position: 20.833% 50.000%;
+}
+.emoji-1f400 {
+    background-position: 20.833% 52.083%;
+}
+.emoji-1f401 {
+    background-position: 20.833% 54.167%;
+}
+.emoji-1f402 {
+    background-position: 20.833% 56.250%;
+}
+.emoji-1f403 {
+    background-position: 20.833% 58.333%;
+}
+.emoji-1f404 {
+    background-position: 20.833% 60.417%;
+}
+.emoji-1f405 {
+    background-position: 20.833% 62.500%;
+}
+.emoji-1f406 {
+    background-position: 20.833% 64.583%;
+}
+.emoji-1f407 {
+    background-position: 20.833% 66.667%;
+}
+.emoji-1f408 {
+    background-position: 20.833% 68.750%;
+}
+.emoji-1f409 {
+    background-position: 20.833% 70.833%;
+}
+.emoji-1f40a {
+    background-position: 20.833% 72.917%;
+}
+.emoji-1f40b {
+    background-position: 20.833% 75.000%;
+}
+.emoji-1f40c {
+    background-position: 20.833% 77.083%;
+}
+.emoji-1f40d {
+    background-position: 20.833% 79.167%;
+}
+.emoji-1f40e {
+    background-position: 20.833% 81.250%;
+}
+.emoji-1f40f {
+    background-position: 20.833% 83.333%;
+}
+.emoji-1f410 {
+    background-position: 20.833% 85.417%;
+}
+.emoji-1f411 {
+    background-position: 20.833% 87.500%;
+}
+.emoji-1f412 {
+    background-position: 20.833% 89.583%;
+}
+.emoji-1f413 {
+    background-position: 20.833% 91.667%;
+}
+.emoji-1f414 {
+    background-position: 20.833% 93.750%;
+}
+.emoji-1f415 {
+    background-position: 20.833% 95.833%;
+}
+.emoji-1f416 {
+    background-position: 20.833% 97.917%;
+}
+.emoji-1f417 {
+    background-position: 20.833% 100.000%;
+}
+.emoji-1f418 {
+    background-position: 22.917% 0.000%;
+}
+.emoji-1f419 {
+    background-position: 22.917% 2.083%;
+}
+.emoji-1f41a {
+    background-position: 22.917% 4.167%;
+}
+.emoji-1f41b {
+    background-position: 22.917% 6.250%;
+}
+.emoji-1f41c {
+    background-position: 22.917% 8.333%;
+}
+.emoji-1f41d {
+    background-position: 22.917% 10.417%;
+}
+.emoji-1f41e {
+    background-position: 22.917% 12.500%;
+}
+.emoji-1f41f {
+    background-position: 22.917% 14.583%;
+}
+.emoji-1f420 {
+    background-position: 22.917% 16.667%;
+}
+.emoji-1f421 {
+    background-position: 22.917% 18.750%;
+}
+.emoji-1f422 {
+    background-position: 22.917% 20.833%;
+}
+.emoji-1f423 {
+    background-position: 22.917% 22.917%;
+}
+.emoji-1f424 {
+    background-position: 22.917% 25.000%;
+}
+.emoji-1f425 {
+    background-position: 22.917% 27.083%;
+}
+.emoji-1f426 {
+    background-position: 22.917% 29.167%;
+}
+.emoji-1f427 {
+    background-position: 22.917% 31.250%;
+}
+.emoji-1f428 {
+    background-position: 22.917% 33.333%;
+}
+.emoji-1f429 {
+    background-position: 22.917% 35.417%;
+}
+.emoji-1f42a {
+    background-position: 22.917% 37.500%;
+}
+.emoji-1f42b {
+    background-position: 22.917% 39.583%;
+}
+.emoji-1f42c {
+    background-position: 22.917% 41.667%;
+}
+.emoji-1f42d {
+    background-position: 22.917% 43.750%;
+}
+.emoji-1f42e {
+    background-position: 22.917% 45.833%;
+}
+.emoji-1f42f {
+    background-position: 22.917% 47.917%;
+}
+.emoji-1f430 {
+    background-position: 22.917% 50.000%;
+}
+.emoji-1f431 {
+    background-position: 22.917% 52.083%;
+}
+.emoji-1f432 {
+    background-position: 22.917% 54.167%;
+}
+.emoji-1f433 {
+    background-position: 22.917% 56.250%;
+}
+.emoji-1f434 {
+    background-position: 22.917% 58.333%;
+}
+.emoji-1f435 {
+    background-position: 22.917% 60.417%;
+}
+.emoji-1f436 {
+    background-position: 22.917% 62.500%;
+}
+.emoji-1f437 {
+    background-position: 22.917% 64.583%;
+}
+.emoji-1f438 {
+    background-position: 22.917% 66.667%;
+}
+.emoji-1f439 {
+    background-position: 22.917% 68.750%;
+}
+.emoji-1f43a {
+    background-position: 22.917% 70.833%;
+}
+.emoji-1f43b {
+    background-position: 22.917% 72.917%;
+}
+.emoji-1f43c {
+    background-position: 22.917% 75.000%;
+}
+.emoji-1f43d {
+    background-position: 22.917% 77.083%;
+}
+.emoji-1f43e {
+    background-position: 22.917% 79.167%;
+}
+.emoji-1f43f {
+    background-position: 22.917% 81.250%;
+}
+.emoji-1f440 {
+    background-position: 22.917% 83.333%;
+}
+.emoji-1f441 {
+    background-position: 22.917% 85.417%;
+}
+.emoji-1f442 {
+    background-position: 22.917% 87.500%;
+}
+.emoji-1f443 {
+    background-position: 22.917% 100.000%;
+}
+.emoji-1f444 {
+    background-position: 25.000% 10.417%;
+}
+.emoji-1f445 {
+    background-position: 25.000% 12.500%;
+}
+.emoji-1f446 {
+    background-position: 25.000% 14.583%;
+}
+.emoji-1f447 {
+    background-position: 25.000% 27.083%;
+}
+.emoji-1f448 {
+    background-position: 25.000% 39.583%;
+}
+.emoji-1f449 {
+    background-position: 25.000% 52.083%;
+}
+.emoji-1f44a {
+    background-position: 25.000% 64.583%;
+}
+.emoji-1f44b {
+    background-position: 25.000% 77.083%;
+}
+.emoji-1f44c {
+    background-position: 25.000% 89.583%;
+}
+.emoji-1f44d {
+    background-position: 27.083% 0.000%;
+}
+.emoji-1f44e {
+    background-position: 27.083% 12.500%;
+}
+.emoji-1f44f {
+    background-position: 27.083% 25.000%;
+}
+.emoji-1f450 {
+    background-position: 27.083% 37.500%;
+}
+.emoji-1f451 {
+    background-position: 27.083% 50.000%;
+}
+.emoji-1f452 {
+    background-position: 27.083% 52.083%;
+}
+.emoji-1f453 {
+    background-position: 27.083% 54.167%;
+}
+.emoji-1f454 {
+    background-position: 27.083% 56.250%;
+}
+.emoji-1f455 {
+    background-position: 27.083% 58.333%;
+}
+.emoji-1f456 {
+    background-position: 27.083% 60.417%;
+}
+.emoji-1f457 {
+    background-position: 27.083% 62.500%;
+}
+.emoji-1f458 {
+    background-position: 27.083% 64.583%;
+}
+.emoji-1f459 {
+    background-position: 27.083% 66.667%;
+}
+.emoji-1f45a {
+    background-position: 27.083% 68.750%;
+}
+.emoji-1f45b {
+    background-position: 27.083% 70.833%;
+}
+.emoji-1f45c {
+    background-position: 27.083% 72.917%;
+}
+.emoji-1f45d {
+    background-position: 27.083% 75.000%;
+}
+.emoji-1f45e {
+    background-position: 27.083% 77.083%;
+}
+.emoji-1f45f {
+    background-position: 27.083% 79.167%;
+}
+.emoji-1f460 {
+    background-position: 27.083% 81.250%;
+}
+.emoji-1f461 {
+    background-position: 27.083% 83.333%;
+}
+.emoji-1f462 {
+    background-position: 27.083% 85.417%;
+}
+.emoji-1f463 {
+    background-position: 27.083% 87.500%;
+}
+.emoji-1f464 {
+    background-position: 27.083% 89.583%;
+}
+.emoji-1f465 {
+    background-position: 27.083% 91.667%;
+}
+.emoji-1f466 {
+    background-position: 27.083% 93.750%;
+}
+.emoji-1f467 {
+    background-position: 29.167% 4.167%;
+}
+.emoji-1f468 {
+    background-position: 29.167% 16.667%;
+}
+.emoji-1f469 {
+    background-position: 29.167% 29.167%;
+}
+.emoji-1f46a {
+    background-position: 29.167% 41.667%;
+}
+.emoji-1f46b {
+    background-position: 29.167% 43.750%;
+}
+.emoji-1f46c {
+    background-position: 29.167% 45.833%;
+}
+.emoji-1f46d {
+    background-position: 29.167% 47.917%;
+}
+.emoji-1f46e {
+    background-position: 29.167% 50.000%;
+}
+.emoji-1f46f {
+    background-position: 29.167% 62.500%;
+}
+.emoji-1f470 {
+    background-position: 29.167% 64.583%;
+}
+.emoji-1f471 {
+    background-position: 29.167% 77.083%;
+}
+.emoji-1f472 {
+    background-position: 29.167% 89.583%;
+}
+.emoji-1f473 {
+    background-position: 31.250% 0.000%;
+}
+.emoji-1f474 {
+    background-position: 31.250% 12.500%;
+}
+.emoji-1f475 {
+    background-position: 31.250% 25.000%;
+}
+.emoji-1f476 {
+    background-position: 31.250% 37.500%;
+}
+.emoji-1f477 {
+    background-position: 31.250% 50.000%;
+}
+.emoji-1f478 {
+    background-position: 31.250% 62.500%;
+}
+.emoji-1f479 {
+    background-position: 31.250% 75.000%;
+}
+.emoji-1f47a {
+    background-position: 31.250% 77.083%;
+}
+.emoji-1f47b {
+    background-position: 31.250% 79.167%;
+}
+.emoji-1f47c {
+    background-position: 31.250% 81.250%;
+}
+.emoji-1f47d {
+    background-position: 31.250% 93.750%;
+}
+.emoji-1f47e {
+    background-position: 31.250% 95.833%;
+}
+.emoji-1f47f {
+    background-position: 31.250% 97.917%;
+}
+.emoji-1f480 {
+    background-position: 31.250% 100.000%;
+}
+.emoji-1f481 {
+    background-position: 33.333% 0.000%;
+}
+.emoji-1f482 {
+    background-position: 33.333% 12.500%;
+}
+.emoji-1f483 {
+    background-position: 33.333% 25.000%;
+}
+.emoji-1f484 {
+    background-position: 33.333% 37.500%;
+}
+.emoji-1f485 {
+    background-position: 33.333% 39.583%;
+}
+.emoji-1f486 {
+    background-position: 33.333% 52.083%;
+}
+.emoji-1f487 {
+    background-position: 33.333% 64.583%;
+}
+.emoji-1f488 {
+    background-position: 33.333% 77.083%;
+}
+.emoji-1f489 {
+    background-position: 33.333% 79.167%;
+}
+.emoji-1f48a {
+    background-position: 33.333% 81.250%;
+}
+.emoji-1f48b {
+    background-position: 33.333% 83.333%;
+}
+.emoji-1f48c {
+    background-position: 33.333% 85.417%;
+}
+.emoji-1f48d {
+    background-position: 33.333% 87.500%;
+}
+.emoji-1f48e {
+    background-position: 33.333% 89.583%;
+}
+.emoji-1f490 {
+    background-position: 33.333% 93.750%;
+}
+.emoji-1f492 {
+    background-position: 33.333% 97.917%;
+}
+.emoji-1f493 {
+    background-position: 33.333% 100.000%;
+}
+.emoji-1f494 {
+    background-position: 35.417% 0.000%;
+}
+.emoji-1f495 {
+    background-position: 35.417% 2.083%;
+}
+.emoji-1f496 {
+    background-position: 35.417% 4.167%;
+}
+.emoji-1f497 {
+    background-position: 35.417% 6.250%;
+}
+.emoji-1f498 {
+    background-position: 35.417% 8.333%;
+}
+.emoji-1f499 {
+    background-position: 35.417% 10.417%;
+}
+.emoji-1f49a {
+    background-position: 35.417% 12.500%;
+}
+.emoji-1f49b {
+    background-position: 35.417% 14.583%;
+}
+.emoji-1f49c {
+    background-position: 35.417% 16.667%;
+}
+.emoji-1f49d {
+    background-position: 35.417% 18.750%;
+}
+.emoji-1f49e {
+    background-position: 35.417% 20.833%;
+}
+.emoji-1f49f {
+    background-position: 35.417% 22.917%;
+}
+.emoji-1f4a0 {
+    background-position: 35.417% 25.000%;
+}
+.emoji-1f4a1 {
+    background-position: 35.417% 27.083%;
+}
+.emoji-1f4a2 {
+    background-position: 35.417% 29.167%;
+}
+.emoji-1f4a3 {
+    background-position: 35.417% 31.250%;
+}
+.emoji-1f4a4 {
+    background-position: 35.417% 33.333%;
+}
+.emoji-1f4a5 {
+    background-position: 35.417% 35.417%;
+}
+.emoji-1f4a6 {
+    background-position: 35.417% 37.500%;
+}
+.emoji-1f4a7 {
+    background-position: 35.417% 39.583%;
+}
+.emoji-1f4a8 {
+    background-position: 35.417% 41.667%;
+}
+.emoji-1f4a9 {
+    background-position: 35.417% 43.750%;
+}
+.emoji-1f4aa {
+    background-position: 35.417% 45.833%;
+}
+.emoji-1f4ab {
+    background-position: 35.417% 58.333%;
+}
+.emoji-1f4ac {
+    background-position: 35.417% 60.417%;
+}
+.emoji-1f4ad {
+    background-position: 35.417% 62.500%;
+}
+.emoji-1f4ae {
+    background-position: 35.417% 64.583%;
+}
+.emoji-1f4af {
+    background-position: 35.417% 66.667%;
+}
+.emoji-1f4b0 {
+    background-position: 35.417% 68.750%;
+}
+.emoji-1f4b1 {
+    background-position: 35.417% 70.833%;
+}
+.emoji-1f4b2 {
+    background-position: 35.417% 72.917%;
+}
+.emoji-1f4b3 {
+    background-position: 35.417% 75.000%;
+}
+.emoji-1f4b4 {
+    background-position: 35.417% 77.083%;
+}
+.emoji-1f4b5 {
+    background-position: 35.417% 79.167%;
+}
+.emoji-1f4b6 {
+    background-position: 35.417% 81.250%;
+}
+.emoji-1f4b7 {
+    background-position: 35.417% 83.333%;
+}
+.emoji-1f4b8 {
+    background-position: 35.417% 85.417%;
+}
+.emoji-1f4b9 {
+    background-position: 35.417% 87.500%;
+}
+.emoji-1f4ba {
+    background-position: 35.417% 89.583%;
+}
+.emoji-1f4bb {
+    background-position: 35.417% 91.667%;
+}
+.emoji-1f4bc {
+    background-position: 35.417% 93.750%;
+}
+.emoji-1f4bd {
+    background-position: 35.417% 95.833%;
+}
+.emoji-1f4be {
+    background-position: 35.417% 97.917%;
+}
+.emoji-1f4bf {
+    background-position: 35.417% 100.000%;
+}
+.emoji-1f4c0 {
+    background-position: 37.500% 0.000%;
+}
+.emoji-1f4c1 {
+    background-position: 37.500% 2.083%;
+}
+.emoji-1f4c2 {
+    background-position: 37.500% 4.167%;
+}
+.emoji-1f4c3 {
+    background-position: 37.500% 6.250%;
+}
+.emoji-1f4c4 {
+    background-position: 37.500% 8.333%;
+}
+.emoji-1f4c5 {
+    background-position: 37.500% 10.417%;
+}
+.emoji-1f4c6 {
+    background-position: 37.500% 12.500%;
+}
+.emoji-1f4c7 {
+    background-position: 37.500% 14.583%;
+}
+.emoji-1f4c8 {
+    background-position: 37.500% 16.667%;
+}
+.emoji-1f4c9 {
+    background-position: 37.500% 18.750%;
+}
+.emoji-1f4ca {
+    background-position: 37.500% 20.833%;
+}
+.emoji-1f4cb {
+    background-position: 37.500% 22.917%;
+}
+.emoji-1f4cc {
+    background-position: 37.500% 25.000%;
+}
+.emoji-1f4cd {
+    background-position: 37.500% 27.083%;
+}
+.emoji-1f4ce {
+    background-position: 37.500% 29.167%;
+}
+.emoji-1f4cf {
+    background-position: 37.500% 31.250%;
+}
+.emoji-1f4d0 {
+    background-position: 37.500% 33.333%;
+}
+.emoji-1f4d1 {
+    background-position: 37.500% 35.417%;
+}
+.emoji-1f4d2 {
+    background-position: 37.500% 37.500%;
+}
+.emoji-1f4d3 {
+    background-position: 37.500% 39.583%;
+}
+.emoji-1f4d4 {
+    background-position: 37.500% 41.667%;
+}
+.emoji-1f4d5 {
+    background-position: 37.500% 43.750%;
+}
+.emoji-1f4d6 {
+    background-position: 37.500% 45.833%;
+}
+.emoji-1f4d7 {
+    background-position: 37.500% 47.917%;
+}
+.emoji-1f4d8 {
+    background-position: 37.500% 50.000%;
+}
+.emoji-1f4d9 {
+    background-position: 37.500% 52.083%;
+}
+.emoji-1f4da {
+    background-position: 37.500% 54.167%;
+}
+.emoji-1f4db {
+    background-position: 37.500% 56.250%;
+}
+.emoji-1f4dc {
+    background-position: 37.500% 58.333%;
+}
+.emoji-1f4dd {
+    background-position: 37.500% 60.417%;
+}
+.emoji-1f4de {
+    background-position: 37.500% 62.500%;
+}
+.emoji-1f4df {
+    background-position: 37.500% 64.583%;
+}
+.emoji-1f4e0 {
+    background-position: 37.500% 66.667%;
+}
+.emoji-1f4e1 {
+    background-position: 37.500% 68.750%;
+}
+.emoji-1f4e2 {
+    background-position: 37.500% 70.833%;
+}
+.emoji-1f4e3 {
+    background-position: 37.500% 72.917%;
+}
+.emoji-1f4e4 {
+    background-position: 37.500% 75.000%;
+}
+.emoji-1f4e5 {
+    background-position: 37.500% 77.083%;
+}
+.emoji-1f4e6 {
+    background-position: 37.500% 79.167%;
+}
+.emoji-1f4e7 {
+    background-position: 37.500% 81.250%;
+}
+.emoji-1f4e8 {
+    background-position: 37.500% 83.333%;
+}
+.emoji-1f4e9 {
+    background-position: 37.500% 85.417%;
+}
+.emoji-1f4ea {
+    background-position: 37.500% 87.500%;
+}
+.emoji-1f4eb {
+    background-position: 37.500% 89.583%;
+}
+.emoji-1f4ec {
+    background-position: 37.500% 91.667%;
+}
+.emoji-1f4ed {
+    background-position: 37.500% 93.750%;
+}
+.emoji-1f4ee {
+    background-position: 37.500% 95.833%;
+}
+.emoji-1f4ef {
+    background-position: 37.500% 97.917%;
+}
+.emoji-1f4f0 {
+    background-position: 37.500% 100.000%;
+}
+.emoji-1f4f1 {
+    background-position: 39.583% 0.000%;
+}
+.emoji-1f4f2 {
+    background-position: 39.583% 2.083%;
+}
+.emoji-1f4f3 {
+    background-position: 39.583% 4.167%;
+}
+.emoji-1f4f4 {
+    background-position: 39.583% 6.250%;
+}
+.emoji-1f4f5 {
+    background-position: 39.583% 8.333%;
+}
+.emoji-1f4f6 {
+    background-position: 39.583% 10.417%;
+}
+.emoji-1f4f7 {
+    background-position: 39.583% 12.500%;
+}
+.emoji-1f4f8 {
+    background-position: 39.583% 14.583%;
+}
+.emoji-1f4f9 {
+    background-position: 39.583% 16.667%;
+}
+.emoji-1f4fa {
+    background-position: 39.583% 18.750%;
+}
+.emoji-1f4fb {
+    background-position: 39.583% 20.833%;
+}
+.emoji-1f4fc {
+    background-position: 39.583% 22.917%;
+}
+.emoji-1f4fd {
+    background-position: 39.583% 25.000%;
+}
+.emoji-1f4ff {
+    background-position: 39.583% 27.083%;
+}
+.emoji-1f500 {
+    background-position: 39.583% 29.167%;
+}
+.emoji-1f501 {
+    background-position: 39.583% 31.250%;
+}
+.emoji-1f502 {
+    background-position: 39.583% 33.333%;
+}
+.emoji-1f503 {
+    background-position: 39.583% 35.417%;
+}
+.emoji-1f504 {
+    background-position: 39.583% 37.500%;
+}
+.emoji-1f505 {
+    background-position: 39.583% 39.583%;
+}
+.emoji-1f506 {
+    background-position: 39.583% 41.667%;
+}
+.emoji-1f507 {
+    background-position: 39.583% 43.750%;
+}
+.emoji-1f508 {
+    background-position: 39.583% 45.833%;
+}
+.emoji-1f509 {
+    background-position: 39.583% 47.917%;
+}
+.emoji-1f50a {
+    background-position: 39.583% 50.000%;
+}
+.emoji-1f50b {
+    background-position: 39.583% 52.083%;
+}
+.emoji-1f50c {
+    background-position: 39.583% 54.167%;
+}
+.emoji-1f50d {
+    background-position: 39.583% 56.250%;
+}
+.emoji-1f50e {
+    background-position: 39.583% 58.333%;
+}
+.emoji-1f50f {
+    background-position: 39.583% 60.417%;
+}
+.emoji-1f510 {
+    background-position: 39.583% 62.500%;
+}
+.emoji-1f511 {
+    background-position: 39.583% 64.583%;
+}
+.emoji-1f512 {
+    background-position: 39.583% 66.667%;
+}
+.emoji-1f513 {
+    background-position: 39.583% 68.750%;
+}
+.emoji-1f514 {
+    background-position: 39.583% 70.833%;
+}
+.emoji-1f515 {
+    background-position: 39.583% 72.917%;
+}
+.emoji-1f516 {
+    background-position: 39.583% 75.000%;
+}
+.emoji-1f517 {
+    background-position: 39.583% 77.083%;
+}
+.emoji-1f518 {
+    background-position: 39.583% 79.167%;
+}
+.emoji-1f519 {
+    background-position: 39.583% 81.250%;
+}
+.emoji-1f51a {
+    background-position: 39.583% 83.333%;
+}
+.emoji-1f51b {
+    background-position: 39.583% 85.417%;
+}
+.emoji-1f51c {
+    background-position: 39.583% 87.500%;
+}
+.emoji-1f51d {
+    background-position: 39.583% 89.583%;
+}
+.emoji-1f51e {
+    background-position: 39.583% 91.667%;
+}
+.emoji-1f51f {
+    background-position: 39.583% 93.750%;
+}
+.emoji-1f520 {
+    background-position: 39.583% 95.833%;
+}
+.emoji-1f521 {
+    background-position: 39.583% 97.917%;
+}
+.emoji-1f522 {
+    background-position: 39.583% 100.000%;
+}
+.emoji-1f523 {
+    background-position: 41.667% 0.000%;
+}
+.emoji-1f524 {
+    background-position: 41.667% 2.083%;
+}
+.emoji-1f525 {
+    background-position: 41.667% 4.167%;
+}
+.emoji-1f526 {
+    background-position: 41.667% 6.250%;
+}
+.emoji-1f527 {
+    background-position: 41.667% 8.333%;
+}
+.emoji-1f528 {
+    background-position: 41.667% 10.417%;
+}
+.emoji-1f529 {
+    background-position: 41.667% 12.500%;
+}
+.emoji-1f52a {
+    background-position: 41.667% 14.583%;
+}
+.emoji-1f52b {
+    background-position: 41.667% 16.667%;
+}
+.emoji-1f52c {
+    background-position: 41.667% 18.750%;
+}
+.emoji-1f52d {
+    background-position: 41.667% 20.833%;
+}
+.emoji-1f52e {
+    background-position: 41.667% 22.917%;
+}
+.emoji-1f52f {
+    background-position: 41.667% 25.000%;
+}
+.emoji-1f530 {
+    background-position: 41.667% 27.083%;
+}
+.emoji-1f531 {
+    background-position: 41.667% 29.167%;
+}
+.emoji-1f532 {
+    background-position: 41.667% 31.250%;
+}
+.emoji-1f533 {
+    background-position: 41.667% 33.333%;
+}
+.emoji-1f534 {
+    background-position: 41.667% 35.417%;
+}
+.emoji-1f535 {
+    background-position: 41.667% 37.500%;
+}
+.emoji-1f536 {
+    background-position: 41.667% 39.583%;
+}
+.emoji-1f537 {
+    background-position: 41.667% 41.667%;
+}
+.emoji-1f538 {
+    background-position: 41.667% 43.750%;
+}
+.emoji-1f539 {
+    background-position: 41.667% 45.833%;
+}
+.emoji-1f53a {
+    background-position: 41.667% 47.917%;
+}
+.emoji-1f53b {
+    background-position: 41.667% 50.000%;
+}
+.emoji-1f53c {
+    background-position: 41.667% 52.083%;
+}
+.emoji-1f53d {
+    background-position: 41.667% 54.167%;
+}
+.emoji-1f549 {
+    background-position: 41.667% 56.250%;
+}
+.emoji-1f54a {
+    background-position: 41.667% 58.333%;
+}
+.emoji-1f54b {
+    background-position: 41.667% 60.417%;
+}
+.emoji-1f54c {
+    background-position: 41.667% 62.500%;
+}
+.emoji-1f54d {
+    background-position: 41.667% 64.583%;
+}
+.emoji-1f54e {
+    background-position: 41.667% 66.667%;
+}
+.emoji-1f550 {
+    background-position: 41.667% 68.750%;
+}
+.emoji-1f551 {
+    background-position: 41.667% 70.833%;
+}
+.emoji-1f552 {
+    background-position: 41.667% 72.917%;
+}
+.emoji-1f553 {
+    background-position: 41.667% 75.000%;
+}
+.emoji-1f554 {
+    background-position: 41.667% 77.083%;
+}
+.emoji-1f555 {
+    background-position: 41.667% 79.167%;
+}
+.emoji-1f556 {
+    background-position: 41.667% 81.250%;
+}
+.emoji-1f557 {
+    background-position: 41.667% 83.333%;
+}
+.emoji-1f558 {
+    background-position: 41.667% 85.417%;
+}
+.emoji-1f559 {
+    background-position: 41.667% 87.500%;
+}
+.emoji-1f55a {
+    background-position: 41.667% 89.583%;
+}
+.emoji-1f55b {
+    background-position: 41.667% 91.667%;
+}
+.emoji-1f55c {
+    background-position: 41.667% 93.750%;
+}
+.emoji-1f55d {
+    background-position: 41.667% 95.833%;
+}
+.emoji-1f55e {
+    background-position: 41.667% 97.917%;
+}
+.emoji-1f55f {
+    background-position: 41.667% 100.000%;
+}
+.emoji-1f560 {
+    background-position: 43.750% 0.000%;
+}
+.emoji-1f561 {
+    background-position: 43.750% 2.083%;
+}
+.emoji-1f562 {
+    background-position: 43.750% 4.167%;
+}
+.emoji-1f563 {
+    background-position: 43.750% 6.250%;
+}
+.emoji-1f564 {
+    background-position: 43.750% 8.333%;
+}
+.emoji-1f565 {
+    background-position: 43.750% 10.417%;
+}
+.emoji-1f566 {
+    background-position: 43.750% 12.500%;
+}
+.emoji-1f567 {
+    background-position: 43.750% 14.583%;
+}
+.emoji-1f56f {
+    background-position: 43.750% 16.667%;
+}
+.emoji-1f570 {
+    background-position: 43.750% 18.750%;
+}
+.emoji-1f573 {
+    background-position: 43.750% 20.833%;
+}
+.emoji-1f574 {
+    background-position: 43.750% 22.917%;
+}
+.emoji-1f575 {
+    background-position: 43.750% 35.417%;
+}
+.emoji-1f576 {
+    background-position: 43.750% 47.917%;
+}
+.emoji-1f577 {
+    background-position: 43.750% 50.000%;
+}
+.emoji-1f578 {
+    background-position: 43.750% 52.083%;
+}
+.emoji-1f579 {
+    background-position: 43.750% 54.167%;
+}
+.emoji-1f57a {
+    background-position: 43.750% 56.250%;
+}
+.emoji-1f587 {
+    background-position: 43.750% 68.750%;
+}
+.emoji-1f58a {
+    background-position: 43.750% 70.833%;
+}
+.emoji-1f58b {
+    background-position: 43.750% 72.917%;
+}
+.emoji-1f58c {
+    background-position: 43.750% 75.000%;
+}
+.emoji-1f58d {
+    background-position: 43.750% 77.083%;
+}
+.emoji-1f590 {
+    background-position: 43.750% 79.167%;
+}
+.emoji-1f595 {
+    background-position: 43.750% 91.667%;
+}
+.emoji-1f596 {
+    background-position: 45.833% 2.083%;
+}
+.emoji-1f5a4 {
+    background-position: 45.833% 14.583%;
+}
+.emoji-1f5a5 {
+    background-position: 45.833% 16.667%;
+}
+.emoji-1f5a8 {
+    background-position: 45.833% 18.750%;
+}
+.emoji-1f5b1 {
+    background-position: 45.833% 20.833%;
+}
+.emoji-1f5b2 {
+    background-position: 45.833% 22.917%;
+}
+.emoji-1f5bc {
+    background-position: 45.833% 25.000%;
+}
+.emoji-1f5c2 {
+    background-position: 45.833% 27.083%;
+}
+.emoji-1f5c3 {
+    background-position: 45.833% 29.167%;
+}
+.emoji-1f5c4 {
+    background-position: 45.833% 31.250%;
+}
+.emoji-1f5d1 {
+    background-position: 45.833% 33.333%;
+}
+.emoji-1f5d2 {
+    background-position: 45.833% 35.417%;
+}
+.emoji-1f5d3 {
+    background-position: 45.833% 37.500%;
+}
+.emoji-1f5dc {
+    background-position: 45.833% 39.583%;
+}
+.emoji-1f5dd {
+    background-position: 45.833% 41.667%;
+}
+.emoji-1f5de {
+    background-position: 45.833% 43.750%;
+}
+.emoji-1f5e1 {
+    background-position: 45.833% 45.833%;
+}
+.emoji-1f5e3 {
+    background-position: 45.833% 47.917%;
+}
+.emoji-1f5e8 {
+    background-position: 45.833% 50.000%;
+}
+.emoji-1f5ef {
+    background-position: 45.833% 52.083%;
+}
+.emoji-1f5f3 {
+    background-position: 45.833% 54.167%;
+}
+.emoji-1f5fa {
+    background-position: 45.833% 56.250%;
+}
+.emoji-1f5fb {
+    background-position: 45.833% 58.333%;
+}
+.emoji-1f5fc {
+    background-position: 45.833% 60.417%;
+}
+.emoji-1f5fd {
+    background-position: 45.833% 62.500%;
+}
+.emoji-1f5fe {
+    background-position: 45.833% 64.583%;
+}
+.emoji-1f5ff {
+    background-position: 45.833% 66.667%;
+}
+.emoji-1f600 {
+    background-position: 45.833% 68.750%;
+}
+.emoji-1f601 {
+    background-position: 45.833% 70.833%;
+}
+.emoji-1f602 {
+    background-position: 45.833% 72.917%;
+}
+.emoji-1f603 {
+    background-position: 45.833% 75.000%;
+}
+.emoji-1f604 {
+    background-position: 45.833% 77.083%;
+}
+.emoji-1f605 {
+    background-position: 45.833% 79.167%;
+}
+.emoji-1f606 {
+    background-position: 45.833% 81.250%;
+}
+.emoji-1f607 {
+    background-position: 45.833% 83.333%;
+}
+.emoji-1f608 {
+    background-position: 45.833% 85.417%;
+}
+.emoji-1f609 {
+    background-position: 45.833% 87.500%;
+}
+.emoji-1f60a {
+    background-position: 45.833% 89.583%;
+}
+.emoji-1f60b {
+    background-position: 45.833% 91.667%;
+}
+.emoji-1f60c {
+    background-position: 45.833% 93.750%;
+}
+.emoji-1f60d {
+    background-position: 45.833% 95.833%;
+}
+.emoji-1f60e {
+    background-position: 45.833% 97.917%;
+}
+.emoji-1f60f {
+    background-position: 45.833% 100.000%;
+}
+.emoji-1f610 {
+    background-position: 47.917% 0.000%;
+}
+.emoji-1f611 {
+    background-position: 47.917% 2.083%;
+}
+.emoji-1f612 {
+    background-position: 47.917% 4.167%;
+}
+.emoji-1f613 {
+    background-position: 47.917% 6.250%;
+}
+.emoji-1f614 {
+    background-position: 47.917% 8.333%;
+}
+.emoji-1f615 {
+    background-position: 47.917% 10.417%;
+}
+.emoji-1f616 {
+    background-position: 47.917% 12.500%;
+}
+.emoji-1f617 {
+    background-position: 47.917% 14.583%;
+}
+.emoji-1f618 {
+    background-position: 47.917% 16.667%;
+}
+.emoji-1f619 {
+    background-position: 47.917% 18.750%;
+}
+.emoji-1f61a {
+    background-position: 47.917% 20.833%;
+}
+.emoji-1f61b {
+    background-position: 47.917% 22.917%;
+}
+.emoji-1f61c {
+    background-position: 47.917% 25.000%;
+}
+.emoji-1f61d {
+    background-position: 47.917% 27.083%;
+}
+.emoji-1f61e {
+    background-position: 47.917% 29.167%;
+}
+.emoji-1f61f {
+    background-position: 47.917% 31.250%;
+}
+.emoji-1f620 {
+    background-position: 47.917% 33.333%;
+}
+.emoji-1f621 {
+    background-position: 47.917% 35.417%;
+}
+.emoji-1f622 {
+    background-position: 47.917% 37.500%;
+}
+.emoji-1f623 {
+    background-position: 47.917% 39.583%;
+}
+.emoji-1f624 {
+    background-position: 47.917% 41.667%;
+}
+.emoji-1f625 {
+    background-position: 47.917% 43.750%;
+}
+.emoji-1f626 {
+    background-position: 47.917% 45.833%;
+}
+.emoji-1f627 {
+    background-position: 47.917% 47.917%;
+}
+.emoji-1f628 {
+    background-position: 47.917% 50.000%;
+}
+.emoji-1f629 {
+    background-position: 47.917% 52.083%;
+}
+.emoji-1f62a {
+    background-position: 47.917% 54.167%;
+}
+.emoji-1f62b {
+    background-position: 47.917% 56.250%;
+}
+.emoji-1f62c {
+    background-position: 47.917% 58.333%;
+}
+.emoji-1f62d {
+    background-position: 47.917% 60.417%;
+}
+.emoji-1f62e {
+    background-position: 47.917% 62.500%;
+}
+.emoji-1f62f {
+    background-position: 47.917% 64.583%;
+}
+.emoji-1f630 {
+    background-position: 47.917% 66.667%;
+}
+.emoji-1f631 {
+    background-position: 47.917% 68.750%;
+}
+.emoji-1f632 {
+    background-position: 47.917% 70.833%;
+}
+.emoji-1f633 {
+    background-position: 47.917% 72.917%;
+}
+.emoji-1f634 {
+    background-position: 47.917% 75.000%;
+}
+.emoji-1f635 {
+    background-position: 47.917% 77.083%;
+}
+.emoji-1f636 {
+    background-position: 47.917% 79.167%;
+}
+.emoji-1f637 {
+    background-position: 47.917% 81.250%;
+}
+.emoji-1f638 {
+    background-position: 47.917% 83.333%;
+}
+.emoji-1f639 {
+    background-position: 47.917% 85.417%;
+}
+.emoji-1f63a {
+    background-position: 47.917% 87.500%;
+}
+.emoji-1f63b {
+    background-position: 47.917% 89.583%;
+}
+.emoji-1f63c {
+    background-position: 47.917% 91.667%;
+}
+.emoji-1f63d {
+    background-position: 47.917% 93.750%;
+}
+.emoji-1f63e {
+    background-position: 47.917% 95.833%;
+}
+.emoji-1f63f {
+    background-position: 47.917% 97.917%;
+}
+.emoji-1f640 {
+    background-position: 47.917% 100.000%;
+}
+.emoji-1f641 {
+    background-position: 50.000% 0.000%;
+}
+.emoji-1f642 {
+    background-position: 50.000% 2.083%;
+}
+.emoji-1f643 {
+    background-position: 50.000% 4.167%;
+}
+.emoji-1f644 {
+    background-position: 50.000% 6.250%;
+}
+.emoji-1f645 {
+    background-position: 50.000% 8.333%;
+}
+.emoji-1f646 {
+    background-position: 50.000% 20.833%;
+}
+.emoji-1f647 {
+    background-position: 50.000% 33.333%;
+}
+.emoji-1f648 {
+    background-position: 50.000% 45.833%;
+}
+.emoji-1f649 {
+    background-position: 50.000% 47.917%;
+}
+.emoji-1f64a {
+    background-position: 50.000% 50.000%;
+}
+.emoji-1f64b {
+    background-position: 50.000% 52.083%;
+}
+.emoji-1f64c {
+    background-position: 50.000% 64.583%;
+}
+.emoji-1f64d {
+    background-position: 50.000% 77.083%;
+}
+.emoji-1f64e {
+    background-position: 50.000% 89.583%;
+}
+.emoji-1f64f {
+    background-position: 52.083% 0.000%;
+}
+.emoji-1f680 {
+    background-position: 52.083% 12.500%;
+}
+.emoji-1f681 {
+    background-position: 52.083% 14.583%;
+}
+.emoji-1f682 {
+    background-position: 52.083% 16.667%;
+}
+.emoji-1f683 {
+    background-position: 52.083% 18.750%;
+}
+.emoji-1f684 {
+    background-position: 52.083% 20.833%;
+}
+.emoji-1f685 {
+    background-position: 52.083% 22.917%;
+}
+.emoji-1f686 {
+    background-position: 52.083% 25.000%;
+}
+.emoji-1f687 {
+    background-position: 52.083% 27.083%;
+}
+.emoji-1f688 {
+    background-position: 52.083% 29.167%;
+}
+.emoji-1f689 {
+    background-position: 52.083% 31.250%;
+}
+.emoji-1f68a {
+    background-position: 52.083% 33.333%;
+}
+.emoji-1f68b {
+    background-position: 52.083% 35.417%;
+}
+.emoji-1f68c {
+    background-position: 52.083% 37.500%;
+}
+.emoji-1f68d {
+    background-position: 52.083% 39.583%;
+}
+.emoji-1f68e {
+    background-position: 52.083% 41.667%;
+}
+.emoji-1f68f {
+    background-position: 52.083% 43.750%;
+}
+.emoji-1f690 {
+    background-position: 52.083% 45.833%;
+}
+.emoji-1f691 {
+    background-position: 52.083% 47.917%;
+}
+.emoji-1f692 {
+    background-position: 52.083% 50.000%;
+}
+.emoji-1f693 {
+    background-position: 52.083% 52.083%;
+}
+.emoji-1f694 {
+    background-position: 52.083% 54.167%;
+}
+.emoji-1f695 {
+    background-position: 52.083% 56.250%;
+}
+.emoji-1f696 {
+    background-position: 52.083% 58.333%;
+}
+.emoji-1f697 {
+    background-position: 52.083% 60.417%;
+}
+.emoji-1f698 {
+    background-position: 52.083% 62.500%;
+}
+.emoji-1f699 {
+    background-position: 52.083% 64.583%;
+}
+.emoji-1f69a {
+    background-position: 52.083% 66.667%;
+}
+.emoji-1f69b {
+    background-position: 52.083% 68.750%;
+}
+.emoji-1f69c {
+    background-position: 52.083% 70.833%;
+}
+.emoji-1f69d {
+    background-position: 52.083% 72.917%;
+}
+.emoji-1f69e {
+    background-position: 52.083% 75.000%;
+}
+.emoji-1f69f {
+    background-position: 52.083% 77.083%;
+}
+.emoji-1f6a0 {
+    background-position: 52.083% 79.167%;
+}
+.emoji-1f6a1 {
+    background-position: 52.083% 81.250%;
+}
+.emoji-1f6a2 {
+    background-position: 52.083% 83.333%;
+}
+.emoji-1f6a3 {
+    background-position: 52.083% 85.417%;
+}
+.emoji-1f6a4 {
+    background-position: 52.083% 97.917%;
+}
+.emoji-1f6a5 {
+    background-position: 52.083% 100.000%;
+}
+.emoji-1f6a6 {
+    background-position: 54.167% 0.000%;
+}
+.emoji-1f6a7 {
+    background-position: 54.167% 2.083%;
+}
+.emoji-1f6a8 {
+    background-position: 54.167% 4.167%;
+}
+.emoji-1f6a9 {
+    background-position: 54.167% 6.250%;
+}
+.emoji-1f6aa {
+    background-position: 54.167% 8.333%;
+}
+.emoji-1f6ab {
+    background-position: 54.167% 10.417%;
+}
+.emoji-1f6ac {
+    background-position: 54.167% 12.500%;
+}
+.emoji-1f6ad {
+    background-position: 54.167% 14.583%;
+}
+.emoji-1f6ae {
+    background-position: 54.167% 16.667%;
+}
+.emoji-1f6af {
+    background-position: 54.167% 18.750%;
+}
+.emoji-1f6b0 {
+    background-position: 54.167% 20.833%;
+}
+.emoji-1f6b1 {
+    background-position: 54.167% 22.917%;
+}
+.emoji-1f6b2 {
+    background-position: 54.167% 25.000%;
+}
+.emoji-1f6b3 {
+    background-position: 54.167% 27.083%;
+}
+.emoji-1f6b4 {
+    background-position: 54.167% 29.167%;
+}
+.emoji-1f6b5 {
+    background-position: 54.167% 41.667%;
+}
+.emoji-1f6b6 {
+    background-position: 54.167% 54.167%;
+}
+.emoji-1f6b7 {
+    background-position: 54.167% 66.667%;
+}
+.emoji-1f6b8 {
+    background-position: 54.167% 68.750%;
+}
+.emoji-1f6b9 {
+    background-position: 54.167% 70.833%;
+}
+.emoji-1f6ba {
+    background-position: 54.167% 72.917%;
+}
+.emoji-1f6bb {
+    background-position: 54.167% 75.000%;
+}
+.emoji-1f6bc {
+    background-position: 54.167% 77.083%;
+}
+.emoji-1f6bd {
+    background-position: 54.167% 79.167%;
+}
+.emoji-1f6be {
+    background-position: 54.167% 81.250%;
+}
+.emoji-1f6bf {
+    background-position: 54.167% 83.333%;
+}
+.emoji-1f6c0 {
+    background-position: 54.167% 85.417%;
+}
+.emoji-1f6c1 {
+    background-position: 54.167% 97.917%;
+}
+.emoji-1f6c2 {
+    background-position: 54.167% 100.000%;
+}
+.emoji-1f6c3 {
+    background-position: 56.250% 0.000%;
+}
+.emoji-1f6c4 {
+    background-position: 56.250% 2.083%;
+}
+.emoji-1f6c5 {
+    background-position: 56.250% 4.167%;
+}
+.emoji-1f6cb {
+    background-position: 56.250% 6.250%;
+}
+.emoji-1f6cc {
+    background-position: 56.250% 8.333%;
+}
+.emoji-1f6cd {
+    background-position: 56.250% 20.833%;
+}
+.emoji-1f6ce {
+    background-position: 56.250% 22.917%;
+}
+.emoji-1f6cf {
+    background-position: 56.250% 25.000%;
+}
+.emoji-1f6d0 {
+    background-position: 56.250% 27.083%;
+}
+.emoji-1f6d1 {
+    background-position: 56.250% 29.167%;
+}
+.emoji-1f6d2 {
+    background-position: 56.250% 31.250%;
+}
+.emoji-1f6e0 {
+    background-position: 56.250% 33.333%;
+}
+.emoji-1f6e1 {
+    background-position: 56.250% 35.417%;
+}
+.emoji-1f6e2 {
+    background-position: 56.250% 37.500%;
+}
+.emoji-1f6e3 {
+    background-position: 56.250% 39.583%;
+}
+.emoji-1f6e4 {
+    background-position: 56.250% 41.667%;
+}
+.emoji-1f6e5 {
+    background-position: 56.250% 43.750%;
+}
+.emoji-1f6e9 {
+    background-position: 56.250% 45.833%;
+}
+.emoji-1f6eb {
+    background-position: 56.250% 47.917%;
+}
+.emoji-1f6ec {
+    background-position: 56.250% 50.000%;
+}
+.emoji-1f6f0 {
+    background-position: 56.250% 52.083%;
+}
+.emoji-1f6f3 {
+    background-position: 56.250% 54.167%;
+}
+.emoji-1f6f4 {
+    background-position: 56.250% 56.250%;
+}
+.emoji-1f6f5 {
+    background-position: 56.250% 58.333%;
+}
+.emoji-1f6f6 {
+    background-position: 56.250% 60.417%;
+}
+.emoji-1f910 {
+    background-position: 56.250% 62.500%;
+}
+.emoji-1f911 {
+    background-position: 56.250% 64.583%;
+}
+.emoji-1f912 {
+    background-position: 56.250% 66.667%;
+}
+.emoji-1f913 {
+    background-position: 56.250% 68.750%;
+}
+.emoji-1f914 {
+    background-position: 56.250% 70.833%;
+}
+.emoji-1f915 {
+    background-position: 56.250% 72.917%;
+}
+.emoji-1f916 {
+    background-position: 56.250% 75.000%;
+}
+.emoji-1f917 {
+    background-position: 56.250% 77.083%;
+}
+.emoji-1f918 {
+    background-position: 56.250% 79.167%;
+}
+.emoji-1f919 {
+    background-position: 56.250% 91.667%;
+}
+.emoji-1f91a {
+    background-position: 58.333% 2.083%;
+}
+.emoji-1f91b {
+    background-position: 58.333% 14.583%;
+}
+.emoji-1f91c {
+    background-position: 58.333% 27.083%;
+}
+.emoji-1f91d {
+    background-position: 58.333% 39.583%;
+}
+.emoji-1f91e {
+    background-position: 58.333% 41.667%;
+}
+.emoji-1f920 {
+    background-position: 58.333% 54.167%;
+}
+.emoji-1f921 {
+    background-position: 58.333% 56.250%;
+}
+.emoji-1f922 {
+    background-position: 58.333% 58.333%;
+}
+.emoji-1f923 {
+    background-position: 58.333% 60.417%;
+}
+.emoji-1f924 {
+    background-position: 58.333% 62.500%;
+}
+.emoji-1f925 {
+    background-position: 58.333% 64.583%;
+}
+.emoji-1f926 {
+    background-position: 58.333% 66.667%;
+}
+.emoji-1f927 {
+    background-position: 58.333% 79.167%;
+}
+.emoji-1f930 {
+    background-position: 58.333% 81.250%;
+}
+.emoji-1f933 {
+    background-position: 58.333% 93.750%;
+}
+.emoji-1f934 {
+    background-position: 60.417% 4.167%;
+}
+.emoji-1f935 {
+    background-position: 60.417% 16.667%;
+}
+.emoji-1f936 {
+    background-position: 60.417% 29.167%;
+}
+.emoji-1f937 {
+    background-position: 60.417% 41.667%;
+}
+.emoji-1f938 {
+    background-position: 60.417% 54.167%;
+}
+.emoji-1f939 {
+    background-position: 60.417% 66.667%;
+}
+.emoji-1f93a {
+    background-position: 60.417% 79.167%;
+}
+.emoji-1f93c {
+    background-position: 60.417% 81.250%;
+}
+.emoji-1f93d {
+    background-position: 60.417% 83.333%;
+}
+.emoji-1f93e {
+    background-position: 60.417% 95.833%;
+}
+.emoji-1f940 {
+    background-position: 62.500% 6.250%;
+}
+.emoji-1f941 {
+    background-position: 62.500% 8.333%;
+}
+.emoji-1f942 {
+    background-position: 62.500% 10.417%;
+}
+.emoji-1f943 {
+    background-position: 62.500% 12.500%;
+}
+.emoji-1f944 {
+    background-position: 62.500% 14.583%;
+}
+.emoji-1f945 {
+    background-position: 62.500% 16.667%;
+}
+.emoji-1f947 {
+    background-position: 62.500% 18.750%;
+}
+.emoji-1f948 {
+    background-position: 62.500% 20.833%;
+}
+.emoji-1f949 {
+    background-position: 62.500% 22.917%;
+}
+.emoji-1f94a {
+    background-position: 62.500% 25.000%;
+}
+.emoji-1f94b {
+    background-position: 62.500% 27.083%;
+}
+.emoji-1f950 {
+    background-position: 62.500% 29.167%;
+}
+.emoji-1f951 {
+    background-position: 62.500% 31.250%;
+}
+.emoji-1f952 {
+    background-position: 62.500% 33.333%;
+}
+.emoji-1f953 {
+    background-position: 62.500% 35.417%;
+}
+.emoji-1f954 {
+    background-position: 62.500% 37.500%;
+}
+.emoji-1f955 {
+    background-position: 62.500% 39.583%;
+}
+.emoji-1f956 {
+    background-position: 62.500% 41.667%;
+}
+.emoji-1f957 {
+    background-position: 62.500% 43.750%;
+}
+.emoji-1f958 {
+    background-position: 62.500% 45.833%;
+}
+.emoji-1f959 {
+    background-position: 62.500% 47.917%;
+}
+.emoji-1f95a {
+    background-position: 62.500% 50.000%;
+}
+.emoji-1f95b {
+    background-position: 62.500% 52.083%;
+}
+.emoji-1f95c {
+    background-position: 62.500% 54.167%;
+}
+.emoji-1f95d {
+    background-position: 62.500% 56.250%;
+}
+.emoji-1f95e {
+    background-position: 62.500% 58.333%;
+}
+.emoji-1f980 {
+    background-position: 62.500% 60.417%;
+}
+.emoji-1f981 {
+    background-position: 62.500% 62.500%;
+}
+.emoji-1f982 {
+    background-position: 62.500% 64.583%;
+}
+.emoji-1f983 {
+    background-position: 62.500% 66.667%;
+}
+.emoji-1f984 {
+    background-position: 62.500% 68.750%;
+}
+.emoji-1f985 {
+    background-position: 62.500% 70.833%;
+}
+.emoji-1f986 {
+    background-position: 62.500% 72.917%;
+}
+.emoji-1f987 {
+    background-position: 62.500% 75.000%;
+}
+.emoji-1f988 {
+    background-position: 62.500% 77.083%;
+}
+.emoji-1f989 {
+    background-position: 62.500% 79.167%;
+}
+.emoji-1f98a {
+    background-position: 62.500% 81.250%;
+}
+.emoji-1f98b {
+    background-position: 62.500% 83.333%;
+}
+.emoji-1f98c {
+    background-position: 62.500% 85.417%;
+}
+.emoji-1f98d {
+    background-position: 62.500% 87.500%;
+}
+.emoji-1f98e {
+    background-position: 62.500% 89.583%;
+}
+.emoji-1f98f {
+    background-position: 62.500% 91.667%;
+}
+.emoji-1f990 {
+    background-position: 62.500% 93.750%;
+}
+.emoji-1f991 {
+    background-position: 62.500% 95.833%;
+}
+.emoji-1f9c0 {
+    background-position: 62.500% 97.917%;
+}
+.emoji-0023-20e3 {
+    background-position: 62.500% 100.000%;
+}
+.emoji-002a-20e3 {
+    background-position: 64.583% 0.000%;
+}
+.emoji-0030-20e3 {
+    background-position: 64.583% 2.083%;
+}
+.emoji-0031-20e3 {
+    background-position: 64.583% 4.167%;
+}
+.emoji-0032-20e3 {
+    background-position: 64.583% 6.250%;
+}
+.emoji-0033-20e3 {
+    background-position: 64.583% 8.333%;
+}
+.emoji-0034-20e3 {
+    background-position: 64.583% 10.417%;
+}
+.emoji-0035-20e3 {
+    background-position: 64.583% 12.500%;
+}
+.emoji-0036-20e3 {
+    background-position: 64.583% 14.583%;
+}
+.emoji-0037-20e3 {
+    background-position: 64.583% 16.667%;
+}
+.emoji-0038-20e3 {
+    background-position: 64.583% 18.750%;
+}
+.emoji-0039-20e3 {
+    background-position: 64.583% 20.833%;
+}
+.emoji-1f1e6-1f1e8 {
+    background-position: 64.583% 22.917%;
+}
+.emoji-1f1e6-1f1e9 {
+    background-position: 64.583% 25.000%;
+}
+.emoji-1f1e6-1f1ea {
+    background-position: 64.583% 27.083%;
+}
+.emoji-1f1e6-1f1eb {
+    background-position: 64.583% 29.167%;
+}
+.emoji-1f1e6-1f1ec {
+    background-position: 64.583% 31.250%;
+}
+.emoji-1f1e6-1f1ee {
+    background-position: 64.583% 33.333%;
+}
+.emoji-1f1e6-1f1f1 {
+    background-position: 64.583% 35.417%;
+}
+.emoji-1f1e6-1f1f2 {
+    background-position: 64.583% 37.500%;
+}
+.emoji-1f1e6-1f1f4 {
+    background-position: 64.583% 39.583%;
+}
+.emoji-1f1e6-1f1f6 {
+    background-position: 64.583% 41.667%;
+}
+.emoji-1f1e6-1f1f7 {
+    background-position: 64.583% 43.750%;
+}
+.emoji-1f1e6-1f1f8 {
+    background-position: 64.583% 45.833%;
+}
+.emoji-1f1e6-1f1f9 {
+    background-position: 64.583% 47.917%;
+}
+.emoji-1f1e6-1f1fa {
+    background-position: 64.583% 50.000%;
+}
+.emoji-1f1e6-1f1fc {
+    background-position: 64.583% 52.083%;
+}
+.emoji-1f1e6-1f1fd {
+    background-position: 64.583% 54.167%;
+}
+.emoji-1f1e6-1f1ff {
+    background-position: 64.583% 56.250%;
+}
+.emoji-1f1e7-1f1e6 {
+    background-position: 64.583% 58.333%;
+}
+.emoji-1f1e7-1f1e7 {
+    background-position: 64.583% 60.417%;
+}
+.emoji-1f1e7-1f1e9 {
+    background-position: 64.583% 62.500%;
+}
+.emoji-1f1e7-1f1ea {
+    background-position: 64.583% 64.583%;
+}
+.emoji-1f1e7-1f1eb {
+    background-position: 64.583% 66.667%;
+}
+.emoji-1f1e7-1f1ec {
+    background-position: 64.583% 68.750%;
+}
+.emoji-1f1e7-1f1ed {
+    background-position: 64.583% 70.833%;
+}
+.emoji-1f1e7-1f1ee {
+    background-position: 64.583% 72.917%;
+}
+.emoji-1f1e7-1f1ef {
+    background-position: 64.583% 75.000%;
+}
+.emoji-1f1e7-1f1f2 {
+    background-position: 64.583% 79.167%;
+}
+.emoji-1f1e7-1f1f3 {
+    background-position: 64.583% 81.250%;
+}
+.emoji-1f1e7-1f1f4 {
+    background-position: 64.583% 83.333%;
+}
+.emoji-1f1e7-1f1f7 {
+    background-position: 64.583% 87.500%;
+}
+.emoji-1f1e7-1f1f8 {
+    background-position: 64.583% 89.583%;
+}
+.emoji-1f1e7-1f1f9 {
+    background-position: 64.583% 91.667%;
+}
+.emoji-1f1e7-1f1fc {
+    background-position: 64.583% 95.833%;
+}
+.emoji-1f1e7-1f1fe {
+    background-position: 64.583% 97.917%;
+}
+.emoji-1f1e7-1f1ff {
+    background-position: 64.583% 100.000%;
+}
+.emoji-1f1e8-1f1e6 {
+    background-position: 66.667% 0.000%;
+}
+.emoji-1f1e8-1f1e8 {
+    background-position: 66.667% 2.083%;
+}
+.emoji-1f1e8-1f1e9 {
+    background-position: 66.667% 4.167%;
+}
+.emoji-1f1e8-1f1eb {
+    background-position: 66.667% 6.250%;
+}
+.emoji-1f1e8-1f1ec {
+    background-position: 66.667% 8.333%;
+}
+.emoji-1f1e8-1f1ed {
+    background-position: 66.667% 10.417%;
+}
+.emoji-1f1e8-1f1ee {
+    background-position: 66.667% 12.500%;
+}
+.emoji-1f1e8-1f1f0 {
+    background-position: 66.667% 14.583%;
+}
+.emoji-1f1e8-1f1f1 {
+    background-position: 66.667% 16.667%;
+}
+.emoji-1f1e8-1f1f2 {
+    background-position: 66.667% 18.750%;
+}
+.emoji-1f1e8-1f1f3 {
+    background-position: 66.667% 20.833%;
+}
+.emoji-1f1e8-1f1f4 {
+    background-position: 66.667% 22.917%;
+}
+.emoji-1f1e8-1f1f7 {
+    background-position: 66.667% 27.083%;
+}
+.emoji-1f1e8-1f1fa {
+    background-position: 66.667% 29.167%;
+}
+.emoji-1f1e8-1f1fb {
+    background-position: 66.667% 31.250%;
+}
+.emoji-1f1e8-1f1fc {
+    background-position: 66.667% 33.333%;
+}
+.emoji-1f1e8-1f1fd {
+    background-position: 66.667% 35.417%;
+}
+.emoji-1f1e8-1f1fe {
+    background-position: 66.667% 37.500%;
+}
+.emoji-1f1e8-1f1ff {
+    background-position: 66.667% 39.583%;
+}
+.emoji-1f1e9-1f1ea {
+    background-position: 66.667% 41.667%;
+}
+.emoji-1f1e9-1f1ef {
+    background-position: 66.667% 45.833%;
+}
+.emoji-1f1e9-1f1f0 {
+    background-position: 66.667% 47.917%;
+}
+.emoji-1f1e9-1f1f2 {
+    background-position: 66.667% 50.000%;
+}
+.emoji-1f1e9-1f1f4 {
+    background-position: 66.667% 52.083%;
+}
+.emoji-1f1e9-1f1ff {
+    background-position: 66.667% 54.167%;
+}
+.emoji-1f1ea-1f1e8 {
+    background-position: 66.667% 58.333%;
+}
+.emoji-1f1ea-1f1ea {
+    background-position: 66.667% 60.417%;
+}
+.emoji-1f1ea-1f1ec {
+    background-position: 66.667% 62.500%;
+}
+.emoji-1f1ea-1f1f7 {
+    background-position: 66.667% 66.667%;
+}
+.emoji-1f1ea-1f1f8 {
+    background-position: 66.667% 68.750%;
+}
+.emoji-1f1ea-1f1f9 {
+    background-position: 66.667% 70.833%;
+}
+.emoji-1f1ea-1f1fa {
+    background-position: 66.667% 72.917%;
+}
+.emoji-1f1eb-1f1ee {
+    background-position: 66.667% 75.000%;
+}
+.emoji-1f1eb-1f1ef {
+    background-position: 66.667% 77.083%;
+}
+.emoji-1f1eb-1f1f2 {
+    background-position: 66.667% 81.250%;
+}
+.emoji-1f1eb-1f1f4 {
+    background-position: 66.667% 83.333%;
+}
+.emoji-1f1eb-1f1f7 {
+    background-position: 66.667% 85.417%;
+}
+.emoji-1f1ec-1f1e6 {
+    background-position: 66.667% 87.500%;
+}
+.emoji-1f1ec-1f1e7 {
+    background-position: 66.667% 89.583%;
+}
+.emoji-1f1ec-1f1e9 {
+    background-position: 66.667% 91.667%;
+}
+.emoji-1f1ec-1f1ea {
+    background-position: 66.667% 93.750%;
+}
+.emoji-1f1ec-1f1ec {
+    background-position: 66.667% 97.917%;
+}
+.emoji-1f1ec-1f1ed {
+    background-position: 66.667% 100.000%;
+}
+.emoji-1f1ec-1f1ee {
+    background-position: 68.750% 0.000%;
+}
+.emoji-1f1ec-1f1f1 {
+    background-position: 68.750% 2.083%;
+}
+.emoji-1f1ec-1f1f2 {
+    background-position: 68.750% 4.167%;
+}
+.emoji-1f1ec-1f1f3 {
+    background-position: 68.750% 6.250%;
+}
+.emoji-1f1ec-1f1f6 {
+    background-position: 68.750% 10.417%;
+}
+.emoji-1f1ec-1f1f7 {
+    background-position: 68.750% 12.500%;
+}
+.emoji-1f1ec-1f1f9 {
+    background-position: 68.750% 16.667%;
+}
+.emoji-1f1ec-1f1fa {
+    background-position: 68.750% 18.750%;
+}
+.emoji-1f1ec-1f1fc {
+    background-position: 68.750% 20.833%;
+}
+.emoji-1f1ec-1f1fe {
+    background-position: 68.750% 22.917%;
+}
+.emoji-1f1ed-1f1f0 {
+    background-position: 68.750% 25.000%;
+}
+.emoji-1f1ed-1f1f3 {
+    background-position: 68.750% 29.167%;
+}
+.emoji-1f1ed-1f1f7 {
+    background-position: 68.750% 31.250%;
+}
+.emoji-1f1ed-1f1f9 {
+    background-position: 68.750% 33.333%;
+}
+.emoji-1f1ed-1f1fa {
+    background-position: 68.750% 35.417%;
+}
+.emoji-1f1ee-1f1e8 {
+    background-position: 68.750% 37.500%;
+}
+.emoji-1f1ee-1f1e9 {
+    background-position: 68.750% 39.583%;
+}
+.emoji-1f1ee-1f1ea {
+    background-position: 68.750% 41.667%;
+}
+.emoji-1f1ee-1f1f1 {
+    background-position: 68.750% 43.750%;
+}
+.emoji-1f1ee-1f1f2 {
+    background-position: 68.750% 45.833%;
+}
+.emoji-1f1ee-1f1f3 {
+    background-position: 68.750% 47.917%;
+}
+.emoji-1f1ee-1f1f4 {
+    background-position: 68.750% 50.000%;
+}
+.emoji-1f1ee-1f1f6 {
+    background-position: 68.750% 52.083%;
+}
+.emoji-1f1ee-1f1f7 {
+    background-position: 68.750% 54.167%;
+}
+.emoji-1f1ee-1f1f8 {
+    background-position: 68.750% 56.250%;
+}
+.emoji-1f1ee-1f1f9 {
+    background-position: 68.750% 58.333%;
+}
+.emoji-1f1ef-1f1ea {
+    background-position: 68.750% 60.417%;
+}
+.emoji-1f1ef-1f1f2 {
+    background-position: 68.750% 62.500%;
+}
+.emoji-1f1ef-1f1f4 {
+    background-position: 68.750% 64.583%;
+}
+.emoji-1f1ef-1f1f5 {
+    background-position: 68.750% 66.667%;
+}
+.emoji-1f1f0-1f1ea {
+    background-position: 68.750% 68.750%;
+}
+.emoji-1f1f0-1f1ec {
+    background-position: 68.750% 70.833%;
+}
+.emoji-1f1f0-1f1ed {
+    background-position: 68.750% 72.917%;
+}
+.emoji-1f1f0-1f1ee {
+    background-position: 68.750% 75.000%;
+}
+.emoji-1f1f0-1f1f2 {
+    background-position: 68.750% 77.083%;
+}
+.emoji-1f1f0-1f1f3 {
+    background-position: 68.750% 79.167%;
+}
+.emoji-1f1f0-1f1f5 {
+    background-position: 68.750% 81.250%;
+}
+.emoji-1f1f0-1f1f7 {
+    background-position: 68.750% 83.333%;
+}
+.emoji-1f1f0-1f1fc {
+    background-position: 68.750% 85.417%;
+}
+.emoji-1f1f0-1f1fe {
+    background-position: 68.750% 87.500%;
+}
+.emoji-1f1f0-1f1ff {
+    background-position: 68.750% 89.583%;
+}
+.emoji-1f1f1-1f1e6 {
+    background-position: 68.750% 91.667%;
+}
+.emoji-1f1f1-1f1e7 {
+    background-position: 68.750% 93.750%;
+}
+.emoji-1f1f1-1f1e8 {
+    background-position: 68.750% 95.833%;
+}
+.emoji-1f1f1-1f1ee {
+    background-position: 68.750% 97.917%;
+}
+.emoji-1f1f1-1f1f0 {
+    background-position: 68.750% 100.000%;
+}
+.emoji-1f1f1-1f1f7 {
+    background-position: 70.833% 0.000%;
+}
+.emoji-1f1f1-1f1f8 {
+    background-position: 70.833% 2.083%;
+}
+.emoji-1f1f1-1f1f9 {
+    background-position: 70.833% 4.167%;
+}
+.emoji-1f1f1-1f1fa {
+    background-position: 70.833% 6.250%;
+}
+.emoji-1f1f1-1f1fb {
+    background-position: 70.833% 8.333%;
+}
+.emoji-1f1f1-1f1fe {
+    background-position: 70.833% 10.417%;
+}
+.emoji-1f1f2-1f1e6 {
+    background-position: 70.833% 12.500%;
+}
+.emoji-1f1f2-1f1e8 {
+    background-position: 70.833% 14.583%;
+}
+.emoji-1f1f2-1f1e9 {
+    background-position: 70.833% 16.667%;
+}
+.emoji-1f1f2-1f1ea {
+    background-position: 70.833% 18.750%;
+}
+.emoji-1f1f2-1f1ec {
+    background-position: 70.833% 22.917%;
+}
+.emoji-1f1f2-1f1ed {
+    background-position: 70.833% 25.000%;
+}
+.emoji-1f1f2-1f1f0 {
+    background-position: 70.833% 27.083%;
+}
+.emoji-1f1f2-1f1f1 {
+    background-position: 70.833% 29.167%;
+}
+.emoji-1f1f2-1f1f2 {
+    background-position: 70.833% 31.250%;
+}
+.emoji-1f1f2-1f1f3 {
+    background-position: 70.833% 33.333%;
+}
+.emoji-1f1f2-1f1f4 {
+    background-position: 70.833% 35.417%;
+}
+.emoji-1f1f2-1f1f5 {
+    background-position: 70.833% 37.500%;
+}
+.emoji-1f1f2-1f1f7 {
+    background-position: 70.833% 41.667%;
+}
+.emoji-1f1f2-1f1f8 {
+    background-position: 70.833% 43.750%;
+}
+.emoji-1f1f2-1f1f9 {
+    background-position: 70.833% 45.833%;
+}
+.emoji-1f1f2-1f1fa {
+    background-position: 70.833% 47.917%;
+}
+.emoji-1f1f2-1f1fb {
+    background-position: 70.833% 50.000%;
+}
+.emoji-1f1f2-1f1fc {
+    background-position: 70.833% 52.083%;
+}
+.emoji-1f1f2-1f1fd {
+    background-position: 70.833% 54.167%;
+}
+.emoji-1f1f2-1f1fe {
+    background-position: 70.833% 56.250%;
+}
+.emoji-1f1f2-1f1ff {
+    background-position: 70.833% 58.333%;
+}
+.emoji-1f1f3-1f1e6 {
+    background-position: 70.833% 60.417%;
+}
+.emoji-1f1f3-1f1ea {
+    background-position: 70.833% 64.583%;
+}
+.emoji-1f1f3-1f1eb {
+    background-position: 70.833% 66.667%;
+}
+.emoji-1f1f3-1f1ec {
+    background-position: 70.833% 68.750%;
+}
+.emoji-1f1f3-1f1ee {
+    background-position: 70.833% 70.833%;
+}
+.emoji-1f1f3-1f1f1 {
+    background-position: 70.833% 72.917%;
+}
+.emoji-1f1f3-1f1f4 {
+    background-position: 70.833% 75.000%;
+}
+.emoji-1f1f3-1f1f5 {
+    background-position: 70.833% 77.083%;
+}
+.emoji-1f1f3-1f1f7 {
+    background-position: 70.833% 79.167%;
+}
+.emoji-1f1f3-1f1fa {
+    background-position: 70.833% 81.250%;
+}
+.emoji-1f1f3-1f1ff {
+    background-position: 70.833% 83.333%;
+}
+.emoji-1f1f4-1f1f2 {
+    background-position: 70.833% 85.417%;
+}
+.emoji-1f1f5-1f1e6 {
+    background-position: 70.833% 87.500%;
+}
+.emoji-1f1f5-1f1ea {
+    background-position: 70.833% 89.583%;
+}
+.emoji-1f1f5-1f1eb {
+    background-position: 70.833% 91.667%;
+}
+.emoji-1f1f5-1f1ec {
+    background-position: 70.833% 93.750%;
+}
+.emoji-1f1f5-1f1ed {
+    background-position: 70.833% 95.833%;
+}
+.emoji-1f1f5-1f1f0 {
+    background-position: 70.833% 97.917%;
+}
+.emoji-1f1f5-1f1f1 {
+    background-position: 70.833% 100.000%;
+}
+.emoji-1f1f5-1f1f3 {
+    background-position: 72.917% 2.083%;
+}
+.emoji-1f1f5-1f1f7 {
+    background-position: 72.917% 4.167%;
+}
+.emoji-1f1f5-1f1f8 {
+    background-position: 72.917% 6.250%;
+}
+.emoji-1f1f5-1f1f9 {
+    background-position: 72.917% 8.333%;
+}
+.emoji-1f1f5-1f1fc {
+    background-position: 72.917% 10.417%;
+}
+.emoji-1f1f5-1f1fe {
+    background-position: 72.917% 12.500%;
+}
+.emoji-1f1f6-1f1e6 {
+    background-position: 72.917% 14.583%;
+}
+.emoji-1f1f7-1f1f4 {
+    background-position: 72.917% 18.750%;
+}
+.emoji-1f1f7-1f1f8 {
+    background-position: 72.917% 20.833%;
+}
+.emoji-1f1f7-1f1fa {
+    background-position: 72.917% 22.917%;
+}
+.emoji-1f1f7-1f1fc {
+    background-position: 72.917% 25.000%;
+}
+.emoji-1f1f8-1f1e6 {
+    background-position: 72.917% 27.083%;
+}
+.emoji-1f1f8-1f1e7 {
+    background-position: 72.917% 29.167%;
+}
+.emoji-1f1f8-1f1e8 {
+    background-position: 72.917% 31.250%;
+}
+.emoji-1f1f8-1f1e9 {
+    background-position: 72.917% 33.333%;
+}
+.emoji-1f1f8-1f1ea {
+    background-position: 72.917% 35.417%;
+}
+.emoji-1f1f8-1f1ec {
+    background-position: 72.917% 37.500%;
+}
+.emoji-1f1f8-1f1ed {
+    background-position: 72.917% 39.583%;
+}
+.emoji-1f1f8-1f1ee {
+    background-position: 72.917% 41.667%;
+}
+.emoji-1f1f8-1f1f0 {
+    background-position: 72.917% 45.833%;
+}
+.emoji-1f1f8-1f1f1 {
+    background-position: 72.917% 47.917%;
+}
+.emoji-1f1f8-1f1f2 {
+    background-position: 72.917% 50.000%;
+}
+.emoji-1f1f8-1f1f3 {
+    background-position: 72.917% 52.083%;
+}
+.emoji-1f1f8-1f1f4 {
+    background-position: 72.917% 54.167%;
+}
+.emoji-1f1f8-1f1f7 {
+    background-position: 72.917% 56.250%;
+}
+.emoji-1f1f8-1f1f8 {
+    background-position: 72.917% 58.333%;
+}
+.emoji-1f1f8-1f1f9 {
+    background-position: 72.917% 60.417%;
+}
+.emoji-1f1f8-1f1fb {
+    background-position: 72.917% 62.500%;
+}
+.emoji-1f1f8-1f1fd {
+    background-position: 72.917% 64.583%;
+}
+.emoji-1f1f8-1f1fe {
+    background-position: 72.917% 66.667%;
+}
+.emoji-1f1f8-1f1ff {
+    background-position: 72.917% 68.750%;
+}
+.emoji-1f1f9-1f1e6 {
+    background-position: 72.917% 70.833%;
+}
+.emoji-1f1f9-1f1e8 {
+    background-position: 72.917% 72.917%;
+}
+.emoji-1f1f9-1f1e9 {
+    background-position: 72.917% 75.000%;
+}
+.emoji-1f1f9-1f1ec {
+    background-position: 72.917% 79.167%;
+}
+.emoji-1f1f9-1f1ed {
+    background-position: 72.917% 81.250%;
+}
+.emoji-1f1f9-1f1ef {
+    background-position: 72.917% 83.333%;
+}
+.emoji-1f1f9-1f1f0 {
+    background-position: 72.917% 85.417%;
+}
+.emoji-1f1f9-1f1f1 {
+    background-position: 72.917% 87.500%;
+}
+.emoji-1f1f9-1f1f2 {
+    background-position: 72.917% 89.583%;
+}
+.emoji-1f1f9-1f1f3 {
+    background-position: 72.917% 91.667%;
+}
+.emoji-1f1f9-1f1f4 {
+    background-position: 72.917% 93.750%;
+}
+.emoji-1f1f9-1f1f7 {
+    background-position: 72.917% 95.833%;
+}
+.emoji-1f1f9-1f1f9 {
+    background-position: 72.917% 97.917%;
+}
+.emoji-1f1f9-1f1fb {
+    background-position: 72.917% 100.000%;
+}
+.emoji-1f1f9-1f1fc {
+    background-position: 75.000% 0.000%;
+}
+.emoji-1f1f9-1f1ff {
+    background-position: 75.000% 2.083%;
+}
+.emoji-1f1fa-1f1e6 {
+    background-position: 75.000% 4.167%;
+}
+.emoji-1f1fa-1f1ec {
+    background-position: 75.000% 6.250%;
+}
+.emoji-1f1fa-1f1f3 {
+    background-position: 75.000% 10.417%;
+}
+.emoji-1f1fa-1f1f8 {
+    background-position: 75.000% 12.500%;
+}
+.emoji-1f1fa-1f1fe {
+    background-position: 75.000% 14.583%;
+}
+.emoji-1f1fa-1f1ff {
+    background-position: 75.000% 16.667%;
+}
+.emoji-1f1fb-1f1e6 {
+    background-position: 75.000% 18.750%;
+}
+.emoji-1f1fb-1f1e8 {
+    background-position: 75.000% 20.833%;
+}
+.emoji-1f1fb-1f1ea {
+    background-position: 75.000% 22.917%;
+}
+.emoji-1f1fb-1f1ec {
+    background-position: 75.000% 25.000%;
+}
+.emoji-1f1fb-1f1ee {
+    background-position: 75.000% 27.083%;
+}
+.emoji-1f1fb-1f1f3 {
+    background-position: 75.000% 29.167%;
+}
+.emoji-1f1fb-1f1fa {
+    background-position: 75.000% 31.250%;
+}
+.emoji-1f1fc-1f1f8 {
+    background-position: 75.000% 35.417%;
+}
+.emoji-1f1fe-1f1ea {
+    background-position: 75.000% 39.583%;
+}
+.emoji-1f1ff-1f1e6 {
+    background-position: 75.000% 43.750%;
+}
+.emoji-1f1ff-1f1f2 {
+    background-position: 75.000% 45.833%;
+}
+.emoji-1f1ff-1f1fc {
+    background-position: 75.000% 47.917%;
+}
+.emoji-1f468-200d-1f33e {
+    background-position: 75.000% 50.000%;
+}
+.emoji-1f468-200d-1f373 {
+    background-position: 75.000% 62.500%;
+}
+.emoji-1f468-200d-1f393 {
+    background-position: 75.000% 75.000%;
+}
+.emoji-1f468-200d-1f3a4 {
+    background-position: 75.000% 87.500%;
+}
+.emoji-1f468-200d-1f3a8 {
+    background-position: 75.000% 100.000%;
+}
+.emoji-1f468-200d-1f3eb {
+    background-position: 77.083% 10.417%;
+}
+.emoji-1f468-200d-1f3ed {
+    background-position: 77.083% 22.917%;
+}
+.emoji-1f468-200d-1f466 {
+    background-position: 77.083% 35.417%;
+}
+.emoji-1f468-200d-1f467 {
+    background-position: 77.083% 37.500%;
+}
+.emoji-1f468-200d-1f4bb {
+    background-position: 77.083% 39.583%;
+}
+.emoji-1f468-200d-1f4bc {
+    background-position: 77.083% 52.083%;
+}
+.emoji-1f468-200d-1f527 {
+    background-position: 77.083% 64.583%;
+}
+.emoji-1f468-200d-1f52c {
+    background-position: 77.083% 77.083%;
+}
+.emoji-1f468-200d-1f680 {
+    background-position: 77.083% 89.583%;
+}
+.emoji-1f468-200d-1f692 {
+    background-position: 79.167% 0.000%;
+}
+.emoji-1f469-200d-1f33e {
+    background-position: 79.167% 12.500%;
+}
+.emoji-1f469-200d-1f373 {
+    background-position: 79.167% 25.000%;
+}
+.emoji-1f469-200d-1f393 {
+    background-position: 79.167% 37.500%;
+}
+.emoji-1f469-200d-1f3a4 {
+    background-position: 79.167% 50.000%;
+}
+.emoji-1f469-200d-1f3a8 {
+    background-position: 79.167% 62.500%;
+}
+.emoji-1f469-200d-1f3eb {
+    background-position: 79.167% 75.000%;
+}
+.emoji-1f469-200d-1f3ed {
+    background-position: 79.167% 87.500%;
+}
+.emoji-1f469-200d-1f466 {
+    background-position: 79.167% 100.000%;
+}
+.emoji-1f469-200d-1f467 {
+    background-position: 81.250% 0.000%;
+}
+.emoji-1f469-200d-1f4bb {
+    background-position: 81.250% 2.083%;
+}
+.emoji-1f469-200d-1f4bc {
+    background-position: 81.250% 14.583%;
+}
+.emoji-1f469-200d-1f527 {
+    background-position: 81.250% 27.083%;
+}
+.emoji-1f469-200d-1f52c {
+    background-position: 81.250% 39.583%;
+}
+.emoji-1f469-200d-1f680 {
+    background-position: 81.250% 52.083%;
+}
+.emoji-1f469-200d-1f692 {
+    background-position: 81.250% 64.583%;
+}
+.emoji-1f468-200d-1f466-200d-1f466 {
+    background-position: 85.417% 2.083%;
+}
+.emoji-1f468-200d-1f467-200d-1f466 {
+    background-position: 85.417% 4.167%;
+}
+.emoji-1f468-200d-1f467-200d-1f467 {
+    background-position: 85.417% 6.250%;
+}
+.emoji-1f468-200d-1f468-200d-1f466 {
+    background-position: 85.417% 8.333%;
+}
+.emoji-1f468-200d-1f468-200d-1f466-200d-1f466 {
+    background-position: 85.417% 10.417%;
+}
+.emoji-1f468-200d-1f468-200d-1f467 {
+    background-position: 85.417% 12.500%;
+}
+.emoji-1f468-200d-1f468-200d-1f467-200d-1f466 {
+    background-position: 85.417% 14.583%;
+}
+.emoji-1f468-200d-1f468-200d-1f467-200d-1f467 {
+    background-position: 85.417% 16.667%;
+}
+.emoji-1f468-200d-1f469-200d-1f466 {
+    background-position: 85.417% 18.750%;
+}
+.emoji-1f468-200d-1f469-200d-1f466-200d-1f466 {
+    background-position: 85.417% 20.833%;
+}
+.emoji-1f468-200d-1f469-200d-1f467 {
+    background-position: 85.417% 22.917%;
+}
+.emoji-1f468-200d-1f469-200d-1f467-200d-1f466 {
+    background-position: 85.417% 25.000%;
+}
+.emoji-1f468-200d-1f469-200d-1f467-200d-1f467 {
+    background-position: 85.417% 27.083%;
+}
+.emoji-1f469-200d-1f466-200d-1f466 {
+    background-position: 85.417% 70.833%;
+}
+.emoji-1f469-200d-1f467-200d-1f466 {
+    background-position: 85.417% 72.917%;
+}
+.emoji-1f469-200d-1f467-200d-1f467 {
+    background-position: 85.417% 75.000%;
+}
+.emoji-1f469-200d-1f469-200d-1f466 {
+    background-position: 85.417% 77.083%;
+}
+.emoji-1f469-200d-1f469-200d-1f466-200d-1f466 {
+    background-position: 85.417% 79.167%;
+}
+.emoji-1f469-200d-1f469-200d-1f467 {
+    background-position: 85.417% 81.250%;
+}
+.emoji-1f469-200d-1f469-200d-1f467-200d-1f466 {
+    background-position: 85.417% 83.333%;
+}
+.emoji-1f469-200d-1f469-200d-1f467-200d-1f467 {
+    background-position: 85.417% 85.417%;
+}
+
+.emoji-1f1e7-1f1f1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 0.000% 95.000%;
+}
+.emoji-1f1e7-1f1f6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 0.000%;
+}
+.emoji-1f1e7-1f1fb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 6.667%;
+}
+.emoji-1f1e8-1f1f5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 33.333%;
+}
+.emoji-1f1e9-1f1ec {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 48.333%;
+}
+.emoji-1f1ea-1f1e6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 58.333%;
+}
+.emoji-1f1ea-1f1ed {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 65.000%;
+}
+.emoji-1f1eb-1f1f0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 76.667%;
+}
+.emoji-1f1ec-1f1eb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 1.667% 90.000%;
+}
+.emoji-1f1ec-1f1f5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 3.333% 0.000%;
+}
+.emoji-1f1ec-1f1f8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 3.333% 5.000%;
+}
+.emoji-1f1ed-1f1f2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 3.333% 15.000%;
+}
+.emoji-1f1f2-1f1eb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 3.333% 91.667%;
+}
+.emoji-1f1f2-1f1f6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 5.000% 5.000%;
+}
+.emoji-1f1f3-1f1e8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 5.000% 23.333%;
+}
+.emoji-1f1f5-1f1f2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 5.000% 55.000%;
+}
+.emoji-1f1f7-1f1ea {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 5.000% 68.333%;
+}
+.emoji-1f1f8-1f1ef {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 5.000% 90.000%;
+}
+.emoji-1f1f9-1f1eb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 6.667% 15.000%;
+}
+.emoji-1f1fa-1f1f2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 6.667% 41.667%;
+}
+.emoji-1f1fc-1f1eb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 6.667% 61.667%;
+}
+.emoji-1f1fd-1f1f0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 6.667% 65.000%;
+}
+.emoji-1f1fe-1f1f9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 6.667% 68.333%;
+}
+.emoji-1f3c3-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 13.333% 23.333%;
+}
+.emoji-1f3c3-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 13.333% 33.333%;
+}
+.emoji-1f3c4-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 13.333% 53.333%;
+}
+.emoji-1f3c4-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 13.333% 63.333%;
+}
+.emoji-1f3ca-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 13.333% 100.000%;
+}
+.emoji-1f3ca-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 15.000% 8.333%;
+}
+.emoji-1f3cb-fe0f-200d-2640-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 15.000% 28.333%;
+}
+.emoji-1f3cb-fe0f-200d-2642-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 15.000% 38.333%;
+}
+.emoji-1f3cc-fe0f-200d-2640-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 15.000% 58.333%;
+}
+.emoji-1f3cc-fe0f-200d-2642-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 15.000% 68.333%;
+}
+.emoji-1f3f3-200d-1f308 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 16.667% 46.667%;
+}
+.emoji-1f3f3-fe0f-200d-26a7-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 16.667% 48.333%;
+}
+.emoji-1f3f4-200d-2620 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 16.667% 51.667%;
+}
+.emoji-1f3f4-e0067-e0062-e0065-e006e-e0067-e007f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 16.667% 53.333%;
+}
+.emoji-1f3f4-e0067-e0062-e0073-e0063-e0074-e007f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 16.667% 55.000%;
+}
+.emoji-1f3f4-e0067-e0062-e0077-e006c-e0073-e007f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 16.667% 56.667%;
+}
+.emoji-1f408-200d-2b1b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 16.667% 90.000%;
+}
+.emoji-1f415-200d-1f9ba {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 18.333% 11.667%;
+}
+.emoji-1f43b-200d-2744 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 18.333% 76.667%;
+}
+.emoji-1f441-fe0f-200d-1f5e8-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 18.333% 88.333%;
+}
+.emoji-1f468-200d-1f37c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 21.667% 96.667%;
+}
+.emoji-1f468-200d-1f9af {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 25.000% 38.333%;
+}
+.emoji-1f468-200d-1f9b0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 25.000% 48.333%;
+}
+.emoji-1f468-200d-1f9b1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 25.000% 58.333%;
+}
+.emoji-1f468-200d-1f9b2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 25.000% 68.333%;
+}
+.emoji-1f468-200d-1f9b3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 25.000% 78.333%;
+}
+.emoji-1f468-200d-1f9bc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 25.000% 88.333%;
+}
+.emoji-1f468-200d-1f9bd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 25.000% 98.333%;
+}
+.emoji-1f468-200d-2695 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 26.667% 6.667%;
+}
+.emoji-1f468-200d-2696 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 26.667% 16.667%;
+}
+.emoji-1f468-200d-2708 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 26.667% 26.667%;
+}
+.emoji-1f468-200d-2764-200d-1f468 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 26.667% 36.667%;
+}
+.emoji-1f468-200d-2764-200d-1f48b-200d-1f468 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 26.667% 80.000%;
+}
+.emoji-1f469-200d-1f37c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 28.333% 51.667%;
+}
+.emoji-1f469-200d-1f9af {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 30.000% 86.667%;
+}
+.emoji-1f469-200d-1f9b0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 30.000% 96.667%;
+}
+.emoji-1f469-200d-1f9b1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 5.000%;
+}
+.emoji-1f469-200d-1f9b2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 15.000%;
+}
+.emoji-1f469-200d-1f9b3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 25.000%;
+}
+.emoji-1f469-200d-1f9bc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 35.000%;
+}
+.emoji-1f469-200d-1f9bd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 45.000%;
+}
+.emoji-1f469-200d-2695 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 55.000%;
+}
+.emoji-1f469-200d-2696 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 65.000%;
+}
+.emoji-1f469-200d-2708 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 75.000%;
+}
+.emoji-1f469-200d-2764-200d-1f468 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 31.667% 85.000%;
+}
+.emoji-1f469-200d-2764-200d-1f469 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 33.333% 26.667%;
+}
+.emoji-1f469-200d-2764-200d-1f48b-200d-1f468 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 33.333% 70.000%;
+}
+.emoji-1f469-200d-2764-200d-1f48b-200d-1f469 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 35.000% 11.667%;
+}
+.emoji-1f46e-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 36.667% 95.000%;
+}
+.emoji-1f46e-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 3.333%;
+}
+.emoji-1f46f-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 23.333%;
+}
+.emoji-1f46f-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 25.000%;
+}
+.emoji-1f470-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 28.333%;
+}
+.emoji-1f470-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 38.333%;
+}
+.emoji-1f471-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 58.333%;
+}
+.emoji-1f471-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 68.333%;
+}
+.emoji-1f473-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 38.333% 98.333%;
+}
+.emoji-1f473-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 40.000% 6.667%;
+}
+.emoji-1f477-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 40.000% 56.667%;
+}
+.emoji-1f477-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 40.000% 66.667%;
+}
+.emoji-1f481-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 41.667% 16.667%;
+}
+.emoji-1f481-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 41.667% 26.667%;
+}
+.emoji-1f482-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 41.667% 46.667%;
+}
+.emoji-1f482-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 41.667% 56.667%;
+}
+.emoji-1f486-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 41.667% 98.333%;
+}
+.emoji-1f486-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 43.333% 6.667%;
+}
+.emoji-1f487-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 43.333% 26.667%;
+}
+.emoji-1f487-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 43.333% 36.667%;
+}
+.emoji-1f48f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 43.333% 68.333%;
+}
+.emoji-1f491 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 45.000% 11.667%;
+}
+.emoji-1f575-fe0f-200d-2640-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 51.667% 6.667%;
+}
+.emoji-1f575-fe0f-200d-2642-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 51.667% 16.667%;
+}
+.emoji-1f62e-200d-1f4a8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 55.000% 8.333%;
+}
+.emoji-1f635-200d-1f4ab {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 55.000% 21.667%;
+}
+.emoji-1f636-200d-1f32b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 55.000% 25.000%;
+}
+.emoji-1f645-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 55.000% 51.667%;
+}
+.emoji-1f645-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 55.000% 61.667%;
+}
+.emoji-1f646-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 55.000% 81.667%;
+}
+.emoji-1f646-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 55.000% 91.667%;
+}
+.emoji-1f647-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 56.667% 10.000%;
+}
+.emoji-1f647-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 56.667% 20.000%;
+}
+.emoji-1f64b-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 56.667% 45.000%;
+}
+.emoji-1f64b-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 56.667% 55.000%;
+}
+.emoji-1f64d-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 56.667% 85.000%;
+}
+.emoji-1f64d-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 56.667% 95.000%;
+}
+.emoji-1f64e-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 58.333% 13.333%;
+}
+.emoji-1f64e-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 58.333% 23.333%;
+}
+.emoji-1f6a3-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 60.000% 10.000%;
+}
+.emoji-1f6a3-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 60.000% 20.000%;
+}
+.emoji-1f6b4-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 60.000% 66.667%;
+}
+.emoji-1f6b4-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 60.000% 76.667%;
+}
+.emoji-1f6b5-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 60.000% 96.667%;
+}
+.emoji-1f6b5-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 61.667% 5.000%;
+}
+.emoji-1f6b6-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 61.667% 25.000%;
+}
+.emoji-1f6b6-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 61.667% 35.000%;
+}
+.emoji-1f6d5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 8.333%;
+}
+.emoji-1f6d6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 10.000%;
+}
+.emoji-1f6d7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 11.667%;
+}
+.emoji-1f6dd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 13.333%;
+}
+.emoji-1f6de {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 15.000%;
+}
+.emoji-1f6df {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 16.667%;
+}
+.emoji-1f6f7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 41.667%;
+}
+.emoji-1f6f8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 43.333%;
+}
+.emoji-1f6f9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 45.000%;
+}
+.emoji-1f6fa {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 46.667%;
+}
+.emoji-1f6fb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 48.333%;
+}
+.emoji-1f6fc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 50.000%;
+}
+.emoji-1f7e0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 51.667%;
+}
+.emoji-1f7e1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 53.333%;
+}
+.emoji-1f7e2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 55.000%;
+}
+.emoji-1f7e3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 56.667%;
+}
+.emoji-1f7e4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 58.333%;
+}
+.emoji-1f7e5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 60.000%;
+}
+.emoji-1f7e6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 61.667%;
+}
+.emoji-1f7e7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 63.333%;
+}
+.emoji-1f7e8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 65.000%;
+}
+.emoji-1f7e9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 66.667%;
+}
+.emoji-1f7ea {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 68.333%;
+}
+.emoji-1f7eb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 70.000%;
+}
+.emoji-1f7f0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 71.667%;
+}
+.emoji-1f90c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 73.333%;
+}
+.emoji-1f90d {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 83.333%;
+}
+.emoji-1f90e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 85.000%;
+}
+.emoji-1f90f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 63.333% 86.667%;
+}
+.emoji-1f91f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 10.000%;
+}
+.emoji-1f926-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 30.000%;
+}
+.emoji-1f926-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 40.000%;
+}
+.emoji-1f928 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 61.667%;
+}
+.emoji-1f929 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 63.333%;
+}
+.emoji-1f92a {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 65.000%;
+}
+.emoji-1f92b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 66.667%;
+}
+.emoji-1f92c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 68.333%;
+}
+.emoji-1f92d {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 70.000%;
+}
+.emoji-1f92e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 71.667%;
+}
+.emoji-1f92f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 73.333%;
+}
+.emoji-1f931 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 85.000%;
+}
+.emoji-1f932 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 66.667% 95.000%;
+}
+.emoji-1f935-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 68.333% 23.333%;
+}
+.emoji-1f935-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 68.333% 33.333%;
+}
+.emoji-1f937-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 68.333% 63.333%;
+}
+.emoji-1f937-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 68.333% 73.333%;
+}
+.emoji-1f938-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 68.333% 93.333%;
+}
+.emoji-1f938-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 1.667%;
+}
+.emoji-1f939-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 21.667%;
+}
+.emoji-1f939-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 31.667%;
+}
+.emoji-1f93c-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 53.333%;
+}
+.emoji-1f93c-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 55.000%;
+}
+.emoji-1f93d-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 58.333%;
+}
+.emoji-1f93d-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 68.333%;
+}
+.emoji-1f93e-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 88.333%;
+}
+.emoji-1f93e-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 70.000% 98.333%;
+}
+.emoji-1f93f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 16.667%;
+}
+.emoji-1f94c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 36.667%;
+}
+.emoji-1f94d {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 38.333%;
+}
+.emoji-1f94e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 40.000%;
+}
+.emoji-1f94f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 41.667%;
+}
+.emoji-1f95f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 68.333%;
+}
+.emoji-1f960 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 70.000%;
+}
+.emoji-1f961 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 71.667%;
+}
+.emoji-1f962 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 73.333%;
+}
+.emoji-1f963 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 75.000%;
+}
+.emoji-1f964 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 76.667%;
+}
+.emoji-1f965 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 78.333%;
+}
+.emoji-1f966 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 80.000%;
+}
+.emoji-1f967 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 81.667%;
+}
+.emoji-1f968 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 83.333%;
+}
+.emoji-1f969 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 85.000%;
+}
+.emoji-1f96a {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 86.667%;
+}
+.emoji-1f96b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 88.333%;
+}
+.emoji-1f96c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 90.000%;
+}
+.emoji-1f96d {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 91.667%;
+}
+.emoji-1f96e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 93.333%;
+}
+.emoji-1f96f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 95.000%;
+}
+.emoji-1f970 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 96.667%;
+}
+.emoji-1f971 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 98.333%;
+}
+.emoji-1f972 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 71.667% 100.000%;
+}
+.emoji-1f973 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 0.000%;
+}
+.emoji-1f974 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 1.667%;
+}
+.emoji-1f975 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 3.333%;
+}
+.emoji-1f976 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 5.000%;
+}
+.emoji-1f977 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 6.667%;
+}
+.emoji-1f978 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 16.667%;
+}
+.emoji-1f979 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 18.333%;
+}
+.emoji-1f97a {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 20.000%;
+}
+.emoji-1f97b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 21.667%;
+}
+.emoji-1f97c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 23.333%;
+}
+.emoji-1f97d {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 25.000%;
+}
+.emoji-1f97e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 26.667%;
+}
+.emoji-1f97f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 28.333%;
+}
+.emoji-1f992 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 60.000%;
+}
+.emoji-1f993 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 61.667%;
+}
+.emoji-1f994 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 63.333%;
+}
+.emoji-1f995 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 65.000%;
+}
+.emoji-1f996 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 66.667%;
+}
+.emoji-1f997 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 68.333%;
+}
+.emoji-1f998 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 70.000%;
+}
+.emoji-1f999 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 71.667%;
+}
+.emoji-1f99a {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 73.333%;
+}
+.emoji-1f99b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 75.000%;
+}
+.emoji-1f99c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 76.667%;
+}
+.emoji-1f99d {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 78.333%;
+}
+.emoji-1f99e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 80.000%;
+}
+.emoji-1f99f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 81.667%;
+}
+.emoji-1f9a0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 83.333%;
+}
+.emoji-1f9a1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 85.000%;
+}
+.emoji-1f9a2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 86.667%;
+}
+.emoji-1f9a3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 88.333%;
+}
+.emoji-1f9a4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 90.000%;
+}
+.emoji-1f9a5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 91.667%;
+}
+.emoji-1f9a6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 93.333%;
+}
+.emoji-1f9a7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 95.000%;
+}
+.emoji-1f9a8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 96.667%;
+}
+.emoji-1f9a9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 98.333%;
+}
+.emoji-1f9aa {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 73.333% 100.000%;
+}
+.emoji-1f9ab {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 0.000%;
+}
+.emoji-1f9ac {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 1.667%;
+}
+.emoji-1f9ad {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 3.333%;
+}
+.emoji-1f9ae {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 5.000%;
+}
+.emoji-1f9af {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 6.667%;
+}
+.emoji-1f9b4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 8.333%;
+}
+.emoji-1f9b5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 10.000%;
+}
+.emoji-1f9b6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 20.000%;
+}
+.emoji-1f9b7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 30.000%;
+}
+.emoji-1f9b8-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 31.667%;
+}
+.emoji-1f9b8-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 41.667%;
+}
+.emoji-1f9b8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 51.667%;
+}
+.emoji-1f9b9-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 61.667%;
+}
+.emoji-1f9b9-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 71.667%;
+}
+.emoji-1f9b9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 81.667%;
+}
+.emoji-1f9ba {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 91.667%;
+}
+.emoji-1f9bb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 75.000% 93.333%;
+}
+.emoji-1f9bc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 1.667%;
+}
+.emoji-1f9bd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 3.333%;
+}
+.emoji-1f9be {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 5.000%;
+}
+.emoji-1f9bf {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 6.667%;
+}
+.emoji-1f9c1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 10.000%;
+}
+.emoji-1f9c2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 11.667%;
+}
+.emoji-1f9c3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 13.333%;
+}
+.emoji-1f9c4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 15.000%;
+}
+.emoji-1f9c5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 16.667%;
+}
+.emoji-1f9c6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 18.333%;
+}
+.emoji-1f9c7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 20.000%;
+}
+.emoji-1f9c8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 21.667%;
+}
+.emoji-1f9c9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 23.333%;
+}
+.emoji-1f9ca {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 25.000%;
+}
+.emoji-1f9cb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 26.667%;
+}
+.emoji-1f9cc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 28.333%;
+}
+.emoji-1f9cd-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 30.000%;
+}
+.emoji-1f9cd-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 40.000%;
+}
+.emoji-1f9cd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 50.000%;
+}
+.emoji-1f9ce-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 60.000%;
+}
+.emoji-1f9ce-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 70.000%;
+}
+.emoji-1f9ce {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 80.000%;
+}
+.emoji-1f9cf-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 90.000%;
+}
+.emoji-1f9cf-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 76.667% 100.000%;
+}
+.emoji-1f9cf {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 8.333%;
+}
+.emoji-1f9d0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 18.333%;
+}
+.emoji-1f9d1-200d-1f33e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 20.000%;
+}
+.emoji-1f9d1-200d-1f373 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 30.000%;
+}
+.emoji-1f9d1-200d-1f37c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 40.000%;
+}
+.emoji-1f9d1-200d-1f384 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 50.000%;
+}
+.emoji-1f9d1-200d-1f393 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 60.000%;
+}
+.emoji-1f9d1-200d-1f3a4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 70.000%;
+}
+.emoji-1f9d1-200d-1f3a8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 80.000%;
+}
+.emoji-1f9d1-200d-1f3eb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 90.000%;
+}
+.emoji-1f9d1-200d-1f3ed {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 78.333% 100.000%;
+}
+.emoji-1f9d1-200d-1f4bb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 80.000% 8.333%;
+}
+.emoji-1f9d1-200d-1f4bc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 80.000% 18.333%;
+}
+.emoji-1f9d1-200d-1f527 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 80.000% 28.333%;
+}
+.emoji-1f9d1-200d-1f52c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 80.000% 38.333%;
+}
+.emoji-1f9d1-200d-1f680 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 80.000% 48.333%;
+}
+.emoji-1f9d1-200d-1f692 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 80.000% 58.333%;
+}
+.emoji-1f9d1-200d-1f91d-200d-1f9d1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 80.000% 68.333%;
+}
+.emoji-1f9d1-200d-1f9af {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 10.000%;
+}
+.emoji-1f9d1-200d-1f9b0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 20.000%;
+}
+.emoji-1f9d1-200d-1f9b1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 30.000%;
+}
+.emoji-1f9d1-200d-1f9b2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 40.000%;
+}
+.emoji-1f9d1-200d-1f9b3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 50.000%;
+}
+.emoji-1f9d1-200d-1f9bc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 60.000%;
+}
+.emoji-1f9d1-200d-1f9bd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 70.000%;
+}
+.emoji-1f9d1-200d-2695 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 80.000%;
+}
+.emoji-1f9d1-200d-2696 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 90.000%;
+}
+.emoji-1f9d1-200d-2708 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 81.667% 100.000%;
+}
+.emoji-1f9d1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 8.333%;
+}
+.emoji-1f9d2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 18.333%;
+}
+.emoji-1f9d3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 28.333%;
+}
+.emoji-1f9d4-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 38.333%;
+}
+.emoji-1f9d4-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 48.333%;
+}
+.emoji-1f9d4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 58.333%;
+}
+.emoji-1f9d5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 68.333%;
+}
+.emoji-1f9d6-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 78.333%;
+}
+.emoji-1f9d6-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 88.333%;
+}
+.emoji-1f9d6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 83.333% 98.333%;
+}
+.emoji-1f9d7-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 6.667%;
+}
+.emoji-1f9d7-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 16.667%;
+}
+.emoji-1f9d7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 26.667%;
+}
+.emoji-1f9d8-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 36.667%;
+}
+.emoji-1f9d8-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 46.667%;
+}
+.emoji-1f9d8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 56.667%;
+}
+.emoji-1f9d9-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 66.667%;
+}
+.emoji-1f9d9-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 76.667%;
+}
+.emoji-1f9d9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 86.667%;
+}
+.emoji-1f9da-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 85.000% 96.667%;
+}
+.emoji-1f9da-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 5.000%;
+}
+.emoji-1f9da {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 15.000%;
+}
+.emoji-1f9db-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 25.000%;
+}
+.emoji-1f9db-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 35.000%;
+}
+.emoji-1f9db {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 45.000%;
+}
+.emoji-1f9dc-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 55.000%;
+}
+.emoji-1f9dc-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 65.000%;
+}
+.emoji-1f9dc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 75.000%;
+}
+.emoji-1f9dd-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 85.000%;
+}
+.emoji-1f9dd-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 86.667% 95.000%;
+}
+.emoji-1f9dd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 3.333%;
+}
+.emoji-1f9de-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 13.333%;
+}
+.emoji-1f9de-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 15.000%;
+}
+.emoji-1f9de {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 16.667%;
+}
+.emoji-1f9df-200d-2640 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 18.333%;
+}
+.emoji-1f9df-200d-2642 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 20.000%;
+}
+.emoji-1f9df {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 21.667%;
+}
+.emoji-1f9e0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 23.333%;
+}
+.emoji-1f9e1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 25.000%;
+}
+.emoji-1f9e2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 26.667%;
+}
+.emoji-1f9e3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 28.333%;
+}
+.emoji-1f9e4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 30.000%;
+}
+.emoji-1f9e5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 31.667%;
+}
+.emoji-1f9e6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 33.333%;
+}
+.emoji-1f9e7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 35.000%;
+}
+.emoji-1f9e8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 36.667%;
+}
+.emoji-1f9e9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 38.333%;
+}
+.emoji-1f9ea {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 40.000%;
+}
+.emoji-1f9eb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 41.667%;
+}
+.emoji-1f9ec {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 43.333%;
+}
+.emoji-1f9ed {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 45.000%;
+}
+.emoji-1f9ee {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 46.667%;
+}
+.emoji-1f9ef {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 48.333%;
+}
+.emoji-1f9f0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 50.000%;
+}
+.emoji-1f9f1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 51.667%;
+}
+.emoji-1f9f2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 53.333%;
+}
+.emoji-1f9f3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 55.000%;
+}
+.emoji-1f9f4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 56.667%;
+}
+.emoji-1f9f5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 58.333%;
+}
+.emoji-1f9f6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 60.000%;
+}
+.emoji-1f9f7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 61.667%;
+}
+.emoji-1f9f8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 63.333%;
+}
+.emoji-1f9f9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 65.000%;
+}
+.emoji-1f9fa {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 66.667%;
+}
+.emoji-1f9fb {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 68.333%;
+}
+.emoji-1f9fc {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 70.000%;
+}
+.emoji-1f9fd {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 71.667%;
+}
+.emoji-1f9fe {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 73.333%;
+}
+.emoji-1f9ff {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 75.000%;
+}
+.emoji-1fa70 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 76.667%;
+}
+.emoji-1fa71 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 78.333%;
+}
+.emoji-1fa72 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 80.000%;
+}
+.emoji-1fa73 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 81.667%;
+}
+.emoji-1fa74 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 83.333%;
+}
+.emoji-1fa78 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 85.000%;
+}
+.emoji-1fa79 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 86.667%;
+}
+.emoji-1fa7a {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 88.333%;
+}
+.emoji-1fa7b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 90.000%;
+}
+.emoji-1fa7c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 91.667%;
+}
+.emoji-1fa80 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 93.333%;
+}
+.emoji-1fa81 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 95.000%;
+}
+.emoji-1fa82 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 96.667%;
+}
+.emoji-1fa83 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 98.333%;
+}
+.emoji-1fa84 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 88.333% 100.000%;
+}
+.emoji-1fa85 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 0.000%;
+}
+.emoji-1fa86 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 1.667%;
+}
+.emoji-1fa90 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 3.333%;
+}
+.emoji-1fa91 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 5.000%;
+}
+.emoji-1fa92 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 6.667%;
+}
+.emoji-1fa93 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 8.333%;
+}
+.emoji-1fa94 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 10.000%;
+}
+.emoji-1fa95 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 11.667%;
+}
+.emoji-1fa96 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 13.333%;
+}
+.emoji-1fa97 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 15.000%;
+}
+.emoji-1fa98 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 16.667%;
+}
+.emoji-1fa99 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 18.333%;
+}
+.emoji-1fa9a {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 20.000%;
+}
+.emoji-1fa9b {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 21.667%;
+}
+.emoji-1fa9c {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 23.333%;
+}
+.emoji-1fa9d {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 25.000%;
+}
+.emoji-1fa9e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 26.667%;
+}
+.emoji-1fa9f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 28.333%;
+}
+.emoji-1faa0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 30.000%;
+}
+.emoji-1faa1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 31.667%;
+}
+.emoji-1faa2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 33.333%;
+}
+.emoji-1faa3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 35.000%;
+}
+.emoji-1faa4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 36.667%;
+}
+.emoji-1faa5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 38.333%;
+}
+.emoji-1faa6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 40.000%;
+}
+.emoji-1faa7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 41.667%;
+}
+.emoji-1faa8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 43.333%;
+}
+.emoji-1faa9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 45.000%;
+}
+.emoji-1faaa {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 46.667%;
+}
+.emoji-1faab {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 48.333%;
+}
+.emoji-1faac {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 50.000%;
+}
+.emoji-1fab0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 51.667%;
+}
+.emoji-1fab1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 53.333%;
+}
+.emoji-1fab2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 55.000%;
+}
+.emoji-1fab3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 56.667%;
+}
+.emoji-1fab4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 58.333%;
+}
+.emoji-1fab5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 60.000%;
+}
+.emoji-1fab6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 61.667%;
+}
+.emoji-1fab7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 63.333%;
+}
+.emoji-1fab8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 65.000%;
+}
+.emoji-1fab9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 66.667%;
+}
+.emoji-1faba {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 68.333%;
+}
+.emoji-1fac0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 70.000%;
+}
+.emoji-1fac1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 71.667%;
+}
+.emoji-1fac2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 73.333%;
+}
+.emoji-1fac3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 75.000%;
+}
+.emoji-1fac4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 85.000%;
+}
+.emoji-1fac5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 90.000% 95.000%;
+}
+.emoji-1fad0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 3.333%;
+}
+.emoji-1fad1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 5.000%;
+}
+.emoji-1fad2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 6.667%;
+}
+.emoji-1fad3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 8.333%;
+}
+.emoji-1fad4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 10.000%;
+}
+.emoji-1fad5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 11.667%;
+}
+.emoji-1fad6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 13.333%;
+}
+.emoji-1fad7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 15.000%;
+}
+.emoji-1fad8 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 16.667%;
+}
+.emoji-1fad9 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 18.333%;
+}
+.emoji-1fae0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 20.000%;
+}
+.emoji-1fae1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 21.667%;
+}
+.emoji-1fae2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 23.333%;
+}
+.emoji-1fae3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 25.000%;
+}
+.emoji-1fae4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 26.667%;
+}
+.emoji-1fae5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 28.333%;
+}
+.emoji-1fae6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 30.000%;
+}
+.emoji-1fae7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 31.667%;
+}
+.emoji-1faf0 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 33.333%;
+}
+.emoji-1faf1 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 43.333%;
+}
+.emoji-1faf2 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 53.333%;
+}
+.emoji-1faf3 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 63.333%;
+}
+.emoji-1faf4 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 73.333%;
+}
+.emoji-1faf5 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 83.333%;
+}
+.emoji-1faf6 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 91.667% 93.333%;
+}
+.emoji-265f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 95.000% 31.667%;
+}
+.emoji-267e {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 95.000% 43.333%;
+}
+.emoji-26a7 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 95.000% 65.000%;
+}
+.emoji-26f9-fe0f-200d-2640-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 96.667% 5.000%;
+}
+.emoji-26f9-fe0f-200d-2642-fe0f {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 96.667% 15.000%;
+}
+.emoji-2764-200d-1f525 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 98.333% 13.333%;
+}
+.emoji-2764-200d-1fa79 {
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: 6100.000% !important;
+    background-position: 98.333% 15.000%;
+}

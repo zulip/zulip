@@ -1,0 +1,75 @@
+<html>
+<head><style type="text/css">a:hover {color:#434388 !important}
+a.button:hover {background-color:#5f5ec7 !important;color:#fff !important;text-decoration:none !important}
+@media only screen and (max-width: 620px) {
+    table[class="body"] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important
+        }
+    table[class="body"] p, table[class="body"] ul, table[class="body"] ol, table[class="body"] td, table[class="body"] span, table[class="body"] a {
+        font-size: 16px !important
+        }
+    table[class="body"] .wrapper {
+        padding: 0 10px 10px !important
+        }
+    table[class="body"] .article {
+        padding: 10px !important
+        }
+    table[class="body"] .content {
+        padding: 0 !important
+        }
+    table[class="body"] .container {
+        padding: 0 !important;
+        width: 100% !important
+        }
+    table[class="body"] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important
+        }
+    table[class="body"] .btn table {
+        width: 100% !important
+        }
+    table[class="body"] .btn a {
+        width: 100% !important
+        }
+    table[class="body"] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important
+        }
+    }
+@media all {
+    .ExternalClass {
+        width: 100% !important
+        }
+    .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {
+        line-height: 100% !important
+        }
+    /* iOS converts addresses in emails to links automatically */
+    .apple-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important
+        }
+    }
+@media only screen and (min-width: 450px) {
+    .float-right-image {
+        max-width: 200px !important
+        }
+    }</style></head>
+<body style="background-color:#f5f9f8; font-family:sans-serif; font-size:14px; line-height:1.4; margin:0; padding:0; -ms-text-size-adjust:100%; -webkit-text-size-adjust:100%" bgcolor="#f5f9f8"><p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% macro email_tag(email, text) -%}
+    <a href="mailto:{{ email }}" style="color:#5f5ec7; text-decoration:underline">{{ text | default(email) }}</a>
+{%- endmacro %}
+
+{% macro referrer_email_tag(referrer_email, referrer_name) -%}
+    <a href="mailto:{{ referrer_email }}" style="color:#5f5ec7; text-decoration:underline">{{ referrer_name }} ({{ referrer_email }})</a>
+{%- endmacro %}
+
+{% macro link_tag(url, text) -%}
+    <a href="{{ url }}" style="color:#5f5ec7; text-decoration:underline">{{ text | default(url) }}</a>
+{%- endmacro %}</p></body>
+</html>

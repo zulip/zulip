@@ -1,0 +1,116 @@
+<html>
+<head><style type="text/css">a:hover {color:#434388 !important}
+a.button:hover {background-color:#5f5ec7 !important;color:#fff !important;text-decoration:none !important}
+@media only screen and (max-width: 620px) {
+    table[class="body"] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important
+        }
+    table[class="body"] p, table[class="body"] ul, table[class="body"] ol, table[class="body"] td, table[class="body"] span, table[class="body"] a {
+        font-size: 16px !important
+        }
+    table[class="body"] .wrapper {
+        padding: 0 10px 10px !important
+        }
+    table[class="body"] .article {
+        padding: 10px !important
+        }
+    table[class="body"] .content {
+        padding: 0 !important
+        }
+    table[class="body"] .container {
+        padding: 0 !important;
+        width: 100% !important
+        }
+    table[class="body"] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important
+        }
+    table[class="body"] .btn table {
+        width: 100% !important
+        }
+    table[class="body"] .btn a {
+        width: 100% !important
+        }
+    table[class="body"] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important
+        }
+    }
+@media all {
+    .ExternalClass {
+        width: 100% !important
+        }
+    .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {
+        line-height: 100% !important
+        }
+    /* iOS converts addresses in emails to links automatically */
+    .apple-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important
+        }
+    }
+@media only screen and (min-width: 450px) {
+    .float-right-image {
+        max-width: 200px !important
+        }
+    }</style></head>
+<body style="background-color:#f5f9f8; font-family:sans-serif; font-size:14px; line-height:1.4; margin:0; padding:0; -ms-text-size-adjust:100%; -webkit-text-size-adjust:100%" bgcolor="#f5f9f8">
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% import 'zerver/emails/compiled/macros.html' as  macros %}
+
+
+    </p>
+        <meta name="viewport" content="width=device-width">
+        <meta charset="UTF-8">
+        <title>Zulip</title>
+    
+    
+        <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse:separate; mso-table-lspace:0; mso-table-rspace:0; width:100%; background-color:#f5f9f8" width="100%" bgcolor="#f5f9f8">
+            <tr>
+                <td style="font-family:sans-serif; font-size:14px; vertical-align:top" valign="top"> </td>
+                <td class="container" style="font-family:sans-serif; font-size:14px; vertical-align:top; display:block; max-width:500px; padding:10px; margin:0 auto" valign="top">
+                    <div class="content" style="box-sizing:border-box; display:block; margin:20px auto 0; max-width:580px; padding:10px">
+                        <a href="#" class="illustration" style="color:#5f5ec7; text-decoration:underline; pointer-events:none; z-index:100; cursor:default">
+                            {% block illustration %}{% endblock %}
+                        </a>
+                        <span class="preheader" style="color:transparent; display:none; height:0; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all; visibility:hidden; width:0" height="0" width="0">
+                            {% block preheader %}{% endblock %}
+                        </span>
+                        <table class="main" style="border-collapse:separate; mso-table-lspace:0; mso-table-rspace:0; width:100%; background-color:#fff; border-radius:3px" width="100%" bgcolor="#ffffff">
+                            <tr>
+                                <td class="wrapper" style="font-family:sans-serif; font-size:14px; vertical-align:top; box-sizing:border-box; padding:0 20px 20px" valign="top">
+                                    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate; mso-table-lspace:0; mso-table-rspace:0; width:100%" width="100%">
+                                        <tr>
+                                            <td style="font-family:sans-serif; font-size:14px; vertical-align:top" valign="top">
+                                                {% block content %}{% endblock %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <img src="{{ email_images_base_uri }}/footer.png" alt="{{ _('Swimming fish') }}" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="footer" style="clear:both; padding-top:10px; text-align:center; width:100%; margin-top:20px" align="center" width="100%">
+                            <table border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate; mso-table-lspace:0; mso-table-rspace:0; width:100%" width="100%">
+                                <tr>
+                                    <td class="content-block" style="font-family:sans-serif; font-size:12px; vertical-align:top; color:#5f5ec7; text-align:center" valign="top" align="center">
+                                        <span class="apple-link" style="color:#5f5ec7; font-size:12px; text-align:center" align="center">{{physical_address}}</span>
+                                        {% block manage_preferences %}{% endblock %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </td>
+                <td style="font-family:sans-serif; font-size:14px; vertical-align:top" valign="top"> </td>
+            </tr>
+        </table>
+    
+</body>
+</html>

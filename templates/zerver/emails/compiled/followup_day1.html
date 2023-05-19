@@ -1,0 +1,61 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt="" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+{% endblock %}
+
+{% block content %}
+</p>
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _('Welcome to Zulip!') }}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {% if realm_creation %}
+        {% if is_demo_org %}
+            {% trans %}You've created a demo Zulip organization. Note that this organization will be automatically deleted in 30 days. Learn more about demo organizations <a href="https://zulip.com/help/demo-organizations" style="color:#5f5ec7; text-decoration:underline">here</a>!{% endtrans %}
+        {% else %}
+            {% trans %}You've created the new Zulip organization <b>{{ realm_name }}</b>.{% endtrans %}
+        {% endif %}
+    {% else %}
+        {% trans %}You've joined the Zulip organization <b>{{ realm_name }}</b>.{% endtrans %}
+    {% endif %}
+</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {{ _('Your account details:') }}
+    </p>
+<ul style="padding-left:5px; font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+        <li style="list-style-position:outside; margin-left:15px">{% trans organization_url=macros.link_tag(realm_uri) %}Organization URL: {{ organization_url }}{% endtrans %}<br>
+</li>
+        {% if ldap %}
+            {% if ldap_username %}
+            <li style="list-style-position:outside; margin-left:15px">{% trans %}Username: {{ ldap_username }}{% endtrans %}<br>
+</li>
+            {% else %}
+            <li style="list-style-position:outside; margin-left:15px">{{ _('Use your LDAP account to log in') }}<br>
+</li>
+            {% endif %}
+        {% else %}
+            <li style="list-style-position:outside; margin-left:15px">{% trans email=macros.email_tag(email) %}Email: {{ email }}{% endtrans %}<br>
+</li>
+        {% endif %}
+    </ul>
+    {% trans apps_page_link="https://zulip.com/apps" %}(you'll need these to sign in to the <a href="{{ apps_page_link }}" style="color:#5f5ec7; text-decoration:underline">mobile and desktop</a> apps){% endtrans %}
+
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {% if is_realm_admin %}
+        {% trans %}Check out our <a href="{{ getting_started_link }}" style="color:#5f5ec7; text-decoration:underline">guide for admins</a>, become a Zulip pro with a few <a href="{{ keyboard_shortcuts_link }}" style="color:#5f5ec7; text-decoration:underline">keyboard shortcuts</a>, or <a href="{{ realm_uri }}" style="color:#5f5ec7; text-decoration:underline">dive right in</a>!{% endtrans %}
+    {% else %}
+        {% trans %}<a href="{{ getting_started_link }}" style="color:#5f5ec7; text-decoration:underline">Learn more</a> about Zulip, become a pro with a few <a href="{{ keyboard_shortcuts_link }}" style="color:#5f5ec7; text-decoration:underline">keyboard shortcuts</a>, or <a href="{{ realm_uri }}" style="color:#5f5ec7; text-decoration:underline">dive right in</a>!{% endtrans %}
+    {% endif %}
+</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {{ _("Cheers,") }}<br>
+    {{ _("Team Zulip") }}
+</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {% trans %}PS: Follow us on <a href="https://twitter.com/zulip" style="color:#5f5ec7; text-decoration:underline">Twitter</a>, star us on <a href="https://github.com/zulip/zulip" style="color:#5f5ec7; text-decoration:underline">GitHub</a>, or chat with us live on the <a href="https://zulip.com/development-community/" style="color:#5f5ec7; text-decoration:underline">Zulip community server</a>!{% endtrans %}
+</p>
+{% endblock %}

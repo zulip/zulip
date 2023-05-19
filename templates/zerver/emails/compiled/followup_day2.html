@@ -1,0 +1,37 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/day2_1.png" alt="" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+{% endblock %}
+
+{% block content %}
+</p>
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("Hey,") }}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.") }}</p>
+
+<img src="{{ email_images_base_uri }}/day2_2.png" alt="{{ _('Examples of short topics') }}" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. Two or three words will do it. Don't overthink 'em—you can always edit the message later!") }}</p>
+
+<ul style="padding-left:5px; font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    <li style="list-style-position:outside; margin-left:15px">{{ _("Good topics: design mockup, Bug 345, acme burgers") }}</li>
+    <li style="list-style-position:outside; margin-left:15px">{% trans %}Not recommended: "What do people think of this new design mockup?", "I'm looking at Bug 345", "Is Acme Burgers open for lunch?"{% endtrans %}</li>
+</ul>
+
+<img src="{{ email_images_base_uri }}/day2_3.png" alt="{{ _('Example of a topic that is too long') }}" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away—read the topics that are relevant to you, and ignore the ones that aren't!") }}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0"><a href="{{ realm_uri }}" style="color:#5f5ec7; text-decoration:underline">{{ _("Take it for a spin now.") }}</a></p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("Thanks,") }}<br>{{ _("Zulip") }}</p>
+{% endblock %}
+
+{% block manage_preferences %}
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    <a href="{{ realm_uri }}/#settings/notifications" style="color:#5f5ec7; text-decoration:underline">{{ _("Manage email preferences") }}</a> |
+    <a href="{{ unsubscribe_link }}" style="color:#5f5ec7; text-decoration:underline">{{ _("Unsubscribe from welcome emails") }}</a>
+</p>
+{% endblock %}

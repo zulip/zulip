@@ -1,0 +1,28 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/invitation_reminder.png" alt="" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+{% endblock %}
+
+{% block content %}
+</p>
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("Hi again,") }}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% trans referrer_name=macros.referrer_email_tag(referrer_email, referrer_name) %}This is a friendly reminder that {{ referrer_name }} wants you to join them on Zulip — the team communication tool designed for productivity.{% endtrans %}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {{ _("To get started, click the button below.") }}
+    <a class="button" href="{{ activate_url }}" style="color:#5f5ec7; text-decoration:none; display:block; padding:10px 0; margin:20px auto; width:200px; border:2px solid #5f5ec7; background-color:#fff; border-radius:4px; font-size:16px; outline:none; font-family:sans-serif; text-align:center; text-shadow:none" width="200" bgcolor="#ffffff" align="center">{{ _("Complete registration") }}</a>
+</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {{ _("This is the last reminder you'll receive for this invitation.") }}
+</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {% trans referrer_name=macros.email_tag(referrer_email, referrer_name) %}
+    This invitation expires in two days. If the invitation expires,
+    you'll need to ask {{ referrer_name }} for another one.
+    {% endtrans %}
+</p>
+{% endblock %}

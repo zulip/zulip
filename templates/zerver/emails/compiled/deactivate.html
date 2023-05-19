@@ -1,0 +1,21 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt="" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+{% endblock %}
+
+{% block content %}
+{% trans %}
+Your Zulip account on <a href="{{ realm_uri }}" style="color:#5f5ec7; text-decoration:underline">{{ realm_uri }}</a> has been deactivated, and you will no longer be able to log in.
+{% endtrans %}
+
+<br><br>
+
+{% if deactivation_notification_comment %}
+{{ _("The administrators provided the following comment:") }}
+
+</p>
+<pre class="deactivated-user-text" style="font-family:sans-serif; font-size:14px; padding:0 0 0 15px; margin:0 0 20px; border-left:5px solid #eee; white-space:pre-line">{{ deactivation_notification_comment }}</pre>
+{% endif %}
+
+{% endblock %}

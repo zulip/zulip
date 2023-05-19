@@ -20,7 +20,7 @@ import * as timerender from "./timerender";
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
-export let scheduled_messages_data = [];
+export let scheduled_messages_data = new Hashtable;
 
 function compute_send_times(now = new Date()) {
     const send_times = {};

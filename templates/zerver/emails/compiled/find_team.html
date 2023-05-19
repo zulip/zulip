@@ -1,0 +1,22 @@
+{% extends "zerver/emails/compiled/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt="" style="border:none; -ms-interpolation-mode:bicubic; max-width:100%; vertical-align:bottom" valign="bottom">
+{% endblock %}
+
+{% block content %}
+</p>
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("Thanks for your request!") }}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% trans %}Your email address {{ email }} has accounts with the following Zulip organizations hosted by <a href="{{ external_host }}" style="color:#5f5ec7; text-decoration:underline">{{ external_host }}</a>:{% endtrans %}</p>
+
+<ul style="padding-left:5px; font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">
+    {% for realm in realms %}
+    <li style="list-style-position:outside; margin-left:15px"><a href="{{ realm.uri }}" style="color:#5f5ec7; text-decoration:underline">{{ realm.name }} ({{ realm.host }})</a></li>
+    {% endfor %}
+</ul>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{% trans %}If you have trouble logging in, please contact Zulip support by replying to this email.{% endtrans %}</p>
+
+<p style="font-family:sans-serif; font-size:14px; font-weight:normal; margin:10px 0">{{ _("Thanks for using Zulip!") }}</p>
+{% endblock %}
