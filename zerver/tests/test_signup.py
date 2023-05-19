@@ -5066,7 +5066,9 @@ class UserSignUpTest(InviteUserBase):
             POPULATE_PROFILE_VIA_LDAP=True,
             LDAP_APPEND_DOMAIN="zulip.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
-        ):
+        ), self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs, self.assertLogs(
+            level="WARNING"
+        ) as root_logs:
             # Click confirmation link
             result = self.submit_reg_form_for_user(
                 email,
@@ -5096,6 +5098,18 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(
                 result["Location"], "/accounts/login/?email=no_such_user_in_ldap%40example.com"
+            )
+            self.assertEqual(
+                root_logs.output,
+                [
+                    "WARNING:root:New account email no_such_user_in_ldap@example.com could not be found in LDAP"
+                ],
+            )
+            self.assertEqual(
+                ldap_logs.output,
+                [
+                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email no_such_user_in_ldap@example.com does not match LDAP domain zulip.com.",
+                ],
             )
 
     @override_settings(
