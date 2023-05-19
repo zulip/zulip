@@ -145,6 +145,7 @@ export function huddle_with_url(user_ids_string) {
 }
 
 export function by_conversation_and_time_url(message) {
+    // Wrapper for web use of internal_url.by_conversation_and_time_url
     const absolute_url =
         window.location.protocol +
         "//" +
@@ -152,13 +153,15 @@ export function by_conversation_and_time_url(message) {
         "/" +
         window.location.pathname.split("/")[1];
 
-    const suffix = "/near/" + internal_url.encodeHashComponent(message.id);
+    const user_ids = people.all_user_ids_in_pm(message);
 
-    if (message.type === "stream") {
-        return absolute_url + by_stream_topic_url(message.stream_id, message.topic) + suffix;
-    }
-
-    return absolute_url + people.pm_perma_link(message) + suffix;
+    return internal_url.by_conversation_and_time_url(
+        absolute_url,
+        message,
+        user_ids,
+        sub_store.maybe_get_stream_name,
+        null,
+    );
 }
 
 export function stream_edit_url(sub) {

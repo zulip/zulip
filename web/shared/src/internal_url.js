@@ -86,3 +86,23 @@ export function pm_perma_link(message, user_ids, zulip_feature_level) {
     const url = "#narrow/" + operator + "/" + slug;
     return url;
 }
+
+export function by_conversation_and_time_url(
+    realm,
+    message,
+    user_ids,
+    maybe_get_stream_name,
+    zulip_feature_level,
+) {
+    const suffix = "/near/" + encodeHashComponent(message.id);
+
+    if (message.type === "stream") {
+        return (
+            realm +
+            by_stream_topic_url(message.stream_id, message.topic, maybe_get_stream_name) +
+            suffix
+        );
+    }
+
+    return realm + pm_perma_link(message, user_ids, zulip_feature_level) + suffix;
+}
