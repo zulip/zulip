@@ -147,8 +147,8 @@ export function resize_bottom_whitespace() {
 }
 
 export function resize_stream_filters_container() {
+    resize_bottom_whitespace();
     const h = get_new_heights();
-    resize_bottom_whitespace(h);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
@@ -156,7 +156,6 @@ export function resize_sidebars() {
     const h = get_new_heights();
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
-    return h;
 }
 
 export function resize_middle_column() {
@@ -203,8 +202,8 @@ export function resize_app() {
 
 export function resize_page_components() {
     resize_app();
-    const h = resize_sidebars();
-    resize_bottom_whitespace(h);
+    resize_sidebars();
+    resize_bottom_whitespace();
 }
 
 let _old_width = $(window).width();
