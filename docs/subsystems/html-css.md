@@ -23,6 +23,12 @@ to learn about all the great tools that you can use to modify and test
 changes to CSS interactively in-browser (without even having the
 reload the page!).
 
+Our CSS is formatted with [Prettier](https://prettier.io/). You can
+ask Prettier to reformat all code via our [linter
+tool](../testing/linters.md) with `tools/lint --only=prettier --fix`.
+You can also [integrate it with your
+editor](https://prettier.io/docs/en/editors.html).
+
 Zulip's development environment has hot code-reloading configured, so
 changes made in source files will immediately take effect in open
 browser windows, either by live-updating the CSS or reloading the
@@ -38,6 +44,10 @@ understand the current styling or modify it. We would very much like
 to avoid such a fate. So please make an effort to reuse existing
 styling, clean up now-unused CSS, etc., to keep things maintainable.
 
+Opt to write CSS in CSS files. Avoid using the `style=` attribute in
+HTML unless the styling is actually dynamic. Instead, define logical
+classes and put your styles in external CSS files such as `zulip.css`.
+
 ### Be consistent with existing similar UI
 
 Ideally, do this by reusing existing CSS declarations, so that any
@@ -48,6 +58,14 @@ elements.
 
 This makes it much easier to read the code and use `git grep` to find
 where a particular class is used.
+
+Don't use the tag name in a selector unless you have to. In other words,
+use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
+type changes in the future.
+
+Additionally, multi-word class and ID values should be hyphenated,
+also known as _kebab case_. In HTML, opt for `class="my-multiword-class"`,
+with its corresponding CSS selector as `.my-multiword-class`.
 
 ## Validating CSS
 
