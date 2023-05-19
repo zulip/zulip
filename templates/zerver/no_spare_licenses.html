@@ -1,7 +1,7 @@
 {% extends "zerver/portico.html" %}
 
 {% block title %}
-<title>{{ _("No licenses available") }} | Zulip</title>
+<title>{{ _("No licenses available") }} | Practice Chat</title>
 {% endblock %}
 
 {% block portico_content %}
@@ -13,7 +13,7 @@
             </div>
             <div class="white-box">
                 <p>
-                    {% trans %}New members cannot currently join <a href="{{ realm_uri }}">{{ realm_name }}</a> because all Zulip Cloud licenses are in use.{% endtrans %}
+                    {% trans %}New members cannot currently join <a href="{{ realm_uri }}">{{ realm_name }}</a> because all Practice Chat Cloud licenses are in use.{% endtrans %}
                 </p>
                 <p>
                     {{ _("Please contact the person who invited you and ask them to increase the number of licenses, then try again.") }}

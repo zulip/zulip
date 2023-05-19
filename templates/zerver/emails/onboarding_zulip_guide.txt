@@ -1,4 +1,4 @@
-{{ _("As you are getting started with Zulip, we'd love to help you discover how it can work best for your needs. Check out this guide to key Zulip features for organizations like yours!") }}
+{{ _("As you are getting started with Practice Chat, we'd love to help you discover how it can work best for your needs. Check out this guide to key Practice Chat features for organizations like yours!") }}
 
 {% if organization_type == "business" %}
 {{ _("View Practice Chat guide for businesses") }}:

@@ -2,7 +2,7 @@
 {% set entrypoint = "billing" %}
 
 {% block title %}
-<title>{{ _("Billing") }} | Zulip</title>
+<title>{{ _("Billing") }} | Practice Chat</title>
 {% endblock %}
 
 {% block customhead %}
@@ -41,7 +41,7 @@
                         <p>
                             You are using <strong>{{ seat_count }} of {{ licenses }} licenses</strong>.
                             {% if automanage_licenses %}
-                            Licenses are automatically managed by Zulip; when you add or deactivate a user, the number of
+                            Licenses are automatically managed by Practice Chat; when you add or deactivate a user, the number of
                             licenses will be immediately updated to reflect your new usage.
                             {% else %}
                             Licenses are manually managed. You will not be able to add new users to your organization once
@@ -54,7 +54,7 @@
                                 Your plan will be upgraded to <strong>{{ plan_name }}</strong> on <strong>{{ renewal_date }}</strong> for
                                 <strong>${{ renewal_amount }}</strong>.
                                 {% elif downgrade_at_end_of_cycle %}
-                                Your plan will be downgraded to <strong>Zulip Limited</strong> on <strong>{{ renewal_date }}</strong>.
+                                Your plan will be downgraded to <strong>Practice Chat Limited</strong> on <strong>{{ renewal_date }}</strong>.
                                 {% elif switch_to_annual_at_end_of_cycle %}
                                 Your plan will be switched from monthly to annual billing on <strong>{{ renewal_date }}</strong>.
                                 {% else %}
@@ -135,7 +135,7 @@
                                 <h3>Downgrade</h3>
                                 {% if free_trial %}
                                     <p>
-                                        End Free Trial and downgrade plan to <strong>Zulip Limited</strong>.
+                                        End Free Trial and downgrade plan to <strong>Practice Chat Limited</strong>.
                                     </p>
                                     <input name="status" type="hidden" value="{{ CustomerPlan.ENDED }}" />
                                     <button class="btn-danger" id="change-plan-status">End free trial</button>
@@ -148,7 +148,7 @@
                                     <button class="btn-info" id="change-plan-status">Cancel downgrade</button>
                                     {% else %}
                                     <p>
-                                        Downgrade to <strong>Zulip Limited</strong> at the end of current billing period.
+                                        Downgrade to <strong>Practice Chat Limited</strong> at the end of current billing period.
                                     </p>
                                     <input name="status" type="hidden" value="{{ CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE }}" />
                                     <button class="btn-danger" id="change-plan-status">Start downgrade process</button>
@@ -179,14 +179,14 @@
                     {% if onboarding %}
                     <br />
                     <h3>
-                        <b><a href="/">Go to your Zulip organization</a></b>
+                        <b><a href="/">Go to your Practice Chat organization</a></b>
                     </h3>
                     {% endif %}
                 </div>
                 <hr />
                 <div class="support-link">
                     <p>
-                        <a href="mailto:support@zulip.com">Contact Zulip support</a>
+                        <a href="mailto:support@zulip.com">Contact Practice Chat support</a>
                         for billing history or to make changes to your subscription or billing email.
                     </p>
                 </div>
@@ -195,17 +195,17 @@
                     {% if sponsorship_pending %}
                     <h3>Your organization has requested sponsored or discounted hosting.</h3>
                     <br />
-                    Please <a href="mailto:support@zulip.com">contact Practice Chat support</a> if you have any questions or concerns.
+                    Please <a href="mailto:hello@axe.software">contact Practice Chat support</a> if you have any questions or concerns.
                     {% elif is_sponsored %}
                     <center>
                         <p>
-                            <h3>💚 Your organization is fully sponsored and is on the <b>Zulip Cloud Standard</b> plan.</h3>
+                            <h3>💚 Your organization is fully sponsored and is on the <b>Practice Chat Cloud Standard</b> plan.</h3>
                         </p>
                     </center>
                     {% else %}
                     <center>
                         <p>
-                            <h2>Your organization is on the <b>Zulip Free</b> plan.</h2>
+                            <h2>Your organization is on the <b>Practice Chat Free</b> plan.</h2>
                             <a href="/upgrade/">
                                 <button type="submit" class="button green">Upgrade to Standard</button>
                             </a>
@@ -220,7 +220,7 @@
                 {# In the other case, we're displaying a different message about contacting support. #}
                 <div class="support-link">
                     <p>
-                        <a href="mailto:support@zulip.com">Contact Zulip support</a> for billing history.
+                        <a href="mailto:support@zulip.com">Contact Practice Chat support</a> for billing history.
                     </p>
                 </div>
                 {% endif %}

@@ -1,7 +1,7 @@
 {% extends "zerver/portico.html" %}
 
 {% block title %}
-<title>Zephyr mirroring information | Zulip</title>
+<title>Zephyr mirroring information | Practice Chat</title>
 {% endblock %}
 
 {# Zephyr mirroring information page #}
@@ -10,9 +10,9 @@
     <h1 style="margin-top:30px;">The Zephyr mirror script (not recommended)</h1>
 
     <p>
-        Webathena is the easiest way to use Zulip.  With Webathena, you don't need
+        Webathena is the easiest way to use Practice Chat.  With Webathena, you don't need
         to run any software in a screen session.  Your Athena password never leaves
-        your computer and the only access that any Zulip computer ever receives is the
+        your computer and the only access that any Practice Chat computer ever receives is the
         ability to send/receive zephyrs as you.
     </p>
 
@@ -36,9 +36,9 @@
         <strong>IMPORTANT: You must keep the Zephyr mirroring script
         always running in a session with unexpired Kerberos
         tickets.</strong> The script forwards personals you receive on
-        Zephyr to Zulip, and forwards messages you send in Zulip to
-        Zephyr. <strong>If it is not running, only other Zulip users
-        will receive messages you send from Zulip!</strong> The Zulip
+        Zephyr to Practice Chat, and forwards messages you send in Practice Chat to
+        Zephyr. <strong>If it is not running, only other Practice Chat users
+        will receive messages you send from Practice Chat!</strong> The Practice Chat
         web application will warn you if the Zephyr mirroring script is
         not running.
     </p>
@@ -75,7 +75,7 @@
         This will run the Zephyr mirroring script inside a screen
         session, and use `/mit/kchen/bin/cont-renew-notify` to continually
         renew your Kerberos tickets for up to a week; each week, it will
-        send you a Zephyr/Zulip letting you know that you need to renew
+        send you a Zephyr/Practice Chat letting you know that you need to renew
         your tickets.  To do so, log in to the server that you set up the
         screen session on and use the following procedure:
     </p>

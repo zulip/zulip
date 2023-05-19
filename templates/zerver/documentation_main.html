@@ -1,7 +1,7 @@
 {% extends "zerver/portico-help.html" %}
 {% set entrypoint = "help" %}
 
-{# Zulip user and API documentation. #}
+{# Practice Chat user and API documentation. #}
 {% block title %}
 <title>{{ PAGE_TITLE }}</title>
 {% endblock %}
@@ -11,7 +11,7 @@
     <div class="sidebar">
         <div class="content">
             {% if not page_is_policy_center %}
-            <h1><a href="https://zulip.com" class="no-underline">Zulip homepage</a></h1>
+            <h1><a href="https://zulip.com" class="no-underline">Practice Chat homepage</a></h1>
             <h1><a href="{{ doc_root }}" class="no-underline">{{ doc_root_title }} home</a></h1>
             {% endif %}
 
@@ -24,7 +24,7 @@
             {% endif %}
 
             {% if not page_is_policy_center %}
-            <h1 class="home-link"><a href="/" class="no-underline">Back to Zulip</a></h1>
+            <h1 class="home-link"><a href="/" class="no-underline">Back to Practice Chat</a></h1>
             {% endif %}
         </div>
     </div>
@@ -47,12 +47,12 @@
                 <hr />
                 {% if corporate_enabled %}
                     {% if page_is_policy_center %}
-                    <p>Please contact {{ support_email_html_tag }} with any questions about Zulip's policies.</p>
+                    <p>Please contact {{ support_email_html_tag }} with any questions about Practice Chat's policies.</p>
                     {% else %}
-                    <p>Your feedback helps us make Zulip better for everyone! Please <a href="mailto:{{ support_email }}">contact us</a> with questions, suggestions, and feature requests.</p>
+                    <p>Your feedback helps us make Practice Chat better for everyone! Please <a href="mailto:{{ support_email }}">contact us</a> with questions, suggestions, and feature requests.</p>
                     {% endif %}
                 {% else %}
-                    <p>Don't see an answer to your question? <a href="mailto:{{ support_email }}">Contact this Zulip server's administrators</a> for support.</p>
+                    <p>Don't see an answer to your question? <a href="mailto:{{ support_email }}">Contact this Practice Chat server's administrators</a> for support.</p>
                 {% endif %}
             </div>
         </div>
