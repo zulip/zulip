@@ -430,6 +430,19 @@
                 color: hsl(204deg 49% 29% / 75%);
             }
         }
+
+        .main-view-banner-action-button {
+            background-color: hsl(204deg 49% 29% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(204deg 49% 29% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(204deg 49% 29% / 15%);
+            }
+        }
     }
 }
 
