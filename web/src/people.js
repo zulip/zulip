@@ -496,9 +496,7 @@ export function pm_with_user_ids(message) {
     return sorted_other_user_ids(user_ids);
 }
 
-export function pm_perma_link(message) {
-    const user_ids = all_user_ids_in_pm(message);
-
+export function pm_perma_link(message, user_ids, zulip_feature_level) {
     if (!user_ids) {
         return undefined;
     }
@@ -508,13 +506,26 @@ export function pm_perma_link(message) {
     if (user_ids.length >= 3) {
         suffix = "group";
     } else {
-        suffix = "dm";
+        if (zulip_feature_level && zulip_feature_level < 177) {
+            suffix = "pm";
+        } else {
+            suffix = "dm";
+        }
+    }
+
+    let operator;
+
+    if (zulip_feature_level && zulip_feature_level < 177) {
+        operator = "pm-with";
+    } else {
+        operator = "dm";
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const url = "#narrow/dm/" + slug;
+    const url = "#narrow/" + operator + "/" + slug;
     return url;
 }
+
 
 export function pm_with_url(message) {
     const user_ids = pm_with_user_ids(message);
