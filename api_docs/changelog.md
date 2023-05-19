@@ -80,18 +80,22 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 176**
 
-* [`POST /realm/filters`](/api/add-linkifier), [`realm/filters/<int:filter_id>`](/api/update-linkifier):
-  The parameter `url_format_string` is replaced by `url_template`.
-  The linkifiers now accept only [RFC 6570][rfc6570] compliant URL Templates.
-  The old URL format strings are no longer supported.
+* [`POST /realm/filters`](/api/add-linkifier),
+  [`PATCH realm/filters/<int:filter_id>`](/api/update-linkifier):
+  The `url_format_string` parameter is replaced by `url_template`.
+  [Linkifiers](/help/add-a-custom-linkifier) now only accept
+  [RFC 6570][rfc6570] compliant URL templates. The old URL format
+  strings are no longer supported.
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
-  The key `url_format_string` is replaced by `url_template` for the `realm_linkifiers`
-  event type. For backwards-compatibility, clients that do not support the
-  `linkifier_url_template`
+  The `url_format_string` key in `realm_linkifiers` objects is replaced
+  by `url_template`. For backwards-compatibility, clients that do not
+  support the `linkifier_url_template`
   [client capability](/api/register-queue#parameter-client_capabilities)
-  will get an empty list in the response of `/register` and not receive `realm_linkifiers`
-  events. Unconditionally, the deprecated event type `realm_filters` gives an empty list in the
-  response of `/register` and is no longer sent the clients otherwise.
+  will receive an empty `realm_linkifiers` array in the `/register`
+  response and not receive `realm_linkifiers` events. Unconditionally,
+  the deprecated `realm_filters` event type returns an empty array in
+  the `/register` response and these events are no longer sent to
+  clients.
 
 **Feature level 175**
 

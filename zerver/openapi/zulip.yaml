@@ -3107,26 +3107,19 @@ paths:
                                 set of configured [linkifiers](/help/add-a-custom-linkifier)
                                 for the organization has changed.
 
-                                Processing this event is important to doing Markdown local echo
+                                Processing this event is important for doing Markdown local echo
                                 correctly.
 
-                                The client will not receive this event unless the event queue
-                                is registered with `linkifier_url_template` client capability set to `true`.
+                                **Changes**: As of Zulip 7.0 (feature level 176), clients will not
+                                receive this event unless the event queue is registered with the
+                                client capability `{"linkifier_url_template": true}`. This is because
+                                the change to specify linkifiers with a URL template instead of a
+                                URL format string is not backwards-compatible.
                                 See [`POST /register`](/api/register-queue#parameter-client_capabilities)
                                 for how client capabilities can be specified.
 
-                                **Changes**: Changed in Zulip 7.0 (feature level 176). This event no longer
-                                gets sent unless the `linkifier_url_template` client capability is set to
-                                `true`, due to the backwards-incompatible change from specifying the
-                                URL from a `url_format` format string to `url_template`.
-
-                                **Changes**: New in Zulip 4.0 (feature level 54), replacing the
-                                previous `realm_filters` event type, which is still sent for
-                                backwards compatibility reasons.
-
-                                Clients should migrate to requesting and processing the
-                                `realm_linkifiers` event type when possible, since we plan to remove
-                                the legacy `realm_filters` logic entirely in a future release.
+                                New in Zulip 4.0 (feature level 54), replacing the deprecated
+                                `realm_filters` event type.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3147,8 +3140,8 @@ paths:
                                       pattern:
                                         type: string
                                         description: |
-                                          The string regex pattern which represents the pattern that
-                                          should be linkified by this linkifier.
+                                          The [Python regular expression](https://docs.python.org/3/howto/regex.html)
+                                          that represents the pattern that should be linkified by this linkifier.
                                       url_template:
                                         type: string
                                         description: |
@@ -3178,16 +3171,15 @@ paths:
                               additionalProperties: false
                               deprecated: true
                               description: |
-                                Legacy event type. Sent to all users in a Zulip organization
+                                Legacy event type. Previously, sent to all users in a Zulip organization
                                 when the set of configured [linkifiers](/help/add-a-custom-linkifier)
                                 for the organization has changed.
 
-                                **Changes**: In Zulip 7.0 (feature level 176), clients will no longer
+                                **Changes**: As of Zulip 7.0 (feature level 176), clients will no longer
                                 receive this event.
 
-                                **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
-                                the `realm_linkifiers` event type, which has a clearer name and format,
-                                instead.
+                                **Deprecated** in Zulip 4.0 (feature level 54), and replaced by the
+                                `realm_linkifiers` event type, which has a clearer name and format.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3205,12 +3197,12 @@ paths:
                                         - type: integer
                                         - type: string
                                   description: |
-                                    An array of tuples, where each tuple describes a linkifier.
-                                    The first element of the tuple is a
-                                    string regex pattern which represents the pattern that should
-                                    be linkified on matching. The second element is the URL with which the
-                                    pattern matching string should be linkified with and the third element
-                                    is the ID of the realm filter.
+                                    An array of tuples, where each tuple described a linkifier.
+                                    The first element of the tuple was a string regex pattern which
+                                    represented the pattern to be linkified on matching. The second
+                                    element was the URL with which the pattern matching string
+                                    should be linkified with, and the third element was the ID of
+                                    the realm filter.
                               example:
                                 {
                                   "type": "realm_filters",
@@ -10606,14 +10598,19 @@ paths:
               `/register` response or the presence/absence of a `user_settings` key to
               determine where to look for the data.
 
-            - `linkifier_url_template`: Boolean for whether the client accepts linkifiers
-              that uses [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL
-              template for linkifying matches. If false or unset, then the `realm_linkifiers`
-              list in the `/register` response will be empty if present, and no `realm_linkifiers`
-              events will be sent.
+            - `linkifier_url_template`: Boolean for whether the client accepts
+              [linkifiers][help-linkifiers] that use [RFC 6570][rfc6570] compliant
+              URL templates for linkifying matches. If false or unset, then the
+              `realm_linkifiers` array in the `/register` response will be empty
+              if present, and no `realm_linkifiers` [events][events-linkifiers]
+              will be sent to the client.
+              <br />
+              **Changes**: New in Zulip 7.0 (feature level 176). This capability
+              is for backwards-compatibility.
 
-              **Changes**: New in Zulip 7.0 (feature level 176). This capability is for
-              backwards-compatibility.
+            [help-linkifiers]: /help/add-a-custom-linkifier
+            [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+            [events-linkifiers]: /api/get-events#realm_linkifiers
           content:
             application/json:
               schema:
@@ -10986,19 +10983,16 @@ paths:
                           Array of objects where each object describes a single
                           [linkifier](/help/add-a-custom-linkifier).
 
-                          If the client capability `linkifier_url_template` is false or unset, then
-                          the `realm_linkifiers` list in the `/register` response will be empty if
-                          present, and no `realm_linkifiers` events will be sent.
-                          See [`POST /register`](/api/register-queue#parameter-client_capabilities).
-                          for how client capabilities can be specified.
+                          **Changes**: As of Zulip 7.0 (feature level 176), clients will
+                          receive an empty array unless the event queue is registered with the
+                          client capability `{"linkifier_url_template": true}`. This is because
+                          the change to specify linkifiers with a URL template instead of a
+                          URL format string is not backwards-compatible.
+                          See [`client_capabilities`](/api/register-queue#parameter-client_capabilities)
+                          parameter for how this can be specified.
 
-                          **Changes**: In Zulip 7.0 (feature level 176), clients will always receive
-                          an empty list in the response unless they set the `linkifier_url_template`
-                          client capability to `true`.
-
-                          **Changes**: New in Zulip 4.0 (feature level 54). Clients can
-                          access these data on older server versions via the previous
-                          `realm_filters` key.
+                          New in Zulip 4.0 (feature level 54). Clients can access this data for
+                          servers on earlier feature levels via the legacy `realm_filters` property.
                         items:
                           type: object
                           additionalProperties: false
@@ -11006,8 +11000,8 @@ paths:
                             pattern:
                               type: string
                               description: |
-                                The string regex pattern which represents the pattern that
-                                should be linkified on matching.
+                                The [Python regular expression](https://docs.python.org/3/howto/regex.html)
+                                pattern which represents the pattern that should be linkified on matching.
                             url_template:
                               type: string
                               description: |
@@ -11030,22 +11024,21 @@ paths:
                               - type: integer
                               - type: string
                         description: |
-                          Legacy property for linkifiers. Present if `realm_filters` is
-                          present in `fetch_event_types`.
+                          Legacy property for [linkifiers](/help/add-a-custom-linkifier).
+                          Present if `realm_filters` is present in `fetch_event_types`.
 
                           When present, this is always an empty array.
 
-                          **Changes**: Became empty in Zulip 7.0 (feature level 176). In previous versions,
-                          there is an array of tuples (fixed-length arrays) where each tuple describes
-                          a single [linkifier](/help/add-a-custom-linkifier).
-                          The first element of the tuple is a string regex pattern which represents
-                          the pattern that should be linkified on matching.
-                          The second element is the URL with which the
-                          pattern matching string should be linkified with and the third element
-                          is the ID of the realm filter.
+                          **Changes**: Prior to Zulip 7.0 (feature level 176), this was an
+                          array of tuples (fixed-length arrays), where each tuple described
+                          a single linkifier. The first element of the tuple was a string
+                          regex pattern which represented the pattern to be linkified on
+                          matching. The second element was the URL with which the pattern
+                          matching string should be linkified with, and the third element
+                          was the ID of the realm filter.
 
-                          **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
-                          the `realm_linkifiers` key instead.
+                          **Deprecated** in Zulip 4.0 (feature level 54), replaced by the
+                          `realm_linkifiers` key.
                       realm_playgrounds:
                         type: array
                         items:
@@ -18672,15 +18665,14 @@ components:
       name: url_template
       in: query
       description: |
-        The [RFC
-        6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL template
-        used for the link. If you used named groups for the `pattern`,
-        you can insert their content here with
-        `{name_of_the_capturing_group}`.
+        The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+        compliant URL template used for the link.
+        If you used named groups in `pattern`, you can insert their
+        content here with `{name_of_group}`.
 
         **Changes**: New in Zulip 7.0 (feature level 176). This replaced
-        the parameter `url_format_string`, which was a format string in which
-        named groups' content could be inserted with `%(name_of_the_capturing_group)s`.
+        the `url_format_string` parameter, which was a format string in which
+        named groups' content could be inserted with `%(name_of_group)s`.
       schema:
         type: string
       example: https://github.com/zulip/zulip/issues/{id}
