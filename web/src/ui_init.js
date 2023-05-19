@@ -735,7 +735,7 @@ $(async () => {
             channel.post({
                 url: "/json/register",
                 data,
-                resolve,
+                success: resolve,
                 error(xhr) {
                     blueslip.error("Spectator failed to register", {
                         status: xhr.status,
