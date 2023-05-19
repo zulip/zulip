@@ -7,7 +7,6 @@ import * as fenced_code from "../shared/src/fenced_code";
 import render_compose from "../templates/compose.hbs";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
-import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
@@ -167,10 +166,6 @@ function message_hover($message_row) {
         data_template_id = "move-message-tooltip-template";
     }
     $edit_content.attr("data-tooltip-template-id", data_template_id);
-}
-
-function initialize_bottom_whitespace() {
-    $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
 }
 
 function initialize_left_sidebar() {
@@ -622,7 +617,6 @@ export function initialize_everything() {
     // modules' initialization has not been audited for whether they
     // expect DOM elements to always exist (As that did before these
     // modules were migrated from Django templates to Handlebars).
-    initialize_bottom_whitespace();
     initialize_left_sidebar();
     initialize_right_sidebar();
     initialize_compose_box();

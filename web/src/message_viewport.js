@@ -290,7 +290,7 @@ export function scrollTop(target_scrollTop) {
     }
     let $ret = $message_pane.scrollTop(target_scrollTop);
     const new_scrollTop = $message_pane.scrollTop();
-    const space_to_scroll = $("#bottom_whitespace").offset().top - height();
+    const space_to_scroll = $("#bottom-sticky-container").offset().top - height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
     if (

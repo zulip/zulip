@@ -2352,11 +2352,6 @@ nav {
     }
 }
 
-#bottom_whitespace {
-    display: block;
-    height: 300px;
-}
-
 .operator_value {
     font-family: "Source Code Pro", monospace;
     color: hsl(353deg 70% 65%);

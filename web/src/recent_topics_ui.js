@@ -886,6 +886,7 @@ export function show() {
     // Hide "middle-column" which has html for rendering
     // a messages narrow. We hide it and show recent topics.
     $("#message_feed_container").hide();
+    $("#bottom_whitespace").hide();
     $("#recent_topics_view").show();
     set_visible(true);
 
@@ -922,8 +923,10 @@ export function hide() {
     }
 
     $("#message_feed_container").show();
+    $("#bottom_whitespace").show();
     $("#recent_topics_view").hide();
     set_visible(false);
+    resize.resize_middle_column();
 
     // This solves a bug with message_view_header
     // being broken sometimes when we narrow

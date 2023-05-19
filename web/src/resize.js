@@ -9,13 +9,15 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as popovers from "./popovers";
+import * as recent_topics_util from "./recent_topics_util";
 import * as util from "./util";
 
-function get_bottom_space_height() {
-    const viewport_height = message_viewport.height();
-    const compose_height = $("#compose").safeOuterHeight(true);
-    const bottom_whitespace_height = viewport_height * 0.4 - compose_height;
-    return bottom_whitespace_height;
+function get_bottom_sticky_container_height() {
+    if (recent_topics_util.is_visible()) {
+        return $("#compose").safeOuterHeight(true);
+    }
+
+    return message_viewport.height() * 0.4;
 }
 
 function get_new_heights() {
@@ -89,16 +91,16 @@ export function watch_manual_resize(element) {
     return [box_handler, body_handler];
 }
 
-export function reset_compose_message_max_height(bottom_whitespace_height) {
+export function reset_compose_message_max_height(bottom_sticky_container_height) {
     // If the compose-box is open, we set the `max-height` property of
     // `compose-textarea` and `preview-textarea`, so that the
     // compose-box's maximum extent does not overlap the last message
     // in the current stream.  We also leave a tiny bit of space after
     // the last message of the current stream.
 
-    // Compute bottom_whitespace_height if not provided by caller.
-    if (bottom_whitespace_height === undefined) {
-        bottom_whitespace_height = get_bottom_space_height();
+    // Compute bottom_sticky_container_height if not provided by caller.
+    if (bottom_sticky_container_height === undefined) {
+        bottom_sticky_container_height = get_bottom_sticky_container_height();
     }
 
     const compose_height = $("#compose").get(0).getBoundingClientRect().height;
@@ -113,41 +115,40 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
         "max-height",
         // Because <textarea> max-height includes padding, we subtract
         // 10 for the padding and 10 for the selected message border.
-        bottom_whitespace_height + compose_height - compose_non_textarea_height - 20,
+        bottom_sticky_container_height - compose_non_textarea_height - 20,
     );
     $("#preview_message_area").css(
         "max-height",
         // Because <div> max-height doesn't include padding, we only
         // subtract 10 for the selected message border.
-        bottom_whitespace_height + compose_height - compose_non_textarea_height - 10,
+        bottom_sticky_container_height - compose_non_textarea_height - 10,
     );
 }
 
 export function compose_height_resize_handler() {
     const resizeObserver = new ResizeObserver(() => {
         resize_middle_column();
-        $("#bottom_whitespace").height(get_bottom_space_height());
     });
     resizeObserver.observe(document.querySelector("#compose"));
 }
 
-export function resize_bottom_whitespace() {
-    const bottom_whitespace_height = get_bottom_space_height();
-    $("#bottom_whitespace").height(bottom_whitespace_height);
+export function resize_bottom_sticky_container() {
+    const bottom_sticky_container_height = get_bottom_sticky_container_height();
+    $("#bottom-sticky-container").height(bottom_sticky_container_height);
 
     // The height of the compose box is tied to that of
-    // bottom_whitespace, so update it if necessary.
+    // bottom_sticky_container, so update it if necessary.
     //
     // reset_compose_message_max_height cannot compute the right
     // height correctly while compose is hidden. This is OK, because
     // we also resize compose every time it is opened.
     if (compose_state.composing()) {
-        reset_compose_message_max_height(bottom_whitespace_height);
+        reset_compose_message_max_height(bottom_sticky_container_height);
     }
 }
 
 export function resize_stream_filters_container() {
-    resize_bottom_whitespace();
+    resize_bottom_sticky_container();
     const h = get_new_heights();
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
@@ -161,15 +162,21 @@ export function resize_sidebars() {
 export function resize_middle_column() {
     const viewport_height = message_viewport.height();
     const navbar_sticky_container_height = $("#navbar-sticky-container").safeOuterHeight(true);
-    const compose_height = $("#compose").safeOuterHeight(true);
-    const content_height = viewport_height - navbar_sticky_container_height - compose_height;
+    const bottom_sticky_container_heigh = get_bottom_sticky_container_height();
+    const content_height =
+        viewport_height - navbar_sticky_container_height - bottom_sticky_container_heigh;
 
-    const recent_topics_filters_height = $("#recent_topics_filter_buttons").safeOuterHeight(true);
-    const recent_topics_table_height = content_height - recent_topics_filters_height;
+    if (recent_topics_util.is_visible()) {
+        const recent_topics_filters_height = $("#recent_topics_filter_buttons").safeOuterHeight(
+            true,
+        );
+        const recent_topics_table_height = content_height - recent_topics_filters_height;
 
-    // Resize recent topics.
-    $("#recent_topics_view").css("height", content_height);
-    $(".table_fix_head").css("height", recent_topics_table_height);
+        // Resize recent topics.
+        $("#recent_topics_view").css("height", content_height);
+        $(".table_fix_head").css("height", recent_topics_table_height);
+        return;
+    }
 
     const message_feed_padding = Number.parseInt(
         $("#message_feed_container").css("paddingTop"),
@@ -203,7 +210,7 @@ export function resize_app() {
 export function resize_page_components() {
     resize_app();
     resize_sidebars();
-    resize_bottom_whitespace();
+    resize_bottom_sticky_container();
 }
 
 let _old_width = $(window).width();

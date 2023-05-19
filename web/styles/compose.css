@@ -216,11 +216,26 @@
     }
 }
 
-#compose {
+#bottom-sticky-container {
+    display: flex;
+    flex-direction: column;
     position: sticky;
     bottom: 0;
     z-index: 4;
+    height: 300px;
     width: 100%;
+    pointer-events: none;
+
+    #bottom_whitespace {
+        display: block;
+        visibility: hidden;
+        flex-grow: 1;
+    }
+
+    #compose {
+        pointer-events: auto;
+        width: 100%;
+    }
 }
 
 #compose-container {
