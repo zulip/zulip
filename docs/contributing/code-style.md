@@ -30,6 +30,8 @@ outlines some general
 applicable to all languages used in the codebase, as well as specific
 guidance on [Python](#python-specific-conventions-and-practices) and
 [JavaScript and TypeScript](#javascript-and-typescript-conventions-and-practices).
+([HTML and CSS](../subsystems/html-css.md) are outlined in their own
+documentation.)
 
 At the end of the document, you can read about
 [dangerous constructs in Django](#dangerous-constructs-in-django) and
@@ -213,23 +215,8 @@ avoided in new code.
 
 ## HTML and CSS
 
-Our CSS is formatted with [Prettier](https://prettier.io/). You can
-ask Prettier to reformat all code via our [linter
-tool](../testing/linters.md) with `./tools/lint --only=prettier --fix`.
-You can also [integrate it with your
-editor](https://prettier.io/docs/en/editors.html).
-
-Avoid using the `style=` attribute unless the styling is actually
-dynamic. Instead, define logical classes and put your styles in
-external CSS files such as `zulip.css`.
-
-Don't use the tag name in a selector unless you have to. In other words,
-use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
-type changes in the future.
-
-Additionally, multi-word class and ID values should be hyphenated,
-also known as _kebab case_. In HTML, opt for `class="my-multiword-class"`,
-with its corresponding CSS selector as `.my-multiword-class`.
+See the documentation on [HTML and CSS](../subsystems/html-css.md)
+for guidance on conventions in those language.
 
 ## Dangerous constructs in Django
 
