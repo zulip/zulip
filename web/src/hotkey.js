@@ -309,7 +309,7 @@ export function process_escape_key(e) {
             }
 
             // Check for errors in compose box; close errors if they exist
-            if ($(".compose_banner").length) {
+            if ($("main-view-banner").length) {
                 compose_banner.clear_all();
                 return true;
             }
