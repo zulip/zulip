@@ -69,7 +69,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
     if not valid_endpoint:
         return (404, {}, b"")
 
-    if request.headers.get("Authorization") != "Bearer xoxp-valid-token":
+    if request.headers.get("Authorization") != "Bearer xoxb-valid-token":
         return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
 
     if request.url == "https://slack.com/api/users.list":
@@ -114,7 +114,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
 class SlackImporter(ZulipTestCase):
     @responses.activate
     def test_get_slack_api_data(self) -> None:
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # Users list
         slack_user_list_url = "https://slack.com/api/users.list"
@@ -151,7 +151,7 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_team_info_url, "team", token=token)
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: team_not_found",))
 
-        token = "xoxp-invalid-token"
+        token = "xoxb-invalid-token"
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: invalid_auth",))
@@ -160,7 +160,7 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_user_list_url, "members")
         self.assertEqual(invalid.exception.args, ("Slack token missing in kwargs",))
 
-        token = "xoxp-status404"
+        token = "xoxb-status404"
         wrong_url = "https://slack.com/api/wrong"
         responses.add_callback(responses.GET, wrong_url, callback=request_callback)
         with self.assertRaises(Exception) as invalid:
@@ -245,7 +245,7 @@ class SlackImporter(ZulipTestCase):
         slack_team_info_url = "https://slack.com/api/team.info"
         responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
         slack_data_dir = self.fixture_file_name("", type="slack_fixtures")
-        fetch_shared_channel_users(users, slack_data_dir, "xoxp-valid-token")
+        fetch_shared_channel_users(users, slack_data_dir, "xoxb-valid-token")
 
         # Normal users
         self.assert_length(users, 5)
@@ -1203,7 +1203,7 @@ class SlackImporter(ZulipTestCase):
 
         test_realm_subdomain = "test-slack-import"
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-importer-data")
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
@@ -1400,7 +1400,7 @@ class SlackImporter(ZulipTestCase):
         test_slack_zip_file = os.path.join(test_slack_dir, "test_unicode_slack_importer.zip")
         test_slack_unzipped_file = os.path.join(test_slack_dir, "test_unicode_slack_importer")
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-unicode-slack-importer-data")
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
