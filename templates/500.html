@@ -1,7 +1,7 @@
 {% extends "zerver/portico.html" %}
 
 {% block title %}
-<title>{{ _("Internal server error") }} | Zulip</title>
+<title>{{ _("Internal server error") }} | Practice Chat</title>
 {% endblock %}
 
 {% block customhead %}
@@ -21,7 +21,7 @@
                     <h1 class="lead">{{ _("Internal server error") }}</h1>
                     <p>
                         {% trans %}
-                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.
+                        Your Practice Chat cannot be loaded because the server is experiencing technical difficulties.
                         {% endtrans %}
                     </p>
                     <p>
@@ -30,7 +30,7 @@
                         {% endtrans %}
                         {% if corporate_enabled %}
                             {% trans %}
-                            In the meantime, you can <a href="mailto:{{support_email}}">contact Zulip support</a>.
+                            In the meantime, you can <a href="mailto:{{support_email}}">contact Practice Chat support</a>.
                             {% endtrans %}
                         {% else %}
                             {% trans %}
@@ -43,7 +43,7 @@
                         <p>
                             {% trans troubleshooting_url="https://zulip.readthedocs.io/en/latest/production/troubleshooting.html" %}
                             If you administer this server, you may want to check out the
-                            <a href="{{troubleshooting_url}}">Zulip server troubleshooting guide</a>.
+                            <a href="{{troubleshooting_url}}">Practice Chat server troubleshooting guide</a>.
                             {% endtrans %}
                         </p>
                     {% endif %}
