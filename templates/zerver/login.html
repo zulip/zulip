@@ -29,9 +29,9 @@ page can be easily identified in it's respective JavaScript file. -->
                         <div class="organization-path">{{ realm_uri }}</div>
                     </div>
                 </div>
-                <div class="description">
-                    {{ realm_description|safe }}
-                </div>
+{#                <div class="description">#}
+{#                    {{ realm_description|safe }}#}
+{#                </div>#}
             </div>
             {% endif %}
 
@@ -159,11 +159,11 @@ page can be easily identified in it's respective JavaScript file. -->
             </div>
         </div>
 
-        {% if realm_invite_required %}
-        <div class="contact-admin">
-            <p class="invite-hint">{{ _("Don't have an account yet? You need to be invited to join this organization.") }}</p>
-        </div>
-        {% endif %}
+{#        {% if realm_invite_required %}#}
+{#        <div class="contact-admin">#}
+{#            <p class="invite-hint">{{ _("Don't have an account yet? You need to be invited to join this organization.") }}</p>#}
+{#        </div>#}
+{#        {% endif %}#}
     </div>
 </div>
 

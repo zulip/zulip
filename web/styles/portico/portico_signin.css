@@ -19,6 +19,11 @@ html {
     font-weight: 600;
 }
 
+.app-main.white-box {
+    display: flex;
+    align-items: center;
+}
+
 .white-box {
     position: relative;
     padding: 30px;
@@ -309,7 +314,7 @@ html {
         display: inline-block;
         vertical-align: top;
         padding: 1px 22px;
-        font-family: "Product Sans", sans-serif;
+        font-family: "Source Sans 3", sans-serif;
         font-size: 1rem;
         font-weight: 400;
         box-sizing: border-box;
@@ -326,7 +331,7 @@ html {
         display: inline-block;
         vertical-align: top;
         padding: 1px 22px;
-        font-family: "Product Sans", sans-serif;
+        font-family: "Source Sans 3", sans-serif;
         font-size: 1rem;
         font-weight: 400;
         box-sizing: border-box;
@@ -356,6 +361,8 @@ html {
     &.new-style {
         text-align: left;
         color: hsl(0deg 0% 45%);
+        display: flex;
+        align-items: center;
     }
 
     #errors {
@@ -457,7 +464,7 @@ html {
         vertical-align: top;
         padding: 13px 22px;
 
-        font-family: "Product Sans", sans-serif;
+        font-family: "Source Sans 3", sans-serif;
 
         font-size: 1.2rem;
         font-weight: 400;
@@ -568,7 +575,7 @@ html {
             padding: 10px 32px 10px 12px;
             margin: 25px 0 5px;
 
-            font-family: "Product Sans", sans-serif;
+            font-family: "Source Sans 3", sans-serif;
             font-size: 1.2rem;
             line-height: normal;
             height: auto;
@@ -807,7 +814,7 @@ html {
 
     .left-side {
         width: 500px;
-        border-right: 1px solid hsl(0deg 0% 93%);
+        /*border-right: 1px solid hsl(0deg 0% 93%);*/
         position: relative;
         left: -1px;
 
