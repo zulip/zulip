@@ -361,6 +361,8 @@ html {
     &.new-style {
         text-align: left;
         color: hsl(0deg 0% 45%);
+        display: flex;
+        align-items: center;
     }
 
     #errors {
