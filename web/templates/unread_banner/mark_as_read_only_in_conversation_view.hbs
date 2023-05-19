@@ -1,15 +1,13 @@
-<div id="mark_as_read_turned_off_banner" class="home-error-bar info">
-    <p id="mark_as_read_turned_off_content">
+<div id="mark_as_read_turned_off_banner" class="main-view-banner home-error-bar info">
+    <p id="mark_as_read_turned_off_content" class="banner_content">
         {{#tr}}
             Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>
             {{#*inline "z-link"}}<a href='/#settings/display-settings'>{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
     </p>
-    <div id="mark_as_read_controls">
-        <button id="mark_view_read" class="banner-action-button">
-            {{t 'Mark as read' }}
-        </button>
-    </div>
-    <a role="button" id="mark_as_read_close" class="zulip-icon zulip-icon-close"></a>
+    <button id="mark_view_read" class="main-view-banner-action-button">
+        {{t 'Mark as read' }}
+    </button>
+    <a role="button" id="mark_as_read_close" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
 </div>
 
