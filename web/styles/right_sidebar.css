@@ -25,8 +25,8 @@ $user_status_emoji_width: 24px;
         list-style-type: none;
         border-radius: 4px;
         padding-right: 15px;
-        padding-top: 1px;
-        padding-bottom: 2px;
+        padding-top: 5px;
+        padding-bottom: 5px;
 
         .user-list-sidebar-menu-icon {
             position: absolute;

@@ -15,10 +15,10 @@
 <p>
     {% trans referrer_name=macros.referrer_email_tag(referrer_email, referrer_full_name) %}{{ referrer_name }} wants you to join them on Practice Chat &mdash; the team communication tool designed for productivity.{% endtrans %}
 </p>
-<p>
-    {{ _("To get started, click the button below.") }}
-    <a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a>
-</p>
+
+<p>{{ _("To get started, click the button below.") }}</p>
+<p><a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a></p>
+
 <p>
     {% if corporate_enabled %}
         {{macros.contact_us_zulip_cloud(support_email)}}

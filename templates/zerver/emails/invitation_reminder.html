@@ -11,12 +11,10 @@
 
 <p>
     {{ _("To get started, click the button below.") }}
-    <a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a>
 </p>
 
-<p>
-    {{ _("This is the last reminder you'll receive for this invitation.") }}
-</p>
+<p><a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a></p>
+<p>{{ _("This is the last reminder you'll receive for this invitation.") }}</p>
 
 <p>
     {% trans referrer_name=macros.email_tag(referrer_email, referrer_name) %}
