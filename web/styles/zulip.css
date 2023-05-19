@@ -1568,7 +1568,6 @@ td.pointer {
 }
 
 .unread_marker {
-    grid-column: 1 / 2;
     margin-left: var(--unread-marker-left);
     opacity: 0;
     transition: all 0.3s ease-out;
@@ -1582,8 +1581,7 @@ td.pointer {
     }
 
     &.date_unread_marker {
-        grid-area: "date_unread_marker";
-        grid-row: 1 / 2;
+        grid-area: date_unread_marker;
 
         .unread-marker-fill {
             border-radius: 0 !important;
@@ -1592,8 +1590,7 @@ td.pointer {
     }
 
     &.message_unread_marker {
-        grid-area: "message_unread_marker";
-        grid-row: 2 / 3;
+        grid-area: message_unread_marker;
     }
 }
 
