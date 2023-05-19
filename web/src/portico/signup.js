@@ -45,7 +45,7 @@ $(() => {
         "#id_new_password2 ~ .password_visibility_toggle",
     );
 
-    $("#registration, #password_reset", "#create_realm").validate({
+    $("#registration, #password_reset, #create_realm").validate({
         rules: {
             password: "password_strength",
             new_password1: "password_strength",
