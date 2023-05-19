@@ -101,8 +101,9 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
-  Added new user setting `web_mark_read_on_scroll_policy` . This determines whether to mark
-  messages as read or not as the client scrolls through their feed.
+  Added new user setting `web_mark_read_on_scroll_policy`. Clients may use this to
+  determine the user's preference on whether to mark messages as read or not when
+  scrolling through their message feed.
 
 **Feature level 174**:
 
