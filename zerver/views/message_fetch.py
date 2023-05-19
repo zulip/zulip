@@ -17,6 +17,7 @@ from zerver.lib.narrow import (
     is_spectator_compatible,
     is_web_public_narrow,
     narrow_parameter,
+    parse_anchor_date_value,
     parse_anchor_value,
 )
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -83,6 +84,7 @@ def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     anchor_val: Optional[str] = REQ("anchor", default=None),
+    anchor_date_val: Optional[str] = REQ("anchor_date", default=None),
     include_anchor: bool = REQ(json_validator=check_bool, default=True),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
@@ -93,6 +95,7 @@ def get_messages_backend(
     client_gravatar: bool = REQ(json_validator=check_bool, default=True),
     apply_markdown: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
+    anchor_date = parse_anchor_date_value(anchor_val, anchor_date_val)
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         raise JsonableError(
@@ -160,6 +163,7 @@ def get_messages_backend(
         realm=realm,
         is_web_public_query=is_web_public_query,
         anchor=anchor,
+        anchor_date=anchor_date,
         include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,

@@ -5613,6 +5613,10 @@ paths:
             - `oldest`: The oldest message.
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
+            - `date`: Anchors the retrieval to the message closest to the specified date
+              in the `anchor_date` parameter, if any; otherwise, the most recent message.
+
+            **Changes**: `date` enum value is new in Zulip 7.1 (feature level 188).
 
             **Changes**: String values are new in Zulip 3.0 (feature level 1). The
             `first_unread` functionality was supported in Zulip 2.1.x
@@ -5625,8 +5629,28 @@ paths:
           schema:
             oneOf:
               - type: string
+                enum: [newest, oldest, first_unread, date]
               - type: integer
-          example: 43
+          example: date
+        - name: anchor_date
+          in: query
+          description: |
+            Date and time (in ISO 8601 format) to search for messages closest to this datetime.
+            If only the date is provided, the timezone will be interpreted as UTC.
+
+            **Changes**: New in Zulip 7.1 (feature level 188).
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+            nullable: true
+          example: "2023-05-18T00:00:00Z"
+          x-constraint:
+            - name: anchor-date-required
+              description: anchor_date is required if anchor is set to 'date'
+              expression: anchor == 'date' && anchor_date !== null
         - name: include_anchor
           in: query
           description: |
@@ -6381,12 +6405,36 @@ paths:
             - `oldest`: The oldest message.
             - `first_unread`: The oldest unread message matching the
               query, if any; otherwise, the most recent message.
+            - `date`: Anchors the retrieval to the message closest to the specified date
+              in the `anchor_date` parameter, if any; otherwise, the most recent message.
+
+            **Changes**: `date` enum value is new in Zulip 7.1 (feature level 188).
           schema:
             oneOf:
               - type: string
+                enum: [newest, oldest, first_unread, date]
               - type: integer
           example: 43
           required: true
+        - name: anchor_date
+          in: query
+          description: |
+            Date and time (in ISO 8601 format) to search for messages closest to this datetime.
+            If only the date is provided, the timezone will be interpreted as UTC.
+
+            **Changes**: New in Zulip 7.1 (feature level 188).
+          schema:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: string
+                format: date
+            nullable: true
+          example: "2023-05-18T00:00:00Z"
+          x-constraint:
+            - name: anchor-date-required
+              description: anchor_date is required if anchor is set to 'date'
+              expression: anchor == 'date' && anchor_date !== null
         - name: include_anchor
           in: query
           description: |

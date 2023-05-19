@@ -136,6 +136,7 @@ IGNORED_PHRASES = [
     r"does not apply to moderators and administrators",
     # Used in message-delete-time-limit setting label
     r"does not apply to administrators",
+    r"ISO",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

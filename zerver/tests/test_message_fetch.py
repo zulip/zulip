@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Un
 from unittest import mock
 
 import orjson
+import time_machine
+from django.core.exceptions import ValidationError
 from django.db import connection
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -3441,6 +3443,164 @@ class GetOldMessagesTest(ZulipTestCase):
         payload = get_messages_backend(request, user_profile)
         result = orjson.loads(payload.content)
         self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
+
+    def test_narrow_for_anchor_date(self) -> None:
+        user_profile = self.example_user("hamlet")
+        stream = self.make_stream("date-anchor")
+        self.subscribe(user_profile, stream.name)
+        current_datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+        interval_between_messages = 2  # days
+
+        message_ids = []
+        with time_machine.travel(current_datetime, tick=False) as traveller:
+            for _ in range(20):
+                message_id = self.send_stream_message(user_profile, stream.name)
+                message_ids.append(message_id)
+                traveller.shift(datetime.timedelta(days=interval_between_messages))
+
+        def get_message_search_result(search_date: str) -> Dict[str, Any]:
+            query_params = dict(
+                anchor="date",
+                anchor_date=search_date,
+                num_before=5,
+                num_after=5,
+                narrow=f'[["stream", "{stream.name}"]]',
+            )
+
+            request = HostRequestMock(query_params, user_profile)
+            payload = get_messages_backend(request, user_profile)
+            result = orjson.loads(payload.content)
+            return result
+
+        def verify_message_ids_and_closest_message_id(
+            result: Dict[str, Any], search_datetime: datetime.datetime
+        ) -> None:
+            id_to_timestamp_dict = {}
+            for message in result["messages"]:
+                self.assertIn(message["id"], message_ids)
+                id_to_timestamp_dict[message["id"]] = message["timestamp"]
+
+            actual_closest_message_id = result["anchor"]
+            expected_closest_message_id, _ = min(
+                id_to_timestamp_dict.items(), key=lambda x: abs(x[1] - search_datetime.timestamp())
+            )
+            self.assertEqual(actual_closest_message_id, expected_closest_message_id)
+
+        # Case: A message is sent on the `search_datetime`
+        search_by_days = interval_between_messages * 5
+        expected_anchor = message_ids[5]
+        search_datetime = current_datetime + datetime.timedelta(days=search_by_days)
+        search_date_str = search_datetime.isoformat()
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], expected_anchor)
+        self.assertEqual(result["found_newest"], False)
+        self.assertEqual(result["found_oldest"], False)
+        verify_message_ids_and_closest_message_id(result, search_datetime)
+
+        # Case: search_date_str is in YYYY-MM-DD format (date only)
+        search_date_str = search_datetime.strftime("%Y-%m-%d")
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], expected_anchor)
+        self.assertEqual(result["found_newest"], False)
+        self.assertEqual(result["found_oldest"], False)
+        verify_message_ids_and_closest_message_id(result, search_datetime)
+
+        # Case: No message is sent on the `search_datetime`
+        search_datetime -= datetime.timedelta(
+            hours=10
+        )  # Search in the vicinity of the message date sent
+        search_date_str = search_datetime.isoformat()
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], expected_anchor)
+        self.assertEqual(result["found_newest"], False)
+        self.assertEqual(result["found_oldest"], False)
+        verify_message_ids_and_closest_message_id(result, search_datetime)
+
+        # Case: No message is sent on the `search_datetime`
+        search_datetime += datetime.timedelta(
+            hours=20
+        )  # Search in the vicinity of the message date sent
+        search_date_str = search_datetime.isoformat()
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], expected_anchor)
+        self.assertEqual(result["found_newest"], False)
+        self.assertEqual(result["found_oldest"], False)
+        verify_message_ids_and_closest_message_id(result, search_datetime)
+
+        # Case: search_datetime < datetime of the oldest message sent
+        search_datetime = current_datetime - datetime.timedelta(days=search_by_days * 50)
+        search_date_str = search_datetime.isoformat()
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], message_ids[0])
+        self.assertEqual(result["found_newest"], False)
+        self.assertEqual(result["found_oldest"], True)
+        verify_message_ids_and_closest_message_id(result, search_datetime)
+
+        # Case: search_datetime > datetime of the latest message sent
+        search_datetime = current_datetime + datetime.timedelta(days=search_by_days * 50)
+        search_date_str = search_datetime.isoformat()
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], message_ids[-1])
+        self.assertEqual(result["found_newest"], True)
+        self.assertEqual(result["found_oldest"], False)
+        verify_message_ids_and_closest_message_id(result, search_datetime)
+
+        # Case: Invalid search date format
+        with self.assertRaises(ValidationError) as validation_error:
+            search_date_str = search_datetime.strftime("%d-%b-%Y")
+            get_message_search_result(search_date_str)
+        self.assertEqual(
+            validation_error.exception.message,
+            "Search date must be in the ISO 8601 format.",
+        )
+
+        # Case: Missing 'anchor_date' argument
+        with self.assertRaises(JsonableError) as error:
+            result = get_message_search_result(search_date="")
+        self.assertEqual(
+            str(error.exception),
+            "Missing 'anchor_date' argument.",
+        )
+
+        # Case: No messages found for the narrow conditions even though a message is sent on the `search_datetime`
+        search_date_str = search_datetime.isoformat()
+        query_params = dict(
+            anchor="date",
+            anchor_date=search_date_str,
+            num_before=5,
+            num_after=5,
+            narrow=f'[["stream", "{stream.name}"], ["search", "thisissomerandomsearch"]]',
+        )
+        request = HostRequestMock(query_params, user_profile)
+        payload = get_messages_backend(request, user_profile)
+        result = orjson.loads(payload.content)
+        self.assertEqual(result["anchor"], LARGER_THAN_MAX_MESSAGE_ID)
+        self.assertEqual(result["found_newest"], True)
+        self.assertEqual(result["found_oldest"], True)
+
+        # Case: Anchor should point to the first message when multiple messages are sent on a single day
+        first_message_id = None
+        current_datetime += datetime.timedelta(days=search_by_days * 50)
+        with time_machine.travel(current_datetime) as traveller:
+            for _ in range(20):
+                message_id = self.send_stream_message(user_profile, stream.name)
+                if first_message_id is None:
+                    first_message_id = message_id
+
+        search_datetime = current_datetime
+        search_date_str = search_datetime.isoformat()
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], first_message_id)
+        self.assertEqual(result["found_newest"], False)
+        self.assertEqual(result["found_oldest"], False)
+
+        # Case: When only date filter is passed.
+        search_datetime = datetime.datetime(1888, 6, 2, tzinfo=timezone.utc)
+        search_date_str = search_datetime.isoformat()
+        result = get_message_search_result(search_date_str)
+        self.assertEqual(result["anchor"], 151)
+        self.assertEqual(result["found_newest"], False)
+        self.assertEqual(result["found_oldest"], True)
 
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user("hamlet")

@@ -18,6 +18,18 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 8.1
+
+**Feature level 188**
+
+* [`GET /messages`](/api/get-messages),
+  [`POST /message/flags/narrow`](/api/update-message-flags-for-narrow): Added
+  a new enum value `date` for the `anchor` parameter. When using the
+  `date` value for the `anchor` parameter, clients also need to set
+  the new `anchor_date` parameter in ISO 8601 format. This allows to
+  anchor the request to the message sent closest to the specified
+  date in the `anchor_date` parameter.
+
 ## Changes in Zulip 8.0
 
 **Feature level 189**

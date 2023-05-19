@@ -13,6 +13,7 @@ from zerver.lib.narrow import (
     OptionalNarrowListT,
     fetch_messages,
     narrow_parameter,
+    parse_anchor_date_value,
     parse_anchor_value,
 )
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
@@ -72,6 +73,7 @@ def update_message_flags_for_narrow(
     request: HttpRequest,
     user_profile: UserProfile,
     anchor_val: str = REQ("anchor"),
+    anchor_date_val: Optional[str] = REQ("anchor_date", default=None),
     include_anchor: bool = REQ(json_validator=check_bool, default=True),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
@@ -79,6 +81,7 @@ def update_message_flags_for_narrow(
     operation: str = REQ("op"),
     flag: str = REQ(),
 ) -> HttpResponse:
+    anchor_date = parse_anchor_date_value(anchor_val, anchor_date_val)
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor=False)
 
     if num_before > 0 and num_after > 0 and not include_anchor:
@@ -96,6 +99,7 @@ def update_message_flags_for_narrow(
         realm=user_profile.realm,
         is_web_public_query=False,
         anchor=anchor,
+        anchor_date=anchor_date,
         include_anchor=include_anchor,
         num_before=num_before,
         num_after=num_after,
