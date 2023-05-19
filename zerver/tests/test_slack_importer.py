@@ -28,6 +28,7 @@ from zerver.data_import.slack import (
     SlackBotEmail,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
+    check_token_access,
     convert_slack_workspace_messages,
     do_convert_data,
     fetch_shared_channel_users,
@@ -180,6 +181,62 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_realm_dict["string_id"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["name"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["date_created"], time)
+
+    @responses.activate
+    def test_check_token_access(self) -> None:
+        def token_request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+            auth = request.headers.get("Authorization")
+            if auth == "Bearer xoxb-broken-request":
+                return (400, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
+
+            if auth == "Bearer xoxb-invalid-token":
+                return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
+
+            if auth == "Bearer xoxb-limited-scopes":
+                return (
+                    200,
+                    {"x-oauth-scopes": "emoji:read,bogus:scope"},
+                    orjson.dumps({"ok": True}),
+                )
+            if auth == "Bearer xoxb-valid-token":
+                return (
+                    200,
+                    {"x-oauth-scopes": "emoji:read,users:read,users:read.email,team:read"},
+                    orjson.dumps({"ok": True}),
+                )
+            else:  # nocoverage
+                raise Exception("Unknown token mock")
+
+        responses.add_callback(
+            responses.GET, "https://slack.com/api/team.info", callback=token_request_callback
+        )
+
+        def exception_for(token: str) -> str:
+            with self.assertRaises(Exception) as invalid:
+                check_token_access(token)
+            return invalid.exception.args[0]
+
+        self.assertEqual(
+            exception_for("xoxq-unknown"),
+            "Unknown token type -- must start with xoxb- or xoxp-",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-invalid-token"),
+            "Invalid Slack token: xoxb-invalid-token, invalid_auth",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-broken-request"),
+            "Failed to fetch data (HTTP status 400) for Slack token: xoxb-broken-request",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-limited-scopes"),
+            "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
+        )
+
+        check_token_access("xoxb-valid-token")
 
     def test_get_owner(self) -> None:
         user_data = [
@@ -1186,8 +1243,10 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.check_token_access")
     def test_slack_import_to_existing_database(
         self,
+        mock_check_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -1385,8 +1444,10 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.check_token_access")
     def test_slack_import_unicode_filenames(
         self,
+        mock_check_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
