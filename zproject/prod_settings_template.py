@@ -648,6 +648,20 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
 ##    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
 
+########
+## Github previews.
+##
+## Zulip has a feature to display Github issues and Pull requests previews
+## when a related url is linked in a message. The initial limit of 50 requests per hour does not require
+## authentication, but if more requests or access to private repositories are needed, a Personal Access Token
+## is required. We can use any type of personal access token, but you may want to use a fined grained token as
+## Fine-grained personal access tokens have several security advantages over classic personal access tokens.
+## Zulip needs only issues and pull request permission to preview the urls, so you have to give permissions to these
+## for private repos(if needed).
+## To create a token, follow the steps provided by Github :
+## https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-fine-grained-personal-access-token
+## After creating the token, add its value as "github_api_auth_token" in the /etc/zulip/zulip-secrets.conf file.
+
 
 ################
 ## Logging and error reporting.

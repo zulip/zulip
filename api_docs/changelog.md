@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 188**
+
+* [`POST /previewable`](/api/previewable):
+  Added new endpoint to get the data of previewable URLs.
+
 Feature levels 186-187 are reserved for future use in 7.x maintenance
 releases.
 

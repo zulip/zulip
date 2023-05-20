@@ -16,6 +16,7 @@
 * [Update personal message flags for narrow](/api/update-message-flags-for-narrow)
 * [Mark messages as read in bulk](/api/mark-all-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
+* [Previewable URL](/api/previewable)
 
 #### Scheduled messages
 

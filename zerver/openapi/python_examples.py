@@ -1480,6 +1480,16 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
     validate_against_openapi_schema(result, "/user_groups/{group_id}/members", "post", "200")
 
 
+@openapi_test_function("/previewable:post")
+def get_previewable_data(client: Client, url: str) -> None:
+    # {code_example|start}
+    request = {"url": url}
+
+    result = client.call_endpoint(url="/previewable", method="POST", request=request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/previewable", "post", "200")
+
+
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
@@ -1534,7 +1544,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     mark_stream_as_read(client)
     mark_topic_as_read(client)
     update_message_flags(client)
-
+    get_previewable_data(client, "https://github.com/zulip/zulip/pull/22368")
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
     test_update_message_edit_permission_error(client, nonadmin_client)

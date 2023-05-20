@@ -6757,6 +6757,129 @@ paths:
                       access read receipts for a message ID that
                       either does not exist or is not accessible to
                       the current user.
+  /previewable:
+    post:
+      operationId: previewable
+      summary: Endpoint to fetch data of a previewable URL.
+      tags: ["messages"]
+      description: |
+        Returns data of a URL which is provided to preview.
+      parameters:
+        - name: url
+          in: query
+          description: |
+            The previewable URL to get data of.
+          schema:
+            type: string
+          example: "https://www.github.com/zulip/zulip/issues/19710"
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      platform:
+                        type: string
+                        description: |
+                          Platform from which URL is.
+                        enum:
+                          - github
+                      title:
+                        type: string
+                        description: |
+                          The title of the issue.
+                      owner:
+                        type: string
+                        description: |
+                          Owner of the repo.
+                      repo:
+                        type: string
+                        description: |
+                          The name of the repository where the issue was opened.
+                      issue_number:
+                        type: string
+                        description: |
+                          The unique identifier for the issue.
+                      type:
+                        type: string
+                        description: |
+                          The type of the issue, either "issue" or "pull_request".
+                        enum:
+                          - issue
+                          - pull_request
+                      author:
+                        example: issue
+                        type: string
+                        description: |
+                          The username of the person who opened the issue.
+                      state:
+                        example: issue
+                        type: string
+                        enum:
+                          - open
+                          - closed
+                          - merged
+                        description: |
+                          The current state of the issue, either "open", "closed", or "merged".
+                      state_reason:
+                        type: string
+                        nullable: true
+                        description: |
+                          Only present if type is issue.
+
+                          The reason why the issue is in its current state.
+                      draft:
+                        type: boolean
+                        description: |
+                          Only present if type is pull_request.
+
+                          A boolean value indicating whether the pull request is a draft.
+                      merged_at:
+                        type: string
+                        nullable: true
+                        description: |
+                          Only present if type is pull_request.
+
+                          The date and time when the pull request was merged.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "platform": "github",
+                        "type": "issue",
+                        "owner": "zulip",
+                        "repo": "zulip",
+                        "issue_number": "19710",
+                        "title": "Show titles of GitHub issues on hover",
+                        "author": "alya",
+                        "state": "open",
+                        "state_reason": null,
+                      }
+                    description: |
+                      A typical successful JSON response may look like:
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "URL is not previewable.",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response for a URL passed which is not previewable:
 
   /messages/matches_narrow:
     get:

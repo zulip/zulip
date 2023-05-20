@@ -1095,6 +1095,8 @@ SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 
+GITHUB_API_AUTH_TOKEN = get_secret("github_api_auth_token")
+
 SOCIAL_AUTH_GOOGLE_SECRET = get_secret("social_auth_google_secret")
 # Fallback to google-oauth settings in case social auth settings for
 # Google are missing; this is for backwards-compatibility with older
