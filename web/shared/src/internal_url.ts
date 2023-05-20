@@ -1,3 +1,23 @@
+type MatchedMessage = {
+    match_content?: string;
+    match_data?: string;
+};
+
+type MessageType = "private" | "stream";
+
+type RawMessage = {
+    sender_email: string;
+    stream_id: number;
+    data: string;
+    type: MessageType;
+} & MatchedMessage;
+
+type Message = RawMessage & {
+    id: number;
+    to_user_ids: string;
+    topic: string;
+};
+
 type MaybeGetStreamName = (id: number) => string | undefined;
 
 const hashReplacements = new Map([
@@ -66,4 +86,54 @@ export function by_stream_topic_url(
         stream_id,
         maybe_get_stream_name,
     )}/topic/${encodeHashComponent(topic)}`;
+}
+
+export function pm_perma_link(user_ids: number[], zulip_feature_level: number): string | undefined {
+    if (!user_ids) {
+        return undefined;
+    }
+
+    let suffix;
+
+    if (user_ids.length >= 3) {
+        suffix = "group";
+    } else {
+        if (zulip_feature_level && zulip_feature_level < 177) {
+            suffix = "pm";
+        } else {
+            suffix = "dm";
+        }
+    }
+
+    let operator;
+
+    if (zulip_feature_level && zulip_feature_level < 177) {
+        operator = "pm-with";
+    } else {
+        operator = "dm";
+    }
+
+    const slug = user_ids.join(",") + "-" + suffix;
+    const url = "#narrow/" + operator + "/" + slug;
+    return url;
+}
+
+export function by_conversation_and_time_url(
+    realm: string,
+    message: Message,
+    user_ids: number[],
+    maybe_get_stream_name: MaybeGetStreamName,
+    zulip_feature_level: number,
+): string {
+    const suffix = "/near/" + encodeHashComponent(message.id.toString());
+
+    if (message.type === "stream") {
+        return (
+            realm +
+            by_stream_topic_url(message.stream_id, message.topic, maybe_get_stream_name) +
+            suffix
+        );
+    }
+
+    return realm + `${pm_perma_link(user_ids, zulip_feature_level)!}` + suffix;
 }

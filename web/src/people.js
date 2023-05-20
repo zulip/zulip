@@ -1,6 +1,7 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
 
+import * as internal_url from "../shared/src/internal_url";
 import * as typeahead from "../shared/src/typeahead";
 
 import * as blueslip from "./blueslip";
@@ -497,23 +498,8 @@ export function pm_with_user_ids(message) {
 }
 
 export function pm_perma_link(message) {
-    const user_ids = all_user_ids_in_pm(message);
-
-    if (!user_ids) {
-        return undefined;
-    }
-
-    let suffix;
-
-    if (user_ids.length >= 3) {
-        suffix = "group";
-    } else {
-        suffix = "dm";
-    }
-
-    const slug = user_ids.join(",") + "-" + suffix;
-    const url = "#narrow/dm/" + slug;
-    return url;
+    // Wrapper for web use of internal_url.pm_perma_link
+    return internal_url.pm_perma_link(all_user_ids_in_pm(message), null);
 }
 
 export function pm_with_url(message) {

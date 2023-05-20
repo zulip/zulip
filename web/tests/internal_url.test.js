@@ -50,3 +50,90 @@ run_test("test by_stream_topic_url", () => {
     const result = internal_url.by_stream_topic_url(123, "test topic", maybe_get_stream_name);
     assert.equal(result, "#narrow/stream/123-a-test-stream/topic/test.20topic");
 });
+
+run_test("test pm_perma_link", () => {
+    let message = {
+        type: "private",
+        display_recipient: [30, 301, 302],
+    };
+    assert.equal(
+        internal_url.pm_perma_link(message.display_recipient, null),
+        "#narrow/dm/30,301,302-group",
+    );
+
+    message = {
+        type: "private",
+        display_recipient: [30, 302],
+    };
+    assert.equal(
+        internal_url.pm_perma_link(message.display_recipient, 177),
+        "#narrow/dm/30,302-dm",
+    );
+
+    message = {
+        type: "private",
+        display_recipient: [30],
+    };
+    assert.equal(
+        internal_url.pm_perma_link(message.display_recipient, 173),
+        "#narrow/pm-with/30-pm",
+    );
+});
+
+run_test("test_by_conversation_and_time_url", () => {
+    const maybe_get_stream_name = () => "a test stream";
+
+    let message = {
+        type: "stream",
+        stream_id: 99,
+        topic: "testing",
+        id: 42,
+    };
+
+    assert.equal(
+        internal_url.by_conversation_and_time_url(
+            "http://zulip.zulipdev.com/",
+            message,
+            [15],
+            maybe_get_stream_name,
+            177,
+        ),
+        "http://zulip.zulipdev.com/#narrow/stream/99-a-test-stream/topic/testing/near/42",
+    );
+
+    message = {
+        type: "private",
+        stream_id: 15,
+        topic: "testing",
+        id: 43,
+    };
+
+    assert.equal(
+        internal_url.by_conversation_and_time_url(
+            "http://zulip.zulipdev.com/",
+            message,
+            [15],
+            maybe_get_stream_name,
+            173,
+        ),
+        "http://zulip.zulipdev.com/#narrow/pm-with/15-pm/near/43",
+    );
+
+    message = {
+        type: "private",
+        stream_id: 15,
+        topic: "testing",
+        id: 43,
+    };
+
+    assert.equal(
+        internal_url.by_conversation_and_time_url(
+            "http://zulip.zulipdev.com/",
+            message,
+            [15],
+            maybe_get_stream_name,
+            177,
+        ),
+        "http://zulip.zulipdev.com/#narrow/dm/15-dm/near/43",
+    );
+});
