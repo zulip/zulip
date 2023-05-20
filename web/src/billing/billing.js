@@ -52,7 +52,6 @@ export function initialize() {
             create_update_license_request();
         }
     });
-    
 
     $(".dialog_submit_button").on("click", () => {
         create_update_license_request();
