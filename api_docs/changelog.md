@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 428**
+
+* [`POST /previewable`](/api/previewable):
+  Added new endpoint to get the data of previewable URLs.
+
 **Feature level 427**
 
 * [`POST /register`](/api/register-queue): `stream_creator_or_nobody`
