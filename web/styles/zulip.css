@@ -1,10 +1,13 @@
+html {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+}
+
 body,
 html {
     width: 100%;
     height: 100%;
-    overflow-x: hidden;
-    overflow-y: hidden;
-
     touch-action: manipulation;
 }
 
@@ -359,9 +362,14 @@ p.n-margin {
     opacity: 1;
 }
 
-.header {
+#navbar-fixed-container {
     position: fixed;
-    z-index: 102; /* Needs to be higher than .alert-bar-container */
+    top: 0;
+    z-index: 102;
+    width: 100%;
+}
+
+.header {
     width: 100%;
     height: var(--header-height);
     /* Since the headers are sticky, we need non-transparent background. */
@@ -485,9 +493,7 @@ p.n-margin {
 .app {
     width: 100%;
     height: 100%;
-    overflow-y: scroll;
     z-index: 99;
-    -webkit-overflow-scrolling: touch;
 }
 
 .app-main,

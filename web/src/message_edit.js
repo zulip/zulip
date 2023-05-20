@@ -566,8 +566,8 @@ function edit_message($row, raw_content) {
 
 function start_edit_maintaining_scroll($row, content) {
     edit_message($row, content);
-    const row_bottom = $row.height() + $row.offset().top;
-    const composebox_top = $("#compose").offset().top;
+    const row_bottom = $row.get_offset_to_window().bottom;
+    const composebox_top = $("#compose").get_offset_to_window().top;
     if (row_bottom > composebox_top) {
         message_viewport.scrollTop(message_viewport.scrollTop() + row_bottom - composebox_top);
     }

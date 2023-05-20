@@ -231,7 +231,7 @@ import {get_string_diff} from "../../src/util";
         })
 
         // Zulip patch: Workaround for iOS safari problems
-        pos.top = this.$element.offset().top;
+        pos.top = this.$element.get_offset_to_window().top;
 
         var top_pos = pos.top + pos.height
         if (this.dropup) {

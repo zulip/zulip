@@ -56,11 +56,10 @@ export function message_viewport_info() {
 
     const res = {};
 
-    const $element_just_above_us = $("#navbar-container .header");
+    const $element_just_above_us = $("#navbar-fixed-container");
     const $element_just_below_us = $("#compose");
 
-    res.visible_top =
-        $element_just_above_us.offset().top + $element_just_above_us.safeOuterHeight();
+    res.visible_top = $element_just_above_us.safeOuterHeight();
 
     const $sticky_header = $(".sticky_header");
     if ($sticky_header.length) {
@@ -119,7 +118,7 @@ export function offset_from_bottom($last_row) {
     // A positive return value here means the last row is
     // below the bottom of the feed (i.e. obscured by the compose
     // box or even further below the bottom).
-    const message_bottom = $last_row.offset().top + $last_row.height();
+    const message_bottom = $last_row.get_offset_to_window().bottom;
     const info = message_viewport_info();
 
     return message_bottom - info.visible_bottom;
@@ -188,8 +187,8 @@ function add_to_visible(
 
 const top_of_feed = new util.CachedValue({
     compute_value() {
-        const $header = $("#navbar-container .header");
-        let visible_top = $header.offset().top + $header.safeOuterHeight();
+        const $header = $("#navbar-fixed-container");
+        let visible_top = $header.safeOuterHeight();
 
         const $sticky_header = $(".sticky_header");
         if ($sticky_header.length) {
@@ -290,7 +289,7 @@ export function scrollTop(target_scrollTop) {
     }
     let $ret = $message_pane.scrollTop(target_scrollTop);
     const new_scrollTop = $message_pane.scrollTop();
-    const space_to_scroll = $("#bottom_whitespace").offset().top - height();
+    const space_to_scroll = $("#bottom_whitespace").get_offset_to_window().top - height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
     if (
@@ -362,7 +361,7 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
 
     const bottom_threshold = viewport_info.visible_bottom;
 
-    const message_top = $message.offset().top;
+    const message_top = $message.get_offset_to_window().top;
     const message_height = $message.safeOuterHeight(true);
     const message_bottom = message_top + message_height;
 
@@ -395,7 +394,7 @@ export function maybe_scroll_to_show_message_top() {
     // Only applies if the top of the message is out of view above the visible area.
     const $selected_message = message_lists.current.selected_row();
     const viewport_info = message_viewport_info();
-    const message_top = $selected_message.offset().top;
+    const message_top = $selected_message.get_offset_to_window().top;
     const message_height = $selected_message.safeOuterHeight(true);
     if (message_top < viewport_info.visible_top) {
         set_message_position(message_top, message_height, viewport_info, 0);
@@ -405,7 +404,7 @@ export function maybe_scroll_to_show_message_top() {
 
 export function is_message_below_viewport($message_row) {
     const info = message_viewport_info();
-    const offset = $message_row.offset();
+    const offset = $message_row.get_offset_to_window();
     return offset.top >= info.visible_bottom;
 }
 
@@ -432,7 +431,7 @@ export function keep_pointer_in_view() {
             return true;
         }
 
-        const message_top = $next_row.offset().top;
+        const message_top = $next_row.get_offset_to_window().top;
 
         // If the message starts after the very top of the screen, we just
         // leave it alone.  This avoids bugs like #1608, where overzealousness
@@ -453,7 +452,7 @@ export function keep_pointer_in_view() {
     }
 
     function message_is_far_enough_up() {
-        return at_bottom() || $next_row.offset().top <= bottom_threshold;
+        return at_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
     }
 
     function adjust(in_view, get_next_row) {
@@ -481,7 +480,7 @@ export function keep_pointer_in_view() {
 
 export function initialize() {
     $jwindow = $(window);
-    $message_pane = $(".app");
+    $message_pane = $("html");
     // This handler must be placed before all resize handlers in our application
     $jwindow.on("resize", () => {
         dimensions.height.reset();

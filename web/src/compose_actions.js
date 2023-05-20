@@ -128,7 +128,8 @@ export function maybe_scroll_up_selected_message() {
         return;
     }
 
-    const cover = $selected_row.offset().top + $selected_row.height() - $("#compose").offset().top;
+    const cover =
+        $selected_row.get_offset_to_window().bottom - $("#compose").get_offset_to_window().top;
     if (cover > 0) {
         message_viewport.user_initiated_animate_scroll(cover + 20);
     }

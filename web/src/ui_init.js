@@ -221,7 +221,7 @@ function initialize_navbar() {
         search_pills_enabled: page_params.search_pills_enabled,
     });
 
-    $("#navbar-container").html(rendered_navbar);
+    $("#header-container").html(rendered_navbar);
 }
 
 function initialize_compose_box() {
