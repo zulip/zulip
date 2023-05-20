@@ -2,6 +2,8 @@ import $ from "jquery";
 
 import * as helpers from "./helpers";
 
+import Micromodal from "micromodal";
+
 export function create_update_license_request() {
     helpers.create_ajax_request(
         "/json/billing/plan",
@@ -40,13 +42,19 @@ export function initialize() {
         if (new_licenses > current_licenses) {
             $("#new_license_count_holder").text(new_licenses);
             $("#current_license_count_holder").text(current_licenses);
-            $("#confirm-licenses-modal").modal("show");
+            const additional_licenses = new_licenses - current_licenses;
+            $("#additional_license_count_holder").text(additional_licenses);
+            Micromodal.show("confirm-licenses-modal", {
+                disableFocus: true,
+                openClass: "modal--opening",
+            });
         } else {
             create_update_license_request();
         }
     });
+    
 
-    $("#confirm-license-update-button").on("click", () => {
+    $(".dialog_submit_button").on("click", () => {
         create_update_license_request();
     });
 
