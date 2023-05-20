@@ -39,6 +39,26 @@ def find_path(repository: str) -> str:
     return str(pathlib.Path().resolve().parents[0] / repository)
 
 
+def process_repo(
+    *,
+    out_dict: Dict[str, int],
+    repo_short: str,
+    repo_full: str,
+    lower_version: str,
+    upper_version: str,
+) -> None:
+    commit_count = len(
+        subprocess.check_output(
+            ["git", "log", "--pretty=oneline", f"{lower_version}..{upper_version}"],
+            cwd=find_path(repo_short),
+            text=True,
+        ).splitlines()
+    )
+    repo_log = retrieve_log(repo_short, lower_version, upper_version)
+    print(f"{commit_count} commits from {repo_full}: {lower_version[0:12]}..{upper_version[0:12]}")
+    add_log(out_dict, repo_log)
+
+
 def find_last_commit_before_time(repository: str, branch: str, time: str) -> str:
     """Find the latest release version for the target repository as of the
     specified time.
@@ -141,18 +161,13 @@ print(
 repository_dict: Dict[str, int] = defaultdict(int)
 out_dict: Dict[str, int] = defaultdict(int)
 subprocess.check_call(["git", "fetch"], cwd=find_path("zulip"))
-commit_count = len(
-    subprocess.check_output(
-        ["git", "log", "--pretty=oneline", f"{lower_zulip_version}..{upper_zulip_version}"],
-        cwd=find_path("zulip"),
-        text=True,
-    ).splitlines()
+process_repo(
+    out_dict=out_dict,
+    repo_short="zulip",
+    repo_full="zulip/zulip",
+    lower_version=lower_zulip_version,
+    upper_version=upper_zulip_version,
 )
-repo_log = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
-print(
-    f"{commit_count} commits from zulip/zulip: {lower_zulip_version[0:12]}..{upper_zulip_version[0:12]}"
-)
-add_log(out_dict, repo_log)
 
 # TODO: We should migrate the last couple repositories to use the
 # `main` default branch name and then simplify this.
@@ -186,18 +201,13 @@ for full_repository, branch in [
     subprocess.check_call(["git", "fetch", "-a"], cwd=find_path(repository))
     lower_repo_version = find_last_commit_before_time(repository, branch, lower_time)
     upper_repo_version = find_last_commit_before_time(repository, branch, upper_time)
-    commit_count = len(
-        subprocess.check_output(
-            ["git", "log", "--pretty=oneline", f"{lower_repo_version}..{upper_repo_version}"],
-            cwd=find_path(repository),
-            text=True,
-        ).splitlines()
+    process_repo(
+        out_dict=out_dict,
+        repo_short=repository,
+        repo_full=full_repository,
+        lower_version=lower_repo_version,
+        upper_version=upper_repo_version,
     )
-    repo_log = retrieve_log(repository, lower_repo_version, upper_repo_version)
-    print(
-        f"{commit_count} commits from {full_repository}: {lower_repo_version[0:12]}..{upper_repo_version[0:12]}"
-    )
-    add_log(out_dict, repo_log)
 
 # Sorting based on number of commits
 grand_total = 0
