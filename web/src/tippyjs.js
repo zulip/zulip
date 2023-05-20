@@ -1,10 +1,14 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
+import previewable_url_tooltip from "../templates/previewable_url_tooltip.hbs";
+import tooltip_loader from "../templates/tooltip_loader.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
+import * as channel from "./channel";
 import {$t} from "./i18n";
 import * as popover_menus from "./popover_menus";
+import {parse_html} from "./ui_util";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -208,6 +212,72 @@ export function initialize() {
         },
         onHidden(instance) {
             instance.destroy();
+        },
+    });
+    delegate("body", {
+        target: ".rendered_markdown .previewable",
+        appendTo: () => document.body,
+        content() {
+            return parse_html(tooltip_loader());
+        },
+        maxWidth: "350px",
+        delay: [300, 20],
+        onShow(instance) {
+            channel.post({
+                url: "/json/previewable",
+                data: {
+                    url: $(instance.reference).attr("href"),
+                },
+                success(data) {
+                    let icon;
+                    // If adding more platforms support then make a function to get the data, as platform is key in data we get from backend, Ex - github.
+                    if (data.type === "pull_request") {
+                        icon = data.state;
+                        const merged = data.merged_at !== null;
+                        if (data.draft) {
+                            icon += "-draft";
+                        } else if (merged) {
+                            icon += "-merged";
+                        }
+                    } else {
+                        icon = [data.state, data.state_reason].filter(Boolean).join("-");
+                    }
+                    const issue = `${data.owner}/${data.repo}#${data.issue_number}`;
+                    instance.setContent(
+                        parse_html(
+                            previewable_url_tooltip({
+                                hover_preview_title: data.title,
+                                hover_preview_details: $t(
+                                    {
+                                        defaultMessage: "{issue} opened by { author }",
+                                    },
+                                    {
+                                        author: data.author,
+                                        issue,
+                                    },
+                                ),
+                                hover_preview_icon_path: `/static/images/github/${data.type}/${icon}.svg`,
+                            }),
+                        ),
+                    );
+                },
+                error(error) {
+                    if (error?.responseJSON?.msg) {
+                        instance.setContent(
+                            parse_html(`<strong>${error?.responseJSON?.msg}</strong>`),
+                        );
+                    } else {
+                        // If the response does not contain a msg, it implies that the request failed prior to reaching the server. Therefore, the data should be re-fetched.
+                        instance._shouldDestroy = true;
+                        instance.setContent(parse_html(`<strong>Unable to preview link.</strong>`));
+                    }
+                },
+            });
+        },
+        onHidden(instance) {
+            if (instance._shouldDestroy) {
+                instance.destroy();
+            }
         },
     });
 

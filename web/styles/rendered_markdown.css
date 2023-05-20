@@ -642,6 +642,39 @@
     }
 }
 
+/* URL Preview tooltip classes */
+.previewable-url-tooltip-container {
+    display: flex;
+    max-width: 100%;
+}
+
+.previewable-url-tooltip-container > img {
+    padding: 2px 5px 0 0;
+    width: 1rem;
+    height: 1rem;
+}
+
+.previewable-url-tooltip-container > div {
+    min-width: 0;
+}
+
+.previewable-url-tooltip-title,
+.previewable-url-tooltip-details {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.previewable-url-tooltip-title {
+    font-size: medium;
+}
+
+.previewable-url-tooltip-details {
+    color: hsl(0deg 0% 50% / 100%);
+}
+
 .preview_content .copy_codeblock {
     /* We avoid displaying copy_codeblock button in previews, because it
        feels odd given that you can just copy-paste the code out of

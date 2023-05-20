@@ -120,6 +120,7 @@ import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as user_topics from "./user_topics";
+import * as util from "./util";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -758,6 +759,7 @@ export function initialize_everything() {
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
     hotkey.initialize();
+    util.initialize();
 
     $("#app-loading").addClass("loaded");
 }

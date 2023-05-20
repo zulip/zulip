@@ -101,3 +101,44 @@
         display: none;
     }
 }
+
+.tooltip-loader {
+    width: 30px;
+    height: 15px;
+    border-radius: 100%;
+    position: relative;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.tooltip-loader > div {
+    display: inline-flex;
+    width: 7px;
+    height: 7px;
+    border-radius: 100%;
+    background-color: hsl(225deg 100% 100% / 100%);
+    margin: 0 1px;
+    animation: tooltip-loader-ball-anm 1.2s infinite ease-in-out both;
+}
+
+.tooltip-loader > div:nth-child(1) {
+    animation-delay: -320ms;
+}
+
+.tooltip-loader > div:nth-child(2) {
+    animation-delay: -160ms;
+}
+
+@keyframes tooltip-loader-ball-anm {
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
