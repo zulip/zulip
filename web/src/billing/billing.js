@@ -52,7 +52,7 @@ export function initialize() {
         }
     });
 
-    $(".confirm-license-update-button").on("click", () => {
+    $("#confirm-license-update-button").on("click", () => {
         create_update_license_request();
     });
 
