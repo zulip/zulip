@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import * as helpers from "./helpers";
-
 import Micromodal from "micromodal";
+
+import * as helpers from "./helpers";
 
 export function create_update_license_request() {
     helpers.create_ajax_request(
