@@ -179,6 +179,7 @@ process_repo(
 # `main` default branch name and then simplify this.
 for full_repository, branch in [
     ("zulip/zulip-mobile", "main"),
+    ("zulip/zulip-flutter", "main"),
     ("zulip/zulip-desktop", "main"),
     ("zulip/docker-zulip", "main"),
     ("zulip/python-zulip-api", "main"),
