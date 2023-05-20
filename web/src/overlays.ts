@@ -137,7 +137,7 @@ export function open_overlay(opts: OverlayOptions): void {
     opts.$overlay.addClass("show");
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
-    $(".header").attr("aria-hidden", "true");
+    $("#navbar-fixed-container").attr("aria-hidden", "true");
 }
 
 // If conf.autoremove is true, the modal element will be removed from the DOM
@@ -240,7 +240,6 @@ export function open_modal(
         }
         close_modal(modal_id);
     });
-
     Micromodal.show(modal_id, {
         disableFocus: true,
         openClass: "modal--opening",
@@ -272,7 +271,7 @@ export function close_overlay(name: string): void {
 
     active_overlay.$element.attr("aria-hidden", "true");
     $(".app").attr("aria-hidden", "false");
-    $(".header").attr("aria-hidden", "false");
+    $("#navbar-fixed-container").attr("aria-hidden", "false");
 
     active_overlay.close_handler();
 }

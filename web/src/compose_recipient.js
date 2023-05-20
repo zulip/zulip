@@ -286,7 +286,8 @@ function compose_recipient_dropdown_on_show(dropdown) {
     const window_height = window.innerHeight;
     const search_box_and_padding_height = 50;
     // pixels above compose box.
-    const recipient_input_top = $("#compose_recipient_selection_dropdown").offset().top;
+    const recipient_input_top = $("#compose_recipient_selection_dropdown").get_offset_to_window()
+        .top;
     const top_space = recipient_input_top - top_offset - search_box_and_padding_height;
     // pixels below compose starting from top of compose box.
     const bottom_space = window_height - recipient_input_top - search_box_and_padding_height;

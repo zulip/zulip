@@ -145,8 +145,19 @@ export function resize_sidebars() {
     return h;
 }
 
+export function reposition_message_header() {
+    // Since `navbar_alerts_wrapper`'s height can vary based on text / language, we
+    // need to adjust at what `top` position do `message-header` becomes `sticky`.
+    // Best way to do this is via adding custom CSS to the DOM instead of running endless
+    // javascript queries to find and update them on various re-renders.
+    const navbar_fixed_height = $("#navbar-fixed-container").safeOuterHeight(true);
+    const style = document.querySelector("#sticky_message_header_styles");
+    style.textContent = `.message_list .message_header { top: ${navbar_fixed_height}px !important; }`;
+}
+
 export function resize_page_components() {
     navbar_alerts.resize_app();
+    reposition_message_header();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
 }
