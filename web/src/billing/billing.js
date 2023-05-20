@@ -1,7 +1,5 @@
 import $ from "jquery";
-
 import Micromodal from "micromodal";
-
 import * as helpers from "./helpers";
 
 export function create_update_license_request() {
