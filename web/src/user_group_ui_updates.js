@@ -44,8 +44,6 @@ export function update_add_members_elements(group) {
 
         stream_ui_updates.initialize_disable_btn_hint_popover(
             $add_members_container,
-            $input_element,
-            $button_element,
             $t({defaultMessage: "Only group members can add users to a group."}),
         );
     }
