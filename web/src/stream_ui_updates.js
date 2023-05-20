@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
@@ -20,26 +21,11 @@ export function initialize_disable_btn_hint_popover(
     $disabled_btn,
     hint_text,
 ) {
-    // Disabled button blocks mouse events(hover) from reaching
-    // to it's parent div element, so popover don't get triggered.
-    // Add css to prevent this.
-    $disabled_btn.css("pointer-events", "none");
-    $popover_btn.popover({
-        placement: "bottom",
-        content: $("<div>").addClass("sub_disable_btn_hint").text(hint_text).prop("outerHTML"),
-        trigger: "manual",
-        html: true,
+    tippy($btn_wrapper[0], {
+        content: hint_text,
         animation: false,
-    });
-
-    $btn_wrapper.on("mouseover", (e) => {
-        $popover_btn.popover("show");
-        e.stopPropagation();
-    });
-
-    $btn_wrapper.on("mouseout", (e) => {
-        $popover_btn.popover("hide");
-        e.stopPropagation();
+        hideOnClick: false,
+        placement: "bottom",
     });
 }
 
@@ -101,7 +87,7 @@ export function update_settings_button_for_sub(sub) {
     }
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
-        $settings_button.popover("destroy");
+        $settings_button.parent()[0]._tippy?.destroy();
         $settings_button.css("pointer-events", "");
     } else {
         $settings_button.attr("title", "");
@@ -289,13 +275,14 @@ export function enable_or_disable_add_subscribers_elements(
     const $add_subscribers_button = $container_elem
         .find('button[name="add_subscriber"]')
         .expectOne();
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
     $input_element.prop("contenteditable", enable_elem);
     $add_subscribers_button.prop("disabled", !enable_elem);
 
     if (enable_elem) {
         $add_subscribers_button.css("pointer-events", "");
-        $input_element.popover("destroy");
+        $add_subscribers_container[0]?._tippy?.destroy();
         $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
     } else {
         $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");

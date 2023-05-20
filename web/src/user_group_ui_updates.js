@@ -37,7 +37,7 @@ export function update_add_members_elements(group) {
         $input_element.prop("disabled", false);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
-        $input_element.popover("destroy");
+        $add_members_container[0]._tippy?.destroy();
     } else {
         $input_element.prop("disabled", true);
         $button_element.prop("disabled", true);
