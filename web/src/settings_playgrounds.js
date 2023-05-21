@@ -21,23 +21,6 @@ export function reset() {
     meta.loaded = false;
 }
 
-function compare_by_index(a, b, i) {
-    if (a[i] > b[i]) {
-        return 1;
-    } else if (a[i] === b[i]) {
-        return 0;
-    }
-    return -1;
-}
-
-function sort_pygments_language(a, b) {
-    return compare_by_index(a, b, 0);
-}
-
-function sort_playground_name(a, b) {
-    return compare_by_index(a, b, 1);
-}
-
 export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         return;
@@ -76,11 +59,7 @@ export function populate_playgrounds(playgrounds_data) {
             },
         },
         $parent_container: $("#playground-settings").expectOne(),
-        init_sort: [sort_pygments_language],
-        sort_fields: {
-            pygments_language: sort_pygments_language,
-            playground_name: sort_playground_name,
-        },
+        init_sort: ["alphabetic", "pygments_language"],
         $simplebar_container: $("#playground-settings .progressive-table-wrapper"),
     });
 }
