@@ -243,7 +243,10 @@ function render_user_info_popover(
     const show_manage_menu = !spectator_view && !is_me;
 
     let date_joined;
-    if (spectator_view) {
+
+    // Some users might not have `date_joined` field because of the missing server data.
+    // These users are added late in `people.js` via `extract_people_from_message`.
+    if (spectator_view && !user.is_missing_server_data) {
         date_joined = timerender.get_localized_date_or_time_for_format(
             parseISO(user.date_joined),
             "dayofyear_year",
