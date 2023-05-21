@@ -45,6 +45,15 @@ body {
     }
 
     /*
+    Since #navbar_alerts_wrapper can take variable height depending upon
+    window width / language, we sync its height in navbar_alerts.js
+    */
+    --navbar-alerts-wrapper-height: 0px;
+    --navbar-fixed-height: calc(
+        var(--header-height) + var(--navbar-alerts-wrapper-height)
+    );
+
+    /*
     We have a 10px gutter below the header,
     which often needs to be respected by both
     the elements above it and below it on
@@ -56,7 +65,6 @@ body {
     Our sidebars (and anything that top-align
     with them) go beneath the header.
     */
-    --sidebar-top: calc(var(--header-height) + var(--header-padding-bottom));
     --left-sidebar-collapse-widget-gutter: 10px;
     --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
@@ -490,6 +498,10 @@ p.n-margin {
     }
 }
 
+.recent_topics_container #recent_topics_table {
+    margin-top: var(--navbar-fixed-height);
+}
+
 .app {
     width: 100%;
     height: 100%;
@@ -584,6 +596,14 @@ p.n-margin {
     top: 0;
 }
 
+#message_feed_container,
+.column-left .left-sidebar,
+.column-right .right-sidebar {
+    padding-top: calc(
+        var(--navbar-fixed-height) + var(--header-padding-bottom)
+    );
+}
+
 .app-main {
     height: 100%;
     min-height: 100%;
@@ -591,7 +611,6 @@ p.n-margin {
     .column-left .left-sidebar,
     .column-right .right-sidebar {
         position: fixed;
-        margin-top: var(--sidebar-top);
         z-index: 100;
     }
 
@@ -1272,7 +1291,7 @@ td.pointer {
 
     .message_header {
         position: sticky;
-        top: var(--header-height);
+        top: var(--navbar-fixed-height);
         /* Needs to be higher than the z-index of date_row. */
         z-index: 4;
         box-shadow: 0 -1px 0 0 var(--color-background);
@@ -2670,10 +2689,6 @@ select.invite-as {
     margin-left: -15px;
 }
 
-#message_feed_container {
-    padding-top: var(--sidebar-top);
-}
-
 .screen {
     position: absolute;
     left: 0;
@@ -2809,12 +2824,8 @@ select.invite-as {
             .right-sidebar {
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-left: 1px solid hsl(0deg 0% 87%);
-
-                /* We use both margin and padding to
-                   hide little artifacts from showing up in
-                   the gutter below the navbar. */
-                margin-top: var(--header-height);
-                padding: var(--header-padding-bottom) 15px 0 15px;
+                padding-right: 15px;
+                padding-left: 15px;
                 height: 100%;
                 right: 0;
                 background-color: var(--color-background);
@@ -2872,13 +2883,6 @@ select.invite-as {
                 background-color: var(--color-background);
                 box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
                 border-right: 1px solid hsl(0deg 0% 87%);
-
-                /* We use both margin and padding to
-                   hide little artifacts from showing up in
-                   the gutter below the navbar. */
-                margin-top: var(--header-height);
-                padding-top: var(--header-padding-bottom);
-
                 height: 100%;
                 padding-left: 10px;
                 width: var(--left-sidebar-width);
@@ -2989,10 +2993,6 @@ select.invite-as {
         background: none !important;
         padding: 0 !important;
         border: none !important;
-    }
-
-    #floating_recipient_bar {
-        top: var(--sidebar-top);
     }
 
     .message_content {
