@@ -16,7 +16,6 @@
         border-color: hsl(0deg 0% 88%);
         border-width: 0 1px;
         border-radius: 0;
-        margin-top: 40px;
         /* To make the table span full height
          * when rows don't reach bottom of the
          * window. This makes the border span

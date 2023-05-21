@@ -14,16 +14,13 @@ import * as util from "./util";
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
-    const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
     const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
-    res.main_div_min_height = viewport_height - top_navbar_height;
-
     res.stream_filters_max_height =
         viewport_height -
-        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
+        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
@@ -36,7 +33,7 @@ function get_new_heights() {
 
     const usable_height =
         viewport_height -
-        Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
+        Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
         right_sidebar_shortcuts_height;
@@ -145,19 +142,8 @@ export function resize_sidebars() {
     return h;
 }
 
-export function reposition_message_header() {
-    // Since `navbar_alerts_wrapper`'s height can vary based on text / language, we
-    // need to adjust at what `top` position do `message-header` becomes `sticky`.
-    // Best way to do this is via adding custom CSS to the DOM instead of running endless
-    // javascript queries to find and update them on various re-renders.
-    const navbar_fixed_height = $("#navbar-fixed-container").safeOuterHeight(true);
-    const style = document.querySelector("#sticky_message_header_styles");
-    style.textContent = `.message_list .message_header { top: ${navbar_fixed_height}px !important; }`;
-}
-
 export function resize_page_components() {
     navbar_alerts.resize_app();
-    reposition_message_header();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
 }
