@@ -71,9 +71,9 @@
         <div class="progressive-table-wrapper" data-simplebar>
             <table class="table table-condensed table-striped wrapped-table admin_playgrounds_table">
                 <thead class="table-sticky-headers">
-                    <th class="active" data-sort="pygments_language">{{t "Language" }}</th>
-                    <th data-sort="playground_name">{{t "Name" }}</th>
-                    <th data-sort="url">{{t "URL prefix" }}</th>
+                    <th class="active" data-sort="alphabetic" data-sort-prop="pygments_language">{{t "Language" }}</th>
+                    <th data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}</th>
+                    <th data-sort="alphabetic" data-sort-prop="url_prefix">{{t "URL prefix" }}</th>
                     {{#if is_admin}}
                     <th class="actions">{{t "Actions" }}</th>
                     {{/if}}
