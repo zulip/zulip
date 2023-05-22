@@ -917,10 +917,10 @@
         text-shadow: none;
     }
 
-    /* With the unread marker as a grid item, there
-      is no lefthand border to cover in dark mode,
-      so don't apply negative margin to pull the
-      unread marker to the left. */
+    /* There is no lefthand border to cover in
+      dark mode, so don't apply negative margin
+      that would otherwise pull the unread marker
+      to the left. */
     .unread_marker {
         margin-left: 0;
     }

@@ -1155,9 +1155,9 @@ td.pointer {
     word-wrap: break-word;
     cursor: pointer;
     border: none;
-    /* The left padding value maintains the same amount
-      of space to the left of the message box from before
-      the unread marker was a grid item. */
+    /* The left padding value accounts for a 2px
+      unread marker, ensuring a uniform 5px of
+      padding on either side of the message box. */
     padding: 0 5px 0 3px;
 
     &:hover .message_controls,
