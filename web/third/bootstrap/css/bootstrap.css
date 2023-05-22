@@ -72,16 +72,6 @@ button,
 input[type="submit"] {
   cursor: pointer;
 }
-input[type="search"] {
-  -webkit-box-sizing: content-box;
-  -moz-box-sizing: content-box;
-  box-sizing: content-box;
-  -webkit-appearance: textfield;
-}
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-}
 body {
   margin: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -466,8 +456,7 @@ input[type="text"],
 input[type="password"],
 input[type="number"],
 input[type="email"],
-input[type="url"],
-input[type="search"] {
+input[type="url"] {
   display: inline-block;
   height: 20px;
   padding: 4px 6px;
@@ -484,8 +473,7 @@ input[type="text"],
 input[type="password"],
 input[type="number"],
 input[type="email"],
-input[type="url"],
-input[type="search"] {
+input[type="url"] {
   background-color: #ffffff;
   border: 1px solid #cccccc;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
@@ -500,8 +488,7 @@ input[type="text"]:focus,
 input[type="password"]:focus,
 input[type="number"]:focus,
 input[type="email"]:focus,
-input[type="url"]:focus,
-input[type="search"]:focus {
+input[type="url"]:focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
