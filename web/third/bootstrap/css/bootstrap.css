@@ -464,7 +464,6 @@ label {
 }
 input[type="text"],
 input[type="password"],
-input[type="week"],
 input[type="number"],
 input[type="email"],
 input[type="url"],
@@ -485,7 +484,6 @@ input[type="color"] {
 }
 input[type="text"],
 input[type="password"],
-input[type="week"],
 input[type="number"],
 input[type="email"],
 input[type="url"],
@@ -504,7 +502,6 @@ input[type="color"] {
 }
 input[type="text"]:focus,
 input[type="password"]:focus,
-input[type="week"]:focus,
 input[type="number"]:focus,
 input[type="email"]:focus,
 input[type="url"]:focus,
