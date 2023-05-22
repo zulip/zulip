@@ -484,7 +484,7 @@ def format_user_row(
         result["avatar_url"] = get_avatar_field(
             user_id=row["id"],
             realm_id=realm.id,
-            email=row["delivery_email"],
+            full_name=row["full_name"],
             avatar_source=row["avatar_source"],
             avatar_version=row["avatar_version"],
             medium=False,

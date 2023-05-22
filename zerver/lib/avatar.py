@@ -21,7 +21,7 @@ def avatar_url(
     return get_avatar_field(
         user_id=user_profile.id,
         realm_id=user_profile.realm_id,
-        email=user_profile.delivery_email,
+        full_name=user_profile.full_name,
         avatar_source=user_profile.avatar_source,
         avatar_version=user_profile.avatar_version,
         medium=medium,
@@ -41,7 +41,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool = False) -> str:
         userdict["id"],
         userdict["avatar_source"],
         userdict["realm_id"],
-        email=userdict["email"],
+        full_name=userdict["full_name"],
         medium=medium,
     )
     return append_url_query_string(url, "version={:d}".format(userdict["avatar_version"]))
@@ -50,7 +50,7 @@ def avatar_url_from_dict(userdict: Dict[str, Any], medium: bool = False) -> str:
 def get_avatar_field(
     user_id: int,
     realm_id: int,
-    email: str,
+    full_name: str,
     avatar_source: str,
     avatar_version: int,
     medium: bool,
@@ -91,7 +91,7 @@ def get_avatar_field(
         user_profile_id=user_id,
         avatar_source=avatar_source,
         realm_id=realm_id,
-        email=email,
+        full_name=full_name,
         medium=medium,
     )
     return append_url_query_string(url, f"version={avatar_version:d}")
@@ -102,11 +102,12 @@ def get_gravatar_url(email: str, avatar_version: int, medium: bool = False) -> s
     return append_url_query_string(url, f"version={avatar_version:d}")
 
 
-def _get_unversioned_gravatar_url(email: str, medium: bool) -> str:
+def _get_unversioned_gravatar_url(full_name: str, medium: bool) -> str:
     if settings.ENABLE_GRAVATAR:
-        gravitar_query_suffix = f"&s={MEDIUM_AVATAR_SIZE}" if medium else ""
-        hash_key = gravatar_hash(email)
-        return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon{gravitar_query_suffix}"
+        # gravitar_query_suffix = f"&s={MEDIUM_AVATAR_SIZE}" if medium else ""
+        # hash_key = gravatar_hash(email)
+        # return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon{gravitar_query_suffix}"
+        return f"https://ui-avatars.com/api/?background=random&bold=true&name={full_name}"
     elif settings.DEFAULT_AVATAR_URI is not None:
         return settings.DEFAULT_AVATAR_URI
     else:
@@ -117,14 +118,14 @@ def _get_unversioned_avatar_url(
     user_profile_id: int,
     avatar_source: str,
     realm_id: int,
-    email: Optional[str] = None,
+    full_name: Optional[str] = None,
     medium: bool = False,
 ) -> str:
     if avatar_source == "U":
         hash_key = user_avatar_path_from_ids(user_profile_id, realm_id)
         return get_avatar_url(hash_key, medium=medium)
-    assert email is not None
-    return _get_unversioned_gravatar_url(email, medium)
+    assert full_name is not None
+    return _get_unversioned_gravatar_url(full_name, medium)
 
 
 def absolute_avatar_url(user_profile: UserProfile) -> str:
