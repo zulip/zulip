@@ -22,7 +22,7 @@ of mistakes unlikely, etc.). This approach minimizes the cognitive
 load of ensuring a consistent coding style for both contributors and
 maintainers.
 
-## Be consistent!
+## Be consistent with existing code
 
 Look at the surrounding code, or a similar part of the project, and try
 to do the same thing. If you think the other code has actively bad
@@ -31,7 +31,7 @@ style, fix it (in a separate commit).
 When in doubt, ask in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help).
 
-## Lint tools
+### Use the linters
 
 You can run them all at once with
 
@@ -59,45 +59,50 @@ The Vagrant setup process runs this for you.
 - Puppet configuration
 - custom checks (e.g. trailing whitespace and spaces-not-tabs)
 
-### Tests
+### Use tests to verify your logic
 
 Clear, readable code is important for [tests](../testing/testing.md);
 familiarize yourself with our testing frameworks so that you can write
 clean, readable tests. Comments about anything subtle about what is
 being verified are appreciated.
 
-### Line length
+## Follow Zulip conventions and practices
+
+What follows is language-neutral advice that is beyond the bounds of
+linters and automated tests.
+
+### Observe a reasonable line length
 
 We have an absolute hard limit on line length only for some files, but
 we should still avoid extremely long lines. A general guideline is:
 refactor stuff to get it under 85 characters, unless that makes the
 code a lot uglier, in which case it's fine to go up to 120 or so.
 
-### Third party code
-
-See [our docs on dependencies](../subsystems/dependencies.md) for discussion of
-rules about integrating third-party projects.
-
-### Translation tags
+### Tag user-facing strings for translation
 
 Remember to
 [tag all user-facing strings for translation](../translating/translating.md), whether
 they are in HTML templates or JavaScript/TypeScript editing the HTML (e.g. error
 messages).
 
-### Paths to state or log files
+### Correctly prepare paths destined for state or log files
 
 When writing out state or log files, always pass an absolute path
 through `zulip_path` (found in `zproject/computed_settings.py`), which
 will do the right thing in both development and production.
 
-## Secrets
+### Never include secrets inline with code
 
 Please don't put any passwords, secret access keys, etc. inline in the
 code. Instead, use the `get_secret` function or the `get_mandatory_secret`
 function in `zproject/config.py` to read secrets from `/etc/zulip/secrets.conf`.
 
-### Python
+### Familiarize yourself with rules about third-party code
+
+See [our docs on dependencies](../subsystems/dependencies.md) for discussion of
+rules about integrating third-party projects.
+
+## Python-specific conventions and practices
 
 - Our Python code is formatted with
   [Black](https://github.com/psf/black) and
@@ -128,7 +133,7 @@ function in `zproject/config.py` to read secrets from `/etc/zulip/secrets.conf`.
 - For string formatting, use `x % (y,)` rather than `x % y`, to avoid
   ambiguity if `y` happens to be a tuple.
 
-### JavaScript and TypeScript
+## JavaScript and TypeScript conventions and practices
 
 Our JavaScript and TypeScript code is formatted with
 [Prettier](https://prettier.io/). You can ask Prettier to reformat
@@ -172,12 +177,12 @@ but there are some reasons to prefer attaching events using jQuery code:
 Either way, avoid complicated JavaScript code inside HTML attributes;
 call a helper function instead.
 
-### JavaScript `const` and `let`
+### Declare variables using `const` and `let`
 
 Always declare JavaScript variables using `const` or `let` rather than
 `var`.
 
-## JS array/object manipulation
+### Manipulate objects and arrays with modern methods
 
 For functions that operate on arrays or JavaScript objects, you should
 generally use modern
@@ -194,7 +199,7 @@ when necessary. We used to use the
 [Underscore](https://underscorejs.org/) library, but that should be
 avoided in new code.
 
-### HTML / CSS
+## HTML and CSS
 
 Our CSS is formatted with [Prettier](https://prettier.io/). You can
 ask Prettier to reformat all code via our [linter
@@ -214,9 +219,9 @@ Additionally, multi-word class and ID values should be hyphenated,
 also known as _kebab case_. In HTML, opt for `class="my-multiword-class"`,
 with its corresponding CSS selector as `.my-multiword-class`.
 
-## Dangerous constructs
+## Dangerous constructs in Django
 
-### Too many database queries
+### Avoid excessive database queries
 
 Look out for Django code like this:
 
@@ -254,7 +259,7 @@ is wrong with the database schema. So don't defer this optimization when
 performing schema changes, or else you may later find that it's
 impossible.
 
-### UserProfile.objects.get() / Client.objects.get() / etc.
+### Never do direct database queries (`UserProfile.objects.get()`, `Client.objects.get()`, etc.)
 
 In our Django code, never do direct `UserProfile.objects.get(email=foo)`
 database queries. Instead always use `get_user_profile_by_{email,id}`.
@@ -270,7 +275,7 @@ Similarly we have `get_client` and `access_stream_by_id` /
 `access_stream_by_name` functions to fetch those commonly accessed
 objects via remote cache.
 
-### Using Django model objects as keys in sets/dicts
+### Don't use Django model objects as keys in sets/dicts
 
 Don't use Django model objects as keys in sets/dictionaries -- you will
 get unexpected behavior when dealing with objects obtained from
@@ -293,7 +298,7 @@ some_objs = UserProfile.objects.get(id=17)
 assert obj.id in set([o.id for o in some_objs])
 ```
 
-### user_profile.save()
+### Don't call user_profile.save() without `update_fields`
 
 You should always pass the update_fields keyword argument to .save()
 when modifying an existing Django model object. By default, .save() will
@@ -302,7 +307,7 @@ conditions where unrelated changes made by one thread can be
 accidentally overwritten by another thread that fetched its UserProfile
 object before the first thread wrote out its change.
 
-### Using raw saves to update important model objects
+### Don't update important model objects with raw saves
 
 In most cases, we already have a function in `zerver.actions` with
 a name like do_activate_user that will correctly handle lookups,
@@ -311,7 +316,7 @@ change. So please check whether such a function exists before writing
 new code to modify a model object, since your new code has a good chance
 of getting at least one of these things wrong.
 
-### Naive datetime objects
+### Don't use naive datetime objects
 
 Python allows datetime objects to not have an associated time zone, which can
 cause time-related bugs that are hard to catch with a test suite, or bugs
@@ -347,7 +352,9 @@ Additional notes:
 - All datetimes on the backend should be in UTC, unless there is a good
   reason to do otherwise.
 
-### `x.attr('zid')` vs. `rows.id(x)`
+## Dangerous constructs in JavaScript and TypeScript
+
+### Do not access rows via `x.attr('zid')`; use `rows.id(x)`
 
 Our message row DOM elements have a custom attribute `zid` which
 contains the numerical message ID. **Don't access this directly as**
@@ -361,8 +368,9 @@ string, use the `id` function, as it will simplify future code changes.
 In most contexts in JavaScript where a string is needed, you can pass a
 number without any explicit conversion.
 
-### JavaScript and TypeScript `for (i in myArray)`
+### Do not use `for...in` statements to traverse arrays
 
+That construct pulls in properties inherited from the prototype chain.
 Don't use it:
 [[1]](https://stackoverflow.com/questions/500504/javascript-for-in-with-arrays),
 [[2]](https://google.github.io/styleguide/javascriptguide.xml#for-in_loop),
