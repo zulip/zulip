@@ -467,8 +467,7 @@ input[type="password"],
 input[type="number"],
 input[type="email"],
 input[type="url"],
-input[type="search"],
-input[type="color"] {
+input[type="search"] {
   display: inline-block;
   height: 20px;
   padding: 4px 6px;
@@ -486,8 +485,7 @@ input[type="password"],
 input[type="number"],
 input[type="email"],
 input[type="url"],
-input[type="search"],
-input[type="color"] {
+input[type="search"] {
   background-color: #ffffff;
   border: 1px solid #cccccc;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
@@ -503,8 +501,7 @@ input[type="password"]:focus,
 input[type="number"]:focus,
 input[type="email"]:focus,
 input[type="url"]:focus,
-input[type="search"]:focus,
-input[type="color"]:focus {
+input[type="search"]:focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
