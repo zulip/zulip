@@ -85,24 +85,6 @@ const DEFAULTS = {
 // This function describes (programmatically) how to use the ListWidget.
 // ----------------------------------------------------
 
-export function validate_opts<Key, Item>(opts: ListWidgetOpts<Key, Item>): boolean {
-    if (opts.html_selector && typeof opts.html_selector !== "function") {
-        // We have an html_selector, but it is not a function.
-        // This is a programming error.
-        blueslip.error("html_selector should be a function.");
-        return false;
-    }
-    if (!opts.$simplebar_container) {
-        blueslip.error("$simplebar_container is missing.");
-        return false;
-    }
-    if (!opts.get_item) {
-        blueslip.error("get_item is missing.");
-        return false;
-    }
-    return true;
-}
-
 export function get_filtered_items<Key, Item>(
     value: string,
     list: Key[],
@@ -187,29 +169,6 @@ export function generic_sort_functions<T extends Record<string, unknown>>(
     return sorting_functions;
 }
 
-export function valid_filter_opts<Key, Item>(opts: ListWidgetOpts<Key, Item>): boolean {
-    if (!opts.filter) {
-        return true;
-    }
-    if (opts.filter.predicate) {
-        if (typeof opts.filter.predicate !== "function") {
-            blueslip.error("Filter predicate is not a function.");
-            return false;
-        }
-        if (opts.filter.filterer) {
-            blueslip.error("Filterer and predicate are mutually exclusive.");
-            return false;
-        }
-    } else {
-        if (typeof opts.filter.filterer !== "function") {
-            blueslip.error("Filter filterer is not a function (or missing).");
-            return false;
-        }
-    }
-
-    return true;
-}
-
 function is_scroll_position_for_render(scroll_container: HTMLElement): boolean {
     return (
         scroll_container.scrollHeight -
@@ -227,15 +186,6 @@ export function create<Key = unknown, Item = Key>(
     list: Key[],
     opts: ListWidgetOpts<Key, Item>,
 ): ListWidget<Key, Item> | undefined {
-    if (!opts) {
-        blueslip.error("Need opts to create widget.");
-        return undefined;
-    }
-
-    if (!validate_opts(opts)) {
-        return undefined;
-    }
-
     if (opts.name && DEFAULTS.instances.get(opts.name)) {
         // Clear event handlers for prior widget.
         const old_widget = DEFAULTS.instances.get(opts.name)!;
@@ -252,15 +202,6 @@ export function create<Key = unknown, Item = Key>(
         filter_value: "",
         $scroll_container: scroll_util.get_scroll_element(opts.$simplebar_container),
     };
-
-    if (!valid_filter_opts(opts)) {
-        return undefined;
-    }
-
-    if (opts.get_item && typeof opts.get_item !== "function") {
-        blueslip.error("get_item should be a function");
-        return undefined;
-    }
 
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
@@ -486,7 +427,7 @@ export function create<Key = unknown, Item = Key>(
             // Rows greater than `offset` are not rendered in the DOM by list_widget;
             // for those, there's nothing to update.
             if (insert_index <= meta.offset) {
-                if (!opts.modifier || !opts.html_selector) {
+                if (!opts.html_selector) {
                     blueslip.error(
                         "Please specify modifier and html_selector when creating the widget.",
                     );

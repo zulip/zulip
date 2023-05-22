@@ -562,67 +562,6 @@ run_test("clear_event_handlers", () => {
     assert.equal($filter_element.cleared, true);
 });
 
-run_test("errors", () => {
-    // We don't care about actual data for this test.
-    const list = ["stub"];
-    const $container = make_container();
-    const $scroll_container = make_scroll_container();
-
-    blueslip.expect("error", "Need opts to create widget.");
-    ListWidget.create($container, list);
-    blueslip.reset();
-
-    blueslip.expect("error", "$simplebar_container is missing.");
-    ListWidget.create($container, list, {
-        modifier: "hello world",
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "get_item should be a function");
-    ListWidget.create($container, list, {
-        get_item: "not a function",
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "Filter predicate is not a function.");
-    ListWidget.create($container, list, {
-        filter: {
-            predicate: "wrong type",
-        },
-        $simplebar_container: $scroll_container,
-        get_item() {},
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "Filterer and predicate are mutually exclusive.");
-    ListWidget.create($container, list, {
-        filter: {
-            filterer: /* istanbul ignore next */ () => true,
-            predicate: /* istanbul ignore next */ () => true,
-        },
-        $simplebar_container: $scroll_container,
-        get_item() {},
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "Filter filterer is not a function (or missing).");
-    ListWidget.create($container, list, {
-        filter: {},
-        $simplebar_container: $scroll_container,
-        get_item() {},
-    });
-    blueslip.reset();
-
-    blueslip.expect("error", "List item is not a string");
-    ListWidget.create($container, list, {
-        modifier: () => 999,
-        $simplebar_container: $scroll_container,
-        get_item: (item) => item,
-    });
-    blueslip.reset();
-});
-
 run_test("sort helpers", () => {
     /*
         We mostly test our sorting helpers using the
@@ -789,17 +728,6 @@ run_test("render item", () => {
     assert.ok(called);
 
     // Tests below this are for the corner cases, where we abort the rerender.
-
-    blueslip.expect("error", "html_selector should be a function.");
-    ListWidget.create($container, list, {
-        name: "replace-list",
-        modifier: /* istanbul ignore next */ (item) =>
-            `<tr data-item=${item.value}>${item.text}</tr>\n`,
-        get_item,
-        html_selector: "hello world",
-        $simplebar_container: $scroll_container,
-    });
-    blueslip.reset();
 
     let get_item_called;
     const widget_2 = ListWidget.create($container, list, {
