@@ -38,7 +38,7 @@ table.layout > tbody > tr > td {
     vertical-align: top;
 }
 
-/* After email clients strip the actual <body> tag out of the email, the
+/* After email clients strip the actual body tag out of the email, the
    .body element will be the equivalent of our outer element. */
 .body {
     width: 100%;
