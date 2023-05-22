@@ -464,7 +464,6 @@ label {
 }
 input[type="text"],
 input[type="password"],
-input[type="datetime"],
 input[type="date"],
 input[type="month"],
 input[type="time"],
@@ -489,7 +488,6 @@ input[type="color"] {
 }
 input[type="text"],
 input[type="password"],
-input[type="datetime"],
 input[type="date"],
 input[type="month"],
 input[type="time"],
@@ -512,7 +510,6 @@ input[type="color"] {
 }
 input[type="text"]:focus,
 input[type="password"]:focus,
-input[type="datetime"]:focus,
 input[type="date"]:focus,
 input[type="month"]:focus,
 input[type="time"]:focus,
