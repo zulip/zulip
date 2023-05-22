@@ -240,16 +240,15 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 159**
 
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Nobody added as an option for the realm setting
-  `edit_topic_policy`.
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Nobody added as an option for the realm setting
-  `move_messages_between_streams_policy`.
-* [`PATCH /messages/{message_id}`](/api/update-message): Permission to edit stream
-  and topic of messages do not depend on `allow_message_editing` setting now.
-* [`PATCH /messages/{message_id}`](/api/update-message): Message senders are not
-  allowed to edit topics indefinitely now.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events):
+  Nobody added as an option for the realm settings `edit_topic_policy`
+  and `move_messages_between_streams_policy`.
+* [`PATCH /messages/{message_id}`](/api/update-message): Permission
+  to edit the stream and/or topic of messages no longer depends on the
+  realm setting `allow_message_editing`.
+* [`PATCH /messages/{message_id}`](/api/update-message): The user who
+  sent the message can no longer edit the message's topic indefinitely.
 
 Feature level 158 is reserved for future use in 6.x maintenance
 releases.
