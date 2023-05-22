@@ -49,6 +49,14 @@ function call_hooks(func_list: Hook[]): void {
     }
 }
 
+export function disable_scrolling(): void {
+    $("html").css({"overflow-y": "hidden"});
+}
+
+function enable_scrolling(): void {
+    $("html").css({"overflow-y": "scroll"});
+}
+
 export function is_active(): boolean {
     return Boolean(open_overlay_name);
 }
@@ -134,6 +142,7 @@ export function open_overlay(opts: OverlayOptions): void {
         },
     };
 
+    disable_scrolling();
     opts.$overlay.addClass("show");
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
@@ -240,11 +249,26 @@ export function open_modal(
         }
         close_modal(modal_id);
     });
+
+    function on_show_callback(): void {
+        if (conf.on_show) {
+            conf.on_show();
+        }
+        disable_scrolling();
+    }
+
+    function on_close_callback(): void {
+        if (conf.on_hide) {
+            conf.on_hide();
+        }
+        enable_scrolling();
+    }
+
     Micromodal.show(modal_id, {
         disableFocus: true,
         openClass: "modal--opening",
-        onShow: conf?.on_show,
-        onClose: conf?.on_hide,
+        onShow: on_show_callback,
+        onClose: on_close_callback,
     });
 }
 
@@ -274,6 +298,7 @@ export function close_overlay(name: string): void {
     $("#navbar-fixed-container").attr("aria-hidden", "false");
 
     active_overlay.close_handler();
+    enable_scrolling();
 }
 
 export function close_active(): void {
