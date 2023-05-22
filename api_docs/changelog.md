@@ -209,16 +209,16 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 162**
 
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Added new `move_messages_within_stream_limit_seconds` setting.
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Added new `move_messages_between_streams_limit_seconds` setting.
-* [`PATCH /messages/{message_id}`](/api/update-message): Time limit to edit
-  topics, for users other than administrators and moderators, can now be
-  configured using `move_messages_within_stream_limit_seconds` setting.
-* [`PATCH /messages/{message_id}`](/api/update-message): Time limit to move
-  messages between streams, for users other than administrators and moderators,
-  can now be configured using `move_messages_between_streams_limit_seconds` setting.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+   [`GET /events`](/api/get-events): Added two new realm settings
+  `move_messages_within_stream_limit_seconds` and
+  `move_messages_between_streams_limit_seconds` for organizations to
+  configure time limits for editing topics and moving messages between streams.
+* [`PATCH /messages/{message_id}`](/api/update-message): For users other than
+  administrators and moderators, the time limit for editing topics is now
+  controlled via the realm setting `move_messages_within_stream_limit_seconds`
+  and the time limit for moving messages between streams is now controlled by
+  the realm setting `move_messages_between_streams_limit_seconds`.
 
 **Feature level 161**
 
