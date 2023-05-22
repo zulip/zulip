@@ -59,11 +59,160 @@ The Vagrant setup process runs this for you.
 - Puppet configuration
 - custom checks (e.g. trailing whitespace and spaces-not-tabs)
 
+### Tests
+
+Clear, readable code is important for [tests](../testing/testing.md);
+familiarize yourself with our testing frameworks so that you can write
+clean, readable tests. Comments about anything subtle about what is
+being verified are appreciated.
+
+### Line length
+
+We have an absolute hard limit on line length only for some files, but
+we should still avoid extremely long lines. A general guideline is:
+refactor stuff to get it under 85 characters, unless that makes the
+code a lot uglier, in which case it's fine to go up to 120 or so.
+
+### Third party code
+
+See [our docs on dependencies](../subsystems/dependencies.md) for discussion of
+rules about integrating third-party projects.
+
+### Translation tags
+
+Remember to
+[tag all user-facing strings for translation](../translating/translating.md), whether
+they are in HTML templates or JavaScript/TypeScript editing the HTML (e.g. error
+messages).
+
+### Paths to state or log files
+
+When writing out state or log files, always pass an absolute path
+through `zulip_path` (found in `zproject/computed_settings.py`), which
+will do the right thing in both development and production.
+
 ## Secrets
 
 Please don't put any passwords, secret access keys, etc. inline in the
 code. Instead, use the `get_secret` function or the `get_mandatory_secret`
 function in `zproject/config.py` to read secrets from `/etc/zulip/secrets.conf`.
+
+### Python
+
+- Our Python code is formatted with
+  [Black](https://github.com/psf/black) and
+  [isort](https://pycqa.github.io/isort/). The [linter
+  tool](../testing/linters.md) enforces this by running Black and
+  isort in check mode, or in write mode with
+  `tools/lint --only=black,isort --fix`. You may find it helpful to
+  [integrate
+  Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
+  and
+  [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
+  with your editor.
+- Don't put a shebang line on a Python file unless it's meaningful to
+  run it as a script. (Some libraries can also be run as scripts, e.g.
+  to run a test suite.)
+- Scripts should be executed directly (`./script.py`), so that the
+  interpreter is implicitly found from the shebang line, rather than
+  explicitly overridden (`python script.py`).
+- Put all imports together at the top of the file, absent a compelling
+  reason to do otherwise.
+- Unpacking sequences doesn't require list brackets:
+
+  ```python
+  [x, y] = xs    # unnecessary
+  x, y = xs      # better
+  ```
+
+- For string formatting, use `x % (y,)` rather than `x % y`, to avoid
+  ambiguity if `y` happens to be a tuple.
+
+### JavaScript and TypeScript
+
+Our JavaScript and TypeScript code is formatted with
+[Prettier](https://prettier.io/). You can ask Prettier to reformat
+all code via our [linter tool](../testing/linters.md) with
+`tools/lint --only=prettier --fix`. You can also [integrate it with your
+editor](https://prettier.io/docs/en/editors.html).
+
+Combine adjacent on-ready functions, if they are logically related.
+
+The best way to build complicated DOM elements is a Handlebars template
+like `web/templates/message_reactions.hbs`. For simpler things
+you can use jQuery DOM building APIs like so:
+
+```js
+var new_tr = $('<tr />').attr('id', object.id);
+```
+
+Passing a HTML string to jQuery is fine for simple hardcoded things
+that don't need internationalization:
+
+```js
+foo.append('<p id="selected">/</p>');
+```
+
+but avoid programmatically building complicated strings.
+
+We used to favor attaching behaviors in templates like so:
+
+```js
+<p onclick="select_zerver({{id}})">
+```
+
+but there are some reasons to prefer attaching events using jQuery code:
+
+- Potential huge performance gains by using delegated events where
+  possible
+- When calling a function from an `onclick` attribute, `this` is not
+  bound to the element like you might think
+- jQuery does event normalization
+
+Either way, avoid complicated JavaScript code inside HTML attributes;
+call a helper function instead.
+
+### JavaScript `const` and `let`
+
+Always declare JavaScript variables using `const` or `let` rather than
+`var`.
+
+## JS array/object manipulation
+
+For functions that operate on arrays or JavaScript objects, you should
+generally use modern
+[ECMAScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Language_Resources)
+primitives such as [`for … of`
+loops](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of),
+[`Array.prototype.{entries, every, filter, find, indexOf, map, some}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array),
+[`Object.{assign, entries, keys, values}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object),
+[spread
+syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax),
+and so on. Our Babel configuration automatically transpiles and
+polyfills these using [`core-js`](https://github.com/zloirock/core-js)
+when necessary. We used to use the
+[Underscore](https://underscorejs.org/) library, but that should be
+avoided in new code.
+
+### HTML / CSS
+
+Our CSS is formatted with [Prettier](https://prettier.io/). You can
+ask Prettier to reformat all code via our [linter
+tool](../testing/linters.md) with `tools/lint --only=prettier --fix`.
+You can also [integrate it with your
+editor](https://prettier.io/docs/en/editors.html).
+
+Avoid using the `style=` attribute unless the styling is actually
+dynamic. Instead, define logical classes and put your styles in
+external CSS files such as `zulip.css`.
+
+Don't use the tag name in a selector unless you have to. In other words,
+use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
+type changes in the future.
+
+Additionally, multi-word class and ID values should be hyphenated,
+also known as _kebab case_. In HTML, opt for `class="my-multiword-class"`,
+with its corresponding CSS selector as `.my-multiword-class`.
 
 ## Dangerous constructs
 
@@ -212,160 +361,9 @@ string, use the `id` function, as it will simplify future code changes.
 In most contexts in JavaScript where a string is needed, you can pass a
 number without any explicit conversion.
 
-### JavaScript `const` and `let`
-
-Always declare JavaScript variables using `const` or `let` rather than
-`var`.
-
 ### JavaScript and TypeScript `for (i in myArray)`
 
 Don't use it:
 [[1]](https://stackoverflow.com/questions/500504/javascript-for-in-with-arrays),
 [[2]](https://google.github.io/styleguide/javascriptguide.xml#for-in_loop),
 [[3]](https://www.jslint.com/help.html#forin)
-
-### Translation tags
-
-Remember to
-[tag all user-facing strings for translation](../translating/translating.md), whether
-they are in HTML templates or JavaScript/TypeScript editing the HTML (e.g. error
-messages).
-
-### Paths to state or log files
-
-When writing out state or log files, always pass an absolute path
-through `zulip_path` (found in `zproject/computed_settings.py`), which
-will do the right thing in both development and production.
-
-## JS array/object manipulation
-
-For functions that operate on arrays or JavaScript objects, you should
-generally use modern
-[ECMAScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Language_Resources)
-primitives such as [`for … of`
-loops](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of),
-[`Array.prototype.{entries, every, filter, find, indexOf, map, some}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array),
-[`Object.{assign, entries, keys, values}`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object),
-[spread
-syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax),
-and so on. Our Babel configuration automatically transpiles and
-polyfills these using [`core-js`](https://github.com/zloirock/core-js)
-when necessary. We used to use the
-[Underscore](https://underscorejs.org/) library, but that should be
-avoided in new code.
-
-## More arbitrary style things
-
-### Line length
-
-We have an absolute hard limit on line length only for some files, but
-we should still avoid extremely long lines. A general guideline is:
-refactor stuff to get it under 85 characters, unless that makes the
-code a lot uglier, in which case it's fine to go up to 120 or so.
-
-### JavaScript and TypeScript
-
-Our JavaScript and TypeScript code is formatted with
-[Prettier](https://prettier.io/). You can ask Prettier to reformat
-all code via our [linter tool](../testing/linters.md) with
-`tools/lint --only=prettier --fix`. You can also [integrate it with your
-editor](https://prettier.io/docs/en/editors.html).
-
-Combine adjacent on-ready functions, if they are logically related.
-
-The best way to build complicated DOM elements is a Handlebars template
-like `web/templates/message_reactions.hbs`. For simpler things
-you can use jQuery DOM building APIs like so:
-
-```js
-var new_tr = $('<tr />').attr('id', object.id);
-```
-
-Passing a HTML string to jQuery is fine for simple hardcoded things
-that don't need internationalization:
-
-```js
-foo.append('<p id="selected">/</p>');
-```
-
-but avoid programmatically building complicated strings.
-
-We used to favor attaching behaviors in templates like so:
-
-```js
-<p onclick="select_zerver({{id}})">
-```
-
-but there are some reasons to prefer attaching events using jQuery code:
-
-- Potential huge performance gains by using delegated events where
-  possible
-- When calling a function from an `onclick` attribute, `this` is not
-  bound to the element like you might think
-- jQuery does event normalization
-
-Either way, avoid complicated JavaScript code inside HTML attributes;
-call a helper function instead.
-
-### HTML / CSS
-
-Our CSS is formatted with [Prettier](https://prettier.io/). You can
-ask Prettier to reformat all code via our [linter
-tool](../testing/linters.md) with `tools/lint --only=prettier --fix`.
-You can also [integrate it with your
-editor](https://prettier.io/docs/en/editors.html).
-
-Avoid using the `style=` attribute unless the styling is actually
-dynamic. Instead, define logical classes and put your styles in
-external CSS files such as `zulip.css`.
-
-Don't use the tag name in a selector unless you have to. In other words,
-use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
-type changes in the future.
-
-Additionally, multi-word class and ID values should be hyphenated,
-also known as _kebab case_. In HTML, opt for `class="my-multiword-class"`,
-with its corresponding CSS selector as `.my-multiword-class`.
-
-### Python
-
-- Our Python code is formatted with
-  [Black](https://github.com/psf/black) and
-  [isort](https://pycqa.github.io/isort/). The [linter
-  tool](../testing/linters.md) enforces this by running Black and
-  isort in check mode, or in write mode with
-  `tools/lint --only=black,isort --fix`. You may find it helpful to
-  [integrate
-  Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
-  and
-  [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
-  with your editor.
-- Don't put a shebang line on a Python file unless it's meaningful to
-  run it as a script. (Some libraries can also be run as scripts, e.g.
-  to run a test suite.)
-- Scripts should be executed directly (`./script.py`), so that the
-  interpreter is implicitly found from the shebang line, rather than
-  explicitly overridden (`python script.py`).
-- Put all imports together at the top of the file, absent a compelling
-  reason to do otherwise.
-- Unpacking sequences doesn't require list brackets:
-
-  ```python
-  [x, y] = xs    # unnecessary
-  x, y = xs      # better
-  ```
-
-- For string formatting, use `x % (y,)` rather than `x % y`, to avoid
-  ambiguity if `y` happens to be a tuple.
-
-### Tests
-
-Clear, readable code is important for [tests](../testing/testing.md);
-familiarize yourself with our testing frameworks so that you can write
-clean, readable tests. Comments about anything subtle about what is
-being verified are appreciated.
-
-### Third party code
-
-See [our docs on dependencies](../subsystems/dependencies.md) for discussion of
-rules about integrating third-party projects.
