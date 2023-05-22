@@ -64,7 +64,6 @@ input::-moz-focus-inner {
 }
 button,
 html input[type="button"],
-input[type="reset"],
 input[type="submit"] {
   -webkit-appearance: button;
   cursor: pointer;
@@ -72,7 +71,6 @@ input[type="submit"] {
 label,
 button,
 input[type="button"],
-input[type="reset"],
 input[type="submit"] {
   cursor: pointer;
 }
@@ -536,7 +534,6 @@ input[type="color"]:focus {
 input[type="file"],
 input[type="image"],
 input[type="submit"],
-input[type="reset"],
 input[type="button"] {
   width: auto;
 }
