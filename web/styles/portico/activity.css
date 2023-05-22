@@ -144,3 +144,13 @@ tr.admin td:first-child {
     border-color: hsl(0deg 0% 83%);
     border-radius: 2px;
 }
+
+.search-query.input-xxlarge {
+    width: 530px;
+}
+
+@media (width <= 767px) {
+    .search-query.input-xxlarge {
+        width: 100%;
+    }
+}
