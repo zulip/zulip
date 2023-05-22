@@ -468,7 +468,6 @@ input[type="number"],
 input[type="email"],
 input[type="url"],
 input[type="search"],
-input[type="tel"],
 input[type="color"] {
   display: inline-block;
   height: 20px;
@@ -488,7 +487,6 @@ input[type="number"],
 input[type="email"],
 input[type="url"],
 input[type="search"],
-input[type="tel"],
 input[type="color"] {
   background-color: #ffffff;
   border: 1px solid #cccccc;
@@ -506,7 +504,6 @@ input[type="number"]:focus,
 input[type="email"]:focus,
 input[type="url"]:focus,
 input[type="search"]:focus,
-input[type="tel"]:focus,
 input[type="color"]:focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
