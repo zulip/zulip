@@ -3069,24 +3069,6 @@ select.invite-as {
     }
 }
 
-.recipient_row {
-    /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
-       for details on how this works */
-    .message_row.unread {
-        .date_unread_marker {
-            display: none;
-        }
-    }
-
-    /* Select all but the first .message_row.unread,
-       and remove the properties set from the previous rule. */
-    .message_row.unread ~ .message_row.unread {
-        .date_unread_marker {
-            display: block;
-        }
-    }
-}
-
 .simplebar-content-wrapper {
     /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
         but we don't want it to have an outline when focused anywhere in the app. */
