@@ -1150,31 +1150,6 @@ td.pointer {
     }
 }
 
-.messagebox {
-    grid-area: messagebox;
-    word-wrap: break-word;
-    cursor: pointer;
-    border: none;
-    /* The left padding value accounts for a 2px
-      unread marker, ensuring a uniform 5px of
-      padding on either side of the message box. */
-    padding: 0 5px 0 3px;
-
-    &:hover .message_controls,
-    &:focus-within .message_controls,
-    &:hover .message_failed,
-    &:focus-within .message_failed {
-        .empty-star:hover {
-            cursor: pointer;
-        }
-
-        > div {
-            opacity: 1;
-            visibility: visible;
-        }
-    }
-}
-
 .message_header {
     vertical-align: middle;
     text-align: left;
@@ -1584,43 +1559,6 @@ td.pointer {
     }
 }
 
-.unread_marker {
-    margin-left: var(--unread-marker-left);
-    opacity: 0;
-    transition: all 0.3s ease-out;
-
-    &.slow_fade {
-        transition: all 2s ease-out;
-    }
-
-    &.fast_fade {
-        transition: all 0.3s ease-out;
-    }
-
-    &.date_unread_marker {
-        grid-area: date_unread_marker;
-
-        .unread-marker-fill {
-            border-radius: 0 !important;
-            height: 100% !important;
-        }
-    }
-
-    &.message_unread_marker {
-        grid-area: message_unread_marker;
-    }
-}
-
-.unread-marker-fill {
-    border-left: 2px solid var(--color-unread-marker);
-    height: 100%;
-}
-
-.unread .unread_marker {
-    transition: all 0.3s ease-out;
-    opacity: 1;
-}
-
 .selected_message {
     .messagebox-content {
         /* We add an outline and shift it inside the message so that without
@@ -1728,77 +1666,6 @@ div.message_table {
     margin-left: auto;
     display: none;
     width: 100%;
-}
-
-.message_row {
-    display: grid;
-    /* 2x2 grid:
-      date_unread_marker date_row
-      message_unread_marker messagebox */
-    grid-template: "date_unread_marker date_row" auto "message_unread_marker messagebox" auto / 2px 1fr;
-    border-left: 1px solid var(--color-message-list-border);
-    border-right: 1px solid var(--color-message-list-border);
-    background-color: var(--color-background-stream-message-content);
-
-    &.direct_mention {
-        background-color: var(--color-background-direct-mention);
-    }
-
-    .user-mention {
-        color: var(--color-text-other-mention);
-        background-color: var(--color-background-text-direct-mention);
-
-        &.user-mention-me {
-            color: var(--color-text-self-direct-mention);
-            font-weight: 600;
-
-            &[data-user-id="*"] {
-                color: var(--color-text-self-group-mention);
-                background-color: var(--color-background-text-group-mention);
-            }
-        }
-
-        &:hover {
-            background-color: var(--color-background-text-hover-direct-mention);
-        }
-    }
-
-    &.group_mention {
-        background-color: var(--color-background-group-mention);
-    }
-
-    .user-group-mention {
-        color: var(--color-text-other-mention);
-        background-color: var(--color-background-text-group-mention);
-
-        &.user-mention-me {
-            color: var(--color-text-self-group-mention);
-            font-weight: 600;
-        }
-
-        &:hover {
-            background-color: var(--color-background-text-hover-group-mention);
-        }
-    }
-
-    .date_row {
-        grid-area: date_row;
-        background-color: var(--color-background-stream-message-content);
-        /* We only want padding for the date rows between recipient blocks */
-        padding-bottom: 0;
-
-        & span {
-            font-size: calc(12em / 14);
-            font-style: normal;
-            font-weight: 600;
-            line-height: 17px; /* identical to box height, or 131% */
-            text-align: right;
-            letter-spacing: 0.04em;
-            color: var(--color-date);
-            /* To match time in message row and date in recipient row. */
-            padding-right: 6px;
-        }
-    }
 }
 
 div.focused_table {
