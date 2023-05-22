@@ -6897,35 +6897,43 @@ paths:
         You can [resolve topics](/help/resolve-a-topic) by editing the
         topic to `✔ {original_topic}`.
 
-        **Note**: See [configuring message editing][config-message-editing]
-        for detailed documentation on when users are allowed to edit topics.
+        See [configuring message editing][config-message-editing] for detailed
+        documentation on when users are allowed to edit message content and
+        [restricting moving messages][restrict-move-messages] for detailed
+        documentation on when users are allowed to change a message's topic
+        and/or stream.
 
-        **Changes**: Before Zulip 7.0 (feature level 162), users who were not
+        **Changes**: Prior to Zulip 7.0 (feature level 172), anyone could add a
+        topic to stream messages without a topic, regardless of the organization's
+        [topic editing permissions](/help/restrict-moving-messages). As of this
+        feature level, messages without topics have the same restrictions for
+        topic edits as messages with topics.
+
+        Before Zulip 7.0 (feature level 172), by using the `change_all` value for
+        the `propagate_mode` parameter, users could move messages after the
+        organization's configured time limits for changing a message's topic or
+        stream had passed. As of this feature level, the server will [return an
+        error](/api/update-message#response) with `"code":
+        "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"` if users, other than organization
+        administrators or moderators, try to move messages after these time
+        limits have passed.
+
+        Before Zulip 7.0 (feature level 162), users who were not
         administrators or moderators could only edit topics if the target
         message was sent within the last 3 days. That time limit is now
         controlled by the `move_messages_within_stream_limit_seconds` setting. A
         similar time limit for moving topics to different streams was added,
         controlled by the `move_messages_between_streams_limit_seconds` setting.
 
-        **Changes**: Before Zulip 7.0 (feature level 159), editing
+        Before Zulip 7.0 (feature level 159), editing
         streams and topics of messages was forbidden if
         `allow_message_editing` was `false`, regardless of the
         `edit_topic_policy` or `move_messages_between_streams_policy`.
         Before Zulip 7.0 (feature level 159), message senders were allowed
         to edit the topic indefinitely.
 
-        **Changes**: Before Zulip 7.0 (feature level 172), anyone could add
-        a topic to messages without topic regardless of topic edit
-        permissions. Now topic editing restrictions apply to messages without a
-        topic as well.
-
-        Before Zulip 7.0 (feature level 172), users were allowed to move messages
-        that had passed the time limit by using `change_all` value for `propagate_mode`
-        parameter. Now, the server returns an error if users, other than organization
-        administrators and moderators, try to move messages that have passed the time
-        limit.
-
         [config-message-editing]: /help/restrict-message-editing-and-deletion
+        [restrict-move-messages]: /help/restrict-moving-messages
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -7062,30 +7070,35 @@ paths:
                             "total_messages_in_topic": 5,
                           }
                         description: |
-                          A special failed JSON response for when the user has permission to move
+                          A special failed JSON response (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`)
+                          for when the user has permission to move
                           the target message, but asked to move all messages in a topic
-                          (`change_all`) and the user does not have permission to move the entire
-                          topic.
+                          (`"propagate_mode": "change_all"`) and the user does not have permission
+                          to move the entire topic.
 
                           This happens when the topic contains some messages that are older than an
-                          applicable time limit for the requested topic move
-                          (`move_messages_within_stream_limit_seconds` and/or
-                          `move_messages_between_streams_limit_seconds`).
+                          applicable time limit for the requested topic move (see
+                          `move_messages_within_stream_limit_seconds` and/or
+                          `move_messages_between_streams_limit_seconds` in the
+                          [`POST /register`](/api/register-queue) response).
 
-                          This response contains data on which portion of this topic the user has
-                          permission to move; `first_message_id_allowed_to_move` is the oldest
-                          message ID in this topic that the user has permission to move; the user
-                          has permission to move the most recent `total_messages_allowed_to_move`
-                          messages, but `total_messages_in_topic` exist in the topic.
+                          The error response contains data on which portion of this topic the user has
+                          permission to move. `first_message_id_allowed_to_move` is the oldest message
+                          ID in this topic that the user has permission to move.
+                          There are `total_messages_in_topic` in the topic, but the user only has
+                          permission to move the (most recent) `total_messages_allowed_to_move`
+                          messages.
 
-                          A client is recommended to either just present the error to the user, or
-                          if `first_message_id_allowed_to_move` is not `null`, prompt the user with
-                          this information. Clients should support this error code with
-                          `"first_message_id_allowed_to_move": null` for forwards compatibility
-                          with future server versions that may use this error code in other
-                          propagation modes where it is possible that the user does not have
-                          permission to move any messages, or where the server did not calculate the
-                          other fields.
+                          Clients should support this error code with
+                          `"first_message_id_allowed_to_move": null` for forward compatibility
+                          with future server versions that may use this error code with other
+                          propagation modes where the user does not have permission to move any
+                          messages, or where the server did not calculate the total message counts
+                          noted above.
+
+                          Clients can either only present the error to the user or, if
+                          `first_message_id_allowed_to_move` is not `null`, prompt the user to adjust
+                          their query with the above information.
 
                           If clients choose to present a prompt for this error code, they should
                           recommend the option of cancelling and (manually) asking a moderator to
@@ -7095,12 +7108,13 @@ paths:
                           a target message ID of `first_message_id_allowed_to_move`, if the user
                           desires to move only the portion of the topic that they can.
 
-                          Note that in a stream with protected history, the Zulip security model
-                          requires that the above calculations only include messages the acting user
-                          has access to. So in the rare case of a user attempting to move a topic
-                          that started before the user joined a private stream with protected
-                          history, this API endpoint might move only portion of a topic that they
-                          have access to, without this error or any confirmation dialog.
+                          Note that in a stream with [protected history](/help/stream-permissions),
+                          the Zulip security model requires that the above calculations only include
+                          messages the acting user has access to. So in the rare case of a user
+                          attempting to move a topic that started before the user joined a private
+                          stream with protected history, this API endpoint might move only the portion
+                          of a topic that they have access to, without this error or any confirmation
+                          dialog.
 
                           **Changes**: New in Zulip 7.0 (feature level 172).
     delete:
