@@ -394,6 +394,7 @@ class MessageDict:
         del obj["sender_avatar_source"]
         del obj["sender_delivery_email"]
         del obj["sender_avatar_version"]
+        del obj["sender_full_name"]
 
         del obj["recipient_type"]
         del obj["recipient_type_id"]
@@ -690,13 +691,14 @@ class MessageDict:
         sender_id = obj["sender_id"]
         sender_realm_id = obj["sender_realm_id"]
         sender_delivery_email = obj["sender_delivery_email"]
+        sender_full_name = obj["sender_full_name"]
         sender_avatar_source = obj["sender_avatar_source"]
         sender_avatar_version = obj["sender_avatar_version"]
 
         obj["avatar_url"] = get_avatar_field(
             user_id=sender_id,
             realm_id=sender_realm_id,
-            email=sender_delivery_email,
+            full_name=sender_full_name,
             avatar_source=sender_avatar_source,
             avatar_version=sender_avatar_version,
             medium=False,

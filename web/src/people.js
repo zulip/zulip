@@ -701,9 +701,9 @@ export function user_can_direct_message(recipient_ids_string) {
     return true;
 }
 
-function gravatar_url_for_email(email) {
-    const hash = md5(email.toLowerCase());
-    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
+function gravatar_url_for_email(full_name) {
+    // const hash = md5(email.toLowerCase());
+    const avatar_url = "https://ui-avatars.com/api/?background=random&bold=true&name=" + full_name; // "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
     const small_avatar_url = format_small_avatar_url(avatar_url);
     return small_avatar_url;
 }
@@ -714,15 +714,15 @@ export function small_avatar_url_for_person(person) {
     }
 
     if (person.avatar_url === null) {
-        return gravatar_url_for_email(person.email);
+        return gravatar_url_for_email(person.full_name);
     }
 
     return format_small_avatar_url("/avatar/" + person.user_id);
 }
 
-function medium_gravatar_url_for_email(email) {
-    const hash = md5(email.toLowerCase());
-    const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
+function medium_gravatar_url_for_email(full_name) {
+    // const hash = md5(email.toLowerCase());
+    const avatar_url = "https://ui-avatars.com/api/?background=random&bold=true&name=" + full_name; // "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
     const url = new URL(avatar_url, location);
     url.search += (url.search ? "&" : "") + "s=500";
     return url.href;
@@ -734,7 +734,7 @@ export function medium_avatar_url_for_person(person) {
      * gravatar and server endpoints here. */
 
     if (person.avatar_url === null) {
-        return medium_gravatar_url_for_email(person.email);
+        return medium_gravatar_url_for_email(person.full_name);
     }
 
     return "/avatar/" + person.user_id + "/medium";
@@ -793,14 +793,14 @@ export function small_avatar_url(message) {
     // For computing the user's email, we first trust the person
     // object since that is updated via our real-time sync system, but
     // if unavailable, we use the sender email.
-    let email;
+    let full_name;
     if (person) {
-        email = person.email;
+        full_name = person.full_name;
     } else {
-        email = message.sender_email;
+        full_name = message.sender_full_name;
     }
 
-    return gravatar_url_for_email(email);
+    return gravatar_url_for_email(full_name);
 }
 
 export function is_valid_email_for_compose(email) {
