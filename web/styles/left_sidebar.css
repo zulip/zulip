@@ -268,6 +268,11 @@ li.show-more-topics {
                 & span:not(.user_circle) {
                     opacity: 0.7;
                 }
+
+                & img {
+                    width: 16px;
+                    height: 17px;
+                }
             }
         }
 
@@ -502,7 +507,7 @@ li.top_left_scheduled_messages {
 }
 
 .conversation-partners {
-    line-height: 1.25;
+    /*line-height: 1.25;*/
 }
 
 .top_left_all_messages i.fa-align-left {
