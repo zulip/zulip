@@ -518,9 +518,6 @@ input:-ms-input-placeholder {
 input::-webkit-input-placeholder {
   color: #999999;
 }
-.input-large {
-  width: 210px;
-}
 .input-xxlarge {
   width: 530px;
 }
@@ -1442,7 +1439,6 @@ button.close {
   .row {
     margin-left: 0;
   }
-  .input-large,
   .input-xxlarge {
     display: block;
     width: 100%;
