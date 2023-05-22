@@ -122,12 +122,15 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 172**
 
-* [`PATCH /messages/{message_id}`](/api/update-message): Topic editing
-  restrictions now apply to messages without a topic as well.
-* [`PATCH /messages/{message_id}`](/api/update-message): The endpoint
-  now returns an error when users, other than organization administrators
-  and moderators, try to move messages that have passed the time limit
-  using `change_all` value for `propagate_mode` parameter.
+* [`PATCH /messages/{message_id}`](/api/update-message):
+  [Topic editing restrictions](/help/restrict-moving-messages) now apply
+  to stream messages without a topic.
+* [`PATCH /messages/{message_id}`](/api/update-message): When users, other
+  than organization administrators and moderators, use
+  `"propagate_mode": "change_all"` to move messages that have passed the
+  organization's time limit for updating a message's topic and/or stream,
+  this endpoint now returns an error response
+  (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`).
 
 **Feature level 171**:
 
