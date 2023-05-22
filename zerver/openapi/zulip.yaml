@@ -3110,13 +3110,17 @@ paths:
                                 Processing this event is important for doing Markdown local echo
                                 correctly.
 
-                                **Changes**: As of Zulip 7.0 (feature level 176), clients will not
-                                receive this event unless the event queue is registered with the
-                                client capability `{"linkifier_url_template": true}`. This is because
-                                the change to specify linkifiers with a URL template instead of a
-                                URL format string is not backwards-compatible.
+                                Clients will not receive this event unless the event queue is
+                                registered with the client capability
+                                `{"linkifier_url_template": true}`.
                                 See [`POST /register`](/api/register-queue#parameter-client_capabilities)
                                 for how client capabilities can be specified.
+
+                                **Changes**: Before Zulip 7.0 (feature level 176), the
+                                `linkifier_url_template` client capability was not required. The
+                                requirement was added because linkifiers were updated to contain
+                                a URL template instead of a URL format string, which was not a
+                                backwards-compatible change.
 
                                 New in Zulip 4.0 (feature level 54), replacing the deprecated
                                 `realm_filters` event type.
@@ -3171,12 +3175,13 @@ paths:
                               additionalProperties: false
                               deprecated: true
                               description: |
-                                Legacy event type. Previously, sent to all users in a Zulip organization
-                                when the set of configured [linkifiers](/help/add-a-custom-linkifier)
-                                for the organization has changed.
+                                Legacy event type that is no longer sent to clients. Previously, sent
+                                to all users in a Zulip organization when the set of configured
+                                [linkifiers](/help/add-a-custom-linkifier) for the organization was
+                                changed.
 
-                                **Changes**: As of Zulip 7.0 (feature level 176), clients will no longer
-                                receive this event.
+                                **Changes**: Prior to Zulip 7.0 (feature level 176), this event type
+                                was sent to clients.
 
                                 **Deprecated** in Zulip 4.0 (feature level 54), and replaced by the
                                 `realm_linkifiers` event type, which has a clearer name and format.
@@ -3199,10 +3204,10 @@ paths:
                                   description: |
                                     An array of tuples, where each tuple described a linkifier. The first
                                     element of the tuple was a string regex pattern which represented the
-                                    pattern that to be linkified on matching, for example `"#(?P<id>[123])"`.
-                                    The second element was the URL with which the pattern matching string
-                                    should be linkified with, so with the above pattern an example URL would
-                                    be `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
+                                    pattern to be linkified on matching, for example `"#(?P<id>[123])"`.
+                                    The second element was the URL format string that the pattern should be
+                                    linkified with. A URL format string for the above example would be
+                                    `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
                                     was the ID of the realm filter.
                               example:
                                 {
@@ -10985,13 +10990,16 @@ paths:
                           Array of objects where each object describes a single
                           [linkifier](/help/add-a-custom-linkifier).
 
-                          **Changes**: As of Zulip 7.0 (feature level 176), clients will
-                          receive an empty array unless the event queue is registered with the
-                          client capability `{"linkifier_url_template": true}`. This is because
-                          the change to specify linkifiers with a URL template instead of a
-                          URL format string is not backwards-compatible.
+                          Clients will receive an empty array unless the event queue is
+                          registered with the client capability `{"linkifier_url_template": true}`.
                           See [`client_capabilities`](/api/register-queue#parameter-client_capabilities)
                           parameter for how this can be specified.
+
+                          **Changes**: Before Zulip 7.0 (feature level 176), the
+                          `linkifier_url_template` client capability was not required. The
+                          requirement was added because linkifiers were updated to contain
+                          a URL template instead of a URL format string, which was a not
+                          backwards-compatible change.
 
                           New in Zulip 4.0 (feature level 54). Clients can access this data for
                           servers on earlier feature levels via the legacy `realm_filters` property.
@@ -11034,10 +11042,10 @@ paths:
                           **Changes**: Prior to Zulip 7.0 (feature level 176), this was
                           an array of tuples, where each tuple described a linkifier. The first
                           element of the tuple was a string regex pattern which represented the
-                          pattern that to be linkified on matching, for example `"#(?P<id>[123])"`.
-                          The second element was the URL with which the pattern matching string
-                          should be linkified with, so with the above pattern an example URL would
-                          be `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
+                          pattern to be linkified on matching, for example `"#(?P<id>[123])"`.
+                          The second element was a URL format string that the pattern should be
+                          linkified with. A URL format string for the above example would be
+                          `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
                           was the ID of the realm filter.
 
                           **Deprecated** in Zulip 4.0 (feature level 54), replaced by the
