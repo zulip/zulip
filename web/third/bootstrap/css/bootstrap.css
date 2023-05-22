@@ -63,14 +63,12 @@ input::-moz-focus-inner {
   border: 0;
 }
 button,
-html input[type="button"],
 input[type="submit"] {
   -webkit-appearance: button;
   cursor: pointer;
 }
 label,
 button,
-input[type="button"],
 input[type="submit"] {
   cursor: pointer;
 }
@@ -533,8 +531,7 @@ input[type="color"]:focus {
 }
 input[type="file"],
 input[type="image"],
-input[type="submit"],
-input[type="button"] {
+input[type="submit"] {
   width: auto;
 }
 input[type="file"] {
