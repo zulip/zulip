@@ -317,6 +317,10 @@ export function initialize() {
     delegate("body", {
         target: "#compose-send-button",
         delay: EXTRA_LONG_HOVER_DELAY,
+        // By default, tippyjs uses a trigger value of "mouseenter focus",
+        // but by specifying "mouseenter", this will prevent showing the
+        // Send tooltip when tabbing to the Send button.
+        trigger: "mouseenter",
         appendTo: () => document.body,
         onShow(instance) {
             if (user_settings.enter_sends) {
