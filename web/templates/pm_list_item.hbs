@@ -5,7 +5,9 @@
             {{#if is_group}}
             <span class="fa fa-group"></span>
             {{else if is_bot}}
-            <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
+            <span class="zulip-icon" aria-hidden="true">
+                <img class="bot-icon" src="../images/icons/bot-icon.png" alt="" />
+            </span>
             {{else}}
             <span class="{{user_circle_class}} user_circle"></span>
             {{/if}}
