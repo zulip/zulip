@@ -54,8 +54,8 @@ export function _build_private_messages_list() {
             pm_list_dom.more_private_conversations_li(more_conversations_unread_count),
         );
     }
-    const bot_list_nodes = pm_list_nodes.filter((item) => item.conversation.is_bot);
-    const non_bot_list_nodes = pm_list_nodes.filter((item) => !item.conversation.is_bot);
+    const bot_list_nodes = pm_list_nodes.filter((item) => item?.conversation?.is_bot);
+    const non_bot_list_nodes = pm_list_nodes.filter((item) => !item?.conversation?.is_bot);
     const sortingOrder = ['Office Bot', 'Clinical Bot', 'Notification Bot', 'Welcome Bot'];
     const filtered_list_nodes = [...bot_list_nodes.sort((a, b) => sortingOrder.indexOf(a.conversation.recipients) - sortingOrder.indexOf(b.conversation.recipients)), ...non_bot_list_nodes];
     const dom_ast = pm_list_dom.pm_ul(filtered_list_nodes);
