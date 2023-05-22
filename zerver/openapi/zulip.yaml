@@ -3941,9 +3941,10 @@ paths:
                                         - 5 = Everyone
                                         - 6 = Nobody
 
-                                        **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                                        previous `allow_community_topic_editing` boolean. Nobody added
-                                        as an option in Zulip 7.0 (feature level 159).
+                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                                        New in Zulip 5.0 (feature level 75), replacing the previous
+                                        `allow_community_topic_editing` boolean.
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -4108,8 +4109,9 @@ paths:
                                         - 4 = Moderators only
                                         - 6 = Nobody
 
-                                        **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
-                                        as an option in Zulip 7.0 (feature level 159).
+                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                                        New in Zulip 4.0 (feature level 56).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -6930,12 +6932,13 @@ paths:
         had permission to move messages between streams did not have any time limit
         restrictions when doing so.
 
-        Before Zulip 7.0 (feature level 159), editing
-        streams and topics of messages was forbidden if
-        `allow_message_editing` was `false`, regardless of the
+        Before Zulip 7.0 (feature level 159), editing streams and topics of messages
+        was forbidden if the realm setting for `allow_message_editing` was `false`,
+        regardless of an organization's configuration for the realm settings
         `edit_topic_policy` or `move_messages_between_streams_policy`.
-        Before Zulip 7.0 (feature level 159), message senders were allowed
-        to edit the topic indefinitely.
+
+        Before Zulip 7.0 (feature level 159), message senders were allowed to edit
+        the topic of their messages indefinitely.
 
         [config-message-editing]: /help/restrict-message-editing-and-deletion
         [restrict-move-messages]: /help/restrict-moving-messages
@@ -12684,8 +12687,9 @@ paths:
                           - 4 = Moderators only
                           - 6 = Nobody
 
-                          **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
-                          as an option in Zulip 7.0 (feature level 159).
+                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                          New in Zulip 4.0 (feature level 56).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -12929,9 +12933,10 @@ paths:
                           - 5 = Everyone
                           - 6 = Nobody
 
-                          **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                          previous `allow_community_topic_editing` boolean. Nobody added as
-                          an option in Zulip 7.0 (feature level 159).
+                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                          New in Zulip 5.0 (feature level 75), replacing the previous
+                          `allow_community_topic_editing` boolean.
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
