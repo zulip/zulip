@@ -137,8 +137,14 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 170**
 
-* [`POST /user_topics`](/api/update-user-topic):
-  Added a new endpoint to update the personal preferences for a topic.
+* [`POST /user_topics`](/api/update-user-topic): Added a new endpoint to
+  update a user's personal preferences for a topic, which deprecates the
+  [`PATCH /users/me/subscriptions/muted_topics`](/api/mute-topic) endpoint.
+  The deprecated endpoint is maintained for backwards-compatibility but may be
+  removed in a future release.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Unmuted added as a visibility policy option to the objects sent in response
+  to the `user_topic` event.
 
 **Feature level 169**
 

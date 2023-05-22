@@ -2007,10 +2007,13 @@ paths:
                                     preferences for the topic, such as whether the topic
                                     is muted.
 
-                                    - 0 = None. Used in events to indicate that the user no
-                                      longer has a special visibility policy for this
-                                      topic (for example, the user just unmuted it).
+                                    - 0 = None. Used to indicate that the user no
+                                      longer has a special visibility policy for this topic.
                                     - 1 = Muted. Used to record muted topics.
+                                    - 2 = Unmuted. Used to record unmuted topics.
+
+                                    **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                    a visibility policy option.
                               additionalProperties: false
                               example:
                                 {
@@ -8660,14 +8663,12 @@ paths:
       summary: Topic muting
       tags: ["streams"]
       description: |
-        This endpoint mutes/unmutes a topic within a stream that the current
-        user is subscribed to. Muted topics are displayed faded in the Zulip
-        UI, and are not included in the user's unread count totals.
+        [Mute or unmute a topic](/help/mute-a-topic) within a stream that
+        the current user is subscribed to.
 
         **Changes**: Deprecated in Zulip 7.0 (feature level 170). Clients connecting
-        to the newer server should use the `/user_topics` endpoint instead.
-        It will be removed once clients have migrated to use the
-        `/user_topics` endpoint.
+        to newer servers should use the [POST /user_topics](/api/update-user-topic)
+        endpoint, as this endpoint may be removed in a future release.
 
         Before Zulip 7.0 (feature level 169), this endpoint
         returned an error if asked to mute a topic that was already muted
@@ -8740,10 +8741,9 @@ paths:
         This endpoint can be used to update the visibility policy for the single
         stream and topic pair indicated by the parameters for a user.
 
-        **Changes**: New in Zulip 7.0 (feature level 170).
-        Previously, toggling the muting state for a topic was managed by the
-        `/users/me/subscriptions/muted_topics` endpoint, which this endpoint
-        is intended to replace.
+        **Changes**: New in Zulip 7.0 (feature level 170). Previously,
+        toggling whether a topic was muted or unmuted was managed by the
+        [PATCH /users/me/subscriptions/muted_topics](/api/mute-topic) endpoint.
       parameters:
         - name: stream_id
           in: query
@@ -8768,21 +8768,12 @@ paths:
           description: |
             Controls which visibility policy to set.
 
-            - 0 - INHERIT
-            - 1 - MUTED
-            - 2 - UNMUTED
+            - 0 = None. Removes the visibility policy previously set for the topic.
+            - 1 = Muted. [Mutes the topic](/help/mute-a-topic) in a stream.
+            - 2 = Unmuted. [Unmutes the topic](/help/mute-a-topic) in a muted stream.
 
-            The visibility policy, when set to MUTED, mutes a topic;
-            when set to UNMUTED, it unmutes a topic in a muted stream;
-            and INHERIT is used to remove the visibility policy already set.
-
-            MUTED topics are displayed faded in the Zulip UI, are not included
-            in the user's unread count totals, and the user doesn't receive any
-            notifications.
-
-            An UNMUTED topic will remain visible even if the stream is muted.
-            In a stream that is not muted, a policy of UNMUTED has the same effect
-            as INHERIT.
+            In an unmuted stream, a topic visibility policy of unmuted will have the
+            same effect as the "None" visibility policy.
           schema:
             type: integer
             enum:
@@ -11825,6 +11816,10 @@ paths:
                                 the topic.
 
                                 - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
+                                - 2 = Unmuted. Used to record [unmuted topics](/help/mute-a-topic).
+
+                                **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                a visibility policy option.
                       has_zoom_token:
                         type: boolean
                         description: |
