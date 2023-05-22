@@ -4071,29 +4071,31 @@ paths:
                                       nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved within a
-                                        stream by members with this organization's [message move
-                                        policy](/help/restrict-moving-messages). This setting does not
-                                        affect moderators and administrators.
+                                        stream to another topic by users who have permission to do so based on this
+                                        organization's [topic edit policy](/help/restrict-moving-messages). This
+                                        setting does not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit: messages can be moved
-                                        regardless of how long ago they were sent.
+                                        Will not be 0. A `null` value means no limit, so message topics can be
+                                        edited regardless of how long ago they were sent.
 
-                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
-                                        limit was always 72 hours.
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
+                                        limit was always 72 hours for users who were not administrators or
+                                        moderators.
                                     move_messages_between_streams_limit_seconds:
                                       type: integer
                                       nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved between
-                                        streams by members with this organization's [message move
-                                        policy](/help/restrict-moving-messages). This setting does not
-                                        affect moderators and administrators.
+                                        streams by users who have permission to do so based on this organization's
+                                        [message move policy](/help/restrict-moving-messages). This setting does
+                                        not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit: messages can be moved
+                                        Will not be 0. A `null` value means no limit, so messages can be moved
                                         regardless of how long ago they were sent.
 
-                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
-                                        was not possible to add a time limit for moving messages.
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
+                                        no time limit for moving messages between streams for users with permission
+                                        to do so.
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -6918,12 +6920,15 @@ paths:
         administrators or moderators, try to move messages after these time
         limits have passed.
 
-        Before Zulip 7.0 (feature level 162), users who were not
-        administrators or moderators could only edit topics if the target
-        message was sent within the last 3 days. That time limit is now
-        controlled by the `move_messages_within_stream_limit_seconds` setting. A
-        similar time limit for moving topics to different streams was added,
-        controlled by the `move_messages_between_streams_limit_seconds` setting.
+        Before Zulip 7.0 (feature level 162), users who were not administrators or
+        moderators could only edit topics if the target message was sent within the
+        last 3 days. As of this feature level, that time limit is now controlled by
+        the realm setting `move_messages_within_stream_limit_seconds`. Also at this
+        feature level, a similar time limit for moving messages between streams was
+        added, controlled by the realm setting
+        `move_messages_between_streams_limit_seconds`. Previously, all users who
+        had permission to move messages between streams did not have any time limit
+        restrictions when doing so.
 
         Before Zulip 7.0 (feature level 159), editing
         streams and topics of messages was forbidden if
@@ -12952,15 +12957,16 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be moved within a
-                          stream by members with this organization's [message move
-                          policy](/help/restrict-moving-messages). This setting does not
-                          affect moderators and administrators.
+                          stream to another topic by users who have permission to do so based on this
+                          organization's [topic edit policy](/help/restrict-moving-messages). This
+                          setting does not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit: messages can be moved
-                          regardless of how long ago they were sent.
+                          Will not be 0. A `null` value means no limit, so message topics can be
+                          edited regardless of how long ago they were sent.
 
-                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
-                          limit was always 72 hours.
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
+                          limit was always 72 hours for users who were not administrators or
+                          moderators.
                       realm_move_messages_between_streams_limit_seconds:
                         type: integer
                         nullable: true
@@ -12968,15 +12974,16 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be moved between
-                          streams by members with this organization's [message move
-                          policy](/help/restrict-moving-messages). This setting does not
-                          affect moderators and administrators.
+                          streams by users who have permission to do so based on this organization's
+                          [message move policy](/help/restrict-moving-messages). This setting does
+                          not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit: messages can be moved
+                          Will not be 0. A `null` value means no limit, so messages can be moved
                           regardless of how long ago they were sent.
 
-                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
-                          was not possible to add a time limit for moving messages.
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
+                          no time limit for moving messages between streams for users with permission
+                          to do so.
                       realm_community_topic_editing_limit_seconds:
                         type: integer
                         description: |
