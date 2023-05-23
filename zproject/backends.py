@@ -2742,8 +2742,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             self.logger.info("/complete/saml/: error while parsing SAMLResponse:", exc_info=True)
             # Fall through to returning None.
         finally:
+            # We need a finally: block to ensure we don't keep around information in the session
+            # if the authentication failed.
             if result is None:
-                for param in self.standard_relay_params:
+                for param in [*self.standard_relay_params, "saml_idp_name", "saml_session_index"]:
                     # If an attacker managed to eavesdrop on the RelayState token,
                     # they may pass it here to the endpoint with an invalid SAMLResponse.
                     # We remove these potentially sensitive parameters that we have set in the session
