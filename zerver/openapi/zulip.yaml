@@ -9708,7 +9708,8 @@ paths:
         - name: realm_name_in_email_notifications_policy
           in: query
           description: |
-            Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+            Whether to [include organization name in subject of message notification
+            emails](/help/email-notifications#include-organization-name-in-subject-line).
 
             - 1 - Automatic
             - 2 - Always
@@ -11765,7 +11766,8 @@ paths:
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
-                              Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+                              Whether to [include organization name in subject of message notification
+                              emails](/help/email-notifications#include-organization-name-in-subject-line).
 
                               - 1 - Automatic
                               - 2 - Always
@@ -12177,12 +12179,14 @@ paths:
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated `realm_name_in_notifications` in Zulip 5.0 (feature level 89).
-                          Replaced `realm_name_in_notifications` boolean with
-                          `realm_name_in_email_notifications_policy` in Zulip 7.0 (feature level 168);
-                          `true` corresponded to `Always`, and `false` to `Never`.
+                          **Changes**: In Zulip 7.0 (feature level 168), replaced previous
+                          `realm_name_in_notifications` global notifications setting with
+                          `realm_name_in_email_notifications_policy`.
 
-                          Clients connecting to newer servers should declare the `user_settings_object`
+                          **Deprecated** since Zulip 5.0 (feature level 89); both
+                          `realm_name_in_notifications` and the newer
+                          `realm_name_in_email_notifications_policy` are deprecated. Clients
+                          connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
                       presence_enabled:
                         deprecated: true
@@ -13714,7 +13718,8 @@ paths:
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
-                              Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+                              Whether to [include organization name in subject of message notification
+                              emails](/help/email-notifications#include-organization-name-in-subject-line).
 
                               - 1 - Automatic
                               - 2 - Always
@@ -14909,7 +14914,8 @@ paths:
         - name: realm_name_in_email_notifications_policy
           in: query
           description: |
-            Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+            Whether to [include organization name in subject of message notification
+            emails](/help/email-notifications#include-organization-name-in-subject-line).
 
             - 1 - Automatic
             - 2 - Always
