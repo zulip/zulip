@@ -1,26 +1,40 @@
 # Code style and conventions
 
-One can summarize Zulip's coding philosophy as a relentless focus on
-making the codebase easy to understand and difficult to make dangerous
-mistakes in. The majority of work in any large software development
-project is understanding the existing code so one can debug or modify
-it, and investments in code readability usually end up paying for
-themselves when someone inevitably needs to debug or improve the code.
-
-When there's something subtle or complex to explain or ensure in the
-implementation, we try hard to make it clear, through a combination of
-clean and intuitive interfaces, well-named variables and functions,
-comments/docstrings, and commit messages (roughly in order of priority
--- if you can make something clear with a good interface, that's a lot
-better than writing a comment explaining how the bad interface works).
-
 This page documents code style policies that every Zulip developer
 should understand. We aim for this document to be short and focused
-only on details that cannot be easily enforced another way (e.g.
-through linters, automated tests, subsystem design that makes classes
-of mistakes unlikely, etc.). This approach minimizes the cognitive
+only on details that cannot be easily enforced another way (e.g.,
+through linters, automated tests, or subsystem design that makes classes
+of mistakes unlikely). This approach minimizes the cognitive
 load of ensuring a consistent coding style for both contributors and
 maintainers.
+
+One can summarize Zulip's coding philosophy as a relentless focus on
+making the codebase easy to understand and difficult to make dangerous
+mistakes in (see the sections on [dangerous constructs](#dangerous-constructs-in-django)
+at the end of this page). The majority of work in any large software
+development project is understanding the existing code so one can debug
+or modify it, and investments in code readability usually end up paying
+for themselves when someone inevitably needs to debug or improve the code.
+
+When there's something subtle or complex to explain or ensure in the
+implementation, we try hard to make it clear through a combination of
+clean and intuitive interfaces, well-named variables and functions,
+comments/docstrings, and commit messages (roughly in that order of
+priority -- if you can make something clear with a good interface,
+that's a lot better than writing a comment explaining how the bad
+interface works).
+
+After an introduction to our lint tools and test suites, this document
+outlines some general
+[conventions and practices](#follow-zulip-conventions-and-practices)
+applicable to all languages used in the codebase, as well as specific
+guidance on [Python](#python-specific-conventions-and-practices) and
+[JavaScript and TypeScript](#javascript-and-typescript-conventions-and-practices).
+
+At the end of the document, you can read about
+[dangerous constructs in Django](#dangerous-constructs-in-django) and
+[JavaScript and TypeScript](#dangerous-constructs-in-javascript-and-typescript)
+that you should absolutely avoid.
 
 ## Be consistent with existing code
 
