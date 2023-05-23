@@ -215,7 +215,7 @@ avoided in new code.
 
 Our CSS is formatted with [Prettier](https://prettier.io/). You can
 ask Prettier to reformat all code via our [linter
-tool](../testing/linters.md) with `tools/lint --only=prettier --fix`.
+tool](../testing/linters.md) with `./tools/lint --only=prettier --fix`.
 You can also [integrate it with your
 editor](https://prettier.io/docs/en/editors.html).
 
@@ -253,7 +253,7 @@ for bar in bars:
     # Make use of foo
 ```
 
-...which makes a database query for every Bar. While this may be fast
+...which makes a database query for every `Bar`. While this may be fast
 locally in development, it may be quite slow in production! Instead,
 tell Django's [QuerySet
 API](https://docs.djangoproject.com/en/dev/ref/models/querysets/) to
@@ -280,8 +280,9 @@ There are 3 reasons for this:
 1.  It's guaranteed to correctly do a case-inexact lookup
 2.  It fetches the user object from remote cache, which is faster
 3.  It always fetches a UserProfile object which has been queried
-    using `.select_related()` (see above!), and thus will perform well
-    when one later accesses related models like the Realm.
+    using `.select_related()` ([see above](#avoid-excessive-database-queries)!),
+    and thus will perform well when one later accesses related models
+    like the Realm.
 
 Similarly we have `get_client` and `access_stream_by_id` /
 `access_stream_by_name` functions to fetch those commonly accessed
@@ -312,17 +313,17 @@ assert obj.id in set([o.id for o in some_objs])
 
 ### Don't call user_profile.save() without `update_fields`
 
-You should always pass the update_fields keyword argument to .save()
-when modifying an existing Django model object. By default, .save() will
+You should always pass the `update_fields` keyword argument to `.save()`
+when modifying an existing Django model object. By default, `.save()` will
 overwrite every value in the column, which results in lots of race
 conditions where unrelated changes made by one thread can be
-accidentally overwritten by another thread that fetched its UserProfile
+accidentally overwritten by another thread that fetched its `UserProfile`
 object before the first thread wrote out its change.
 
 ### Don't update important model objects with raw saves
 
 In most cases, we already have a function in `zerver.actions` with
-a name like do_activate_user that will correctly handle lookups,
+a name like `do_activate_user` that will correctly handle lookups,
 caching, and notifying running browsers via the event system about your
 change. So please check whether such a function exists before writing
 new code to modify a model object, since your new code has a good chance
@@ -332,7 +333,7 @@ of getting at least one of these things wrong.
 
 Python allows datetime objects to not have an associated time zone, which can
 cause time-related bugs that are hard to catch with a test suite, or bugs
-that only show up during daylight savings time.
+that only show up during daylight saving time.
 
 Good ways to make time-zone-aware datetimes are below. We import time zone
 libraries as `from datetime import datetime, timezone` and
@@ -370,9 +371,9 @@ Additional notes:
 
 Our message row DOM elements have a custom attribute `zid` which
 contains the numerical message ID. **Don't access this directly as**
-`x.attr('zid')` ! The result will be a string and comparisons (e.g. with
-`<=`) will give the wrong result, occasionally, just enough to make a
-bug that's impossible to track down.
+`x.attr('zid')` ! The result will be a string and comparisons (e.g., with
+`<=`) will occasionally return the wrong result, just often enough
+to make a bug that's impossible to track down.
 
 You should instead use the `id` function from the `rows` module, as in
 `rows.id(x)`. This returns a number. Even in cases where you do want a
