@@ -131,13 +131,12 @@ rules about integrating third-party projects.
   tool](../testing/linters.md) enforces this by running Black and
   isort in check mode, or in write mode with
   `tools/lint --only=black,isort --fix`. You may find it helpful to
-  [integrate
-  Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
+  [integrate Black](https://black.readthedocs.io/en/stable/integrations/editors.html)
   and
   [isort](https://pycqa.github.io/isort/#installing-isorts-for-your-preferred-text-editor)
   with your editor.
 - Don't put a shebang line on a Python file unless it's meaningful to
-  run it as a script. (Some libraries can also be run as scripts, e.g.
+  run it as a script. (Some libraries can also be run as scripts, e.g.,
   to run a test suite.)
 - Scripts should be executed directly (`./script.py`), so that the
   interpreter is implicitly found from the shebang line, rather than
@@ -145,12 +144,10 @@ rules about integrating third-party projects.
 - Put all imports together at the top of the file, absent a compelling
   reason to do otherwise.
 - Unpacking sequences doesn't require list brackets:
-
   ```python
   [x, y] = xs    # unnecessary
   x, y = xs      # better
   ```
-
 - For string formatting, use `x % (y,)` rather than `x % y`, to avoid
   ambiguity if `y` happens to be a tuple.
 
