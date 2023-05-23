@@ -649,6 +649,7 @@ export function build_emoji_popover($elt, id) {
         content: generate_emoji_picker_content(id),
         html: true,
         trigger: "manual",
+        fixed: true,
     });
     $elt.popover("show");
 
