@@ -2946,6 +2946,10 @@ select.invite-as {
         height: var(--header-height);
     }
 
+    #searchbox_form {
+        height: calc(var(--header-height) - 1px);
+    }
+
     .spectator_narrow_login_button {
         height: var(--header-height) !important;
     }
