@@ -1888,7 +1888,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
         Specifies a dict of keys:values to be saved in the user's session
         after successfully authenticating.
         """
-        return {"authentication_method": self.name}
+        return {"social_auth_backend": self.name}
 
     @classmethod
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
@@ -2719,7 +2719,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
         idp_name = self.strategy.session_get("saml_idp_name")
 
-        return {"authentication_method": f"saml:{idp_name}"}
+        return {"social_auth_backend": f"saml:{idp_name}"}
 
 
 def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
