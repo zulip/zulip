@@ -557,7 +557,7 @@ DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 
 SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 18
 
 # How long servers have to respond to outgoing webhook requests
-OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
+OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 60 * 5
 
 # Maximum length of message content allowed.
 # Any message content exceeding this limit will be truncated.
