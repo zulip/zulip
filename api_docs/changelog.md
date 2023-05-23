@@ -153,10 +153,10 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 168**
 
-* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
-  [`POST /register`](/api/register-queue),
-  [`PATCH /settings`](/api/update-settings): Replaced the `realm_name_in_notifications`
-  boolean field with an integer field `realm_name_in_email_notifications_policy`.
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Replaced the boolean user setting `realm_name_in_notifications`
+  with an integer `realm_name_in_email_notifications_policy`.
 
 **Feature level 167**
 
