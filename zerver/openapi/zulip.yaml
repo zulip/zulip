@@ -3832,7 +3832,13 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
 
-                                    **Changes**: Before Zulip 6.0 (feature level 150), on changing any of
+                                    **Changes**: In Zulip 7.0 (feature level 183), the
+                                    `community_topic_editing_limit_seconds` property was removed.
+                                    It was documented as potentially returned as a changed property
+                                    in this event, but in fact it was only ever returned in the
+                                    [`POST /register`](/api/register-queue) response.
+
+                                    Before Zulip 6.0 (feature level 150), on changing any of
                                     `allow_message_editing`, `message_content_edit_limit_seconds`, or
                                     `edit_topic_policy` settings, this object included all the three settings
                                     irrespective of which of these settings were changed. Now, a separate event
@@ -3869,15 +3875,6 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can create bot users in this organization.
-                                    community_topic_editing_limit_seconds:
-                                      type: integer
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot have
-                                        their topics edited by other users with this organization's
-                                        [message edit policy](/help/restrict-message-editing-and-deletion).
-
-                                        **Changes**: New in Zulip 3.0 (feature level 11). Previously this
-                                        value was hardcoded to 86400 seconds (1 day).
                                     create_public_stream_policy:
                                       type: integer
                                       description: |
@@ -10506,7 +10503,14 @@ paths:
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
 
-        **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
+        **Changes**: Before Zulip 7.0 (feature level 183), the
+        `realm_community_topic_editing_limit_seconds` property
+        was returned by the response. It was removed because it
+        had not been in use since the realm setting
+        `move_messages_within_stream_limit_seconds` was introduced
+        in feature level 162.
+
+        The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
         It was replaced by a [user setting](/api/update-settings) with a
         [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
         values preserved. Clients can support all versions by supporting the current API and treating
@@ -13008,17 +13012,6 @@ paths:
                           **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
                           no time limit for moving messages between streams for users with permission
                           to do so.
-                      realm_community_topic_editing_limit_seconds:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Messages sent more than this many seconds ago cannot have
-                          their topics edited by other users with this organization's
-                          [message edit policy](/help/restrict-message-editing-and-deletion).
-
-                          **Changes**: New in Zulip 3.0 (feature level 11). Previously this
-                          value was hardcoded to 86400 seconds (1 day).
                       realm_enable_read_receipts:
                         type: boolean
                         description: |
