@@ -47,21 +47,14 @@ When in doubt, ask in
 
 ### Use the linters
 
-You can run them all at once with
+You can run all of the linters at once:
 
 ```bash
-./tools/lint
+$ ./tools/lint
 ```
 
-You can set this up as a local Git commit hook with
-
-```bash
-tools/setup-git-repo
-```
-
-The Vagrant setup process runs this for you.
-
-`lint` runs many lint checks in parallel, including
+Note that that takes a little time. `./tools/lint` runs many
+lint checks in parallel, including:
 
 - JavaScript ([ESLint](https://eslint.org/),
   [Prettier](https://prettier.io/))
@@ -71,13 +64,27 @@ The Vagrant setup process runs this for you.
   [isort](https://pycqa.github.io/isort/))
 - templates
 - Puppet configuration
-- custom checks (e.g. trailing whitespace and spaces-not-tabs)
+- custom checks (e.g., trailing whitespace and spaces-not-tabs)
+
+To speed things up, you can [pass specific files or directories
+to the linter](../testing/linters.md):
+
+```
+$ ./tools/lint web/src/compose.js
+```
+
+If you'd like, you can also set up a local Git commit hook that
+will lint only your changed files each time you commit:
+
+```bash
+$ ./tools/setup-git-repo
+```
 
 ### Use tests to verify your logic
 
 Clear, readable code is important for [tests](../testing/testing.md);
 familiarize yourself with our testing frameworks so that you can write
-clean, readable tests. Comments about anything subtle about what is
+clean, readable tests. In-test comments about anything subtle that is
 being verified are appreciated.
 
 ## Follow Zulip conventions and practices
@@ -95,9 +102,9 @@ code a lot uglier, in which case it's fine to go up to 120 or so.
 ### Tag user-facing strings for translation
 
 Remember to
-[tag all user-facing strings for translation](../translating/translating.md), whether
-they are in HTML templates or JavaScript/TypeScript editing the HTML (e.g. error
-messages).
+[tag all user-facing strings for translation](../translating/translating.md),
+whether the strings are in HTML templates or output by JavaScript/TypeScript
+that injects or modifies HTML (e.g., error messages).
 
 ### Correctly prepare paths destined for state or log files
 
