@@ -1122,7 +1122,7 @@ div.settings-radio-input-parent {
         left: 101%;
 
         top: 45px;
-        background-color: hsl(0deg 0% 98%);
+        background-color: var(--color-background-modal);
         border-top: none;
 
         transition: all 0.3s ease;
