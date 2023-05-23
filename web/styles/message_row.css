@@ -242,12 +242,19 @@ $time_column_max_width: 150px;
         .message_content {
             grid-row-start: 1;
             grid-column-start: 2;
-            padding: 4px 0 1px;
+            /*
+            Space between two single line messages in a paragraph is 10px.
+            There is 3px margin above and below a message. So, having a 2px
+            padding above and below the message will make the space between
+            all single paragraphs the same.
+            */
+            padding: 2px 0;
         }
 
         .message_reactions {
             grid-row-start: 4;
             grid-column-start: 2;
+            margin-top: -1px;
         }
 
         .message_edit {
