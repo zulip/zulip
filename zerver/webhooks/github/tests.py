@@ -51,6 +51,11 @@ class GitHubWebhookTest(WebhookTestCase):
             "push__local_branch_without_commits", "public-repo / feature", expected_message
         )
 
+    def test_push_merege_queue_ignore(self) -> None:
+        self.url = self.build_webhook_url()
+        payload = self.get_body("push__merge_queue")
+        self.verify_post_is_ignored(payload, "push")
+
     def test_push_1_commit(self) -> None:
         expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
         self.check_webhook("push__1_commit", TOPIC_BRANCH, expected_message)
