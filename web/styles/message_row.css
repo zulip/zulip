@@ -31,41 +31,8 @@ $time_column_max_width: 150px;
         background-color: var(--color-background-direct-mention);
     }
 
-    .user-mention {
-        color: var(--color-text-other-mention);
-        background-color: var(--color-background-text-direct-mention);
-
-        &.user-mention-me {
-            color: var(--color-text-self-direct-mention);
-            font-weight: 600;
-
-            &[data-user-id="*"] {
-                color: var(--color-text-self-group-mention);
-                background-color: var(--color-background-text-group-mention);
-            }
-        }
-
-        &:hover {
-            background-color: var(--color-background-text-hover-direct-mention);
-        }
-    }
-
     &.group_mention {
         background-color: var(--color-background-group-mention);
-    }
-
-    .user-group-mention {
-        color: var(--color-text-other-mention);
-        background-color: var(--color-background-text-group-mention);
-
-        &.user-mention-me {
-            color: var(--color-text-self-group-mention);
-            font-weight: 600;
-        }
-
-        &:hover {
-            background-color: var(--color-background-text-hover-group-mention);
-        }
     }
 
     .date_row {
