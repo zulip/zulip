@@ -420,6 +420,10 @@ function hashchanged(from_reload, e) {
 }
 
 export function initialize() {
+    // We don't want browser to restore the scroll
+    // position of the new hash in the current hash.
+    window.history.scrollRestoration = "manual";
+
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
     });
