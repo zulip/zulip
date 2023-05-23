@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 183**
+
+* [`POST /register`](/api/register-queue): Removed the
+  `realm_community_topic_editing_limit_seconds` property, which was no
+  longer in use. The time limit for editing topics is controlled by the
+  realm setting `move_messages_within_stream_limit_seconds`, see feature
+  level 162.
+* [`GET /events`](/api/get-events): Removed the `community_topic_editing_limit_seconds`
+  property from realm `update_dict` event documentation, because it was
+  never returned as a changed property in this event and was only ever
+  returned in the [`POST /register`](/api/register-queue) response.
+
 **Feature level 182**
 
 * `POST /export/realm`: This endpoint now returns the ID of the data

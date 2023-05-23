@@ -399,8 +399,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
 
-    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
-
     DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
 
     move_messages_within_stream_limit_seconds = models.PositiveIntegerField(

@@ -276,10 +276,6 @@ def fetch_initial_state_data(
             Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
         )
 
-        state[
-            "realm_community_topic_editing_limit_seconds"
-        ] = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS
-
         # This setting determines whether to send presence and also
         # whether to display of users list in the right sidebar; we
         # want both behaviors for logged-out users.  We may in the
