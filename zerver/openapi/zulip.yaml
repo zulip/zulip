@@ -6907,6 +6907,21 @@ paths:
         documentation on when users are allowed to change a message's topic
         and/or stream.
 
+        The relevant realm settings in the API that are related to the above
+        linked documentation on when users are allowed to update messages are:
+
+        - `allow_message_editing`
+        - `edit_topic_policy`
+        - `move_messages_between_streams_policy`
+        - `message_content_edit_limit_seconds`
+        - `move_messages_within_stream_limit_seconds`
+        - `move_messages_between_streams_limit_seconds`
+
+        More details about these realm settings can be found in the
+        [`POST /register`](/api/register-queue) response or in the documentation
+        of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
+        event in [`GET /events`](/api/get-events).
+
         **Changes**: Prior to Zulip 7.0 (feature level 172), anyone could add a
         topic to stream messages without a topic, regardless of the organization's
         [topic editing permissions](/help/restrict-moving-messages). As of this
