@@ -7,12 +7,11 @@
 
 # Do not invoke gitlint if commit message is empty
 if grep -q '^[^#]' "$1"; then
-    lint_cmd="cd ~/zulip && gitlint"
     if
         if [ -z "$VIRTUAL_ENV" ] && command -v vagrant >/dev/null && [ -e .vagrant ]; then
-            ! vagrant ssh -c "$lint_cmd"
+            ! vagrant ssh -c 'cd ~/zulip && gitlint'
         else
-            ! eval "$lint_cmd"
+            ! gitlint
         fi <"$1"
     then
         echo "WARNING: Your commit message does not match Zulip's style guide."
