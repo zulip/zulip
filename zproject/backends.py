@@ -2682,16 +2682,32 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             self.logger.info(error_msg, idp_name, subdomain)
             return None
 
+        # We have to branch here to do different things depending on the kind
+        # of SAMLRequest/SAMLResponse we received. We do just basic heuristics here
+        # to choose the right branch, since it's not our intent to do proper validation now.
+        # We end up calling the appropriate process_*() function, which takes care of validation
+        # in the python3-saml library, ensuring it received the correct kind of XML document
+        # and finishes processing it.
+        # (1) We received a SAMLRequest - the only SAMLRequest we accept is a LogoutRequest,
+        #     so we call process_logout().
+        # (2) We received a SAMLResponse and it looks like a LogoutResponse - we call
+        #     process_logout_response()
+        # (3) We received a SAMLResponse that's not a LogoutResponse. We proceed to treat it
+        #     as an authentication response. We don't do anything security-sensitive here, just some setup
+        #     before calling the super().auth_complete() method, which is where the actual validation
+        #     and authentication will happen.
+        #
+        # If for any reason, an XML document that doesn't match the expected type is passed
+        # to these *_process() functions, it will be rejected.
         if isinstance(saml_document, SAMLRequest):
-            # We're a Service Provider, so the only SAMLRequest we accept is a LogoutRequest. Thus
-            # we can proceed with process_logout and it's for the lower level libraries to reject it
-            # if it's not a valid LogoutRequest.
             return self.process_logout(subdomain, idp_name)
         elif isinstance(saml_document, SAMLResponse) and saml_document.is_logout_response():
-            # As a Service Provider, we process SAMLResponse which can be either LogoutResponse
-            # or an authentication response.
             return SAMLSPInitiatedLogout.process_logout_response(saml_document, idp_name)
 
+        # IMPORTANT: The saml_document has not yet been validated at this point. We are
+        # assuming it is to be treated as an authentication SAMLResponse, but it will only
+        # be validated in the super().auth_complete() call below - and code until then
+        # must not assume trust in the data.
         assert isinstance(saml_document, SAMLResponse)
 
         result = None
