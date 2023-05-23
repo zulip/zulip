@@ -159,32 +159,27 @@ all code via our [linter tool](../testing/linters.md) with
 `tools/lint --only=prettier --fix`. You can also [integrate it with your
 editor](https://prettier.io/docs/en/editors.html).
 
-Combine adjacent on-ready functions, if they are logically related.
+### Build DOM elements in Handlebars
 
 The best way to build complicated DOM elements is a Handlebars template
-like `web/templates/message_reactions.hbs`. For simpler things
-you can use jQuery DOM building APIs like so:
+like `web/templates/message_reactions.hbs`. For simpler things you can
+use jQuery DOM-building APIs like this:
 
 ```js
-var new_tr = $('<tr />').attr('id', object.id);
+const $new_tr = $('<tr />').attr('id', object.id);
 ```
 
-Passing a HTML string to jQuery is fine for simple hardcoded things
-that don't need internationalization:
+### Attach behaviors to event listeners
+
+Attach callback functions to events using jQuery code. For example:
 
 ```js
-foo.append('<p id="selected">/</p>');
+$("body").on("click", ".move_message_button", function (e) {
+  // message-moving UI logic
+}
 ```
 
-but avoid programmatically building complicated strings.
-
-We used to favor attaching behaviors in templates like so:
-
-```js
-<p onclick="select_zerver({{id}})">
-```
-
-but there are some reasons to prefer attaching events using jQuery code:
+That approach has multiple benefits:
 
 - Potential huge performance gains by using delegated events where
   possible
@@ -192,8 +187,7 @@ but there are some reasons to prefer attaching events using jQuery code:
   bound to the element like you might think
 - jQuery does event normalization
 
-Either way, avoid complicated JavaScript code inside HTML attributes;
-call a helper function instead.
+Do not use `onclick` attributes in the HTML.
 
 ### Declare variables using `const` and `let`
 
