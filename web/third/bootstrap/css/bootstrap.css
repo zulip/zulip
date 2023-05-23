@@ -452,7 +452,6 @@ label {
 }
 input[type="text"],
 input[type="password"],
-input[type="number"],
 input[type="email"],
 input[type="url"] {
   display: inline-block;
@@ -469,7 +468,6 @@ input[type="url"] {
 }
 input[type="text"],
 input[type="password"],
-input[type="number"],
 input[type="email"],
 input[type="url"] {
   background-color: #ffffff;
@@ -484,7 +482,6 @@ input[type="url"] {
 }
 input[type="text"]:focus,
 input[type="password"]:focus,
-input[type="number"]:focus,
 input[type="email"]:focus,
 input[type="url"]:focus {
   border-color: rgba(82, 168, 236, 0.8);
