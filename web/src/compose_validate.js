@@ -237,8 +237,13 @@ export function warn_if_topic_resolved(topic_changed) {
         };
 
         const new_row = render_compose_banner(context);
-        compose_banner.append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
-        compose_state.set_recipient_viewed_topic_resolved_banner(true);
+        const appended = compose_banner.append_compose_banner_to_banner_list(
+            new_row,
+            $("#compose_banners"),
+        );
+        if (appended) {
+            compose_state.set_recipient_viewed_topic_resolved_banner(true);
+        }
     } else {
         clear_topic_resolved_warning();
     }
