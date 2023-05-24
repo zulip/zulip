@@ -535,7 +535,7 @@ export function initialize() {
 
             $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
                 message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                    message_edit.toggle_resolve_topic(message_id, topic_name);
+                    message_edit.toggle_resolve_topic(message_id, topic_name, true);
                 });
 
                 instance.hide();
