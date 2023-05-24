@@ -22,37 +22,27 @@ export let toggler;
 
 const markdown_help_rows = [
     {
-        markdown: "*italic*",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>I</kbd>)",
-    },
-    {
         markdown: "**bold**",
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>B</kbd>)",
     },
     {
+        markdown: "*italic*",
+        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>I</kbd>)",
+    },
+    {
         markdown: "~~strikethrough~~",
+    },
+    {
+        markdown: ":heart:",
     },
     {
         markdown: "[Zulip website](https://zulip.org)",
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
     },
     {
-        markdown: `\
-* Milk
-* Tea
-  * Green tea
-  * Black tea
-  * Oolong tea
-* Coffee`,
-    },
-    {
-        markdown: `\
-1. Milk
-1. Tea
-1. Coffee`,
-    },
-    {
-        markdown: ":heart:",
+        markdown: "#**streamName**",
+        output_html: "<p><a>#streamName</a></p>",
+        effect_html: "(links to a stream)",
     },
     {
         markdown: "@**Joe Smith**",
@@ -71,45 +61,34 @@ const markdown_help_rows = [
         effect_html: "(notifies all recipients)",
     },
     {
-        markdown: "#**streamName**",
-        output_html: "<p><a>#streamName</a></p>",
-        effect_html: "(links to a stream)",
+        markdown: `\
+* Milk
+* Tea
+  * Green tea
+  * Black tea
+  * Oolong tea
+* Coffee`,
     },
     {
-        markdown: "/me is busy working",
-        output_html: '<p><span class="sender_name-in-status">Iago</span> is busy working</p>',
+        markdown: `\
+1. Milk
+1. Tea
+1. Coffee`,
     },
     {
-        markdown: `/poll What did you drink this morning?
-Milk
-Tea
-Coffee`,
-        output_html: `\
-<div class="poll-widget">
-    <h4 class="poll-question-header reduced-font-size">What did you drink this morning?</h4>
-    <i class="fa fa-pencil poll-edit-question"></i>
-    <ul class="poll-widget">
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>Milk</span>
-    </li>
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>Tea</span>
-    </li>
-    <li>
-        <button class="poll-vote">
-            0
-        </button>
-        <span>Coffee</span>
-    </li>
-    </ul>
-</div>
-`,
+        markdown: "> Quoted",
+    },
+    {
+        markdown: `\
+\`\`\`quote
+Quoted block
+\`\`\``,
+    },
+    {
+        markdown: `\
+\`\`\`spoiler Always visible heading
+This text won't be visible until the user clicks.
+\`\`\``,
     },
     {
         markdown: "Some inline `code`",
@@ -146,21 +125,6 @@ def zulip():
         ),
     },
     {
-        markdown: "> Quoted",
-    },
-    {
-        markdown: `\
-\`\`\`quote
-Quoted block
-\`\`\``,
-    },
-    {
-        markdown: `\
-\`\`\`spoiler Always visible heading
-This text won't be visible until the user clicks.
-\`\`\``,
-    },
-    {
         markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
     },
     {
@@ -168,6 +132,42 @@ This text won't be visible until the user clicks.
 \`\`\`math
 \\int_{0}^{1} f(x) dx
 \`\`\``,
+    },
+    {
+        markdown: "/me is busy working",
+        output_html: '<p><span class="sender_name-in-status">Iago</span> is busy working</p>',
+    },
+    {
+        markdown: `/poll What did you drink this morning?
+Milk
+Tea
+Coffee`,
+        output_html: `\
+<div class="poll-widget">
+    <h4 class="poll-question-header reduced-font-size">What did you drink this morning?</h4>
+    <i class="fa fa-pencil poll-edit-question"></i>
+    <ul class="poll-widget">
+    <li>
+        <button class="poll-vote">
+            0
+        </button>
+        <span>Milk</span>
+    </li>
+    <li>
+        <button class="poll-vote">
+            0
+        </button>
+        <span>Tea</span>
+    </li>
+    <li>
+        <button class="poll-vote">
+            0
+        </button>
+        <span>Coffee</span>
+    </li>
+    </ul>
+</div>
+`,
     },
     {
         markdown: "---",
