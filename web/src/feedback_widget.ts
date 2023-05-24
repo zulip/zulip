@@ -64,7 +64,16 @@ const animate = {
         }
 
         if (meta.$container) {
-            meta.$container.fadeOut(500).removeClass("show");
+            meta.$container.addClass("slide-out-feedback-container");
+            // Delay setting `display: none` enough that the hide animation starts.
+            setTimeout(
+                () =>
+                    meta.$container?.removeClass([
+                        "show-feedback-container",
+                        "slide-out-feedback-container",
+                    ]),
+                50,
+            );
             meta.opened = false;
             meta.alert_hover_state = false;
         }
@@ -75,7 +84,7 @@ const animate = {
         }
 
         if (meta.$container) {
-            meta.$container.fadeIn(500).addClass("show");
+            meta.$container.addClass("show-feedback-container");
             meta.opened = true;
             setTimeout(() => animate.maybe_close(), 100);
         }

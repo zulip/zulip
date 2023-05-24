@@ -284,28 +284,50 @@ p.n-margin {
     top: -2px;
 }
 
+/* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
+@keyframes feedback-slide-in {
+    from {
+        transform: translateY(-120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(50px);
+        opacity: 1;
+    }
+}
+
+@keyframes feedback-slide-out {
+    from {
+        transform: translateY(50px);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-120%);
+        opacity: 0;
+    }
+}
+
 #feedback_container {
     display: none;
-    position: absolute;
+    position: fixed;
     width: 400px;
     top: 0;
     left: calc(50vw - 220px);
     padding: 15px;
-
     background-color: hsl(0deg 0% 98%);
     border-radius: 5px;
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
     z-index: 110;
 
-    animation-name: pulse;
-    animation-iteration-count: infinite;
-    animation-duration: 2s;
+    &.show-feedback-container {
+        display: block;
+        animation: feedback-slide-in 0.6s forwards;
+    }
 
-    transition-property: top, bottom;
-    transition-duration: 0.5s;
-
-    &.show {
-        top: 50px;
+    &.slide-out-feedback-container {
+        animation: feedback-slide-out 0.6s;
     }
 
     & h3 {
@@ -318,20 +340,6 @@ p.n-margin {
         font-weight: 200;
         margin: 0 0 0 10px;
         cursor: pointer;
-    }
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 30px hsl(0deg 0% 0% / 35%);
-    }
-
-    50% {
-        box-shadow: 0 0 30px hsl(0deg 0% 0% / 15%);
-    }
-
-    100% {
-        box-shadow: 0 0 30px hsl(0deg 0% 0% / 35%);
     }
 }
 
