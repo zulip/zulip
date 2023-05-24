@@ -365,20 +365,6 @@ Additional notes:
 
 ## Dangerous constructs in JavaScript and TypeScript
 
-### Do not access rows via `x.attr('zid')`; use `rows.id(x)`
-
-Our message row DOM elements have a custom attribute `zid` which
-contains the numerical message ID. **Don't access this directly as**
-`x.attr('zid')` ! The result will be a string and comparisons (e.g., with
-`<=`) will occasionally return the wrong result, just often enough
-to make a bug that's impossible to track down.
-
-You should instead use the `id` function from the `rows` module, as in
-`rows.id(x)`. This returns a number. Even in cases where you do want a
-string, use the `id` function, as it will simplify future code changes.
-In most contexts in JavaScript where a string is needed, you can pass a
-number without any explicit conversion.
-
 ### Do not use `for...in` statements to traverse arrays
 
 That construct pulls in properties inherited from the prototype chain.
