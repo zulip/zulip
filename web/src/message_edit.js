@@ -697,7 +697,7 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved) {
     });
 }
 
-export function toggle_resolve_topic(message_id, old_topic_name) {
+export function toggle_resolve_topic(message_id, old_topic_name, report_errors_in_global_banner) {
     let new_topic_name;
     const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
     if (topic_is_resolved) {
@@ -719,6 +719,12 @@ export function toggle_resolve_topic(message_id, old_topic_name) {
         error(xhr) {
             if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                 handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
+                return;
+            }
+
+            if (report_errors_in_global_banner) {
+                const error_msg = JSON.parse(xhr.responseText).msg;
+                ui_report.generic_embed_error(error_msg, 3500);
             }
         },
     });
