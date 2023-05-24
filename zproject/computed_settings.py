@@ -780,6 +780,7 @@ LOGGING: Dict[str, Any] = {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "default",
+            "stream": sys.stdout,
         },
         "file": {
             "level": "DEBUG",
