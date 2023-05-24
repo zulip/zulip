@@ -65,6 +65,7 @@
         width: 100%;
         font-size: 16px;
         height: calc(var(--header-height) - 1px);
+        min-height: 30px;
         padding: 0;
         padding-right: 40px;
         border: none;
