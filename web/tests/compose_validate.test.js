@@ -66,6 +66,15 @@ function test_ui(label, f) {
     });
 }
 
+function stub_message_row($textarea) {
+    const $stub = $.create("message_row_stub");
+    $textarea.closest = (selector) => {
+        assert.equal(selector, ".message_row");
+        $stub.length = 0;
+        return $stub;
+    };
+}
+
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
     mock_banners();
     const sub = {
@@ -622,6 +631,7 @@ test_ui("needs_subscribe_warning", () => {
 
 test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
+    stub_message_row($textarea);
     const test_sub = {
         name: compose_state.stream_name(),
         stream_id: 99,
@@ -676,6 +686,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
 test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
+    stub_message_row($textarea);
     compose_state.set_stream_name("");
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
