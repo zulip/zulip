@@ -45,8 +45,20 @@ to avoid such a fate. So please make an effort to reuse existing
 styling, clean up now-unused CSS, etc., to keep things maintainable.
 
 Opt to write CSS in CSS files. Avoid using the `style=` attribute in
-HTML unless the styling is actually dynamic. Instead, define logical
-classes and put your styles in external CSS files such as `zulip.css`.
+HTML except for styles that are set dynamically. For example, we set
+the colors for specific streams (`{{stream_color}}`) on different
+elements dynamically, in files like `user_stream_list_item.hbs`:
+
+```html
+<span
+  class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon"
+  style="color: {{stream_color}}">
+```
+
+But for most other cases, its preferable to define logical classes and
+put your styles in external CSS files such as `zulip.css` or a more
+specific CSS file, if one exists. See the contents of the `web/styles/`
+directory.
 
 ### Be consistent with existing similar UI
 
