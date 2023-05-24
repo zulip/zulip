@@ -861,7 +861,7 @@ div.overlay {
 .overlay-messages-container {
     position: relative;
     height: 95%;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-modal);
     border-radius: 4px;
     padding: 0;
     width: 58%;
