@@ -59,6 +59,16 @@ export function needs_subscribe_warning(user_id, stream_id) {
     return true;
 }
 
+function get_stream_id() {
+    const stream_name = compose_state.stream_name();
+
+    if (!stream_name) {
+        return undefined;
+    }
+
+    return stream_data.get_sub(stream_name).stream_id;
+}
+
 export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
     // For PMs, we currently don't warn about links to private
     // streams, since you are specifically sharing the existence of
@@ -67,9 +77,8 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
     if (compose_state.get_message_type() !== "stream") {
         return;
     }
-
-    const compose_stream = stream_data.get_sub(compose_state.stream_name());
-    if (compose_stream === undefined) {
+    const stream_id = get_stream_id();
+    if (!stream_id) {
         // We have an invalid stream name, don't warn about this here as
         // we show an error to the user when they try to send the message.
         return;
@@ -93,7 +102,7 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
     // knows it exists.  (But always warn Zephyr users, since
     // we may not know their stream's subscribers.)
     if (
-        peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id) &&
+        peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id) &&
         !page_params.realm_is_zephyr_mirror_realm
     ) {
         return;
@@ -124,19 +133,13 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
         return; // don't check if @all/@everyone/@stream
     }
 
-    const stream_name = compose_state.stream_name();
+    const stream_id = get_stream_id();
 
-    if (!stream_name) {
+    if (!stream_id) {
         return;
     }
 
-    const sub = stream_data.get_sub(stream_name);
-
-    if (!sub) {
-        return;
-    }
-
-    if (needs_subscribe_warning(user_id, sub.stream_id)) {
+    if (needs_subscribe_warning(user_id, stream_id)) {
         const $banner_container = compose_banner.get_compose_banner_container($textarea);
         const $existing_invites_area = $banner_container.find(
             `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
@@ -151,7 +154,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
         if (!existing_invites.includes(user_id)) {
             const context = {
                 user_id,
-                stream_id: sub.stream_id,
+                stream_id,
                 banner_type: compose_banner.WARNING,
                 button_text: can_subscribe_other_users
                     ? $t({defaultMessage: "Subscribe them"})
