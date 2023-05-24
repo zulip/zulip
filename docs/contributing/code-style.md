@@ -85,9 +85,20 @@ $ ./tools/setup-git-repo
 ### Use tests to verify your logic
 
 Clear, readable code is important for [tests](../testing/testing.md);
-familiarize yourself with our testing frameworks so that you can write
+familiarize yourself with our
+[testing frameworks](../testing/testing.md#major-test-suites) and
+[testing philosophy](../testing/philosophy.md) so that you can write
 clean, readable tests. In-test comments about anything subtle that is
 being verified are appreciated.
+
+You can run all of the tests like this:
+
+```
+$ ./tools/test-all
+```
+
+But consult [our documentation on running tests](../testing/testing.md#running-tests),
+which covers more targeted approaches to commanding the test-runners.
 
 ## Follow Zulip conventions and practices
 
