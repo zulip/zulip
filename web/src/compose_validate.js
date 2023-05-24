@@ -59,7 +59,26 @@ export function needs_subscribe_warning(user_id, stream_id) {
     return true;
 }
 
-function get_stream_id() {
+function get_stream_id_for_textarea($textarea) {
+    // Returns the stream ID, if any, associated with the textarea:
+    // The recipient of a message being edited, or the target
+    // recipient of a message being drafted in the compose box.
+    // Returns undefined if the appropriate context is a direct
+    // message conversation.
+    const is_in_editing_area = $textarea.closest(".message_row").length > 0;
+
+    if (is_in_editing_area) {
+        const stream_id_str = $textarea
+            .closest(".recipient_row")
+            .find(".message_header")
+            .attr("data-stream-id");
+        if (stream_id_str === undefined) {
+            // Direct messages don't have a data-stream-id.
+            return undefined;
+        }
+        return Number.parseInt(stream_id_str, 10);
+    }
+
     const stream_name = compose_state.stream_name();
 
     if (!stream_name) {
@@ -70,17 +89,19 @@ function get_stream_id() {
 }
 
 export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
-    // For PMs, we currently don't warn about links to private
-    // streams, since you are specifically sharing the existence of
-    // the private stream with someone.  One could imagine changing
-    // this policy if user feedback suggested it was useful.
-    if (compose_state.get_message_type() !== "stream") {
-        return;
-    }
-    const stream_id = get_stream_id();
+    const stream_id = get_stream_id_for_textarea($textarea);
+
     if (!stream_id) {
-        // We have an invalid stream name, don't warn about this here as
-        // we show an error to the user when they try to send the message.
+        // There are two cases in which the `stream_id` will be
+        // omitted, and we want to exclude the warning banner:
+        //
+        // 1. We currently do not warn about links to private streams
+        // in direct messages; it would probably be an improvement to
+        // do so when one of the recipients is not subscribed.
+        //
+        // 2. If we have an invalid stream name, we do not warn about
+        // it here; we will show an error to the user when they try to
+        // send the message.
         return;
     }
 
@@ -118,10 +139,6 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
-    if (compose_state.get_message_type() !== "stream") {
-        return;
-    }
-
     // Disable for Zephyr mirroring realms, since we never have subscriber lists there
     if (page_params.realm_is_zephyr_mirror_realm) {
         return;
@@ -133,7 +150,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
         return; // don't check if @all/@everyone/@stream
     }
 
-    const stream_id = get_stream_id();
+    const stream_id = get_stream_id_for_textarea($textarea);
 
     if (!stream_id) {
         return;
