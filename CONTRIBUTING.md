@@ -214,8 +214,8 @@ faster as you build experience.
 
 ### Submitting a pull request
 
-See the pull request review
-process
+See the [pull request review
+process](https://zulip.readthedocs.io/en/latest/contributing/review-process.html)
 guide for detailed instructions on how to submit a pull request, and information
 on the stages of review your PR will go through.
 
@@ -263,8 +263,8 @@ labels.
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
      discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
-  2. If all the feedback has been addressed, did you leave a
-     comment
+  2. If all the feedback has been addressed, did you [leave a
+     comment](https://zulip.readthedocs.io/en/latest/contributing/review-process.html#how-to-help-move-the-review-process-forward)
      explaining that you have done so and **requesting another review**? If not,
      it may not be clear to project maintainers or reviewers that your PR is
      ready for another look.
