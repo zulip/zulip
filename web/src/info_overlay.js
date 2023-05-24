@@ -53,8 +53,6 @@ const markdown_help_rows = [
     },
     {
         markdown: ":heart:",
-        usage_html:
-            '(and <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank" rel="noopener noreferrer">many others</a>, from the <a href="https://code.google.com/p/noto/" target="_blank" rel="noopener noreferrer">Noto Project</a>)',
     },
     {
         markdown: "@**Joe Smith**",
