@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const MockDate = require("mockdate");
 
 const {mock_stream_header_colorblock} = require("./lib/compose");
-const {mock_banners} = require("./lib/compose_banner");
+const {mock_banners, mock_error_banner} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -13,6 +13,7 @@ const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
+const scroll_util = zrequire("../src/scroll_util");
 const settings_config = zrequire("settings_config");
 
 const noop = () => {};
@@ -273,11 +274,14 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         mock_template("compose_banner/compose_banner.hbs", false, (data) => {
             assert.equal(data.classname, "generic_compose_error");
             assert.equal(data.banner_text, "Error sending message: Server says 408");
-            banner_rendered = true;
         });
-        const $error_banner = $.create("error_banner");
-        $error_banner.addClass("error");
+        const $error_banner = mock_error_banner();
         override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+        override_rewire(scroll_util, "get_content_element", () => ({
+            append() {
+                banner_rendered = true;
+            },
+        }));
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");

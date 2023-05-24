@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {mock_error_banner} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -24,6 +25,7 @@ mock_esm("../src/csrf", {csrf_token: "csrf_token"});
 
 const compose_banner = zrequire("compose_banner");
 const compose_ui = zrequire("compose_ui");
+const scroll_util = zrequire("../src/scroll_util");
 const upload = zrequire("upload");
 
 function test(label, f) {
@@ -181,15 +183,26 @@ test("show_error_message", ({override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
 
+    // Banners should show even if the "no post permissions" banner
+    // is displayed.
+    const $banner_container = $("#compose_banners");
+    const no_post_permissions_class = `.${CSS.escape(
+        compose_banner.CLASSNAMES.no_post_permissions,
+    )}`;
+    $banner_container.set_find_results(no_post_permissions_class, [{}]);
+
     let banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "Error message");
-        banner_shown = true;
     });
-    const $upload_banner = $.create("upload_banner");
-    $upload_banner.addClass("error");
-    override_rewire(compose_banner, "parse_single_node", () => $upload_banner);
+    const $error_banner = mock_error_banner();
+    override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            banner_shown = true;
+        },
+    }));
 
     $("#compose-send-button").prop("disabled", true);
 
@@ -200,7 +213,6 @@ test("show_error_message", ({override_rewire, mock_template}) => {
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "translated: An unknown error occurred.");
-        banner_shown = true;
     });
     upload.show_error_message({mode: "compose"});
 });
@@ -241,6 +253,14 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     await upload.upload_files(uppy, config, []);
     assert.ok(!$("#compose-send-button").prop("disabled"));
 
+    // Banners should show even if the "no post permissions" banner
+    // is displayed.
+    const $banner_container = $("#compose_banners");
+    const no_post_permissions_class = `.${CSS.escape(
+        compose_banner.CLASSNAMES.no_post_permissions,
+    )}`;
+    $banner_container.set_find_results(no_post_permissions_class, [{}]);
+
     let banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
@@ -248,11 +268,14 @@ test("upload_files", async ({mock_template, override_rewire}) => {
             data.banner_text,
             "translated: File and image uploads have been disabled for this organization.",
         );
-        banner_shown = true;
     });
-    const $error_banner = $.create("error_banner");
-    $error_banner.addClass("error");
+    const $error_banner = mock_error_banner();
     override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            banner_shown = true;
+        },
+    }));
     page_params.max_file_upload_size_mib = 0;
     $("#compose_banners .upload_banner .upload_msg").text("");
     await upload.upload_files(uppy, config, files);
@@ -288,9 +311,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     const $info_banner = $.create("info_banner");
     $info_banner.addClass("info");
     override_rewire(compose_banner, "parse_single_node", () => $info_banner);
-    mock_template("compose_banner/upload_banner.hbs", false, () => {
-        banner_shown = true;
-    });
+    mock_template("compose_banner/upload_banner.hbs", false, () => {});
     await upload.upload_files(uppy, config, files);
     assert.ok($("#compose-send-button").prop("disabled"));
     assert.ok(banner_shown);
@@ -504,6 +525,14 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner").length = 0;
     override_rewire(compose_ui, "smart_insert_inline", () => {});
 
+    // Banners should show even if the "no post permissions" banner
+    // is displayed.
+    const $banner_container = $("#compose_banners");
+    const no_post_permissions_class = `.${CSS.escape(
+        compose_banner.CLASSNAMES.no_post_permissions,
+    )}`;
+    $banner_container.set_find_results(no_post_permissions_class, [{}]);
+
     const callbacks = {};
     let state = {};
 
@@ -574,9 +603,8 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "Some error message");
     });
-    const $upload_banner = $.create("upload_banner");
-    $upload_banner.addClass("error");
-    override_rewire(compose_banner, "parse_single_node", () => $upload_banner);
+    const $error_banner = mock_error_banner();
+    override_rewire(compose_banner, "parse_single_node", () => $error_banner);
     state = {
         type: "error",
         details: "Some error",

@@ -33,3 +33,15 @@ exports.mock_banners = () => {
     $cb.set_find_results(".subscription_error", $stub);
     $cb.set_find_results(".generic_compose_error", $stub);
 };
+
+exports.mock_error_banner = () => {
+    const $error_banner = $.create("error_banner");
+    $error_banner.addClass("error");
+    return $error_banner;
+};
+
+exports.mock_warning_banner = () => {
+    const $warning_banner = $.create("warning_banner");
+    $warning_banner.addClass("warning");
+    return $warning_banner;
+};

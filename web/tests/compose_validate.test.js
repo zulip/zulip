@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_banners} = require("./lib/compose_banner");
+const {mock_banners, mock_error_banner, mock_warning_banner} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -18,6 +18,7 @@ const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const resolved_topic = zrequire("../shared/src/resolved_topic");
+const scroll_util = zrequire("../src/scroll_util");
 const settings_config = zrequire("settings_config");
 const settings_data = mock_esm("../src/settings_data");
 const stream_data = zrequire("stream_data");
@@ -91,12 +92,15 @@ test_ui("validate_stream_message_address_info", ({override_rewire, mock_template
     let user_not_subscribed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
-        user_not_subscribed_rendered = true;
         return html;
     });
-    const $error_banner = $.create("error_banner");
-    $error_banner.addClass("error");
+    const $error_banner = mock_error_banner();
     override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            user_not_subscribed_rendered = true;
+        },
+    }));
     assert.ok(!compose_validate.validate_stream_message_address_info("social"));
     assert.ok(user_not_subscribed_rendered);
 
@@ -124,8 +128,12 @@ test_ui("validate_stream_message_address_info", ({override_rewire, mock_template
     mock_template("compose_banner/stream_does_not_exist_error.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.stream_does_not_exist);
         assert.equal(data.stream_name, "Frontend");
-        stream_does_not_exist_rendered = true;
     });
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            stream_does_not_exist_rendered = true;
+        },
+    }));
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "Frontend");
         payload.error({status: 404});
@@ -137,8 +145,12 @@ test_ui("validate_stream_message_address_info", ({override_rewire, mock_template
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, "subscription_error");
         assert.equal(data.banner_text, $t({defaultMessage: "Error checking subscription."}));
-        subscription_error_rendered = true;
     });
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            subscription_error_rendered = true;
+        },
+    }));
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "social");
         payload.error({status: 500});
@@ -191,11 +203,14 @@ test_ui("validate", ({override_rewire, mock_template}) => {
             data.banner_text,
             $t({defaultMessage: "Please specify at least one valid recipient."}),
         );
-        pm_recipient_error_rendered = true;
     });
-    const $error_banner = $.create("error_banner");
-    $error_banner.addClass("error");
+    const $error_banner = mock_error_banner();
     override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            pm_recipient_error_rendered = true;
+        },
+    }));
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
 
@@ -214,8 +229,12 @@ test_ui("validate", ({override_rewire, mock_template}) => {
             data.banner_text,
             $t({defaultMessage: "You cannot send messages to deactivated users."}),
         );
-        deactivated_user_error_rendered = true;
     });
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            deactivated_user_error_rendered = true;
+        },
+    }));
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
 
@@ -238,9 +257,13 @@ test_ui("validate", ({override_rewire, mock_template}) => {
                         "You need to be running Zephyr mirroring in order to send messages!",
                 }),
             );
-            zephyr_error_rendered = true;
         }
     });
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            zephyr_error_rendered = true;
+        },
+    }));
     initialize_pm_pill();
     compose_state.private_message_recipient("welcome-bot@example.com");
     $("#compose-textarea").toggleClass = (classname, value) => {
@@ -273,8 +296,12 @@ test_ui("validate", ({override_rewire, mock_template}) => {
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
         assert.equal(data.banner_text, $t({defaultMessage: "Please specify a stream."}));
-        empty_stream_error_rendered = true;
     });
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            empty_stream_error_rendered = true;
+        },
+    }));
     assert.ok(!compose_validate.validate());
     assert.ok(empty_stream_error_rendered);
 
@@ -293,8 +320,12 @@ test_ui("validate", ({override_rewire, mock_template}) => {
             data.banner_text,
             $t({defaultMessage: "Topics are required in this organization."}),
         );
-        missing_topic_error_rendered = true;
     });
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            missing_topic_error_rendered = true;
+        },
+    }));
     assert.ok(!compose_validate.validate());
     assert.ok(missing_topic_error_rendered);
 
@@ -402,12 +433,15 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     let wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
     mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
-        wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
     });
-    const $warning_banner = $.create("warning_banner");
-    $warning_banner.addClass("warning");
+    const $warning_banner = mock_warning_banner();
     override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            wildcard_warning_rendered = true;
+        },
+    }));
 
     compose_banner.update_or_append_banner = () => {};
 
@@ -427,11 +461,14 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
                     "You do not have permission to use wildcard mentions in this stream.",
             }),
         );
-        wildcards_not_allowed_rendered = true;
     });
-    const $error_banner = $.create("error_banner");
-    $error_banner.addClass("error");
+    const $error_banner = mock_error_banner();
     override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            wildcards_not_allowed_rendered = true;
+        },
+    }));
     override_rewire(compose_validate, "wildcard_mention_allowed", () => false);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
@@ -467,11 +504,14 @@ test_ui(
                     defaultMessage: "You do not have permission to post in this stream.",
                 }),
             );
-            banner_rendered = true;
         });
-        const $error_banner = $.create("error_banner");
-        $error_banner.addClass("error");
+        const $error_banner = mock_error_banner();
         override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+        override_rewire(scroll_util, "get_content_element", () => ({
+            append() {
+                banner_rendered = true;
+            },
+        }));
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
 
@@ -518,11 +558,14 @@ test_ui(
                     defaultMessage: "You do not have permission to post in this stream.",
                 }),
             );
-            banner_rendered = true;
         });
-        const $error_banner = $.create("error_banner");
-        $error_banner.addClass("error");
+        const $error_banner = mock_error_banner();
         override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+        override_rewire(scroll_util, "get_content_element", () => ({
+            append() {
+                banner_rendered = true;
+            },
+        }));
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
         // Reset error message.
@@ -560,11 +603,14 @@ test_ui(
                     defaultMessage: "You do not have permission to post in this stream.",
                 }),
             );
-            banner_rendered = true;
         });
-        const $error_banner = $.create("error_banner");
-        $error_banner.addClass("error");
+        const $error_banner = mock_error_banner();
         override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+        override_rewire(scroll_util, "get_content_element", () => ({
+            append() {
+                banner_rendered = true;
+            },
+        }));
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
     },
@@ -586,11 +632,14 @@ test_ui("test_check_overflow_text", ({override_rewire, mock_template}) => {
                 defaultMessage: "Message length shouldn't be greater than 10000 characters.",
             }),
         );
-        banner_rendered = true;
     });
-    const $error_banner = $.create("error_banner");
-    $error_banner.addClass("error");
+    const $error_banner = mock_error_banner();
     override_rewire(compose_banner, "parse_single_node", () => $error_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            banner_rendered = true;
+        },
+    }));
 
     // Indicator should show red colored text
     $textarea.val("a".repeat(10000 + 1));
@@ -680,12 +729,15 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) =
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
         assert.equal(data.stream_name, "Denmark");
-        banner_rendered = true;
         return "private_stream_warning_stub";
     });
-    const $warning_banner = $.create("warning_banner");
-    $warning_banner.addClass("warning");
+    const $warning_banner = mock_warning_banner();
     override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            banner_rendered = true;
+        },
+    }));
 
     function test_noop_case(invite_only) {
         banner_rendered = false;
@@ -715,6 +767,19 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) =
     banner_rendered = false;
     compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
     assert.ok(banner_rendered);
+
+    // Test with error banners present. It should return noop.
+    override_rewire(compose_banner, "has_error", () => true);
+
+    banner_rendered = false;
+    compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
+    assert.ok(!banner_rendered);
+
+    override_rewire(compose_banner, "has_error", () => false);
+
+    banner_rendered = false;
+    compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
+    assert.ok(banner_rendered);
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, mock_template}) => {
@@ -734,11 +799,14 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         assert.equal(data.user_id, 34);
         assert.equal(data.stream_id, 111);
         assert.equal(data.name, "Foo Barson");
-        new_banner_rendered = true;
     });
-    const $warning_banner = $.create("warning_banner");
-    $warning_banner.addClass("warning");
+    const $warning_banner = mock_warning_banner();
     override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            new_banner_rendered = true;
+        },
+    }));
 
     function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
         new_banner_rendered = false;
@@ -788,6 +856,17 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".recipient_not_subscribed", []);
 
+    // Test with error banners present. It should return noop.
+    override_rewire(compose_banner, "has_error", () => true);
+
+    new_banner_rendered = false;
+    compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    assert.ok(!new_banner_rendered);
+
+    // Now it should show the warning.
+    override_rewire(compose_banner, "has_error", () => false);
+
+    new_banner_rendered = false;
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);
 
@@ -825,12 +904,15 @@ test_ui("test warn_if_topic_resolved", ({override, override_rewire, mock_templat
                     "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.",
             }),
         );
-        error_shown = true;
         return "topic_resolved_warning_stub";
     });
-    const $warning_banner = $.create("warning_banner");
-    $warning_banner.addClass("warning");
+    const $warning_banner = mock_warning_banner();
     override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
+    override_rewire(scroll_util, "get_content_element", () => ({
+        append() {
+            error_shown = true;
+        },
+    }));
 
     const sub = {
         stream_id: 111,
@@ -850,7 +932,16 @@ test_ui("test warn_if_topic_resolved", ({override, override_rewire, mock_templat
 
     compose_state.set_stream_name("random");
 
-    // Show the warning now as stream also exists
+    // Test with error banners present. It should return noop.
+    override_rewire(compose_banner, "has_error", () => true);
+
+    error_shown = false;
+    compose_validate.warn_if_topic_resolved(true);
+    assert.ok(!error_shown);
+
+    // Now it should show the warning.
+    override_rewire(compose_banner, "has_error", () => false);
+
     error_shown = false;
     compose_validate.warn_if_topic_resolved(true);
     assert.ok(error_shown);
