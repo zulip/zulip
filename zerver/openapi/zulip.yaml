@@ -11903,7 +11903,7 @@ paths:
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11912,13 +11912,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_digest_emails:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11927,13 +11929,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_login_emails:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11942,13 +11946,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_marketing_emails:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11957,13 +11963,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       email_notifications_batching_period_seconds:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11972,13 +11980,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_offline_email_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11987,13 +11997,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_offline_push_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12002,13 +12014,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_online_push_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12017,13 +12031,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_sounds:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12032,13 +12048,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_desktop_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12047,13 +12065,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_email_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12062,13 +12082,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_push_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12077,13 +12099,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_audible_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12092,13 +12116,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       wildcard_mentions_notify:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12107,13 +12133,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       message_content_in_email_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12122,13 +12150,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       notification_sound:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12137,13 +12167,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       pm_content_in_desktop_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12152,13 +12184,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       desktop_icon_count_display:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12167,13 +12201,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       realm_name_in_email_notifications_policy:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12188,13 +12224,15 @@ paths:
                           `realm_name_in_email_notifications_policy` are deprecated. Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       presence_enabled:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12203,6 +12241,8 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       available_notification_sounds:
                         deprecated: true
                         type: array
@@ -12211,7 +12251,7 @@ paths:
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           Array containing the names of the notification sound options supported by
                           this Zulip server. Only relevant to support UI for configuring notification
@@ -12220,13 +12260,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       color_scheme:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The color scheme selected by the user.
 
@@ -12236,13 +12278,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       default_language:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The default language chosen by the user.
 
@@ -12252,13 +12296,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       demote_inactive_streams:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen to demote inactive streams.
 
@@ -12268,13 +12314,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       dense_mode:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has switched on dense mode. Dense mode is an experimental
                           feature that is only available in development environments.
@@ -12285,13 +12333,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       emojiset:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The name of the emoji set that the user has chosen.
 
@@ -12301,11 +12351,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_drafts_synchronization:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`.
+                          Present if `update_display_settings` is present in `fetch_event_types`
+                          and only for clients that did not include `user_settings_object` in
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether drafts synchronization is enabled for the user. If disabled,
                           clients will receive an error when trying to use the `drafts` endpoints.
@@ -12318,13 +12372,15 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           New in Zulip 5.0 (feature level 87).
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       fluid_layout_width:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen for the layout width to be fluid.
 
@@ -12334,13 +12390,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       default_view:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The [default view](/help/configure-default-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
@@ -12353,13 +12411,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       high_contrast_mode:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether has switched on high contrast mode.
 
@@ -12369,13 +12429,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       left_side_userlist:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen for the userlist to be displayed
                           on the left side of the screen (for desktop app and web app) in narrow
@@ -12387,13 +12449,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       starred_message_counts:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen the number of starred messages to
                           be displayed similar to unread counts.
@@ -12404,13 +12468,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       timezone:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The time zone configured for the user. This is used primarily to display
                           the user's time zone to other users.
@@ -12421,13 +12487,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       translate_emoticons:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen for emoticons to be translated into emoji
                           in the Zulip compose box.
@@ -12438,13 +12506,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       twenty_four_hour_time:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen a twenty four hour time display (true)
                           or a twelve hour one (false).
@@ -12455,12 +12525,35 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
+                      enter_sends:
+                        deprecated: true
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`
+                          and only for clients that did not include `user_settings_object` in
+                          their [`client_capabilities`][capabilities] when registering the event queue.
+
+                          Whether the user setting for [sending on pressing Enter][set-enter-send]
+                          in the compose box is enabled.
+
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and process the `user_settings` event type instead.
+
+                          Prior to Zulip 5.0 (feature level 84), this field was present
+                          in response if 'realm_user' was present in `fetch_event_types`, not
+                          `update_display_settings`.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
+                          [set-enter-send]: /help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message
                       emojiset_choices:
                         deprecated: true
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Array of dictionaries where each dictionary describes an emoji set
                           supported by this version of the Zulip server.
@@ -12474,6 +12567,8 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                         type: array
                         items:
                           type: object
@@ -13959,23 +14054,6 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is a [guest user](/api/roles-and-permissions).
-                      enter_sends:
-                        deprecated: true
-                        type: boolean
-                        description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
-                          and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
-
-                          Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
-                          in the compose box is enabled.
-
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                          connecting to newer servers should declare the `user_settings_object`
-                          client capability and process the `user_settings` event type instead.
-                          Prior to Zulip 5.0 (feature level 84) this field was present
-                          in response if 'realm_user' was present in `fetch_event_types`, not
-                          `update_display_settings`.
                       user_id:
                         type: integer
                         description: |
