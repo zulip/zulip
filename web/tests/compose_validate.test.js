@@ -75,7 +75,7 @@ function stub_message_row($textarea) {
     };
 }
 
-test_ui("validate_stream_message_address_info", ({mock_template}) => {
+test_ui("validate_stream_message_address_info", ({override_rewire, mock_template}) => {
     mock_banners();
     const sub = {
         stream_id: 101,
@@ -94,6 +94,9 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         user_not_subscribed_rendered = true;
         return html;
     });
+    const $error_banner = $.create("error_banner");
+    $error_banner.addClass("error");
+    override_rewire(compose_banner, "parse_single_node", () => $error_banner);
     assert.ok(!compose_validate.validate_stream_message_address_info("social"));
     assert.ok(user_not_subscribed_rendered);
 
@@ -190,6 +193,9 @@ test_ui("validate", ({override_rewire, mock_template}) => {
         );
         pm_recipient_error_rendered = true;
     });
+    const $error_banner = $.create("error_banner");
+    $error_banner.addClass("error");
+    override_rewire(compose_banner, "parse_single_node", () => $error_banner);
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
 
@@ -399,6 +405,9 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
     });
+    const $warning_banner = $.create("warning_banner");
+    $warning_banner.addClass("warning");
+    override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
 
     compose_banner.update_or_append_banner = () => {};
 
@@ -420,6 +429,9 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         );
         wildcards_not_allowed_rendered = true;
     });
+    const $error_banner = $.create("error_banner");
+    $error_banner.addClass("error");
+    override_rewire(compose_banner, "parse_single_node", () => $error_banner);
     override_rewire(compose_validate, "wildcard_mention_allowed", () => false);
     assert.ok(!compose_validate.validate());
     assert.ok(wildcards_not_allowed_rendered);
@@ -457,6 +469,9 @@ test_ui(
             );
             banner_rendered = true;
         });
+        const $error_banner = $.create("error_banner");
+        $error_banner.addClass("error");
+        override_rewire(compose_banner, "parse_single_node", () => $error_banner);
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
 
@@ -505,6 +520,9 @@ test_ui(
             );
             banner_rendered = true;
         });
+        const $error_banner = $.create("error_banner");
+        $error_banner.addClass("error");
+        override_rewire(compose_banner, "parse_single_node", () => $error_banner);
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
         // Reset error message.
@@ -544,12 +562,15 @@ test_ui(
             );
             banner_rendered = true;
         });
+        const $error_banner = $.create("error_banner");
+        $error_banner.addClass("error");
+        override_rewire(compose_banner, "parse_single_node", () => $error_banner);
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
     },
 );
 
-test_ui("test_check_overflow_text", ({mock_template}) => {
+test_ui("test_check_overflow_text", ({override_rewire, mock_template}) => {
     mock_banners();
     page_params.max_message_length = 10000;
 
@@ -567,6 +588,9 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
         );
         banner_rendered = true;
     });
+    const $error_banner = $.create("error_banner");
+    $error_banner.addClass("error");
+    override_rewire(compose_banner, "parse_single_node", () => $error_banner);
 
     // Indicator should show red colored text
     $textarea.val("a".repeat(10000 + 1));
@@ -659,6 +683,9 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) =
         banner_rendered = true;
         return "private_stream_warning_stub";
     });
+    const $warning_banner = $.create("warning_banner");
+    $warning_banner.addClass("warning");
+    override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
 
     function test_noop_case(invite_only) {
         banner_rendered = false;
@@ -709,6 +736,9 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         assert.equal(data.name, "Foo Barson");
         new_banner_rendered = true;
     });
+    const $warning_banner = $.create("warning_banner");
+    $warning_banner.addClass("warning");
+    override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
 
     function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
         new_banner_rendered = false;
@@ -798,6 +828,9 @@ test_ui("test warn_if_topic_resolved", ({override, override_rewire, mock_templat
         error_shown = true;
         return "topic_resolved_warning_stub";
     });
+    const $warning_banner = $.create("warning_banner");
+    $warning_banner.addClass("warning");
+    override_rewire(compose_banner, "parse_single_node", () => $warning_banner);
 
     const sub = {
         stream_id: 111,

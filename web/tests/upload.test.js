@@ -22,6 +22,7 @@ mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
 const compose_actions = mock_esm("../src/compose_actions");
 mock_esm("../src/csrf", {csrf_token: "csrf_token"});
 
+const compose_banner = zrequire("compose_banner");
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
 
@@ -176,7 +177,7 @@ test("get_item", () => {
     );
 });
 
-test("show_error_message", ({mock_template}) => {
+test("show_error_message", ({override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
 
@@ -186,6 +187,9 @@ test("show_error_message", ({mock_template}) => {
         assert.equal(data.banner_text, "Error message");
         banner_shown = true;
     });
+    const $upload_banner = $.create("upload_banner");
+    $upload_banner.addClass("error");
+    override_rewire(compose_banner, "parse_single_node", () => $upload_banner);
 
     $("#compose-send-button").prop("disabled", true);
 
@@ -246,6 +250,9 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         );
         banner_shown = true;
     });
+    const $error_banner = $.create("error_banner");
+    $error_banner.addClass("error");
+    override_rewire(compose_banner, "parse_single_node", () => $error_banner);
     page_params.max_file_upload_size_mib = 0;
     $("#compose_banners .upload_banner .upload_msg").text("");
     await upload.upload_files(uppy, config, files);
@@ -278,6 +285,9 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     $("#compose .undo_markdown_preview").show();
 
     banner_shown = false;
+    const $info_banner = $.create("info_banner");
+    $info_banner.addClass("info");
+    override_rewire(compose_banner, "parse_single_node", () => $info_banner);
     mock_template("compose_banner/upload_banner.hbs", false, () => {
         banner_shown = true;
     });
@@ -564,6 +574,9 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         assert.equal(data.banner_type, "error");
         assert.equal(data.banner_text, "Some error message");
     });
+    const $upload_banner = $.create("upload_banner");
+    $upload_banner.addClass("error");
+    override_rewire(compose_banner, "parse_single_node", () => $upload_banner);
     state = {
         type: "error",
         details: "Some error",

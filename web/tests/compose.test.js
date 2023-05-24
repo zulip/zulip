@@ -275,6 +275,9 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             assert.equal(data.banner_text, "Error sending message: Server says 408");
             banner_rendered = true;
         });
+        const $error_banner = $.create("error_banner");
+        $error_banner.addClass("error");
+        override_rewire(compose_banner, "parse_single_node", () => $error_banner);
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
