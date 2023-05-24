@@ -4,6 +4,7 @@ import tippy, {delegate} from "tippy.js";
 
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
+import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import * as compose_recipient from "./compose_recipient";
@@ -189,8 +190,9 @@ export function initialize() {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
         onCreate(instance) {
-            const content = instance.props.content + $("#narrow-hotkey-tooltip-template").html();
-            instance.setContent(parse_html(content));
+            instance.setContent(
+                parse_html(render_narrow_tooltip({content: instance.props.content})),
+            );
         },
     });
 
