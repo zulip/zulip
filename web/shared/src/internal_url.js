@@ -28,9 +28,6 @@ export function stream_id_to_slug(stream_id, maybe_get_stream_name) {
 
     // The name part of the URL doesn't really matter, so we try to
     // make it pretty.
-
-    // TODO: Convert this to replaceAll once mobile no longer supports
-    // browsers that don't have it.
     name = name.replaceAll(" ", "-");
 
     return stream_id + "-" + name;
