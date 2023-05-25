@@ -111,8 +111,8 @@ Alejandro explains.
 
 End Point’s client companies use a wide variety of chat tools to communicate
 with their collaborators at EndDev, from modern team chat tools like Slack and
-Microsoft Teams, to tools designed primarily for 1:1 communication like GChat
-and Skype. End Point’s CTO [Jon
+Microsoft Teams, to tools designed primarily for 1:1 communication like Google
+Chat and Skype. End Point’s CTO [Jon
 Jensen](https://www.endpointdev.com/team/jon-jensen/) has experienced them all.
 
 “It is amazing that companies would use Teams in its current state,” Jon says, a
