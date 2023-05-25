@@ -505,9 +505,10 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the value of the user's delivery email as visible to you changes,
+                                        When the value of a user's delivery email as visible to you changes,
                                         either due to the email address changing or your access to the user's
-                                        email via their `email_address_visibility` policy changing.
+                                        email changing via an update to their `email_address_visibility`
+                                        setting.
 
                                         **Changes**: Prior to Zulip 7.0 (feature level 163), this event was
                                         sent only to the affected user, and this event would only be triggered
@@ -523,13 +524,14 @@ paths:
                                           description: |
                                             The new delivery email of the user.
 
-                                            This value can be `null` if user changes the
-                                            `email_address_visibility` value such that
-                                            you cannot access user's real email.
+                                            This value can be `null` if the affected user
+                                            changed their `email_address_visibility` setting
+                                            such that you cannot access their real email.
 
-                                            **Changes**: As of Zulip 7.0 (feature level 163),
-                                            `null` is a possible value as this event is also
-                                            sent on changing `email_address_visibility` setting.
+                                            **Changes**: Before Zulip 7.0 (feature level 163),
+                                            `null` was not a possible value for this event as
+                                            it was only sent to the affected user when their
+                                            email address was changed.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -3803,11 +3805,15 @@ paths:
                                 event type supports multiple properties being changed in a
                                 single event.
 
-                                **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
-                                It was replaced by a [user setting](/api/update-settings) with a
-                                [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
-                                values preserved. Clients can support all versions by supporting the current API and treating
-                                every user as having the realm's email address visibility value.
+                                **Changes**: In Zulip 7.0 (feature level 163), the realm setting
+                                `email_address_visibility` was removed. It was replaced by a [user
+                                setting](/api/update-settings#parameter-email_address_visibility) with
+                                a [realm user default][user-defaults], with the encoding of different
+                                values preserved. Clients can support all versions by supporting the
+                                current API and treating every user as having the realm's
+                                `email_address_visibility` value.
+
+                                [user-defaults]: /api/update-realm-user-settings-defaults#parameter-email_address_visibility
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -7744,20 +7750,13 @@ paths:
                         example: 1
                       delivery_email:
                         type: string
-                        nullable: true
                         description: |
-                          The user's real email address. This value will be `null` if you cannot
-                          access this user's real email address. For bot users, this field is
-                          always set to the real email of the bot, because bot users always have
-                          `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+                          The requesting user's real email address.
 
-                          **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
-                          only when `email_address_visibility` was restricted and you had access to
-                          the user's real email. Now, this field is always present, including the case
-                          when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
-                          with the value being `null` if you don't have access to the user's real email.
-                          For bot users, this field is now always set to the real email irrespective of
-                          `email_address_visibility` setting.
+                          **Changes**: Prior to Zulip 7.0 (feature level 163), this field was
+                          present only when `email_address_visibility` was restricted and the
+                          requesting user had permission to access realm users' emails. As of
+                          this feature level, this field is always present.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
                     example:
@@ -9786,9 +9785,8 @@ paths:
         - name: email_address_visibility
           in: query
           description: |
-            The [policy][permission-level] this user has selected for [which other
-            users][help-email-visibility] in this organization can see the real email
-            address of this user.
+            The [policy][permission-level] for [which other users][help-email-visibility]
+            in this organization can see the user's real email address.
 
             - 1 = Everyone
             - 2 = Members only
@@ -9796,7 +9794,7 @@ paths:
             - 4 = Nobody
             - 5 = Moderators only
 
-            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            **Changes**: New in Zulip 7.0 (feature level 163), replacing the
             realm-level setting.
 
             [permission-level]: /api/roles-and-permissions#permission-levels
@@ -10516,11 +10514,15 @@ paths:
         `move_messages_within_stream_limit_seconds` was introduced
         in feature level 162.
 
-        The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
-        It was replaced by a [user setting](/api/update-settings) with a
-        [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
-        values preserved. Clients can support all versions by supporting the current API and treating
-        every user as having the realm's email address visibility value.
+        In Zulip 7.0 (feature level 163), the realm setting
+        `email_address_visibility` was removed. It was replaced by a [user
+        setting](/api/update-settings#parameter-email_address_visibility) with
+        a [realm user default][user-defaults], with the encoding of different
+        values preserved. Clients can support all versions by supporting the
+        current API and treating every user as having the realm's
+        `email_address_visibility` value.
+
+        [user-defaults]: /api/update-realm-user-settings-defaults#parameter-email_address_visibility
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -15066,8 +15068,8 @@ paths:
           in: query
           description: |
             The [policy][permission-level] this user has selected for [which other
-            users][help-email-visibility] in this organization can see the real email
-            address of this user.
+            users][help-email-visibility] in this organization can see their real
+            email address.
 
             - 1 = Everyone
             - 2 = Members only
@@ -15075,7 +15077,7 @@ paths:
             - 4 = Nobody
             - 5 = Moderators only
 
-            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            **Changes**: New in Zulip 7.0 (feature level 163), replacing the
             realm-level setting.
 
             [permission-level]: /api/roles-and-permissions#permission-levels
@@ -17261,9 +17263,8 @@ components:
     EmailAddressVisibility:
       type: integer
       description: |
-        The [policy][permission-level] this user has selected for [which other
-        users][help-email-visibility] in this organization can see the real email
-        address of this user.
+        The [policy][permission-level] for [which other users][help-email-visibility]
+        in this organization can see the user's real email address.
 
         - 1 = Everyone
         - 2 = Members only
@@ -17271,7 +17272,7 @@ components:
         - 4 = Nobody
         - 5 = Moderators only
 
-        **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+        **Changes**: New in Zulip 7.0 (feature level 163), replacing the
         realm-level setting.
 
         [permission-level]: /api/roles-and-permissions#permission-levels
@@ -17865,15 +17866,13 @@ components:
             The user's real email address. This value will be `null` if you cannot
             access user's real email address. For bot users, this field is always
             set to the real email of the bot, because bot users always have
-            `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+            `email_address_visibility` set to everyone.
 
-            **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
-            only when `email_address_visibility` was restricted and you had access to the
-            user's real email. Now, this field is always present, including the case when
-            `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
-            with the value being `null` if you don't have access the user's real email.
-            For bot users, this field is now always set to the real email irrespective of
-            `email_address_visibility` setting.
+            **Changes**: Prior to Zulip 7.0 (feature level 163), this field was
+            present only when `email_address_visibility` was restricted and you had
+            access to the user's real email. As of this feature level, this field
+            is always present, including the case when `email_address_visibility`
+            is set to everyone (and therefore not restricted).
         email:
           type: string
           description: |
