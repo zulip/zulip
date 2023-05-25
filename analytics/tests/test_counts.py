@@ -1724,6 +1724,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(2)
@@ -1735,6 +1736,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user1@domain.tld", "user2@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(4)
@@ -1745,6 +1747,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         assertInviteCountEquals(4)
@@ -1755,6 +1758,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
             self.assert_length(skipped, 1)

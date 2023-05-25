@@ -139,18 +139,15 @@ def set_up_streams_for_new_human_user(
         streams = []
         acting_user = None
 
-    user_was_invited = prereg_user is not None and (
-        prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
-    )
-
     if add_initial_stream_subscriptions:
         # If the Preregistration object didn't explicitly list some streams (it
         # happens when user directly signs up without any invitation), we add the
         # default streams for the realm. Note that we are fine with "slim" Stream
         # objects for calling bulk_add_subscriptions and add_new_user_history,
         # which we verify in StreamSetupTest tests that check query counts.
-        if len(streams) == 0 and not user_was_invited:
-            streams = get_slim_realm_default_streams(realm.id)
+        if prereg_user is None or prereg_user.include_realm_default_subscriptions:
+            default_streams = get_slim_realm_default_streams(realm.id)
+            streams = list(set(streams) | set(default_streams))
 
         for default_stream_group in default_stream_groups:
             default_stream_group_streams = default_stream_group.streams.all()

@@ -1115,6 +1115,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         check_invites_changed("events[0]", events[0])
@@ -1132,6 +1133,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 PreregistrationUser.INVITE_AS["MEMBER"],
                 invite_expires_in_minutes,
+                False,
                 streams,
             )
         check_invites_changed("events[0]", events[0])
@@ -1145,6 +1147,7 @@ class NormalActionsTest(BaseAction):
                 user_profile,
                 ["foo@zulip.com"],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
@@ -1167,6 +1170,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         prereg_users = PreregistrationUser.objects.filter(
@@ -1188,6 +1192,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile,
             PreregistrationUser.INVITE_AS["MEMBER"],
             invite_expires_in_minutes,
+            False,
             streams,
         )
 
@@ -1211,6 +1216,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")

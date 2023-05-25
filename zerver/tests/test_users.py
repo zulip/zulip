@@ -902,6 +902,7 @@ class QueryCountTest(ZulipTestCase):
                 user_profile=self.example_user("hamlet"),
                 invitee_emails=["fred@zulip.com"],
                 streams=streams,
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
 
@@ -1707,6 +1708,7 @@ class ActivateTest(ZulipTestCase):
                 iago,
                 ["new1@zulip.com", "new2@zulip.com"],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
                 invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
             )
@@ -1714,6 +1716,7 @@ class ActivateTest(ZulipTestCase):
                 desdemona,
                 ["new3@zulip.com", "new4@zulip.com"],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
                 invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
             )
@@ -1722,6 +1725,7 @@ class ActivateTest(ZulipTestCase):
                 iago,
                 ["new5@zulip.com"],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,
                 invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
             )
@@ -1729,22 +1733,35 @@ class ActivateTest(ZulipTestCase):
                 desdemona,
                 ["new6@zulip.com"],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=None,
                 invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
             )
 
         iago_multiuse_key = do_create_multiuse_invite_link(
-            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+            iago,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
         desdemona_multiuse_key = do_create_multiuse_invite_link(
-            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+            desdemona,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
 
         iago_never_expire_multiuse_key = do_create_multiuse_invite_link(
-            iago, PreregistrationUser.INVITE_AS["MEMBER"], None
+            iago,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            None,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
         desdemona_never_expire_multiuse_key = do_create_multiuse_invite_link(
-            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], None
+            desdemona,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            None,
+            include_realm_default_subscriptions=False,
         ).split("/")[-2]
 
         self.assertEqual(

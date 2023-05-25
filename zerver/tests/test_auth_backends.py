@@ -1542,7 +1542,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
         iago = self.example_user("iago")
         with self.captureOnCommitCallbacks(execute=True):
-            do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
+            do_invite_users(
+                iago,
+                [email],
+                [],
+                include_realm_default_subscriptions=True,
+                invite_expires_in_minutes=2 * 24 * 60,
+            )
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1889,6 +1895,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
                 iago,
                 [email],
                 [],
+                include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
                 invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
             )
@@ -4702,7 +4709,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
         # Now confirm an invitation link works
         referrer = self.example_user("hamlet")
-        multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
+        multiuse_obj = MultiuseInvite.objects.create(
+            realm=realm, referred_by=referrer, include_realm_default_subscriptions=False
+        )
         multiuse_obj.streams.set(streams)
         validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
