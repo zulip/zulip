@@ -104,7 +104,14 @@
  *   append to, where before it could only be appended to `body`.
  *   Since it's in the right part of the DOM, we don't need to do
  *   the manual positioning in the show() function.
- *
+ * 
+ * 11. Add `openInputFieldOnKeyUp` option:
+ *  
+ *   If the typeahead isn't shown yet, the `lookup` call in the keyup
+ *   handler will open it. Here we make a callback to the input field
+ *   before we open the lookahead in case it needs to make UI changes first
+ *   (e.g. widening the search bar).
+ *     
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -495,6 +502,13 @@ import {get_string_diff} from "../../src/util";
               hideOnEmpty = true;
             }
           }
+          if (this.options.openInputFieldOnKeyUp !== null && !this.shown) {
+            // If the typeahead isn't shown yet, the `lookup` call will open it.
+            // Here we make a callback to the input field before we open the
+            // lookahead in case it needs to make UI changes first (e.g. widening
+            // the search bar).
+            this.options.openInputFieldOnKeyUp();
+          }
           this.lookup(hideOnEmpty)
       }
 
@@ -584,6 +598,7 @@ import {get_string_diff} from "../../src/util";
   , stopAdvance: false
   , dropup: false
   , advanceKeyCodes: []
+  , openInputFieldOnKeyUp: null
   }
 
   $.fn.typeahead.Constructor = Typeahead
