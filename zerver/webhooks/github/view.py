@@ -599,10 +599,7 @@ def get_star_body(helper: Helper) -> str:
     payload = helper.payload
     template = "[{user}]({user_url}) {action} the repository [{repo}]({url})."
     return template.format(
-<<<<<<< HEAD
-=======
         user=get_sender_name(payload),
->>>>>>> b52aff110a (integration : Added user profile link for star event)
         user_url=get_sender_url(payload),
         action="starred" if payload["action"].tame(check_string) == "created" else "unstarred",
         repo=get_repository_full_name(payload),
@@ -633,11 +630,6 @@ def get_sender_name(payload: WildValue) -> str:
 
 def get_sender_url(payload: WildValue) -> str:
     return payload["sender"]["html_url"].tame(check_string)
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> b52aff110a (integration : Added user profile link for star event)
 
 
 def get_branch_name_from_ref(ref_string: str) -> str:
