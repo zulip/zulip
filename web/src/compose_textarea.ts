@@ -4,7 +4,7 @@ import $ from "jquery";
 // shift-tab back in (see hotkey.js).
 let saved_compose_cursor = 0;
 
-function set_compose_textarea_handlers() {
+function set_compose_textarea_handlers(): void {
     $("#compose-textarea").on("blur", function () {
         saved_compose_cursor = $(this).caret();
     });
@@ -16,10 +16,10 @@ function set_compose_textarea_handlers() {
     });
 }
 
-export function restore_compose_cursor() {
+export function restore_compose_cursor(): void {
     $("#compose-textarea").trigger("focus").caret(saved_compose_cursor);
 }
 
-export function initialize() {
+export function initialize(): void {
     set_compose_textarea_handlers();
 }
