@@ -7,6 +7,7 @@ export type UserGroupPill = {
     type: "user_group";
     group_id: number;
     group_name: string;
+    group_size: number;
 };
 
 type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
@@ -15,10 +16,6 @@ export type UserGroupPillData = UserGroup & {
     type: "user_group";
     is_silent?: boolean;
 };
-
-function display_pill(group: UserGroup): string {
-    return `${group.name}: ${group.members.size} users`;
-}
 
 export function create_item_from_group_name(
     group_name: string,
@@ -36,9 +33,10 @@ export function create_item_from_group_name(
 
     return {
         type: "user_group",
-        display_value: display_pill(group),
+        display_value: group.name,
         group_id: group.id,
         group_name: group.name,
+        group_size: group.members.size,
     };
 }
 
@@ -64,9 +62,10 @@ export function get_user_ids(pill_widget: UserGroupPillWidget | CombinedPillCont
 export function append_user_group(group: UserGroup, pill_widget: CombinedPillContainer): void {
     pill_widget.appendValidatedData({
         type: "user_group",
-        display_value: display_pill(group),
+        display_value: group.name,
         group_id: group.id,
         group_name: group.name,
+        group_size: group.members.size,
     });
     pill_widget.clear_text();
 }

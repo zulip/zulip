@@ -23,7 +23,7 @@ set_global("getSelection", () => ({
 
 const input_pill = zrequire("input_pill");
 
-function pill_html(value, img_src, status_emoji_info) {
+function pill_html(value, img_src, status_emoji_info, group_id, group_size) {
     const has_image = img_src !== undefined;
     const has_status = status_emoji_info !== undefined;
 
@@ -39,6 +39,14 @@ function pill_html(value, img_src, status_emoji_info) {
 
     if (has_status) {
         opts.status_emoji_info = status_emoji_info;
+    }
+
+    if (group_id) {
+        opts.group_id = group_id;
+    }
+
+    if (group_size) {
+        opts.group_size = group_size;
     }
 
     return require("../templates/input_pill.hbs")(opts);
@@ -88,6 +96,46 @@ run_test("basics", ({mock_template}) => {
     assert.deepEqual(widget.items(), [item]);
 });
 
+run_test("user group pill", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(data.display_value, "Testers");
+        assert.equal(data.group_id, 100);
+        return html;
+    });
+
+    const $pill_input = $.create("pill_input");
+    const $container = $.create("container");
+    $container.set_find_results(".input", $pill_input);
+
+    const widget = input_pill.create({
+        $container,
+        create_item_from_text: noop,
+        get_text_from_item: noop,
+        pill_config: {
+            show_user_group_size: true,
+        },
+    });
+
+    const item = {
+        type: "user_group",
+        display_value: "Testers",
+        group_id: 100,
+        group_size: 5,
+    };
+
+    let inserted_before;
+    const expected_html = pill_html("Testers", undefined, undefined, 100, 5);
+
+    $pill_input.before = ($elem) => {
+        inserted_before = true;
+        assert.equal($elem.html(), expected_html);
+    };
+
+    widget.appendValidatedData(item);
+    assert.ok(inserted_before);
+
+    assert.deepEqual(widget.items(), [item]);
+});
 function set_up() {
     const items = {
         blue: {
