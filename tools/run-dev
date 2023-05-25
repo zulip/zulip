@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import asyncio
+import errno
 import os
 import pwd
 import signal
@@ -359,7 +360,7 @@ async def serve() -> None:
     try:
         app.listen(proxy_port, address=options.interface)
     except OSError as e:
-        if e.errno == 98:
+        if e.errno == errno.EADDRINUSE:
             print("\n\nERROR: You probably have another server running!!!\n\n")
         raise
 
