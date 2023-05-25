@@ -1,6 +1,18 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
+type TypingStatusWorker = {
+    get_current_time: () => number;
+    notify_server_start: (recipient: number[]) => void;
+    notify_server_stop: (recipient: number[]) => void;
+};
+
+type TypingStatusState = {
+    current_recipient: number[];
+    next_send_start_time: number;
+    idle_timer: ReturnType<typeof setTimeout>;
+};
+
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other
 // users will use to time out our messages.  (Or us,
@@ -14,10 +26,10 @@ const TYPING_STARTED_WAIT_PERIOD = 10000; // 10s
 const TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
 
 /** Exported only for tests. */
-export let state = null;
+export let state: TypingStatusState | null = null;
 
 /** Exported only for tests. */
-export function stop_last_notification(worker) {
+export function stop_last_notification(worker: TypingStatusWorker): void {
     assert(state !== null, "State object should not be null here.");
     clearTimeout(state.idle_timer);
     worker.notify_server_stop(state.current_recipient);
@@ -25,8 +37,10 @@ export function stop_last_notification(worker) {
 }
 
 /** Exported only for tests. */
-export function start_or_extend_idle_timer(worker) {
-    function on_idle_timeout() {
+export function start_or_extend_idle_timer(
+    worker: TypingStatusWorker,
+): ReturnType<typeof setTimeout> {
+    function on_idle_timeout(): void {
         // We don't do any real error checking here, because
         // if we've been idle, we need to tell folks, and if
         // our current recipient has changed, previous code will
@@ -40,18 +54,22 @@ export function start_or_extend_idle_timer(worker) {
     return setTimeout(on_idle_timeout, TYPING_STOPPED_WAIT_PERIOD);
 }
 
-function set_next_start_time(current_time) {
+function set_next_start_time(current_time: number): void {
     assert(state !== null, "State object should not be null here.");
     state.next_send_start_time = current_time + TYPING_STARTED_WAIT_PERIOD;
 }
 
-function actually_ping_server(worker, recipient, current_time) {
+function actually_ping_server(
+    worker: TypingStatusWorker,
+    recipient: number[],
+    current_time: number,
+): void {
     worker.notify_server_start(recipient);
     set_next_start_time(current_time);
 }
 
 /** Exported only for tests. */
-export function maybe_ping_server(worker, recipient) {
+export function maybe_ping_server(worker: TypingStatusWorker, recipient: number[]): void {
     assert(state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
@@ -85,14 +103,14 @@ export function maybe_ping_server(worker, recipient) {
  *   as a sorted array of user IDs; or `null` if no PM is being composed
  *   anymore.
  */
-export function update(worker, new_recipient) {
+export function update(worker: TypingStatusWorker, new_recipient: number[] | null): void {
     if (state !== null) {
         // We need to use _.isEqual for comparisons; === doesn't work
         // on arrays.
         if (_.isEqual(new_recipient, state.current_recipient)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
-            maybe_ping_server(worker, new_recipient);
+            maybe_ping_server(worker, new_recipient!);
 
             // We can also extend out our idle time.
             state.idle_timer = start_or_extend_idle_timer(worker);
