@@ -107,11 +107,6 @@
     }
 
     #compose-recipient {
-        padding: 0;
-        display: flex;
-        align-items: center;
-        flex: 1;
-
         &.compose-recipient-direct-selected {
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
@@ -125,14 +120,15 @@
         .fa-angle-right {
             font-size: 0.9em;
             -webkit-text-stroke: 0.05em;
-            position: relative;
+            align-self: center;
             margin: 0 5px;
         }
 
         & a.narrow_to_compose_recipients {
             background: transparent;
             font-size: 18px;
-            padding: 1px;
+            padding: 0 1px;
+            align-self: center;
             line-height: 20px;
             opacity: 0.7;
             border: 0;
@@ -519,7 +515,8 @@ textarea.new_message_textarea,
 
 input.recipient_box {
     margin: 0;
-    height: 1.1em;
+    padding: 0 6px;
+    height: auto;
     border-radius: 3px;
 }
 
@@ -527,6 +524,10 @@ input.recipient_box {
     border-radius: 0 4px 4px 0;
     width: auto;
     outline: none;
+
+    &.dropdown-widget-button {
+        padding: 0 6px;
+    }
 }
 
 #stream_message_recipient_topic.recipient_box {
@@ -629,10 +630,20 @@ input.recipient_box {
 }
 
 #compose-recipient {
-    min-width: 0;
     display: flex;
-    align-items: center;
     width: 100%;
+    /* Use this containing flex element to
+      establish the minimum height of all its
+      children; the default `align-items: stretch`
+      (which is set on any flexbox without specifying
+      it) ensures that the child flex items will
+      always stretch to fit the height set here;
+      larger heights, such as on group-DM pills,
+      will allow this to grow as needed.
+      Child flex items like chevrons take
+      `align-self: center` to center only
+      themselves, where necessary. */
+    min-height: var(--compose-recipient-box-min-height);
 }
 
 .tippy-content .compose_control_buttons_container {
@@ -832,10 +843,6 @@ a.compose_control_button.hide {
     .text-warning {
         color: inherit;
     }
-}
-
-#stream_message_recipient_topic {
-    min-width: 0;
 }
 
 .dropdown-menu {

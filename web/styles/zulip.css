@@ -75,6 +75,13 @@ body {
     */
     --unread-marker-left: -1px;
 
+    /*
+    Compose-recipient box minimum height. Used in a flexbox context to
+    allow elements like DM pills to stack without breaking out of their
+    flex item.
+    */
+    --compose-recipient-box-min-height: 30.5px;
+
     /* Colors used across the app */
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
