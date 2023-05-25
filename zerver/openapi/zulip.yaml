@@ -7638,14 +7638,14 @@ paths:
                       avatar_url:
                         type: string
                         description: |
-                          URL for the user's avatar.
+                          URL for the requesting user's avatar.
 
                           **Changes**: New in Zulip 2.1.0.
                         example: "x"
                       avatar_version:
                         type: integer
                         description: |
-                          Version for the user's avatar. Used for cache-busting requests
+                          Version for the requesting user's avatar. Used for cache-busting requests
                           for the user's avatar. Clients generally shouldn't need to use this;
                           most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
 
@@ -7654,7 +7654,7 @@ paths:
                       email:
                         type: string
                         description: |
-                          Email of the requesting user.
+                          Zulip API email of the requesting user.
                         example: "iago@zulip.com"
                       full_name:
                         type: string
@@ -7691,7 +7691,8 @@ paths:
                           - 400
                           - 600
                         description: |
-                          [Organization-level role](/api/roles-and-permissions) of the user.
+                          [Organization-level role](/api/roles-and-permissions) of
+                          the requesting user.
                           Possible values are:
 
                           - 100 = Organization owner
@@ -7716,21 +7717,22 @@ paths:
                       is_active:
                         type: boolean
                         description: |
-                          A boolean specifying whether the user account has been deactivated.
+                          A boolean specifying whether the requesting user account
+                          has been deactivated.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: true
                       timezone:
                         type: string
                         description: |
-                          The time zone of the user.
+                          The time zone of the requesting user.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: ""
                       date_joined:
                         type: string
                         description: |
-                          The time the user account was created.
+                          The time the requesting user's account was created.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: "2019-10-20T07:50:53.728864+00:00"
@@ -7738,7 +7740,8 @@ paths:
                         type: integer
                         deprecated: true
                         description: |
-                          The integer ID of the last message received by your account.
+                          The integer ID of the last message received by the requesting
+                          user's account.
 
                           **Deprecated**. We plan to remove this in favor of recommending
                           using `GET /messages` with `"anchor": "newest"`.
