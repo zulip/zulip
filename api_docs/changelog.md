@@ -184,8 +184,9 @@ format used by the Zulip server that they are interacting with.
 **Feature level 164**
 
 * [`POST /register`](/api/register-queue): Added the
-  `server_presence_ping_interval_seconds` and `server_presence_offline_threshold_seconds`
-  attributes.
+  `server_presence_ping_interval_seconds` and
+  `server_presence_offline_threshold_seconds` fields for clients
+  to use when implementing the [presence](/api/get-presence) system.
 
 **Feature level 163**
 
