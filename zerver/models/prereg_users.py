@@ -107,6 +107,8 @@ class PreregistrationUser(models.Model):
         UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
     )
 
+    subscribe_to_default_streams = models.BooleanField(default=True)
+
     class Meta:
         indexes = [
             models.Index(Upper("email"), name="upper_preregistration_email_idx"),
@@ -146,6 +148,7 @@ class MultiuseInvite(models.Model):
     streams = models.ManyToManyField("zerver.Stream")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
+    subscribe_to_default_streams = models.BooleanField(default=True)
 
     # status for tracking whether the invite has been revoked.
     # If revoked, set to confirmation.settings.STATUS_REVOKED.

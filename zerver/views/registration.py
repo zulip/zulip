@@ -728,6 +728,7 @@ def prepare_activation_url(
     realm: Optional[Realm],
     streams: Optional[Iterable[Stream]] = None,
     invited_as: Optional[int] = None,
+    subscribe_to_default_streams: Optional[bool] = None,
     multiuse_invite: Optional[MultiuseInvite] = None,
 ) -> str:
     """
@@ -741,6 +742,11 @@ def prepare_activation_url(
 
     if invited_as is not None:
         prereg_user.invited_as = invited_as
+
+    if subscribe_to_default_streams is not None:
+        prereg_user.subscribe_to_default_streams = subscribe_to_default_streams
+
+    if invited_as is not None or subscribe_to_default_streams is not None:
         prereg_user.save()
 
     confirmation_type = Confirmation.USER_REGISTRATION
@@ -977,6 +983,7 @@ def accounts_home(
     from_multiuse_invite = False
     streams_to_subscribe = None
     invited_as = None
+    subscribe_to_default_streams = None
 
     if multiuse_object:
         # multiuse_object's realm should have been validated by the caller,
@@ -987,6 +994,7 @@ def accounts_home(
         streams_to_subscribe = multiuse_object.streams.all()
         from_multiuse_invite = True
         invited_as = multiuse_object.invited_as
+        subscribe_to_default_streams = multiuse_object.subscribe_to_default_streams
 
     if request.method == "POST":
         form = HomepageForm(
@@ -1020,6 +1028,7 @@ def accounts_home(
                 realm=realm,
                 streams=streams_to_subscribe,
                 invited_as=invited_as,
+                subscribe_to_default_streams=subscribe_to_default_streams,
                 multiuse_invite=multiuse_object,
             )
             try:

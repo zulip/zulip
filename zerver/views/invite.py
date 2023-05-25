@@ -15,12 +15,11 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.decorator import require_member_or_admin
-from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_int, check_int_in, check_list, check_none_or
+from zerver.lib.validator import check_bool, check_int, check_int_in, check_list, check_none_or
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
@@ -59,6 +58,7 @@ def invite_users_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    subscribe_to_default_streams: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -79,6 +79,13 @@ def invite_users_backend(
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
+    if len(stream_ids) and subscribe_to_default_streams:
+        raise JsonableError(
+            _(
+                "Invalid parameters: stream_ids and subscribe_to_default_streams are mutually exclusive"
+            )
+        )
+
     streams: List[Stream] = []
     for stream_id in stream_ids:
         try:
@@ -91,15 +98,8 @@ def invite_users_backend(
             )
         streams.append(stream)
 
-    if not user_profile.can_subscribe_other_users():
-        if len(streams):
-            raise JsonableError(
-                _("You do not have permission to subscribe other users to streams.")
-            )
-
-        # We would subscribe the invited user to default streams even when the user
-        # inviting them does not have permission to subscribe others.
-        streams = get_slim_realm_default_streams(user_profile.realm_id)
+    if len(streams) and not user_profile.can_subscribe_other_users():
+        raise JsonableError(_("You do not have permission to subscribe other users to streams."))
 
     do_invite_users(
         user_profile,
@@ -107,6 +107,7 @@ def invite_users_backend(
         streams,
         invite_expires_in_minutes=invite_expires_in_minutes,
         invite_as=invite_as,
+        subscribe_to_default_streams=subscribe_to_default_streams,
     )
     return json_success(request)
 
@@ -208,6 +209,7 @@ def generate_multiuse_invite_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    subscribe_to_default_streams: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_create_multiuse_invite_to_realm():
         # Guest users case will not be handled here as it will
@@ -222,6 +224,13 @@ def generate_multiuse_invite_backend(
         PreregistrationUser.INVITE_AS["MODERATOR"],
     ]
     check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
+
+    if len(stream_ids) and subscribe_to_default_streams:
+        raise JsonableError(
+            _(
+                "Invalid parameters: stream_ids and subscribe_to_default_streams are mutually exclusive"
+            )
+        )
 
     streams = []
     for stream_id in stream_ids:
@@ -239,6 +248,6 @@ def generate_multiuse_invite_backend(
         raise JsonableError(_("You do not have permission to subscribe other users to streams."))
 
     invite_link = do_create_multiuse_invite_link(
-        user_profile, invite_as, invite_expires_in_minutes, streams
+        user_profile, invite_as, invite_expires_in_minutes, streams, subscribe_to_default_streams
     )
     return json_success(request, data={"invite_link": invite_link})

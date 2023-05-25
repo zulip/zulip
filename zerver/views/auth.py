@@ -273,19 +273,24 @@ def maybe_send_to_registration(
         )
 
         streams_to_subscribe = None
+        subscribe_to_default_streams = None
         if multiuse_obj is not None:
             # If the user came here explicitly via a multiuse invite link, then
             # we use the defaults implied by the invite.
             streams_to_subscribe = list(multiuse_obj.streams.all())
+            subscribe_to_default_streams = multiuse_obj.subscribe_to_default_streams
         elif existing_prereg_user:
             # Otherwise, the user is doing this signup not via any invite link,
             # but we can use the pre-existing PreregistrationUser for these values
             # since it tells how they were intended to be, when the user was invited.
             streams_to_subscribe = list(existing_prereg_user.streams.all())
+            subscribe_to_default_streams = existing_prereg_user.subscribe_to_default_streams
             invited_as = existing_prereg_user.invited_as
 
         if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)
+        if subscribe_to_default_streams is not None:
+            prereg_user.subscribe_to_default_streams = subscribe_to_default_streams
         prereg_user.invited_as = invited_as
         prereg_user.multiuse_invite = multiuse_obj
         prereg_user.save()
