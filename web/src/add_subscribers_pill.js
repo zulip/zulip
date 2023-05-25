@@ -46,8 +46,13 @@ function set_up_pill_typeahead({pill_widget, $pill_container, get_users}) {
 }
 
 export function create({$pill_container, get_potential_subscribers}) {
+    const pill_config = {
+        show_user_group_size: true,
+    };
+
     const pill_widget = input_pill.create({
         $container: $pill_container,
+        pill_config,
         create_item_from_text,
         get_text_from_item,
     });

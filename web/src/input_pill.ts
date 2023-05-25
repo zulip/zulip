@@ -20,12 +20,14 @@ export type InputPillItem<T> = {
     deactivated?: boolean;
     status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean}; // TODO: Move this in user_status.js
     should_add_guest_user_indicator?: boolean;
+    group_size?: number;
 } & T;
 
 type InputPillCreateOptions<T> = {
     $container: JQuery;
     pill_config?: {
         show_user_status_emoji?: boolean;
+        show_user_group_size?: boolean;
     };
     create_item_from_text: (
         text: string,
@@ -60,6 +62,7 @@ type InputPillRenderingDetails = {
     has_status?: boolean;
     status_emoji_info?: EmojiRenderingDetails & {emoji_alt_code?: boolean};
     should_add_guest_user_indicator?: boolean;
+    group_size?: number;
 };
 
 // These are the functions that are exposed to other modules.
@@ -160,6 +163,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                     opts.status_emoji_info = item.status_emoji_info;
                 }
                 opts.has_status = has_status;
+            }
+
+            if (store.pill_config?.show_user_group_size && item.group_size !== undefined) {
+                opts.group_size = item.group_size;
             }
 
             const pill_html = render_input_pill(opts);

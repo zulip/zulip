@@ -5,13 +5,10 @@ import * as user_groups from "./user_groups";
 type UserGroupPill = {
     group_id: number;
     group_name: string;
+    group_size: number;
 };
 
 type UserGroupPillWidget = InputPillContainer<UserGroupPill>;
-
-function display_pill(group: UserGroup): string {
-    return `${group.name}: ${group.members.size} users`;
-}
 
 export function create_item_from_group_name(
     group_name: string,
@@ -30,9 +27,10 @@ export function create_item_from_group_name(
 
     const item = {
         type: "user_group",
-        display_value: display_pill(group),
+        display_value: group.name,
         group_id: group.id,
         group_name: group.name,
+        group_size: group.members.size,
     };
 
     return item;
@@ -62,9 +60,10 @@ export function get_user_ids(pill_widget: UserGroupPillWidget): number[] {
 export function append_user_group(group: UserGroup, pill_widget: UserGroupPillWidget): void {
     pill_widget.appendValidatedData({
         type: "user_group",
-        display_value: display_pill(group),
+        display_value: group.name,
         group_id: group.id,
         group_name: group.name,
+        group_size: group.members.size,
     });
     pill_widget.clear_text();
 }
