@@ -7,7 +7,7 @@ makes the commit history a much more useful resource for developers
 trying to understand why the code works the way it does, which also
 helps a lot in preventing bugs.
 
-Commits must be coherent:
+## Each commit must be coherent
 
 - It should pass tests (so test updates needed by a change should be
   in the same commit as the original change, not a separate "fix the
@@ -22,7 +22,7 @@ Commits must be coherent:
 - TODO comments should be in the commit that introduces the issue or
   the functionality with further work required.
 
-Commits should generally be minimal:
+## Commits should generally be minimal
 
 - Significant refactorings should be done in a separate commit from
   functional changes.
@@ -34,7 +34,7 @@ Commits should generally be minimal:
   of somewhat dissimilar things that you did, you probably should have
   just done multiple commits.
 
-When not to be overly minimal:
+### When not to be overly minimal
 
 - For completely new features, you don't necessarily need to split out
   new commits for each little subfeature of the new feature. E.g., if
@@ -46,7 +46,7 @@ When not to be overly minimal:
 - Don't bother to split backend commits from frontend commits, even
   though the backend can often be coherent on its own.
 
-Other considerations:
+## Write a clean commit history
 
 - Overly fine commits are easy to squash later, but not vice versa.
   So err toward small commits, and the code reviewer can advise on
