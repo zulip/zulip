@@ -966,6 +966,7 @@ paths:
                                   "person":
                                     {
                                       "email": "foo@zulip.com",
+                                      "delivery_email": null,
                                       "user_id": 38,
                                       "avatar_version": 1,
                                       "is_admin": false,
@@ -7345,6 +7346,7 @@ paths:
                             {
                               "is_active": true,
                               "email": "AARON@zulip.com",
+                              "delivery_email": null,
                               "is_admin": false,
                               "is_owner": false,
                               "is_billing_admin": false,
@@ -7397,6 +7399,7 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
                               "email": "hamlet@zulip.com",
+                              "delivery_email": null,
                             },
                             {
                               "bot_owner_id": 11,
@@ -7404,6 +7407,7 @@ paths:
                               "date_joined": "2019-10-20T12:52:17.862053+00:00",
                               "full_name": "Iago's Bot",
                               "email": "iago-bot@zulipdev.com",
+                              "delivery_email": "iago-bot@zulipdev.com",
                               "is_active": true,
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
@@ -7761,6 +7765,7 @@ paths:
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
                         "avatar_version": 1,
                         "email": "iago@zulip.com",
+                        "delivery_email": iago@zulip.com,
                         "full_name": "Iago",
                         "is_admin": true,
                         "is_owner": false,
@@ -10016,6 +10021,7 @@ paths:
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
+                            "delivery_email": null,
                           },
                       }
   /users/{user_id}:
@@ -10105,6 +10111,7 @@ paths:
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
+                            "delivery_email": null,
                           },
                       }
     patch:
