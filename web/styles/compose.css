@@ -516,6 +516,7 @@ textarea.new_message_textarea,
     border: 1px solid hsl(0deg 0% 0% / 20%);
     box-shadow: none;
     transition: border 0.2s ease;
+    color: var(--color-text-default);
 
     &:focus {
         outline: 0;
@@ -830,6 +831,7 @@ a.compose_control_button.hide {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        color: var(--color-text-default);
 
         .stream-privacy-type-icon {
             font-size: 13px;
