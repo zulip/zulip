@@ -47,7 +47,10 @@ from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
 from zerver.lib.create_user import create_user
-from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
+from zerver.lib.default_streams import (
+    get_default_streams_for_realm_as_dicts,
+    get_slim_realm_default_streams,
+)
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_future_email
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -1296,9 +1299,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             result, "You do not have permission to subscribe other users to streams."
         )
 
+        # User will be subscribed to default streams even when
+        # the referrer does not permission to subscribe others.
         result = self.invite(invitee, [])
         self.assert_json_success(result)
         self.check_sent_emails([invitee])
+
+        self.submit_reg_form_for_user(invitee, "password")
+
+        default_streams = get_slim_realm_default_streams(realm.id)
+        self.assert_length(default_streams, 1)
+        self.check_user_subscribed_only_to_streams("alice", default_streams)
         mail.outbox.pop()
 
         self.login("iago")
@@ -1316,6 +1327,17 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         result = self.invite(invitee, ["Denmark", "Scotland"])
         self.assert_json_success(result)
         self.check_sent_emails([invitee])
+        mail.outbox.pop()
+
+        invitee = self.nonreg_email("test1")
+        # User will not be subscribed to any streams, because the streams
+        # list is empty when referrer has permission to subscribe others.
+        result = self.invite(invitee, [])
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams("test1", [])
 
     def test_invitation_reminder_email(self) -> None:
         # All users belong to zulip realm
