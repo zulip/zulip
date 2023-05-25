@@ -6,7 +6,9 @@ const {zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
+const {user_settings} = require("./lib/zpage_params");
 
+user_settings.default_view = "recent";
 window.location.hash = "#bogus";
 
 const browser_history = zrequire("browser_history");
@@ -73,5 +75,5 @@ test("web-public view hash restore", () => {
     browser_history.update(new_hash);
     assert.equal(window.location.hash, new_hash);
     browser_history.return_to_web_public_hash();
-    assert.equal(window.location.hash, "");
+    assert.equal(window.location.hash, "#recent");
 });
