@@ -967,6 +967,7 @@ class TestSupportEndpoint(ZulipTestCase):
             self.example_user("hamlet"),
             invited_as=1,
             invite_expires_in_minutes=invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
         )
         result = query_result_from_before("zulip", 2)
         check_multiuse_invite_link_query_result(result)

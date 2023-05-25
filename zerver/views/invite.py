@@ -16,12 +16,11 @@ from zerver.actions.invites import (
     do_send_user_invite_email,
 )
 from zerver.decorator import require_member_or_admin
-from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id
-from zerver.lib.validator import check_int, check_int_in, check_list, check_none_or
+from zerver.lib.validator import check_bool, check_int, check_int_in, check_list, check_none_or
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
@@ -60,6 +59,7 @@ def invite_users_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
+    include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -92,21 +92,15 @@ def invite_users_backend(
             )
         streams.append(stream)
 
-    if not user_profile.can_subscribe_other_users():
-        if len(streams):
-            raise JsonableError(
-                _("You do not have permission to subscribe other users to channels.")
-            )
-
-        # We would subscribe the invited user to default streams even when the user
-        # inviting them does not have permission to subscribe others.
-        streams = get_slim_realm_default_streams(user_profile.realm_id)
+    if len(streams) and not user_profile.can_subscribe_other_users():
+        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
     skipped = do_invite_users(
         user_profile,
         invitee_emails,
         streams,
         invite_expires_in_minutes=invite_expires_in_minutes,
+        include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
     )
 
@@ -221,6 +215,7 @@ def generate_multiuse_invite_backend(
         default=PreregistrationUser.INVITE_AS["MEMBER"],
     ),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    include_realm_default_subscriptions: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     if not user_profile.can_create_multiuse_invite_to_realm():
         # Guest users case will not be handled here as it will
@@ -248,17 +243,14 @@ def generate_multiuse_invite_backend(
             )
         streams.append(stream)
 
-    if not user_profile.can_subscribe_other_users():
-        if len(streams) != 0:
-            raise JsonableError(
-                _("You do not have permission to subscribe other users to channels.")
-            )
-
-        # We would subscribe the invited user to default streams even when the user
-        # inviting them does not have permission to subscribe others.
-        streams = get_slim_realm_default_streams(user_profile.realm_id)
+    if len(streams) and not user_profile.can_subscribe_other_users():
+        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
     invite_link = do_create_multiuse_invite_link(
-        user_profile, invite_as, invite_expires_in_minutes, streams
+        user_profile,
+        invite_as,
+        invite_expires_in_minutes,
+        include_realm_default_subscriptions,
+        streams,
     )
     return json_success(request, data={"invite_link": invite_link})

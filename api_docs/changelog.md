@@ -26,6 +26,12 @@ format used by the Zulip server that they are interacting with.
   /invites/multiuse`](/api/create-invite-link): Newly created user is
   now subscribed to the default streams in the organization even when
   the user sending the invite is not allowed to subscribe others.
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Added
+  `include_realm_default_subscriptions` parameter to indicate whether to
+  subscribe the invited user to default streams when creating the new
+  user account instead of passing the stream IDs of default streams
+  in `stream_ids` parameter.
 
 **Feature level 260**:
 

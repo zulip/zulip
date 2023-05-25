@@ -12160,14 +12160,14 @@ paths:
                   $ref: "#/components/schemas/InviteRoleParameter"
                 stream_ids:
                   description: |
-                    A list containing the [IDs of the streams](/api/get-stream-id) that the
-                    newly created user will be automatically subscribed to if the invitation
-                    is accepted. If the list is empty, then the new user will not be
-                    subscribed to any streams.
+                    A list containing the [IDs of the streams](/api/get-stream-id) that
+                    the newly created user will be automatically subscribed to if the
+                    invitation is accepted, in addition to default streams configured via
+                    the `include_realm_default_subscriptions` setting.
 
-                    If the user is not allowed to subscribe others, then this list should
-                    be empty but the newly created user will still be subscribed to default
-                    streams in the organization.
+                    This parameter must be the empty list if the current user has the
+                    unlikely configuration of being able to generate invitations while
+                    lacking permission to subscribe other users to streams.
 
                     **Changes**: Prior to Zulip 9.0 (feature level 261), if the user was not
                     allowed to subscribe others to stream, the newly created user was not
@@ -12179,6 +12179,16 @@ paths:
                   items:
                     type: integer
                   example: [1, 10]
+                include_realm_default_subscriptions:
+                  description: |
+                    Boolean indicating that the newly created user should be subscribed
+                    to the [default streams][default-streams] for the organization.
+
+                    **Changes**: New in Zulip 9.0 (feature level 261).
+
+                    [default-streams]: /help/set-default-streams-for-new-users
+                  type: boolean
+                  example: false
               required:
                 - invitee_emails
                 - stream_ids
@@ -12315,7 +12325,8 @@ paths:
 
                     If the user is not allowed to subscribe others, then this list should
                     be empty but the newly created user will still be subscribed to default
-                    streams in the organization.
+                    streams in the organization depending on the `include_realm_default_subscriptions`
+                    value.
 
                     **Changes**: Prior to Zulip 9.0 (feature level 261), if the user was not
                     allowed to subscribe others to stream, the newly created user was not
@@ -12325,6 +12336,16 @@ paths:
                     type: integer
                   default: []
                   example: [1, 10]
+                include_realm_default_subscriptions:
+                  description: |
+                    Boolean indicating that the newly created user should be subscribed
+                    to the [default streams][default-streams] for the organization.
+
+                    **Changes**: New in Zulip 9.0 (feature level 261).
+
+                    [default-streams]: /help/set-default-streams-for-new-users
+                  type: boolean
+                  example: false
             encoding:
               invite_expires_in_minutes:
                 contentType: application/json
