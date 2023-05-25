@@ -569,7 +569,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the Zulip display email address of a user changes,
+                                        When the Zulip API email address of a user changes,
                                         either due to the user's email address changing, or
                                         due to changes in the user's
                                         [email address visibility][help-email-visibility].
@@ -586,7 +586,7 @@ paths:
                                             The new value of `email` for the user. The client
                                             should update any data structures associated
                                             with this user to use this new value as the
-                                            user's Zulip display email address.
+                                            user's Zulip API email address.
                               additionalProperties: false
                               example:
                                 {
@@ -1049,7 +1049,7 @@ paths:
                                 email:
                                   type: string
                                   description: |
-                                    The Zulip display email of the user.
+                                    The Zulip API email of the user.
 
                                     **Deprecated**: This field will be removed in a future
                                     release as it is redundant with the `user_id`.
@@ -2457,7 +2457,7 @@ paths:
                                     email:
                                       type: string
                                       description: |
-                                        The Zulip display email address for the user.
+                                        The Zulip API email address for the user.
                                 recipients:
                                   type: array
                                   description: |
@@ -2480,7 +2480,7 @@ paths:
                                       email:
                                         type: string
                                         description: |
-                                          The Zulip display email address for the user.
+                                          The Zulip API email address for the user.
                                 stream_id:
                                   type: integer
                                   description: |
@@ -2575,7 +2575,7 @@ paths:
                                     email:
                                       type: string
                                       description: |
-                                        The Zulip display email address for the user.
+                                        The Zulip API email address for the user.
                                 recipients:
                                   type: array
                                   description: |
@@ -2598,7 +2598,7 @@ paths:
                                       email:
                                         type: string
                                         description: |
-                                          The Zulip display email address for the user.
+                                          The Zulip API email address for the user.
                                 stream_id:
                                   type: integer
                                   description: |
@@ -7539,10 +7539,10 @@ paths:
         - name: user_id_or_email
           in: path
           description: |
-            The ID or Zulip display email address of the user whose presence you want to fetch.
+            The ID or Zulip API email address of the user whose presence you want to fetch.
 
             **Changes**: New in Zulip 4.0 (feature level 43). Previous versions only supported
-            identifying the user by Zulip display email.
+            identifying the user by Zulip API email.
           schema:
             type: string
           example: iago@zulip.com
@@ -9088,7 +9088,7 @@ paths:
                           type: object
                           description: |
                             `{user_email}`: Object containing the details of a user's presence.
-                            The object's key is the user's Zulip display email.
+                            The object's key is the user's Zulip API email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                     example:
@@ -9922,8 +9922,8 @@ paths:
       summary: Get a user by email
       tags: ["users"]
       description: |
-        Fetch details for a single user in the organization given a Zulip display
-        email address.
+        Fetch details for a single user in the organization given a Zulip
+        API email address.
 
         Note that this endpoint uses Zulip display emails addresses
         for organizations that have configured limited [email address
@@ -9951,7 +9951,7 @@ paths:
         - name: email
           in: path
           description: |
-            The email address of the user whose details you want to fetch.
+            The Zulip API email address of the user whose details you want to fetch.
           schema:
             type: string
           example: iago@zulip.com
@@ -10028,7 +10028,7 @@ paths:
         Fetch details for a single user in the organization.
 
         You can also fetch details on [all users in the organization](/api/get-users)
-        or [by email](/api/get-user-by-email).
+        or [by a user's Zulip API email](/api/get-user-by-email).
 
         **Changes**: New in Zulip 3.0 (feature level 1).
       x-curl-examples-parameters:
@@ -10988,7 +10988,7 @@ paths:
                           description: |
                             `{user_id}` or `{user_email}`: Object containing the details of a user's
                             presence . Depending on the value of `slim_presence`, the object's key is
-                            either the user's ID or the user's Zulip display email.
+                            either the user's ID or the user's Zulip API email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                       server_timestamp:
@@ -14058,9 +14058,9 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          The Zulip display email address for the current user. See also
+                          The Zulip API email address for the current user. See also
                           `delivery_email`; these may be the same or different depending
-                          on the organization's `email_address_visibility` policy.
+                          on the user's `email_address_visibility` policy.
                       delivery_email:
                         type: string
                         description: |
@@ -17347,7 +17347,7 @@ components:
                 email:
                   type: string
                   description: |
-                    Email of the user.
+                    Zulip API email of the user.
                 full_name:
                   type: string
                   description: |
@@ -17426,7 +17426,7 @@ components:
                   email:
                     type: string
                     description: |
-                      Email of the user.
+                      Zulip API email of the user.
                   full_name:
                     type: string
                     description: |
@@ -17572,7 +17572,7 @@ components:
         sender_email:
           type: string
           description: |
-            The Zulip display email address of the message's sender.
+            The Zulip API email address of the message's sender.
         sender_full_name:
           type: string
           description: |
@@ -18674,7 +18674,7 @@ components:
       name: principals
       in: query
       description: |
-        A list of user IDs (preferred) or Zulip display email
+        A list of user IDs (preferred) or Zulip API email
         addresses of the users to be subscribed to or unsubscribed
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
