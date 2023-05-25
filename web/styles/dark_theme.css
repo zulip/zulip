@@ -638,6 +638,14 @@
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
     }
 
+    #draft_overlay,
+    #scheduled_messages_overlay_container {
+        .flex.overlay-content > div {
+            box-shadow: 0 0 30px hsl(213deg 31% 0%);
+            background-color: var(--color-background);
+        }
+    }
+
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
     .dropdown .dropdown-menu,
