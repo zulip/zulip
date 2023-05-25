@@ -16,6 +16,7 @@ from zerver.actions.invites import (
     do_send_user_invite_email,
 )
 from zerver.decorator import require_member_or_admin
+from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -91,8 +92,15 @@ def invite_users_backend(
             )
         streams.append(stream)
 
-    if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
+    if not user_profile.can_subscribe_other_users():
+        if len(streams):
+            raise JsonableError(
+                _("You do not have permission to subscribe other users to channels.")
+            )
+
+        # We would subscribe the invited user to default streams even when the user
+        # inviting them does not have permission to subscribe others.
+        streams = get_slim_realm_default_streams(user_profile.realm_id)
 
     skipped = do_invite_users(
         user_profile,
@@ -240,8 +248,15 @@ def generate_multiuse_invite_backend(
             )
         streams.append(stream)
 
-    if len(streams) and not user_profile.can_subscribe_other_users():
-        raise JsonableError(_("You do not have permission to subscribe other users to channels."))
+    if not user_profile.can_subscribe_other_users():
+        if len(streams) != 0:
+            raise JsonableError(
+                _("You do not have permission to subscribe other users to channels.")
+            )
+
+        # We would subscribe the invited user to default streams even when the user
+        # inviting them does not have permission to subscribe others.
+        streams = get_slim_realm_default_streams(user_profile.realm_id)
 
     invite_link = do_create_multiuse_invite_link(
         user_profile, invite_as, invite_expires_in_minutes, streams
