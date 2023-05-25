@@ -9925,16 +9925,15 @@ paths:
         Fetch details for a single user in the organization given a Zulip
         API email address.
 
-        Note that this endpoint uses Zulip display emails addresses
-        for organizations that have configured limited [email address
-        visibility](/help/configure-email-visibility).
+        You can also fetch details on [all users in the organization](/api/get-users)
+        or [by user ID](/api/get-user).
 
-        You can also fetch details on [all users in the organization](/api/get-users) or
-        [by user ID](/api/get-user). Fetching by user ID is generally recommended
-        when possible, as users can
-        [change their email address](/help/change-your-email-address).
+        Fetching by user ID is generally recommended when possible,
+        as a user might [change their email address](/help/change-your-email-address)
+        or change their [email address visibility](/help/configure-email-visibility),
+        either of which could change the value of their Zulip API email address.
 
-        _This endpoint is new in Zulip Server 4.0 (feature level 39)._
+        **Changes**: New in Zulip Server 4.0 (feature level 39).
       x-curl-examples-parameters:
         oneOf:
           - type: include
