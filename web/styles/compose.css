@@ -117,11 +117,20 @@
             }
         }
 
-        .fa-angle-right {
-            font-size: 0.9em;
-            -webkit-text-stroke: 0.05em;
-            align-self: center;
-            margin: 0 5px;
+        .topic-marker-container {
+            /* Ensure the marker ( < ) stays centered vertically
+              with the dropdown, even when adjacent stacking pills
+              in, e.g., a group DM. */
+            display: flex;
+            align-items: center;
+            height: var(--compose-recipient-box-min-height);
+
+            .fa-angle-right {
+                font-size: 0.9em;
+                -webkit-text-stroke: 0.05em;
+                align-self: center;
+                margin: 0 5px;
+            }
         }
 
         & a.narrow_to_compose_recipients {
@@ -233,12 +242,14 @@
 #compose_top {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     padding-bottom: 5px;
 }
 
 #compose_top_right {
     display: flex;
     align-items: center;
+    height: var(--compose-recipient-box-min-height);
 
     & button {
         background: transparent;
@@ -789,6 +800,7 @@ a.compose_control_button.hide {
 #compose_recipient_selection_dropdown {
     display: flex;
     justify-content: flex-start;
+    height: var(--compose-recipient-box-min-height);
 
     .stream_header_colorblock {
         margin: 0;
