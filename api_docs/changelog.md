@@ -232,11 +232,10 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 160**
 
-* `POST /api/v1/jwt/fetch_api_key`: New API endpoint to fetch API
+* `POST /api/v1/jwt/fetch_api_key`: Added new endpoint to fetch API
   keys using JSON Web Token (JWT) authentication.
-* `accounts/login/jwt/`: Adjusted format of requests to this
-  previously undocumented, optional endpoint for
-  JWT authentication log in support.
+* `accounts/login/jwt/`: Adjusted format of requests to undocumented,
+  optional endpoint for JWT authentication log in support.
 
 **Feature level 159**
 
