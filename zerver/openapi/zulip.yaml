@@ -10504,8 +10504,7 @@ paths:
         doing this often saves 90% of the total bandwidth and other resources
         consumed by a client using this API.
 
-        See the
-        [events system developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/events-system.html)
+        See the [events system developer documentation][events-system-docs]
         if you need deeper details about how the Zulip event queue system
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
@@ -10526,6 +10525,7 @@ paths:
         `email_address_visibility` value.
 
         [user-defaults]: /api/update-realm-user-settings-defaults#parameter-email_address_visibility
+        [events-system-docs]: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
       x-curl-examples-parameters:
         oneOf:
           - type: include
