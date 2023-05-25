@@ -279,6 +279,23 @@ might worry about it breaking.
   you developed this commit or pull request, like "First I tried X" or
   "I changed Y".
 
+#### Mentioning other contributors
+
+You can
+[credit](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors)
+co-authors on a commit by adding a `Co-authored-by:` line after a blank line at
+the end of your commit message:
+
+    Co-authored-by: Greg Price <greg@zulip.com>
+
+You can also add other notes, such as `Reported-by:`, `Debugged-by:`, or
+`Suggested-by:`, but we don't typically do so.
+
+**Never @-mention a contributor in a commit message**, as GitHub will turn this into
+a notification for the person every time a version of the commit is rebased and
+pushed somewhere. If you want to send someone a notification about a change,
+@-mention them in the PR thread.
+
 #### Formatting guidelines
 
 There are a few specific formatting guidelines to keep in mind:
