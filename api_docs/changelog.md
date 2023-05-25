@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 9.0
 
+**Feature level 261**
+
+* [`POST /invites`](/api/send-invites), [`POST
+  /invites/multiuse`](/api/create-invite-link): Newly created user is
+  now subscribed to the default streams in the organization even when
+  the user sending the invite is not allowed to subscribe others.
+
 **Feature level 260**:
 
 * [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):
