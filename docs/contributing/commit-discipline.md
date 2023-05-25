@@ -279,7 +279,7 @@ might worry about it breaking.
   you developed this commit or pull request, like "First I tried X" or
   "I changed Y".
 
-#### Mentioning people
+#### Don't @-mention people in commit messages
 
 **No GitHub @-mentions:** GitHub makes it tempting to refer to people
 by an @-mention of their GitHub username, like `@gnprice`. Unfortunately
@@ -302,8 +302,8 @@ this is a misfeature in commit messages:
 If you want to send someone a notification about a change, @-mention
 them in the PR thread, not in a commit message.
 
-To refer to them in a commit message, use one of the conventions
-below.
+To refer to someone in a commit message, then, use one of the
+conventions below.
 
 **Consider just a name:** If there's further context -- like a chat
 link where you're referring to what someone said in that conversation
@@ -316,13 +316,17 @@ commit, reviewed it, approved it, etc. These identify people by name
 and email address, for complete unambiguity.
 
 We don't have a habit of using this in our codebase, but that doesn't
-stop it from working just fine. For an example, see 338036e0c which
-has a line
+stop it from working just fine. For example, your commit message might
+have a line like:
 
-    Suggested-by: Anders Kaseorg <anders@zulipchat.com>
+    Suggested-by: Anders Kaseorg <anders@zulip.com>
 
-In the kernel, the most numerous of these is actually `Cc:`, which
-basically amounts to an @-mention! Other common lines include
+[GitHub provides support for `Co-authored-by:`](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors).
+That GitHub convention is similar to the Linux kernel's common practice
+of referring to someone with `Cc:`, which basically amounts to an
+@-mention!
+
+Other common lines include:
 
     Reported-by:
     Debugged-by:
@@ -330,11 +334,21 @@ basically amounts to an @-mention! Other common lines include
     Co-developed-by:
     Tested-by:
 
-and there's no fixed list; people invent others.
+But there's no fixed list; people invent others.
 
 When inventing a label for a metadata line like this, note the
 formatting style: hyphens (`-`) instead of spaces, and in sentence case
-(i.e. capitalized only at the beginning).
+(i.e., capitalized only at the beginning). Your block of credits should
+appear at the end of your commit message. Separate them from your commit
+description with a blank line:
+
+    docs: Give credit where credit is due.
+
+    This commit corrects the docs to reflect contributions by
+    multiple people.
+
+    Co-authored-by: Greg Price <greg@zulip.com>
+    Reviewed-by: Anders Kaseorg <anders@zulip.com>
 
 #### Formatting guidelines
 
