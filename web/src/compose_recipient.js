@@ -63,8 +63,7 @@ function composing_to_current_private_message_narrow() {
 export function update_narrow_to_recipient_visibility() {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
-        const stream_name = compose_state.stream_name();
-        const stream_exists = Boolean(stream_data.get_stream_id(stream_name));
+        const stream_exists = Boolean(compose_state.stream_id());
 
         if (
             stream_exists &&

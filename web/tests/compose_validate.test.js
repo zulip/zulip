@@ -631,7 +631,9 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose_validate.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
+test_ui("warn_if_private_stream_is_linked", ({mock_template, override_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
+
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     const test_sub = {
@@ -642,7 +644,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     stream_data.add_sub(test_sub);
     peer_data.set_subscribers(test_sub.stream_id, [1, 2]);
 
-    let denmark = {
+    const denmark = {
         stream_id: 100,
         name: "Denmark",
     };
@@ -674,14 +676,17 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     $("#compose_private").hide();
     compose_state.set_message_type("stream");
 
-    denmark = {
+    // Not everyone is subscribed to secret_stream in denmark, so the
+    // warning is rendered.
+    compose_recipient.set_selected_recipient_id(denmark.stream_id);
+    const secret_stream = {
         invite_only: true,
         name: "Denmark",
         stream_id: 22,
     };
-    stream_data.add_sub(denmark);
+    stream_data.add_sub(secret_stream);
     banner_rendered = false;
-    compose_validate.warn_if_private_stream_is_linked(denmark, $textarea);
+    compose_validate.warn_if_private_stream_is_linked(secret_stream, $textarea);
     assert.ok(banner_rendered);
 });
 

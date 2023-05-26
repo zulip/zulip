@@ -72,6 +72,14 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
 
 // NOTE: See `selected_recipient_id` in compose_recipient to for
 // documentation on the variable and how it is used.
+export function stream_id() {
+    const stream_id = compose_recipient.selected_recipient_id;
+    if (typeof stream_id === "number") {
+        return stream_id;
+    }
+    return "";
+}
+
 export function stream_name() {
     const stream_id = compose_recipient.selected_recipient_id;
     if (typeof stream_id === "number") {

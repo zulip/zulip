@@ -79,13 +79,7 @@ function get_stream_id_for_textarea($textarea) {
         return Number.parseInt(stream_id_str, 10);
     }
 
-    const stream_name = compose_state.stream_name();
-
-    if (!stream_name) {
-        return undefined;
-    }
-
-    return stream_data.get_sub(stream_name).stream_id;
+    return compose_state.stream_id() || undefined;
 }
 
 export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
@@ -216,9 +210,9 @@ export function warn_if_topic_resolved(topic_changed) {
         return;
     }
 
-    const stream_name = compose_state.stream_name();
+    const stream_id = compose_state.stream_id();
     const message_content = compose_state.message_content();
-    const sub = stream_data.get_sub(stream_name);
+    const sub = stream_data.get_sub_by_id(stream_id);
 
     if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
         if (compose_state.has_recipient_viewed_topic_resolved_banner()) {
@@ -484,9 +478,9 @@ export function validate_stream_message_address_info(stream_name) {
 }
 
 function validate_stream_message(scheduling_message) {
-    const stream_name = compose_state.stream_name();
+    const stream_id = compose_state.stream_id();
     const $banner_container = $("#compose_banners");
-    if (stream_name === "") {
+    if (stream_id === "") {
         compose_banner.show_error_message(
             $t({defaultMessage: "Please specify a stream."}),
             compose_banner.CLASSNAMES.missing_stream,
@@ -511,9 +505,9 @@ function validate_stream_message(scheduling_message) {
         }
     }
 
-    const sub = stream_data.get_sub(stream_name);
+    const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
-        return validation_error("does-not-exist", stream_name);
+        return validation_error("does-not-exist", stream_id);
     }
 
     if (!stream_data.can_post_messages_in_stream(sub)) {
@@ -530,7 +524,7 @@ function validate_stream_message(scheduling_message) {
     const wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
     if (
-        !validate_stream_message_address_info(stream_name) ||
+        !validate_stream_message_address_info(sub.name) ||
         !validate_stream_message_mentions({
             stream_id: sub.stream_id,
             $banner_container,
