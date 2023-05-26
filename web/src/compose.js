@@ -517,11 +517,11 @@ export function initialize() {
         (event) => {
             event.preventDefault();
 
-            const stream_name = compose_state.stream_name();
-            if (stream_name === "") {
+            const stream_id = compose_state.stream_id();
+            if (stream_id === "") {
                 return;
             }
-            const sub = stream_data.get_sub(stream_name);
+            const sub = stream_data.get_sub_by_id(stream_id);
             stream_settings_ui.sub_or_unsub(sub);
             $(user_not_subscribed_selector).remove();
         },
