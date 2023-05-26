@@ -266,7 +266,8 @@
                             }
                         ]
                     }
-                ]
+                ],
+                "unicorn/prefer-string-replace-all": "off"
             }
         }
     ]
