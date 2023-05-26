@@ -874,13 +874,6 @@ run_test("user_settings", ({override}) => {
     assert_same(user_settings.dense_mode, true);
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
 
-    $("body").fadeOut = (secs) => {
-        assert_same(secs, 300);
-    };
-    $("body").fadeIn = (secs) => {
-        assert_same(secs, 300);
-    };
-
     override(realm_logo, "render", noop);
 
     {

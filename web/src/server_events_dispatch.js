@@ -716,7 +716,6 @@ export function dispatch_normal_event(event) {
                 unread_ui.update_unread_banner();
             }
             if (event.property === "color_scheme") {
-                $("body").fadeOut(300);
                 setTimeout(() => {
                     if (event.value === settings_config.color_scheme_values.night.code) {
                         dark_theme.enable();
@@ -728,7 +727,6 @@ export function dispatch_normal_event(event) {
                         dark_theme.default_preference_checker();
                         realm_logo.render();
                     }
-                    $("body").fadeIn(300);
                     message_lists.update_recipient_bar_background_color();
                 }, 300);
             }
