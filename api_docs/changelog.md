@@ -213,6 +213,14 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events): Event for updating a user's
   `delivery_email` is now sent to all users who have access to it, and
   is also sent when a user's `email_address_visibility` setting changes.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue)
+  [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email),
+  [`GET /users/me`](/api/get-own-user), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Whether the `avatar_url`
+  field in message and user objects returned by these endpoints can be `null`
+  now depends on if the current user has access to the other user's real
+  email address based on the other user's `email_address_visibility` policy.
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `email_address_visibility`, to replace the
