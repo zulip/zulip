@@ -153,6 +153,7 @@ def create_realm_custom_profile_field(
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
     field_type: int = REQ(json_validator=check_int),
+    editable_by_user: bool = REQ(default=True, json_validator=check_bool),
     display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     if display_in_profile_summary and display_in_profile_summary_limit_reached(user_profile.realm):
@@ -168,6 +169,7 @@ def create_realm_custom_profile_field(
             field = try_add_realm_default_custom_profile_field(
                 realm=user_profile.realm,
                 field_subtype=field_subtype,
+                editable_by_user=editable_by_user,
                 display_in_profile_summary=display_in_profile_summary,
             )
             return json_success(request, data={"id": field.id})
@@ -178,6 +180,7 @@ def create_realm_custom_profile_field(
                 field_data=field_data,
                 field_type=field_type,
                 hint=hint,
+                editable_by_user=editable_by_user,
                 display_in_profile_summary=display_in_profile_summary,
             )
             return json_success(request, data={"id": field.id})
@@ -207,6 +210,7 @@ def update_realm_custom_profile_field(
     name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
+    editable_by_user: bool = REQ(default=True, json_validator=check_bool),
     display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -244,6 +248,7 @@ def update_realm_custom_profile_field(
             name,
             hint=hint,
             field_data=field_data,
+            editable_by_user=editable_by_user,
             display_in_profile_summary=display_in_profile_summary,
         )
     except IntegrityError:
@@ -270,7 +275,7 @@ def remove_user_custom_profile_data(
     data: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
     for field_id in data:
-        check_remove_custom_profile_field_value(user_profile, field_id)
+        check_remove_custom_profile_field_value(user_profile, field_id, acting_user=user_profile)
     return json_success(request)
 
 
@@ -296,7 +301,7 @@ def update_user_custom_profile_data(
         )
     ),
 ) -> HttpResponse:
-    validate_user_custom_profile_data(user_profile.realm.id, data)
+    validate_user_custom_profile_data(user_profile.realm.id, data, acting_user=user_profile)
     do_update_user_custom_profile_data_if_changed(user_profile, data)
     # We need to call this explicitly otherwise constraints are not check
     return json_success(request)

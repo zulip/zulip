@@ -41,21 +41,6 @@ methods][authentication-production] documentation for details.
 
 {end_tabs}
 
-## Profile field types
-
-There are several different types of fields available.
-
-* **Short text**: For one line responses, like
-    "Job title". Responses are limited to 50 characters.
-* **Long text**: For multiline responses, like "Biography".
-* **Date picker**: For dates, like "Birthday".
-* **Link**: For links to websites.
-* **External account**: For linking to GitHub, Twitter, etc.
-* **Pronouns**: What pronouns should people use to refer to the user?
-* **List of options**: Creates a dropdown with a list of options.
-* **Person picker**: For selecting one or more users, like "Manager" or
-    "Direct reports".
-
 ## Display custom fields on user card
 
 Organizations may find it useful to display additional fields on the
@@ -84,6 +69,42 @@ checkboxes will be disabled.
     the checkboxes in the **Card** column of the **Custom profile fields** table.
 
 {end_tabs}
+
+## Configure whether users can edit custom profile fields
+
+{!admin-only.md!}
+
+You can configure whether users in your organization can modify their
+own custom profile fields. For example, you may want to restrict editing
+if syncing profile fields from an employee directory.
+
+{start_tabs}
+
+{settings_tab|profile-field-settings}
+
+1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+   icon for the profile field you want to configure.
+
+1. Toggle **Users can edit this field**.
+
+4. Click **Save changes**.
+
+{end_tabs}
+
+## Profile field types
+
+There are several different types of fields available.
+
+* **Short text**: For one line responses, like
+    "Job title". Responses are limited to 50 characters.
+* **Long text**: For multiline responses, like "Biography".
+* **Date picker**: For dates, like "Birthday".
+* **Link**: For links to websites.
+* **External account**: For linking to GitHub, Twitter, etc.
+* **Pronouns**: What pronouns should people use to refer to the user?
+* **List of options**: Creates a dropdown with a list of options.
+* **Person picker**: For selecting one or more users, like "Manager" or
+    "Direct reports".
 
 ## Related articles
 

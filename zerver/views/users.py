@@ -252,7 +252,7 @@ def update_user_backend(
             assert not isinstance(entry["value"], int)
             if entry["value"] is None or not entry["value"]:
                 field_id = entry["id"]
-                check_remove_custom_profile_field_value(target, field_id)
+                check_remove_custom_profile_field_value(target, field_id, acting_user=user_profile)
             else:
                 clean_profile_data.append(
                     {
@@ -260,7 +260,9 @@ def update_user_backend(
                         "value": entry["value"],
                     }
                 )
-        validate_user_custom_profile_data(target.realm.id, clean_profile_data)
+        validate_user_custom_profile_data(
+            target.realm.id, clean_profile_data, acting_user=user_profile
+        )
         do_update_user_custom_profile_data_if_changed(target, clean_profile_data)
 
     return json_success(request)

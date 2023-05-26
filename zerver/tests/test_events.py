@@ -1052,7 +1052,12 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: try_update_realm_custom_profile_field(
-                realm, field, name, hint=hint, display_in_profile_summary=display_in_profile_summary
+                realm,
+                field,
+                name,
+                hint=hint,
+                display_in_profile_summary=display_in_profile_summary,
+                editable_by_user=True,
             )
         )
         check_custom_profile_fields("events[0]", events[0])

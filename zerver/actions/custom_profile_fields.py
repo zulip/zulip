@@ -28,6 +28,7 @@ def notify_realm_custom_profile_fields(realm: Realm) -> None:
 def try_add_realm_default_custom_profile_field(
     realm: Realm,
     field_subtype: str,
+    editable_by_user: bool = True,
     display_in_profile_summary: bool = False,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
@@ -37,6 +38,7 @@ def try_add_realm_default_custom_profile_field(
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
         hint=field_data.hint,
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
+        editable_by_user=editable_by_user,
         display_in_profile_summary=display_in_profile_summary,
     )
     custom_profile_field.save()
@@ -52,12 +54,14 @@ def try_add_realm_custom_profile_field(
     field_type: int,
     hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
+    editable_by_user: bool = True,
     display_in_profile_summary: bool = False,
 ) -> CustomProfileField:
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=name,
         field_type=field_type,
+        editable_by_user=editable_by_user,
         display_in_profile_summary=display_in_profile_summary,
     )
     custom_profile_field.hint = hint
@@ -104,10 +108,12 @@ def try_update_realm_custom_profile_field(
     name: str,
     hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
+    editable_by_user: bool = True,
     display_in_profile_summary: bool = False,
 ) -> None:
     field.name = name
     field.hint = hint
+    field.editable_by_user = editable_by_user
     field.display_in_profile_summary = display_in_profile_summary
     if (
         field.field_type == CustomProfileField.SELECT
@@ -188,9 +194,13 @@ def do_update_user_custom_profile_data_if_changed(
             )
 
 
-def check_remove_custom_profile_field_value(user_profile: UserProfile, field_id: int) -> None:
+def check_remove_custom_profile_field_value(
+    user_profile: UserProfile, field_id: int, acting_user: UserProfile
+) -> None:
     try:
         custom_profile_field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
+        if not acting_user.is_realm_admin and not custom_profile_field.editable_by_user:
+            raise JsonableError(_("User does not have permission to update the field"))
         field_value = CustomProfileFieldValue.objects.get(
             field=custom_profile_field, user_profile=user_profile
         )

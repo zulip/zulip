@@ -2,30 +2,32 @@
     <label class="inline-block" for="{{ field.name }}" class="title">{{ field.name }}</label>
     <div class="alert-notification custom-field-status"></div>
     <div class="field_hint">{{ field.hint }}</div>
-    <div class="field">
+    <div class="field {{#unless editable_by_user}}custom_profile_field_changes_disabled_tooltip{{/unless}}">
         {{#if is_long_text_field}}
-        <textarea maxlength="500" class="custom_user_field_value settings_textarea">{{ field_value.value }}</textarea>
+        <textarea maxlength="500" class="custom_user_field_value settings_textarea" {{#unless editable_by_user}}disabled="disabled"{{/unless}}>{{ field_value.value }}</textarea>
         {{else if is_select_field}}
-        <select class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style">
-            <option value=""></option>
-            {{#each field_choices}}
-                <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
-            {{/each}}
-        </select>
+        <div class="select-field-wrapper">
+            <select class="custom_user_field_value {{#if for_manage_user_modal}}modal_select{{else}}settings_select{{/if}} bootstrap-focus-style {{#unless editable_by_user}}disabled{{/unless}}">
+                <option value=""></option>
+                {{#each field_choices}}
+                    <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
+                {{/each}}
+            </select>
+        </div>
         {{else if is_user_field }}
-        <div class="pill-container person_picker">
-            <div class="input" contenteditable="true"></div>
+        <div class="pill-container person_picker {{#unless editable_by_user}}disabled{{/unless}}" >
+            <div class="input" {{#if editable_by_user}}contenteditable="true"{{/if}}></div>
         </div>
         {{else if is_date_field }}
         <input class="custom_user_field_value datepicker {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" data-field-id="{{ field.id }}" type="text"
-          value="{{ field_value.value }}" />
-        <span class="remove_date"><i class="fa fa-close"></i></span>
+          value="{{ field_value.value }}" {{#unless editable_by_user}}disabled="disabled"{{/unless}}/>
+        {{#if editable_by_user}}<span class="remove_date"><i class="fa fa-close"></i></span>{{/if}}
         {{else if is_url_field }}
-        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
+        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" {{#unless editable_by_user}}disabled="disabled"{{/unless}} maxlength="2048" />
         {{else if is_pronouns_field}}
-        <input class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
+        <input class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled="disabled"{{/unless}}/>
         {{else}}
-        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
+        <input class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled="disabled"{{/unless}}/>
         {{/if}}
     </div>
 </div>

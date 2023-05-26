@@ -4668,6 +4668,8 @@ class CustomProfileField(models.Model):
     # Sort order for display of custom profile fields.
     order = models.IntegerField(default=0)
 
+    # Whether a non-admin user can edit the field.
+    editable_by_user = models.BooleanField(default=True)
     # Whether the field should be displayed in smaller summary
     # sections of a page displaying custom profile fields.
     display_in_profile_summary = models.BooleanField(default=False)
@@ -4756,6 +4758,7 @@ class CustomProfileField(models.Model):
             "hint": self.hint,
             "field_data": self.field_data,
             "order": self.order,
+            "editable_by_user": self.editable_by_user,
         }
         if self.display_in_profile_summary:
             data_as_dict["display_in_profile_summary"] = True

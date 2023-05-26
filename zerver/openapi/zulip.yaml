@@ -1695,6 +1695,7 @@ paths:
                                         "hint": "Or drink, if you'd prefer",
                                         "field_data": "",
                                         "order": 3,
+                                        "editable_by_user": true,
                                       },
                                       {
                                         "id": 4,
@@ -1704,6 +1705,7 @@ paths:
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
                                         "display_in_profile_summary": true,
+                                        "editable_by_user": true,
                                       },
                                       {
                                         "id": 5,
@@ -9185,6 +9187,7 @@ paths:
                               "hint": "Or drink, if you'd prefer",
                               "field_data": "",
                               "order": 3,
+                              "editable_by_user": true,
                             },
                             {
                               "id": 4,
@@ -9211,6 +9214,7 @@ paths:
                               "field_data": "",
                               "order": 6,
                               "display_in_profile_summary": true,
+                              "editable_by_user": true,
                             },
                             {
                               "id": 7,
@@ -9333,6 +9337,15 @@ paths:
                   "python": {"text": "Python", "order": "1"},
                   "java": {"text": "Java", "order": "2"},
                 }
+        - name: editable_by_user
+          in: query
+          description: |
+            Whether a non-administrator user can change value of custom profile field or not.
+
+            **Changes**: New in Zulip 7.0 (feature level 184).
+          schema:
+            type: boolean
+          example: true
         - name: display_in_profile_summary
           in: query
           description: |
@@ -16815,6 +16828,12 @@ components:
             dropdown UI for individual users to select an option.
 
             The interface for field type 7 is not yet stabilized.
+        editable_by_user:
+          type: boolean
+          description: |
+            Whether a non-administrator user can change value of custom profile field or not.
+
+            **Changes**: New in Zulip 7.0 (feature level 184).
         display_in_profile_summary:
           type: boolean
           description: |

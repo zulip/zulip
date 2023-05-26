@@ -107,6 +107,19 @@
             perspective: 1000px;
         }
     }
+
+    &.disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+
+        .pill {
+            cursor: not-allowed;
+        }
+
+        .exit {
+            display: none;
+        }
+    }
 }
 
 #compose-direct-recipient.pill-container {
