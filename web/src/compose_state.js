@@ -97,11 +97,9 @@ export function set_stream_name(stream_name) {
     compose_recipient.set_selected_recipient_id(stream_id);
 }
 
-export function set_compose_recipient_id(value) {
-    let recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
-    if (typeof value === "number") {
-        // value is stream name
-        recipient_id = sub_store.maybe_get_stream_name(value) || "";
+export function set_compose_recipient_id(recipient_id) {
+    if (typeof recipient_id !== "number") {
+        recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
     }
     compose_recipient.set_selected_recipient_id(recipient_id);
 }
