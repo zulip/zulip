@@ -6004,6 +6004,8 @@ paths:
 
                                 The ID of the stream containing the message immediately
                                 prior to this edit event.
+
+                                **Changes**: New in Zulip 3.0 (feature level 1).
                             content:
                               type: string
                               description: |
@@ -7054,6 +7056,8 @@ paths:
             Note that a message's content and stream cannot be changed at the
             same time, so sending both `content` and `stream_id` parameters will
             throw an error.
+
+            **Changes**: New in Zulip 3.0 (feature level 1).
           schema:
             type: integer
           example: 43
@@ -17490,6 +17494,8 @@ components:
 
                   The stream ID of the message immediately prior to this
                   edit event.
+
+                  **Changes**: New in Zulip 3.0 (feature level 1).
               prev_topic:
                 type: string
                 description: |

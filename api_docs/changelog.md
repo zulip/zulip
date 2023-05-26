@@ -1461,6 +1461,15 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 1**:
 
+* [`PATCH /messages/{message_id}`](/api/update-message): Added the
+  `stream_id` parameter to support moving messages between streams.
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
+  Added `prev_stream` as a potential property of the `edit_history` object
+  within message objects to indicate when a message was moved to another
+  stream.
+* [`GET messages/{message_id}/history`](/api/get-message-history):
+  `prev_stream` is present in `snapshot` objects within `message_history`
+  object when a message was moved to another stream.
 * [`GET /server_settings`](/api/get-server-settings): Added
   `zulip_feature_level`, which can be used by clients to detect which
   of the features described in this changelog are supported.
