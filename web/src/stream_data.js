@@ -95,11 +95,12 @@ class BinaryDict {
     }
 }
 
-// The stream_info variable maps stream names to stream properties objects
+// The stream_info variable maps stream ids to stream properties objects
 // Call clear_subscriptions() to initialize it.
 let stream_info;
 
 const stream_ids_by_name = new FoldDict();
+const stream_ids_by_old_names = new FoldDict();
 const default_stream_ids = new Set();
 
 export const stream_privacy_policy_values = {
@@ -171,12 +172,12 @@ clear_subscriptions();
 
 export function rename_sub(sub, new_name) {
     const old_name = sub.name;
-
-    stream_ids_by_name.set(old_name, sub.stream_id);
+    stream_ids_by_old_names.set(old_name, sub.stream_id);
 
     sub.name = new_name;
-    stream_info.delete(old_name);
-    stream_info.set(new_name, sub);
+    stream_info.set(sub.stream_id, sub);
+    stream_ids_by_name.delete(old_name);
+    stream_ids_by_name.set(new_name, sub.stream_id);
 }
 
 export function subscribe_myself(sub) {
@@ -184,7 +185,7 @@ export function subscribe_myself(sub) {
     peer_data.add_subscriber(sub.stream_id, user_id);
     sub.subscribed = true;
     sub.newly_subscribed = true;
-    stream_info.set_true(sub.name, sub);
+    stream_info.set_true(sub.stream_id, sub);
 }
 
 export function unsubscribe_myself(sub) {
@@ -193,32 +194,41 @@ export function unsubscribe_myself(sub) {
     peer_data.remove_subscriber(sub.stream_id, user_id);
     sub.subscribed = false;
     sub.newly_subscribed = false;
-    stream_info.set_false(sub.name, sub);
+    stream_info.set_false(sub.stream_id, sub);
 }
 
 export function add_sub(sub) {
     // This function is currently used only by tests.
     // We use create_sub_from_server_data at page load.
     // We use create_streams for new streams in live-update events.
-    stream_info.set(sub.name, sub);
+    stream_info.set(sub.stream_id, sub);
+    stream_ids_by_name.set(sub.name, sub.stream_id);
     sub_store.add_hydrated_sub(sub.stream_id, sub);
 }
 
 export function get_sub(stream_name) {
-    return stream_info.get(stream_name);
+    const stream_id = stream_ids_by_name.get(stream_name);
+    if (stream_id) {
+        return stream_info.get(stream_id);
+    }
+    return undefined;
+}
+
+export function get_sub_by_id(stream_id) {
+    if (!stream_id) {
+        return undefined;
+    }
+    return stream_info.get(stream_id);
 }
 
 export function get_stream_id(name) {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-    const sub = stream_info.get(name);
-
-    if (sub) {
-        return sub.stream_id;
+    let stream_id = stream_ids_by_name.get(name);
+    if (!stream_id) {
+        stream_id = stream_ids_by_old_names.get(name);
     }
-
-    const stream_id = stream_ids_by_name.get(name);
     return stream_id;
 }
 
@@ -226,15 +236,10 @@ export function get_sub_by_name(name) {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
-
-    const sub = stream_info.get(name);
-
-    if (sub) {
-        return sub;
+    let stream_id = stream_ids_by_name.get(name);
+    if (!stream_id) {
+        stream_id = stream_ids_by_old_names.get(name);
     }
-
-    const stream_id = stream_ids_by_name.get(name);
-
     if (!stream_id) {
         return undefined;
     }
@@ -305,13 +310,12 @@ export function slug_to_name(slug) {
 }
 
 export function delete_sub(stream_id) {
-    const sub = sub_store.get(stream_id);
-    if (!sub) {
+    if (!stream_info.get(stream_id)) {
         blueslip.warn("Failed to archive stream " + stream_id);
         return;
     }
     sub_store.delete_sub(stream_id);
-    stream_info.delete(sub.name);
+    stream_info.delete(stream_id);
 }
 
 export function get_non_default_stream_names() {
@@ -762,7 +766,8 @@ export function create_sub_from_server_data(attrs) {
 
     clean_up_description(sub);
 
-    stream_info.set(sub.name, sub);
+    stream_info.set(sub.stream_id, sub);
+    stream_ids_by_name.set(sub.name, sub.stream_id);
     sub_store.add_hydrated_sub(sub.stream_id, sub);
 
     return sub;
