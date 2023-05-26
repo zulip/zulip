@@ -17402,10 +17402,18 @@ components:
           type: string
           nullable: true
           description: |
-            The URL of the user's avatar. Can be `null` only if client_gravatar was passed,
-            which means that the user has not uploaded an avatar in Zulip, and the
-            client should compute the gravatar URL by hashing the
-            user's Zulip API email address itself for this user.
+            The URL of the message sender's avatar. Can be `null` only if
+            the current user has access to the sender's real email address
+            and `client_gravatar` was `true`.
+
+            If `null`, then the sender has not uploaded an avatar in Zulip,
+            and the client can compute the gravatar URL by hashing the
+            sender's email address, which corresponds in this case to their
+            real email address.
+
+            **Changes**: Before Zulip 7.0 (feature level 163), access to a
+            user's real email address was a realm-level setting. As of this
+            feature level, `email_address_visibility` is a user setting.
         client:
           type: string
           description: |
@@ -17970,11 +17978,18 @@ components:
           type: string
           nullable: true
           description: |
-            URL for the user's avatar. Will be `null` if the `client_gravatar`
-            query parameter was set to `true` and the user's avatar is hosted by
-            the Gravatar provider (i.e. the user has never uploaded an avatar).
+            URL for the user's avatar.
 
-            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
+            Will be `null` if the `client_gravatar`
+            query parameter was set to `true`, the current user has access to
+            this user's real email address, and this user's avatar is hosted by
+            the Gravatar provider (i.e. this user has never uploaded an avatar).
+
+            **Changes**: Before Zulip 7.0 (feature level 163), access to a
+            user's real email address was a realm-level setting. As of this
+            feature level, `email_address_visibility` is a user setting.
+
+            In Zulip 3.0 (feature level 18), if the client has the
             `user_avatar_url_field_optional` capability, this will be missing at
             the server's sole discretion.
         avatar_version:
