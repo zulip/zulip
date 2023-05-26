@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import List, Optional
 
 import orjson
 from django.db import transaction
@@ -23,9 +23,16 @@ def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygrou
 
 @transaction.atomic(durable=True)
 def do_add_realm_playground(
-    realm: Realm, *, acting_user: Optional[UserProfile], **kwargs: Any
+    realm: Realm,
+    *,
+    acting_user: Optional[UserProfile],
+    name: str,
+    pygments_language: str,
+    url_prefix: str,
 ) -> int:
-    realm_playground = RealmPlayground(realm=realm, **kwargs)
+    realm_playground = RealmPlayground(
+        realm=realm, name=name, pygments_language=pygments_language, url_prefix=url_prefix
+    )
     # We expect full_clean to always pass since a thorough input validation
     # is performed in the view (using check_url, check_pygments_language, etc)
     # before calling this function.

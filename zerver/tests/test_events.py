@@ -2222,14 +2222,13 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["domain"], "zulip.org")
 
     def test_realm_playground_events(self) -> None:
-        playground_info = dict(
-            name="Python playground",
-            pygments_language="Python",
-            url_prefix="https://python.example.com",
-        )
         events = self.verify_action(
             lambda: do_add_realm_playground(
-                self.user_profile.realm, acting_user=None, **playground_info
+                self.user_profile.realm,
+                acting_user=None,
+                name="Python playground",
+                pygments_language="Python",
+                url_prefix="https://python.example.com",
             )
         )
         check_realm_playgrounds("events[0]", events[0])

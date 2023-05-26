@@ -94,12 +94,13 @@ class RealmPlaygroundTests(ZulipTestCase):
         iago = self.example_user("iago")
         realm = get_realm("zulip")
 
-        playground_info = dict(
+        playground_id = do_add_realm_playground(
+            realm,
+            acting_user=iago,
             name="Python playground",
             pygments_language="Python",
             url_prefix="https://python.example.com",
         )
-        playground_id = do_add_realm_playground(realm, acting_user=iago, **playground_info)
         self.assertTrue(RealmPlayground.objects.filter(name="Python playground").exists())
 
         result = self.api_delete(iago, f"/api/v1/realm/playgrounds/{playground_id + 1}")
