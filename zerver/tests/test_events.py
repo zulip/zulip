@@ -226,6 +226,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
     get_client,
+    get_realm,
     get_stream,
     get_user_by_delivery_email,
 )
@@ -1118,6 +1119,38 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["person"]["custom_profile_field"].keys(), {"id", "value"})
 
     def test_presence_events(self) -> None:
+        # First create new user presence with No last connection.
+        realm = get_realm("zulip")
+        new_user_profile = UserProfile.objects.create(
+            realm=realm, email="newuser@zulip.com", delivery_email="newuser@zulip.com", is_bot=False
+        )
+        UserPresence.objects.create(
+            user_profile=new_user_profile,
+            last_active_time=None,
+            last_connected_time=None,
+            realm_id=new_user_profile.realm_id,
+        )
+
+        # Test for new user
+        events = self.verify_action(
+            lambda: do_update_user_presence(
+                new_user_profile,
+                get_client("website"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
+            ),
+            slim_presence=False,
+        )
+
+        check_presence(
+            "events[0]",
+            events[0],
+            has_email=True,
+            presence_key="website",
+            status="active",
+        )
+
+        # Test for existing user
         events = self.verify_action(
             lambda: do_update_user_presence(
                 self.user_profile,
