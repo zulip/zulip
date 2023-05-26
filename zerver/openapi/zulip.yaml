@@ -446,7 +446,7 @@ paths:
                                         email:
                                           type: string
                                           description: |
-                                            The email of the user.
+                                            The Zulip API email of the user.
 
                                             **Deprecated**: This field will be removed in a future
                                             release as it is redundant with the `user_id`.
@@ -2474,7 +2474,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user ID and email of a recipient.
+                                      Object containing the user ID and Zulip API email of a recipient.
                                     properties:
                                       user_id:
                                         type: integer
@@ -5833,7 +5833,7 @@ paths:
           description: |
             For stream messages, either the name or integer ID of the stream. For
             direct messages, either a list containing integer user IDs or a list
-            containing string email addresses.
+            containing string Zulip API email addresses.
 
             **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
           content:
@@ -8552,7 +8552,7 @@ paths:
                       subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the email
+                          A dictionary where the key is the Zulip API email
                           address of the user/bot and the value is a
                           list of the names of the streams that were
                           subscribed to as a result of the query.
@@ -8566,7 +8566,7 @@ paths:
                       already_subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the email
+                          A dictionary where the key is the Zulip API email
                           address of the user/bot and the value is a
                           list of the names of the streams that the
                           user/bot is already subscribed to.
@@ -10591,7 +10591,7 @@ paths:
           in: query
           description: |
             Setting this to `true` will make presence dictionaries be keyed by
-            user_id instead of email.
+            user ID instead of Zulip API email.
 
             **Changes**: New in Zulip 3.0 (Unstable with no feature level yet).
           schema:
@@ -17405,7 +17405,7 @@ components:
             The URL of the user's avatar. Can be `null` only if client_gravatar was passed,
             which means that the user has not uploaded an avatar in Zulip, and the
             client should compute the gravatar URL by hashing the
-            user's email address itself for this user.
+            user's Zulip API email address itself for this user.
         client:
           type: string
           description: |
@@ -18266,9 +18266,9 @@ components:
             subscribed:
               type: object
               description: |
-                A dictionary where the key is the email address of the user/bot and the
-                value is a list of the names of the streams that were subscribed to as a
-                result of the query.
+                A dictionary where the key is the Zulip API email address of the user/bot
+                and the value is a list of the names of the streams that were subscribed
+                to as a result of the query.
               additionalProperties:
                 description: |
                   `{email_address}`: List of the names of the streams that were subscribed
@@ -18279,9 +18279,9 @@ components:
             already_subscribed:
               type: object
               description: |
-                A dictionary where the key is the email address of the user/bot and the
-                value is a list of the names of the streams that the user/bot is already
-                subscribed to.
+                A dictionary where the key is the Zulip API email address of the user/bot
+                and the value is a list of the names of the streams that the user/bot is
+                already subscribed to.
               additionalProperties:
                 description: |
                   `{email_address}`: List of the names of the streams that the user is
