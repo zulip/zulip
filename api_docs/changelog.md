@@ -568,7 +568,8 @@ No changes; feature level used for Zulip 5.0 release.
   /events`](/api/get-events): Improved the format of the
   `edit_history` object within message objects. Entries for stream
   edits now include a both a `prev_stream` and `stream` field to
-  indicate the previous and current stream IDs. Entries for topic
+  indicate the previous and current stream IDs. Prior to this feature
+  level, only the `prev_stream` field was present. Entries for topic
   edits now include both a `prev_topic` and `topic` field to indicate
   the previous and current topic, replacing the `prev_subject`
   field. These changes substantially simplify client complexity for
