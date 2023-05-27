@@ -58,7 +58,7 @@
                     <li tabindex="0" data-section="organization-profile">
                         <i class="icon fa fa-id-card" aria-hidden="true"></i>
                         <div class="text">{{t "Organization profile" }}</div>
-                        {{#unless is_admin}}
+                        {{#unless can_create_new_bots}}
                         <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
                         {{/unless}}
                     </li>
