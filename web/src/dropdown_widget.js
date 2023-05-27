@@ -15,6 +15,7 @@ const noop = () => {};
 export function setup(tippy_props, get_options, item_click_callback, dropdown_props = {}) {
     // Define all possible `dropdown_props` here so that they are easy to track.
     const on_show_callback = dropdown_props.on_show_callback || noop;
+    const on_hidden_callback = dropdown_props.on_hidden_callback || noop;
     const on_exit_with_escape_callback = dropdown_props.on_exit_with_escape_callback || noop;
     // Used to focus the `target` after dropdown is closed. This is important since the dropdown is
     // appended to `body` and hence `body` is focused when the dropdown is closed, which makes
@@ -163,10 +164,11 @@ export function setup(tippy_props, get_options, item_click_callback, dropdown_pr
 
             on_show_callback(instance);
         },
-        onHidden() {
+        onHidden(instance) {
             if (focus_target_on_hidden) {
                 $(tippy_props.target).trigger("focus");
             }
+            on_hidden_callback(instance);
         },
         ...tippy_props,
     });
