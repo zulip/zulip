@@ -7,7 +7,7 @@ import * as common from "./lib/common";
 type Playground = {
     playground_name: string;
     pygments_language: string;
-    url_prefix: string;
+    url_template: string;
 };
 
 async function _add_playground_and_return_status(page: Page, payload: Playground): Promise<string> {
@@ -35,7 +35,7 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
     const payload = {
         pygments_language: "Python",
         playground_name: "Python3 playground",
-        url_prefix: "https://python.example.com",
+        url_template: "https://python.example.com?code={code}",
     };
     const status = await _add_playground_and_return_status(page, payload);
     assert.strictEqual(status, "Custom playground added!");
@@ -52,8 +52,8 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
         "Python3 playground",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".playground_row span.playground_url_prefix"),
-        "https://python.example.com",
+        await common.get_text_from_selector(page, ".playground_row span.playground_url_template"),
+        "https://python.example.com?code={code}",
     );
 }
 
@@ -61,12 +61,12 @@ async function test_invalid_playground_parameters(page: Page): Promise<void> {
     const payload = {
         pygments_language: "Python",
         playground_name: "Python3 playground",
-        url_prefix: "not_a_url",
+        url_template: "not_a_url_template{",
     };
     let status = await _add_playground_and_return_status(page, payload);
-    assert.strictEqual(status, "Failed: url_prefix is not a URL");
+    assert.strictEqual(status, "Failed: Invalid URL template.");
 
-    payload.url_prefix = "https://python.example.com";
+    payload.url_template = "https://python.example.com?code={code}";
     payload.pygments_language = "py!@%&";
     status = await _add_playground_and_return_status(page, payload);
     assert.strictEqual(status, "Failed: Invalid characters in pygments language");

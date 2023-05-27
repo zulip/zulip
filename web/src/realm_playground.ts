@@ -23,7 +23,7 @@ export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
         const element_to_push: Omit<RealmPlayground, "pygments_language"> = {
             id: data.id,
             name: data.name,
-            url_prefix: data.url_prefix,
+            url_template: data.url_template,
         };
         if (map_language_to_playground_info.has(data.pygments_language)) {
             map_language_to_playground_info.get(data.pygments_language)!.push(element_to_push);

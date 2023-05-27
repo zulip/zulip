@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 196**
+
+* [`POST /realm/playgrounds`](/api/add-code-playground): `url_prefix` is
+  replaced by `url_template`, which only accepts [RFC 6570][rfc6570] compliant
+  URL templates. The old prefix format is no longer supported.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  `url_prefix` is replaced by `url_template` in `realm_playgrounds` events.
+
 **Feature level 195**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):

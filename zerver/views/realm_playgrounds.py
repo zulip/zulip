@@ -9,7 +9,7 @@ from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError, ValidationFailureError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_capped_string, check_url
+from zerver.lib.validator import check_capped_string
 from zerver.models import Realm, RealmPlayground, UserProfile
 
 
@@ -40,7 +40,7 @@ def add_realm_playground(
     request: HttpRequest,
     user_profile: UserProfile,
     name: str = REQ(),
-    url_prefix: str = REQ(str_validator=check_url),
+    url_template: str = REQ(),
     pygments_language: str = REQ(str_validator=check_pygments_language),
 ) -> HttpResponse:
     try:
@@ -49,7 +49,7 @@ def add_realm_playground(
             acting_user=user_profile,
             name=name.strip(),
             pygments_language=pygments_language.strip(),
-            url_prefix=url_prefix.strip(),
+            url_template=url_template.strip(),
         )
     except ValidationError as e:
         raise ValidationFailureError(e)

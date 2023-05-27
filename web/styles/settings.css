@@ -250,7 +250,7 @@ h3,
 #playground-settings {
     #playground_pygments_language,
     #playground_name,
-    #playground_url_prefix {
+    #playground_url_template {
         width: calc(100% - 10em - 6em);
     }
 }

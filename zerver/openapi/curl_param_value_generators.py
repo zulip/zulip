@@ -296,7 +296,7 @@ def add_realm_playground() -> Dict[str, object]:
     return {
         "name": "Python2 playground",
         "pygments_language": "Python2",
-        "url_prefix": "https://python2.example.com",
+        "url_template": "https://python2.example.com?code={code}",
     }
 
 
@@ -307,7 +307,7 @@ def remove_realm_playground() -> Dict[str, object]:
         acting_user=None,
         name="Python playground",
         pygments_language="Python",
-        url_prefix="https://python.example.com",
+        url_template="https://python.example.com?code={code}",
     )
     return {
         "playground_id": playground_id,

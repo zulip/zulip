@@ -518,7 +518,7 @@ exports.fixtures = {
                 id: 1,
                 name: "Lean playground",
                 pygments_language: "Lean",
-                url_prefix: "https://leanprover.github.io/live/latest/#code=",
+                url_template: "https://leanprover.github.io/live/latest/{#code}",
             },
         ],
     },

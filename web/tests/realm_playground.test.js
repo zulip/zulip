@@ -25,7 +25,7 @@ run_test("get_pygments_typeahead_list_for_composebox", () => {
             id: 2,
             name: "Custom Lang",
             pygments_language: custom_pygment_language,
-            url_prefix: "https://example.com/?q=",
+            url_template: "https://example.com/?q={code}",
         },
     ];
     realm_playground.initialize({
@@ -52,19 +52,19 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
             id: 1,
             name: "Custom Lang #1",
             pygments_language: custom_pygment_language,
-            url_prefix: "https://example.com/?q=",
+            url_template: "https://example.com/?q={code}",
         },
         {
             id: 2,
             name: "Custom Lang #2",
             pygments_language: custom_pygment_language,
-            url_prefix: "https://example.com/?q=",
+            url_template: "https://example.com/?q={code}",
         },
         {
             id: 3,
             name: "Invent a Language",
             pygments_language: "invent_a_lang",
-            url_prefix: "https://example.com/?q=",
+            url_template: "https://example.com/?q={code}",
         },
     ];
     realm_playground.initialize({
