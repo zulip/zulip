@@ -31,7 +31,11 @@ def do_add_realm_playground(
     url_prefix: str,
 ) -> int:
     realm_playground = RealmPlayground(
-        realm=realm, name=name, pygments_language=pygments_language, url_prefix=url_prefix
+        realm=realm,
+        name=name,
+        pygments_language=pygments_language,
+        url_prefix=url_prefix,
+        url_template=url_prefix + "{code}",
     )
     # We expect full_clean to always pass since a thorough input validation
     # is performed in the view (using check_url, check_pygments_language, etc)
@@ -68,6 +72,7 @@ def do_remove_realm_playground(
         "name": realm_playground.name,
         "pygments_language": realm_playground.pygments_language,
         "url_prefix": realm_playground.url_prefix,
+        "url_template": realm_playground.url_template,
     }
 
     realm_playground.delete()

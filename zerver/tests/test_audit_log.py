@@ -900,6 +900,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "name": "Python playground",
             "pygments_language": "Python",
             "url_prefix": "https://python.example.com",
+            "url_template": "https://python.example.com{code}",
         }
         expected_extra_data = {
             "realm_playgrounds": initial_playgrounds,
