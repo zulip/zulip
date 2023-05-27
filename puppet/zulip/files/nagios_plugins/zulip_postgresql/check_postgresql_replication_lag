@@ -63,7 +63,7 @@ def run_sql_query(query: str) -> List[List[str]]:
             return []
         return [x.split("\0") for x in output.split("\n")]
     except subprocess.CalledProcessError as e:
-        report("CRITICAL", f"psql failed: {str(e)}: {e.output}")
+        report("CRITICAL", f"psql failed: {e}: {e.output}")
         sys.exit(MAXSTATE)
 
 
