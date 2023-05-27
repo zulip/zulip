@@ -202,32 +202,27 @@ export function update_compose_for_message_type(message_type, opts) {
 }
 
 export function on_compose_select_recipient_update() {
-    let message_type = "stream";
-    if (selected_recipient_id === DIRECT_MESSAGE_ID) {
-        message_type = "private";
-    }
-    compose_state.set_message_type(message_type);
-    if (message_type === "private") {
-        // TODO: In theory, we could do something more lightweight in
-        // the case it's already that value, but doing nothing would
-        // display the wrong and fail to update focus properly.
-        switch_message_type("private");
+    const prev_message_type = compose_state.get_message_type();
 
-        if (compose_state.private_message_recipient().length === 0) {
-            $("#private_message_recipient").trigger("focus").trigger("select");
-        }
-    } else {
+    let curr_message_type = "stream";
+    if (selected_recipient_id === DIRECT_MESSAGE_ID) {
+        curr_message_type = "private";
+    }
+
+    if (prev_message_type !== curr_message_type) {
+        switch_message_type(curr_message_type);
+    }
+
+    if (curr_message_type === "stream") {
+        // Update stream name in the recipient box.
         const $stream_header_colorblock = $(
             "#compose_recipient_selection_dropdown .stream_header_colorblock",
         );
         const stream_name = compose_state.stream_name();
+        update_recipient_label(stream_name);
         stream_bar.decorate(stream_name, $stream_header_colorblock);
-        switch_message_type("stream");
-        // Always move focus to the topic input even if it's not empty,
-        // since it's likely the user will want to update the topic
-        // after updating the stream.
-        ui_util.place_caret_at_end($("#stream_message_recipient_topic")[0]);
     }
+
     check_posting_policy_for_compose_box();
     update_on_recipient_change();
 }
@@ -319,6 +314,22 @@ function focus_compose_recipient() {
     $("#compose_recipient_selection_dropdown").trigger("focus");
 }
 
+// NOTE: Since tippy triggers this on `mousedown` it is always triggered before say a `click` on `textarea`.
+function on_hidden_callback() {
+    if (compose_state.get_message_type() === "stream") {
+        // Always move focus to the topic input even if it's not empty,
+        // since it's likely the user will want to update the topic
+        // after updating the stream.
+        ui_util.place_caret_at_end($("#stream_message_recipient_topic")[0]);
+    } else {
+        if (compose_state.private_message_recipient().length === 0) {
+            $("#private_message_recipient").trigger("focus").trigger("select");
+        } else {
+            $("#compose-textarea").trigger("focus");
+        }
+    }
+}
+
 export function initialize() {
     dropdown_widget.setup(
         {
@@ -331,6 +342,7 @@ export function initialize() {
             on_exit_with_escape_callback: focus_compose_recipient,
             // We want to focus on topic box if dropdown was closed via selecting an item.
             focus_target_on_hidden: false,
+            on_hidden_callback,
         },
     );
 
