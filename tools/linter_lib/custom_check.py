@@ -539,7 +539,7 @@ html_rules: List["Rule"] = [
         },
         "exclude": {
             "templates/analytics/support.html",
-            # We have URL prefix and Pygments language name as placeholders
+            # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",
         },
@@ -553,6 +553,8 @@ html_rules: List["Rule"] = [
         "description": "Likely missing quoting in HTML attribute",
         "good_lines": ['<a href="{{variable}}">'],
         "bad_lines": ["<a href={{variable}}>"],
+        # Exclude the use of URL templates from this check.
+        "exclude_pattern": "={code}",
     },
     {
         "pattern": " '}}",

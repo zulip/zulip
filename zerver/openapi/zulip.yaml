@@ -3305,7 +3305,7 @@ paths:
                                         "id": 1,
                                         "name": "Python playground",
                                         "pygments_language": "Python",
-                                        "url_prefix": "https://python.example.com",
+                                        "url_template": "https://python.example.com",
                                       },
                                     ],
                                   "id": 0,
@@ -10716,13 +10716,20 @@ paths:
             type: string
           example: Python
           required: true
-        - name: url_prefix
+        - name: url_template
           in: query
           description: |
-            The url prefix for the playground.
+            The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+            compliant URL template for the playground. The template should
+            contain exactly one variable named `code`, which determines how the
+            extracted code should be substituted in the playground URL.
+
+            **Changes**: New in Zulip 8.0 (feature level 196). This replaced the
+            `url_prefix` parameter, which was used to construct URLs by just
+            concatenating `url_prefix` and `code`.
           schema:
             type: string
-          example: https://python.example.com
+          example: https://python.example.com?code={code}
           required: true
       responses:
         "200":
@@ -17408,10 +17415,17 @@ components:
           description: |
             The name of the Pygments language lexer for that
             programming language.
-        url_prefix:
+        url_template:
           type: string
           description: |
-            The url prefix for the playground.
+            The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+            compliant URL template for the playground. The template contains
+            exactly one variable named `code`, which determines how the
+            extracted code should be substituted in the playground URL.
+
+            **Changes**: New in Zulip 8.0 (feature level 196). This replaced the
+            `url_prefix` parameter, which was used to construct URLs by just
+            concatenating url_prefix and code.
     RealmExport:
       type: object
       additionalProperties: false

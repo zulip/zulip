@@ -42,7 +42,7 @@ from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
+from django.core.validators import MinLengthValidator, RegexValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import CASCADE, Exists, F, OuterRef, Q, QuerySet, Sum
@@ -1365,8 +1365,7 @@ class RealmPlayground(models.Model):
     MAX_PYGMENTS_LANGUAGE_LENGTH = 40
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    url_prefix = models.TextField(validators=[URLValidator()])
-    url_template = models.TextField(validators=[url_template_validator], null=True)
+    url_template = models.TextField(validators=[url_template_validator])
 
     # User-visible display name used when configuring playgrounds in the settings page and
     # when displaying them in the playground links popover.
@@ -1399,22 +1398,17 @@ class RealmPlayground(models.Model):
         and stores all ValidationErrors from all stages to return as JSON.
         """
 
-        # Prior to the completion of this migration, we make url_template nullable,
-        # while ensuring that no code path will create a RealmPlayground without populating it.
-        assert self.url_template is not None
-
-        # Do not continue the check if the url template is invalid to begin with.
-        # The ValidationError for invalid template will only be raised by the validator
-        # set on the url_template field instead of here to avoid duplicates.
+        # Do not continue the check if the url template is invalid to begin
+        # with. The ValidationError for invalid template will only be raised by
+        # the validator set on the url_template field instead of here to avoid
+        # duplicates.
         if not uri_template.validate(self.url_template):
             return
 
         # Extract variables used in the URL template.
         template_variables = set(uri_template.URITemplate(self.url_template).variable_names)
 
-        if (
-            "code" not in template_variables
-        ):  # nocoverage: prior to the completion of the migration, it is impossible to generate a URL template without the "code" variable
+        if "code" not in template_variables:
             raise ValidationError(_('Missing the required variable "code" in the URL template'))
 
         # The URL template should only contain a single variable, which is "code".
@@ -1432,7 +1426,7 @@ def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
                 id=playground.id,
                 name=playground.name,
                 pygments_language=playground.pygments_language,
-                url_prefix=playground.url_prefix,
+                url_template=playground.url_template,
             )
         )
     return playgrounds

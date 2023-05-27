@@ -866,13 +866,13 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=user,
             name="Python playground",
             pygments_language="Python",
-            url_prefix="https://python.example.com",
+            url_template="https://python.example.com{code}",
         )
         added_playground = RealmPlaygroundDict(
             id=playground_id,
             name="Python playground",
             pygments_language="Python",
-            url_prefix="https://python.example.com",
+            url_template="https://python.example.com{code}",
         )
         expected_extra_data = {
             "realm_playgrounds": [*initial_playgrounds, added_playground],
@@ -899,7 +899,6 @@ class TestRealmAuditLog(ZulipTestCase):
         removed_playground = {
             "name": "Python playground",
             "pygments_language": "Python",
-            "url_prefix": "https://python.example.com",
             "url_template": "https://python.example.com{code}",
         }
         expected_extra_data = {

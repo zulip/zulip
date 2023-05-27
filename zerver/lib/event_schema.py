@@ -702,7 +702,7 @@ realm_domains_remove_event = event_dict_type(
 check_realm_domains_remove = make_checker(realm_domains_remove_event)
 
 realm_playground_type = DictType(
-    required_keys=[("id", int), ("name", str), ("pygments_language", str), ("url_prefix", str)]
+    required_keys=[("id", int), ("name", str), ("pygments_language", str), ("url_template", str)]
 )
 
 realm_playgrounds_event = event_dict_type(
