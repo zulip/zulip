@@ -38,7 +38,6 @@ target_fully_covered = [
     "analytics/views/*.py",
     # zerver/ and zerver/lib/ are important core files
     "zerver/*.py",
-    "zerver/actions/*.py",
     "zerver/lib/*.py",
     "zerver/lib/*/*.py",
     "zerver/lib/*/*/*.py",
@@ -75,7 +74,6 @@ not_yet_fully_covered = [
     "analytics/views/stats.py",
     "analytics/views/support.py",
     # Major lib files should have 100% coverage
-    "zerver/actions/presence.py",
     "zerver/lib/addressee.py",
     "zerver/lib/markdown/__init__.py",
     "zerver/lib/cache.py",
