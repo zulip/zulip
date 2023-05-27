@@ -40,8 +40,8 @@ const markdown_help_rows = [
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
     },
     {
-        markdown: "#**streamName**",
-        output_html: "<p><a>#streamName</a></p>",
+        markdown: "#**stream name**",
+        output_html: "<p><a>#stream name</a></p>",
         effect_html: "(links to a stream)",
     },
     {
