@@ -2,11 +2,11 @@ html {
     overflow-y: scroll;
     overflow-x: hidden;
     overscroll-behavior-y: none;
+    width: calc(100% - var(--disabled-scrollbar-width));
 }
 
 body,
 html {
-    width: 100%;
     height: 100%;
     touch-action: manipulation;
 }
@@ -21,6 +21,7 @@ html {
 }
 
 body {
+    width: 100%;
     font-size: 14px;
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
@@ -81,6 +82,13 @@ body {
     flex item.
     */
     --compose-recipient-box-min-height: 30.5px;
+
+    /*
+    Width to be reserved for document scrollbar when scrolling is disabled.
+    Using `scrollbar-gutter` would be more appropriate but doesn't has wide
+    support and doesn't work for `fixed` elements.
+    */
+    --disabled-scrollbar-width: 0px;
 
     /* Colors used across the app */
     --color-background-private-message-header: hsl(46deg 35% 93%);
@@ -381,7 +389,13 @@ p.n-margin {
     position: fixed;
     top: 0;
     z-index: 102;
-    width: 100%;
+}
+
+/* Adjust width of any fixed / absolute positioned elements that might be visible in
+   the background when a overlay / modal is open. */
+#navbar-fixed-container,
+#compose {
+    width: calc(100% - var(--disabled-scrollbar-width));
 }
 
 .header {
