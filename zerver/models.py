@@ -1366,6 +1366,7 @@ class RealmPlayground(models.Model):
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     url_prefix = models.TextField(validators=[URLValidator()])
+    url_template = models.TextField(validators=[url_template_validator], null=True)
 
     # User-visible display name used when configuring playgrounds in the settings page and
     # when displaying them in the playground links popover.
@@ -1389,6 +1390,38 @@ class RealmPlayground(models.Model):
 
     def __str__(self) -> str:
         return f"{self.realm.string_id}: {self.pygments_language} {self.name}"
+
+    def clean(self) -> None:
+        """Validate whether the URL template is valid for the playground,
+        ensuring that "code" is the sole variable present in it.
+
+        Django's `full_clean` calls `clean_fields` followed by `clean` method
+        and stores all ValidationErrors from all stages to return as JSON.
+        """
+
+        # Prior to the completion of this migration, we make url_template nullable,
+        # while ensuring that no code path will create a RealmPlayground without populating it.
+        assert self.url_template is not None
+
+        # Do not continue the check if the url template is invalid to begin with.
+        # The ValidationError for invalid template will only be raised by the validator
+        # set on the url_template field instead of here to avoid duplicates.
+        if not uri_template.validate(self.url_template):
+            return
+
+        # Extract variables used in the URL template.
+        template_variables = set(uri_template.URITemplate(self.url_template).variable_names)
+
+        if (
+            "code" not in template_variables
+        ):  # nocoverage: prior to the completion of the migration, it is impossible to generate a URL template without the "code" variable
+            raise ValidationError(_('Missing the required variable "code" in the URL template'))
+
+        # The URL template should only contain a single variable, which is "code".
+        if len(template_variables) != 1:
+            raise ValidationError(
+                _('"code" should be the only variable present in the URL template'),
+            )
 
 
 def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:

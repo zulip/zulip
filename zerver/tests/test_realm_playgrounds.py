@@ -65,6 +65,24 @@ class RealmPlaygroundTests(ZulipTestCase):
         resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(resp, "Invalid characters in pygments language")
 
+        payload = {
+            "name": "Template with an unexpected variable",
+            "pygments_language": "Python",
+            "url_prefix": "https://template.com?test={test}",
+        }
+        resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(
+            resp, '"code" should be the only variable present in the URL template'
+        )
+
+        payload = {
+            "name": "Invalid URL template",
+            "pygments_language": "Python",
+            "url_prefix": "https://template.com?test={test",
+        }
+        resp = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(resp, "Invalid URL template.")
+
     def test_create_already_existing_playground(self) -> None:
         iago = self.example_user("iago")
 
