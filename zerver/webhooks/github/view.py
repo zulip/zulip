@@ -636,11 +636,11 @@ def get_tag_name_from_ref(ref_string: str) -> str:
 
 
 def is_commit_push_event(payload: WildValue) -> bool:
-    return bool(re.match(r"^refs/heads/", payload["ref"].tame(check_string)))
+    return payload["ref"].tame(check_string).startswith("refs/heads/")
 
 
 def is_merge_queue_push_event(payload: WildValue) -> bool:
-    return bool(re.match(r"^refs/heads/gh-readonly-queue/", payload["ref"].tame(check_string)))
+    return payload["ref"].tame(check_string).startswith("refs/heads/gh-readonly-queue/")
 
 
 def get_subject_based_on_type(payload: WildValue, event: str) -> str:
