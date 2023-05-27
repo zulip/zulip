@@ -36,6 +36,10 @@ mock_esm("../src/stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
+set_global("document", {
+    to_$: () => $("document-stub"),
+});
+
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const popovers = zrequire("popovers");
