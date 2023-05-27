@@ -163,6 +163,17 @@ function switch_message_type(message_type) {
     compose_ui.set_focus(message_type, opts);
 }
 
+function update_recipient_label(stream_name) {
+    const stream = stream_data.get_sub_by_name(stream_name);
+    if (stream === undefined) {
+        $("#compose_select_recipient_name").text($t({defaultMessage: "Select a stream"}));
+    } else {
+        $("#compose_select_recipient_name").html(
+            render_inline_decorated_stream_name({stream, show_colored_icon: true}),
+        );
+    }
+}
+
 export function update_compose_for_message_type(message_type, opts) {
     if (message_type === "stream") {
         $("#compose-direct-recipient").hide();
@@ -170,14 +181,7 @@ export function update_compose_for_message_type(message_type, opts) {
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
-        const stream = stream_data.get_sub_by_name(opts.stream);
-        if (stream === undefined) {
-            $("#compose_select_recipient_name").text($t({defaultMessage: "Select a stream"}));
-        } else {
-            $("#compose_select_recipient_name").html(
-                render_inline_decorated_stream_name({stream, show_colored_icon: true}),
-            );
-        }
+        update_recipient_label(opts.stream);
     } else {
         $("#compose-direct-recipient").show();
         $("#stream_message_recipient_topic").hide();
