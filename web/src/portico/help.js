@@ -1,6 +1,9 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import SimpleBar from "simplebar";
+import tippy from "tippy.js";
 
+import copy_to_clipboard_svg from "../../templates/copy_to_clipboard_svg.hbs";
 import * as common from "../common";
 
 import * as google_analytics from "./google-analytics";
@@ -24,6 +27,37 @@ function registerCodeSection($codeSection) {
         if (e.key === "Enter") {
             e.target.click();
         }
+    });
+}
+
+// Display the copy-to-clipboard button inside the markdown.pre element
+// within the API and Help Center docs using clipboard.js
+function add_copy_to_clipboard_element($pre) {
+    const $copy_button = $("<button>").addClass("copy-codeblock");
+    $copy_button.html(copy_to_clipboard_svg());
+
+    $($pre).append($copy_button);
+
+    const clipboard = new ClipboardJS($copy_button[0], {
+        text(copy_element) {
+            return $(copy_element).siblings("code").text();
+        },
+    });
+
+    // Show a tippy tooltip when the code is copied
+    clipboard.on("success", () => {
+        const tooltip = tippy($copy_button[0], {
+            content: "Copied!",
+            trigger: "manual",
+            placement: "top",
+        });
+
+        tooltip.show();
+
+        // Show the tooltip for 1s
+        setTimeout(() => {
+            tooltip.hide();
+        }, 1000);
     });
 }
 
@@ -54,6 +88,11 @@ function render_code_sections() {
     $(".code-section").each(function () {
         activate_correct_tab($(this));
         registerCodeSection($(this));
+    });
+
+    // Add a copy-to-clipboard button for each pre element
+    $(".markdown pre").each(function () {
+        add_copy_to_clipboard_element($(this));
     });
 
     highlight_current_article();

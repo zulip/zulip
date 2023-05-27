@@ -382,6 +382,10 @@
     }
 
     & pre {
+        /* Relative positioning is used to place the copy-to-clipboard button
+           in the top-right corner. */
+        position: relative;
+
         & code {
             font-size: 14px;
             white-space: pre-wrap;
@@ -389,6 +393,23 @@
             color: inherit;
             background-color: transparent;
             border: 0;
+        }
+    }
+
+    .copy-codeblock {
+        /* Invisible default button */
+        background: none;
+        border: none;
+        padding: 0;
+        position: absolute;
+        /* Position the button in the top-right corner */
+        top: 10px;
+        right: 10px;
+        line-height: 3px;
+
+        &:focus {
+            outline-offset: -1px;
+            outline-color: hsl(176deg 46% 41%);
         }
     }
 
