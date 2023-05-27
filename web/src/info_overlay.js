@@ -46,13 +46,11 @@ const markdown_help_rows = [
     },
     {
         markdown: "@**Joe Smith**",
-        usage_html: "(autocompletes from @joe)",
         output_html: '<p><span class="user-mention">@Joe Smith</span></p>',
         effect_html: "(notifies Joe Smith)",
     },
     {
         markdown: "@_**Joe Smith**",
-        usage_html: "(autocompletes from @_joe)",
         output_html: '<p><span class="user-mention">Joe Smith</span></p>',
         effect_html: "(links to profile but doesn't notify Joe Smith)",
     },
@@ -66,7 +64,6 @@ const markdown_help_rows = [
 * Tea
   * Green tea
   * Black tea
-  * Oolong tea
 * Coffee`,
     },
     {
@@ -109,20 +106,6 @@ def zulip():
         output_html: `\
 <div class="codehilite"><pre><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span>
     <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
-    },
-    {
-        note_html: $t_html(
-            {
-                defaultMessage:
-                    "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.",
-            },
-            {
-                "z-link": (content_html) =>
-                    `<a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">${content_html.join(
-                        "",
-                    )}</a>`,
-            },
-        ),
     },
     {
         markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
