@@ -370,7 +370,7 @@ def build_customprofile_field(
             if field in slack_custom_fields:
                 field_name = field
             else:
-                field_name = f"Slack custom field {str(custom_profile_field_id + 1)}"
+                field_name = f"Slack custom field {custom_profile_field_id + 1}"
             customprofilefield = CustomProfileField(
                 id=custom_profile_field_id,
                 name=field_name,

@@ -1171,7 +1171,7 @@ Output:
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError(f"{str(type(items))} is of unexpected size!")
+            raise AssertionError(f"{type(items)} is of unexpected size!")
 
     @contextmanager
     def assert_database_query_count(
