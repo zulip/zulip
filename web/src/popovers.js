@@ -210,6 +210,7 @@ function show_user_info_popover_manage_menu(element, user) {
         placement: "bottom",
         html: true,
         trigger: "manual",
+        fixed: true,
     });
 
     $popover_elt.popover("show");
@@ -497,6 +498,7 @@ function show_user_group_info_popover(element, group, message) {
             content: render_user_group_info_popover_content(args),
             html: true,
             trigger: "manual",
+            fixed: true,
         });
         $elt.popover("show");
         $current_message_info_popover_elem = $elt;
@@ -715,6 +717,7 @@ export function toggle_playground_link_popover(element, playground_info) {
             content: render_playground_links_popover_content({playground_info}),
             html: true,
             trigger: "manual",
+            fixed: true,
         });
         $elt.popover("show");
         $current_playground_links_popover_elem = $elt;
