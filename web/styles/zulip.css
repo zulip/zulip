@@ -27,6 +27,14 @@ body {
     color: var(--color-text-default);
     background-color: var(--color-background);
     transition: background-color 200ms linear;
+
+    &.fluid_layout_width {
+        .header-main,
+        .app .app-main,
+        #compose-container {
+            max-width: 1400px;
+        }
+    }
 }
 
 :root {
