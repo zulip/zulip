@@ -1160,9 +1160,7 @@ export class MessageListView {
 
     set_message_offset(offset) {
         const $msg = this.selected_row();
-        message_viewport.scrollTop(
-            message_viewport.scrollTop() + $msg.get_offset_to_window().top - offset,
-        );
+        message_viewport.scrollTop($msg.offset().top - offset);
     }
 
     rerender_with_target_scrolltop(selected_row, target_offset) {
