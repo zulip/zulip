@@ -29,7 +29,10 @@ $alert-error-red: hsl(0deg 80% 40%);
 
 /* alert box component changes */
 .alert-box {
-    position: absolute;
+    /* Ensure alert box remains in viewport,
+      regardless of scroll position in message
+      list. */
+    position: fixed;
     top: 0;
     left: 0;
     width: 900px;
