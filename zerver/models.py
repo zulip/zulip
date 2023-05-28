@@ -1724,6 +1724,7 @@ class UserBaseSettings(models.Model):
     modern_notification_settings: Dict[str, Any] = dict(
         # Add new notification settings here.
         enable_followed_topic_email_notifications=bool,
+        enable_followed_topic_push_notifications=bool,
     )
 
     notification_setting_types = {
@@ -4284,6 +4285,7 @@ class NotificationTriggers:
     WILDCARD_MENTION = "wildcard_mentioned"
     STREAM_PUSH = "stream_push_notify"
     STREAM_EMAIL = "stream_email_notify"
+    FOLLOWED_TOPIC_PUSH = "followed_topic_push_notify"
     FOLLOWED_TOPIC_EMAIL = "followed_topic_email_notify"
 
 

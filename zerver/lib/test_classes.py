@@ -1730,6 +1730,7 @@ Output:
             stream_email_notify=kwargs.get("stream_email_notify", False),
             stream_push_notify=kwargs.get("stream_push_notify", False),
             followed_topic_email_notify=kwargs.get("followed_topic_email_notify", False),
+            followed_topic_push_notify=kwargs.get("followed_topic_push_notify", False),
             sender_is_muted=kwargs.get("sender_is_muted", False),
             disable_external_notifications=kwargs.get("disable_external_notifications", False),
         )

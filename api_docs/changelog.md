@@ -24,8 +24,9 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
   [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
-  Added `enable_followed_topic_email_notifications` field to control
-  email notifications for messages sent to followed topics.
+  Added `enable_followed_topic_email_notifications` and `enable_followed_topic_push_notifications`
+  boolean fields to control email and push notifications, respectively, for messages
+  sent to followed topics.
 
 **Feature level 188**
 
