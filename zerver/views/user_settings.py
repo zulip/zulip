@@ -196,6 +196,9 @@ def json_change_settings(
     enable_followed_topic_email_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),
+    enable_followed_topic_push_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     notification_sound: Optional[str] = REQ(default=None),
     enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
