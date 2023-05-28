@@ -1178,7 +1178,7 @@ export class MessageListView {
         // window such that the newly selected message is at the
         // same location as it would have been before we
         // re-rendered.
-        if (target_offset !== undefined) {
+        if (target_offset !== undefined && message_lists.current === this) {
             if (this.selected_row().length === 0 && this.list.selected_id() > -1) {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
