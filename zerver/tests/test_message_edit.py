@@ -1201,17 +1201,17 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_success(id_, "E", "iago")
         do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
-            id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
+            id_, "G", "The time limit for editing this message's topic has passed.", "cordelia"
         )
         do_edit_message_assert_error(
-            id_, "G", "The time limit for editing this message's topic has passed", "hamlet"
+            id_, "G", "The time limit for editing this message's topic has passed.", "hamlet"
         )
 
         # topic edit permissions apply on "no topic" messages as well
         message.set_topic_name("(no topic)")
         message.save()
         do_edit_message_assert_error(
-            id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
+            id_, "G", "The time limit for editing this message's topic has passed.", "cordelia"
         )
 
         # set the topic edit limit to two weeks
