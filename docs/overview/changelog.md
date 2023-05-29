@@ -37,12 +37,15 @@ log][commit-log] for an up-to-date list of all changes.
   email address should be shared with other users in the organization;
   previously this was solely controlled by organization
   administrators. This is presented to the user during account
-  creation.
+  creation, including for users imported from other chat products.
+- Added support for the upcoming Debian 12 release.
 
 #### Full feature changelog
 
 - Added full support for using JWT authentication to integrate Zulip
   with another application.
+- Added support for SAML Single-Logout initiated by the Zulip server
+  (SP-initiated Single Logout).
 - Added new stream setting controlling which users can remove other
   subscribers from the stream.
 - Added new setting to control when messages are marked as read when
@@ -63,6 +66,8 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved left sidebar to show more topics within the current stream,
   and more private message converations, especially when many are
   unread.
+- Reworked the internals of the main message feed scrollbar, fixing
+  several longstanding bugs.
 - Improved many interaction details in the settings subsystem,
   including how files are uploaded, hover behaviors, etc.
 - Improved the logged out experience to suggest logging in to see more
@@ -108,6 +113,8 @@ log][commit-log] for an up-to-date list of all changes.
   files that are no longer used in a message was not running in cron.
 - Fixed noticeable lag when marking messages as unread in the web app.
 - Fixed a bug that could cause duplicate mobile push notifications.
+- Fixed several error handling issues with the data export process.
+- Fixed several subtle issues affecting certain container runtimes.
 - Added support for configurable hooks to be run when upgrading the
   Zulip server.
 - Added support for using TLS to secure the RabbitMQ connection.
@@ -152,6 +159,14 @@ log][commit-log] for an up-to-date list of all changes.
 - PostgreSQL 11 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
   before upgrading Zulip.
+- Installations that deploy Zulip behind a [reverse
+  proxy][reverse-proxy-docs] should make sure the proxy is configured
+  to set the `X-Forwarded-Proto` HTTP header; the documentation has
+  updated example configuration.
+- Zulip's Twitter preview integration has been disabled due to Twitter
+  desupporting the API that it relied on.
+
+[reverse-proxy-docs]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
 
 ## Zulip 6.x series
 
