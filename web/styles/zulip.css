@@ -105,6 +105,15 @@ body {
     */
     --disabled-scrollbar-width: 0px;
 
+    /*
+    Right offset of simplebar scrollbar for `.column-right` when browser has
+    overlay scrollbars which don't occupy any space. Currently only
+    known to present on Mac (all browsers) and Firefox (all OS?). This seems
+    more than enough to differentiate right sidebar scrollbar and browser
+    scrollbar even if the browser scrollbar is wider.
+    */
+    --browser-overlay-scrollbar-width: 10px;
+
     /* Colors used across the app */
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
@@ -551,6 +560,14 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
+}
+
+body.has-overlay-scrollbar {
+    /* Move simplebar scrollbar to the left so that
+       browser scrollbar doesn't overlap with it. */
+    .column-right .simplebar-track.simplebar-vertical {
+        right: var(--browser-overlay-scrollbar-width);
+    }
 }
 
 .column-right {
@@ -2852,6 +2869,10 @@ select.invite-as {
             float: none;
             right: 15px;
             top: 0;
+
+            .simplebar-track.simplebar-vertical {
+                right: 0;
+            }
 
             .right-sidebar {
                 box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
