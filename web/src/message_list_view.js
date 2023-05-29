@@ -1155,7 +1155,7 @@ export class MessageListView {
             this.clear_rendering_state(true);
             this.update_render_window(this.list.selected_idx(), false);
         }
-        return this.rerender_with_target_scrolltop($selected_row, old_offset);
+        return this.rerender_with_target_scrolltop(old_offset);
     }
 
     set_message_offset(offset) {
@@ -1163,7 +1163,7 @@ export class MessageListView {
         message_viewport.scrollTop($msg.offset().top - offset);
     }
 
-    rerender_with_target_scrolltop(selected_row, target_offset) {
+    rerender_with_target_scrolltop(target_offset) {
         // target_offset is the target number of pixels between the top of the
         // viewable window and the selected message
         this.clear_table();
