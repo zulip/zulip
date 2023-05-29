@@ -385,9 +385,8 @@ export function close_active_modal(): void {
 }
 
 export function close_for_hash_change(): void {
-    $("div.overlay.show").removeClass("show");
-    if (active_overlay) {
-        active_overlay.close_handler();
+    if (open_overlay_name) {
+        close_overlay(open_overlay_name);
     }
 }
 
