@@ -29,11 +29,18 @@ body {
     background-color: var(--color-background);
     transition: background-color 200ms linear;
 
+    /* Implementation for fluid layout width setting. */
+    .header-main,
+    .app .app-main,
+    #compose-container {
+        max-width: 1400px;
+    }
+
     &.fluid_layout_width {
         .header-main,
         .app .app-main,
         #compose-container {
-            max-width: 1400px;
+            max-width: inherit;
         }
     }
 }
@@ -540,10 +547,6 @@ p.n-margin {
 .app-main,
 .header-main {
     width: 100%;
-    /* `max-width` is changed based on `fluid_layout_width` setting in
-       `scroll_bar.js`. User may or may not see a flash of mispositioned content
-       based on how quickly the JS code is executed. */
-    max-width: 1400px;
     min-width: 950px;
     margin: 0 auto;
     padding: 0;
