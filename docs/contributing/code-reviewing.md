@@ -1,8 +1,8 @@
 # Reviewing Zulip code
 
 Code review is a key part of how Zulip does development. It's an essential
-aspect of our process to build a high-quality product with a maintainable code
-base. See the [pull request review process](../contributing/review-process.md)
+aspect of our process to build a high-quality product with a maintainable
+codebase. See the [pull request review process](../contributing/review-process.md)
 guide for a detailed overview of Zulip's PR review process.
 
 ## Principles of code review

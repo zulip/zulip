@@ -94,7 +94,7 @@ Commit messages have two parts:
 
 In Zulip, commit summaries have a two-part structure:
 
-1. A one or two word description of the part of the code base changed
+1. A one or two word description of the part of the codebase changed
    by the commit.
 2. A short sentence summarizing your changes.
 
@@ -148,7 +148,7 @@ scan commit messages to find what they need.
 Additional tips:
 
 - Use lowercase (e.g., "settings", not "Settings").
-- If it's hard to find a 1-2 word description of the part of the code base
+- If it's hard to find a 1-2 word description of the part of the codebase
   affected by your commit, consider again whether you have structured your
   commits well.
 - Never use a generic term like "bug", "fix", or "refactor".
@@ -167,7 +167,7 @@ a few rules to keep in mind:
   update tests/docs," would be better written as just, "Change X," since (as
   discussed above) _every_ commit is expected to update tests and documentation
   as needed.
-- Make it readable to someone who is familiar with Zulip's code base, but hasn't
+- Make it readable to someone who is familiar with Zulip's codebase, but hasn't
   been involved with the effort you're working on.
 - Use no more than 72 characters for the entire commit summary (parts 1 and 2).
 

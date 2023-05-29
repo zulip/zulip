@@ -2,7 +2,7 @@
 
 Pull requests submitted to Zulip go through a rigorous review process, which is
 designed to ensure that we are building a high-quality product with a
-maintainable code base. This page describes the stages of review your pull
+maintainable codebase. This page describes the stages of review your pull
 request may go through, and offers guidance on how you can help keep your pull
 request moving along.
 
