@@ -18,7 +18,7 @@ USER_GROUP_MENTIONS_RE = re.compile(
     rf"{BEFORE_MENTION_ALLOWED_REGEX}@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)"
 )
 
-wildcards = ["all", "everyone", "stream"]
+wildcards = frozenset(["all", "everyone", "stream"])
 
 
 @dataclass
