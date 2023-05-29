@@ -21,7 +21,7 @@
          * window. This makes the border span
          * fully to bottom in that case.
          */
-        min-height: 100vw;
+        min-height: 100vh;
 
         & td {
             vertical-align: middle;
