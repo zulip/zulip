@@ -94,9 +94,6 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
 
 def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     """Handle either an exception type event or a message type event payload."""
-    # We shouldn't support the officially deprecated Raven series of SDKs.
-    if int(event["version"]) < 7:
-        raise UnsupportedWebhookEventTypeError("Raven SDK")
 
     subject = event["title"]
     platform_name = event["platform"]
@@ -104,6 +101,10 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     if syntax_highlight_as == "":  # nocoverage
         logging.info("Unknown Sentry platform: %s", platform_name)
 
+    # We shouldn't support the officially deprecated Raven series of
+    # Python SDKs.
+    if platform_name == "python" and int(event["version"]) < 7:
+        raise UnsupportedWebhookEventTypeError("Raven SDK")
     context = {
         "title": subject,
         "level": event["level"],
