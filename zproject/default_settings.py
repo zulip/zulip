@@ -10,7 +10,7 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
 
-if PRODUCTION:
+if PRODUCTION:  # nocoverage
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
     from .dev_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR

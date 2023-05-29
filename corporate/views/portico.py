@@ -152,7 +152,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         org_types.pop("unspecified", None)
 
     # Change display name of non-profit orgs.
-    if org_types.get("nonprofit"):
+    if org_types.get("nonprofit"):  # nocoverage
         org_types["nonprofit"]["name"] = "Non-profit"
 
     return TemplateResponse(

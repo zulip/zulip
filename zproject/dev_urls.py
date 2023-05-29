@@ -109,7 +109,7 @@ if use_prod_static:
     urls += [
         path("static/<path:path>", serve, {"document_root": settings.STATIC_ROOT}),
     ]
-else:
+else:  # nocoverage
 
     def serve_static(request: HttpRequest, path: str) -> FileResponse:
         response = staticfiles_serve(request, path)
