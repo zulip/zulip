@@ -82,6 +82,35 @@ Traceback:
 ```"""
         self.check_webhook("event_for_exception_python", expected_topic, expected_message)
 
+    def test_event_for_exception_rails(self) -> None:
+        expected_topic = "ZeroDivisionError: divided by 0"
+        expected_message = """\
+**New exception:** [ZeroDivisionError: divided by 0](https://sentry.io/organizations/nitk-46/issues/4213933362/events/49b528e13e45497ab9adc3173fd2ed34/)
+```quote
+**level:** error
+**timestamp:** 2023-05-29 10:12:33
+**filename:** app/controllers/articles_controller.rb
+```
+
+Traceback:
+```ruby
+     class ArticlesController < ApplicationController
+
+       def index
+
+         begin
+
+--->       132312 / 0
+
+         rescue ZeroDivisionError => exception
+
+           Sentry.capture_exception(exception)
+
+         end
+
+```"""
+        self.check_webhook("event_for_exception_rails", expected_topic, expected_message)
+
     def test_webhook_event_for_exception_python(self) -> None:
         expected_topic = "ValueError: new sentry error."
         expected_message = """\
