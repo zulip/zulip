@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
@@ -166,6 +167,7 @@ export function handler() {
         condense.clear_message_content_height_cache();
     }
     resize_page_components();
+    compose_ui.autosize_textarea($("#compose-textarea"));
 
     // Re-compute and display/remove [More] links to messages
     condense.condense_and_collapse($(".message_table .message_row"));
