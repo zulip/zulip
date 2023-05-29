@@ -52,8 +52,6 @@ log][commit-log] for an up-to-date list of all changes.
 - Added additional confirmation dialogs for actions deserving caution,
   including marking all messages as read, removing the last user from a
   private stream, and disabling all notifications for direct messages.
-- Added support for deployment hooks to be run whenever the Zulip
-  server is upgraded.
 - Added support for Postgres 15, and removed support for Postgres 11.
 - Added new `z` keyboard shortcut to view a message in context.
 - Added new `=` keyboard shortcut to upvote an existing emoji reaction.
