@@ -11,7 +11,7 @@ from .default_settings import *  # noqa: F403 isort: skip
 # Import prod_settings after determining the deployment/machine type
 from .config import PRODUCTION
 
-if PRODUCTION:
+if PRODUCTION:  # nocoverage
     from .prod_settings import *  # noqa: F403 isort: skip
 else:
     # For the Dev VM environment, we use the same settings as the

@@ -5,7 +5,9 @@ from zerver.lib.camo import is_camo_url_valid
 from zerver.lib.thumbnail import generate_thumbnail_url
 
 
-def handle_camo_url(request: HttpRequest, digest: str, received_url: str) -> HttpResponse:
+def handle_camo_url(
+    request: HttpRequest, digest: str, received_url: str
+) -> HttpResponse:  # nocoverage
     original_url = bytes.fromhex(received_url).decode()
     if is_camo_url_valid(digest, original_url):
         return redirect(generate_thumbnail_url(original_url))
