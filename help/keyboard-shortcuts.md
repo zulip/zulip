@@ -100,20 +100,20 @@ in the Zulip app to add more to your repertoire as needed.
 
 ## Composing messages
 
-* **Reply to message**: <kbd>R</kbd> or <kbd>Enter</kbd> — Reply to the
-  selected message (outlined in blue). Same behavior as clicking on the
-  message.
-
-* **Reply to message, mentioning author**: <kbd>@</kbd>
-
-* **Reply only to author**: <kbd>Shift</kbd> + <kbd>R</kbd>
-
-* **Quote and reply to message**: <kbd>></kbd>
-
 * **New stream message**: <kbd>C</kbd> — For starting a new topic in a
   stream.
 
 * **New direct message**: <kbd>X</kbd>
+
+* **Reply to message**: <kbd>R</kbd> or <kbd>Enter</kbd> — Reply to the
+  selected message (outlined in blue). Same behavior as clicking on the
+  message.
+
+* **Quote and reply to message**: <kbd>></kbd>
+
+* **Reply directly to sender**: <kbd>Shift</kbd> + <kbd>R</kbd>
+
+* **Reply @-mentioning sender**: <kbd>@</kbd>
 
 ### In the compose box
 
