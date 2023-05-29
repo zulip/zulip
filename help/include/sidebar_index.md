@@ -88,6 +88,7 @@
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
 * [All messages](/help/all-messages)
+* [Inbox](/help/inbox)
 * [Message actions](/help/message-actions)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
