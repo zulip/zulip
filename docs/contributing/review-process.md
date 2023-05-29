@@ -77,9 +77,9 @@ review:
 In the Zulip server/web app repository
 ([`zulip/zulip`](https://github.com/zulip/zulip/)), we use GitHub labels to help
 everyone understand where a pull request is in the review process. These labels
-are noted below. Each label is removed by the reviewer for that stage when they
-have no more feedback on the PR and consider it ready for the next stage of
-review.
+are noted below, alongside their corresponding pull-request stage. Each label is
+removed by the reviewer for that stage when they have no more feedback on the PR
+and consider it ready for the next stage of review.
 
 Sometimes, a label may also be removed because significant changes by
 the contributor are required before the PR ready to be reviewed again. In that
