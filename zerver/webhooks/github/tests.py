@@ -25,7 +25,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("ping", TOPIC_REPO, expected_message)
 
     def test_star_event(self) -> None:
-        expected_message = "Codertocat starred the repository [Codertocat/Hello-World](https://github.com/Codertocat/Hello-World)."
+        expected_message = "[Codertocat](https://github.com/Codertocat) starred the repository [Codertocat/Hello-World](https://github.com/Codertocat/Hello-World)."
         expected_topic = "Hello-World"
         self.check_webhook("star", expected_topic, expected_message)
 
