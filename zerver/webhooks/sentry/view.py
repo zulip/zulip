@@ -77,6 +77,7 @@ syntax_highlight_as_map = {
     "javascript": "javascript",
     "node": "javascript",
     "python": "python3",
+    "ruby": "ruby",
 }
 
 
