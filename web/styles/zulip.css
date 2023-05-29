@@ -114,6 +114,10 @@ body {
     */
     --browser-overlay-scrollbar-width: 10px;
 
+    /* This is a rough estimate for height occupied by recent topics filters.
+       We expect `resize.js` to update this once UI is initialized. */
+    --recent-topics-filters-height: 50px;
+
     /* Colors used across the app */
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);

@@ -35,6 +35,7 @@ import {
     is_visible,
     set_visible,
 } from "./recent_topics_util";
+import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as search from "./search";
 import * as stream_data from "./stream_data";
@@ -901,8 +902,8 @@ export function show() {
     narrow.handle_middle_pane_transition();
     pm_list.handle_narrow_deactivated();
     search.clear_search_form();
-
     complete_rerender();
+    resize.update_recent_topics_filters_height();
 }
 
 function filter_buttons() {
