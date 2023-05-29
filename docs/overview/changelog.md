@@ -166,7 +166,7 @@ log][commit-log] for an up-to-date list of all changes.
 - Zulip's Twitter preview integration has been disabled due to Twitter
   desupporting the API that it relied on.
 
-[reverse-proxy-docs]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
+[reverse-proxy-docs]: ../production/deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
 
 ## Zulip 6.x series
 
