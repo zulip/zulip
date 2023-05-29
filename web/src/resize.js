@@ -12,12 +12,14 @@ import * as navigate from "./navigate";
 import * as popovers from "./popovers";
 import * as util from "./util";
 
+function get_bottom_whitespace_height() {
+    return message_viewport.height() * 0.4;
+}
+
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
     const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
-
-    res.bottom_whitespace_height = viewport_height * 0.4;
 
     res.stream_filters_max_height =
         viewport_height -
@@ -90,8 +92,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
 
     // Compute bottom_whitespace_height if not provided by caller.
     if (bottom_whitespace_height === undefined) {
-        const h = get_new_heights();
-        bottom_whitespace_height = h.bottom_whitespace_height;
+        bottom_whitespace_height = get_bottom_whitespace_height();
     }
 
     const compose_height = $("#compose").get(0).getBoundingClientRect().height;
@@ -116,9 +117,9 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
     );
 }
 
-export function resize_bottom_whitespace(h) {
-    $("#bottom_whitespace").height(h.bottom_whitespace_height);
-
+export function resize_bottom_whitespace() {
+    const bottom_whitespace_height = get_bottom_whitespace_height();
+    $("#bottom_whitespace").height(bottom_whitespace_height);
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
@@ -126,13 +127,13 @@ export function resize_bottom_whitespace(h) {
     // height correctly while compose is hidden. This is OK, because
     // we also resize compose every time it is opened.
     if (compose_state.composing()) {
-        reset_compose_message_max_height(h.bottom_whitespace_height);
+        reset_compose_message_max_height(bottom_whitespace_height);
     }
 }
 
 export function resize_stream_filters_container() {
     const h = get_new_heights();
-    resize_bottom_whitespace(h);
+    resize_bottom_whitespace();
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
