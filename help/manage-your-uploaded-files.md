@@ -13,8 +13,9 @@ uploaded.
 
 !!! tip ""
 
-    You can also view a file in the context of the conversations where it
-    was mentioned by clicking on a message ID in the **Mentioned in** column.
+    You can also view a file in the context of the
+    [conversations](/help/recent-conversations) where it was
+    mentioned by clicking on a message ID in the **Mentioned in** column.
 
 {end_tabs}
 

@@ -1,8 +1,9 @@
 # Inbox
 
 The **Inbox** is the default view in the Zulip mobile app. It's a great way to
-get an overview of all the unmuted conversations where you have unread messages,
-excluding [inactive streams](/help/manage-inactive-streams).
+get an overview of all the unmuted [conversations](/help/recent-conversations)
+where you have unread messages, excluding [inactive
+streams](/help/manage-inactive-streams).
 
 The **Inbox** view shows your unread direct message conversations, followed by
 all topics with unread messages, grouped by stream. The list of streams is
