@@ -1868,6 +1868,13 @@ $option_title_width: 180px;
     #change_email_modal {
         width: 300px;
     }
+
+    #user_column_header,
+    .user_name_column {
+        position: sticky;
+        z-index: 2;
+        left: 0;
+    }
 }
 
 @media (width < $mm_min) {
