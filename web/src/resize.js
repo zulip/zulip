@@ -178,7 +178,7 @@ export function handler() {
     update_recent_topics_filters_height();
 
     // Re-compute and display/remove [More] links to messages
-    condense.condense_and_collapse($(".message_table .message_row"));
+    condense.condense_and_collapse(message_lists.all_current_message_rows());
 
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import {Filter} from "./filter";
 import * as message_list from "./message_list";
 import * as recent_topics_util from "./recent_topics_util";
@@ -16,6 +18,10 @@ export function all_rendered_message_lists() {
         rendered_message_lists.push(current);
     }
     return rendered_message_lists;
+}
+
+export function all_current_message_rows() {
+    return $(`#${current.table_name}.message_table .message_row`);
 }
 
 export function update_recipient_bar_background_color() {
