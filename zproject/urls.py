@@ -538,7 +538,7 @@ i18n_urls = [
     path("accounts/login/start/sso/", start_remote_user_sso, name="start-login-sso"),
     path("accounts/login/sso/", remote_user_sso, name="login-sso"),
     path("accounts/login/jwt/", remote_user_jwt),
-    path("accounts/login/jwt_from_headers/", remote_user_jwt_get),
+    path("accounts/login/jwt_get/", remote_user_jwt_get),
     path("accounts/login/social/<backend>", start_social_login, name="login-social"),
     path("accounts/login/social/<backend>/<extra_arg>", start_social_login, name="login-social"),
     path("accounts/register/social/<backend>", start_social_signup, name="signup-social"),
