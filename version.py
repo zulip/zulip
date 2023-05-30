@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "7.0-beta3"
+ZULIP_VERSION = "7.0-beta3+git"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(

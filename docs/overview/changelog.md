@@ -5,7 +5,7 @@ This page the release history for the Zulip server. See also the
 
 ## Zulip 7.x series
 
-### 7.0-beta3 -- 2023-05-29
+### 7.0 -- unreleased
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
