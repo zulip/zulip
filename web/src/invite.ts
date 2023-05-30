@@ -48,6 +48,7 @@ function get_common_invitation_data(): {
     stream_ids: string;
     invite_expires_in_minutes: string;
     invitee_emails: string;
+    include_realm_default_subscriptions: string;
 } {
     const invite_as = Number.parseInt(
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
@@ -64,10 +65,13 @@ function get_common_invitation_data(): {
         expires_in = Number.parseFloat(raw_expires_in);
     }
 
-    let stream_ids: number[] = [];
-    const default_stream_ids = stream_data.get_default_stream_ids();
-    if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
-        stream_ids = default_stream_ids;
+    const stream_ids: number[] = [];
+    let include_realm_default_subscriptions = false;
+    if (
+        $("#invite_select_default_streams").prop("checked") ||
+        !settings_data.user_can_subscribe_other_users()
+    ) {
+        include_realm_default_subscriptions = true;
     } else {
         $<HTMLInputElement>("#invite-stream-checkboxes input:checked").each(function () {
             const stream_id = Number.parseInt($(this).val()!, 10);
@@ -85,6 +89,7 @@ function get_common_invitation_data(): {
             .items()
             .map((pill) => email_pill.get_email_from_item(pill))
             .join(","),
+        include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
     const current_email = email_pill.get_current_email(pills);
     if (current_email) {
