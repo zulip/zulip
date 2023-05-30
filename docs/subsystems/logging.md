@@ -66,7 +66,7 @@ hook][sentry-deploy-hook].
 
 [sentry-project]: https://docs.sentry.io/product/projects/
 [sentry-dsn]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
-[sentry-relase-hook]: ../production/deployment.md#sentry-deploy-hook
+[sentry-deploy-hook]: ../production/deployment.md#sentry-deploy-hook
 
 ### Backend logging
 
