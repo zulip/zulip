@@ -162,8 +162,8 @@ function get_message_height(elem, message_id) {
         return _message_content_height_cache.get(message_id);
     }
 
-    // shown to be ~2.5x faster than Node.getBoundingClientRect().
-    const height = elem.offsetHeight;
+    const height = $(elem).find(".message_content")[0].scrollHeight;
+
     if (!recent_topics_util.is_visible()) {
         _message_content_height_cache.set(message_id, height);
     }
