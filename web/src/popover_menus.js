@@ -386,7 +386,12 @@ export function initialize() {
     // that could possibly obstruct user from using this popover.
     delegate("body", {
         ...default_popover_props,
-        target: ".compose_mobile_button",
+        // Attach the click event to `.mobile_button_container`, since
+        // the button (`.compose_mobile_button`) already has a hover
+        // action attached, for showing the keyboard shortcut,
+        // and Tippy cannot handle events that trigger two different
+        // actions
+        target: ".mobile_button_container",
         placement: "top",
         onShow(instance) {
             popover_instances.compose_mobile_button = instance;
