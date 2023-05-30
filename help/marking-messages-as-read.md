@@ -23,7 +23,7 @@ are at your computer. You will still be able to
 
 1. Under **Advanced**, click on the **Automatically mark messages as
    read** dropdown, and select **Always**, **Never** or **Only in
-   conversation views**.
+   [conversation](/help/recent-conversations) views**.
 
 {tab|mobile}
 
@@ -33,7 +33,8 @@ are at your computer. You will still be able to
 
 1. Tap **Mark messages as read on scroll**.
 
-1. Select **Always**, **Never** or **Only in conversation views**.
+1. Select **Always**, **Never** or **Only in
+   [conversation](/help/recent-conversations) views**.
 
 {end_tabs}
 
