@@ -1269,7 +1269,13 @@ export function deactivate(person) {
 }
 
 export function report_late_add(user_id, email) {
-    if (reload_state.is_in_progress()) {
+    // If the events system is not running, then it is expected that
+    // we will fetch messages from the server that were sent by users
+    // who don't exist in our users data set. This can happen because
+    // we're in the middle of a reload (and thus stopped our event
+    // queue polling) or because we are a spectator and never had an
+    // event queue in the first place.
+    if (reload_state.is_in_progress() || page_params.is_spectator) {
         blueslip.log("Added user late", {user_id, email});
     } else {
         blueslip.error("Added user late", {user_id, email});

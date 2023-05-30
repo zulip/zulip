@@ -154,8 +154,8 @@ function get_events({dont_block = false} = {}) {
     }
 
     // TODO: In the future, we may implement Tornado support for live
-    // update for spectator, but until then, there's nothing
-    // to do here.
+    // update for spectators (#20315), but until then, there's nothing
+    // to do here. Update report_late_add if this changes.
     if (page_params.is_spectator) {
         return;
     }
