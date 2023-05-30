@@ -1,8 +1,9 @@
 # Link to a message or conversation
 
 Zulip makes it easy to share links to messages, topics, and streams. You can
-link from one Zulip conversation to another, or share links to Zulip conversations
-in issue trackers, emails, or other external tools.
+link from one Zulip [conversation](/help/recent-conversations) to another, or
+share links to Zulip conversations in issue trackers, emails, or other external
+tools.
 
 ## Link to a stream or topic within Zulip
 
