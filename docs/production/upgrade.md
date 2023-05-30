@@ -217,14 +217,38 @@ Zulip's upgrades have a hook system which allows for arbitrary
 user-configured actions to run before and after an upgrade.
 
 Files in the `/etc/zulip/pre-deploy.d` and `/etc/zulip/post-deploy.d`
-directories are inspected for files ending with `.hook`, just before
-and after the critical period when the server is restarted. Each file
-is called, sorted in alphabetical order, from the working directory of
-the new version, with arguments of the old and new Zulip versions. If
-they exit with non-0 exit code, the upgrade will abort.
+directories are inspected for files ending with `.hook`, just before and after
+the critical period when the server is restarted. Each file is called, sorted in
+alphabetical order, from the working directory of the new version, with
+environment variables as described below. If any of them exit with non-0 exit
+code, the upgrade will abort.
+
+The hook is run with the following environment variables set:
+
+- `ZULIP_OLD_VERSION`: The version being upgraded from, which may either be a
+  release name (e.g. `7.0` or `7.0-beta3`) or the output from `git describe`
+  (e.g. `7.0-beta3-2-gdc158b18f2`).
+- `ZULIP_NEW_VERSION`: The version being upgraded to, in the same format as
+  `ZULIP_OLD_VERSION`.
+
+If the upgrade is upgrading between [versions in `git`][upgrade-from-git], then
+the following environment variables will also be present:
+
+- `ZULIP_OLD_COMMIT`: The full commit hash of the version being upgraded from
+- `ZULIP_NEW_COMMIT`: The full commit hash of the version being upgraded to
+- `ZULIP_OLD_MERGE_BASE_COMMIT`: The full commit hash of the merge-base of the
+  version being upgraded from, and the public branch in
+  [`zulip/zulip`][zulip/zulip]. This will be the closest commit in standard
+  Zulip Server to the version being upgraded from.
+- `ZULIP_NEW_MERGE_BASE_COMMIT`: The full commit hash of the merge-base of the
+  version being upgraded to, and the public branch in
+  [`zulip/zulip`][zulip/zulip]. This will be the closest commit in standard
+  Zulip Server to the version being upgraded to.
 
 See the [deploy documentation](deployment.md#deployment-hooks) for
 hooks included with Zulip.
+
+[zulip/zulip]: https://github.com/zulip/zulip/
 
 ## Preserving local changes to service configuration files
 
