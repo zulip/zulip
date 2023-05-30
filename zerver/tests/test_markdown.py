@@ -46,6 +46,7 @@ from zerver.lib.mention import (
     FullNameInfo,
     MentionBackend,
     MentionData,
+    PossibleMentions,
     get_possible_mentions_info,
     possible_mentions,
     possible_user_group_mentions,
@@ -2027,7 +2028,10 @@ class MarkdownTest(ZulipTestCase):
 
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
-            self.assertEqual(possible_mentions(content), (names, has_wildcards))
+            self.assertEqual(
+                possible_mentions(content),
+                PossibleMentions(mention_texts=names, message_has_wildcards=has_wildcards),
+            )
 
         aaron = self.example_user("aaron")
 

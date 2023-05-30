@@ -49,6 +49,12 @@ class MentionText:
     is_wildcard: bool
 
 
+@dataclass
+class PossibleMentions:
+    mention_texts: Set[str]
+    message_has_wildcards: bool
+
+
 class MentionBackend:
     def __init__(self, realm_id: int) -> None:
         self.realm_id = realm_id
@@ -152,7 +158,7 @@ def extract_mention_text(m: Match[str]) -> MentionText:
     return MentionText(text=text, is_wildcard=False)
 
 
-def possible_mentions(content: str) -> Tuple[Set[str], bool]:
+def possible_mentions(content: str) -> PossibleMentions:
     # mention texts can either be names, or an extended name|id syntax.
     texts = set()
     message_has_wildcards = False
@@ -163,7 +169,7 @@ def possible_mentions(content: str) -> Tuple[Set[str], bool]:
             texts.add(text)
         if mention_text.is_wildcard:
             message_has_wildcards = True
-    return texts, message_has_wildcards
+    return PossibleMentions(mention_texts=texts, message_has_wildcards=message_has_wildcards)
 
 
 def possible_user_group_mentions(content: str) -> Set[str]:
@@ -202,12 +208,12 @@ class MentionData:
     def __init__(self, mention_backend: MentionBackend, content: str) -> None:
         self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
-        mention_texts, has_wildcards = possible_mentions(content)
-        possible_mentions_info = get_possible_mentions_info(mention_backend, mention_texts)
+        mentions = possible_mentions(content)
+        possible_mentions_info = get_possible_mentions_info(mention_backend, mentions.mention_texts)
         self.full_name_info = {row.full_name.lower(): row for row in possible_mentions_info}
         self.user_id_info = {row.id: row for row in possible_mentions_info}
         self.init_user_group_data(realm_id=realm_id, content=content)
-        self.has_wildcards = has_wildcards
+        self.has_wildcards = mentions.message_has_wildcards
 
     def message_has_wildcards(self) -> bool:
         return self.has_wildcards
