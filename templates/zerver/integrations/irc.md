@@ -36,7 +36,8 @@ Mirror an IRC channel in Zulip!
 1. [Subscribe the bot](/help/add-or-remove-users-from-a-stream) to the Zulip
    stream that will contain the mirror.
 
-1. Inside the virtualenv you created above, run:
+1. Inside the virtualenv you created above, run the following command 
+   (key can be obtained from zuliprc you downloaded in a previous step)
 
     ```
     python irc-mirror.py --irc-server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> \
