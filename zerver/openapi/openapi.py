@@ -347,10 +347,6 @@ def find_openapi_endpoint(path: str) -> Optional[str]:
     return None
 
 
-def get_event_type(event: Dict[str, Any]) -> str:
-    return event["type"] + ":" + event.get("op", "")
-
-
 def fix_events(content: Dict[str, Any]) -> None:
     """Remove undocumented events from events array. This is a makeshift
     function so that further documentation of `/events` can happen with
