@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Union
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import CASCADE
+from django.db.models import CASCADE, Q
 
 from zerver.models import Realm, UserProfile
 from zilencer.models import RemoteZulipServer
@@ -28,22 +28,16 @@ class Customer(models.Model):
     # they purchased.
     exempt_from_license_number_check = models.BooleanField(default=False)
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=Q(realm__isnull=False) ^ Q(remote_server__isnull=False),
+                name="cloud_xor_self_hosted",
+            )
+        ]
+
     def __str__(self) -> str:
         return f"{self.realm!r} {self.stripe_customer_id}"
-
-    @property
-    def is_self_hosted(self) -> bool:
-        is_self_hosted = self.remote_server is not None
-        if is_self_hosted:
-            assert self.realm is None
-        return is_self_hosted
-
-    @property
-    def is_cloud(self) -> bool:
-        is_cloud = self.realm is not None
-        if is_cloud:
-            assert self.remote_server is None
-        return is_cloud
 
 
 def get_customer_by_realm(realm: Realm) -> Optional[Customer]:
