@@ -33,10 +33,10 @@ helps in a few ways:
   the email would go out.
 * Edits made by the sender soon after sending a message will be
   reflected in the email.
-* Multiple messages in the same Zulip conversation are combined into
-  a single email. (Different conversations will always be
-  in separate emails, so that you can
-  [respond directly from your email][reply-from-email]).
+* Multiple messages in the same Zulip [conversation](/help/recent-conversations)
+  are combined into a single email. (Different conversations will always be in
+  separate emails, so that you can [respond directly from your
+  email][reply-from-email]).
 
 [reply-from-email]: /help/using-zulip-via-email
 
