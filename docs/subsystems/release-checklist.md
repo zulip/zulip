@@ -114,3 +114,11 @@ preparing a new release.
     release with a `+git` suffix, e.g. `3.2+git`.
   - On main, update `LATEST_RELEASE_VERSION` with the released
     version, as well as the changelog changes from the release branch.
+- _Prereleases only (e.g. 7.0-beta3):_
+  - Atop the prerelease commit (e.g. `7.0-beta3`), make a commit
+    updating `ZULIP_VERSION` to the prerelease version with a `+git`
+    suffix, e.g. `7.0-beta3+git`. Push this to `main`. (If `main` has
+    already diverged from the prerelease, a merge commit will be
+    needed here.)
+  - Delete the prerelease branch (e.g. `7.0-beta3-branch`); it's now
+    an ancestor of `main` and thus unnecessary.
