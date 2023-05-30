@@ -88,6 +88,7 @@ const apps_events = function () {
         const $download_android_apk = $("#download-android-apk");
         const $download_from_google_play_store = $(".download-from-google-play-store");
         const $download_from_apple_app_store = $(".download-from-apple-app-store");
+        const $download_from_microsoft_store = $("#download-from-microsoft-store");
         const $download_mac_arm64 = $("#download-mac-arm64");
         const $desktop_download_link = $(".desktop-download-link");
         const version_info = info[version];
@@ -110,6 +111,7 @@ const apps_events = function () {
         $download_android_apk.toggle(version === "android");
         $download_from_google_play_store.toggle(version === "android");
         $download_from_apple_app_store.toggle(version === "ios");
+        $download_from_microsoft_store.toggle(version === "windows");
         $download_mac_arm64.toggle(version === "mac");
     };
 
