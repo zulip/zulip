@@ -111,6 +111,17 @@ Traceback:
 ```"""
         self.check_webhook("event_for_exception_rails", expected_topic, expected_message)
 
+    def test_event_for_exception_vue(self) -> None:
+        expected_topic = "TypeError: Cannot read properties of null (reading 'inser..."
+        expected_message = """\
+**New exception:** [TypeError: Cannot read properties of null (reading 'insertBefore')](https://sentry.io/organizations/nitk-46/issues/4214010673/events/292f78454e774e62999506f759ad791d/)
+```quote
+**level:** error
+**timestamp:** 2023-05-29 11:08:30
+**filename:** /node_modules/.vite/deps/chunk-G4DFXOZZ.js
+```"""
+        self.check_webhook("event_for_exception_vue", expected_topic, expected_message)
+
     def test_webhook_event_for_exception_python(self) -> None:
         expected_topic = "ValueError: new sentry error."
         expected_message = """\
