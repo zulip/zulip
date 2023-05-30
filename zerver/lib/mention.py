@@ -43,6 +43,12 @@ class UserFilter:
             raise AssertionError("totally empty filter makes no sense")
 
 
+@dataclass
+class MentionText:
+    text: Optional[str]
+    is_wildcard: bool
+
+
 class MentionBackend:
     def __init__(self, realm_id: int) -> None:
         self.realm_id = realm_id
@@ -139,11 +145,11 @@ def user_mention_matches_wildcard(mention: str) -> bool:
     return mention in wildcards
 
 
-def extract_mention_text(m: Match[str]) -> Tuple[Optional[str], bool]:
+def extract_mention_text(m: Match[str]) -> MentionText:
     text = m.group("match")
     if text in wildcards:
-        return None, True
-    return text, False
+        return MentionText(text=None, is_wildcard=True)
+    return MentionText(text=text, is_wildcard=False)
 
 
 def possible_mentions(content: str) -> Tuple[Set[str], bool]:
@@ -151,10 +157,11 @@ def possible_mentions(content: str) -> Tuple[Set[str], bool]:
     texts = set()
     message_has_wildcards = False
     for m in MENTIONS_RE.finditer(content):
-        text, is_wildcard = extract_mention_text(m)
+        mention_text = extract_mention_text(m)
+        text = mention_text.text
         if text:
             texts.add(text)
-        if is_wildcard:
+        if mention_text.is_wildcard:
             message_has_wildcards = True
     return texts, message_has_wildcards
 
