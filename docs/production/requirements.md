@@ -120,7 +120,6 @@ access to incoming port 22 for SSH access for remote access.
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 [smokescreen-proxy]: deployment.md#customizing-the-outgoing-http-proxy
 [reverse-proxy]: deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
-[email-mirror-code]: https://github.com/zulip/zulip/blob/main/zerver/management/commands/email_mirror.py
 
 ## Credentials needed
 
@@ -153,8 +152,6 @@ certificate documentation](ssl-certificates.md).
 
 Once you have met these requirements, see [full instructions for installing
 Zulip in production](install.md).
-
-[trusty-eol]: https://wiki.ubuntu.com/Releases
 
 ## Scalability
 
