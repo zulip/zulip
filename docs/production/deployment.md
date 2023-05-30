@@ -893,6 +893,12 @@ may wish to increase this if you are taking backups on a replica, so can afford
 to affect other disk I/O, and have an SSD which is good at parallel random
 reads.
 
+#### `missing_dictionaries`
+
+If set to a true value during initial database creation, uses PostgreSQL's
+standard `pg_catalog.english` text search configuration, rather than Zulip's
+improved set of stopwords. Has no effect after initial database construction.
+
 #### `ssl_ca_file`
 
 Set to the path to the PEM-encoded certificate authority used to
