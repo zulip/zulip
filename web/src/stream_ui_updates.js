@@ -70,6 +70,10 @@ export function enable_or_disable_subscribers_tab(sub) {
 }
 
 export function update_settings_button_for_sub(sub) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
     if (sub.subscribed) {
