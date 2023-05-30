@@ -93,7 +93,27 @@ user-configured actions to run before and after an upgrade; see the
 [upgrading documentation](upgrade.md#deployment-hooks) for details on
 how to write your own.
 
-Zulip also provides and optional deploy hook for Sentry.
+### Zulip message deploy hook
+
+Zulip can use its deploy hooks to send a message immediately before and after
+conducting an upgrade. To configure this:
+
+1. Add `, zulip::hooks::zulip_notify` to the `puppet_classes` line in
+   `/etc/zulip/zulip.conf`
+1. Add a `[zulip_notify]` section to `/etc/zulip/zulip.conf`:
+   ```ini
+   [zulip_notify]
+   bot_email = your-bot@zulip.example.com
+   server = zulip.example.com
+   stream = deployments
+   ```
+1. Add the [api key][https://zulip.com/api/api-keys#get-a-bots-api-key] for the
+   bot user in `/etc/zulip/zulip-secrets.conf` as `zulip_release_api_key`:
+   ```ini
+   # Replace with your own bot's token, found in the Zulip UI
+   zulip_release_api_key = abcd1234E6DK0F7pNSqaMSuzd8C5i7Eu
+   ```
+1. As root, run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.
 
 ### Sentry deploy hook
 
