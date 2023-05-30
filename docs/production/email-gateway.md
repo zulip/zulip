@@ -122,7 +122,7 @@ Congratulations! The integration should be fully operational.
 1. Test your configuration by sending emails to the target email
    account and then running the Zulip tool to poll that inbox:
 
-   ```
+   ```bash
    su zulip -c '/home/zulip/deployments/current/manage.py email_mirror'
    ```
 
