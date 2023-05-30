@@ -377,8 +377,8 @@ td .button {
     }
 }
 
-.user_role {
-    min-width: 95px;
+.user_name_column {
+    min-width: 30%;
 }
 
 .button,
@@ -1595,10 +1595,6 @@ $option_title_width: 180px;
     }
 }
 
-#admin-user-list .last_active {
-    width: 100px;
-}
-
 .required-text {
     &:empty::after {
         content: attr(data-empty);
@@ -1844,6 +1840,10 @@ $option_title_width: 180px;
     #change_password_modal,
     #change_email_modal {
         width: 400px;
+    }
+
+    .user_name_column {
+        min-width: 40%;
     }
 }
 
