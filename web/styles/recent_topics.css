@@ -8,7 +8,6 @@
 
     #recent_topics_table {
         max-width: 100%;
-        padding-top: 12px;
         overflow: hidden !important;
         display: flex;
         flex-direction: column;
@@ -87,6 +86,7 @@
         }
 
         #recent_topics_filter_buttons {
+            padding-top: 12px;
             margin: 0 10px;
             display: flex;
             /* Search box has no height without this in safari. */
