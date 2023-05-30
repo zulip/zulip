@@ -248,6 +248,7 @@ the following environment variables will also be present:
 See the [deploy documentation](deployment.md#deployment-hooks) for
 hooks included with Zulip.
 
+[upgrade-from-git]: #upgrading-from-a-git-repository
 [zulip/zulip]: https://github.com/zulip/zulip/
 
 ## Preserving local changes to service configuration files

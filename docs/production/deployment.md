@@ -66,7 +66,7 @@ as well as those mentioned in the
   on the first install.
 
 - `--postgresql-missing-dictionaries`: Set
-  `postgresql.missing_dictionaries` ([docs][doc-settings]) in the
+  `postgresql.missing_dictionaries` ([docs][missing-dicts]) in the
   Zulip settings, which omits some configuration needed for full-text
   indexing. This should be used with [cloud managed databases like
   RDS](#using-zulip-with-amazon-rds-as-the-database). This option
@@ -78,6 +78,8 @@ as well as those mentioned in the
 
 - `--no-overwrite-settings`: This option preserves existing
   `/etc/zulip` configuration files.
+
+[missing-dicts]: #missing_dictionaries
 
 ## Installing on an existing server
 
@@ -107,7 +109,7 @@ conducting an upgrade. To configure this:
    server = zulip.example.com
    stream = deployments
    ```
-1. Add the [api key][https://zulip.com/api/api-keys#get-a-bots-api-key] for the
+1. Add the [api key](https://zulip.com/api/api-keys#get-a-bots-api-key) for the
    bot user in `/etc/zulip/zulip-secrets.conf` as `zulip_release_api_key`:
    ```ini
    # Replace with your own bot's token, found in the Zulip UI
@@ -793,7 +795,7 @@ different requests will be served by different versions of the code.
 #### `service_file_descriptor_limit`
 
 The number of file descriptors which [Supervisor is configured to allow
-processes to use][supervisor-minds]; defaults to 40000. If your Zulip deployment
+processes to use][supervisor-minfds]; defaults to 40000. If your Zulip deployment
 is very large (hundreds of thousands of concurrent users), your Django processes
 hit this limit and refuse connections to clients. Raising it above this default
 may require changing system-level limits, particularly if you are using a
