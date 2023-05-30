@@ -118,7 +118,7 @@ To do so:
    organization = your-organization-name
    project = your-project-name
    ```
-6. Add the [authentication token] for your internal Sentry integration
+6. Add the [authentication token][sentry-tokens] for your internal Sentry integration
    to your `/etc/zulip/zulip-secrets.conf`:
    ```ini
    # Replace with your own token, found in Sentry
