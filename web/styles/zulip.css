@@ -118,6 +118,14 @@ body {
        We expect `resize.js` to update this once UI is initialized. */
     --recent-topics-filters-height: 50px;
 
+    /*
+    Maximum height of the compose box when it is not in expanded state. This
+    is equal to the height of `#bottom_whitespace`. We expect resize.js to
+    replace it with its pixel calculation since even if `vh` has great support,
+    it can change depending on browser / OS on mobile devices.
+    */
+    --max-unexpanded-compose-height: 40vh;
+
     /* Colors used across the app */
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
@@ -2346,7 +2354,7 @@ nav {
 
 #bottom_whitespace {
     display: block;
-    height: 300px;
+    height: var(--max-unexpanded-compose-height);
 }
 
 .operator_value {

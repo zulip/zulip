@@ -120,7 +120,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
 
 export function resize_bottom_whitespace() {
     const bottom_whitespace_height = get_bottom_whitespace_height();
-    $("#bottom_whitespace").height(bottom_whitespace_height);
+    $("html").css("--max-unexpanded-compose-height", `${bottom_whitespace_height}px`);
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
