@@ -511,7 +511,7 @@ Apache requires you use the hostname, not the IP address; see
 
 1. Enable some required Apache modules:
 
-   ```
+   ```bash
    a2enmod ssl proxy proxy_http headers rewrite
    ```
 

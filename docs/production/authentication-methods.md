@@ -330,7 +330,7 @@ settings in `/etc/zulip/settings.py`.
 
 An example configation for Active Directory group restriction can be:
 
-```
+```python
 import django_auth_ldap
 AUTH_LDAP_GROUP_TYPE = django_auth_ldap.config.ActiveDirectoryGroupType()
 
@@ -613,7 +613,7 @@ integration](../production/scim.md).
 
    Save the certificate in a new `{idp_name}.crt` file constructed as follows:
 
-   ```
+   ```text
    -----BEGIN CERTIFICATE-----
    {Paste the content here}
    -----END CERTIFICATE-----
@@ -676,7 +676,7 @@ this with another IdP.
    `/etc/zulip/settings.py` as `slo_url`. For example it may look like
    this:
 
-   ```
+   ```text
    "your_keycloak_idp_name": {
        "entity_id": "https://keycloak.example.com/auth/realms/yourrealm",
        "url": "https://keycloak.example.com/auth/realms/yourrealm/protocol/saml",

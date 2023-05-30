@@ -23,13 +23,13 @@ The Zulip server-side configuration is straightforward:
    example, if your organization is hosted on a subdomain
    (`subdomain.zulip.example.com`):
 
-   ```
+   ```bash
    /home/zulip/deployments/current/manage.py add_scim_client okta -r 'subdomain'
    ```
 
    Or your organization is hosted on the root domain (`zulip.example.com`):
 
-   ```
+   ```bash
    /home/zulip/deployments/current/manage.py add_scim_client okta -r ""
    ```
 
@@ -39,14 +39,14 @@ The Zulip server-side configuration is straightforward:
 1. Configure the Zulip server by adding a `SCIM_CONFIG` block to your
    `/etc/zulip/settings.py`:
 
-   ```
+   ```python
    SCIM_CONFIG = {
-        "subdomain": {
-            "bearer_token": "<secret token>",
-            "scim_client_name": "okta",
-            "name_formatted_included": False,
-        }
-    }
+       "subdomain": {
+           "bearer_token": "<secret token>",
+           "scim_client_name": "okta",
+           "name_formatted_included": False,
+       }
+   }
    ```
 
    The `bearer_token` should contain a secure, secret token that you
