@@ -91,7 +91,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
     // the last message of the current stream.
 
     // Compute bottom_whitespace_height if not provided by caller.
-    if (bottom_whitespace_height === undefined) {
+    if (typeof bottom_whitespace_height !== "number") {
         bottom_whitespace_height = get_bottom_whitespace_height();
     }
 
@@ -115,6 +115,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
         // subtract 10 for the selected message border.
         bottom_whitespace_height - compose_non_textarea_height - 10,
     );
+    $("#scroll-to-bottom-button-container").css("bottom", compose_height);
 }
 
 export function resize_bottom_whitespace() {
