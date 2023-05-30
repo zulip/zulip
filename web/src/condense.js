@@ -196,6 +196,7 @@ export function show_message_condenser($row) {
 
 export function condense_and_collapse(elems) {
     const height_cutoff = message_viewport.height() * 0.65;
+    const rows_to_resize = [];
 
     for (const elem of elems) {
         const $content = $(elem).find(".message_content");
@@ -218,6 +219,20 @@ export function condense_and_collapse(elems) {
         }
 
         const message_height = get_message_height(elem, message.id);
+
+        rows_to_resize.push({
+            elem,
+            $content,
+            message,
+            message_height,
+        });
+    }
+
+    // Note that we resize all the rows *after* we calculate if we should
+    // resize them or not. This allows us to do all measurements before
+    // changing the layout of the page, which is more performanant.
+    // More information here: https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/#avoid-layout-thrashing
+    for (const {elem, $content, message, message_height} of rows_to_resize) {
         const long_message = message_height > height_cutoff;
         if (long_message) {
             // All long messages are flagged as such.
