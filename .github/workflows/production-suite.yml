@@ -184,12 +184,6 @@ jobs:
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
-      - name: Restore pnpm store
-        uses: actions/cache@v3
-        with:
-          path: ~/.local/share/pnpm/store
-          key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('/tmp/pnpm-lock.yaml') }}
-
       - name: Install production
         run: sudo /tmp/production-install ${{ matrix.extra-args }}
 
