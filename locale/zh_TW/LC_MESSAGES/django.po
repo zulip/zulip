@@ -12,6 +12,7 @@
 # Richard Chen <yihsun.r.chen@gmail.com>, 2022
 # s s <sshiuan2+transifex.com@gmail.com>, 2022
 # Leon H., 2022
+# 林恩衍, 2023
 # 
 #, fuzzy
 msgid ""
@@ -20,8 +21,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Leon H., 2022\n"
-"Language-Team: Chinese (Taiwan) (https://www.transifex.com/zulip/teams/53893/zh_TW/)\n"
+"Last-Translator: 林恩衍, 2023\n"
+"Language-Team: Chinese (Taiwan) (https://app.transifex.com/zulip/teams/53893/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -182,11 +183,11 @@ msgstr "未知的付款方式。請聯繫 {email}."
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
-msgstr ""
+msgstr "無法更新方案。該方案已經過期並由新方案取代。"
 
 #: corporate/views/billing_page.py:184
 msgid "Unable to update the plan. The plan has ended."
-msgstr ""
+msgstr "無法更新方案。該方案已經結束。"
 
 #: corporate/views/billing_page.py:207 corporate/views/billing_page.py:230
 msgid ""
@@ -237,7 +238,7 @@ msgstr ""
 
 #: corporate/views/session.py:55
 msgid "Please create a customer first."
-msgstr ""
+msgstr "請先創建一個用戶"
 
 #: corporate/views/session.py:62
 msgid "Invalid payment intent id."
@@ -558,7 +559,7 @@ msgstr ""
 #: templates/corporate/development-community.html:30
 #: templates/corporate/development-community.html:55
 msgid "Join as a user"
-msgstr ""
+msgstr "以用戶身份加入"
 
 #: templates/corporate/development-community.html:33
 #: templates/corporate/development-community.html:58
@@ -727,7 +728,7 @@ msgstr "訊息"
 
 #: templates/corporate/support_request.html:33
 msgid "Submit"
-msgstr ""
+msgstr "提交"
 
 #: templates/corporate/support_request_thanks.html:4
 msgid "Thanks for contacting us"
@@ -1089,7 +1090,7 @@ msgstr ""
 
 #: templates/zerver/development/dev_login.html:26
 msgid "Anonymous user"
-msgstr ""
+msgstr "匿名使用者"
 
 #: templates/zerver/development/dev_login.html:32
 msgid "Owners"
@@ -2017,7 +2018,7 @@ msgstr "查詢帳號"
 
 #: templates/zerver/footer.html:4
 msgid "Product"
-msgstr ""
+msgstr "產品"
 
 #: templates/zerver/footer.html:6
 msgid "Home"
@@ -2045,7 +2046,7 @@ msgstr "桌電和行動裝置應用程式"
 
 #: templates/zerver/footer.html:12
 msgid "Security"
-msgstr ""
+msgstr "安全性"
 
 #: templates/zerver/footer.html:13
 msgid "Integrations"
@@ -2053,11 +2054,11 @@ msgstr "整合"
 
 #: templates/zerver/footer.html:17
 msgid "Solutions"
-msgstr ""
+msgstr "解決方案"
 
 #: templates/zerver/footer.html:20
 msgid "Business"
-msgstr ""
+msgstr "商務選購"
 
 #: templates/zerver/footer.html:23
 msgid "Education"
@@ -2065,23 +2066,23 @@ msgstr "教育"
 
 #: templates/zerver/footer.html:26
 msgid "Research"
-msgstr ""
+msgstr "研究用途"
 
 #: templates/zerver/footer.html:29
 msgid "Events and conferences"
-msgstr ""
+msgstr "活動與研討會"
 
 #: templates/zerver/footer.html:32
 msgid "Open source projects"
-msgstr ""
+msgstr "開源專案"
 
 #: templates/zerver/footer.html:35
 msgid "Communities"
-msgstr ""
+msgstr "社群"
 
 #: templates/zerver/footer.html:40
 msgid "Customer stories"
-msgstr ""
+msgstr "使用者回饋"
 
 #: templates/zerver/footer.html:43
 msgid "Company"
@@ -2169,7 +2170,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:132
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 #: templates/zerver/footer.html:135
 msgid "Contributing guide"
@@ -2185,7 +2186,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:148
 msgid "About us"
-msgstr ""
+msgstr "關於我們"
 
 #: templates/zerver/footer.html:150
 msgid "Team"
@@ -5125,7 +5126,7 @@ msgid ""
 "Your data export is complete and has been uploaded here:\n"
 "\n"
 "{public_url}"
-msgstr ""
+msgstr "你的資料匯出完畢並已上傳至此：{public_url}"
 
 #: zilencer/auth.py:84
 msgid "Invalid subdomain for push notifications bouncer"
@@ -5133,12 +5134,12 @@ msgstr "無效的推送通知 bouncer 子域名"
 
 #: zilencer/auth.py:99
 msgid "Must validate with valid Zulip server API key"
-msgstr ""
+msgstr "需驗證是否為可用的 Zulip server API"
 
 #. error
 #: zilencer/views.py:61 zilencer/views.py:63
 msgid "Invalid UUID"
-msgstr ""
+msgstr "無效的 UUID"
 
 #. error
 #: zilencer/views.py:68
@@ -5151,11 +5152,11 @@ msgstr "{} 不是有效的 hostname"
 
 #: zilencer/views.py:158
 msgid "Missing user_id or user_uuid"
-msgstr ""
+msgstr "未填寫 user_id 或 user_uuid"
 
 #: zilencer/views.py:163
 msgid "Specify only one of user_id or user_uuid"
-msgstr ""
+msgstr "只能指定 user_id 或 user_uuid 中的一個"
 
 #: zilencer/views.py:300
 msgid "Invalid property {}"
@@ -5171,7 +5172,7 @@ msgstr "無效的資料。"
 
 #: zproject/backends.py:478
 msgid "You need to reset your password."
-msgstr ""
+msgstr "你需要重置密碼。"
 
 #: zproject/backends.py:2140
 msgid "Missing id_token parameter"

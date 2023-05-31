@@ -7,8 +7,8 @@
 # Adrian Seni <adsbistrita@gmail.com>, 2022
 # Paul-Sebastian Ungureanu <ungureanupaulsebastian@gmail.com>, 2022
 # Julian Dumitrascu, 2022
-# Cosmic Sound <cosmin@uhl-services.ch>, 2022
 # Eugenol Man <neatusebastian@gmail.com>, 2022
+# Viorel-Cosmin Miron <cosmin@uhl-services.ch>, 2023
 # 
 #, fuzzy
 msgid ""
@@ -17,8 +17,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Eugenol Man <neatusebastian@gmail.com>, 2022\n"
-"Language-Team: Romanian (https://www.transifex.com/zulip/teams/53893/ro/)\n"
+"Last-Translator: Viorel-Cosmin Miron <cosmin@uhl-services.ch>, 2023\n"
+"Language-Team: Romanian (https://app.transifex.com/zulip/teams/53893/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -956,7 +956,7 @@ msgstr "Actualizările pot fi întârziate."
 
 #: templates/zerver/app/index.html:112
 msgid "Retrying soon…"
-msgstr "Reîncerc în curând..."
+msgstr "Reîncerc în curând…"
 
 #: templates/zerver/app/index.html:113
 msgid "Try now."
@@ -1128,7 +1128,7 @@ msgstr "Token incorect."
 
 #: templates/zerver/desktop_login.html:28
 msgid "Token accepted.  Logging you in…"
-msgstr "Token acceptat.  Te loghez.."
+msgstr "Token acceptat.  Te loghez…"
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
@@ -2306,7 +2306,7 @@ msgstr "Comunitatea demonstratorilor de teoreme Lean"
 
 #: templates/zerver/footer.html:55
 msgid "Asciidoctor open-source community"
-msgstr ""
+msgstr "Comunitatea open-source Asciidoctor"
 
 #: templates/zerver/footer.html:58
 msgid "Rust language community"
@@ -3379,15 +3379,15 @@ msgstr "Fără descriere."
 #: zerver/actions/streams.py:1170
 #, python-brace-format
 msgid "{user} changed the description for this stream."
-msgstr ""
+msgstr "{user} modificat descrierea acestui flux."
 
 #: zerver/actions/streams.py:1172
 msgid "Old description"
-msgstr ""
+msgstr "Descriere veche"
 
 #: zerver/actions/streams.py:1176
 msgid "New description"
-msgstr ""
+msgstr "Descriere nouă"
 
 #: zerver/actions/streams.py:1244 zerver/actions/streams.py:1249
 msgid "Forever"
@@ -3475,10 +3475,12 @@ msgid ""
 "Your account {username} has been deactivated. Please contact your "
 "organization administrator to reactivate it."
 msgstr ""
+"{username} contului a fost dezactivat. Vă rugăm să contactați "
+"administratorul organizației pentru a-l reactiva."
 
 #: zerver/forms.py:65
 msgid "The password is too weak."
-msgstr ""
+msgstr "Parola este prea slabă."
 
 #: zerver/forms.py:86
 msgid "Subdomain needs to have length 3 or greater."
@@ -3551,12 +3553,16 @@ msgid ""
 "You're making too many attempts to sign in. Try again in {} seconds or "
 "contact your organization administrator for help."
 msgstr ""
+"Faci prea multe încercări de a te conecta. Încercați din nou în {} secunde "
+"sau contactați administratorul organizației pentru ajutor."
 
 #: zerver/forms.py:466
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
 msgstr ""
+"Parola a fost dezactivată deoarece este prea slabă. Resetați parola pentru a"
+" crea una nouă."
 
 #: zerver/forms.py:515
 msgid "Token"
@@ -3716,7 +3722,7 @@ msgstr "Acest emoji personalizat a fost dezactivat."
 
 #: zerver/lib/emoji.py:84 zerver/lib/emoji.py:89
 msgid "Invalid emoji code."
-msgstr "Cod emoji nevalid"
+msgstr "Cod emoji nevalid."
 
 #: zerver/lib/emoji.py:86 zerver/lib/emoji.py:91
 msgid "Invalid emoji name."
@@ -3724,7 +3730,7 @@ msgstr "Nume emoji nevalid."
 
 #: zerver/lib/emoji.py:94
 msgid "Invalid emoji type."
-msgstr "Tip emoji nevalid"
+msgstr "Tip emoji nevalid."
 
 #: zerver/lib/emoji.py:109
 msgid "Must be an organization administrator or emoji author"
@@ -4303,7 +4309,7 @@ msgstr "Valoare greșită pentru  '{var_name}': {bad_value}"
 #: zerver/lib/request.py:394 zerver/webhooks/ifttt/view.py:37
 #: zerver/webhooks/slack_incoming/view.py:41
 msgid "Malformed payload"
-msgstr ""
+msgstr "Sarcină utilă malformată"
 
 #: zerver/lib/request.py:442
 msgid "Argument \"{}\" is not valid JSON."
@@ -4407,11 +4413,11 @@ msgstr "Mărimea imaginii depășește limitele permise."
 
 #: zerver/lib/upload.py:168
 msgid "Corrupt animated image."
-msgstr ""
+msgstr "Imagine animată coruptă."
 
 #: zerver/lib/upload.py:177
 msgid "Unknown animated image format."
-msgstr ""
+msgstr "Format de imagine animat necunoscut."
 
 #: zerver/lib/upload.py:373
 msgid "Upload would exceed your organization's upload quota."
@@ -4628,12 +4634,12 @@ msgstr "{var_name} nu este un string sau integer"
 #: zerver/lib/validator.py:636
 #, python-brace-format
 msgid "{var_name} does not have a length"
-msgstr ""
+msgstr "{var_name} nu are o lungime"
 
 #: zerver/lib/validator.py:693 zerver/lib/validator.py:713
 #, python-brace-format
 msgid "{var_name} is missing"
-msgstr ""
+msgstr "{var_name} lipsește"
 
 #: zerver/lib/webhooks/common.py:69
 #, python-brace-format
@@ -5087,7 +5093,7 @@ msgstr "Trebuie să fie activată cel puțin o metodă de autentificare."
 
 #: zerver/views/realm.py:164
 msgid "Invalid video_chat_provider {}"
-msgstr " video_chat_provider {} nevalid"
+msgstr "video_chat_provider {} nevalid"
 
 #: zerver/views/realm.py:168
 msgid "Invalid giphy_rating {}"
@@ -5226,7 +5232,7 @@ msgstr "huburi noi"
 #: zerver/views/streams.py:746
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
-msgstr ""
+msgstr "**{policy}** flux creat de {user_name}. **Descriere:__________:**"
 
 #: zerver/views/streams.py:996
 msgid "Unknown subscription property: {}"
@@ -5378,7 +5384,7 @@ msgstr "Boții incorporați nu sunt activi."
 
 #: zerver/views/users.py:502
 msgid "Invalid embedded bot name."
-msgstr "Nume nevalid de bot încorporat"
+msgstr "Nume nevalid de bot încorporat."
 
 #: zerver/views/users.py:511
 msgid "Username already in use"
@@ -5423,7 +5429,7 @@ msgstr "BigBlueButton nu este configurat."
 
 #: zerver/views/video_calls.py:212
 msgid "Invalid signature."
-msgstr ""
+msgstr "Semnătură nevalidă."
 
 #: zerver/views/video_calls.py:242
 msgid "Error connecting to the BigBlueButton server."
@@ -5550,11 +5556,11 @@ msgstr "{} este un hostname invalid"
 
 #: zilencer/views.py:158
 msgid "Missing user_id or user_uuid"
-msgstr ""
+msgstr "Lipsă user_id sau user_uuid"
 
 #: zilencer/views.py:163
 msgid "Specify only one of user_id or user_uuid"
-msgstr ""
+msgstr "Specificați doar una dintre user_id sau user_uuid"
 
 #: zilencer/views.py:300
 msgid "Invalid property {}"

@@ -5,7 +5,7 @@
 # 
 # Translators:
 # Tim Abbott <tabbott@kandralabs.com>, 2022
-# David Clubb, 2022
+# David Clubb, 2023
 # 
 #, fuzzy
 msgid ""
@@ -14,8 +14,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: David Clubb, 2022\n"
-"Language-Team: Welsh (https://www.transifex.com/zulip/teams/53893/cy/)\n"
+"Last-Translator: David Clubb, 2023\n"
+"Language-Team: Welsh (https://app.transifex.com/zulip/teams/53893/cy/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -281,11 +281,11 @@ msgstr "Gwall"
 
 #: templates/404.html:17
 msgid "Method not allowed (405)"
-msgstr ""
+msgstr "Ni chaniateir y dull (405)"
 
 #: templates/404.html:19
 msgid "Page not found (404)"
-msgstr ""
+msgstr "Tudalen heb ei chanfod (404)"
 
 #: templates/404.html:22
 #, python-format
@@ -295,6 +295,10 @@ msgid ""
 "                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "                        "
 msgstr ""
+"\n"
+"                    Os yw'r gwall hwn yn annisgwyl, gallwch chi\n"
+"                        <a href=\"mailto:%(support_email)s\">cysylltwch â chefnogaeth</a>.\n"
+"                        "
 
 #: templates/500.html:4 templates/500.html:21 zerver/middleware.py:490
 msgid "Internal server error"
@@ -306,6 +310,9 @@ msgid ""
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
 msgstr ""
+"\n"
+"                        Ni ellir llwytho eich sgwrs Zulip oherwydd bod y gweinydd yn cael anawsterau technegol.\n"
+"                        "
 
 #: templates/500.html:28
 msgid ""
@@ -313,6 +320,9 @@ msgid ""
 "                        This page will reload automatically when service is restored.\n"
 "                        "
 msgstr ""
+"\n"
+"                       Bydd y dudalen hon yn ail-lwytho'n awtomatig pan fydd y gwasanaeth yn cael ei adfer.\n"
+"                        "
 
 #: templates/500.html:32
 #, python-format
@@ -321,6 +331,9 @@ msgid ""
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                            "
 msgstr ""
+"\n"
+"                            Yn y cyfamser, gallwch <a href=\"mailto:%(support_email)s\">cysylltwch â chefnogaeth Zulip</a>.\n"
+"                            "
 
 #: templates/500.html:36
 #, python-format
@@ -330,6 +343,10 @@ msgid ""
 "                            this server's administrators</a> for support.\n"
 "                            "
 msgstr ""
+"\n"
+"                            Yn y cyfamser, gallwch <a href=\"mailto:%(support_email)s\">cysylltwch â\n"
+"                           gweinyddwyr y gweinydd hwn</a> am cefnogaeth.\n"
+"                            "
 
 #: templates/500.html:44
 #, python-format
@@ -339,6 +356,10 @@ msgid ""
 "                            <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
 "                            "
 msgstr ""
+"\n"
+"                            Os ydych yn gweinyddu'r gweinydd hwn, efallai y byddwch am edrych ar y\n"
+"                            <a href=\"%(troubleshooting_url)s\">Canllaw datrys problemau gweinydd Zulip</a>.\n"
+"                            "
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -347,6 +368,9 @@ msgid ""
 "    Analytics for %(target_name)s | Zulip\n"
 "    "
 msgstr ""
+"\n"
+"    Dadansoddeg ar gyfer %(target_name)s | Zulip\n"
+"    "
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -359,31 +383,31 @@ msgstr "Dadansoddeg Zulip ar gyfer %(target_name)s"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
-msgstr ""
+msgstr "Crynodeb o'r sefydliad"
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
-msgstr ""
+msgstr "Nifer ddefnyddwyr"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Defnyddwyr yn weithredol yn ystod y 15 diwrnod diwethaf"
 
 #: templates/analytics/stats.html:29
 msgid "Number of guests"
-msgstr ""
+msgstr "Nifer y gwesteion"
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
-msgstr ""
+msgstr "Cyfanswm nifer y negeseuon"
 
 #: templates/analytics/stats.html:31
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Nifer y negeseuon yn ystod y 30 diwrnod diwethaf"
 
 #: templates/analytics/stats.html:32
 msgid "File storage in use"
-msgstr ""
+msgstr "Storfa ffeiliau yn cael ei defnyddio"
 
 #: templates/analytics/stats.html:37
 msgid "Active users"
@@ -481,7 +505,7 @@ msgstr ""
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
-msgstr ""
+msgstr "E-bost wedi newid"
 
 #: templates/confirmation/confirm_email_change.html:12
 msgid "Email changed!"
@@ -501,11 +525,11 @@ msgstr ""
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
-msgstr ""
+msgstr "Yn cadarnhau eich cyfeiriad e-bost"
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "Nid yw dolen cadarnhad yn bodoli"
 
 #: templates/confirmation/link_does_not_exist.html:13
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -524,7 +548,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "Mae'r ddolen gadarnhau wedi dod i ben neu wedi'i dadactifadu."
 
 #: templates/confirmation/link_expired.html:14
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -536,7 +560,7 @@ msgstr "Cysylltwch â gweinyddwr eich sefydliad i gael dolen newydd."
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "Dolen cadarnhad wedi'i gamffurfio"
 
 #: templates/confirmation/link_malformed.html:13
 msgid "Whoops. The confirmation link is malformed."
@@ -561,7 +585,7 @@ msgstr "Cau"
 
 #: templates/corporate/communities.html:28 templates/zerver/footer.html:64
 msgid "Open communities directory"
-msgstr ""
+msgstr "Agor cyfeiriadur cymunedau"
 
 #: templates/corporate/communities.html:39
 #: templates/zerver/integrations/index.html:47
@@ -599,7 +623,7 @@ msgstr "Ymunwch fel cyfrannwr"
 
 #: templates/corporate/event_status.html:5
 msgid "Billing status"
-msgstr ""
+msgstr "Statws bilio"
 
 #: templates/corporate/for/business.html:28
 #: templates/corporate/for/communities.html:34
@@ -758,15 +782,15 @@ msgstr "Cyflwyno"
 
 #: templates/corporate/support_request_thanks.html:4
 msgid "Thanks for contacting us"
-msgstr ""
+msgstr "Diolch am gysylltu â ni"
 
 #: templates/corporate/support_request_thanks.html:10
 msgid "Thanks for contacting us!"
-msgstr ""
+msgstr "Diolch am gysylltu â ni!"
 
 #: templates/corporate/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "Byddwn mewn cysylltiad â chi yn fuan."
 
 #: templates/corporate/support_request_thanks.html:13
 msgid ""
@@ -775,6 +799,10 @@ msgid ""
 "            <a href=\"/help/\">Zulip help center</a>.\n"
 "            "
 msgstr ""
+"\n"
+"            Gallwch ddod o hyd i atebion i gwestiynau cyffredin yn y\n"
+"            <a href=\"/help/\">Canolfan gymorth Zulip</a>.\n"
+"            "
 
 #: templates/corporate/team.html:146
 msgid "Avatar"
@@ -782,7 +810,7 @@ msgstr "Avatar"
 
 #: templates/corporate/upgrade.html:5
 msgid "Upgrade"
-msgstr ""
+msgstr "Uwchraddio"
 
 #: templates/corporate/upgrade.html:23
 #, python-format
@@ -824,7 +852,7 @@ msgstr "Y rhan fwyaf o reolaeth"
 #: templates/corporate/upgrade.html:158 templates/corporate/upgrade.html:223
 #: templates/corporate/upgrade.html:274
 msgid "Convert demo organization before upgrading."
-msgstr ""
+msgstr "Trosi sefydliad demo cyn uwchraddio."
 
 #: templates/corporate/upgrade.html:266
 msgid "Leave blank if your organization does not have a website."
@@ -903,7 +931,7 @@ msgstr "Cofrestrwch gyda %(identity_provider)s"
 
 #: templates/zerver/accounts_send_confirm.html:5
 msgid "Confirm your email address"
-msgstr ""
+msgstr "Cadarnhewch eich cyfeiriad e-bost"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Thanks for signing up!"
@@ -932,6 +960,8 @@ msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
 msgstr ""
+"Os na fydd y neges hon yn diflannu, trio <a id=\"reload-lnk\">ail-"
+"lwytho'r</a> dudalen."
 
 #: templates/zerver/app/index.html:110
 msgid "Unable to connect to Zulip."
@@ -955,11 +985,11 @@ msgstr "Negeseuon"
 
 #: templates/zerver/auth_subdomain.html:4
 msgid "Authentication subdomain error"
-msgstr ""
+msgstr "Gwall is-barth dilysu"
 
 #: templates/zerver/auth_subdomain.html:15
 msgid "Authentication subdomain"
-msgstr ""
+msgstr "Is-barth dilysu"
 
 #: templates/zerver/auth_subdomain.html:17
 msgid ""
@@ -971,6 +1001,13 @@ msgid ""
 "                        to log in, this is most likely a server bug or misconfiguration.\n"
 "                        "
 msgstr ""
+"\n"
+"                        Mae'n ymddangos eich bod wedi gorffen yma ar ddamwain. Mae'r wefan hon\n"
+"                        i fod yn gam canolradd yn y broses ddilysu\n"
+"                        ac ni ddylid ei gyrchu â llaw. Os daethoch yma yn uniongyrchol,\n"
+"                        mae'n debyg eich bod wedi cael y cyfeiriad yn anghywir. Os aethoch yn sownd yma tra'n ceisio\n"
+"                        mewngofnodi, mae hyn yn fwyaf tebygol o nam gweinydd neu gamgyfluniad.\n"
+"                        "
 
 #: templates/zerver/billing_nav.html:4
 #: templates/zerver/development/integrations_dev_panel.html:19

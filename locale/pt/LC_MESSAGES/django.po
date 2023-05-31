@@ -14,6 +14,7 @@
 # Andrei Bernardo Simoni <andrei_simoni@hotmail.com>, 2022
 # André Lopes Pereira <andrelopespereira@gmail.com>, 2022
 # Rafael Patronilo <rafael.patronilo@hotmail.com>, 2022
+# Murko Marko, 2023
 # 
 #, fuzzy
 msgid ""
@@ -22,8 +23,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Rafael Patronilo <rafael.patronilo@hotmail.com>, 2022\n"
-"Language-Team: Portuguese (https://www.transifex.com/zulip/teams/53893/pt/)\n"
+"Last-Translator: Murko Marko, 2023\n"
+"Language-Team: Portuguese (https://app.transifex.com/zulip/teams/53893/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -908,7 +909,7 @@ msgstr ""
 
 #: templates/zerver/app/index.html:111
 msgid "Updates may be delayed."
-msgstr ""
+msgstr "Atualizações podem atrasar."
 
 #: templates/zerver/app/index.html:112
 msgid "Retrying soon…"
@@ -1434,6 +1435,10 @@ msgid ""
 "live on the <a href=\"https://zulip.com/development-community/\">Zulip "
 "community server</a>!"
 msgstr ""
+"Obs: Siga a gente no <a href=\"https://twitter.com/zulip\">Twitter</a>, nos "
+"avalie no  <a href=\"https://github.com/zulip/zulip\">Github</a>, ou fale "
+"com a gente no <a href=\"https://zulip.com/development-community/\">servidor"
+" da comunidade Zulip</a>!"
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -1498,6 +1503,9 @@ msgid ""
 "(https://github.com/zulip/zulip), or chat with us live on the Zulip "
 "community server (https://zulip.com/development-community/)!"
 msgstr ""
+"Obs: Veja nosso Twitter (@zulip), nos avalie no Github "
+"(https://github.com/zulip/zulip), ou fale com a gente no servidor da "
+"comunidade Zulip (https://zulip.com/development-community/)!"
 
 #: templates/zerver/emails/followup_day2.source.html:8
 #: templates/zerver/emails/followup_day2.txt:1
@@ -1772,12 +1780,12 @@ msgstr ""
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
 msgid "Group PMs with %(huddle_display_name)s"
-msgstr ""
+msgstr "Chat em grupo com %(huddle_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
 msgid "PMs with %(sender_str)s"
-msgstr ""
+msgstr "Chat com %(sender_str)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:7
 msgid "New messages"
@@ -2253,7 +2261,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:138
 msgid "Development community"
-msgstr ""
+msgstr "Comunidade de desenvolvimento"
 
 #: templates/zerver/footer.html:141
 msgid "Translation"
@@ -2863,7 +2871,7 @@ msgstr ""
 #: zerver/actions/create_user.py:239
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
-msgstr ""
+msgstr "{user} aceitou seu convite para participar do Zulip!"
 
 #: zerver/actions/custom_profile_fields.py:129
 msgid "Invalid order mapping."
@@ -3437,7 +3445,7 @@ msgstr ""
 
 #: zerver/lib/drafts.py:103
 msgid "User has disabled synchronizing drafts."
-msgstr ""
+msgstr "O usuário desabilitou a sincronização de rascunhos."
 
 #: zerver/lib/drafts.py:146 zerver/lib/drafts.py:163
 msgid "Draft does not exist"
@@ -3811,12 +3819,16 @@ msgid ""
 "If you are new to Zulip, check out our [Getting started "
 "guide]({getting_started_url})!"
 msgstr ""
+"Se você é um usuário novo do Zulip, que tal dar uma olhada no nosso [Guia de"
+" início]({getting_started_url})?"
 
 #: zerver/lib/onboarding.py:80
 msgid ""
 "I can also help you get set up! Just click anywhere on this message or press"
 " `r` to reply."
 msgstr ""
+"Eu também posso te ajudar a ajeitar suas coisas! Apenas clique nessa "
+"mensagem ou aperte `r` para me responder."
 
 #: zerver/lib/onboarding.py:83 zerver/lib/onboarding.py:191
 msgid "Here are a few messages I understand:"
@@ -4751,11 +4763,11 @@ msgstr ""
 
 #: zerver/views/muting.py:107 zerver/views/muting.py:112
 msgid "User already muted"
-msgstr ""
+msgstr "Usuário já está silenciado"
 
 #: zerver/views/muting.py:126
 msgid "User is not muted"
-msgstr ""
+msgstr "Usuário não está silenciado"
 
 #: zerver/views/presence.py:47
 msgid "Presence is not supported for bot users."

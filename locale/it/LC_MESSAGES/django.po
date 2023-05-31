@@ -9,9 +9,9 @@
 # Daniele Pesciallo, 2022
 # Giancarlo Di Massa <giancarlodimassa@gmail.com>, 2022
 # Paolo Midali <pmidali@latek.it>, 2022
-# Maxxer <maxxer@ufficyo.com>, 2022
 # Andrea, 2022
 # Matteo Piotto <matteo.piotto@welaika.com>, 2022
+# Maxxer <io@maxxer.it>, 2023
 # 
 #, fuzzy
 msgid ""
@@ -20,8 +20,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Matteo Piotto <matteo.piotto@welaika.com>, 2022\n"
-"Language-Team: Italian (https://www.transifex.com/zulip/teams/53893/it/)\n"
+"Last-Translator: Maxxer <io@maxxer.it>, 2023\n"
+"Language-Team: Italian (https://app.transifex.com/zulip/teams/53893/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -5050,7 +5050,7 @@ msgstr "Devi specificare almeno un indirizzo email."
 #: zerver/views/invite.py:72
 msgid "You must specify at least one stream for invitees to join."
 msgstr ""
-"Devi specificare almeno un canale perchè gli invitati possano partecipare."
+"Devi specificare almeno un canale perché gli invitati possano partecipare."
 
 #: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."

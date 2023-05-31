@@ -7,7 +7,7 @@
 # Jiří Ryszawy <jiri@ryszawy.com>, 2022
 # Tomáš Hozman, 2022
 # Filip Vařecha <filip.varecha@fragaria.cz>, 2022
-# fri, 2022
+# fri, 2023
 # 
 #, fuzzy
 msgid ""
@@ -16,8 +16,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: fri, 2022\n"
-"Language-Team: Czech (https://www.transifex.com/zulip/teams/53893/cs/)\n"
+"Last-Translator: fri, 2023\n"
+"Language-Team: Czech (https://app.transifex.com/zulip/teams/53893/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -295,6 +295,10 @@ msgid ""
 "                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "                        "
 msgstr ""
+"\n"
+"                        Pokud je tato chyba neočekávaná, můžete\n"
+"                        <a href=\"mailto:%(support_email)s\">se spojit s podporou</a>.\n"
+"                        "
 
 #: templates/500.html:4 templates/500.html:21 zerver/middleware.py:490
 msgid "Internal server error"
@@ -306,6 +310,9 @@ msgid ""
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
 msgstr ""
+"\n"
+"                        Váš chat Zulip nelze načíst, protože server má technické potíže..\n"
+"                        "
 
 #: templates/500.html:28
 msgid ""
@@ -313,6 +320,9 @@ msgid ""
 "                        This page will reload automatically when service is restored.\n"
 "                        "
 msgstr ""
+"\n"
+"                        This page will reload automatically when service is restored.\n"
+"                        "
 
 #: templates/500.html:32
 #, python-format
@@ -321,6 +331,10 @@ msgid ""
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                            "
 msgstr ""
+"\n"
+"                        Mezitím se můžete\n"
+"                        <a href=\"mailto:%(support_email)s\">spojit s podporou Zulipu</a>.\n"
+"                        "
 
 #: templates/500.html:36
 #, python-format
@@ -330,6 +344,10 @@ msgid ""
 "                            this server's administrators</a> for support.\n"
 "                            "
 msgstr ""
+"\n"
+"                            Mezitím se můžete kvůli podpoře <a href=\"mailto:%(support_email)s\">spojit se \n"
+"                            správci tohoto erveru</a>.\n"
+"                            "
 
 #: templates/500.html:44
 #, python-format
@@ -347,6 +365,9 @@ msgid ""
 "    Analytics for %(target_name)s | Zulip\n"
 "    "
 msgstr ""
+"\n"
+"    Rozbor pro %(target_name)s | Zulip\n"
+"    "
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -359,31 +380,31 @@ msgstr "Analytika Zulipu pro %(target_name)s"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
-msgstr ""
+msgstr "Přehled organizace"
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
-msgstr ""
+msgstr "Počet uživatelů"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Uživatelé činní v posledních 15 dnech"
 
 #: templates/analytics/stats.html:29
 msgid "Number of guests"
-msgstr ""
+msgstr "Počet hostů"
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
-msgstr ""
+msgstr "Celkový počet zpráv"
 
 #: templates/analytics/stats.html:31
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Počet zpráv za posledních 30 dní"
 
 #: templates/analytics/stats.html:32
 msgid "File storage in use"
-msgstr ""
+msgstr "Používané úložiště souborů"
 
 #: templates/analytics/stats.html:37
 msgid "Active users"
@@ -481,7 +502,7 @@ msgstr ""
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
-msgstr ""
+msgstr "Adresa elektronické pošty změněna"
 
 #: templates/confirmation/confirm_email_change.html:12
 msgid "Email changed!"
@@ -502,11 +523,11 @@ msgstr ""
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
-msgstr ""
+msgstr "Potvrzuje se adresa elektronické pošty"
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
-msgstr ""
+msgstr "Potvrzovací odkaz neexistuje"
 
 #: templates/confirmation/link_does_not_exist.html:13
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -526,7 +547,7 @@ msgstr ""
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "Platnost potvrzovacího odkazu vypršela nebo byl vypnut"
 
 #: templates/confirmation/link_expired.html:14
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -538,7 +559,7 @@ msgstr "Požádejte správce vaší organizace o nový odkaz."
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "Potvrzovací odkaz je chybný"
 
 #: templates/confirmation/link_malformed.html:13
 msgid "Whoops. The confirmation link is malformed."
@@ -563,7 +584,7 @@ msgstr "Zavřít"
 
 #: templates/corporate/communities.html:28 templates/zerver/footer.html:64
 msgid "Open communities directory"
-msgstr ""
+msgstr "Otevřít adresář společenství"
 
 #: templates/corporate/communities.html:39
 #: templates/zerver/integrations/index.html:47
@@ -601,7 +622,7 @@ msgstr "Zapojit se jako přispěvatel"
 
 #: templates/corporate/event_status.html:5
 msgid "Billing status"
-msgstr ""
+msgstr "Stav vyúčtování"
 
 #: templates/corporate/for/business.html:28
 #: templates/corporate/for/communities.html:34
@@ -760,15 +781,15 @@ msgstr "Odeslat"
 
 #: templates/corporate/support_request_thanks.html:4
 msgid "Thanks for contacting us"
-msgstr ""
+msgstr "Děkujeme, že jste se na nás obrátili"
 
 #: templates/corporate/support_request_thanks.html:10
 msgid "Thanks for contacting us!"
-msgstr ""
+msgstr "Děkujeme, že jste se na nás obrátili!"
 
 #: templates/corporate/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "Brzy se vám ozveme."
 
 #: templates/corporate/support_request_thanks.html:13
 msgid ""
@@ -777,6 +798,10 @@ msgid ""
 "            <a href=\"/help/\">Zulip help center</a>.\n"
 "            "
 msgstr ""
+"\n"
+"            Odpovědi na často kladené otázky naleznete ve\n"
+"            <a href=\"/help/\">středisku nápovědy pro Zulip</a>.\n"
+"            "
 
 #: templates/corporate/team.html:146
 msgid "Avatar"
@@ -784,7 +809,7 @@ msgstr "Avatar"
 
 #: templates/corporate/upgrade.html:5
 msgid "Upgrade"
-msgstr ""
+msgstr "Povýšit"
 
 #: templates/corporate/upgrade.html:23
 #, python-format
@@ -826,7 +851,7 @@ msgstr "Nejvyšší kontrola"
 #: templates/corporate/upgrade.html:158 templates/corporate/upgrade.html:223
 #: templates/corporate/upgrade.html:274
 msgid "Convert demo organization before upgrading."
-msgstr ""
+msgstr "Před povýšením převeďte ukázkovou organizaci."
 
 #: templates/corporate/upgrade.html:266
 msgid "Leave blank if your organization does not have a website."
@@ -906,7 +931,7 @@ msgstr "Přihlásit se pomocí %(identity_provider)s"
 
 #: templates/zerver/accounts_send_confirm.html:5
 msgid "Confirm your email address"
-msgstr ""
+msgstr "Potvrďte svoji adresu elektronické pošty"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Thanks for signing up!"
@@ -935,6 +960,8 @@ msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
 msgstr ""
+"Pokud tato zpráva neodchází, zkuste stránku <a id=\"reload-lnk\">nahrát "
+"znovu</a>."
 
 #: templates/zerver/app/index.html:110
 msgid "Unable to connect to Zulip."
@@ -958,11 +985,11 @@ msgstr "Zprávy"
 
 #: templates/zerver/auth_subdomain.html:4
 msgid "Authentication subdomain error"
-msgstr ""
+msgstr "Chyba při ověřování subdomény"
 
 #: templates/zerver/auth_subdomain.html:15
 msgid "Authentication subdomain"
-msgstr ""
+msgstr "Subdoména pro ověřování"
 
 #: templates/zerver/auth_subdomain.html:17
 msgid ""
@@ -986,15 +1013,15 @@ msgstr "Zulip"
 
 #: templates/zerver/close_window.html:5
 msgid "Video call ended"
-msgstr ""
+msgstr "Videohovor ukončen"
 
 #: templates/zerver/close_window.html:13
 msgid "You may now close this window."
-msgstr ""
+msgstr "Nyní můžete toto okno zavřít."
 
 #: templates/zerver/config_error.html:4 templates/zerver/config_error.html:15
 msgid "Configuration error"
-msgstr ""
+msgstr "Chyba nastavení"
 
 #: templates/zerver/config_error.html:18
 msgid ""
@@ -1012,7 +1039,7 @@ msgstr ""
 
 #: templates/zerver/confirm_continue_registration.html:4
 msgid "Account not found"
-msgstr ""
+msgstr "Účet nenalezen"
 
 #: templates/zerver/confirm_continue_registration.html:14
 msgid "Zulip account not found."
@@ -1090,7 +1117,7 @@ msgstr ""
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
-msgstr ""
+msgstr "Dokončit přihlášení aplikace pro počítače"
 
 #: templates/zerver/desktop_login.html:11
 msgid "Finish desktop login"
@@ -1122,7 +1149,7 @@ msgstr "Elektronický klíč přijat. Jste přihlašován..."
 
 #: templates/zerver/desktop_redirect.html:5
 msgid "Log in to desktop app"
-msgstr ""
+msgstr "Přihlášení do aplikace pro počítače"
 
 #: templates/zerver/desktop_redirect.html:12
 msgid ""
@@ -1803,21 +1830,21 @@ msgstr ""
 #: templates/zerver/emails/missed_message.source.html:29
 #: templates/zerver/emails/missed_message.txt:25
 msgid "You are receiving this because you were personally mentioned."
-msgstr ""
+msgstr "Dostáváte ji, protože jste byl osobně zmíněn."
 
 #: templates/zerver/emails/missed_message.source.html:31
 #: templates/zerver/emails/missed_message.txt:27
 #, python-format
 msgid ""
 "You are receiving this because @%(mentioned_user_group_name)s was mentioned."
-msgstr ""
+msgstr "Toto jste dostal, protože @%(mentioned_user_group_name)s byl zmíněn."
 
 #: templates/zerver/emails/missed_message.source.html:33
 #: templates/zerver/emails/missed_message.txt:29
 #, python-format
 msgid ""
 "You are receiving this because everyone was mentioned in #%(stream_name)s."
-msgstr ""
+msgstr "Dostáváte ji, protože všichni byli zmíněni v #%(stream_name)s."
 
 #: templates/zerver/emails/missed_message.source.html:35
 #: templates/zerver/emails/missed_message.txt:31
@@ -1826,6 +1853,8 @@ msgid ""
 "You are receiving this because you have email notifications enabled for "
 "#%(stream_name)s."
 msgstr ""
+"oto jste dostal, protože máte povoleno oznámení elektronickou poštou pro "
+"#%(stream_name)s."
 
 #: templates/zerver/emails/missed_message.source.html:38
 #, python-format
@@ -1900,16 +1929,18 @@ msgstr ""
 #, python-format
 msgid "Reply to this email directly, or view it in %(realm_name)s Zulip:"
 msgstr ""
+"Odpovědět na tento elektronický dopis přímo, nebo jej zobrazit v "
+"%(realm_name)s Zulipu:"
 
 #: templates/zerver/emails/missed_message.txt:39
 #, python-format
 msgid "View or reply in %(realm_name)s Zulip:"
-msgstr ""
+msgstr "Zobrazit nebo odpovědět v %(realm_name)s Zulipu:"
 
 #: templates/zerver/emails/missed_message.txt:43
 #, python-format
 msgid "Reply in %(realm_name)s Zulip:"
-msgstr ""
+msgstr "Odpovědět v %(realm_name)s Zulipu:"
 
 #: templates/zerver/emails/missed_message.txt:47
 msgid ""
@@ -2195,7 +2226,7 @@ msgstr "Klepněte na odkaz níže pro opětovné zapnutí vaší organizace."
 
 #: templates/zerver/find_account.html:4
 msgid "Find your accounts"
-msgstr ""
+msgstr "Najděte své účty"
 
 #: templates/zerver/find_account.html:12
 msgid "Find your Zulip accounts"
@@ -2367,7 +2398,7 @@ msgstr "GitHub"
 
 #: templates/zerver/footer.html:135
 msgid "Contributing guide"
-msgstr ""
+msgstr "Průvodce pro přispěvatele"
 
 #: templates/zerver/footer.html:138
 msgid "Development community"
@@ -2391,7 +2422,7 @@ msgstr "Historie"
 
 #: templates/zerver/footer.html:151
 msgid "Values"
-msgstr ""
+msgstr "Hodnoty"
 
 #: templates/zerver/footer.html:153
 msgid "Jobs"
@@ -2399,7 +2430,7 @@ msgstr "Pracovní místa"
 
 #: templates/zerver/footer.html:154
 msgid "Website attributions"
-msgstr ""
+msgstr "Přisuzování internetových stránek"
 
 #: templates/zerver/footer.html:155
 msgid "Sponsor Zulip"
@@ -2566,7 +2597,7 @@ msgstr "Na této subdoméně není hostována žádná organizace Zulipu."
 
 #: templates/zerver/log_into_subdomain_token_invalid.html:4
 msgid "Invalid or expired login session"
-msgstr ""
+msgstr "Neplatné nebo vypršené sezení přihlášení"
 
 #: templates/zerver/log_into_subdomain_token_invalid.html:12
 msgid "Invalid or expired login session."
@@ -2585,7 +2616,7 @@ msgstr "Přihlásit se do Zulipu"
 
 #: templates/zerver/login.html:44
 msgid "View without an account"
-msgstr ""
+msgstr "Zobrazení bez účtu"
 
 #: templates/zerver/login.html:69
 msgid ""
@@ -2622,7 +2653,7 @@ msgstr ""
 
 #: templates/zerver/no_spare_licenses.html:4
 msgid "No licenses available"
-msgstr ""
+msgstr "Žádné dostupné licence"
 
 #: templates/zerver/no_spare_licenses.html:12
 msgid "This organization cannot accept new members right now."
@@ -4043,6 +4074,8 @@ msgid ""
 "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
 "They are similar to channels in other chat apps."
 msgstr ""
+"V Zulipu kanály [určují, kdo dostane zprávu](/help/streams-and-topics). Jsou"
+" podobné kanálům v jiných aplikacích poskytujících možnost hovoru."
 
 #: zerver/lib/onboarding.py:145
 msgid "[Browse and subscribe to streams](#streams/all)."

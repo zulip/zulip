@@ -27,6 +27,7 @@
 # Dorian Pigeau <dorian.pigeau@gmail.com>, 2022
 # lavamind <jerome@riseup.net>, 2022
 # Web Plankter <web.plankter@protonmail.com>, 2022
+# Sylvain R., 2023
 # 
 #, fuzzy
 msgid ""
@@ -35,8 +36,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Web Plankter <web.plankter@protonmail.com>, 2022\n"
-"Language-Team: French (https://www.transifex.com/zulip/teams/53893/fr/)\n"
+"Last-Translator: Sylvain R., 2023\n"
+"Language-Team: French (https://app.transifex.com/zulip/teams/53893/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -553,12 +554,13 @@ msgstr "Confirmation de votre adresse courriel"
 
 #: templates/confirmation/link_does_not_exist.html:4
 msgid "Confirmation link does not exist"
-msgstr "Le lien de confirmation n&#39;existe pas"
+msgstr "Le lien de confirmation n'existe pas"
 
 #: templates/confirmation/link_does_not_exist.html:13
 msgid "Whoops. We couldn't find your confirmation link in the system."
 msgstr ""
-"Oups. Nous n'avons pas trouvé votre lien de confirmation dans le système."
+"Oups. Nous n'avons pas pu trouver votre lien de confirmation dans le "
+"système."
 
 #: templates/confirmation/link_does_not_exist.html:15
 #: templates/confirmation/link_malformed.html:16

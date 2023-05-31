@@ -16,8 +16,8 @@
 # Akash Nimare <svnitakash@gmail.com>, 2022
 # vados <t3hmrman@gmail.com>, 2022
 # Tetsuya Morimoto <tetsuya.morimoto@gmail.com>, 2022
-# Taiki Choda, 2022
 # stmkza <stmkza@stmkza.net>, 2022
+# Taiki Choda, 2023
 # 
 #, fuzzy
 msgid ""
@@ -26,8 +26,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-11-17 16:38+0000\n"
 "PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: stmkza <stmkza@stmkza.net>, 2022\n"
-"Language-Team: Japanese (https://www.transifex.com/zulip/teams/53893/ja/)\n"
+"Last-Translator: Taiki Choda, 2023\n"
+"Language-Team: Japanese (https://app.transifex.com/zulip/teams/53893/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -210,7 +210,7 @@ msgstr ""
 
 #: corporate/views/billing_page.py:218
 msgid "You cannot decrease the licenses in the current billing period."
-msgstr ""
+msgstr "現在の支払い期間のライセンスは下げられません"
 
 #: corporate/views/billing_page.py:236
 #, python-brace-format
@@ -345,31 +345,31 @@ msgstr "%(target_name)sのZulipアナリティクス"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
-msgstr ""
+msgstr "組織の概要"
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
-msgstr ""
+msgstr "ユーザー数"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "15日以内にアクティブなユーザー"
 
 #: templates/analytics/stats.html:29
 msgid "Number of guests"
-msgstr ""
+msgstr "ゲスト数"
 
 #: templates/analytics/stats.html:30
 msgid "Total number of messages"
-msgstr ""
+msgstr "メッセージの累計"
 
 #: templates/analytics/stats.html:31
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "過去30日のメッセージの累計"
 
 #: templates/analytics/stats.html:32
 msgid "File storage in use"
-msgstr ""
+msgstr "使用中のファイルストレージ"
 
 #: templates/analytics/stats.html:37
 msgid "Active users"
@@ -917,7 +917,7 @@ msgstr ""
 
 #: templates/zerver/app/index.html:110
 msgid "Unable to connect to Zulip."
-msgstr ""
+msgstr "Zulipに接続できません"
 
 #: templates/zerver/app/index.html:111
 msgid "Updates may be delayed."
@@ -1228,7 +1228,7 @@ msgstr "問題が発生したりフィードバックがあるとき、または
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
-msgstr ""
+msgstr "Zulipであなたの組織を作成"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:4
 msgid "Activate your Zulip account"
@@ -3028,22 +3028,22 @@ msgstr "ウィジェットを編集出来ません。"
 #: zerver/actions/message_edit.py:176
 #, python-brace-format
 msgid "{user} has marked this topic as resolved."
-msgstr ""
+msgstr "{user}がこのトピックを解決済みにしました"
 
 #: zerver/actions/message_edit.py:178
 #, python-brace-format
 msgid "{user} has marked this topic as unresolved."
-msgstr ""
+msgstr "{user}がこのトピックを未解決にしました"
 
 #: zerver/actions/message_edit.py:847
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
-msgstr ""
+msgstr "{user}がこのトピックを{new_location}に移動しました"
 
 #: zerver/actions/message_edit.py:851
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
-msgstr ""
+msgstr "{user}がメッセージを{new_location}に移動しました"
 
 #: zerver/actions/message_edit.py:855
 #, python-brace-format
@@ -3055,7 +3055,7 @@ msgstr ""
 #: zerver/actions/message_edit.py:879
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
-msgstr ""
+msgstr "{user}がこのトピックを{old_location}に移動しました"
 
 #: zerver/actions/message_edit.py:883
 #, python-brace-format
@@ -3067,7 +3067,7 @@ msgstr "{user}がメッセージを{old_location} からここに移動しまし
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
-msgstr ""
+msgstr "{user}が{changed_messages_count}件のメッセージを{old_location}からここに移動しました。"
 
 #: zerver/actions/message_edit.py:922
 msgid "Your organization has turned off message editing"
@@ -3230,7 +3230,7 @@ msgstr "新しい説明"
 
 #: zerver/actions/streams.py:1244 zerver/actions/streams.py:1249
 msgid "Forever"
-msgstr ""
+msgstr "永久に"
 
 #: zerver/actions/streams.py:1250
 msgid "Messages in this stream will now be retained forever."
@@ -3648,11 +3648,11 @@ msgstr ""
 
 #: zerver/lib/exceptions.py:312
 msgid "Password authentication is disabled in this organization"
-msgstr ""
+msgstr "この組織ではパスワード認証が無効化されています"
 
 #: zerver/lib/exceptions.py:320
 msgid "Your password has been disabled and needs to be reset"
-msgstr ""
+msgstr "あなたのパスワードは無効化され、リセットが必要です"
 
 #: zerver/lib/exceptions.py:336
 msgid "Invalid API key"
@@ -3860,6 +3860,8 @@ msgid ""
 "You can [download](/apps) the [mobile and desktop apps](/apps). Zulip also "
 "works great in a browser."
 msgstr ""
+"[モバイルとデスクトップ用のアプリ](/apps)を[ダウンロード](/apps)できます。\n"
+"またブラウザでも、Zulipは素晴らしいパフォーマンスを発揮します。"
 
 #: zerver/lib/onboarding.py:125
 msgid ""
@@ -3867,6 +3869,8 @@ msgid ""
 "picture](/help/change-your-profile-picture) and edit your [profile "
 "information](/help/edit-your-profile)."
 msgstr ""
+"[プロフィール設定](#settings/profile)で[プロフィール画像](/help/change-your-profile-"
+"picture)の追加や、[プロフィール情報](/help/edit-your-profile)の編集ができます。"
 
 #: zerver/lib/onboarding.py:131
 msgid ""
@@ -3885,6 +3889,8 @@ msgid ""
 "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
 "They are similar to channels in other chat apps."
 msgstr ""
+"Zulipではストリームで、[誰がメッセージを受け取るか決める](/help/streams-and-"
+"topics)ことができます。これは他のチャットサービスでの「チャンネル」に該当します。"
 
 #: zerver/lib/onboarding.py:145
 msgid "[Browse and subscribe to streams](#streams/all)."
