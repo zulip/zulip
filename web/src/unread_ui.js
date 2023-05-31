@@ -4,20 +4,20 @@ import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark
 import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
 import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
 
-import * as activity from "./activity";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
-import * as pm_list from "./pm_list";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
-import * as stream_list from "./stream_list";
-import * as top_left_corner from "./top_left_corner";
-import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 
 let user_closed_unread_banner = false;
+
+const update_unread_counts_hooks = [];
+
+export function register_update_unread_counts_hook(f) {
+    update_unread_counts_hooks.push(f);
+}
 
 export function update_unread_banner() {
     const filter = narrow_state.filter();
@@ -81,13 +81,10 @@ export function update_unread_counts(skip_animations = false) {
     // Side effects from here down:
     // This updates some DOM elements directly, so try to
     // avoid excessive calls to this.
-    activity.update_dom_with_unread_counts(res);
-    top_left_corner.update_dom_with_unread_counts(res, skip_animations);
-    stream_list.update_dom_with_unread_counts(res);
-    pm_list.update_dom_with_unread_counts(res);
-    topic_list.update();
-    const notifiable_unread_count = unread.calculate_notifiable_count(res);
-    notifications.update_unread_counts(notifiable_unread_count, res.private_message_count);
+    // See `ui_init.initialize_unread_ui` for the registered hooks.
+    for (const hook of update_unread_counts_hooks) {
+        hook(res, skip_animations);
+    }
 
     // Set the unread counts that we show in the buttons that
     // toggle open the sidebar menus when we have a thin window.

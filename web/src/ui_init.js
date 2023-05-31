@@ -457,6 +457,27 @@ export function initialize_kitchen_sink_stuff() {
     }
 }
 
+function initialize_unread_ui() {
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        activity.update_dom_with_unread_counts(counts),
+    );
+    unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
+        top_left_corner.update_dom_with_unread_counts(counts, skip_animations),
+    );
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        stream_list.update_dom_with_unread_counts(counts),
+    );
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        pm_list.update_dom_with_unread_counts(counts),
+    );
+    unread_ui.register_update_unread_counts_hook(() => topic_list.update());
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        notifications.update_unread_counts(counts),
+    );
+
+    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
+}
+
 export function initialize_everything() {
     /*
         When we initialize our various modules, a lot
@@ -707,7 +728,7 @@ export function initialize_everything() {
     // All overlays must be initialized before hashchange.js
     hashchange.initialize();
 
-    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
+    initialize_unread_ui();
     activity.initialize();
     emoji_picker.initialize();
     pm_list.initialize();
