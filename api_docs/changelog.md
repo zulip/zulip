@@ -20,6 +20,10 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 185**
+
+No changes; feature level used for Zulip 7.0 release.
+
 **Feature level 184**
 
 * [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):

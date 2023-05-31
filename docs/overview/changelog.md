@@ -1,15 +1,13 @@
 # Version history
 
-This page the release history for the Zulip server. See also the
-[Zulip release lifecycle](../overview/release-lifecycle.md).
+This page contains the release history for the Zulip 7.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of all changes.
 
 ## Zulip 7.x series
 
-### 7.0 -- unreleased
-
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of all changes.
+### 7.0 -- 2023-05-31
 
 #### Highlights
 
@@ -82,6 +80,7 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved subject lines for email notifications in topics that have
   been resolved so that email clients will thread them with the
   pre-resolution topic.
+- Improved how the Slack data import tool handles Slack threads.
 - Improved the Slack incoming integration's handling of fancier Slack
   syntax.
 - Improved notification format for most Git integrations.
@@ -3206,7 +3205,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 7.0](#upgrade-notes-for-70)
+- [Upgrade notes for 7.0](#upgrade-notes-for-70)
 - [Upgrade notes for 6.0](#upgrade-notes-for-60)
 - [Upgrade notes for 5.0](#upgrade-notes-for-50)
 - [Upgrade notes for 4.0](#upgrade-notes-for-40)
