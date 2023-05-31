@@ -8738,17 +8738,21 @@ paths:
         - Organization administrators can remove any user from any
           stream.
         - Users can remove a bot that they own from any stream that
-          the user can access.
-        - Users who can access a stream and are in the group with ID
-          `can_remove_subscribers_group_id` for that stream can
-          unsubscribe any user from that stream.
+          the user [can access](/help/stream-permissions).
+        - Users can unsubscribe any user from a stream if they [have
+          access](/help/stream-permissions) to the stream and are a
+          member of the [user group](/api/get-user-groups) specified
+          by the [`can_remove_subscribers_group_id`][can-remove-parameter]
+          for the stream.
 
-        **Changes**: Before Zulip 7.0 (feature level 161),
-        `can_remove_subscribers_group_id` was always the system group
-        for organization administrators.
+        **Changes**: Before Zulip 7.0 (feature level 161), the
+        `can_remove_subscribers_group_id` for all streams was always
+        the system group for organization administrators.
 
         Before Zulip 6.0 (feature level 145), users had no special
         privileges for managing bots that they own.
+
+        [can-remove-parameter]: /api/subscribe#parameter-can_remove_subscribers_group_id
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -16154,20 +16158,28 @@ paths:
                         "user_groups":
                           [
                             {
-                              "description": "Characters of Hamlet",
+                              "description": "Owners of this organization",
                               "id": 1,
+                              "name": "@role:owners",
+                              "members": [1],
+                              "direct_subgroup_ids": [],
+                              "is_system_group": true,
+                            },
+                            {
+                              "description": "Administrators of this organization, including owners",
+                              "id": 2,
+                              "name": "@role:administrators",
+                              "members": [2],
+                              "direct_subgroup_ids": [1],
+                              "is_system_group": true,
+                            },
+                            {
+                              "description": "Characters of Hamlet",
+                              "id": 3,
                               "name": "hamletcharacters",
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
-                            },
-                            {
-                              "description": "Moderators",
-                              "id": 2,
-                              "name": "other users",
-                              "members": [1, 2],
-                              "direct_subgroup_ids": [1, 2],
-                              "is_system_group": true,
                             },
                           ],
                       }
@@ -18910,12 +18922,15 @@ components:
       name: can_remove_subscribers_group_id
       in: query
       description: |
-        ID of the user group whose members are allowed to unsubscribe others
-        from the stream, if they have access to this stream, even if
-        they are not an organization administrator.
+        ID of the [user group](/api/get-user-groups) whose members are
+        allowed to unsubscribe others from the stream. Note that a user
+        who is a member of the specified user group must also [have
+        access](/help/stream-permissions) to the stream in order to
+        unsubscribe others.
 
-        This setting can currently only be set to system user groups
-        except `@role:internet` and `@role:owners` group.
+        This setting can currently only be set to user groups that are
+        system groups, except for the system groups named
+        `"@role:internet"` and `"@role:owners"`.
 
         **Changes**: New in Zulip 7.0 (feature level 161).
       schema:

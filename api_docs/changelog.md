@@ -258,13 +258,16 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 161**
 
-* [`PATCH /streams/{stream_id}`](/api/update-stream): Added
-  `can_remove_subscribers_group_id` parameter to support
-  changing `can_remove_subscribers_group` setting.
-* [`POST /users/me/subscriptions`](/api/subscribe): Added
-  `can_remove_subscribers_group_id` parameter to set
-  `can_remove_subscribers_group` setting while creating
-  streams.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_remove_subscribers_group_id` parameter to support setting and
+  changing the user group whose members can remove other subscribers
+  from the specified stream.
+* [`DELETE /users/me/subscriptions`](/api/unsubscribe): Expanded the
+  situations where users can use this endpoint to unsubscribe other
+  users from a stream to include the case where the current user has
+  access to the stream and is a member of the user group specified by
+  the `can_remove_subscribers_group_id` for the stream.
 
 **Feature level 160**
 
