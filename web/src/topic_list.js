@@ -6,7 +6,6 @@ import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
 import * as blueslip from "./blueslip";
-import * as narrow from "./narrow";
 import * as popover_menus from "./popover_menus";
 import * as scroll_util from "./scroll_util";
 import * as stream_topic_history from "./stream_topic_history";
@@ -306,7 +305,7 @@ export function get_topic_search_term() {
     return $filter.val().trim();
 }
 
-export function initialize() {
+export function initialize({narrow_on_topic_click}) {
     $("#stream_filters").on("click", ".topic-box", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -323,7 +322,7 @@ export function initialize() {
         const sub = sub_store.get(stream_id);
         const topic = $(e.target).parents("li").attr("data-topic-name");
 
-        narrow.activate(
+        narrow_on_topic_click(
             [
                 {operator: "stream", operand: sub.name},
                 {operator: "topic", operand: topic},

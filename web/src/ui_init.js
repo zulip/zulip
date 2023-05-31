@@ -54,6 +54,7 @@ import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
@@ -702,7 +703,7 @@ export function initialize_everything() {
     activity.initialize();
     emoji_picker.initialize();
     pm_list.initialize();
-    topic_list.initialize();
+    topic_list.initialize({narrow_on_topic_click: narrow.activate});
     topic_zoom.initialize();
     drafts.initialize();
     sent_messages.initialize();
