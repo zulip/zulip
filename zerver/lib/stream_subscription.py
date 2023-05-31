@@ -307,6 +307,7 @@ def get_subscriptions_for_send_message(
     stream_id: int,
     topic_name: str,
     possible_stream_wildcard_mention: bool,
+    topic_participant_user_ids: AbstractSet[int],
     possibly_mentioned_user_ids: AbstractSet[int],
 ) -> QuerySet[Subscription]:
     """This function optimizes an important use case for large
@@ -352,6 +353,7 @@ def get_subscriptions_for_send_message(
         | Q(email_notifications=True)
         | (Q(email_notifications=None) & Q(user_profile__enable_stream_email_notifications=True))
         | Q(user_profile_id__in=possibly_mentioned_user_ids)
+        | Q(user_profile_id__in=topic_participant_user_ids)
         | Q(
             user_profile_id__in=AlertWord.objects.filter(realm_id=realm_id).values_list(
                 "user_profile_id"

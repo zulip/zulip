@@ -624,6 +624,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             expected_count: int,
             *,
             possible_stream_wildcard_mention: bool = False,
+            topic_participant_user_ids: AbstractSet[int] = set(),
             possibly_mentioned_user_ids: AbstractSet[int] = set(),
         ) -> None:
             self.assertEqual(
@@ -633,6 +634,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                         stream_id=stream_id,
                         topic_name=topic_name,
                         possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                        topic_participant_user_ids=topic_participant_user_ids,
                         possibly_mentioned_user_ids=possibly_mentioned_user_ids,
                     )
                 ),
