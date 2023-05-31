@@ -656,25 +656,6 @@ function focus_stream_filter(e) {
     e.stopPropagation();
 }
 
-function keydown_enter_key() {
-    const stream_id = stream_cursor.get_key();
-
-    if (stream_id === undefined) {
-        // This can happen for empty searches, no need to warn.
-        return;
-    }
-
-    const sub = sub_store.get(stream_id);
-
-    if (sub === undefined) {
-        blueslip.error("Unknown stream_id for search/enter", {stream_id});
-        return;
-    }
-
-    clear_and_hide_search();
-    narrow.by("stream", sub.name, {trigger: "sidebar enter key"});
-}
-
 function actually_update_streams_for_search() {
     update_streams_sidebar();
     resize.resize_page_components();
@@ -765,6 +746,25 @@ export function set_event_handlers() {
     });
 
     const $search_input = $(".stream-list-filter").expectOne();
+
+    function keydown_enter_key() {
+        const stream_id = stream_cursor.get_key();
+
+        if (stream_id === undefined) {
+            // This can happen for empty searches, no need to warn.
+            return;
+        }
+
+        const sub = sub_store.get(stream_id);
+
+        if (sub === undefined) {
+            blueslip.error("Unknown stream_id for search/enter", {stream_id});
+            return;
+        }
+
+        clear_and_hide_search();
+        narrow.by("stream", sub.name, {trigger: "sidebar enter key"});
+    }
 
     keydown_util.handle({
         $elem: $search_input,
