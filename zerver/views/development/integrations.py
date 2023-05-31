@@ -94,9 +94,12 @@ def get_fixtures(request: HttpRequest, integration_name: str = REQ()) -> HttpRes
         )
 
         def fix_name(header: str) -> str:
-            if header.startswith("HTTP_"):  # HTTP_ is a prefix intended for Django.
-                return header[len("HTTP_") :]
-            return header
+            # HTTP_ is a prefix intended for Django. All integrations so far use this.
+            # To use another header, remove this exception and add a unittest in
+            # test_integrations_dev_panel.py that uses your integration to test this other case.
+            if not header.startswith("HTTP_"):
+                raise NotImplementedError
+            return header[len("HTTP_") :]
 
         headers = {fix_name(k): v for k, v in headers_raw.items()}
         fixtures[fixture] = {"body": body, "headers": headers}
