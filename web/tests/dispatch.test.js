@@ -67,6 +67,9 @@ const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
+const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
+    update_announce_stream_option() {},
+});
 const submessage = mock_esm("../src/submessage");
 mock_esm("../src/top_left_corner", {
     update_starred_count() {},
@@ -986,14 +989,17 @@ run_test("user_settings", ({override}) => {
     {
         event = event_fixtures.user_settings__enable_stream_audible_notifications;
         const stub = make_stub();
-        override(notifications, "handle_global_notification_updates", stub.f);
+        override(stream_ui_updates, "update_notification_setting_checkbox", stub.f);
         override(settings_notifications, "update_page", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("name", "setting");
-        assert_same(args.name, event.property);
-        assert_same(args.setting, event.value);
+        const args = stub.get_args("notification_name");
+        assert_same(args.notification_name, "audible_notifications");
     }
+
+    event = event_fixtures.user_settings__notification_sound;
+    override(notifications, "update_notification_sound_source", noop);
+    dispatch(event);
 
     event = event_fixtures.user_settings__email_address_visibility;
     user_settings.email_address_visibility = 3;

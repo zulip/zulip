@@ -19,10 +19,8 @@ import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
-import * as settings_config from "./settings_config";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
-import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -772,24 +770,4 @@ export function register_click_handlers() {
             e.preventDefault();
         },
     );
-}
-
-export function handle_global_notification_updates(notification_name, setting) {
-    // Update the global settings checked when determining if we should notify
-    // for a given message. These settings do not affect whether or not a
-    // particular stream should receive notifications.
-    if (settings_config.all_notification_settings.includes(notification_name)) {
-        user_settings[notification_name] = setting;
-    }
-
-    if (settings_config.stream_notification_settings.includes(notification_name)) {
-        stream_ui_updates.update_notification_setting_checkbox(
-            settings_config.specialize_stream_notification_setting[notification_name],
-        );
-    }
-
-    if (notification_name === "notification_sound") {
-        // Change the sound source with the new page `notification_sound`.
-        update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
-    }
 }
