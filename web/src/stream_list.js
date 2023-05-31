@@ -12,7 +12,6 @@ import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
-import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
@@ -682,7 +681,7 @@ export function initialize_stream_cursor() {
     });
 }
 
-export function initialize() {
+export function initialize({narrow_on_stream_click}) {
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -690,10 +689,10 @@ export function initialize() {
     build_stream_list();
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
-    set_event_handlers();
+    set_event_handlers({narrow_on_stream_click});
 }
 
-export function set_event_handlers() {
+export function set_event_handlers({narrow_on_stream_click}) {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -701,7 +700,7 @@ export function set_event_handlers() {
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
         const sub = sub_store.get(stream_id);
         popovers.hide_all();
-        narrow.by("stream", sub.name, {trigger: "sidebar"});
+        narrow_on_stream_click("stream", sub.name, {trigger: "sidebar"});
 
         clear_and_hide_search();
 
@@ -763,7 +762,7 @@ export function set_event_handlers() {
         }
 
         clear_and_hide_search();
-        narrow.by("stream", sub.name, {trigger: "sidebar enter key"});
+        narrow_on_stream_click("stream", sub.name, {trigger: "sidebar enter key"});
     }
 
     keydown_util.handle({

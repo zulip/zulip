@@ -652,7 +652,7 @@ export function initialize_everything() {
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
     top_left_corner.initialize();
-    stream_list.initialize();
+    stream_list.initialize({narrow_on_stream_click: narrow.by});
     stream_list_sort.initialize();
     condense.initialize();
     spoilers.initialize();
