@@ -30,7 +30,9 @@ def fetch_scheduled_messages(request: HttpRequest, user_profile: UserProfile) ->
 
 @has_request_variables
 def delete_scheduled_messages(
-    request: HttpRequest, user_profile: UserProfile, scheduled_message_id: int
+    request: HttpRequest,
+    user_profile: UserProfile,
+    scheduled_message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
     delete_scheduled_message(user_profile, scheduled_message_id)
     return json_success(request)
