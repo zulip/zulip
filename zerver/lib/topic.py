@@ -1,15 +1,15 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import orjson
 from django.db import connection
-from django.db.models import Q, QuerySet
+from django.db.models import Q, QuerySet, Subquery
 from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -284,3 +284,22 @@ def get_topic_resolution_and_bare_name(stored_name: str) -> Tuple[bool, str]:
         return (True, stored_name[len(RESOLVED_TOPIC_PREFIX) :])
 
     return (False, stored_name)
+
+
+def participants_for_topic(recipient_id: int, topic_name: str) -> Set[int]:
+    """
+    Users who either sent or reacted to the messages in the topic.
+    The function is expensive for large numbers of messages in the topic.
+    """
+    messages = Message.objects.filter(recipient_id=recipient_id, subject__iexact=topic_name)
+    participants = set(
+        UserProfile.objects.filter(
+            Q(id__in=Subquery(messages.values("sender_id")))
+            | Q(
+                id__in=Subquery(
+                    Reaction.objects.filter(message__in=messages).values("user_profile_id")
+                )
+            )
+        ).values_list("id", flat=True)
+    )
+    return participants

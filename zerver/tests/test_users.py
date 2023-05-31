@@ -1755,6 +1755,7 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
+            possible_topic_wildcard_mention=False,
             possible_stream_wildcard_mention=False,
         )
 
@@ -1767,9 +1768,11 @@ class RecipientInfoTest(ZulipTestCase):
             pm_mention_push_disabled_user_ids=set(),
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
+            topic_wildcard_mention_user_ids=set(),
             stream_wildcard_mention_user_ids=set(),
             followed_topic_push_user_ids=set(),
             followed_topic_email_user_ids=set(),
+            topic_wildcard_mention_in_followed_topic_user_ids=set(),
             stream_wildcard_mention_in_followed_topic_user_ids=set(),
             muted_sender_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
@@ -1819,6 +1822,59 @@ class RecipientInfoTest(ZulipTestCase):
             possible_stream_wildcard_mention=True,
         )
         self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+
+        do_change_user_setting(
+            hamlet,
+            "wildcard_mentions_notify",
+            True,
+            acting_user=None,
+        )
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=False,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
+        self.assertEqual(info.topic_wildcard_mention_user_ids, set())
+
+        # User who sent a message to the topic, or reacted to a message on the topic
+        # is only considered as a possible user to be notified for topic mention.
+        self.send_stream_message(hamlet, stream_name, content="test message", topic_name=topic_name)
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=False,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, set())
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=False,
+            possible_stream_wildcard_mention=True,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, set())
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+            possible_topic_wildcard_mention=True,
+            possible_stream_wildcard_mention=True,
+        )
+        self.assertEqual(info.stream_wildcard_mention_user_ids, {hamlet.id, othello.id})
+        self.assertEqual(info.topic_wildcard_mention_user_ids, {hamlet.id})
 
         sub = get_subscription(stream_name, hamlet)
         sub.push_notifications = False

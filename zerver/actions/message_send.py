@@ -69,7 +69,10 @@ from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.topic import filter_by_exact_message_topic
+from zerver.lib.topic import (
+    filter_by_exact_message_topic,
+    participants_for_topic,
+)
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.validator import check_widget_content
@@ -166,9 +169,11 @@ class RecipientInfoResult:
     pm_mention_push_disabled_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
+    topic_wildcard_mention_user_ids: Set[int]
     stream_wildcard_mention_user_ids: Set[int]
     followed_topic_email_user_ids: Set[int]
     followed_topic_push_user_ids: Set[int]
+    topic_wildcard_mention_in_followed_topic_user_ids: Set[int]
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
@@ -195,13 +200,16 @@ def get_recipient_info(
     sender_id: int,
     stream_topic: Optional[StreamTopicTarget],
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
+    possible_topic_wildcard_mention: bool = True,
     possible_stream_wildcard_mention: bool = True,
 ) -> RecipientInfoResult:
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
+    topic_wildcard_mention_user_ids: Set[int] = set()
     stream_wildcard_mention_user_ids: Set[int] = set()
     followed_topic_push_user_ids: Set[int] = set()
     followed_topic_email_user_ids: Set[int] = set()
+    topic_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
 
@@ -217,12 +225,23 @@ def get_recipient_info(
         # of this function for different message types.
         assert stream_topic is not None
 
+        topic_participant_user_ids: Set[int] = set()
+        if possible_topic_wildcard_mention:
+            # A topic participant is anyone who either sent or reacted to messages in the topic.
+            # It is expensive to call `participants_for_topic` if the topic has a large number
+            # of messages. But it is fine to call it here, as this gets called only if the message
+            # has syntax that might be a @topic mention without having confirmed the syntax isn't, say,
+            # in a code block.
+            topic_participant_user_ids = participants_for_topic(
+                recipient.id, stream_topic.topic_name
+            )
         subscription_rows = (
             get_subscriptions_for_send_message(
                 realm_id=realm_id,
                 stream_id=stream_topic.stream_id,
                 topic_name=stream_topic.topic_name,
                 possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                topic_participant_user_ids=topic_participant_user_ids,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
             .annotate(
@@ -293,14 +312,31 @@ def get_recipient_info(
         )
         followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
 
-        if possible_stream_wildcard_mention:
-            # We calculate `stream_wildcard_mention_user_ids` and `followed_topic_wildcard_mention_user_ids`
-            # only if there's a possible stream wildcard mention in the message. This is important so as
-            # to avoid unnecessarily sending huge user ID lists with thousands of elements to the
-            # event queue (which can happen because these settings are `True` by default for new users.)
-            stream_wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
-            stream_wildcard_mention_in_followed_topic_user_ids = (
+        if possible_stream_wildcard_mention or possible_topic_wildcard_mention:
+            # We calculate `wildcard_mentions_notify_user_ids` and `followed_topic_wildcard_mentions_notify_user_ids`
+            # only if there's a possible stream or topic wildcard mention in the message.
+            # This is important so as to avoid unnecessarily sending huge user ID lists with
+            # thousands of elements to the event queue (which can happen because these settings
+            # are `True` by default for new users.)
+            wildcard_mentions_notify_user_ids = notification_recipients("wildcard_mentions_notify")
+            followed_topic_wildcard_mentions_notify_user_ids = (
                 followed_topic_notification_recipients("wildcard_mentions_notify")
+            )
+
+        if possible_stream_wildcard_mention:
+            stream_wildcard_mention_user_ids = wildcard_mentions_notify_user_ids
+            stream_wildcard_mention_in_followed_topic_user_ids = (
+                followed_topic_wildcard_mentions_notify_user_ids
+            )
+
+        if possible_topic_wildcard_mention:
+            topic_wildcard_mention_user_ids = topic_participant_user_ids.intersection(
+                wildcard_mentions_notify_user_ids
+            )
+            topic_wildcard_mention_in_followed_topic_user_ids = (
+                topic_participant_user_ids.intersection(
+                    followed_topic_wildcard_mentions_notify_user_ids
+                )
             )
 
     elif recipient.type == Recipient.HUDDLE:
@@ -418,9 +454,11 @@ def get_recipient_info(
         pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
+        topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
         stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
         followed_topic_push_user_ids=followed_topic_push_user_ids,
         followed_topic_email_user_ids=followed_topic_email_user_ids,
+        topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
         stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
         muted_sender_user_ids=muted_sender_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
@@ -541,6 +579,7 @@ def build_message_send_dict(
         sender_id=message.sender_id,
         stream_topic=stream_topic,
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
+        possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
     )
 
