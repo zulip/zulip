@@ -13,7 +13,6 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
-import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
