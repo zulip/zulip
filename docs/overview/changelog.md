@@ -1,9 +1,19 @@
 # Version history
 
-This page contains the release history for the Zulip 7.x stable
-release series. See the [current Zulip changelog][latest-changelog]
-for newer release series, or the [commit log][commit-log] for an
-up-to-date list of all changes.
+This page contains the release history for the Zulip server. See also the
+[Zulip release lifecycle](../overview/release-lifecycle.md).
+
+## Zulip 8.x series
+
+### 8.0 -- unreleased
+
+This section is an incomplete draft of the release notes for the next
+major release, and is only updated occasionally. See the [commit
+log][commit-log] for an up-to-date list of all changes.
+
+#### Upgrade notes for 8.0
+
+- None yet.
 
 ## Zulip 7.x series
 
@@ -3205,6 +3215,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
+- [Draft upgrade notes for 8.0](#upgrade-notes-for-80)
 - [Upgrade notes for 7.0](#upgrade-notes-for-70)
 - [Upgrade notes for 6.0](#upgrade-notes-for-60)
 - [Upgrade notes for 5.0](#upgrade-notes-for-50)
