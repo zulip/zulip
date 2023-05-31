@@ -104,7 +104,11 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     # We shouldn't support the officially deprecated Raven series of
     # Python SDKs.
     if platform_name == "python" and int(event["version"]) < 7:
-        raise UnsupportedWebhookEventTypeError("Raven SDK")
+        # The sample event is still an old "version" -- accept it even
+        # though we don't accept events from the old Python SDK.
+        tags = event.get("tags", [])
+        if ["sample_event", "yes"] not in tags:
+            raise UnsupportedWebhookEventTypeError("Raven SDK")
     context = {
         "title": subject,
         "level": event["level"],
