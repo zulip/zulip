@@ -8,6 +8,8 @@ const {run_test} = require("./lib/test");
 const channel = mock_esm("../src/channel");
 const message_live_update = mock_esm("../src/message_live_update");
 
+set_global("document", {hasFocus: () => true});
+
 mock_esm("../src/starred_messages", {
     add() {},
     get_starred_msg_ids: () => [1, 2, 3, 4, 5],

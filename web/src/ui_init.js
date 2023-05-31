@@ -107,6 +107,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typing from "./typing";
 import * as unread from "./unread";
+import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
@@ -685,6 +686,7 @@ export function initialize_everything() {
     search.initialize();
     tutorial.initialize();
     notifications.initialize();
+    unread_ops.initialize();
     gear_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);

@@ -14,6 +14,7 @@ import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
+import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as ui_report from "./ui_report";
@@ -29,6 +30,14 @@ let loading_indicator_displayed = false;
 // the progress indicator experience of 1000, 3000, etc. feels weird.
 const INITIAL_BATCH_SIZE = 1000;
 const FOLLOWUP_BATCH_SIZE = 1000;
+
+// When you start Zulip, window_focused should be true, but it might not be the
+// case after a server-initiated reload.
+let window_focused = document.hasFocus && document.hasFocus();
+
+export function is_window_focused() {
+    return window_focused;
+}
 
 export function confirm_mark_all_as_read() {
     const html_body = render_confirm_mark_all_as_read();
@@ -423,7 +432,7 @@ export function process_scrolled_to_bottom() {
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
 export function process_visible() {
-    if (message_viewport.is_visible_and_focused() && message_viewport.bottom_message_visible()) {
+    if (viewport_is_visible_and_focused() && message_viewport.bottom_message_visible()) {
         process_scrolled_to_bottom();
     }
 }
@@ -454,4 +463,29 @@ export function mark_pm_as_read(user_ids_string) {
     // user. Eg: "123,124" or "123"
     const unread_msg_ids = unread.get_msg_ids_for_user_ids_string(user_ids_string);
     message_flags.mark_as_read(unread_msg_ids);
+}
+
+export function viewport_is_visible_and_focused() {
+    if (
+        overlays.is_overlay_or_modal_open() ||
+        !is_window_focused() ||
+        !$("#message_feed_container").is(":visible")
+    ) {
+        return false;
+    }
+    return true;
+}
+
+export function initialize() {
+    $(window)
+        .on("focus", () => {
+            window_focused = true;
+
+            // Update many places on the DOM to reflect unread
+            // counts.
+            process_visible();
+        })
+        .on("blur", () => {
+            window_focused = false;
+        });
 }
