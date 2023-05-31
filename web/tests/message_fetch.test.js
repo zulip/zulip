@@ -40,7 +40,7 @@ const message_util = mock_esm("../src/message_util");
 const stream_list = mock_esm("../src/stream_list", {
     maybe_scroll_narrow_into_view() {},
 });
-mock_esm("../src/message_scroll", {
+mock_esm("../src/message_feed_top_notices", {
     update_top_of_narrow_notices() {},
 });
 mock_esm("../src/message_feed_loading", {

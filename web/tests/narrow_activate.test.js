@@ -24,7 +24,7 @@ const message_lists = mock_esm("../src/message_lists", {
         message_lists.current = msg_list;
     },
 });
-const message_scroll = mock_esm("../src/message_scroll");
+const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");
 const message_feed_loading = mock_esm("../src/message_feed_loading");
 const message_view_header = mock_esm("../src/message_view_header");
 const notifications = mock_esm("../src/notifications");
@@ -86,7 +86,7 @@ function test_helper() {
     stub(hashchange, "save_narrow");
     stub(message_feed_loading, "hide_indicators");
     stub(message_feed_loading, "show_loading_older");
-    stub(message_scroll, "hide_top_of_narrow_notices");
+    stub(message_feed_top_notices, "hide_top_of_narrow_notices");
     stub(notifications, "redraw_title");
     stub(search, "update_button_visibility");
     stub(stream_list, "handle_narrow_activated");
@@ -185,7 +185,7 @@ run_test("basics", () => {
     assert.equal(narrow_state.narrowed_to_pms(), false);
 
     helper.assert_events([
-        [message_scroll, "hide_top_of_narrow_notices"],
+        [message_feed_top_notices, "hide_top_of_narrow_notices"],
         [message_feed_loading, "hide_indicators"],
         [compose_banner, "clear_message_sent_banners"],
         [notifications, "redraw_title"],
