@@ -14,7 +14,7 @@ import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
@@ -122,7 +122,7 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
     if (scheduled_msg.type === "stream") {
         compose_args = {
             type: "stream",
-            stream: stream_data.maybe_get_stream_name(scheduled_msg.to),
+            stream: sub_store.maybe_get_stream_name(scheduled_msg.to),
             topic: scheduled_msg.topic,
             content: scheduled_msg.content,
         };

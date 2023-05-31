@@ -66,7 +66,7 @@ Git workflow, or if you'd like a Git refresher.
 [zulip-rtd-commit-discipline]: ../contributing/commit-discipline.md
 [zulip-rtd-commit-messages]: ../contributing/commit-discipline.md
 [zulip-rtd-dev-overview]: ../development/overview.md
-[zulip-rtd-lint-tools]: ../contributing/code-style.md#lint-tools
+[zulip-rtd-lint-tools]: ../contributing/code-style.md#use-the-linters
 [zulip-rtd-mypy]: ../testing/mypy.md
 [zulip-rtd-testing]: ../testing/testing.md
 [zulip-rtd-zulip-tools]: zulip-tools.md

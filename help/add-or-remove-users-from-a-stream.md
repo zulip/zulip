@@ -1,15 +1,19 @@
 # Add or remove users from a stream
 
-## Add users to a stream
-
 By default, anyone (other than guests) subscribed to a stream can add
 users to that stream. Additionally, anyone (other than guests) can add
 users to a public stream, whether or not they are subscribed to the
-stream.
+stream. Anyone can always [unsubscribe themselves from a stream](/help/unsubscribe-from-a-stream).
 
-Organization administrators can configure which
-[roles](/help/roles-and-permissions) have access to [add other users
-to a stream][configure-invites].
+Organization administrators can also unsubscribe *other* users from any stream,
+including streams the admin is not subscribed to. They can also configure which
+[roles](/help/roles-and-permissions) have access to [add other users to a
+stream][add-users] or [remove other users from a stream][remove-users].
+
+[add-users]: /help/configure-who-can-invite-to-streams#configure-who-can-add-users
+[remove-users]: /help/configure-who-can-invite-to-streams#configure-who-can-remove-users
+
+## Add users to a stream
 
 {start_tabs}
 
@@ -50,13 +54,6 @@ subscribe the user.
 
 ## Remove users from a stream
 
-{!admin-only.md!}
-
-Anyone can always [unsubscribe themselves from a stream](/help/unsubscribe-from-a-stream).
-
-Organization administrators can also unsubscribe *other* users from any stream,
-including streams the admin is not subscribed to.
-
 {start_tabs}
 
 {relative|stream|all}
@@ -70,8 +67,6 @@ including streams the admin is not subscribed to.
 1. Click the **Unsubscribe** button in that row.
 
 {end_tabs}
-
-[configure-invites]: /help/configure-who-can-invite-to-streams
 
 ### From a user's profile (alternate method)
 
@@ -87,29 +82,6 @@ This method is useful if you need to remove one user from multiple streams.
    to remove the user from.
 
 1. Click the **Unsubscribe** button in that row.
-
-{end_tabs}
-
-## Configure who can remove users
-
-{!admin-only.md!}
-
-Organization administrators can configure who can remove other users from a
-public stream. For private streams, administrators must be subscribed to the
-stream to configure this setting.
-
-{start_tabs}
-
-{relative|stream|all}
-
-1. Select a stream.
-
-{!select-stream-view-general.md!}
-
-1. Under **Stream permissions**, configure
-   **Who can unsubscribe others from this stream?**
-
-{!save-changes.md!}
 
 {end_tabs}
 

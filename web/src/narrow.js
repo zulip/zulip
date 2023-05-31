@@ -37,6 +37,7 @@ import * as resize from "./resize";
 import * as search from "./search";
 import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -46,6 +47,7 @@ import * as typing_events from "./typing_events";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 import * as widgetize from "./widgetize";
 
@@ -64,7 +66,9 @@ export function save_pre_narrow_offset_for_reload() {
                 render_end: message_lists.current.view._render_win_end,
             });
         }
-        message_lists.current.pre_narrow_offset = message_lists.current.selected_row().offset().top;
+        message_lists.current.pre_narrow_offset = message_lists.current
+            .selected_row()
+            .get_offset_to_window().top;
     }
 }
 
@@ -409,7 +413,7 @@ export function activate(raw_operators, opts) {
             if (opts.then_select_offset === undefined) {
                 const $row = message_lists.current.get_row(opts.then_select_id);
                 if ($row.length > 0) {
-                    opts.then_select_offset = $row.offset().top;
+                    opts.then_select_offset = $row.get_offset_to_window().top;
                 }
             }
         }
@@ -900,6 +904,17 @@ export function by_topic(target_id, opts) {
         return;
     }
 
+    if (
+        user_settings.web_mark_read_on_scroll_policy !==
+        web_mark_read_on_scroll_policy_values.never.code
+    ) {
+        // We don't check message_list.can_mark_messages_read
+        // here because the target message_list isn't initialized;
+        // but the targeted message is about to be marked read
+        // in the new view.
+        unread_ops.notify_server_message_read(original);
+    }
+
     const search_terms = [
         {operator: "stream", operand: original.stream},
         {operator: "topic", operand: original.topic},
@@ -908,11 +923,21 @@ export function by_topic(target_id, opts) {
     activate(search_terms, opts);
 }
 
-// Called for the 'narrow by stream' hotkey.
 export function by_recipient(target_id, opts) {
     opts = {then_select_id: target_id, ...opts};
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
+
+    if (
+        user_settings.web_mark_read_on_scroll_policy !==
+        web_mark_read_on_scroll_policy_values.never.code
+    ) {
+        // We don't check message_list.can_mark_messages_read
+        // here because the target message_list isn't initialized;
+        // but the targeted message is about to be marked read
+        // in the new view.
+        unread_ops.notify_server_message_read(message);
+    }
 
     switch (message.type) {
         case "private":

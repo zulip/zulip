@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, 
 from urllib.parse import urlencode
 
 import jwt
+import orjson
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -86,6 +87,7 @@ from zproject.backends import (
     ExternalAuthResult,
     GenericOpenIdConnectBackend,
     SAMLAuthBackend,
+    SAMLSPInitiatedLogout,
     ZulipLDAPAuthBackend,
     ZulipLDAPConfigurationError,
     ZulipRemoteUserBackend,
@@ -102,6 +104,8 @@ if TYPE_CHECKING:
 
 ParamT = ParamSpec("ParamT")
 ExtraContext = Optional[Dict[str, Any]]
+
+EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS = 3600
 
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
@@ -154,9 +158,9 @@ def maybe_send_to_registration(
     mobile_flow_otp: Optional[str] = None,
     desktop_flow_otp: Optional[str] = None,
     is_signup: bool = False,
-    password_required: bool = True,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
+    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -185,12 +189,25 @@ def maybe_send_to_registration(
     assert not (mobile_flow_otp and desktop_flow_otp)
     if mobile_flow_otp:
         set_expirable_session_var(
-            request.session, "registration_mobile_flow_otp", mobile_flow_otp, expiry_seconds=3600
+            request.session,
+            "registration_mobile_flow_otp",
+            mobile_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
     elif desktop_flow_otp:
         set_expirable_session_var(
-            request.session, "registration_desktop_flow_otp", desktop_flow_otp, expiry_seconds=3600
+            request.session,
+            "registration_desktop_flow_otp",
+            desktop_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
+        if params_to_store_in_authenticated_session:
+            set_expirable_session_var(
+                request.session,
+                "registration_desktop_flow_params_to_store_in_authenticated_session",
+                orjson.dumps(params_to_store_in_authenticated_session).decode(),
+                expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+            )
 
     try:
         # TODO: This should use get_realm_from_request, but a bunch of tests
@@ -241,13 +258,13 @@ def maybe_send_to_registration(
         except PreregistrationUser.DoesNotExist:
             existing_prereg_user = None
 
-        # password_required and full_name data passed here as argument should take precedence
+        # full_name data passed here as argument should take precedence
         # over the defaults with which the existing PreregistrationUser that we've just fetched
         # was created.
         prereg_user = create_preregistration_user(
             email,
             realm,
-            password_required=password_required,
+            password_required=False,
             full_name=full_name,
             full_name_validated=full_name_validated,
             multiuse_invite=multiuse_obj,
@@ -311,12 +328,12 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         "is_signup",
         "multiuse_object_key",
         "full_name_validated",
+        "params_to_store_in_authenticated_session",
     ]
     for key in dict(kwargs):
         if key not in kwargs_to_pass:
             kwargs.pop(key, None)
 
-    kwargs["password_required"] = False
     return maybe_send_to_registration(request, **kwargs)
 
 
@@ -340,8 +357,18 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
       are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
     """
 
-    for key, value in result.data_dict.get("params_to_store_in_authenticated_session", {}).items():
-        request.session[key] = value
+    params_to_store_in_authenticated_session = result.data_dict.get(
+        "params_to_store_in_authenticated_session", {}
+    )
+    mobile_flow_otp = result.data_dict.get("mobile_flow_otp")
+    desktop_flow_otp = result.data_dict.get("desktop_flow_otp")
+    if not mobile_flow_otp and not desktop_flow_otp:
+        # We don't want to store anything in the browser session if we're doing
+        # mobile or desktop flows, since that's just an intermediary step and the
+        # browser session is not to be used any further. Storing extra data in
+        # it just risks bugs or leaking the data.
+        for key, value in params_to_store_in_authenticated_session.items():
+            request.session[key] = value
 
     user_profile = result.user_profile
     if user_profile is None or user_profile.is_mirror_dummy:
@@ -350,12 +377,12 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     # account, and we need to do the right thing depending whether
     # or not they're using the mobile OTP flow or want a browser session.
     is_realm_creation = result.data_dict.get("is_realm_creation")
-    mobile_flow_otp = result.data_dict.get("mobile_flow_otp")
-    desktop_flow_otp = result.data_dict.get("desktop_flow_otp")
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
-        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+        return finish_desktop_flow(
+            request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
+        )
 
     do_login(request, user_profile)
 
@@ -370,7 +397,12 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     return HttpResponseRedirect(redirect_to)
 
 
-def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
+def finish_desktop_flow(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    otp: str,
+    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
+) -> HttpResponse:
     """
     The desktop otp flow returns to the app (through the clipboard)
     a token that allows obtaining (through log_into_subdomain) a logged in session
@@ -379,7 +411,14 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: st
     of being created, as nothing more powerful is needed for the desktop flow
     and this ensures the key can only be used for completing this authentication attempt.
     """
-    result = ExternalAuthResult(user_profile=user_profile)
+    data_dict = None
+    if params_to_store_in_authenticated_session:
+        data_dict = ExternalAuthDataDict(
+            params_to_store_in_authenticated_session=params_to_store_in_authenticated_session
+        )
+
+    result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
+
     token = result.store_data()
     key = bytes.fromhex(otp)
     iv = secrets.token_bytes(12)
@@ -1109,6 +1148,39 @@ def json_fetch_api_key(
 
 
 logout_then_login = require_post(django_logout_then_login)
+
+
+def should_do_saml_sp_initiated_logout(request: HttpRequest) -> bool:
+    realm = RequestNotes.get_notes(request).realm
+    assert realm is not None
+
+    if not request.user.is_authenticated:
+        return False
+
+    if not saml_auth_enabled(realm):
+        return False
+
+    idp_name = SAMLSPInitiatedLogout.get_logged_in_user_idp(request)
+    if idp_name is None:
+        # This session wasn't authenticated via SAML, so proceed with normal logout process.
+        return False
+
+    return settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get(
+        "sp_initiated_logout_enabled", False
+    )
+
+
+@require_post
+def logout_view(request: HttpRequest, /, **kwargs: Any) -> HttpResponse:
+    if not should_do_saml_sp_initiated_logout(request):
+        return logout_then_login(request, **kwargs)
+
+    # This will first redirect to the IdP with a LogoutRequest and if successful on the IdP side,
+    # the user will be redirected to our SAMLResponse-handling endpoint with a success LogoutResponse,
+    # where we will finally terminate their session.
+    result = SAMLSPInitiatedLogout.slo_request_to_idp(request, return_to=None)
+
+    return result
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:

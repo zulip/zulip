@@ -6,6 +6,7 @@ import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
+import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
@@ -677,6 +678,7 @@ export function dispatch_normal_event(event) {
                 "send_read_receipts",
             ];
 
+            const original_default_view = user_settings.default_view;
             if (user_display_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
@@ -688,6 +690,20 @@ export function dispatch_normal_event(event) {
                 // cannot rerender with the new language the strings
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
+            }
+            if (
+                event.property === "default_view" && // If current hash is empty (default view), and the
+                // user changes the default view while in settings,
+                // then going back to an empty hash on closing the
+                // overlay will not match the view currently displayed
+                // under settings, so we set the hash to the previous
+                // value of the default view.
+                !browser_history.state.hash_before_overlay &&
+                overlays.settings_open()
+            ) {
+                browser_history.state.hash_before_overlay =
+                    "#" +
+                    (original_default_view === "recent_topics" ? "recent" : original_default_view);
             }
             if (event.property === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
@@ -716,7 +732,6 @@ export function dispatch_normal_event(event) {
                 unread_ui.update_unread_banner();
             }
             if (event.property === "color_scheme") {
-                $("body").fadeOut(300);
                 setTimeout(() => {
                     if (event.value === settings_config.color_scheme_values.night.code) {
                         dark_theme.enable();
@@ -728,7 +743,6 @@ export function dispatch_normal_event(event) {
                         dark_theme.default_preference_checker();
                         realm_logo.render();
                     }
-                    $("body").fadeIn(300);
                     message_lists.update_recipient_bar_background_color();
                 }, 300);
             }

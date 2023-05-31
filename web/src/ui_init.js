@@ -221,7 +221,7 @@ function initialize_navbar() {
         search_pills_enabled: page_params.search_pills_enabled,
     });
 
-    $("#navbar-container").html(rendered_navbar);
+    $("#header-container").html(rendered_navbar);
 }
 
 function initialize_compose_box() {
@@ -263,7 +263,7 @@ export function initialize_kitchen_sink_stuff() {
         message_viewport.set_last_movement_direction(delta);
     }, 50);
 
-    message_viewport.$message_pane.on("wheel", (e) => {
+    message_viewport.$scroll_container.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
         if (!overlays.is_overlay_or_modal_open() && narrow_state.is_message_feed_visible()) {
             // In the message view, we use a throttled mousewheel handler.
@@ -731,8 +731,19 @@ $(async () => {
             }),
             client_gravatar: false,
         };
-        const {result, msg, ...state} = await new Promise((success, error) => {
-            channel.post({url: "/json/register", data, success, error});
+        const {result, msg, ...state} = await new Promise((resolve, reject) => {
+            channel.post({
+                url: "/json/register",
+                data,
+                success: resolve,
+                error(xhr) {
+                    blueslip.error("Spectator failed to register", {
+                        status: xhr.status,
+                        bodt: xhr.responseText,
+                    });
+                    reject(new Error("Spectator failed to register"));
+                },
+            });
         });
         Object.assign(page_params, state);
     }

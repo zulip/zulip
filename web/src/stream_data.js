@@ -675,19 +675,6 @@ export function get_name(stream_name) {
     return sub.name;
 }
 
-export function maybe_get_stream_name(stream_id) {
-    if (!stream_id) {
-        return undefined;
-    }
-    const stream = sub_store.get(stream_id);
-
-    if (!stream) {
-        return undefined;
-    }
-
-    return stream.name;
-}
-
 export function is_user_subscribed(stream_id, user_id) {
     const sub = sub_store.get(stream_id);
     if (sub === undefined || !can_view_subscribers(sub)) {

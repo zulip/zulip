@@ -784,7 +784,16 @@ class Command(BaseCommand):
                 message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
                 topic_name="test-api",
                 message_content="It's time to celebrate the anniversary of provisioning this development environment :tada:!",
-                scheduled_message_id=None,
+                deliver_at=timezone_now() + timedelta(days=365),
+                realm=zulip_realm,
+            )
+            check_schedule_message(
+                sender=iago,
+                client=get_client("populate_db"),
+                recipient_type_name="private",
+                message_to=[iago.id],
+                topic_name=None,
+                message_content="Note to self: It's been a while since you've provisioned this development environment.",
                 deliver_at=timezone_now() + timedelta(days=365),
                 realm=zulip_realm,
             )

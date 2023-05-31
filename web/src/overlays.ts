@@ -49,6 +49,20 @@ function call_hooks(func_list: Hook[]): void {
     }
 }
 
+export function disable_scrolling(): void {
+    // Why disable scrolling?
+    // Since fixed / absolute positined elements don't capture the scroll event unless
+    // they overflow their defined container. Since fixed / absolute elements are not treated
+    // as part of the document flow, we cannot capture `scroll` events on them and prevent propagation
+    // as event bubbling doesn't work naturally.
+    const scrollbar_width = window.innerWidth - document.documentElement.clientWidth;
+    $("html").css({"overflow-y": "hidden", "--disabled-scrollbar-width": `${scrollbar_width}px`});
+}
+
+function enable_scrolling(): void {
+    $("html").css({"overflow-y": "scroll", "--disabled-scrollbar-width": "0px"});
+}
+
 export function is_active(): boolean {
     return Boolean(open_overlay_name);
 }
@@ -134,10 +148,11 @@ export function open_overlay(opts: OverlayOptions): void {
         },
     };
 
+    disable_scrolling();
     opts.$overlay.addClass("show");
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
-    $(".header").attr("aria-hidden", "true");
+    $("#navbar-fixed-container").attr("aria-hidden", "true");
 }
 
 // If conf.autoremove is true, the modal element will be removed from the DOM
@@ -241,11 +256,25 @@ export function open_modal(
         close_modal(modal_id);
     });
 
+    function on_show_callback(): void {
+        if (conf.on_show) {
+            conf.on_show();
+        }
+        disable_scrolling();
+    }
+
+    function on_close_callback(): void {
+        if (conf.on_hide) {
+            conf.on_hide();
+        }
+        enable_scrolling();
+    }
+
     Micromodal.show(modal_id, {
         disableFocus: true,
         openClass: "modal--opening",
-        onShow: conf?.on_show,
-        onClose: conf?.on_hide,
+        onShow: on_show_callback,
+        onClose: on_close_callback,
     });
 }
 
@@ -272,9 +301,10 @@ export function close_overlay(name: string): void {
 
     active_overlay.$element.attr("aria-hidden", "true");
     $(".app").attr("aria-hidden", "false");
-    $(".header").attr("aria-hidden", "false");
+    $("#navbar-fixed-container").attr("aria-hidden", "false");
 
     active_overlay.close_handler();
+    enable_scrolling();
 }
 
 export function close_active(): void {
@@ -355,9 +385,8 @@ export function close_active_modal(): void {
 }
 
 export function close_for_hash_change(): void {
-    $("div.overlay.show").removeClass("show");
-    if (active_overlay) {
-        active_overlay.close_handler();
+    if (open_overlay_name) {
+        close_overlay(open_overlay_name);
     }
 }
 

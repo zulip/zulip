@@ -65,7 +65,7 @@
     #search_query {
         width: 100%;
         font-size: 16px;
-        height: var(--header-height);
+        height: calc(var(--header-height) - 1px);
         padding: 0;
         padding-left: 5px;
         padding-right: 40px;

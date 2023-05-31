@@ -4,6 +4,7 @@ from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import urlencode, urljoin
 
+import orjson
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
 from django.contrib.sessions.backends.base import SessionBase
@@ -479,9 +480,32 @@ def registration_helper(
                 return_data=return_data,
             )
             if user is None:
-                can_use_different_backend = email_auth_enabled(realm) or (
-                    len(get_external_method_dicts(realm)) > 0
-                )
+                # This logic is security-sensitive. The user has NOT been successfully authenticated
+                # with LDAP and we need to carefully decide whether they should be permitted to proceed
+                # with account creation anyway or be stopped. There are three scenarios to consider:
+                #
+                # 1. EmailAuthBackend is enabled for the realm. That explicitly means that a user
+                #    with a valid confirmation link should be able to create an account, because
+                #    they were invited or organization permissions allowed sign up.
+                # 2. EmailAuthBackend is disabled - that means the organization wants to be authenticating
+                #    users with an external source (LDAP or one of the ExternalAuthMethods). If the user
+                #    came here through one of the ExternalAuthMethods, their identity can be considered
+                #    verified and account creation can proceed.
+                # 3. EmailAuthBackend is disabled and the user did not come here through an ExternalAuthMethod.
+                #    That means they came here by entering their email address on the registration page
+                #    and clicking the confirmation link received. That means their identity needs to be
+                #    verified with LDAP - and that has just failed above. Thus the account should NOT be
+                #    created.
+                #
+                if email_auth_enabled(realm):
+                    can_use_different_backend = True
+                # We can identify the user came here through an ExternalAuthMethod by password_required
+                # being set to False on the PreregistrationUser object.
+                elif len(get_external_method_dicts(realm)) > 0 and not password_required:
+                    can_use_different_backend = True
+                else:
+                    can_use_different_backend = False
+
                 if settings.LDAP_APPEND_DOMAIN:
                     # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
                     # if the email matches the ldap domain.
@@ -624,7 +648,17 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
-        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+        params_to_store_in_authenticated_session = orjson.loads(
+            get_expirable_session_var(
+                request.session,
+                "registration_desktop_flow_params_to_store_in_authenticated_session",
+                default_value="{}",
+                delete=True,
+            )
+        )
+        return finish_desktop_flow(
+            request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
+        )
 
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks

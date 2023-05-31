@@ -18,6 +18,108 @@ $time_column_min_width: 50px; /* + padding */
 $time_column_max_width: 150px;
 
 .message_row {
+    display: grid;
+    /* 2x2 grid:
+      date_unread_marker date_row
+      message_unread_marker messagebox */
+    grid-template: "date_unread_marker date_row" auto "message_unread_marker messagebox" auto / 2px 1fr;
+    border-left: 1px solid var(--color-message-list-border);
+    border-right: 1px solid var(--color-message-list-border);
+    background-color: var(--color-background-stream-message-content);
+
+    &.direct_mention {
+        background-color: var(--color-background-direct-mention);
+    }
+
+    &.group_mention {
+        background-color: var(--color-background-group-mention);
+    }
+
+    .date_row {
+        grid-area: date_row;
+        /* We only want padding for the date rows between recipient blocks */
+        padding-bottom: 0;
+
+        & span {
+            font-size: calc(12em / 14);
+            font-style: normal;
+            font-weight: 600;
+            line-height: 17px; /* identical to box height, or 131% */
+            text-align: right;
+            letter-spacing: 0.04em;
+            color: var(--color-date);
+            /* To match time in message row and date in recipient row. */
+            padding-right: 6px;
+        }
+    }
+
+    .unread_marker {
+        margin-left: var(--unread-marker-left);
+        opacity: 0;
+        transition: all 0.3s ease-out;
+
+        &.slow_fade {
+            transition: all 2s ease-out;
+        }
+
+        &.fast_fade {
+            transition: all 0.3s ease-out;
+        }
+
+        &.date_unread_marker {
+            grid-area: date_unread_marker;
+
+            .unread-marker-fill {
+                border-radius: 0 !important;
+                height: 100% !important;
+            }
+        }
+
+        &.message_unread_marker {
+            grid-area: message_unread_marker;
+        }
+    }
+
+    .unread-marker-fill {
+        height: 100%;
+        width: 2px;
+        background: linear-gradient(
+            90deg,
+            var(--color-unread-marker) 30%,
+            hsl(217deg 64% 59% / 0%)
+        );
+    }
+
+    &.unread .unread_marker {
+        transition: all 0.3s ease-out;
+        opacity: 1;
+    }
+
+    .messagebox {
+        grid-area: messagebox;
+        word-wrap: break-word;
+        cursor: pointer;
+        border: none;
+        /* The left padding value accounts for a 2px
+          unread marker, ensuring a uniform 5px of
+          padding on either side of the message box. */
+        padding: 0 5px 0 3px;
+
+        &:hover .message_controls,
+        &:focus-within .message_controls,
+        &:hover .message_failed,
+        &:focus-within .message_failed {
+            .empty-star:hover {
+                cursor: pointer;
+            }
+
+            > div {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+    }
+
     .messagebox .messagebox-content {
         /* Total 868px
         1    56px   2                                        697px                                                      3     55px     4  60px(min)  5
@@ -111,12 +213,19 @@ $time_column_max_width: 150px;
         .message_content {
             grid-row-start: 1;
             grid-column-start: 2;
-            padding: 4px 0 1px;
+            /*
+            Space between two single line messages in a paragraph is 10px.
+            There is 3px margin above and below a message. So, having a 2px
+            padding above and below the message will make the space between
+            all single paragraphs the same.
+            */
+            padding: 2px 0;
         }
 
         .message_reactions {
             grid-row-start: 4;
             grid-column-start: 2;
+            margin-top: -1px;
         }
 
         .message_edit {
@@ -299,5 +408,23 @@ $time_column_max_width: 150px;
     &.locally-echoed .slow-send-spinner {
         display: unset !important;
         cursor: default;
+    }
+}
+
+.recipient_row {
+    /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
+       for details on how this works */
+    .message_row.unread {
+        .date_unread_marker {
+            display: none;
+        }
+    }
+
+    /* Select all but the first .message_row.unread,
+       and remove the properties set from the previous rule. */
+    .message_row.unread ~ .message_row.unread {
+        .date_unread_marker {
+            display: block;
+        }
     }
 }

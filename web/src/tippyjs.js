@@ -4,6 +4,7 @@ import tippy, {delegate} from "tippy.js";
 
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
+import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
 import * as compose_recipient from "./compose_recipient";
@@ -189,8 +190,9 @@ export function initialize() {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
         onCreate(instance) {
-            const content = instance.props.content + $("#narrow-hotkey-tooltip-template").html();
-            instance.setContent(parse_html(content));
+            instance.setContent(
+                parse_html(render_narrow_tooltip({content: instance.props.content})),
+            );
         },
     });
 
@@ -317,6 +319,10 @@ export function initialize() {
     delegate("body", {
         target: "#compose-send-button",
         delay: EXTRA_LONG_HOVER_DELAY,
+        // By default, tippyjs uses a trigger value of "mouseenter focus",
+        // but by specifying "mouseenter", this will prevent showing the
+        // Send tooltip when tabbing to the Send button.
+        trigger: "mouseenter",
         appendTo: () => document.body,
         onShow(instance) {
             if (user_settings.enter_sends) {
@@ -412,6 +418,7 @@ export function initialize() {
     });
 
     message_list_tooltip([".recipient_bar_icon"], {
+        delay: LONG_HOVER_DELAY,
         onHidden(instance) {
             instance.destroy();
         },

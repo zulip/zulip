@@ -2,27 +2,34 @@
 
 ## Zulip CSS organization
 
-The Zulip application's CSS can be found in the `web/styles/`
-directory. Zulip uses [Bootstrap](https://getbootstrap.com/) as its
-main third-party CSS library.
+There are two high-level sections of CSS: the "portico" (logged-out
+pages like `/help/`, `/login/`, etc.), and the app. The Zulip
+application's CSS can be found in the `web/styles/` directory, while
+the portico CSS lives under the `web/styles/portico/` subdirectory.
 
-Zulip uses PostCSS for its CSS files. There are two high-level sections
-of CSS: the "portico" (logged-out pages like /help/, /login/, etc.),
-and the app. The portico CSS lives under the `web/styles/portico`
-subdirectory.
+To generate its CSS files, Zulip uses [PostCSS](https://postcss.org/)
+and a number of PostCSS plugins, including
+[postcss-nesting](https://github.com/csstools/postcss-nesting#readme),
+whose rules are derived from the [CSS Nesting](https://drafts.csswg.org/css-nesting-1/)
+specification.
 
 ## Editing Zulip CSS
 
 If you aren't experienced with doing web development and want to make
-CSS changes, we recommend reading the excellent [Chrome web inspector
-guide on editing HTML/CSS](https://developer.chrome.com/devtools/docs/dom-and-styles),
-especially the [section on
-CSS](https://developer.chrome.com/devtools/docs/dom-and-styles#styles)
+CSS changes, we recommend reading the excellent [Chrome developer tools
+guide to the Elements panel and CSS](https://developer.chrome.com/docs/devtools/overview/#elements),
+as well as the [section on viewing and editing CSS](https://developer.chrome.com/docs/devtools/css/)
 to learn about all the great tools that you can use to modify and test
 changes to CSS interactively in-browser (without even having the
 reload the page!).
 
-Zulip's development environment has hot code reloading configured, so
+Our CSS is formatted with [Prettier](https://prettier.io/). You can
+ask Prettier to reformat all code via our [linter
+tool](../testing/linters.md) with `tools/lint --only=prettier --fix`.
+You can also [integrate it with your
+editor](https://prettier.io/docs/en/editors.html).
+
+Zulip's development environment has hot code-reloading configured, so
 changes made in source files will immediately take effect in open
 browser windows, either by live-updating the CSS or reloading the
 browser window (following backend changes).
@@ -37,6 +44,22 @@ understand the current styling or modify it. We would very much like
 to avoid such a fate. So please make an effort to reuse existing
 styling, clean up now-unused CSS, etc., to keep things maintainable.
 
+Opt to write CSS in CSS files. Avoid using the `style=` attribute in
+HTML except for styles that are set dynamically. For example, we set
+the colors for specific streams (`{{stream_color}}`) on different
+elements dynamically, in files like `user_stream_list_item.hbs`:
+
+```html
+<span
+  class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon"
+  style="color: {{stream_color}}">
+```
+
+But for most other cases, its preferable to define logical classes and
+put your styles in external CSS files such as `zulip.css` or a more
+specific CSS file, if one exists. See the contents of the `web/styles/`
+directory.
+
 ### Be consistent with existing similar UI
 
 Ideally, do this by reusing existing CSS declarations, so that any
@@ -47,6 +70,14 @@ elements.
 
 This makes it much easier to read the code and use `git grep` to find
 where a particular class is used.
+
+Don't use the tag name in a selector unless you have to. In other words,
+use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
+type changes in the future.
+
+Additionally, multi-word class and ID values should be hyphenated,
+also known as _kebab case_. In HTML, opt for `class="my-multiword-class"`,
+with its corresponding CSS selector as `.my-multiword-class`.
 
 ## Validating CSS
 
@@ -281,5 +312,5 @@ function in those scenarios, add it to `zulip_test`. This is also
 [handlebars]: https://handlebarsjs.com/
 [trans]: https://jinja.palletsprojects.com/en/3.0.x/extensions/#i18n-extension
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
-[hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
+[hconditionals]: https://handlebarsjs.com/guide/block-helpers.html#block-helpers
 [translation]: ../translating/translating.md

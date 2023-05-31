@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import posixpath
@@ -370,7 +371,7 @@ def build_customprofile_field(
             if field in slack_custom_fields:
                 field_name = field
             else:
-                field_name = f"Slack custom field {str(custom_profile_field_id + 1)}"
+                field_name = f"Slack custom field {custom_profile_field_id + 1}"
             customprofilefield = CustomProfileField(
                 id=custom_profile_field_id,
                 name=field_name,
@@ -703,6 +704,7 @@ def convert_slack_workspace_messages(
     zerver_realmemoji: List[ZerverFieldsT],
     domain_name: str,
     output_dir: str,
+    convert_slack_threads: bool,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> Tuple[List[ZerverFieldsT], List[ZerverFieldsT], List[ZerverFieldsT]]:
     """
@@ -764,6 +766,7 @@ def convert_slack_workspace_messages(
             dm_members,
             domain_name,
             long_term_idle,
+            convert_slack_threads,
         )
 
         message_json = dict(zerver_message=zerver_message, zerver_usermessage=zerver_usermessage)
@@ -844,6 +847,7 @@ def channel_message_to_zerver_message(
     dm_members: DMMembersT,
     domain_name: str,
     long_term_idle: Set[int],
+    convert_slack_threads: bool,
 ) -> Tuple[
     List[ZerverFieldsT],
     List[ZerverFieldsT],
@@ -867,6 +871,8 @@ def channel_message_to_zerver_message(
 
     total_user_messages = 0
     total_skipped_user_messages = 0
+    thread_counter: Dict[str, int] = defaultdict(int)
+    thread_map: Dict[str, str] = {}
     for message in all_messages:
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
@@ -955,7 +961,25 @@ def channel_message_to_zerver_message(
         has_attachment = file_info["has_attachment"]
         has_image = file_info["has_image"]
 
+        # Slack's unthreaded messages go into a single topic, while
+        # threads each generate a unique topic labeled by the date and
+        # a counter among topics on that day.
         topic_name = "imported from Slack"
+        if convert_slack_threads and "thread_ts" in message:
+            thread_ts = datetime.datetime.fromtimestamp(
+                float(message["thread_ts"]), tz=datetime.timezone.utc
+            )
+            thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
+            # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
+            # threads with the same date.
+            if thread_ts_str in thread_map:
+                topic_name = thread_map[thread_ts_str]
+            else:
+                thread_date = thread_ts.strftime(r"%Y-%m-%d")
+                thread_counter[thread_date] += 1
+                count = thread_counter[thread_date]
+                topic_name = f"{thread_date} Slack thread {count}"
+                thread_map[thread_ts_str] = topic_name
 
         zulip_message = build_message(
             topic_name=topic_name,
@@ -1311,7 +1335,13 @@ def fetch_team_icons(
     return records
 
 
-def do_convert_data(original_path: str, output_dir: str, token: str, threads: int = 6) -> None:
+def do_convert_data(
+    original_path: str,
+    output_dir: str,
+    token: str,
+    threads: int = 6,
+    convert_slack_threads: bool = False,
+) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
@@ -1380,6 +1410,7 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
         realm["zerver_realmemoji"],
         domain_name,
         output_dir,
+        convert_slack_threads,
     )
 
     # Move zerver_reactions to realm.json file

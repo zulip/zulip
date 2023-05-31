@@ -108,7 +108,7 @@ html {
 
         & select {
             height: 30px;
-            padding: 4px 6px;
+            padding: 0 6px;
             width: 220px;
             font-size: 14px;
             color: hsl(0deg 0% 33%);
@@ -210,12 +210,14 @@ html {
             padding: 8px;
             font-size: 19px;
             min-width: 300px;
+            cursor: pointer;
         }
 
         &.dev-create-button {
             padding: 6px 12px;
             margin-bottom: 4px;
             font-size: 15px;
+            cursor: pointer;
         }
     }
 }

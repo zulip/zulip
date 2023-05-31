@@ -192,7 +192,7 @@
           if (this.options.fixed) {
             // If using position: fixed, position relative to top of
             // viewport
-            newtop = tp.top - $(document).scrollTop()
+            newtop = tp.top;
             tp = $.extend(tp, {top: newtop,
                                position: 'fixed'})
           }
@@ -248,7 +248,7 @@
       }
 
     , getPosition: function (inside) {
-        return $.extend({}, (inside ? {top: 0, left: 0} : this.$element.offset()), {
+        return $.extend({}, (inside ? {top: 0, left: 0} : this.$element.get_offset_to_window()), {
           width: this.$element[0].offsetWidth
         , height: this.$element[0].offsetHeight
         })

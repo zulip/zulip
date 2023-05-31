@@ -3,7 +3,7 @@
 }
 
 .modal-bg {
-    background-color: hsl(0deg 0% 98%);
+    background-color: var(--color-background-modal);
 }
 
 /* Styles for the Micromodal-based modals */
@@ -20,7 +20,7 @@
 .modal__container {
     display: flex;
     flex-direction: column;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-modal);
     max-width: calc(100% - 32px);
     max-height: 96%;
     width: 32.5rem;
@@ -335,7 +335,7 @@
 .modal_select {
     height: 30px;
     width: 220px;
-    padding: 4px 6px;
+    padding: 0 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);

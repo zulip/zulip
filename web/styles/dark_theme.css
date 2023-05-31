@@ -60,12 +60,6 @@
         border-top: 1px solid hsl(0deg 0% 100% / 20%);
     }
 
-    /* Restate this here for more selector specificity */
-    .modal-bg,
-    .modal__container {
-        background-color: var(--color-background);
-    }
-
     .modal__close {
         &::before {
             color: hsl(236deg 33% 90%);
@@ -209,9 +203,6 @@
     & body,
     .app-main,
     .column-middle,
-    #groups_overlay .right,
-    #subscription_overlay .right,
-    #settings_page .right,
     #streams_header,
     .private_messages_container,
     .header {
@@ -647,6 +638,14 @@
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
     }
 
+    #draft_overlay,
+    #scheduled_messages_overlay_container {
+        .flex.overlay-content > div {
+            box-shadow: 0 0 30px hsl(213deg 31% 0%);
+            background-color: var(--color-background);
+        }
+    }
+
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
     .dropdown .dropdown-menu,
@@ -869,6 +868,7 @@
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .user-groups-container .user-groups-header,
+    .overlay-messages-header,
     .grey-box,
     .white-box,
     .stream-email,
@@ -884,7 +884,7 @@
     }
 
     .table-striped tbody tr:nth-child(odd) td {
-        background-color: var(--color-background);
+        background-color: var(--color-background-modal);
     }
 
     .user-groups-container .right .display-type,
@@ -920,8 +920,12 @@
         text-shadow: none;
     }
 
+    /* There is no lefthand border to cover in
+      dark mode, so don't apply negative margin
+      that would otherwise pull the unread marker
+      to the left. */
     .unread_marker {
-        left: 0;
+        margin-left: 0;
     }
 
     .selected_message .messagebox-content {
@@ -931,21 +935,6 @@
     .rendered_markdown {
         .alert-word {
             background-color: hsl(22deg 70% 35%);
-        }
-
-        .user-mention,
-        .user-group-mention {
-            background: linear-gradient(
-                to bottom,
-                hsl(0deg 0% 0% / 20%) 0%,
-                hsl(0deg 0% 0% / 10%) 100%
-            );
-            box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
-        }
-
-        .user-mention-me :not(.silent) {
-            background-color: hsl(355deg 37% 31%);
-            box-shadow: 0 0 0 1px hsl(330deg 40% 20%);
         }
 
         .codehilite code,

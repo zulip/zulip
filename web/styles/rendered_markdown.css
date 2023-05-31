@@ -162,19 +162,45 @@
 
     .user-group-mention,
     .user-mention {
+        font-size: 14px;
+        line-height: 17px;
+        padding: 0 3px;
         border-radius: 3px;
-        padding: 0 0.2em;
-        box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
-        margin-right: 2px;
-        margin-left: 2px;
         white-space: nowrap;
-        background: linear-gradient(
-            to bottom,
-            hsl(0deg 0% 0% / 10%) 0%,
-            hsl(0deg 0% 0% / 0%) 100%
-        );
         display: inline-block;
-        margin-bottom: 1px;
+    }
+
+    .user-mention {
+        color: var(--color-text-other-mention);
+        background-color: var(--color-background-text-direct-mention);
+
+        &.user-mention-me {
+            color: var(--color-text-self-direct-mention);
+            font-weight: 600;
+
+            &[data-user-id="*"] {
+                color: var(--color-text-self-group-mention);
+                background-color: var(--color-background-text-group-mention);
+            }
+        }
+
+        &:hover {
+            background-color: var(--color-background-text-hover-direct-mention);
+        }
+    }
+
+    .user-group-mention {
+        color: var(--color-text-other-mention);
+        background-color: var(--color-background-text-group-mention);
+
+        &.user-mention-me {
+            color: var(--color-text-self-group-mention);
+            font-weight: 600;
+        }
+
+        &:hover {
+            background-color: var(--color-background-text-hover-group-mention);
+        }
     }
 
     .alert-word {
@@ -593,6 +619,11 @@
         position: absolute;
         right: 2px;
         margin-top: -4px;
+
+        /* Remove the outline when clicking on the copy-to-clipboard button */
+        &:focus {
+            outline: none;
+        }
     }
 
     .code_external_link {

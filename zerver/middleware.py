@@ -4,7 +4,7 @@ import tempfile
 import time
 import traceback
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
@@ -579,6 +579,14 @@ class HostDomainMiddleware(MiddlewareMixin):
 
             return render(request, "zerver/invalid_realm.html", status=404)
 
+        # Check that we're not using the non-canonical form of a REALM_HOSTS subdomain
+        if subdomain in settings.REALM_HOSTS:
+            host = request.get_host().lower()
+            formal_host = request_notes.realm.host
+            if host != formal_host and not host.startswith(formal_host + ":"):
+                return HttpResponseRedirect(
+                    urljoin(request_notes.realm.uri, request.get_full_path())
+                )
         return None
 
 

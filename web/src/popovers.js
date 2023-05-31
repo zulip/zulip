@@ -163,7 +163,7 @@ function load_medium_avatar(user, $elt) {
 }
 
 function calculate_info_popover_placement(size, $elt) {
-    const ypos = $elt.offset().top;
+    const ypos = $elt.get_offset_to_window().top;
 
     if (!(ypos + size / 2 < message_viewport.height() && ypos > size / 2)) {
         if (ypos + size < message_viewport.height()) {
@@ -210,6 +210,7 @@ function show_user_info_popover_manage_menu(element, user) {
         placement: "bottom",
         html: true,
         trigger: "manual",
+        fixed: true,
     });
 
     $popover_elt.popover("show");
@@ -303,10 +304,7 @@ function render_user_info_popover(
     const $popover_content = $(render_user_info_popover_content(args));
     popover_element.popover({
         content: $popover_content.get(0),
-        // TODO: Determine whether `fixed` should be applied
-        // unconditionally.  Right now, we only do it for the user
-        // sidebar version of the popover.
-        fixed: template_class === "user_popover",
+        fixed: true,
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
@@ -316,7 +314,7 @@ function render_user_info_popover(
         }),
         html: true,
         trigger: "manual",
-        top_offset: $("#userlist-title").offset().top + 15,
+        top_offset: $("#userlist-title").get_offset_to_window().top + 15,
         fix_positions: true,
     });
     popover_element.popover("show");
@@ -500,6 +498,7 @@ function show_user_group_info_popover(element, group, message) {
             content: render_user_group_info_popover_content(args),
             html: true,
             trigger: "manual",
+            fixed: true,
         });
         $elt.popover("show");
         $current_message_info_popover_elem = $elt;
@@ -709,7 +708,7 @@ export function toggle_playground_link_popover(element, playground_info) {
     }
     const $elt = $(element);
     if ($elt.data("popover") === undefined) {
-        const ypos = $elt.offset().top;
+        const ypos = $elt.get_offset_to_window().top;
         $elt.popover({
             // It's unlikely we'll have more than 3-4 playground links
             // for one language, so it should be OK to hardcode 120 here.
@@ -718,6 +717,7 @@ export function toggle_playground_link_popover(element, playground_info) {
             content: render_playground_links_popover_content({playground_info}),
             html: true,
             trigger: "manual",
+            fixed: true,
         });
         $elt.popover("show");
         $current_playground_links_popover_elem = $elt;
@@ -1025,7 +1025,7 @@ export function register_click_handlers() {
     {
         let last_scroll = 0;
 
-        $(".app").on("scroll", () => {
+        $(document).on("scroll", () => {
             if (suppress_scroll_hide) {
                 suppress_scroll_hide = false;
                 return;

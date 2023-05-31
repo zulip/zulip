@@ -1211,7 +1211,7 @@ def check_update_message(
             user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
         )
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message's topic has passed"))
+            raise JsonableError(_("The time limit for editing this message's topic has passed."))
 
     rendering_result = None
     links_for_embed: Set[str] = set()

@@ -1,7 +1,9 @@
 # Reviewing Zulip code
 
-Code review is a key part of how Zulip does development. It's an essential aspect
-of our process to build a high-quality product with a maintainable code base.
+Code review is a key part of how Zulip does development. It's an essential
+aspect of our process to build a high-quality product with a maintainable
+codebase. See the [pull request review process](../contributing/review-process.md)
+guide for a detailed overview of Zulip's PR review process.
 
 ## Principles of code review
 
@@ -283,12 +285,15 @@ Some scenarios to consider:
 
 ### Asking for a code review
 
-There are a few good ways to ask for a code review:
+The [pull request review process](../contributing/review-process.md) guide
+provides a detailed overview of Zulip's PR review process. Your reviewers and
+Zulip's maintainers will help shepherd your PR through the process. There are
+also some additional ways to ask for a code review:
 
 - Are there folks who have been working on similar things, or a loosely related
   area? If so, they might be a good person to review your PR. `@`-mention them
   with something like "`@person`, would you be up for reviewing this?" If
-  you're not sure whether they are familiar with the code review process, you
+  you're not sure whether they are familiar with how Zulip code reviews work, you
   can also include a link to this guide.
 
 - If you're not sure who to ask, you can post a message in
@@ -296,19 +301,11 @@ There are a few good ways to ask for a code review:
   development community server](https://zulip.com/development-community/) to reach
   out to a wider group of potential reviewers.
 
-- If you would like feedback on user-facing changes, you can `@`-mention `@alya`
-  on your PR. She can also help find someone to review the code once the PR is
-  ready from a product perspective.
-
-- Finally, if you are not sure who should review the PR, just indicate clearly
-  that it is ready for review, and the project maintainers will take a look and
-  follow up with next steps.
-
-With any of these approaches, please be patient and mindful of the fact that it
-isn't always possible to provide a quick reply. Going though the [review
-process](#how-to-review-code) described above for your own PR will make your
-code easier and faster to review, which makes it much more likely that it will
-be reviewed quickly and require fewer review cycles.
+Please be patient and mindful of the fact that it isn't always possible to
+provide a quick reply. Going though the [review process](#how-to-review-code)
+described above for your own PR will make your code easier and faster to review,
+which makes it much more likely that it will be reviewed quickly and require
+fewer review cycles.
 
 ### Reviewing someone else's code
 

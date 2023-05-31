@@ -14,7 +14,6 @@ import * as popovers from "./popovers";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as spectators from "./spectators";
-import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -72,10 +71,10 @@ export function fetch_and_render_message_history(message) {
                     if (!sub) {
                         item.prev_stream = $t({defaultMessage: "Unknown stream"});
                     } else {
-                        item.prev_stream = stream_data.maybe_get_stream_name(msg.prev_stream);
+                        item.prev_stream = sub_store.maybe_get_stream_name(msg.prev_stream);
                     }
                     if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = stream_data.maybe_get_stream_name(
+                        prev_stream_item.new_stream = sub_store.maybe_get_stream_name(
                             msg.prev_stream,
                         );
                     }
@@ -98,10 +97,10 @@ export function fetch_and_render_message_history(message) {
                     if (!sub) {
                         item.prev_stream = $t({defaultMessage: "Unknown stream"});
                     } else {
-                        item.prev_stream = stream_data.maybe_get_stream_name(msg.prev_stream);
+                        item.prev_stream = sub_store.maybe_get_stream_name(msg.prev_stream);
                     }
                     if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = stream_data.maybe_get_stream_name(
+                        prev_stream_item.new_stream = sub_store.maybe_get_stream_name(
                             msg.prev_stream,
                         );
                     }
@@ -119,7 +118,7 @@ export function fetch_and_render_message_history(message) {
                 prev_time = time;
             }
             if (prev_stream_item !== null) {
-                prev_stream_item.new_stream = stream_data.maybe_get_stream_name(message.stream_id);
+                prev_stream_item.new_stream = sub_store.maybe_get_stream_name(message.stream_id);
             }
             $("#message-history").attr("data-message-id", message.id);
             $("#message-history").html(

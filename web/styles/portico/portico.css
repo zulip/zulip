@@ -253,6 +253,16 @@ html {
     & .scroll-target {
         /* Match to where simplebar scrolls */
         scroll-margin-top: 20px;
+    }
+    /* Highlight the headings as well as the first child
+      of any targeted div, as in the API documentation. */
+    & h1.scroll-target,
+    & h2.scroll-target,
+    & h3.scroll-target,
+    & h4.scroll-target,
+    & h5.scroll-target,
+    & h6.scroll-target,
+    & div.scroll-target > :first-child {
         /* Increase the highlighted space around the text... */
         padding: 6px 8px;
         border-radius: 7px 7px 0 0;

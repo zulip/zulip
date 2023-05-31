@@ -36,6 +36,10 @@ mock_esm("../src/stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
+set_global("document", {
+    to_$: () => $("document-stub"),
+});
+
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const popovers = zrequire("popovers");
@@ -196,6 +200,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     });
 
     $.create(".user_popover_email", {children: []});
+    $("#userlist-title").get_offset_to_window = () => 10;
     $popover_content.get = () => {};
     const $user_name_element = $.create("user_full_name");
     const $bot_owner_element = $.create("bot_owner");
@@ -206,7 +211,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     handler.call($target, e);
 
     const avatar_img = image_stubber.get(0);
-    assert.equal(avatar_img.src.toString(), "/avatar/42/medium");
+    assert.equal(avatar_img.src.toString(), "/avatar/42/medium?version=5");
 
     // todo: load image
 });

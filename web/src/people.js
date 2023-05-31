@@ -736,7 +736,14 @@ export function medium_avatar_url_for_person(person) {
         return medium_gravatar_url_for_email(person.email);
     }
 
-    return "/avatar/" + person.user_id + "/medium";
+    // We need to attach a version to the URL as a cache-breaker so that the browser
+    // will update the image in real time when user uploads a new avatar.
+    //
+    // TODO: Newly created users sometimes are first learned about via
+    // the report_late_add code path; these are missing the avatar_version
+    // metadata. Long term, we should clean up that possibility, but
+    // until it is, we fallback to using a version number of 0.
+    return `/avatar/${person.user_id}/medium?version=${person.avatar_version ?? 0}`;
 }
 
 export function sender_info_for_recent_topics_row(sender_ids) {
@@ -1262,7 +1269,13 @@ export function deactivate(person) {
 }
 
 export function report_late_add(user_id, email) {
-    if (reload_state.is_in_progress()) {
+    // If the events system is not running, then it is expected that
+    // we will fetch messages from the server that were sent by users
+    // who don't exist in our users data set. This can happen because
+    // we're in the middle of a reload (and thus stopped our event
+    // queue polling) or because we are a spectator and never had an
+    // event queue in the first place.
+    if (reload_state.is_in_progress() || page_params.is_spectator) {
         blueslip.log("Added user late", {user_id, email});
     } else {
         blueslip.error("Added user late", {user_id, email});

@@ -101,7 +101,7 @@ from zerver.lib.types import (
     UserFieldElement,
     Validator,
 )
-from zerver.lib.utils import make_safe_digest
+from zerver.lib.utils import generate_api_key, make_safe_digest
 from zerver.lib.validator import (
     check_date,
     check_int,
@@ -398,8 +398,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     ]
 
     MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
-
-    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
     DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
 
@@ -1822,7 +1820,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     # fully created on servers that do not have a configured ToS.
     TOS_VERSION_BEFORE_FIRST_LOGIN = "-1"
     tos_version = models.CharField(null=True, max_length=10)
-    api_key = models.CharField(max_length=API_KEY_LENGTH)
+    api_key = models.CharField(max_length=API_KEY_LENGTH, default=generate_api_key, unique=True)
 
     # A UUID generated on user creation. Introduced primarily to
     # provide a unique key for a user for the mobile push

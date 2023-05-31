@@ -18,6 +18,7 @@ import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 let user_acknowledged_wildcard = false;
@@ -58,19 +59,49 @@ export function needs_subscribe_warning(user_id, stream_id) {
     return true;
 }
 
-export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
-    // For PMs, we currently don't warn about links to private
-    // streams, since you are specifically sharing the existence of
-    // the private stream with someone.  One could imagine changing
-    // this policy if user feedback suggested it was useful.
-    if (compose_state.get_message_type() !== "stream") {
-        return;
+function get_stream_id_for_textarea($textarea) {
+    // Returns the stream ID, if any, associated with the textarea:
+    // The recipient of a message being edited, or the target
+    // recipient of a message being drafted in the compose box.
+    // Returns undefined if the appropriate context is a direct
+    // message conversation.
+    const is_in_editing_area = $textarea.closest(".message_row").length > 0;
+
+    if (is_in_editing_area) {
+        const stream_id_str = $textarea
+            .closest(".recipient_row")
+            .find(".message_header")
+            .attr("data-stream-id");
+        if (stream_id_str === undefined) {
+            // Direct messages don't have a data-stream-id.
+            return undefined;
+        }
+        return Number.parseInt(stream_id_str, 10);
     }
 
-    const compose_stream = stream_data.get_sub(compose_state.stream_name());
-    if (compose_stream === undefined) {
-        // We have an invalid stream name, don't warn about this here as
-        // we show an error to the user when they try to send the message.
+    const stream_name = compose_state.stream_name();
+
+    if (!stream_name) {
+        return undefined;
+    }
+
+    return stream_data.get_sub(stream_name).stream_id;
+}
+
+export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
+    const stream_id = get_stream_id_for_textarea($textarea);
+
+    if (!stream_id) {
+        // There are two cases in which the `stream_id` will be
+        // omitted, and we want to exclude the warning banner:
+        //
+        // 1. We currently do not warn about links to private streams
+        // in direct messages; it would probably be an improvement to
+        // do so when one of the recipients is not subscribed.
+        //
+        // 2. If we have an invalid stream name, we do not warn about
+        // it here; we will show an error to the user when they try to
+        // send the message.
         return;
     }
 
@@ -92,7 +123,7 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
     // knows it exists.  (But always warn Zephyr users, since
     // we may not know their stream's subscribers.)
     if (
-        peer_data.is_subscriber_subset(compose_stream.stream_id, linked_stream.stream_id) &&
+        peer_data.is_subscriber_subset(stream_id, linked_stream.stream_id) &&
         !page_params.realm_is_zephyr_mirror_realm
     ) {
         return;
@@ -108,10 +139,6 @@ export function warn_if_private_stream_is_linked(linked_stream, $textarea) {
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
-    if (compose_state.get_message_type() !== "stream") {
-        return;
-    }
-
     // Disable for Zephyr mirroring realms, since we never have subscriber lists there
     if (page_params.realm_is_zephyr_mirror_realm) {
         return;
@@ -123,19 +150,13 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
         return; // don't check if @all/@everyone/@stream
     }
 
-    const stream_name = compose_state.stream_name();
+    const stream_id = get_stream_id_for_textarea($textarea);
 
-    if (!stream_name) {
+    if (!stream_id) {
         return;
     }
 
-    const sub = stream_data.get_sub(stream_name);
-
-    if (!sub) {
-        return;
-    }
-
-    if (needs_subscribe_warning(user_id, sub.stream_id)) {
+    if (needs_subscribe_warning(user_id, stream_id)) {
         const $banner_container = compose_banner.get_compose_banner_container($textarea);
         const $existing_invites_area = $banner_container.find(
             `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
@@ -150,7 +171,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned, $textarea) {
         if (!existing_invites.includes(user_id)) {
             const context = {
                 user_id,
-                stream_id: sub.stream_id,
+                stream_id,
                 banner_type: compose_banner.WARNING,
                 button_text: can_subscribe_other_users
                     ? $t({defaultMessage: "Subscribe them"})
@@ -231,7 +252,7 @@ export function warn_if_topic_resolved(topic_changed) {
 
 function show_wildcard_warnings(opts) {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
-    const stream_name = stream_data.maybe_get_stream_name(opts.stream_id);
+    const stream_name = sub_store.maybe_get_stream_name(opts.stream_id);
     const is_edit_container = opts.$banner_container.closest(".edit_form_banners").length > 0;
     const classname = compose_banner.CLASSNAMES.wildcard_warning;
 

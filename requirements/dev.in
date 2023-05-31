@@ -15,7 +15,7 @@ Twisted
 Scrapy
 
 # Needed to compute test coverage
-coverage<6.4.3  # undiagnosed bug
+coverage
 
 # fake for LDAP testing
 fakeldap

@@ -450,6 +450,9 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         ## default, Zulip asks the user whether they want to create an
         ## account or try to log in again using another method.
         # "auto_signup": False,
+        ## Determines whether Service Provider initiated SAML Single Logout should be enabled.
+        ## Note that IdP-initiated Single Logout must be configured before enabling this.
+        # "sp_initiated_logout_enabled": False,
     },
 }
 

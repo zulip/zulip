@@ -446,7 +446,7 @@ paths:
                                         email:
                                           type: string
                                           description: |
-                                            The email of the user.
+                                            The Zulip API email of the user.
 
                                             **Deprecated**: This field will be removed in a future
                                             release as it is redundant with the `user_id`.
@@ -505,9 +505,10 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the value of the user's delivery email as visible to you changes,
+                                        When the value of a user's delivery email as visible to you changes,
                                         either due to the email address changing or your access to the user's
-                                        email via their `email_address_visibility` policy changing.
+                                        email changing via an update to their `email_address_visibility`
+                                        setting.
 
                                         **Changes**: Prior to Zulip 7.0 (feature level 163), this event was
                                         sent only to the affected user, and this event would only be triggered
@@ -523,13 +524,14 @@ paths:
                                           description: |
                                             The new delivery email of the user.
 
-                                            This value can be `null` if user changes the
-                                            `email_address_visibility` value such that
-                                            you cannot access user's real email.
+                                            This value can be `null` if the affected user
+                                            changed their `email_address_visibility` setting
+                                            such that you cannot access their real email.
 
-                                            **Changes**: As of Zulip 7.0 (feature level 163),
-                                            `null` is a possible value as this event is also
-                                            sent on changing `email_address_visibility` setting.
+                                            **Changes**: Before Zulip 7.0 (feature level 163),
+                                            `null` was not a possible value for this event as
+                                            it was only sent to the affected user when their
+                                            email address was changed.
                                     - type: object
                                       additionalProperties: false
                                       description: |
@@ -569,7 +571,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the Zulip display email address of a user changes,
+                                        When the Zulip API email address of a user changes,
                                         either due to the user's email address changing, or
                                         due to changes in the user's
                                         [email address visibility][help-email-visibility].
@@ -586,7 +588,7 @@ paths:
                                             The new value of `email` for the user. The client
                                             should update any data structures associated
                                             with this user to use this new value as the
-                                            user's Zulip display email address.
+                                            user's Zulip API email address.
                               additionalProperties: false
                               example:
                                 {
@@ -966,6 +968,7 @@ paths:
                                   "person":
                                     {
                                       "email": "foo@zulip.com",
+                                      "delivery_email": null,
                                       "user_id": 38,
                                       "avatar_version": 1,
                                       "is_admin": false,
@@ -1049,7 +1052,7 @@ paths:
                                 email:
                                   type: string
                                   description: |
-                                    The email of the user.
+                                    The Zulip API email of the user.
 
                                     **Deprecated**: This field will be removed in a future
                                     release as it is redundant with the `user_id`.
@@ -1067,19 +1070,24 @@ paths:
                                     type: object
                                     description: |
                                       `{client_name}`: Object containing the details of the user's
-                                      presence on a particular platform. The object key is the client's
-                                      platform name, for example `website` or `ZulipDesktop`.
+                                      presence.
 
                                       **Changes**: Starting with Zulip 7.0 (feature level 178), this
-                                      will always contain two keys, `website` and `aggregated`, with
-                                      identical data. The server no longer stores which client submitted
-                                      presence updates.
+                                      will always be `"website"` as the server no longer stores which
+                                      client submitted presence updates.
+
+                                      Previously, the object key was the client's platform name, for
+                                      example `website` or `ZulipDesktop`.
                                     additionalProperties: false
                                     properties:
                                       client:
                                         type: string
                                         description: |
                                           The client's platform name.
+
+                                          **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                                          will always be `"website"` as the server no longer stores which
+                                          client submitted presence updates.
                                       status:
                                         type: string
                                         enum:
@@ -1098,6 +1106,10 @@ paths:
                                         description: |
                                           Whether the client is capable of showing mobile/push notifications
                                           to the user.
+
+                                          **Changes**: Starting with Zulip 7.0 (feature level 178), this
+                                          will always be `false` as the server no longer stores which
+                                          client submitted presence updates.
                               additionalProperties: false
                               example:
                                 {
@@ -1107,9 +1119,9 @@ paths:
                                   "server_timestamp": 1594825445.320078373,
                                   "presence":
                                     {
-                                      "ZulipAndroid/1.0":
+                                      "website":
                                         {
-                                          "client": "ZulipAndroid/1.0",
+                                          "client": "website",
                                           "status": "idle",
                                           "timestamp": 1594825445,
                                           "pushable": false,
@@ -1998,10 +2010,13 @@ paths:
                                     preferences for the topic, such as whether the topic
                                     is muted.
 
-                                    - 0 = None. Used in events to indicate that the user no
-                                      longer has a special visibility policy for this
-                                      topic (for example, the user just unmuted it).
+                                    - 0 = None. Used to indicate that the user no
+                                      longer has a special visibility policy for this topic.
                                     - 1 = Muted. Used to record muted topics.
+                                    - 2 = Unmuted. Used to record unmuted topics.
+
+                                    **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                    a visibility policy option.
                               additionalProperties: false
                               example:
                                 {
@@ -2448,7 +2463,7 @@ paths:
                                     email:
                                       type: string
                                       description: |
-                                        The Zulip display email address for the user.
+                                        The Zulip API email address for the user.
                                 recipients:
                                   type: array
                                   description: |
@@ -2462,7 +2477,7 @@ paths:
                                     type: object
                                     additionalProperties: false
                                     description: |
-                                      Object containing the user ID and email of a recipient.
+                                      Object containing the user ID and Zulip API email of a recipient.
                                     properties:
                                       user_id:
                                         type: integer
@@ -2471,7 +2486,7 @@ paths:
                                       email:
                                         type: string
                                         description: |
-                                          The Zulip display email address for the user.
+                                          The Zulip API email address for the user.
                                 stream_id:
                                   type: integer
                                   description: |
@@ -2566,7 +2581,7 @@ paths:
                                     email:
                                       type: string
                                       description: |
-                                        The Zulip display email address for the user.
+                                        The Zulip API email address for the user.
                                 recipients:
                                   type: array
                                   description: |
@@ -2589,7 +2604,7 @@ paths:
                                       email:
                                         type: string
                                         description: |
-                                          The Zulip display email address for the user.
+                                          The Zulip API email address for the user.
                                 stream_id:
                                   type: integer
                                   description: |
@@ -3098,26 +3113,23 @@ paths:
                                 set of configured [linkifiers](/help/add-a-custom-linkifier)
                                 for the organization has changed.
 
-                                Processing this event is important to doing Markdown local echo
+                                Processing this event is important for doing Markdown local echo
                                 correctly.
 
-                                The client will not receive this event unless the event queue
-                                is registered with `linkifier_url_template` client capability set to `true`.
+                                Clients will not receive this event unless the event queue is
+                                registered with the client capability
+                                `{"linkifier_url_template": true}`.
                                 See [`POST /register`](/api/register-queue#parameter-client_capabilities)
                                 for how client capabilities can be specified.
 
-                                **Changes**: Changed in Zulip 7.0 (feature level 176). This event no longer
-                                gets sent unless the `linkifier_url_template` client capability is set to
-                                `true`, due to the backwards-incompatible change from specifying the
-                                URL from a `url_format` format string to `url_template`.
+                                **Changes**: Before Zulip 7.0 (feature level 176), the
+                                `linkifier_url_template` client capability was not required. The
+                                requirement was added because linkifiers were updated to contain
+                                a URL template instead of a URL format string, which was not a
+                                backwards-compatible change.
 
-                                **Changes**: New in Zulip 4.0 (feature level 54), replacing the
-                                previous `realm_filters` event type, which is still sent for
-                                backwards compatibility reasons.
-
-                                Clients should migrate to requesting and processing the
-                                `realm_linkifiers` event type when possible, since we plan to remove
-                                the legacy `realm_filters` logic entirely in a future release.
+                                New in Zulip 4.0 (feature level 54), replacing the deprecated
+                                `realm_filters` event type.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3138,8 +3150,8 @@ paths:
                                       pattern:
                                         type: string
                                         description: |
-                                          The string regex pattern which represents the pattern that
-                                          should be linkified by this linkifier.
+                                          The [Python regular expression](https://docs.python.org/3/howto/regex.html)
+                                          that represents the pattern that should be linkified by this linkifier.
                                       url_template:
                                         type: string
                                         description: |
@@ -3169,16 +3181,16 @@ paths:
                               additionalProperties: false
                               deprecated: true
                               description: |
-                                Legacy event type. Sent to all users in a Zulip organization
-                                when the set of configured [linkifiers](/help/add-a-custom-linkifier)
-                                for the organization has changed.
+                                Legacy event type that is no longer sent to clients. Previously, sent
+                                to all users in a Zulip organization when the set of configured
+                                [linkifiers](/help/add-a-custom-linkifier) for the organization was
+                                changed.
 
-                                **Changes**: In Zulip 7.0 (feature level 176), clients will no longer
-                                receive this event.
+                                **Changes**: Prior to Zulip 7.0 (feature level 176), this event type
+                                was sent to clients.
 
-                                **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
-                                the `realm_linkifiers` event type, which has a clearer name and format,
-                                instead.
+                                **Deprecated** in Zulip 4.0 (feature level 54), and replaced by the
+                                `realm_linkifiers` event type, which has a clearer name and format.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3196,12 +3208,13 @@ paths:
                                         - type: integer
                                         - type: string
                                   description: |
-                                    An array of tuples, where each tuple describes a linkifier.
-                                    The first element of the tuple is a
-                                    string regex pattern which represents the pattern that should
-                                    be linkified on matching. The second element is the URL with which the
-                                    pattern matching string should be linkified with and the third element
-                                    is the ID of the realm filter.
+                                    An array of tuples, where each tuple described a linkifier. The first
+                                    element of the tuple was a string regex pattern which represented the
+                                    pattern to be linkified on matching, for example `"#(?P<id>[123])"`.
+                                    The second element was the URL format string that the pattern should be
+                                    linkified with. A URL format string for the above example would be
+                                    `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
+                                    was the ID of the realm filter.
                               example:
                                 {
                                   "type": "realm_filters",
@@ -3795,11 +3808,15 @@ paths:
                                 event type supports multiple properties being changed in a
                                 single event.
 
-                                **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
-                                It was replaced by a [user setting](/api/update-settings) with a
-                                [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
-                                values preserved. Clients can support all versions by supporting the current API and treating
-                                every user as having the realm's email address visibility value.
+                                **Changes**: In Zulip 7.0 (feature level 163), the realm setting
+                                `email_address_visibility` was removed. It was replaced by a [user
+                                setting](/api/update-settings#parameter-email_address_visibility) with
+                                a [realm user default][user-defaults], with the encoding of different
+                                values preserved. Clients can support all versions by supporting the
+                                current API and treating every user as having the realm's
+                                `email_address_visibility` value.
+
+                                [user-defaults]: /api/update-realm-user-settings-defaults#parameter-email_address_visibility
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3825,7 +3842,13 @@ paths:
                                   description: |
                                     An object containing the properties that have changed.
 
-                                    **Changes**: Before Zulip 6.0 (feature level 150), on changing any of
+                                    **Changes**: In Zulip 7.0 (feature level 183), the
+                                    `community_topic_editing_limit_seconds` property was removed.
+                                    It was documented as potentially returned as a changed property
+                                    in this event, but in fact it was only ever returned in the
+                                    [`POST /register`](/api/register-queue) response.
+
+                                    Before Zulip 6.0 (feature level 150), on changing any of
                                     `allow_message_editing`, `message_content_edit_limit_seconds`, or
                                     `edit_topic_policy` settings, this object included all the three settings
                                     irrespective of which of these settings were changed. Now, a separate event
@@ -3862,15 +3885,6 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can create bot users in this organization.
-                                    community_topic_editing_limit_seconds:
-                                      type: integer
-                                      description: |
-                                        Messages sent more than this many seconds ago cannot have
-                                        their topics edited by other users with this organization's
-                                        [message edit policy](/help/restrict-message-editing-and-deletion).
-
-                                        **Changes**: New in Zulip 3.0 (feature level 11). Previously this
-                                        value was hardcoded to 86400 seconds (1 day).
                                     create_public_stream_policy:
                                       type: integer
                                       description: |
@@ -3934,9 +3948,10 @@ paths:
                                         - 5 = Everyone
                                         - 6 = Nobody
 
-                                        **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                                        previous `allow_community_topic_editing` boolean. Nobody added
-                                        as an option in Zulip 7.0 (feature level 159).
+                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                                        New in Zulip 5.0 (feature level 75), replacing the previous
+                                        `allow_community_topic_editing` boolean.
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -4064,29 +4079,31 @@ paths:
                                       nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved within a
-                                        stream by members with this organization's [message move
-                                        policy](/help/restrict-moving-messages). This setting does not
-                                        affect moderators and administrators.
+                                        stream to another topic by users who have permission to do so based on this
+                                        organization's [topic edit policy](/help/restrict-moving-messages). This
+                                        setting does not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit: messages can be moved
-                                        regardless of how long ago they were sent.
+                                        Will not be 0. A `null` value means no limit, so message topics can be
+                                        edited regardless of how long ago they were sent.
 
-                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
-                                        limit was always 72 hours.
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
+                                        limit was always 72 hours for users who were not administrators or
+                                        moderators.
                                     move_messages_between_streams_limit_seconds:
                                       type: integer
                                       nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be moved between
-                                        streams by members with this organization's [message move
-                                        policy](/help/restrict-moving-messages). This setting does not
-                                        affect moderators and administrators.
+                                        streams by users who have permission to do so based on this organization's
+                                        [message move policy](/help/restrict-moving-messages). This setting does
+                                        not affect moderators and administrators.
 
-                                        Will not be 0. A `null` value means no limit: messages can be moved
+                                        Will not be 0. A `null` value means no limit, so messages can be moved
                                         regardless of how long ago they were sent.
 
-                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
-                                        was not possible to add a time limit for moving messages.
+                                        **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
+                                        no time limit for moving messages between streams for users with permission
+                                        to do so.
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -4099,8 +4116,9 @@ paths:
                                         - 4 = Moderators only
                                         - 6 = Nobody
 
-                                        **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
-                                        as an option in Zulip 7.0 (feature level 159).
+                                        **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                                        New in Zulip 4.0 (feature level 56).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -5106,7 +5124,8 @@ paths:
       tags: ["scheduled_messages"]
       summary: Get scheduled messages
       description: |
-        Fetch all scheduled messages for the current user.
+        Fetch all [scheduled messages](/help/schedule-a-message) for
+        the current user.
 
         Scheduled messages are messages the user has scheduled to be
         sent in the future via the send later feature.
@@ -5153,19 +5172,18 @@ paths:
                           ],
                       }
     post:
-      operationId: create-or-update-scheduled-message
+      operationId: create-scheduled-message
       tags: ["scheduled_messages"]
-      summary: Create or edit scheduled message
+      summary: Create a scheduled message
       description: |
-        Create a new scheduled message or edit an existing scheduled message.
+        Create a new [scheduled message](/help/schedule-a-message).
 
-        The `scheduled_message_id` parameter determines whether a scheduled
-        message is created or updated. When it is omitted, a new scheduled
-        message is created. When it is specified, the existing scheduled
-        message with that unique ID is updated for the values passed to the
-        other endpoint parameters.
+        **Changes**: In Zulip 7.0 (feature level 184), moved support for
+        [editing a scheduled message](/api/update-scheduled-message) to a
+        separate API endpoint, which removed the `scheduled_message_id`
+        parameter from this endpoint.
 
-        **Changes**: New in Zulip 7.0 (feature level 179).
+        New in Zulip 7.0 (feature level 179).
       parameters:
         - name: type
           in: query
@@ -5219,16 +5237,6 @@ paths:
             type: string
           example: Castle
           allowEmptyValue: true
-        - name: scheduled_message_id
-          in: query
-          schema:
-            type: integer
-          description: |
-            The unique ID of the scheduled message to be updated.
-
-            If omitted, a new scheduled message will be created. Otherwise,
-            the existing scheduled message with this unique ID will be updated.
-          example: 1
         - name: scheduled_delivery_timestamp
           in: query
           schema:
@@ -5272,21 +5280,149 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/NonExistingStreamError"
+                      - $ref: "#/components/schemas/NonExistingStreamIdError"
                       - description: |
-                          A typical failed JSON response for when a stream message is sent to a stream
-                          that does not exist:
+                          A typical failed JSON response for when a stream message is scheduled
+                          to be sent to a stream that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
                           {
                             "code": "BAD_REQUEST",
-                            "msg": "Invalid email 'eeshan@zulip.com'",
+                            "msg": "Invalid user ID 10",
                             "result": "error",
                           }
                         description: |
-                          A typical failed JSON response for when a private message is sent to a user
-                          that does not exist:
+                          A typical failed JSON response for when a direct message is scheduled
+                          to be sent to a user that does not exist:
+  /scheduled_messages/{scheduled_message_id}:
+    patch:
+      operationId: update-scheduled-message
+      tags: ["scheduled_messages"]
+      summary: Edit a scheduled message
+      description: |
+        Edit an existing [scheduled message](/help/schedule-a-message).
+
+        **Changes**: New in Zulip 7.0 (feature level 184).
+      parameters:
+        - name: scheduled_message_id
+          in: path
+          schema:
+            type: integer
+          description: |
+            The ID of the scheduled message to update.
+
+            This is different from the unique ID that the message would have
+            after being sent.
+          required: true
+          example: 2
+        - name: type
+          in: query
+          description: |
+            The type of scheduled message to be sent. `"direct"` for a direct
+            message and `"stream"` for a stream message.
+
+            When updating the type of the scheduled message, the `to` parameter
+            is required. And, if updating the type of the scheduled message to
+            `"stream"`, then the `topic` parameter is also required.
+
+            In Zulip 7.0 (feature level 174), `"direct"` was added as the
+            preferred way to indicate the type of a direct message, deprecating
+            the original `"private"`. While `"private"` is supported for
+            scheduling direct messages, clients are encouraged to use to the
+            modern convention because support for `"private"` may eventually
+            be removed.
+          schema:
+            type: string
+            enum:
+              - direct
+              - stream
+              - private
+          example: stream
+        - name: to
+          in: query
+          description: |
+            The scheduled message's tentative target audience.
+
+            For stream messages, the integer ID of the stream.
+            For direct messages, a list containing integer user IDs.
+
+            Required when updating the `type` of the scheduled message.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: integer
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
+              example: 8
+        - name: content
+          in: query
+          description: |
+            The updated content of the scheduled message.
+
+            Clients should use the `max_message_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum message size.
+          schema:
+            type: string
+          example: Hello
+        - name: topic
+          in: query
+          description: |
+            The updated topic of the scheduled message.
+
+            Required when updating the `type` of the scheduled message to
+            `"stream"`. Ignored when the existing or updated `type` of the
+            scheduled message is `"direct"` (or `"private"`).
+
+            Clients should use the `max_topic_length` returned by the
+            [`POST /register`](/api/register-queue) endpoint to determine
+            the maximum topic length.
+          schema:
+            type: string
+          example: Castle
+        - name: scheduled_delivery_timestamp
+          in: query
+          schema:
+            type: integer
+          description: |
+            The UNIX timestamp for when the message will be sent,
+            in UTC seconds.
+
+            Required when updating a scheduled message that the server
+            has already tried and failed to send. This state is indicated
+            with `"failed": true` in `scheduled_messages` objects; see
+            response description at
+            [`GET /scheduled_messages`](/api/get-scheduled-messages#response).
+          example: 3165826990
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/NonExistingStreamIdError"
+                      - description: |
+                          A typical failed JSON response for when a stream message is scheduled
+                          to be sent to a stream that does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid user ID 10",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when a direct message is scheduled
+                          to be sent to a user that does not exist:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - description: |
@@ -5297,13 +5433,13 @@ paths:
                             "result": "error",
                             "msg": "Scheduled message does not exist",
                           }
-  /scheduled_messages/{scheduled_message_id}:
     delete:
       operationId: delete-scheduled-message
       tags: ["scheduled_messages"]
       summary: Delete a scheduled message
       description: |
-        Delete, and therefore cancel sending, a previously scheduled message.
+        Delete, and therefore cancel sending, a previously [scheduled
+        message](/help/schedule-a-message).
 
         **Changes**: New in Zulip 7.0 (feature level 173).
       parameters:
@@ -5314,8 +5450,8 @@ paths:
           description: |
             The ID of the scheduled message to delete.
 
-            This is different from the unique ID that a message would have
-            after it was sent.
+            This is different from the unique ID that the message would have
+            after being sent.
           required: true
           example: 1
       responses:
@@ -5816,7 +5952,7 @@ paths:
           description: |
             For stream messages, either the name or integer ID of the stream. For
             direct messages, either a list containing integer user IDs or a list
-            containing string email addresses.
+            containing string Zulip API email addresses.
 
             **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
           content:
@@ -5901,7 +6037,7 @@ paths:
               schema:
                 oneOf:
                   - allOf:
-                      - $ref: "#/components/schemas/NonExistingStreamError"
+                      - $ref: "#/components/schemas/NonExistingStreamNameError"
                       - description: |
                           A typical failed JSON response for when a stream message is sent to a stream
                           that does not exist:
@@ -5987,6 +6123,8 @@ paths:
 
                                 The ID of the stream containing the message immediately
                                 prior to this edit event.
+
+                                **Changes**: New in Zulip 3.0 (feature level 1).
                             content:
                               type: string
                               description: |
@@ -6888,35 +7026,62 @@ paths:
         You can [resolve topics](/help/resolve-a-topic) by editing the
         topic to `✔ {original_topic}`.
 
-        **Note**: See [configuring message editing][config-message-editing]
-        for detailed documentation on when users are allowed to edit topics.
+        See [configuring message editing][config-message-editing] for detailed
+        documentation on when users are allowed to edit message content and
+        [restricting moving messages][restrict-move-messages] for detailed
+        documentation on when users are allowed to change a message's topic
+        and/or stream.
 
-        **Changes**: Before Zulip 7.0 (feature level 162), users who were not
-        administrators or moderators could only edit topics if the target
-        message was sent within the last 3 days. That time limit is now
-        controlled by the `move_messages_within_stream_limit_seconds` setting. A
-        similar time limit for moving topics to different streams was added,
-        controlled by the `move_messages_between_streams_limit_seconds` setting.
+        The relevant realm settings in the API that are related to the above
+        linked documentation on when users are allowed to update messages are:
 
-        **Changes**: Before Zulip 7.0 (feature level 159), editing
-        streams and topics of messages was forbidden if
-        `allow_message_editing` was `false`, regardless of the
+        - `allow_message_editing`
+        - `edit_topic_policy`
+        - `move_messages_between_streams_policy`
+        - `message_content_edit_limit_seconds`
+        - `move_messages_within_stream_limit_seconds`
+        - `move_messages_between_streams_limit_seconds`
+
+        More details about these realm settings can be found in the
+        [`POST /register`](/api/register-queue) response or in the documentation
+        of the [`realm op: update_dict`](/api/get-events#realm-update_dict)
+        event in [`GET /events`](/api/get-events).
+
+        **Changes**: Prior to Zulip 7.0 (feature level 172), anyone could add a
+        topic to stream messages without a topic, regardless of the organization's
+        [topic editing permissions](/help/restrict-moving-messages). As of this
+        feature level, messages without topics have the same restrictions for
+        topic edits as messages with topics.
+
+        Before Zulip 7.0 (feature level 172), by using the `change_all` value for
+        the `propagate_mode` parameter, users could move messages after the
+        organization's configured time limits for changing a message's topic or
+        stream had passed. As of this feature level, the server will [return an
+        error](/api/update-message#response) with `"code":
+        "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"` if users, other than organization
+        administrators or moderators, try to move messages after these time
+        limits have passed.
+
+        Before Zulip 7.0 (feature level 162), users who were not administrators or
+        moderators could only edit topics if the target message was sent within the
+        last 3 days. As of this feature level, that time limit is now controlled by
+        the realm setting `move_messages_within_stream_limit_seconds`. Also at this
+        feature level, a similar time limit for moving messages between streams was
+        added, controlled by the realm setting
+        `move_messages_between_streams_limit_seconds`. Previously, all users who
+        had permission to move messages between streams did not have any time limit
+        restrictions when doing so.
+
+        Before Zulip 7.0 (feature level 159), editing streams and topics of messages
+        was forbidden if the realm setting for `allow_message_editing` was `false`,
+        regardless of an organization's configuration for the realm settings
         `edit_topic_policy` or `move_messages_between_streams_policy`.
-        Before Zulip 7.0 (feature level 159), message senders were allowed
-        to edit the topic indefinitely.
 
-        **Changes**: Before Zulip 7.0 (feature level 172), anyone could add
-        a topic to messages without topic regardless of topic edit
-        permissions. Now topic editing restrictions apply to messages without a
-        topic as well.
-
-        Before Zulip 7.0 (feature level 172), users were allowed to move messages
-        that had passed the time limit by using `change_all` value for `propagate_mode`
-        parameter. Now, the server returns an error if users, other than organization
-        administrators and moderators, try to move messages that have passed the time
-        limit.
+        Before Zulip 7.0 (feature level 159), message senders were allowed to edit
+        the topic of their messages indefinitely.
 
         [config-message-editing]: /help/restrict-message-editing-and-deletion
+        [restrict-move-messages]: /help/restrict-moving-messages
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -7010,6 +7175,8 @@ paths:
             Note that a message's content and stream cannot be changed at the
             same time, so sending both `content` and `stream_id` parameters will
             throw an error.
+
+            **Changes**: New in Zulip 3.0 (feature level 1).
           schema:
             type: integer
           example: 43
@@ -7053,30 +7220,35 @@ paths:
                             "total_messages_in_topic": 5,
                           }
                         description: |
-                          A special failed JSON response for when the user has permission to move
+                          A special failed JSON response (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`)
+                          for when the user has permission to move
                           the target message, but asked to move all messages in a topic
-                          (`change_all`) and the user does not have permission to move the entire
-                          topic.
+                          (`"propagate_mode": "change_all"`) and the user does not have permission
+                          to move the entire topic.
 
                           This happens when the topic contains some messages that are older than an
-                          applicable time limit for the requested topic move
-                          (`move_messages_within_stream_limit_seconds` and/or
-                          `move_messages_between_streams_limit_seconds`).
+                          applicable time limit for the requested topic move (see
+                          `move_messages_within_stream_limit_seconds` and/or
+                          `move_messages_between_streams_limit_seconds` in the
+                          [`POST /register`](/api/register-queue) response).
 
-                          This response contains data on which portion of this topic the user has
-                          permission to move; `first_message_id_allowed_to_move` is the oldest
-                          message ID in this topic that the user has permission to move; the user
-                          has permission to move the most recent `total_messages_allowed_to_move`
-                          messages, but `total_messages_in_topic` exist in the topic.
+                          The error response contains data on which portion of this topic the user has
+                          permission to move. `first_message_id_allowed_to_move` is the oldest message
+                          ID in this topic that the user has permission to move.
+                          There are `total_messages_in_topic` in the topic, but the user only has
+                          permission to move the (most recent) `total_messages_allowed_to_move`
+                          messages.
 
-                          A client is recommended to either just present the error to the user, or
-                          if `first_message_id_allowed_to_move` is not `null`, prompt the user with
-                          this information. Clients should support this error code with
-                          `"first_message_id_allowed_to_move": null` for forwards compatibility
-                          with future server versions that may use this error code in other
-                          propagation modes where it is possible that the user does not have
-                          permission to move any messages, or where the server did not calculate the
-                          other fields.
+                          Clients should support this error code with
+                          `"first_message_id_allowed_to_move": null` for forward compatibility
+                          with future server versions that may use this error code with other
+                          propagation modes where the user does not have permission to move any
+                          messages, or where the server did not calculate the total message counts
+                          noted above.
+
+                          Clients can either only present the error to the user or, if
+                          `first_message_id_allowed_to_move` is not `null`, prompt the user to adjust
+                          their query with the above information.
 
                           If clients choose to present a prompt for this error code, they should
                           recommend the option of cancelling and (manually) asking a moderator to
@@ -7086,12 +7258,13 @@ paths:
                           a target message ID of `first_message_id_allowed_to_move`, if the user
                           desires to move only the portion of the topic that they can.
 
-                          Note that in a stream with protected history, the Zulip security model
-                          requires that the above calculations only include messages the acting user
-                          has access to. So in the rare case of a user attempting to move a topic
-                          that started before the user joined a private stream with protected
-                          history, this API endpoint might move only portion of a topic that they
-                          have access to, without this error or any confirmation dialog.
+                          Note that in a stream with [protected history](/help/stream-permissions),
+                          the Zulip security model requires that the above calculations only include
+                          messages the acting user has access to. So in the rare case of a user
+                          attempting to move a topic that started before the user joined a private
+                          stream with protected history, this API endpoint might move only the portion
+                          of a topic that they have access to, without this error or any confirmation
+                          dialog.
 
                           **Changes**: New in Zulip 7.0 (feature level 172).
     delete:
@@ -7302,6 +7475,7 @@ paths:
                             {
                               "is_active": true,
                               "email": "AARON@zulip.com",
+                              "delivery_email": null,
                               "is_admin": false,
                               "is_owner": false,
                               "is_billing_admin": false,
@@ -7354,6 +7528,7 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
                               "email": "hamlet@zulip.com",
+                              "delivery_email": null,
                             },
                             {
                               "bot_owner_id": 11,
@@ -7361,6 +7536,7 @@ paths:
                               "date_joined": "2019-10-20T12:52:17.862053+00:00",
                               "full_name": "Iago's Bot",
                               "email": "iago-bot@zulipdev.com",
+                              "delivery_email": "iago-bot@zulipdev.com",
                               "is_active": true,
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
@@ -7496,10 +7672,10 @@ paths:
         - name: user_id_or_email
           in: path
           description: |
-            The ID or Zulip display email address of the user whose presence you want to fetch.
+            The ID or Zulip API email address of the user whose presence you want to fetch.
 
             **Changes**: New in Zulip 4.0 (feature level 43). Previous versions only supported
-            identifying the user by Zulip display email.
+            identifying the user by Zulip API email.
           schema:
             type: string
           example: iago@zulip.com
@@ -7521,8 +7697,7 @@ paths:
                       presence:
                         type: object
                         description: |
-                          An object containing the presence details for every client the user has
-                          logged into.
+                          An object containing the presence details for the user.
                         additionalProperties:
                           type: object
                           additionalProperties: false
@@ -7538,31 +7713,24 @@ paths:
                                 Whether the user had recently interacted with Zulip at the time
                                 of the timestamp.
 
-                                Will be either `active` or `idle`
+                                Will be either `"active"` or `"idle"`
                           description: |
-                            `{client_name}` or `aggregated`: Object containing the details of the user's
-                            presence on a particular platform.
+                            `{client_name}` or `"aggregated"`: Object containing the details of the user's
+                            presence.
 
-                            Generally, the keys for these objects are the names of the different clients
-                            where this user is logged in, for example `website` or `ZulipDesktop`.
+                            **Changes**: Starting with Zulip 7.0 (feature level 178), this will always
+                            contain two keys, `"website"` and `"aggregated"`, with identical data. The
+                            server no longer stores which client submitted presence updates.
 
-                            There is also an `aggregated` key, which matches the contents of the object
-                            that has been updated most recently.
-
-                            For most applications, you'll just want to look at the `aggregated` key.
-
-                            **Changes**: Starting with Zulip 7.0 (feature level 178), this
-                            will always contain two keys, `website` and `aggregated`, with
-                            identical data. The server no longer stores which client submitted
-                            presence updates.
+                            Previously, the `{client_name}` keys for these objects were the names of the
+                            different clients where the user was logged in, for example `website` or
+                            `ZulipDesktop`.
                     example:
                       {
                         "presence":
                           {
                             "website":
                               {"timestamp": 1532697622, "status": "active"},
-                            "ZulipMobile":
-                              {"timestamp": 1522687421, "status": "active"},
                             "aggregated":
                               {"timestamp": 1532697622, "status": "active"},
                           },
@@ -7593,14 +7761,14 @@ paths:
                       avatar_url:
                         type: string
                         description: |
-                          URL for the user's avatar.
+                          URL for the requesting user's avatar.
 
                           **Changes**: New in Zulip 2.1.0.
                         example: "x"
                       avatar_version:
                         type: integer
                         description: |
-                          Version for the user's avatar. Used for cache-busting requests
+                          Version for the requesting user's avatar. Used for cache-busting requests
                           for the user's avatar. Clients generally shouldn't need to use this;
                           most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
 
@@ -7609,7 +7777,7 @@ paths:
                       email:
                         type: string
                         description: |
-                          Email of the requesting user.
+                          Zulip API email of the requesting user.
                         example: "iago@zulip.com"
                       full_name:
                         type: string
@@ -7646,7 +7814,8 @@ paths:
                           - 400
                           - 600
                         description: |
-                          [Organization-level role](/api/roles-and-permissions) of the user.
+                          [Organization-level role](/api/roles-and-permissions) of
+                          the requesting user.
                           Possible values are:
 
                           - 100 = Organization owner
@@ -7671,21 +7840,22 @@ paths:
                       is_active:
                         type: boolean
                         description: |
-                          A boolean specifying whether the user account has been deactivated.
+                          A boolean specifying whether the requesting user account
+                          has been deactivated.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: true
                       timezone:
                         type: string
                         description: |
-                          The time zone of the user.
+                          The time zone of the requesting user.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: ""
                       date_joined:
                         type: string
                         description: |
-                          The time the user account was created.
+                          The time the requesting user's account was created.
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: "2019-10-20T07:50:53.728864+00:00"
@@ -7693,7 +7863,8 @@ paths:
                         type: integer
                         deprecated: true
                         description: |
-                          The integer ID of the last message received by your account.
+                          The integer ID of the last message received by the requesting
+                          user's account.
 
                           **Deprecated**. We plan to remove this in favor of recommending
                           using `GET /messages` with `"anchor": "newest"`.
@@ -7705,20 +7876,13 @@ paths:
                         example: 1
                       delivery_email:
                         type: string
-                        nullable: true
                         description: |
-                          The user's real email address. This value will be `null` if you cannot
-                          access this user's real email address. For bot users, this field is
-                          always set to the real email of the bot, because bot users always have
-                          `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+                          The requesting user's real email address.
 
-                          **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
-                          only when `email_address_visibility` was restricted and you had access to
-                          the user's real email. Now, this field is always present, including the case
-                          when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
-                          with the value being `null` if you don't have access to the user's real email.
-                          For bot users, this field is now always set to the real email irrespective of
-                          `email_address_visibility` setting.
+                          **Changes**: Prior to Zulip 7.0 (feature level 163), this field was
+                          present only when `email_address_visibility` was restricted and the
+                          requesting user had permission to access realm users' emails. As of
+                          this feature level, this field is always present.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
                     example:
@@ -7726,6 +7890,7 @@ paths:
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
                         "avatar_version": 1,
                         "email": "iago@zulip.com",
+                        "delivery_email": iago@zulip.com,
                         "full_name": "Iago",
                         "is_admin": true,
                         "is_owner": false,
@@ -8510,7 +8675,7 @@ paths:
                       subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the email
+                          A dictionary where the key is the Zulip API email
                           address of the user/bot and the value is a
                           list of the names of the streams that were
                           subscribed to as a result of the query.
@@ -8524,7 +8689,7 @@ paths:
                       already_subscribed:
                         type: object
                         description: |
-                          A dictionary where the key is the email
+                          A dictionary where the key is the Zulip API email
                           address of the user/bot and the value is a
                           list of the names of the streams that the
                           user/bot is already subscribed to.
@@ -8573,17 +8738,21 @@ paths:
         - Organization administrators can remove any user from any
           stream.
         - Users can remove a bot that they own from any stream that
-          the user can access.
-        - Users who can access a stream and are in the group with ID
-          `can_remove_subscribers_group_id` for that stream can
-          unsubscribe any user from that stream.
+          the user [can access](/help/stream-permissions).
+        - Users can unsubscribe any user from a stream if they [have
+          access](/help/stream-permissions) to the stream and are a
+          member of the [user group](/api/get-user-groups) specified
+          by the [`can_remove_subscribers_group_id`][can-remove-parameter]
+          for the stream.
 
-        **Changes**: Before Zulip 7.0 (feature level 161),
-        `can_remove_subscribers_group_id` was always the system group
-        for organization administrators.
+        **Changes**: Before Zulip 7.0 (feature level 161), the
+        `can_remove_subscribers_group_id` for all streams was always
+        the system group for organization administrators.
 
         Before Zulip 6.0 (feature level 145), users had no special
         privileges for managing bots that they own.
+
+        [can-remove-parameter]: /api/subscribe#parameter-can_remove_subscribers_group_id
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -8655,7 +8824,7 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/NonExistingStreamError"
+                  - $ref: "#/components/schemas/NonExistingStreamNameError"
                   - description: |
                       A typical failed JSON response for when the target stream does not exist:
   /users/me/subscriptions/muted_topics:
@@ -8664,14 +8833,12 @@ paths:
       summary: Topic muting
       tags: ["streams"]
       description: |
-        This endpoint mutes/unmutes a topic within a stream that the current
-        user is subscribed to. Muted topics are displayed faded in the Zulip
-        UI, and are not included in the user's unread count totals.
+        [Mute or unmute a topic](/help/mute-a-topic) within a stream that
+        the current user is subscribed to.
 
         **Changes**: Deprecated in Zulip 7.0 (feature level 170). Clients connecting
-        to the newer server should use the `/user_topics` endpoint instead.
-        It will be removed once clients have migrated to use the
-        `/user_topics` endpoint.
+        to newer servers should use the [POST /user_topics](/api/update-user-topic)
+        endpoint, as this endpoint may be removed in a future release.
 
         Before Zulip 7.0 (feature level 169), this endpoint
         returned an error if asked to mute a topic that was already muted
@@ -8744,10 +8911,9 @@ paths:
         This endpoint can be used to update the visibility policy for the single
         stream and topic pair indicated by the parameters for a user.
 
-        **Changes**: New in Zulip 7.0 (feature level 170).
-        Previously, toggling the muting state for a topic was managed by the
-        `/users/me/subscriptions/muted_topics` endpoint, which this endpoint
-        is intended to replace.
+        **Changes**: New in Zulip 7.0 (feature level 170). Previously,
+        toggling whether a topic was muted or unmuted was managed by the
+        [PATCH /users/me/subscriptions/muted_topics](/api/mute-topic) endpoint.
       parameters:
         - name: stream_id
           in: query
@@ -8772,21 +8938,12 @@ paths:
           description: |
             Controls which visibility policy to set.
 
-            - 0 - INHERIT
-            - 1 - MUTED
-            - 2 - UNMUTED
+            - 0 = None. Removes the visibility policy previously set for the topic.
+            - 1 = Muted. [Mutes the topic](/help/mute-a-topic) in a stream.
+            - 2 = Unmuted. [Unmutes the topic](/help/mute-a-topic) in a muted stream.
 
-            The visibility policy, when set to MUTED, mutes a topic;
-            when set to UNMUTED, it unmutes a topic in a muted stream;
-            and INHERIT is used to remove the visibility policy already set.
-
-            MUTED topics are displayed faded in the Zulip UI, are not included
-            in the user's unread count totals, and the user doesn't receive any
-            notifications.
-
-            An UNMUTED topic will remain visible even if the stream is muted.
-            In a stream that is not muted, a policy of UNMUTED has the same effect
-            as INHERIT.
+            In an unmuted stream, a topic visibility policy of unmuted will have the
+            same effect as the "None" visibility policy.
           schema:
             type: integer
             enum:
@@ -9052,9 +9209,8 @@ paths:
                         additionalProperties:
                           type: object
                           description: |
-                            `{user_email}`: Object containing the details of a user's presence
-                            on every client the user is logged into. The object's key is the
-                            user's email.
+                            `{user_email}`: Object containing the details of a user's presence.
+                            The object's key is the user's Zulip API email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                     example:
@@ -9064,16 +9220,16 @@ paths:
                           {
                             "iago@zulip.com":
                               {
-                                "ZulipPython":
+                                "website":
                                   {
-                                    "client": "ZulipPython",
+                                    "client": "website",
                                     "pushable": false,
                                     "status": "active",
                                     "timestamp": 1656958485,
                                   },
                                 "aggregated":
                                   {
-                                    "client": "ZulipPython",
+                                    "client": "website",
                                     "status": "active",
                                     "timestamp": 1656958485,
                                   },
@@ -9397,15 +9553,16 @@ paths:
         - name: web_mark_read_on_scroll_policy
           in: query
           description: |
-            Whether or not to mark messages as read when the client scrolls through their
+            Whether or not to mark messages as read when the user scrolls through their
             feed.
 
             - 1 - Always
             - 2 - Only in conversation views
             - 3 - Never
 
-            **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
-            like the "Always" setting, without any way to configure this.
+            **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
+            way for the user to configure this behavior on the web, and the Zulip web and
+            desktop apps behaved like the "Always" setting when marking messages as read.
           schema:
             type: integer
             enum:
@@ -9670,7 +9827,8 @@ paths:
         - name: realm_name_in_email_notifications_policy
           in: query
           description: |
-            Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+            Whether to [include organization name in subject of message notification
+            emails](/help/email-notifications#include-organization-name-in-subject-line).
 
             - 1 - Automatic
             - 2 - Always
@@ -9745,9 +9903,8 @@ paths:
         - name: email_address_visibility
           in: query
           description: |
-            The [policy][permission-level] this user has selected for [which other
-            users][help-email-visibility] in this organization can see the real email
-            address of this user.
+            The [policy][permission-level] for [which other users][help-email-visibility]
+            in this organization can see the user's real email address.
 
             - 1 = Everyone
             - 2 = Members only
@@ -9755,7 +9912,7 @@ paths:
             - 4 = Nobody
             - 5 = Moderators only
 
-            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            **Changes**: New in Zulip 7.0 (feature level 163), replacing the
             realm-level setting.
 
             [permission-level]: /api/roles-and-permissions#permission-levels
@@ -9886,19 +10043,18 @@ paths:
       summary: Get a user by email
       tags: ["users"]
       description: |
-        Fetch details for a single user in the organization given a Zulip display
-        email address.
+        Fetch details for a single user in the organization given a Zulip
+        API email address.
 
-        Note that this endpoint uses Zulip display emails addresses
-        for organizations that have configured limited [email address
-        visibility](/help/configure-email-visibility).
+        You can also fetch details on [all users in the organization](/api/get-users)
+        or [by user ID](/api/get-user).
 
-        You can also fetch details on [all users in the organization](/api/get-users) or
-        [by user ID](/api/get-user). Fetching by user ID is generally recommended
-        when possible, as users can
-        [change their email address](/help/change-your-email-address).
+        Fetching by user ID is generally recommended when possible,
+        as a user might [change their email address](/help/change-your-email-address)
+        or change their [email address visibility](/help/configure-email-visibility),
+        either of which could change the value of their Zulip API email address.
 
-        _This endpoint is new in Zulip Server 4.0 (feature level 39)._
+        **Changes**: New in Zulip Server 4.0 (feature level 39).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -9915,7 +10071,7 @@ paths:
         - name: email
           in: path
           description: |
-            The email address of the user whose details you want to fetch.
+            The Zulip API email address of the user whose details you want to fetch.
           schema:
             type: string
           example: iago@zulip.com
@@ -9981,6 +10137,7 @@ paths:
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
+                            "delivery_email": null,
                           },
                       }
   /users/{user_id}:
@@ -9992,7 +10149,7 @@ paths:
         Fetch details for a single user in the organization.
 
         You can also fetch details on [all users in the organization](/api/get-users)
-        or [by email](/api/get-user-by-email).
+        or [by a user's Zulip API email](/api/get-user-by-email).
 
         **Changes**: New in Zulip 3.0 (feature level 1).
       x-curl-examples-parameters:
@@ -10070,6 +10227,7 @@ paths:
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
+                            "delivery_email": null,
                           },
                       }
     patch:
@@ -10461,17 +10619,28 @@ paths:
         doing this often saves 90% of the total bandwidth and other resources
         consumed by a client using this API.
 
-        See the
-        [events system developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/events-system.html)
+        See the [events system developer documentation][events-system-docs]
         if you need deeper details about how the Zulip event queue system
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
 
-        **Changes**: The `email_address_visibility` setting was removed in Zulip 7.0 (feature level 163).
-        It was replaced by a [user setting](/api/update-settings) with a
-        [realm user default](/api/update-realm-user-settings-defaults), with the encoding of different
-        values preserved. Clients can support all versions by supporting the current API and treating
-        every user as having the realm's email address visibility value.
+        **Changes**: Before Zulip 7.0 (feature level 183), the
+        `realm_community_topic_editing_limit_seconds` property
+        was returned by the response. It was removed because it
+        had not been in use since the realm setting
+        `move_messages_within_stream_limit_seconds` was introduced
+        in feature level 162.
+
+        In Zulip 7.0 (feature level 163), the realm setting
+        `email_address_visibility` was removed. It was replaced by a [user
+        setting](/api/update-settings#parameter-email_address_visibility) with
+        a [realm user default][user-defaults], with the encoding of different
+        values preserved. Clients can support all versions by supporting the
+        current API and treating every user as having the realm's
+        `email_address_visibility` value.
+
+        [user-defaults]: /api/update-realm-user-settings-defaults#parameter-email_address_visibility
+        [events-system-docs]: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -10537,7 +10706,7 @@ paths:
           in: query
           description: |
             Setting this to `true` will make presence dictionaries be keyed by
-            user_id instead of email.
+            user ID instead of Zulip API email.
 
             **Changes**: New in Zulip 3.0 (Unstable with no feature level yet).
           schema:
@@ -10604,14 +10773,19 @@ paths:
               `/register` response or the presence/absence of a `user_settings` key to
               determine where to look for the data.
 
-            - `linkifier_url_template`: Boolean for whether the client accepts linkifiers
-              that uses [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL
-              template for linkifying matches. If false or unset, then the `realm_linkifiers`
-              list in the `/register` response will be empty if present, and no `realm_linkifiers`
-              events will be sent.
+            - `linkifier_url_template`: Boolean for whether the client accepts
+              [linkifiers][help-linkifiers] that use [RFC 6570][rfc6570] compliant
+              URL templates for linkifying matches. If false or unset, then the
+              `realm_linkifiers` array in the `/register` response will be empty
+              if present, and no `realm_linkifiers` [events][events-linkifiers]
+              will be sent to the client.
+              <br />
+              **Changes**: New in Zulip 7.0 (feature level 176). This capability
+              is for backwards-compatibility.
 
-              **Changes**: New in Zulip 7.0 (feature level 176). This capability is for
-              backwards-compatibility.
+            [help-linkifiers]: /help/add-a-custom-linkifier
+            [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+            [events-linkifiers]: /api/get-events#realm_linkifiers
           content:
             application/json:
               schema:
@@ -10666,13 +10840,21 @@ paths:
                         description: |
                           The server's current [Zulip feature level](/api/changelog).
 
-                          **Changes**: New in Zulip 3.0 (feature level 1).
+                          **Changes**: As of Zulip 3.0 (feature level 3), this is always present
+                          in the endpoint's response. Previously, it was only present if
+                          `event_types` included `zulip_version`.
+
+                          New in Zulip 3.0 (feature level 1).
                       zulip_version:
                         type: string
                         description: |
                           The server's version number. This is often a release version number,
                           like `2.1.7`. But for a server running a [version from Git][git-release],
                           it will be a Git reference to the commit, like `5.0-dev-1650-gc3fd37755f`.
+
+                          **Changes**: As of Zulip 3.0 (feature level 3), this is always present
+                          in the endpoint's response. Previously, it was only present if
+                          `event_types` included `zulip_version`.
 
                           [git-release]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#git-versions
                       zulip_merge_base:
@@ -10931,8 +11113,8 @@ paths:
                           type: object
                           description: |
                             `{user_id}` or `{user_email}`: Object containing the details of a user's
-                            presence on every client the user is logged into. Depending on the value
-                            of `slim_presence`, the object's key is either the user's ID or email.
+                            presence . Depending on the value of `slim_presence`, the object's key is
+                            either the user's ID or the user's Zulip API email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                       server_timestamp:
@@ -10976,19 +11158,19 @@ paths:
                           Array of objects where each object describes a single
                           [linkifier](/help/add-a-custom-linkifier).
 
-                          If the client capability `linkifier_url_template` is false or unset, then
-                          the `realm_linkifiers` list in the `/register` response will be empty if
-                          present, and no `realm_linkifiers` events will be sent.
-                          See [`POST /register`](/api/register-queue#parameter-client_capabilities).
-                          for how client capabilities can be specified.
+                          Clients will receive an empty array unless the event queue is
+                          registered with the client capability `{"linkifier_url_template": true}`.
+                          See [`client_capabilities`](/api/register-queue#parameter-client_capabilities)
+                          parameter for how this can be specified.
 
-                          **Changes**: In Zulip 7.0 (feature level 176), clients will always receive
-                          an empty list in the response unless they set the `linkifier_url_template`
-                          client capability to `true`.
+                          **Changes**: Before Zulip 7.0 (feature level 176), the
+                          `linkifier_url_template` client capability was not required. The
+                          requirement was added because linkifiers were updated to contain
+                          a URL template instead of a URL format string, which was a not
+                          backwards-compatible change.
 
-                          **Changes**: New in Zulip 4.0 (feature level 54). Clients can
-                          access these data on older server versions via the previous
-                          `realm_filters` key.
+                          New in Zulip 4.0 (feature level 54). Clients can access this data for
+                          servers on earlier feature levels via the legacy `realm_filters` property.
                         items:
                           type: object
                           additionalProperties: false
@@ -10996,8 +11178,8 @@ paths:
                             pattern:
                               type: string
                               description: |
-                                The string regex pattern which represents the pattern that
-                                should be linkified on matching.
+                                The [Python regular expression](https://docs.python.org/3/howto/regex.html)
+                                pattern which represents the pattern that should be linkified on matching.
                             url_template:
                               type: string
                               description: |
@@ -11020,22 +11202,22 @@ paths:
                               - type: integer
                               - type: string
                         description: |
-                          Legacy property for linkifiers. Present if `realm_filters` is
-                          present in `fetch_event_types`.
+                          Legacy property for [linkifiers](/help/add-a-custom-linkifier).
+                          Present if `realm_filters` is present in `fetch_event_types`.
 
                           When present, this is always an empty array.
 
-                          **Changes**: Became empty in Zulip 7.0 (feature level 176). In previous versions,
-                          there is an array of tuples (fixed-length arrays) where each tuple describes
-                          a single [linkifier](/help/add-a-custom-linkifier).
-                          The first element of the tuple is a string regex pattern which represents
-                          the pattern that should be linkified on matching.
-                          The second element is the URL with which the
-                          pattern matching string should be linkified with and the third element
-                          is the ID of the realm filter.
+                          **Changes**: Prior to Zulip 7.0 (feature level 176), this was
+                          an array of tuples, where each tuple described a linkifier. The first
+                          element of the tuple was a string regex pattern which represented the
+                          pattern to be linkified on matching, for example `"#(?P<id>[123])"`.
+                          The second element was a URL format string that the pattern should be
+                          linkified with. A URL format string for the above example would be
+                          `"https://realm.com/my_realm_filter/%(id)s"`. And the third element
+                          was the ID of the realm filter.
 
-                          **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
-                          the `realm_linkifiers` key instead.
+                          **Deprecated** in Zulip 4.0 (feature level 54), replaced by the
+                          `realm_linkifiers` key.
                       realm_playgrounds:
                         type: array
                         items:
@@ -11499,15 +11681,16 @@ paths:
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
-                              Whether or not to mark messages as read when the client scrolls through their
+                              Whether or not to mark messages as read when the user scrolls through their
                               feed.
 
                               - 1 - Always
                               - 2 - Only in conversation views
                               - 3 - Never
 
-                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
-                              like the "Always" setting, without any way to configure this.
+                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
+                              way for the user to configure this behavior on the web, and the Zulip web and
+                              desktop apps behaved like the "Always" setting when marking messages as read.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -11713,7 +11896,8 @@ paths:
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
-                              Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+                              Whether to [include organization name in subject of message notification
+                              emails](/help/email-notifications#include-organization-name-in-subject-line).
 
                               - 1 - Automatic
                               - 2 - Always
@@ -11820,6 +12004,10 @@ paths:
                                 the topic.
 
                                 - 1 = Muted. Used to record [muted topics](/help/mute-a-topic).
+                                - 2 = Unmuted. Used to record [unmuted topics](/help/mute-a-topic).
+
+                                **Changes**: In Zulip 7.0 (feature level 170), added unmuted as
+                                a visibility policy option.
                       has_zoom_token:
                         type: boolean
                         description: |
@@ -11849,7 +12037,7 @@ paths:
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11858,13 +12046,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_digest_emails:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11873,13 +12063,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_login_emails:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11888,13 +12080,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_marketing_emails:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11903,13 +12097,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       email_notifications_batching_period_seconds:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11918,13 +12114,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_offline_email_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11933,13 +12131,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_offline_push_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11948,13 +12148,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_online_push_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11963,13 +12165,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_sounds:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11978,13 +12182,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_desktop_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -11993,13 +12199,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_email_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12008,13 +12216,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_push_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12023,13 +12233,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_stream_audible_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12038,13 +12250,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       wildcard_mentions_notify:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12053,13 +12267,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       message_content_in_email_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12068,13 +12284,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       notification_sound:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12083,13 +12301,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       pm_content_in_desktop_notifications:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12098,13 +12318,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       desktop_icon_count_display:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12113,32 +12335,38 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       realm_name_in_email_notifications_policy:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
                           the meaning of this setting.
 
-                          **Changes**: Deprecated `realm_name_in_notifications` in Zulip 5.0 (feature level 89).
-                          Replaced `realm_name_in_notifications` boolean with
-                          `realm_name_in_email_notifications_policy` in Zulip 7.0 (feature level 168);
-                          `true` corresponded to `Always`, and `false` to `Never`.
+                          **Changes**: In Zulip 7.0 (feature level 168), replaced previous
+                          `realm_name_in_notifications` global notifications setting with
+                          `realm_name_in_email_notifications_policy`.
 
-                          Clients connecting to newer servers should declare the `user_settings_object`
+                          **Deprecated** since Zulip 5.0 (feature level 89); both
+                          `realm_name_in_notifications` and the newer
+                          `realm_name_in_email_notifications_policy` are deprecated. Clients
+                          connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       presence_enabled:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           The current value of this global notification setting for the user.
                           See [PATCH /settings](/api/update-settings) for details on
@@ -12147,6 +12375,8 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       available_notification_sounds:
                         deprecated: true
                         type: array
@@ -12155,7 +12385,7 @@ paths:
                         description: |
                           Present if `update_global_notifications` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in their
-                          client_capabilities` when registering the event queue.
+                          [`client_capabilities`][capabilities] when registering the event queue.
 
                           Array containing the names of the notification sound options supported by
                           this Zulip server. Only relevant to support UI for configuring notification
@@ -12164,13 +12394,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       color_scheme:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The color scheme selected by the user.
 
@@ -12180,13 +12412,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       default_language:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The default language chosen by the user.
 
@@ -12196,13 +12430,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       demote_inactive_streams:
                         deprecated: true
                         type: integer
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen to demote inactive streams.
 
@@ -12212,13 +12448,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       dense_mode:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has switched on dense mode. Dense mode is an experimental
                           feature that is only available in development environments.
@@ -12229,13 +12467,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       emojiset:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The name of the emoji set that the user has chosen.
 
@@ -12245,11 +12485,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       enable_drafts_synchronization:
                         deprecated: true
                         type: boolean
                         description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`.
+                          Present if `update_display_settings` is present in `fetch_event_types`
+                          and only for clients that did not include `user_settings_object` in
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether drafts synchronization is enabled for the user. If disabled,
                           clients will receive an error when trying to use the `drafts` endpoints.
@@ -12262,13 +12506,15 @@ paths:
                           client capability and access the `user_settings` object instead.
 
                           New in Zulip 5.0 (feature level 87).
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       fluid_layout_width:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen for the layout width to be fluid.
 
@@ -12278,13 +12524,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       default_view:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The [default view](/help/configure-default-view) in Zulip, represented
                           as the URL suffix after `#` to be rendered when Zulip loads.
@@ -12297,13 +12545,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       high_contrast_mode:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether has switched on high contrast mode.
 
@@ -12313,13 +12563,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       left_side_userlist:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen for the userlist to be displayed
                           on the left side of the screen (for desktop app and web app) in narrow
@@ -12331,13 +12583,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       starred_message_counts:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen the number of starred messages to
                           be displayed similar to unread counts.
@@ -12348,13 +12602,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       timezone:
                         deprecated: true
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           The time zone configured for the user. This is used primarily to display
                           the user's time zone to other users.
@@ -12365,13 +12621,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       translate_emoticons:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen for emoticons to be translated into emoji
                           in the Zulip compose box.
@@ -12382,13 +12640,15 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                       twenty_four_hour_time:
                         deprecated: true
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Whether the user has chosen a twenty four hour time display (true)
                           or a twelve hour one (false).
@@ -12399,12 +12659,35 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
+                      enter_sends:
+                        deprecated: true
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`
+                          and only for clients that did not include `user_settings_object` in
+                          their [`client_capabilities`][capabilities] when registering the event queue.
+
+                          Whether the user setting for [sending on pressing Enter][set-enter-send]
+                          in the compose box is enabled.
+
+                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
+                          connecting to newer servers should declare the `user_settings_object`
+                          client capability and process the `user_settings` event type instead.
+
+                          Prior to Zulip 5.0 (feature level 84), this field was present
+                          in response if 'realm_user' was present in `fetch_event_types`, not
+                          `update_display_settings`.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
+                          [set-enter-send]: /help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message
                       emojiset_choices:
                         deprecated: true
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`
                           and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
+                          their [`client_capabilities`][capabilities] when registering the event queue.
 
                           Array of dictionaries where each dictionary describes an emoji set
                           supported by this version of the Zulip server.
@@ -12418,6 +12701,8 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+
+                          [capabilities]: /api/register-queue#parameter-client_capabilities
                         type: array
                         items:
                           type: object
@@ -12650,8 +12935,9 @@ paths:
                           - 4 = Moderators only
                           - 6 = Nobody
 
-                          **Changes**: New in Zulip 4.0 (feature level 56). Nobody added
-                          as an option in Zulip 7.0 (feature level 159).
+                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                          New in Zulip 4.0 (feature level 56).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -12895,9 +13181,10 @@ paths:
                           - 5 = Everyone
                           - 6 = Nobody
 
-                          **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                          previous `allow_community_topic_editing` boolean. Nobody added as
-                          an option in Zulip 7.0 (feature level 159).
+                          **Changes**: Nobody added as an option in Zulip 7.0 (feature level 159).
+
+                          New in Zulip 5.0 (feature level 75), replacing the previous
+                          `allow_community_topic_editing` boolean.
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -12923,15 +13210,16 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be moved within a
-                          stream by members with this organization's [message move
-                          policy](/help/restrict-moving-messages). This setting does not
-                          affect moderators and administrators.
+                          stream to another topic by users who have permission to do so based on this
+                          organization's [topic edit policy](/help/restrict-moving-messages). This
+                          setting does not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit: messages can be moved
-                          regardless of how long ago they were sent.
+                          Will not be 0. A `null` value means no limit, so message topics can be
+                          edited regardless of how long ago they were sent.
 
-                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, this
-                          limit was always 72 hours.
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, this time
+                          limit was always 72 hours for users who were not administrators or
+                          moderators.
                       realm_move_messages_between_streams_limit_seconds:
                         type: integer
                         nullable: true
@@ -12939,26 +13227,16 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be moved between
-                          streams by members with this organization's [message move
-                          policy](/help/restrict-moving-messages). This setting does not
-                          affect moderators and administrators.
+                          streams by users who have permission to do so based on this organization's
+                          [message move policy](/help/restrict-moving-messages). This setting does
+                          not affect moderators and administrators.
 
-                          Will not be 0. A `null` value means no limit: messages can be moved
+                          Will not be 0. A `null` value means no limit, so messages can be moved
                           regardless of how long ago they were sent.
 
-                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, it
-                          was not possible to add a time limit for moving messages.
-                      realm_community_topic_editing_limit_seconds:
-                        type: integer
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
-
-                          Messages sent more than this many seconds ago cannot have
-                          their topics edited by other users with this organization's
-                          [message edit policy](/help/restrict-message-editing-and-deletion).
-
-                          **Changes**: New in Zulip 3.0 (feature level 11). Previously this
-                          value was hardcoded to 86400 seconds (1 day).
+                          **Changes**: New in Zulip 7.0 (feature level 162). Previously, there was
+                          no time limit for moving messages between streams for users with permission
+                          to do so.
                       realm_enable_read_receipts:
                         type: boolean
                         description: |
@@ -13210,8 +13488,10 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Dictionary where each entry describes a default external
-                          account type that can be configured with Zulip's custom
-                          profile fields feature.
+                          account type that can be configured with Zulip's [custom
+                          profile fields feature](/help/custom-profile-fields).
+
+                          **Changes**: New in Zulip 2.1.0.
                         additionalProperties:
                           description: |
                             `{site_name}`: Dictionary containing the details of the
@@ -13464,15 +13744,16 @@ paths:
                           web_mark_read_on_scroll_policy:
                             type: integer
                             description: |
-                              Whether or not to mark messages as read when the client scrolls through their
+                              Whether or not to mark messages as read when the user scrolls through their
                               feed.
 
                               - 1 - Always
                               - 2 - Only in conversation views
                               - 3 - Never
 
-                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
-                              like the "Always" setting, without any way to configure this.
+                              **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
+                              way for the user to configure this behavior on the web, and the Zulip web and
+                              desktop apps behaved like the "Always" setting when marking messages as read.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -13655,7 +13936,8 @@ paths:
                           realm_name_in_email_notifications_policy:
                             type: integer
                             description: |
-                              Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+                              Whether to [include organization name in subject of message notification
+                              emails](/help/email-notifications#include-organization-name-in-subject-line).
 
                               - 1 - Automatic
                               - 2 - Always
@@ -13895,23 +14177,6 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is a [guest user](/api/roles-and-permissions).
-                      enter_sends:
-                        deprecated: true
-                        type: boolean
-                        description: |
-                          Present if `update_display_settings` is present in `fetch_event_types`
-                          and only for clients that did not include `user_settings_object` in
-                          their client_capabilities` when registering the event queue.
-
-                          Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
-                          in the compose box is enabled.
-
-                          **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
-                          connecting to newer servers should declare the `user_settings_object`
-                          client capability and process the `user_settings` event type instead.
-                          Prior to Zulip 5.0 (feature level 84) this field was present
-                          in response if 'realm_user' was present in `fetch_event_types`, not
-                          `update_display_settings`.
                       user_id:
                         type: integer
                         description: |
@@ -13923,9 +14188,9 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          The Zulip display email address for the current user. See also
+                          The Zulip API email address for the current user. See also
                           `delivery_email`; these may be the same or different depending
-                          on the organization's `email_address_visibility` policy.
+                          on the user's `email_address_visibility` policy.
                       delivery_email:
                         type: string
                         description: |
@@ -14421,15 +14686,16 @@ paths:
         - name: web_mark_read_on_scroll_policy
           in: query
           description: |
-            Whether or not to mark messages as read when the client scrolls through their
+            Whether or not to mark messages as read when the user scrolls through their
             feed.
 
             - 1 - Always
             - 2 - Only in conversation views
             - 3 - Never
 
-            **Changes**: New in Zulip 7.0 (feature level 175). Previously, the app behaved
-            like the "Always" setting, without any way to configure this.
+            **Changes**: New in Zulip 7.0 (feature level 175). Previously, there was no
+            way for the user to configure this behavior on the web, and the Zulip web and
+            desktop apps behaved like the "Always" setting when marking messages as read.
           schema:
             type: integer
             enum:
@@ -14849,7 +15115,8 @@ paths:
         - name: realm_name_in_email_notifications_policy
           in: query
           description: |
-            Whether to [include organization name in subject of message notification emails](/help/email-notifications#include-organization-name-in-subject-line).
+            Whether to [include organization name in subject of message notification
+            emails](/help/email-notifications#include-organization-name-in-subject-line).
 
             - 1 - Automatic
             - 2 - Always
@@ -14923,8 +15190,8 @@ paths:
           in: query
           description: |
             The [policy][permission-level] this user has selected for [which other
-            users][help-email-visibility] in this organization can see the real email
-            address of this user.
+            users][help-email-visibility] in this organization can see their real
+            email address.
 
             - 1 = Everyone
             - 2 = Members only
@@ -14932,7 +15199,7 @@ paths:
             - 4 = Nobody
             - 5 = Moderators only
 
-            **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+            **Changes**: New in Zulip 7.0 (feature level 163), replacing the
             realm-level setting.
 
             [permission-level]: /api/roles-and-permissions#permission-levels
@@ -15891,20 +16158,28 @@ paths:
                         "user_groups":
                           [
                             {
-                              "description": "Characters of Hamlet",
+                              "description": "Owners of this organization",
                               "id": 1,
+                              "name": "@role:owners",
+                              "members": [1],
+                              "direct_subgroup_ids": [],
+                              "is_system_group": true,
+                            },
+                            {
+                              "description": "Administrators of this organization, including owners",
+                              "id": 2,
+                              "name": "@role:administrators",
+                              "members": [2],
+                              "direct_subgroup_ids": [1],
+                              "is_system_group": true,
+                            },
+                            {
+                              "description": "Characters of Hamlet",
+                              "id": 3,
                               "name": "hamletcharacters",
                               "members": [3, 4],
                               "direct_subgroup_ids": [],
                               "is_system_group": false,
-                            },
-                            {
-                              "description": "Moderators",
-                              "id": 2,
-                              "name": "other users",
-                              "members": [1, 2],
-                              "direct_subgroup_ids": [1, 2],
-                              "is_system_group": true,
                             },
                           ],
                       }
@@ -17118,9 +17393,8 @@ components:
     EmailAddressVisibility:
       type: integer
       description: |
-        The [policy][permission-level] this user has selected for [which other
-        users][help-email-visibility] in this organization can see the real email
-        address of this user.
+        The [policy][permission-level] for [which other users][help-email-visibility]
+        in this organization can see the user's real email address.
 
         - 1 = Everyone
         - 2 = Members only
@@ -17128,7 +17402,7 @@ components:
         - 4 = Nobody
         - 5 = Moderators only
 
-        **Changes**: New in Zulip 7.0 (feature level 163) replacing the existing
+        **Changes**: New in Zulip 7.0 (feature level 163), replacing the
         realm-level setting.
 
         [permission-level]: /api/roles-and-permissions#permission-levels
@@ -17210,7 +17484,7 @@ components:
                 email:
                   type: string
                   description: |
-                    Email of the user.
+                    Zulip API email of the user.
                 full_name:
                   type: string
                   description: |
@@ -17255,10 +17529,18 @@ components:
           type: string
           nullable: true
           description: |
-            The URL of the user's avatar. Can be `null` only if client_gravatar was passed,
-            which means that the user has not uploaded an avatar in Zulip, and the
-            client should compute the gravatar URL by hashing the
-            user's email address itself for this user.
+            The URL of the message sender's avatar. Can be `null` only if
+            the current user has access to the sender's real email address
+            and `client_gravatar` was `true`.
+
+            If `null`, then the sender has not uploaded an avatar in Zulip,
+            and the client can compute the gravatar URL by hashing the
+            sender's email address, which corresponds in this case to their
+            real email address.
+
+            **Changes**: Before Zulip 7.0 (feature level 163), access to a
+            user's real email address was a realm-level setting. As of this
+            feature level, `email_address_visibility` is a user setting.
         client:
           type: string
           description: |
@@ -17289,7 +17571,7 @@ components:
                   email:
                     type: string
                     description: |
-                      Email of the user.
+                      Zulip API email of the user.
                   full_name:
                     type: string
                     description: |
@@ -17335,6 +17617,8 @@ components:
 
                   The stream ID of the message immediately prior to this
                   edit event.
+
+                  **Changes**: New in Zulip 3.0 (feature level 1).
               prev_topic:
                 type: string
                 description: |
@@ -17435,7 +17719,7 @@ components:
         sender_email:
           type: string
           description: |
-            The Zulip display email address of the message's sender.
+            The Zulip API email address of the message's sender.
         sender_full_name:
           type: string
           description: |
@@ -17508,34 +17792,34 @@ components:
     Presence:
       type: object
       description: |
-        `{client_name}` or `aggregated`: Object containing the details of the user's
-        presence on a particular platform.
+        `{client_name}` or `"aggregated"`: Object containing the details of the user's
+        presence.
 
-        Generally, the keys for these objects are the names of the different clients
-        where this user is logged in, for example `website` or `ZulipDesktop`.
+        **Changes**: Starting with Zulip 7.0 (feature level 178), this will always
+        contain two keys, `"website"` and `"aggregated"`, with identical data. The
+        server no longer stores which client submitted presence updates.
 
-        There is also an `aggregated` key, which matches the contents of the object
-        that has been updated most recently (except for the `pushable` value which is
-        not present).
-
-        **Changes**: Starting with Zulip 7.0 (feature level 178), this
-        will always contain two keys, `website` and `aggregated`, with
-        identical data. The server no longer stores which client submitted
-        presence updates.
+        Previously, the `{client_name}` keys for these objects were the names of the
+        different clients where the user was logged in, for example `website` or
+        `ZulipDesktop`.
       additionalProperties: false
       properties:
         client:
           type: string
           description: |
             The client's platform name.
+
+            **Changes**: Starting with Zulip 7.0 (feature level 178), this will
+            always be `"website"` as the server no longer stores which client
+            submitted presence data.
         status:
           type: string
           enum:
             - idle
             - active
           description: |
-            The status of the user on this client. Will be either `idle`
-            or `active`.
+            The status of the user on this client. Will be either `"idle"`
+            or `"active"`.
         timestamp:
           type: integer
           description: |
@@ -17547,7 +17831,11 @@ components:
             Whether the client is capable of showing mobile/push notifications
             to the user.
 
-            Not present in objects with the `aggregated` key.
+            Not present in objects with the `"aggregated"` key.
+
+            **Changes**: Starting with Zulip 7.0 (feature level 178), always
+            `false` when present as the server no longer stores which client
+            submitted presence data.
     Draft:
       type: object
       description: |
@@ -17718,15 +18006,13 @@ components:
             The user's real email address. This value will be `null` if you cannot
             access user's real email address. For bot users, this field is always
             set to the real email of the bot, because bot users always have
-            `email_address_visibility` as `EMAIL_ADDRESS_VISIBILITY_EVERYONE`.
+            `email_address_visibility` set to everyone.
 
-            **Changes**: Prior to Zulip 7.0 (feature level 163), this field was present
-            only when `email_address_visibility` was restricted and you had access to the
-            user's real email. Now, this field is always present, including the case when
-            `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
-            with the value being `null` if you don't have access the user's real email.
-            For bot users, this field is now always set to the real email irrespective of
-            `email_address_visibility` setting.
+            **Changes**: Prior to Zulip 7.0 (feature level 163), this field was
+            present only when `email_address_visibility` was restricted and you had
+            access to the user's real email. As of this feature level, this field
+            is always present, including the case when `email_address_visibility`
+            is set to everyone (and therefore not restricted).
         email:
           type: string
           description: |
@@ -17821,11 +18107,18 @@ components:
           type: string
           nullable: true
           description: |
-            URL for the user's avatar. Will be `null` if the `client_gravatar`
-            query parameter was set to `true` and the user's avatar is hosted by
-            the Gravatar provider (i.e. the user has never uploaded an avatar).
+            URL for the user's avatar.
 
-            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
+            Will be `null` if the `client_gravatar`
+            query parameter was set to `true`, the current user has access to
+            this user's real email address, and this user's avatar is hosted by
+            the Gravatar provider (i.e. this user has never uploaded an avatar).
+
+            **Changes**: Before Zulip 7.0 (feature level 163), access to a
+            user's real email address was a realm-level setting. As of this
+            feature level, `email_address_visibility` is a user setting.
+
+            In Zulip 3.0 (feature level 18), if the client has the
             `user_avatar_url_field_optional` capability, this will be missing at
             the server's sole discretion.
         avatar_version:
@@ -18068,7 +18361,7 @@ components:
               "code": "BAD_REQUEST",
               "result": "error",
             }
-    NonExistingStreamError:
+    NonExistingStreamNameError:
       allOf:
         - $ref: "#/components/schemas/CodedErrorBase"
         - additionalProperties: false
@@ -18087,6 +18380,25 @@ components:
               "result": "error",
               "stream": "nonexistent_stream",
             }
+    NonExistingStreamIdError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            stream_id:
+              type: integer
+              description: |
+                The stream ID that could not be found.
+          example:
+            {
+              "code": "STREAM_DOES_NOT_EXIST",
+              "msg": "Stream with ID '9' does not exist",
+              "result": "error",
+              "stream_id": 9,
+            }
     AddSubscriptionsResponse:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -18098,9 +18410,9 @@ components:
             subscribed:
               type: object
               description: |
-                A dictionary where the key is the email address of the user/bot and the
-                value is a list of the names of the streams that were subscribed to as a
-                result of the query.
+                A dictionary where the key is the Zulip API email address of the user/bot
+                and the value is a list of the names of the streams that were subscribed
+                to as a result of the query.
               additionalProperties:
                 description: |
                   `{email_address}`: List of the names of the streams that were subscribed
@@ -18111,9 +18423,9 @@ components:
             already_subscribed:
               type: object
               description: |
-                A dictionary where the key is the email address of the user/bot and the
-                value is a list of the names of the streams that the user/bot is already
-                subscribed to.
+                A dictionary where the key is the Zulip API email address of the user/bot
+                and the value is a list of the names of the streams that the user/bot is
+                already subscribed to.
               additionalProperties:
                 description: |
                   `{email_address}`: List of the names of the streams that the user is
@@ -18514,7 +18826,7 @@ components:
       name: principals
       in: query
       description: |
-        A list of user IDs (preferred) or Zulip display email
+        A list of user IDs (preferred) or Zulip API email
         addresses of the users to be subscribed to or unsubscribed
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
@@ -18610,12 +18922,15 @@ components:
       name: can_remove_subscribers_group_id
       in: query
       description: |
-        ID of the user group whose members are allowed to unsubscribe others
-        from the stream, if they have access to this stream, even if
-        they are not an organization administrator.
+        ID of the [user group](/api/get-user-groups) whose members are
+        allowed to unsubscribe others from the stream. Note that a user
+        who is a member of the specified user group must also [have
+        access](/help/stream-permissions) to the stream in order to
+        unsubscribe others.
 
-        This setting can currently only be set to system user groups
-        except `@role:internet` and `@role:owners` group.
+        This setting can currently only be set to user groups that are
+        system groups, except for the system groups named
+        `"@role:internet"` and `"@role:owners"`.
 
         **Changes**: New in Zulip 7.0 (feature level 161).
       schema:
@@ -18637,15 +18952,14 @@ components:
       name: url_template
       in: query
       description: |
-        The [RFC
-        6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL template
-        used for the link. If you used named groups for the `pattern`,
-        you can insert their content here with
-        `{name_of_the_capturing_group}`.
+        The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html)
+        compliant URL template used for the link.
+        If you used named groups in `pattern`, you can insert their
+        content here with `{name_of_group}`.
 
         **Changes**: New in Zulip 7.0 (feature level 176). This replaced
-        the parameter `url_format_string`, which was a format string in which
-        named groups' content could be inserted with `%(name_of_the_capturing_group)s`.
+        the `url_format_string` parameter, which was a format string in which
+        named groups' content could be inserted with `%(name_of_group)s`.
       schema:
         type: string
       example: https://github.com/zulip/zulip/issues/{id}

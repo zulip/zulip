@@ -1201,6 +1201,41 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
+    def test_invite_without_permission_to_subscribe_others(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
+
+        invitee = self.nonreg_email("alice")
+
+        self.login("hamlet")
+        result = self.invite(invitee, ["Denmark", "Scotland"])
+        self.assert_json_error(
+            result, "You do not have permission to subscribe other users to streams."
+        )
+
+        result = self.invite(invitee, [])
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+        mail.outbox.pop()
+
+        self.login("iago")
+        invitee = self.nonreg_email("bob")
+        result = self.invite(invitee, ["Denmark", "Scotland"])
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+        mail.outbox.pop()
+
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        self.login("hamlet")
+        invitee = self.nonreg_email("test")
+        result = self.invite(invitee, ["Denmark", "Scotland"])
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+
     def test_invitation_reminder_email(self) -> None:
         # All users belong to zulip realm
         referrer_name = "hamlet"

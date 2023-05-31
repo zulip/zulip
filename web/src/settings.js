@@ -7,6 +7,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
+import * as flatpickr from "./flatpickr";
 import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -128,6 +129,7 @@ export function open_settings_overlay() {
         $overlay: $("#settings_overlay_container"),
         on_close() {
             browser_history.exit_overlay();
+            flatpickr.close_all();
         },
     });
 }

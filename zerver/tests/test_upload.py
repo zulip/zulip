@@ -433,7 +433,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             [self.get_stream_id("Verona")],
             "Test topic",
             body,
-            None,
             timezone_now() + datetime.timedelta(days=365),
             hamlet.realm,
         )

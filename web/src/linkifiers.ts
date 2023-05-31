@@ -84,7 +84,6 @@ function python_to_js_linkifier(
         }
     }
     const url_template = url_template_lib.parse(url);
-    blueslip.info(`Linkifier info ${String(final_regex)} ${url}`, group_number_to_name);
     return [final_regex, url_template, group_number_to_name];
 }
 

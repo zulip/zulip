@@ -816,6 +816,7 @@ run_test("user_settings", ({override}) => {
     let event = event_fixtures.user_settings__default_language;
     user_settings.default_language = "en";
     override(settings_display, "update_page", noop);
+    override(overlays, "settings_open", () => true);
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
 
@@ -873,13 +874,6 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.dense_mode, true);
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
-
-    $("body").fadeOut = (secs) => {
-        assert_same(secs, 300);
-    };
-    $("body").fadeIn = (secs) => {
-        assert_same(secs, 300);
-    };
 
     override(realm_logo, "render", noop);
 

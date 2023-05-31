@@ -636,7 +636,11 @@ def get_tag_name_from_ref(ref_string: str) -> str:
 
 
 def is_commit_push_event(payload: WildValue) -> bool:
-    return bool(re.match(r"^refs/heads/", payload["ref"].tame(check_string)))
+    return payload["ref"].tame(check_string).startswith("refs/heads/")
+
+
+def is_merge_queue_push_event(payload: WildValue) -> bool:
+    return payload["ref"].tame(check_string).startswith("refs/heads/gh-readonly-queue/")
 
 
 def get_subject_based_on_type(payload: WildValue, event: str) -> str:
@@ -733,6 +737,7 @@ IGNORED_EVENTS = [
     "milestone",
     "organization",
     "project_card",
+    "push__merge_queue",
     "repository_vulnerability_alert",
 ]
 
@@ -827,6 +832,8 @@ def get_zulip_event_name(
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
     elif header_event == "push":
+        if is_merge_queue_push_event(payload):
+            return None
         if is_commit_push_event(payload):
             if branches is not None:
                 branch = get_branch_name_from_ref(payload["ref"].tame(check_string))

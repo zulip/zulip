@@ -558,5 +558,5 @@ See https://zulip.readthedocs.io/en/latest/documentation/api.html for help.
 
 The errors logged by the OpenAPI validator are below:\n"""
     for error in errors:
-        msg += f"* {str(error)}\n"
+        msg += f"* {error}\n"
     raise SchemaError(msg)

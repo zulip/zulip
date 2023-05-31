@@ -188,8 +188,8 @@ run_test("format_money", () => {
     assert.equal(helpers.format_money("666.6666666666666"), "6.67");
     assert.equal(helpers.format_money("7600"), "76");
     assert.equal(helpers.format_money("8000"), "80");
-    assert.equal(helpers.format_money("123416.323"), "1234.17");
-    assert.equal(helpers.format_money("927268238"), "9272682.38");
+    assert.equal(helpers.format_money("123416.323"), "1,234.17");
+    assert.equal(helpers.format_money("927268238"), "9,272,682.38");
 });
 
 run_test("update_charged_amount", () => {
@@ -198,11 +198,13 @@ run_test("update_charged_amount", () => {
     prices.monthly = 800;
     page_params.seat_count = 35;
 
+    // 80 * 35 = 2800
     helpers.update_charged_amount(prices, "annual");
-    assert.equal($("#charged_amount").text(), (80 * 35).toString());
+    assert.equal($("#charged_amount").text(), "2,800");
 
+    // 8 * 35 = 280
     helpers.update_charged_amount(prices, "monthly");
-    assert.equal($("#charged_amount").text(), (8 * 35).toString());
+    assert.equal($("#charged_amount").text(), "280");
 });
 
 run_test("show_license_section", () => {

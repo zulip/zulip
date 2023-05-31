@@ -12,5 +12,6 @@
 ## Related articles
 * [Reading strategies](/help/reading-strategies)
 * [Recent conversations](/help/recent-conversations)
+* [Inbox](/help/inbox)
 * [Configure default view](/help/configure-default-view)
 * [Reading topics](/help/reading-topics)

@@ -2,7 +2,7 @@ import datetime
 import re
 import time
 from io import StringIO
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 from unittest import mock
 
 import orjson
@@ -19,7 +19,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Attachment, Message, ScheduledMessage, UserMessage
+from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -38,7 +38,6 @@ class ScheduledMessageTest(ZulipTestCase):
         to: Union[int, List[str], List[int]],
         msg: str,
         scheduled_delivery_timestamp: int,
-        scheduled_message_id: str = "",
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
@@ -53,9 +52,6 @@ class ScheduledMessageTest(ZulipTestCase):
             "topic": topic_name,
             "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
         }
-
-        if scheduled_message_id:
-            payload["scheduled_message_id"] = scheduled_message_id
 
         result = self.client_post("/json/scheduled_messages", payload)
         return result
@@ -79,7 +75,7 @@ class ScheduledMessageTest(ZulipTestCase):
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
 
-        # Scheduling a private message is successful.
+        # Scheduling a direct message with user IDs is successful.
         othello = self.example_user("othello")
         result = self.do_schedule_message(
             "direct", [othello.id], content + " 3", scheduled_delivery_timestamp
@@ -92,6 +88,12 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message.scheduled_timestamp,
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
+
+        # Cannot schedule a direct message with user emails.
+        result = self.do_schedule_message(
+            "direct", [othello.email], content + " 4", scheduled_delivery_timestamp
+        )
+        self.assert_json_error(result, "Recipient list may only contain user IDs")
 
     def create_scheduled_message(self) -> None:
         content = "Test message"
@@ -145,7 +147,7 @@ class ScheduledMessageTest(ZulipTestCase):
                 self.assertEqual(delivered_message.topic_name(), scheduled_message.topic_name())
                 self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
-    def test_successful_deliver_private_scheduled_message(self) -> None:
+    def test_successful_deliver_direct_scheduled_message(self) -> None:
         logger = mock.Mock()
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message(logger))
@@ -200,16 +202,17 @@ class ScheduledMessageTest(ZulipTestCase):
         # message is successfully sent.
         new_delivery_datetime = timezone_now() + datetime.timedelta(minutes=7)
         new_delivery_timestamp = int(new_delivery_datetime.timestamp())
-        updated_response = self.do_schedule_message(
-            "direct",
-            [othello.id],
-            "New content!",
-            new_delivery_timestamp,
-            scheduled_message_id=str(scheduled_message.id),
+        content = "New message content"
+        payload = {
+            "content": content,
+            "scheduled_delivery_timestamp": new_delivery_timestamp,
+        }
+        updated_response = self.client_patch(
+            f"/json/scheduled_messages/{scheduled_message.id}", payload
         )
         self.assert_json_error(updated_response, "Scheduled message was already sent")
 
-    def test_successful_deliver_private_scheduled_message_to_self(self) -> None:
+    def test_successful_deliver_direct_scheduled_message_to_self(self) -> None:
         logger = mock.Mock()
         # No scheduled message
         self.assertFalse(try_deliver_one_scheduled_message(logger))
@@ -426,20 +429,25 @@ class ScheduledMessageTest(ZulipTestCase):
                 scheduled_message, logger, expected_failure_message
             )
 
-        # After verifying the scheduled message failed to be sent, confirm
-        # editing the scheduled message with that ID for a future time is
+            # After verifying the scheduled message failed to be sent:
+            # Confirm not updating the scheduled delivery timestamp for
+            # the scheduled message with that ID returns an error.
+            payload_without_timestamp = {"topic": "Failed to send"}
+            response = self.client_patch(
+                f"/json/scheduled_messages/{scheduled_message.id}", payload_without_timestamp
+            )
+            self.assert_json_error(response, "Scheduled delivery time must be in the future.")
+
+        # Editing the scheduled message with that ID for a future time is
         # successful and resets the `failed` and `failure_message` fields.
         new_delivery_datetime = timezone_now() + datetime.timedelta(minutes=60)
         new_delivery_timestamp = int(new_delivery_datetime.timestamp())
-        content = "Test message"
-        verona_stream_id = self.get_stream_id("Verona")
         scheduled_message_id = scheduled_message.id
-        response = self.do_schedule_message(
-            "stream",
-            verona_stream_id,
-            content + " 1",
-            new_delivery_timestamp,
-            scheduled_message_id=str(scheduled_message_id),
+        payload_with_timestamp = {
+            "scheduled_delivery_timestamp": new_delivery_timestamp,
+        }
+        response = self.client_patch(
+            f"/json/scheduled_messages/{scheduled_message.id}", payload_with_timestamp
         )
         self.assert_json_success(response)
 
@@ -470,30 +478,124 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         scheduled_message = self.last_scheduled_message()
         self.assert_json_success(result)
+        self.assertEqual(scheduled_message.recipient.type, Recipient.STREAM)
         self.assertEqual(scheduled_message.content, "Original test message")
         self.assertEqual(scheduled_message.topic_name(), "Test topic")
         self.assertEqual(
             scheduled_message.scheduled_timestamp,
             timestamp_to_datetime(scheduled_delivery_timestamp),
         )
+        scheduled_message_id = scheduled_message.id
+        payload: Dict[str, Any]
 
-        # Edit content and time of scheduled message.
+        # Sending request with only scheduled message ID returns an error
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}")
+        self.assert_json_error(result, "Nothing to change")
+
+        # Trying to edit only message `type` returns an error
+        payload = {
+            "type": "direct",
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_error(
+            result, "Recipient required when updating type of scheduled message."
+        )
+
+        # Edit message `type` with valid `to` parameter succeeds
+        othello = self.example_user("othello")
+        to = [othello.id]
+        payload = {"type": "direct", "to": orjson.dumps(to).decode()}
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+
+        scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
+        self.assertNotEqual(scheduled_message.recipient.type, Recipient.STREAM)
+
+        # Trying to edit `topic` for direct message is ignored
+        payload = {
+            "topic": "Private message topic",
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+
+        scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
+        self.assertEqual(scheduled_message.topic_name(), "")
+
+        # Trying to edit `type` to stream message type without a `topic` returns an error
+        payload = {
+            "type": "stream",
+            "to": orjson.dumps(verona_stream_id).decode(),
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_error(
+            result, "Topic required when updating scheduled message type to stream."
+        )
+
+        # Edit message `type` to stream with valid `to` and `topic` succeeds
+        payload = {
+            "type": "stream",
+            "to": orjson.dumps(verona_stream_id).decode(),
+            "topic": "New test topic",
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_success(result)
+
+        scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
+        self.assertEqual(scheduled_message.recipient.type, Recipient.STREAM)
+        self.assertEqual(scheduled_message.topic_name(), "New test topic")
+
+        # Trying to edit with timestamp in the past returns an error
+        new_scheduled_delivery_timestamp = int(time.time() - 86400)
+        payload = {
+            "scheduled_delivery_timestamp": new_scheduled_delivery_timestamp,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_error(result, "Scheduled delivery time must be in the future.")
+
+        # Edit content and time of scheduled message succeeds
         edited_content = "Edited test message"
         new_scheduled_delivery_timestamp = scheduled_delivery_timestamp + int(
             time.time() + (3 * 86400)
         )
-
-        result = self.do_schedule_message(
-            "stream",
-            verona_stream_id,
-            edited_content,
-            new_scheduled_delivery_timestamp,
-            scheduled_message_id=str(scheduled_message.id),
-        )
-        scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
+        payload = {
+            "content": edited_content,
+            "scheduled_delivery_timestamp": new_scheduled_delivery_timestamp,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
         self.assert_json_success(result)
+
+        scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
         self.assertEqual(scheduled_message.content, edited_content)
-        self.assertEqual(scheduled_message.topic_name(), "Test topic")
+        self.assertEqual(scheduled_message.topic_name(), "New test topic")
+        self.assertEqual(
+            scheduled_message.scheduled_timestamp,
+            timestamp_to_datetime(new_scheduled_delivery_timestamp),
+        )
+
+        # Edit topic and content of scheduled stream message
+        edited_content = "Final content edit for test"
+        payload = {
+            "topic": "Another topic for test",
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+        self.assert_json_success(result)
+
+        scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
+        self.assertEqual(scheduled_message.content, edited_content)
+        self.assertEqual(scheduled_message.topic_name(), "Another topic for test")
+
+        # Edit only topic of scheduled stream message
+        payload = {
+            "topic": "Final topic for test",
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+        self.assert_json_success(result)
+
+        scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
+        self.assertEqual(scheduled_message.recipient.type, Recipient.STREAM)
+        self.assertEqual(scheduled_message.content, edited_content)
+        self.assertEqual(scheduled_message.topic_name(), "Final topic for test")
         self.assertEqual(
             scheduled_message.scheduled_timestamp,
             timestamp_to_datetime(new_scheduled_delivery_timestamp),
@@ -600,13 +702,11 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Test editing to change attachmment
         edited_content = f"Test [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id2})"
-        result = self.do_schedule_message(
-            "stream",
-            verona_stream_id,
-            edited_content,
-            scheduled_delivery_timestamp,
-            scheduled_message_id=str(scheduled_message.id),
-        )
+        payload = {
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+
         scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
         self.assertEqual(
             list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)), []
@@ -619,13 +719,11 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Test editing to no longer reference any attachments
         edited_content = "No more attachments"
-        result = self.do_schedule_message(
-            "stream",
-            verona_stream_id,
-            edited_content,
-            scheduled_delivery_timestamp,
-            scheduled_message_id=str(scheduled_message.id),
-        )
+        payload = {
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+
         scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
         self.assertEqual(
             list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)), []
@@ -639,13 +737,11 @@ class ScheduledMessageTest(ZulipTestCase):
         edited_content = (
             f"Attachment is back! [zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id2})"
         )
-        result = self.do_schedule_message(
-            "stream",
-            verona_stream_id,
-            edited_content,
-            scheduled_delivery_timestamp,
-            scheduled_message_id=str(scheduled_message.id),
-        )
+        payload = {
+            "content": edited_content,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+
         scheduled_message = self.get_scheduled_message(str(scheduled_message.id))
         self.assertEqual(
             list(attachment_object1.scheduled_messages.all().values_list("id", flat=True)), []

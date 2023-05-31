@@ -170,6 +170,9 @@ mock_esm("../src/unread", {
     },
     topic_has_any_unread_mentions: () => false,
 });
+mock_esm("../src/resize", {
+    update_recent_topics_filters_height: noop,
+});
 
 const {all_messages_data} = zrequire("all_messages_data");
 const people = zrequire("people");

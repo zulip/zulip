@@ -152,7 +152,7 @@ run_test("basics", () => {
 
     const row = {
         length: 1,
-        offset: () => ({top: 25}),
+        get_offset_to_window: () => ({top: 25}),
     };
 
     message_lists.current.selected_id = () => -1;

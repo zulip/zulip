@@ -451,12 +451,10 @@ export function initialize() {
 
     resize.watch_manual_resize("#compose-textarea");
 
-    // Update position of scroll to bottom button based on
-    // height of the compose box.
-    const update_scroll_to_bottom_position = new ResizeObserver(() => {
-        $("#scroll-to-bottom-button-container").css("bottom", $("#compose").outerHeight());
-    });
-    update_scroll_to_bottom_position.observe(document.querySelector("#compose"));
+    // Updates compose max-height and scroll to bottom button position when
+    // there is a change in compose height like when a compose banner is displayed.
+    const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
+    update_compose_max_height.observe(document.querySelector("#compose"));
 
     upload.feature_check($("#compose .compose_upload_file"));
 
@@ -523,7 +521,7 @@ export function initialize() {
             const topic_name = $target.attr("data-topic-name");
 
             message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                message_edit.toggle_resolve_topic(message_id, topic_name);
+                message_edit.toggle_resolve_topic(message_id, topic_name, true);
                 compose_validate.clear_topic_resolved_warning(true);
             });
         },

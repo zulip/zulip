@@ -3,7 +3,9 @@
 This page offers some tips for making your pull requests easy to review.
 Following this advice will help the whole Zulip project move more quickly by
 saving maintainers time when they review your code. It will also make a big
-difference for getting your work integrated without delay.
+difference for getting your work integrated without delay. For a detailed
+overview of Zulip's PR review process, see the [pull request review
+process](../contributing/review-process.md) guide.
 
 ## Posting a pull request
 
