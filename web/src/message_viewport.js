@@ -3,8 +3,6 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as notifications from "./notifications";
-import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as util from "./util";
@@ -500,15 +498,4 @@ export function initialize() {
     $(document).on("message_selected.zulip wheel", () => {
         stop_auto_scrolling();
     });
-}
-
-export function is_visible_and_focused() {
-    if (
-        overlays.is_overlay_or_modal_open() ||
-        !notifications.is_window_focused() ||
-        !$("#message_feed_container").is(":visible")
-    ) {
-        return false;
-    }
-    return true;
 }

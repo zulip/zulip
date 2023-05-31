@@ -4,18 +4,11 @@ const {strict: assert} = require("assert");
 
 const {addDays} = require("date-fns");
 
-const {set_global, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
 page_params.is_spectator = false;
-
-// Dependencies
-set_global("document", {
-    hasFocus() {
-        return true;
-    },
-});
 
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");

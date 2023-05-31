@@ -2,8 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const $ = require("./lib/zjquery");
 
 /*
 
@@ -48,6 +49,8 @@ const {run_test} = require("./lib/test");
           do nothing at all or return a simple
           value.)
 */
+
+set_global("document", {hasFocus: () => true});
 
 const channel = mock_esm("../src/channel");
 const message_lists = mock_esm("../src/message_lists");
@@ -98,7 +101,7 @@ run_test("unread_ops", ({override}) => {
     unread.process_loaded_messages(test_messages);
 
     // Make our message_viewport appear visible.
-    override(message_viewport, "is_visible_and_focused", () => true);
+    $("#message_feed_container").show();
 
     // Make our "test" message appear visible.
     override(message_viewport, "bottom_message_visible", () => true);

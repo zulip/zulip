@@ -23,15 +23,10 @@ import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 
 const notice_memory = new Map();
-
-// When you start Zulip, window_focused should be true, but it might not be the
-// case after a server-initiated reload.
-let window_focused = document.hasFocus && document.hasFocus();
 
 let NotificationAPI;
 
@@ -73,22 +68,12 @@ export function get_notifications() {
 }
 
 export function initialize() {
-    $(window)
-        .on("focus", () => {
-            window_focused = true;
-
-            for (const notice_mem_entry of notice_memory.values()) {
-                notice_mem_entry.obj.close();
-            }
-            notice_memory.clear();
-
-            // Update many places on the DOM to reflect unread
-            // counts.
-            unread_ops.process_visible();
-        })
-        .on("blur", () => {
-            window_focused = false;
-        });
+    $(window).on("focus", () => {
+        for (const notice_mem_entry of notice_memory.values()) {
+            notice_mem_entry.obj.close();
+        }
+        notice_memory.clear();
+    });
 
     update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
     update_notification_sound_source(
@@ -158,10 +143,6 @@ export function update_unread_counts(new_unread_count, new_pm_count) {
     // TODO: Add a `window.electron_bridge.updatePMCount(new_pm_count);` call?
 
     redraw_title();
-}
-
-export function is_window_focused() {
-    return window_focused;
 }
 
 function notify_unmute(muted_narrow, stream_id, topic_name) {
