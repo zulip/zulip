@@ -683,6 +683,24 @@ function actually_update_streams_for_search() {
 
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
+// Exported for tests only.
+export function initialize_stream_cursor() {
+    stream_cursor = new ListCursor({
+        list: {
+            scroll_container_sel: "#left_sidebar_scroll_container",
+            find_li(opts) {
+                const stream_id = opts.key;
+                const li = get_stream_li(stream_id);
+                return li;
+            },
+            first_key: stream_list_sort.first_stream_id,
+            prev_key: stream_list_sort.prev_stream_id,
+            next_key: stream_list_sort.next_stream_id,
+        },
+        highlight_class: "highlighted_stream",
+    });
+}
+
 export function initialize() {
     create_initial_sidebar_rows();
 
@@ -690,6 +708,7 @@ export function initialize() {
     // when new messages come in, but it's fairly quick.
     build_stream_list();
     update_subscribe_to_more_streams_link();
+    initialize_stream_cursor();
     set_event_handlers();
 }
 
@@ -743,21 +762,6 @@ export function set_event_handlers() {
     scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
         has_scrolled = true;
         toggle_pm_header_icon();
-    });
-
-    stream_cursor = new ListCursor({
-        list: {
-            scroll_container_sel: "#left_sidebar_scroll_container",
-            find_li(opts) {
-                const stream_id = opts.key;
-                const li = get_stream_li(stream_id);
-                return li;
-            },
-            first_key: stream_list_sort.first_stream_id,
-            prev_key: stream_list_sort.prev_stream_id,
-            next_key: stream_list_sort.next_stream_id,
-        },
-        highlight_class: "highlighted_stream",
     });
 
     const $search_input = $(".stream-list-filter").expectOne();
