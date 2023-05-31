@@ -77,15 +77,12 @@
         gap: 4px;
     }
 
-    .tooltip-hotkey-hint {
-        box-sizing: inherit;
+    & span.tooltip-hotkey-hint {
         border: 1px solid hsl(225deg 100% 84%);
         border-radius: 3px;
         color: hsl(225deg 100% 84%);
-        padding: 2px 5px;
-        min-width: 20px;
+        padding: 0 5px;
         text-align: center;
-        line-height: 14px;
     }
 
     /* If the reference of the tooltip is went offscreen while scrolling,
