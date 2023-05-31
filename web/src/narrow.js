@@ -17,6 +17,7 @@ import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_feed_loading from "./message_feed_loading";
+import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_fetch from "./message_fetch";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
@@ -131,7 +132,7 @@ export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
-    message_scroll.hide_top_of_narrow_notices();
+    message_feed_top_notices.hide_top_of_narrow_notices();
     message_feed_loading.hide_indicators();
     unread_ui.reset_unread_banner();
 }
@@ -1008,7 +1009,7 @@ function handle_post_narrow_deactivate_processes() {
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
     update_narrow_title(narrow_state.filter());
-    message_scroll.update_top_of_narrow_notices(message_lists.home);
+    message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
 }
 
 export function deactivate(coming_from_recent_topics = false) {

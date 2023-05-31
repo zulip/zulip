@@ -5,10 +5,10 @@ import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
 import * as message_feed_loading from "./message_feed_loading";
+import * as message_feed_top_notices from "./message_feed_top_notices";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
@@ -105,7 +105,7 @@ function get_messages_success(data, opts) {
                 history_limited: data.history_limited,
             });
         }
-        message_scroll.update_top_of_narrow_notices(opts.msg_list);
+        message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
     }
 
     if (opts.num_after > 0) {
