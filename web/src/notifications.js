@@ -123,7 +123,9 @@ export function redraw_title() {
     document.title = new_title;
 }
 
-export function update_unread_counts(new_unread_count, new_pm_count) {
+export function update_unread_counts(counts) {
+    const new_unread_count = unread.calculate_notifiable_count(counts);
+    const new_pm_count = counts.private_message_count;
     if (new_unread_count === unread_count && new_pm_count === pm_count) {
         return;
     }
