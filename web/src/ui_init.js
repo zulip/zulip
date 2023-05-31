@@ -701,7 +701,7 @@ export function initialize_everything() {
     // All overlays must be initialized before hashchange.js
     hashchange.initialize();
 
-    unread_ui.initialize();
+    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
     activity.initialize();
     emoji_picker.initialize();
     pm_list.initialize();
