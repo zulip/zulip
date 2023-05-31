@@ -26,7 +26,6 @@ import * as message_store from "./message_store";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
@@ -646,7 +645,6 @@ export function initialize() {
     user_profile.register_click_handlers();
     emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();
-    notifications.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
