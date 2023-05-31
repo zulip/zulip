@@ -107,6 +107,15 @@ table.layout > tbody > tr > td {
     text-align: center;
 }
 
+/*
+  Styles for the content section of Zulip newsletters and other custom emails.
+*/
+.custom-email-content h1 {
+    font-size: 1.6em;
+    margin-top: 25px;
+    margin-bottom: 5px;
+}
+
 .content ul,
 .content ol {
     /* Override excessive indentation seen in Gmail. */

@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "7.0"
+ZULIP_VERSION = "8.0-dev+git"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
@@ -15,14 +15,14 @@ ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "7.0"
 LATEST_RELEASE_VERSION = "7.0"
-LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2022/11/17/zulip-6-0-released/"
+LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2023/05/31/zulip-7-0-released/"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
 # prevented from connecting to the Zulip server.  Versions above
 # DESKTOP_MINIMUM_VERSION but below DESKTOP_WARNING_VERSION will have
 # a banner at the top of the page asking the user to upgrade.
-DESKTOP_MINIMUM_VERSION = "5.2.0"
-DESKTOP_WARNING_VERSION = "5.4.3"
+DESKTOP_MINIMUM_VERSION = "5.4.3"
+DESKTOP_WARNING_VERSION = "5.9.3"
 
 # Bump the API_FEATURE_LEVEL whenever an API change is made
 # that clients might want to condition on.  If we forget at
