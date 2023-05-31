@@ -79,7 +79,7 @@ jobs:
       - name: Restore pnpm store
         uses: actions/cache@v3
         with:
-          path: ~/.local/share/pnpm/store
+          path: /__w/.pnpm-store
           key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore python cache
@@ -244,6 +244,12 @@ jobs:
 
       - name: Check development database build
         run: ./tools/ci/setup-backend
+
+      - name: Verify pnpm store path
+        run: |
+          set -x
+          path="$(pnpm store path)"
+          [[ "$path" == /__w/.pnpm-store/* ]]
 
       - name: Generate failure report string
         id: failure_report_string
