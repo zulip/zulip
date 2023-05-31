@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-29 17:38+0000\n"
+"POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Oktay, 2022\n"
 "Language-Team: Turkish (http://app.transifex.com/zulip/zulip/language/tr/)\n"
@@ -3064,8 +3064,8 @@ msgid "The time limit for editing this message has passed"
 msgstr "İleti düzenleme için belirlenen zaman limiti geçmiştir."
 
 #: zerver/actions/message_edit.py:1214
-msgid "The time limit for editing this message's topic has passed"
-msgstr "Bu iletinin konusunu düzenlemek için süre sınırı geçti"
+msgid "The time limit for editing this message's topic has passed."
+msgstr ""
 
 #: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1428
 msgid "You do not have permission to use wildcard mentions in this stream."

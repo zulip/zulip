@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-29 17:38+0000\n"
+"POT-Creation-Date: 2023-05-31 15:33+0000\n"
 "PO-Revision-Date: 2021-05-27 07:08+0000\n"
 "Last-Translator: Akash Nimare <svnitakash@gmail.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/"
@@ -3185,7 +3185,7 @@ msgid "The time limit for editing this message has passed"
 msgstr ""
 
 #: zerver/actions/message_edit.py:1214
-msgid "The time limit for editing this message's topic has passed"
+msgid "The time limit for editing this message's topic has passed."
 msgstr ""
 
 #: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1428

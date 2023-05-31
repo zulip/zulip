@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-29 17:38+0000\n"
+"POT-Creation-Date: 2023-05-31 15:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3100,7 +3100,7 @@ msgid "The time limit for editing this message has passed"
 msgstr ""
 
 #: zerver/actions/message_edit.py:1214
-msgid "The time limit for editing this message's topic has passed"
+msgid "The time limit for editing this message's topic has passed."
 msgstr ""
 
 #: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1428
