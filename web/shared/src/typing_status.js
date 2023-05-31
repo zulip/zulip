@@ -1,4 +1,5 @@
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other
@@ -13,24 +14,14 @@ const TYPING_STARTED_WAIT_PERIOD = 10000; // 10s
 const TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
 
 /** Exported only for tests. */
-export const state = {};
-
-/** Exported only for tests. */
-export function initialize_state() {
-    state.current_recipient = null;
-    state.next_send_start_time = undefined;
-    state.idle_timer = undefined;
-}
-
-initialize_state();
+export let state = null;
 
 /** Exported only for tests. */
 export function stop_last_notification(worker) {
-    if (state.idle_timer) {
-        clearTimeout(state.idle_timer);
-    }
+    assert(state !== null, "State object should not be null here.");
+    clearTimeout(state.idle_timer);
     worker.notify_server_stop(state.current_recipient);
-    initialize_state();
+    state = null;
 }
 
 /** Exported only for tests. */
@@ -43,13 +34,14 @@ export function start_or_extend_idle_timer(worker) {
         stop_last_notification(worker);
     }
 
-    if (state.idle_timer) {
+    if (state?.idle_timer) {
         clearTimeout(state.idle_timer);
     }
-    state.idle_timer = setTimeout(on_idle_timeout, TYPING_STOPPED_WAIT_PERIOD);
+    return setTimeout(on_idle_timeout, TYPING_STOPPED_WAIT_PERIOD);
 }
 
 function set_next_start_time(current_time) {
+    assert(state !== null, "State object should not be null here.");
     state.next_send_start_time = current_time + TYPING_STARTED_WAIT_PERIOD;
 }
 
@@ -60,6 +52,7 @@ function actually_ping_server(worker, recipient, current_time) {
 
 /** Exported only for tests. */
 export function maybe_ping_server(worker, recipient) {
+    assert(state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
         actually_ping_server(worker, recipient, current_time);
@@ -93,17 +86,16 @@ export function maybe_ping_server(worker, recipient) {
  *   anymore.
  */
 export function update(worker, new_recipient) {
-    const current_recipient = state.current_recipient;
-    if (current_recipient !== null) {
+    if (state !== null) {
         // We need to use _.isEqual for comparisons; === doesn't work
         // on arrays.
-        if (_.isEqual(new_recipient, current_recipient)) {
+        if (_.isEqual(new_recipient, state.current_recipient)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
             maybe_ping_server(worker, new_recipient);
 
             // We can also extend out our idle time.
-            start_or_extend_idle_timer(worker);
+            state.idle_timer = start_or_extend_idle_timer(worker);
 
             return;
         }
@@ -122,8 +114,11 @@ export function update(worker, new_recipient) {
 
     // We just started talking to this recipient, so notify
     // the server.
-    state.current_recipient = new_recipient;
+    state = {
+        current_recipient: new_recipient,
+        next_send_start_time: 0,
+        idle_timer: start_or_extend_idle_timer(worker),
+    };
     const current_time = worker.get_current_time();
     actually_ping_server(worker, new_recipient, current_time);
-    start_or_extend_idle_timer(worker);
 }
