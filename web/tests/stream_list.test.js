@@ -21,9 +21,6 @@ mock_esm("../src/narrow_state", {
     active: () => false,
 });
 const topic_list = mock_esm("../src/topic_list");
-mock_esm("../src/keydown_util", {
-    handle: noop,
-});
 const scroll_util = mock_esm("../src/scroll_util", {
     scroll_element_into_container() {},
     get_scroll_element: ($element) => $element,
@@ -378,7 +375,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     $("#stream-filters-container")[0] = {
         dataset: {},
     };
-    stream_list.set_event_handlers();
+    stream_list.initialize_stream_cursor();
 
     mock_template("filter_topics", false, () => "filter-topics-stub");
     let filter_topics_appended = false;
@@ -429,8 +426,6 @@ test_ui("narrowing", ({mock_template}) => {
     $("#streams_header").outerHeight = () => 0;
 
     assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
-
-    stream_list.set_event_handlers();
 
     let filter;
 
