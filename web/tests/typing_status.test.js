@@ -22,7 +22,7 @@ function returns_time(secs) {
 }
 
 run_test("basics", ({override, override_rewire}) => {
-    typing_status.initialize_state();
+    typing_status.state = null;
 
     // invalid conversation basically does nothing
     let worker = {};
@@ -123,11 +123,7 @@ run_test("basics", ({override, override_rewire}) => {
     const callback = events.idle_callback;
     clear_events();
     callback();
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -137,11 +133,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Call stop with nothing going on.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -167,11 +159,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Explicitly stop alice.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -197,11 +185,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Switch to an invalid conversation.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -211,11 +195,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Switch to another invalid conversation.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
