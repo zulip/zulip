@@ -462,14 +462,14 @@ test_ui("narrowing", ({mock_template}) => {
 });
 
 test_ui("focusout_user_filter", () => {
-    stream_list.set_event_handlers();
+    stream_list.set_event_handlers({narrow_on_stream_click() {}});
     const e = {};
     const click_handler = $(".stream-list-filter").get_on_handler("focusout");
     click_handler(e);
 });
 
 test_ui("focus_user_filter", () => {
-    stream_list.set_event_handlers();
+    stream_list.set_event_handlers({narrow_on_stream_click() {}});
 
     initialize_stream_data();
     stream_list.build_stream_list();
