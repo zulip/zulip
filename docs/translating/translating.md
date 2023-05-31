@@ -1,8 +1,8 @@
 # Translation guidelines
 
-Zulip's has full support for Unicode (and partial support for RTL
-languages), so you can use your preferred language everywhere in
-Zulip.
+Zulip's has full support for Unicode (and partial support for 
+[RTL languages](https://en.wikipedia.org/wiki/Right-to-left_script)),
+so you can use your preferred language everywhere in Zulip.
 
 Additionally, the Zulip UI is translated into more than a dozen major
 languages, including Spanish, German, Hindi, French, Chinese, Russian,
