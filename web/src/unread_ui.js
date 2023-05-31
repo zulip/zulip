@@ -4,16 +4,11 @@ import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark
 import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
 import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
 
-import * as activity from "./activity";
 import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
-import * as pm_list from "./pm_list";
 import {web_mark_read_on_scroll_policy_values} from "./settings_config";
-import * as stream_list from "./stream_list";
-import * as top_left_corner from "./top_left_corner";
-import * as topic_list from "./topic_list";
 import * as unread from "./unread";
 import {user_settings} from "./user_settings";
 
