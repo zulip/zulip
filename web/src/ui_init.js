@@ -685,7 +685,7 @@ export function initialize_everything() {
     compose_textarea.initialize();
     search.initialize();
     tutorial.initialize();
-    notifications.initialize();
+    notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
     unread_ops.initialize();
     gear_menu.initialize();
     giphy.initialize();
