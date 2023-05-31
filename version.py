@@ -21,8 +21,8 @@ LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2022/11/17/zulip-6-0-relea
 # prevented from connecting to the Zulip server.  Versions above
 # DESKTOP_MINIMUM_VERSION but below DESKTOP_WARNING_VERSION will have
 # a banner at the top of the page asking the user to upgrade.
-DESKTOP_MINIMUM_VERSION = "5.2.0"
-DESKTOP_WARNING_VERSION = "5.4.3"
+DESKTOP_MINIMUM_VERSION = "5.4.3"
+DESKTOP_WARNING_VERSION = "5.9.3"
 
 # Bump the API_FEATURE_LEVEL whenever an API change is made
 # that clients might want to condition on.  If we forget at
