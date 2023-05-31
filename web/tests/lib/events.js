@@ -955,6 +955,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__notification_sound: {
+        type: "user_settings",
+        op: "update",
+        property: "notification_sound",
+        value: "ding",
+    },
+
     user_settings__presence_disabled: {
         type: "user_settings",
         op: "update",
