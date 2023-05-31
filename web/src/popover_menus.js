@@ -52,6 +52,7 @@ import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
+import { show_copied_confirmation } from "./tippyjs";
 
 let message_actions_popover_keyboard_toggle = false;
 let selected_send_later_timestamp;
@@ -758,22 +759,9 @@ export function initialize() {
                 instance.hide();
             });
 
-            new ClipboardJS($popper.find(".copy_link")[0]).on("success", (e) => {
-                // e.trigger returns the DOM element triggering the copy action
-                const message_id = e.trigger.dataset.messageId;
-                const $row = $(`[zid='${CSS.escape(message_id)}']`);
-                $row.find(".alert-msg")
-                    .text($t({defaultMessage: "Copied!"}))
-                    .css("display", "block")
-                    .delay(1000)
-                    .fadeOut(300);
-
-                setTimeout(() => {
-                    // The Clipboard library works by focusing to a hidden textarea.
-                    // We unfocus this so keyboard shortcuts, etc., will work again.
-                    $(":focus").trigger("blur");
-                }, 0);
-                instance.hide();
+            new ClipboardJS($popper.find(".copy_link")[0]).on("success", () => {
+                // Display tippy tool tip above "Copy link to message"
+                show_copied_confirmation($popper.find(".copy_link")[0]);
             });
         },
         onHidden(instance) {
