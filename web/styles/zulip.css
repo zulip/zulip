@@ -1032,10 +1032,6 @@ li.actual-dropdown-menu i {
     }
 }
 
-.settings-dropdown-cog {
-    padding: 6px 12px;
-}
-
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
@@ -2044,10 +2040,10 @@ div.focused_table {
         cursor: pointer;
         font-size: 20px;
 
-        padding: 10px 15px 0 0;
+        padding: 10px 10px 0 0;
 
         @media (width < $sm_min) {
-            padding: 0 15px 0 0;
+            padding: 0 10px 0 0;
         }
     }
 
@@ -2069,8 +2065,6 @@ div.focused_table {
 
 #navbar-buttons {
     white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
     display: inline-block;
     float: right;
 
@@ -2813,15 +2807,6 @@ select.invite-as {
         }
     }
 
-    .header-main .column-right {
-        display: inline-block;
-        width: 30px;
-    }
-
-    #top_navbar #navbar-buttons {
-        margin-right: 41px;
-    }
-
     .nav .dropdown-menu {
         min-width: 180px;
         box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
@@ -2836,7 +2821,7 @@ select.invite-as {
     }
 
     #navbar-middle {
-        margin-right: 87px;
+        margin-right: 127px;
     }
 
     .search_closed .zulip-icon-search {
@@ -2927,6 +2912,10 @@ select.invite-as {
         .narrows_panel {
             margin-top: 10px;
         }
+    }
+
+    #navbar-middle {
+        margin-right: 97px;
     }
 
     /* Usually the styling is applied directly to the icon, but here
@@ -3157,5 +3146,39 @@ select.invite-as {
 
     .zulip-icon {
         padding: 5px;
+    }
+}
+
+.header-main .column-right {
+    display: flex;
+    width: auto;
+    justify-content: flex-end;
+    align-items: center;
+    margin-right: 7px;
+
+    & a:focus {
+        filter: none;
+        outline: 0;
+    }
+}
+
+.header-button,
+#navbar-buttons #settings-dropdown {
+    width: var(--header-height);
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+#personal-menu {
+    .header-button-avatar {
+        width: 24px;
+        height: 24px;
+        background-size: cover;
+        border-radius: 4px;
     }
 }

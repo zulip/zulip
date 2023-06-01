@@ -40,17 +40,23 @@
                     </a>
                 </div>
                 <div class="spectator_narrow_login_button hide show-xl" data-tippy-content="{{t 'Log in' }}" data-tippy-placement="bottom">
-                    <a class="login_button">
+                    <a class="header-button login_button">
                         <i class="fa fa-sign-in"></i>
                     </a>
                 </div>
             </div>
             <div id="userlist-toggle" class="hidden-for-spectators tippy-zulip-delayed-tooltip" data-tooltip-template-id="userlist-tooltip-template">
-                <a id="userlist-toggle-button" role="button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
+                <a id="userlist-toggle-button" role="button" class="header-button" tabindex="0"><i class="fa fa-group" aria-hidden="true"></i>
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
             </div>
-            <div id="navbar-buttons" {{#if embedded}}class="hide-navbar-buttons-visibility"{{/if}}>
+            <div id="navbar-buttons" class="header-button {{#if embedded}}hide-navbar-buttons-visibility{{/if}}">
+            </div>
+            <div id="personal-menu" class="dropdown actual-dropdown-menu hidden-for-spectators">
+                <a class="header-button dropdown-toggle tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-target="nada" data-toggle="dropdown" data-tippy-content="{{t 'Personal menu' }}">
+                    <div class="header-button-avatar" style="background-image: url('{{user_avatar}}');"></div>
+                </a>
+                <span tabindex="0" class="focus-dropdown"></span>
             </div>
         </div>
     </nav>
