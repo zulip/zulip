@@ -245,6 +245,20 @@ EOF
         ;;
 esac
 
+machine="$(uname -m)"
+if [ "$machine" != x86_64 ] && [ "$machine" != aarch64 ]; then
+    system_requirements_failure <<EOF
+Unsupported CPU architecture: $machine (expected x86_64 or aarch64).
+EOF
+fi
+
+dpkg_architecture="$(dpkg --print-architecture)"
+if [ "$dpkg_architecture" != amd64 ] && [ "$dpkg_architecture" != arm64 ]; then
+    system_requirements_failure <<EOF
+Unsupported OS architecture: $dpkg_architecture (expected amd64 or arm64).
+EOF
+fi
+
 has_universe() {
     apt-cache policy \
         | grep -q "^     release v=$os_version_id,o=Ubuntu,a=$os_version_codename,n=$os_version_codename,l=Ubuntu,c=universe"
