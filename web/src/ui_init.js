@@ -661,7 +661,7 @@ export function initialize_everything() {
     message_viewport.initialize();
     navbar_alerts.initialize();
     initialize_kitchen_sink_stuff();
-    echo.initialize();
+    echo.initialize({on_send_message_success: compose.send_message_success});
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
