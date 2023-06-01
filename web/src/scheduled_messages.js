@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
-import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
 import * as channel from "./channel";
@@ -9,7 +8,6 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
-import * as drafts from "./drafts";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
@@ -149,38 +147,6 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
     popover_menus.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
-}
-
-export function send_request_to_schedule_message(scheduled_message_data, deliver_at) {
-    const $banner_container = $("#compose_banners");
-    const success = function (data) {
-        drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
-        compose.clear_compose_box();
-        const new_row = render_success_message_scheduled_banner({
-            scheduled_message_id: data.scheduled_message_id,
-            deliver_at,
-        });
-        compose_banner.clear_message_sent_banners();
-        compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
-    };
-
-    const error = function (xhr) {
-        const response = channel.xhr_error_message("Error sending message", xhr);
-        compose_ui.hide_compose_spinner();
-        compose_banner.show_error_message(
-            response,
-            compose_banner.CLASSNAMES.generic_compose_error,
-            $banner_container,
-            $("#compose-textarea"),
-        );
-    };
-
-    channel.post({
-        url: "/json/scheduled_messages",
-        data: scheduled_message_data,
-        success,
-        error,
-    });
 }
 
 function show_message_unscheduled_banner(scheduled_delivery_timestamp) {

@@ -4,6 +4,8 @@ import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
+import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -27,7 +29,6 @@ import * as popover_menus from "./popover_menus";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
-import * as scheduled_messages from "./scheduled_messages";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
@@ -823,5 +824,33 @@ function schedule_message_to_custom_date() {
         scheduled_delivery_timestamp,
     };
 
-    scheduled_messages.send_request_to_schedule_message(scheduled_message_data, deliver_at);
+    const $banner_container = $("#compose_banners");
+    const success = function (data) {
+        drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
+        clear_compose_box();
+        const new_row = render_success_message_scheduled_banner({
+            scheduled_message_id: data.scheduled_message_id,
+            deliver_at,
+        });
+        compose_banner.clear_message_sent_banners();
+        compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+    };
+
+    const error = function (xhr) {
+        const response = channel.xhr_error_message("Error sending message", xhr);
+        compose_ui.hide_compose_spinner();
+        compose_banner.show_error_message(
+            response,
+            compose_banner.CLASSNAMES.generic_compose_error,
+            $banner_container,
+            $("#compose-textarea"),
+        );
+    };
+
+    channel.post({
+        url: "/json/scheduled_messages",
+        data: scheduled_message_data,
+        success,
+        error,
+    });
 }
