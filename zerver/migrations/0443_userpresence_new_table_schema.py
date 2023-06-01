@@ -33,6 +33,11 @@ def rename_indexes_constraints(
                     suffix = "_idx" if len(infodict["columns"]) > 1 else ""
                     is_index = True
                 new_name = schema_editor._create_index_name(new_table, infodict["columns"], suffix)
+
+                if old_name == new_name:
+                    # Don't crash if these already have the right names.
+                    continue
+
                 if is_index:
                     raw_query = SQL("ALTER INDEX {old_name} RENAME TO {new_name}").format(
                         old_name=Identifier(old_name), new_name=Identifier(new_name)
