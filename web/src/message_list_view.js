@@ -17,6 +17,7 @@ import * as condense from "./condense";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
+import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
@@ -33,7 +34,6 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
-import * as tippyjs from "./tippyjs";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
 
@@ -1278,7 +1278,7 @@ export class MessageListView {
     rerender_messages(messages, message_content_edited) {
         // We need to destroy all the tippy instances from the DOM before re-rendering to
         // prevent the appearance of tooltips whose reference has been removed.
-        tippyjs.destroy_all_message_list_tooltips();
+        message_list_tooltips.destroy_all_message_list_tooltips();
         // Convert messages to list messages
         let message_containers = messages.map((message) => this.message_containers.get(message.id));
         // We may not have the message_container if the stream or topic was muted
