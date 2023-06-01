@@ -178,7 +178,7 @@ export function show_message_condenser($row) {
 }
 
 export function condense_and_collapse(elems) {
-    const height_cutoff = message_viewport.height() * 0.65;
+    const height_cutoff = message_viewport.max_message_height();
     const rows_to_resize = [];
 
     for (const elem of elems) {
