@@ -2151,8 +2151,8 @@ div.focused_table {
 
 .nav .dropdown-menu {
     left: auto;
-    right: 0;
-    top: 30px;
+    right: -7px;
+    top: 35px;
     /* Match the width of the right sidebar so that we don't have
        the presence dots distracting you when looking at this. */
     min-width: 240px;
@@ -2915,6 +2915,10 @@ select.invite-as {
 
     #navbar-middle {
         margin-right: 97px;
+    }
+
+    .nav .dropdown-menu {
+        right: -13px;
     }
 
     /* Usually the styling is applied directly to the icon, but here
