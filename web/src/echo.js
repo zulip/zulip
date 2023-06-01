@@ -3,7 +3,6 @@ import $ from "jquery";
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as local_message from "./local_message";
@@ -82,7 +81,7 @@ function failed_message_success(message_id) {
     show_failed_message_success(message_id);
 }
 
-function resend_message(message, $row) {
+function resend_message(message, $row, on_send_message_success) {
     message.content = message.raw_content;
     if (show_retry_spinner($row)) {
         // retry already in in progress
@@ -102,7 +101,7 @@ function resend_message(message, $row) {
 
         hide_retry_spinner($row);
 
-        compose.send_message_success(local_id, message_id, locally_echoed);
+        on_send_message_success(local_id, message_id, locally_echoed);
 
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);
@@ -482,7 +481,7 @@ export function display_slow_send_loading_spinner(message) {
     }
 }
 
-export function initialize() {
+export function initialize({on_send_message_success}) {
     function on_failed_action(selector, callback) {
         $("#main_div").on("click", selector, function (e) {
             e.stopPropagation();
@@ -499,7 +498,7 @@ export function initialize() {
                 );
                 return;
             }
-            callback(message, $row);
+            callback(message, $row, on_send_message_success);
         });
     }
 
