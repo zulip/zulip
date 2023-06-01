@@ -459,6 +459,9 @@ function edit_message($row, raw_content) {
     $form
         .find(".message-edit-feature-group .video_link")
         .toggle(compose.compute_show_video_chat_button());
+    $form
+        .find(".message-edit-feature-group .audio_link")
+        .toggle(compose.compute_show_audio_chat_button());
     upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
     const $message_edit_content = $row.find("textarea.message_edit_content");

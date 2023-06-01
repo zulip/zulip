@@ -127,7 +127,7 @@ test("videos", ({override}) => {
         handler(ev);
         // video link ids consist of 15 random digits
         const video_link_regex =
-            /\[translated: Join video call\.]\(https:\/\/meet.jit.si\/\d{15}\)/;
+            /\[translated: Join video call\.]\(https:\/\/meet.jit.si\/\d{15}#config.startWithVideoMuted=false\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();

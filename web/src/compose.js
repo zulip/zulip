@@ -75,10 +75,32 @@ export function compute_show_video_chat_button() {
     return true;
 }
 
+export function update_audio_and_video_chat_button_display() {
+    update_audio_chat_button_display();
+    update_video_chat_button_display();
+}
+
 export function update_video_chat_button_display() {
     const show_video_chat_button = compute_show_video_chat_button();
     $("#below-compose-content .video_link").toggle(show_video_chat_button);
     $(".message-edit-feature-group .video_link").toggle(show_video_chat_button);
+}
+
+export function compute_show_audio_chat_button() {
+    const available_providers = page_params.realm_available_video_chat_providers;
+    if (
+        available_providers.jitsi_meet &&
+        page_params.realm_video_chat_provider === available_providers.jitsi_meet.id
+    ) {
+        return true;
+    }
+    return false;
+}
+
+export function update_audio_chat_button_display() {
+    const show_audio_chat_button = compute_show_audio_chat_button();
+    $("#below-compose-content .audio_link").toggle(show_audio_chat_button);
+    $(".message-edit-feature-group .audio_link").toggle(show_audio_chat_button);
 }
 
 export function clear_invites() {
@@ -429,6 +451,7 @@ export function initialize() {
     setup_compose_actions_hooks();
 
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
+    $("#below-compose-content .audio_link").toggle(compute_show_audio_chat_button());
 
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
@@ -641,6 +664,19 @@ export function initialize() {
         }
 
         generate_and_insert_audio_or_video_call_link($(e.target), false);
+    });
+
+    $("body").on("click", ".audio_link", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const show_audio_chat_button = compute_show_audio_chat_button();
+
+        if (!show_audio_chat_button) {
+            return;
+        }
+
+        generate_and_insert_audio_or_video_call_link($(e.target), true);
     });
 
     $("body").on("click", ".time_pick", (e) => {
@@ -887,6 +923,29 @@ function generate_and_insert_audio_or_video_call_link($target_element, is_audio_
         // TODO: Use `new URL` to generate the URLs here.
         const video_call_id = util.random_int(100000000000000, 999999999999999);
         const video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
-        insert_video_call_url(video_call_link, $target_textarea);
+        if (is_audio_call) {
+            insert_audio_call_url(
+                video_call_link + "#config.startWithVideoMuted=true",
+                $target_textarea,
+            );
+        } else {
+            /* Because Jitsi remembers what last call type you joined
+               in browser local storage, we need to specify that video
+               should not be muted in the video call case, or your
+               next call will also join without video after joining an
+               audio-only call.
+
+               This has the annoying downside that it requires users
+               who have a personal preference to disable video every
+               time, but Jitsi's UI makes that very easy to do, and
+               that inconvenience is probably less important than letting
+               the person organizing a call specify their intended
+               call type (video vs audio).
+           */
+            insert_video_call_url(
+                video_call_link + "#config.startWithVideoMuted=false",
+                $target_textarea,
+            );
+        }
     }
 }
