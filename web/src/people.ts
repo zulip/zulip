@@ -196,7 +196,7 @@ export function id_matches_email_operand(user_id: number, email: string): boolea
 }
 
 export function update_email(user_id: number, new_email: string): void {
-    const person = people_by_user_id_dict.get(user_id);
+    const person = get_by_user_id(user_id);
     person.email = new_email;
     people_dict.set(new_email, person);
 
@@ -383,7 +383,6 @@ export function get_user_time(user_id: number): string | undefined {
 
 export function get_user_type(user_id: number): string | undefined {
     const user_profile = get_by_user_id(user_id);
-
     return settings_config.user_role_map.get(user_profile.role);
 }
 
@@ -433,7 +432,8 @@ export function get_display_full_names(user_ids: number[]): string[] {
 }
 
 export function get_full_name(user_id: number): string {
-    return people_by_user_id_dict.get(user_id).full_name;
+    const person = get_by_user_id(user_id);
+    return person.full_name;
 }
 
 function _calc_user_and_other_ids(user_ids_string: string): {
@@ -692,7 +692,9 @@ export function emails_to_slug(emails_string: string): string | undefined {
     const emails = emails_string.split(",");
 
     if (emails.length === 1) {
-        const name = get_by_email(emails[0]).full_name;
+        const person = get_by_email(emails[0]);
+        assert(person !== undefined, "Unknown person in emails_to_slug");
+        const name = person.full_name;
         slug += name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
     } else {
         slug += "group";
@@ -1127,7 +1129,7 @@ export function get_message_people(): User[] {
             .filter(Boolean),
     );
 
-    return message_people;
+    return message_people ?? [];
 }
 
 export function get_active_message_people(): User[] {
@@ -1561,7 +1563,8 @@ export function set_custom_profile_field_data(
         blueslip.error("Trying to set undefined field id");
         return;
     }
-    people_by_user_id_dict.get(user_id).profile_data[field.id] = {
+    const person = get_by_user_id(user_id);
+    person.profile_data[field.id] = {
         value: field.value,
         rendered_value: field.rendered_value,
     };
@@ -1580,11 +1583,13 @@ export function initialize_current_user(user_id: number): void {
 }
 
 export function my_full_name(): string {
-    return people_by_user_id_dict.get(my_user_id).full_name;
+    const person = get_by_user_id(my_user_id);
+    return person.full_name;
 }
 
 export function my_current_email(): string {
-    return people_by_user_id_dict.get(my_user_id).email;
+    const person = get_by_user_id(my_user_id);
+    return person.email;
 }
 
 export function my_current_user_id(): number {
@@ -1600,7 +1605,8 @@ export function my_custom_profile_data(field_id: number): ProfileData | null | u
 }
 
 export function get_custom_profile_data(user_id: number, field_id: number): ProfileData | null {
-    const profile_data = people_by_user_id_dict.get(user_id).profile_data;
+    const person = get_by_user_id(user_id);
+    const profile_data = person.profile_data;
     if (profile_data === undefined) {
         return null;
     }
@@ -1625,7 +1631,7 @@ export function compare_by_name(a: User, b: User): number {
 }
 
 export function sort_but_pin_current_user_on_top(users: User[]): void {
-    const my_user = people_by_user_id_dict.get(my_user_id);
+    const my_user = get_by_user_id(my_user_id);
     if (users.includes(my_user)) {
         users.splice(users.indexOf(my_user), 1);
         users.sort(compare_by_name);
