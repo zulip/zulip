@@ -7,15 +7,8 @@ import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 import render_tooltip_templates from "../templates/tooltip_templates.hbs";
 
-import * as compose_recipient from "./compose_recipient";
-import * as compose_state from "./compose_state";
 import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
-import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
-import * as reactions from "./reactions";
-import * as rows from "./rows";
-import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
 
