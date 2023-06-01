@@ -228,7 +228,7 @@ export function dispatch_normal_event(event) {
                 enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
-                video_chat_provider: compose.update_video_chat_button_display,
+                video_chat_provider: compose.update_audio_and_video_chat_button_display,
                 giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
