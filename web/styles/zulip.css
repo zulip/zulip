@@ -446,7 +446,7 @@ p.n-margin {
 
 #navbar-middle .column-middle-inner,
 #userlist-toggle-button,
-.top_navbar_full_width,
+.header-main,
 #message_view_header {
     background-color: var(--color-background-navbar);
     box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
