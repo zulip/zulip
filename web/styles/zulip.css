@@ -601,8 +601,9 @@ body.has-overlay-scrollbar {
         justify-content: space-evenly;
         position: absolute;
         top: 10px;
-        /* width of right column - width of gear icon(250px - 45px) */
-        width: 205px;
+        right: 40px;
+        /* width of right column - width of gear icon - right margin of column-right (250px - 40px -7px) */
+        width: 203px;
 
         & a {
             font-size: calc(16em / 14);
@@ -630,10 +631,8 @@ body.has-overlay-scrollbar {
         position: absolute;
         top: 0;
         right: 0;
-        /* Height of navbar in tablet sizes */
-        height: 40px;
-        /* Width of userlist-toggle button. */
-        width: 45px;
+        height: var(--header-height);
+        width: var(--header-height);
         border-left: 1px solid hsl(0deg 0% 88%);
 
         .login_button {
@@ -2780,6 +2779,17 @@ select.invite-as {
         min-width: 750px;
     }
 
+    .spectator-view {
+        #navbar-middle {
+            margin-right: 85px;
+        }
+
+        #navbar-buttons {
+            position: absolute;
+            right: 45px;
+        }
+    }
+
     .column-right {
         display: none;
 
@@ -2910,6 +2920,17 @@ select.invite-as {
 
         .narrows_panel {
             margin-top: 10px;
+        }
+    }
+
+    .spectator-view {
+        #navbar-middle {
+            margin-right: 65px;
+        }
+
+        #navbar-buttons {
+            position: absolute;
+            right: 35px;
         }
     }
 
