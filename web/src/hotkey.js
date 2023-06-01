@@ -23,7 +23,6 @@ import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
-import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
@@ -42,6 +41,7 @@ import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui"
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -959,7 +959,7 @@ export function process_hotkey(e, hotkey) {
         case "message_actions":
             return popover_menus.toggle_message_actions_menu(msg);
         case "star_message":
-            message_flags.toggle_starred_and_update_server(msg);
+            starred_messages_ui.toggle_starred_and_update_server(msg);
             return true;
         case "toggle_conversation_view":
             if (narrow_state.narrowed_by_topic_reply()) {
