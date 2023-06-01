@@ -7,7 +7,6 @@ import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
-import * as condense from "./condense";
 import * as drafts from "./drafts";
 import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
@@ -187,8 +186,6 @@ export function update_messages(events) {
             messages_to_rerender.push(anchor_message);
 
             message_store.update_booleans(anchor_message, event.flags);
-
-            condense.un_cache_message_content_height(anchor_message.id);
 
             if (event.rendered_content !== undefined) {
                 anchor_message.content = event.rendered_content;

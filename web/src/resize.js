@@ -171,7 +171,6 @@ export function handler() {
 
     if (new_width !== _old_width) {
         _old_width = new_width;
-        condense.clear_message_content_height_cache();
     }
     resize_page_components();
     compose_ui.autosize_textarea($("#compose-textarea"));

@@ -7,7 +7,6 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
-const condense = mock_esm("../src/condense");
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const notifications = mock_esm("../src/notifications");
@@ -99,7 +98,6 @@ run_test("update_messages", () => {
     message_lists.home = message_lists.current;
 
     const side_effects = [
-        [condense, "un_cache_message_content_height"],
         [message_edit, "end_message_edit"],
         [notifications, "received_messages"],
         [unread_ui, "update_unread_counts"],
