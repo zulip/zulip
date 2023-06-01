@@ -3,7 +3,6 @@ import $ from "jquery";
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as local_message from "./local_message";
