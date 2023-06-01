@@ -12,6 +12,7 @@ const top_left_corner = mock_esm("../src/top_left_corner", {
 });
 const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");
+const starred_messages_ui = zrequire("starred_messages_ui");
 
 run_test("add starred", () => {
     starred_messages.starred_ids.clear();
@@ -97,7 +98,7 @@ run_test("rerender_ui", () => {
     with_overrides(({override}) => {
         const stub = make_stub();
         override(top_left_corner, "update_starred_count", stub.f);
-        starred_messages.rerender_ui();
+        starred_messages_ui.rerender_ui();
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("count");
         assert.equal(args.count, 3);
@@ -107,7 +108,7 @@ run_test("rerender_ui", () => {
     with_overrides(({override}) => {
         const stub = make_stub();
         override(top_left_corner, "update_starred_count", stub.f);
-        starred_messages.rerender_ui();
+        starred_messages_ui.rerender_ui();
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("count");
         assert.equal(args.count, 0);

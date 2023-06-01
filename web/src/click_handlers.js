@@ -20,7 +20,6 @@ import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
-import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muted_topics_ui from "./muted_topics_ui";
@@ -37,6 +36,7 @@ import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as spectators from "./spectators";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
@@ -226,7 +226,7 @@ export function initialize() {
 
         const message_id = rows.id($(this).closest(".message_row"));
         const message = message_store.get(message_id);
-        message_flags.toggle_starred_and_update_server(message);
+        starred_messages_ui.toggle_starred_and_update_server(message);
     });
 
     $("#main_div").on("click", ".message_reaction", function (e) {

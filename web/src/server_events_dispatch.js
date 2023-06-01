@@ -21,7 +21,6 @@ import * as hotspots from "./hotspots";
 import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
-import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as muted_topics_ui from "./muted_topics_ui";
@@ -61,6 +60,7 @@ import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups_legacy";
 import * as settings_users from "./settings_users";
 import * as starred_messages from "./starred_messages";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
@@ -761,7 +761,7 @@ export function dispatch_normal_event(event) {
                 }, 300);
             }
             if (event.property === "starred_message_counts") {
-                starred_messages.rerender_ui();
+                starred_messages_ui.rerender_ui();
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();
@@ -816,13 +816,15 @@ export function dispatch_normal_event(event) {
             switch (event.flag) {
                 case "starred":
                     for (const message_id of event.messages) {
-                        message_flags.update_starred_flag(message_id, new_value);
+                        starred_messages_ui.update_starred_flag(message_id, new_value);
                     }
 
                     if (event.op === "add") {
                         starred_messages.add(event.messages);
+                        starred_messages_ui.rerender_ui();
                     } else {
                         starred_messages.remove(event.messages);
+                        starred_messages_ui.rerender_ui();
                     }
                     break;
                 case "read":
