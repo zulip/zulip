@@ -31,6 +31,13 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
 export const height = make_dimen_wrapper("height", $.fn.height);
 export const width = make_dimen_wrapper("width", $.fn.width);
 
+// TODO: This function let's us use the DOM API instead of jquery
+// (<10x faster) for condense.js, but we want to eventually do a
+// bigger of refactor `height` and `width` above to do the same.
+export function max_message_height() {
+    return document.querySelector("html").offsetHeight * 0.65;
+}
+
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 export let last_movement_direction = 1;
