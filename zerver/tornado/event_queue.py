@@ -782,6 +782,12 @@ def missedmessage_hook(
             stream_email_notify=internal_data.get("stream_email_notify", False),
             followed_topic_push_notify=internal_data.get("followed_topic_push_notify", False),
             followed_topic_email_notify=internal_data.get("followed_topic_email_notify", False),
+            followed_topic_wildcard_mention_push_notify=internal_data.get(
+                "followed_topic_wildcard_mention_push_notify", False
+            ),
+            followed_topic_wildcard_mention_email_notify=internal_data.get(
+                "followed_topic_wildcard_mention_email_notify", False
+            ),
             # Since one is by definition idle, we don't need to check online_push_enabled
             online_push_enabled=False,
             disable_external_notifications=internal_data.get(
@@ -937,6 +943,9 @@ def process_message_event(
     wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
     followed_topic_push_user_ids = set(event_template.get("followed_topic_push_user_ids", []))
     followed_topic_email_user_ids = set(event_template.get("followed_topic_email_user_ids", []))
+    followed_topic_wildcard_mention_user_ids = set(
+        event_template.get("followed_topic_wildcard_mention_user_ids", [])
+    )
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
@@ -989,6 +998,7 @@ def process_message_event(
             wildcard_mention_user_ids=wildcard_mention_user_ids,
             followed_topic_push_user_ids=followed_topic_push_user_ids,
             followed_topic_email_user_ids=followed_topic_email_user_ids,
+            followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
         )
@@ -1142,6 +1152,9 @@ def process_message_update_event(
     wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
     followed_topic_push_user_ids = set(event_template.pop("followed_topic_push_user_ids", []))
     followed_topic_email_user_ids = set(event_template.pop("followed_topic_email_user_ids", []))
+    followed_topic_wildcard_mention_user_ids = set(
+        event_template.pop("followed_topic_wildcard_mention_user_ids", [])
+    )
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
     disable_external_notifications = event_template.pop("disable_external_notifications", False)
@@ -1204,6 +1217,7 @@ def process_message_update_event(
                 wildcard_mention_user_ids=wildcard_mention_user_ids,
                 followed_topic_push_user_ids=followed_topic_push_user_ids,
                 followed_topic_email_user_ids=followed_topic_email_user_ids,
+                followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
             )

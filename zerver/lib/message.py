@@ -167,6 +167,8 @@ class SendMessageRequest:
     service_bot_tuples: List[Tuple[int, int]]
     all_bot_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
+    # IDs of users who have followed the topic the message is being sent to, and have the followed topic wildcard mentions notify setting ON.
+    followed_topic_wildcard_mention_user_ids: Set[int]
     links_for_embed: Set[str]
     widget_content: Optional[Dict[str, Any]]
     submessages: List[Dict[str, Any]] = field(default_factory=list)

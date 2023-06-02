@@ -9827,6 +9827,16 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: enable_followed_topic_wildcard_mentions_notify
+          in: query
+          description: |
+            Whether wildcard mentions (e.g., @**all**) in messages sent to followed topics
+            should send notifications like a personal mention.
+
+            **Changes**: New in Zulip 8.0 (feature level 189).
+          schema:
+            type: boolean
+          example: true
         - name: desktop_icon_count_display
           in: query
           description: |
@@ -11915,6 +11925,13 @@ paths:
                             description: |
                               Whether wildcard mentions (E.g. @**all**) should send notifications
                               like a personal mention.
+                          enable_followed_topic_wildcard_mentions_notify:
+                            type: boolean
+                            description: |
+                              Whether wildcard mentions (e.g., @**all**) in messages sent to followed topics
+                              should send notifications like a personal mention.
+
+                              **Changes**: New in Zulip 8.0 (feature level 189).
                           desktop_icon_count_display:
                             type: integer
                             description: |
@@ -13967,6 +13984,13 @@ paths:
                             description: |
                               Whether wildcard mentions (E.g. @**all**) should send notifications
                               like a personal mention.
+                          enable_followed_topic_wildcard_mentions_notify:
+                            type: boolean
+                            description: |
+                              Whether wildcard mentions (e.g., @**all**) in messages sent to followed topics
+                              should send notifications like a personal mention.
+
+                              **Changes**: New in Zulip 8.0 (feature level 189).
                           desktop_icon_count_display:
                             type: integer
                             description: |
@@ -15151,6 +15175,16 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_followed_topic_wildcard_mentions_notify
+          in: query
+          description: |
+            Whether wildcard mentions (e.g., @**all**) in messages sent to followed topics
+            should send notifications like a personal mention.
+
+            **Changes**: New in Zulip 8.0 (feature level 189).
           schema:
             type: boolean
           example: true

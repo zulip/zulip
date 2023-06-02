@@ -168,6 +168,7 @@ class RecipientInfoResult:
     wildcard_mention_user_ids: Set[int]
     followed_topic_email_user_ids: Set[int]
     followed_topic_push_user_ids: Set[int]
+    followed_topic_wildcard_mention_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
@@ -200,6 +201,7 @@ def get_recipient_info(
     wildcard_mention_user_ids: Set[int] = set()
     followed_topic_push_user_ids: Set[int] = set()
     followed_topic_email_user_ids: Set[int] = set()
+    followed_topic_wildcard_mention_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
 
     if recipient.type == Recipient.PERSONAL:
@@ -234,6 +236,9 @@ def get_recipient_info(
                 followed_topic_push_notifications=F(
                     "user_profile__enable_followed_topic_push_notifications"
                 ),
+                followed_topic_wildcard_mentions_notify=F(
+                    "user_profile__enable_followed_topic_wildcard_mentions_notify"
+                ),
             )
             .values(
                 "user_profile_id",
@@ -242,6 +247,7 @@ def get_recipient_info(
                 "wildcard_mentions_notify",
                 "followed_topic_push_notifications",
                 "followed_topic_email_notifications",
+                "followed_topic_wildcard_mentions_notify",
                 "user_profile_email_notifications",
                 "user_profile_push_notifications",
                 "user_profile_wildcard_mentions_notify",
@@ -287,12 +293,14 @@ def get_recipient_info(
         followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
 
         if possible_wildcard_mention:
-            # We calculate `wildcard_mention_user_ids` only if there's a possible
-            # wildcard mention in the message. This is important so as to avoid
-            # unnecessarily sending huge user ID lists with thousands of elements
-            # to the event queue (which can happen because this setting is `True`
-            # by default for new users.)
+            # We calculate `wildcard_mention_user_ids` and `followed_topic_wildcard_mention_user_ids`
+            # only if there's a possible wildcard mention in the message. This is important so as
+            # to avoid unnecessarily sending huge user ID lists with thousands of elements to the
+            # event queue (which can happen because these settings are `True` by default for new users.)
             wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
+            followed_topic_wildcard_mention_user_ids = followed_topic_notification_recipients(
+                "wildcard_mentions_notify"
+            )
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
@@ -412,6 +420,7 @@ def get_recipient_info(
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         followed_topic_push_user_ids=followed_topic_push_user_ids,
         followed_topic_email_user_ids=followed_topic_email_user_ids,
+        followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
         muted_sender_user_ids=muted_sender_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
@@ -566,8 +575,10 @@ def build_message_send_dict(
     # code block).
     if rendering_result.mentions_wildcard:
         wildcard_mention_user_ids = info.wildcard_mention_user_ids
+        followed_topic_wildcard_mention_user_ids = info.followed_topic_wildcard_mention_user_ids
     else:
         wildcard_mention_user_ids = set()
+        followed_topic_wildcard_mention_user_ids = set()
 
     """
     Once we have the actual list of mentioned ids from message
@@ -604,6 +615,7 @@ def build_message_send_dict(
         service_bot_tuples=info.service_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
+        followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
         limit_unread_user_ids=limit_unread_user_ids,
@@ -902,6 +914,7 @@ def do_send_messages(
                 wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
                 followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
                 followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+                followed_topic_wildcard_mention_user_ids=send_request.followed_topic_wildcard_mention_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
             )
@@ -929,6 +942,9 @@ def do_send_messages(
             wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
             followed_topic_push_user_ids=list(send_request.followed_topic_push_user_ids),
             followed_topic_email_user_ids=list(send_request.followed_topic_email_user_ids),
+            followed_topic_wildcard_mention_user_ids=list(
+                send_request.followed_topic_wildcard_mention_user_ids
+            ),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
             disable_external_notifications=send_request.disable_external_notifications,

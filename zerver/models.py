@@ -1725,6 +1725,7 @@ class UserBaseSettings(models.Model):
         # Add new notification settings here.
         enable_followed_topic_email_notifications=bool,
         enable_followed_topic_push_notifications=bool,
+        enable_followed_topic_wildcard_mentions_notify=bool,
     )
 
     notification_setting_types = {
@@ -4287,6 +4288,7 @@ class NotificationTriggers:
     STREAM_EMAIL = "stream_email_notify"
     FOLLOWED_TOPIC_PUSH = "followed_topic_push_notify"
     FOLLOWED_TOPIC_EMAIL = "followed_topic_email_notify"
+    FOLLOWED_TOPIC_WILDCARD_MENTION = "followed_topic_wildcard_mentioned"
 
 
 class ScheduledMessageNotificationEmail(models.Model):
@@ -4305,6 +4307,7 @@ class ScheduledMessageNotificationEmail(models.Model):
         (NotificationTriggers.WILDCARD_MENTION, "Wildcard mention"),
         (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
         (NotificationTriggers.FOLLOWED_TOPIC_EMAIL, "Followed topic notifications enabled"),
+        (NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION, "Followed topic wildcard mention"),
     ]
 
     trigger = models.TextField(choices=EMAIL_NOTIFICATION_TRIGGER_CHOICES)

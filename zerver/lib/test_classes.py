@@ -1731,6 +1731,12 @@ Output:
             stream_push_notify=kwargs.get("stream_push_notify", False),
             followed_topic_email_notify=kwargs.get("followed_topic_email_notify", False),
             followed_topic_push_notify=kwargs.get("followed_topic_push_notify", False),
+            followed_topic_wildcard_mention_email_notify=kwargs.get(
+                "followed_topic_wildcard_mention_email_notify", False
+            ),
+            followed_topic_wildcard_mention_push_notify=kwargs.get(
+                "followed_topic_wildcard_mention_push_notify", False
+            ),
             sender_is_muted=kwargs.get("sender_is_muted", False),
             disable_external_notifications=kwargs.get("disable_external_notifications", False),
         )
