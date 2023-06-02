@@ -38,4 +38,19 @@ interface JQuery {
     deselectAll(): this;
 }
 
+type ClipboardDecrypter = {
+    version: number;
+    key: Uint8Array;
+    pasted: Promise<string>;
+};
+
+type ElectronBridge = {
+    decrypt_clipboard: (version: number) => ClipboardDecrypter;
+};
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+interface Window {
+    electron_bridge?: ElectronBridge;
+}
+
 declare const ZULIP_VERSION: string;
