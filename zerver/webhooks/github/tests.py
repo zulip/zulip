@@ -179,18 +179,18 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_issue_labeled(self) -> None:
         expected_topic = "testing-gh / issue #9 idk man"
-        expected_message = "sbansal1999 labeled [issue #9](https://github.com/sbansal1999/testing-gh/issues/9):\n\n~~~ quote\nThis is some random Issue description which will be used to test the Zulip GitHub Integration.\n~~~"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added the [bug](https://api.github.com/repos/sbansal1999/testing-gh/labels/bug) label to [Issue #9](https://github.com/sbansal1999/testing-gh/issues/9)."
         self.check_webhook("issues__labeled", expected_topic, expected_message)
 
     def test_issue_labeled_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "sbansal1999 labeled [issue #9 idk man](https://github.com/sbansal1999/testing-gh/issues/9):\n\n~~~ quote\nThis is some random Issue description which will be used to test the Zulip GitHub Integration.\n~~~"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added the [bug](https://api.github.com/repos/sbansal1999/testing-gh/labels/bug) label to [Issue #9 idk man](https://github.com/sbansal1999/testing-gh/issues/9)."
         self.check_webhook("issues__labeled", expected_topic, expected_message)
 
     def test_issue_unlabeled(self) -> None:
         expected_topic = "testing-gh / issue #9 idk man"
-        expected_message = "sbansal1999 unlabeled [issue #9](https://github.com/sbansal1999/testing-gh/issues/9):\n\n~~~ quote\nThis is some random Issue description which will be used to test the Zulip GitHub Integration.\n~~~"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) removed the [bug](https://api.github.com/repos/sbansal1999/testing-gh/labels/bug) label from [Issue #9](https://github.com/sbansal1999/testing-gh/issues/9)."
         self.check_webhook("issues__unlabeled", expected_topic, expected_message)
 
     def test_membership_msg(self) -> None:
