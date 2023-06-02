@@ -61,6 +61,7 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
     NotificationTriggers,
@@ -655,7 +656,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_CREATED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
         )
         # Event type not in SYNCED_BILLING_EVENTS -- should not be included
         RealmAuditLog.objects.create(
@@ -663,7 +668,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
         self.assertEqual(RealmCount.objects.count(), 1)
         self.assertEqual(InstallationCount.objects.count(), 1)
@@ -706,7 +711,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
         send_analytics_to_remote_server()
         check_counts(6, 4, 3, 2, 1)
@@ -716,7 +721,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
         )
         send_analytics_to_remote_server()
         check_counts(7, 5, 3, 2, 2)
@@ -819,7 +828,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
         )
         # Event type not in SYNCED_BILLING_EVENTS -- should not be included
         RealmAuditLog.objects.create(
@@ -827,7 +840,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
 
         # send_analytics_to_remote_server calls send_to_push_bouncer twice.
@@ -857,13 +870,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
     def test_realmauditlog_data_mapping(self) -> None:
         self.add_mock_response()
         user = self.example_user("hamlet")
+        user_count = realm_user_count_by_role(user.realm)
         log_entry = RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
             backfilled=True,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: user_count}).decode(),
         )
         send_analytics_to_remote_server()
         remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
@@ -872,7 +886,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(remote_log_entry.remote_id, log_entry.id)
         self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
         self.assertEqual(remote_log_entry.backfilled, True)
-        self.assertEqual(remote_log_entry.extra_data, "data")
+        assert remote_log_entry.extra_data is not None
+        self.assertEqual(
+            orjson.loads(remote_log_entry.extra_data), {RealmAuditLog.ROLE_COUNT: user_count}
+        )
         self.assertEqual(remote_log_entry.event_type, RealmAuditLog.USER_REACTIVATED)
 
 
