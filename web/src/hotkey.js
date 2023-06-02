@@ -18,6 +18,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
@@ -497,9 +498,25 @@ export function process_enter_key(e) {
         return false;
     }
 
-    // If we got this far, then we're presumably in the message
-    // view, so in that case "Enter" is the hotkey to respond to a message.
-    // Note that "r" has same effect, but that is handled in process_hotkey().
+    if (!narrow_state.is_message_feed_visible()) {
+        return false;
+    }
+
+    // For search views, renarrow to the current message's
+    // conversation.
+    const current_filter = narrow_state.filter();
+    if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+        const message = message_lists.current.selected_message();
+
+        if (message === undefined) {
+            // No selected message.
+            return false;
+        }
+
+        window.location = hash_util.by_conversation_and_time_url(message);
+        return true;
+    }
+
     compose_actions.respond_to_message({trigger: "hotkey enter"});
     return true;
 }
