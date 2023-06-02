@@ -143,7 +143,8 @@
         {
             "files": ["web/src/**"],
             "globals": {
-                "StripeCheckout": false
+                "StripeCheckout": false,
+                "Gtag": false
             }
         },
         {

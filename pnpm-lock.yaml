@@ -277,6 +277,9 @@ devDependencies:
   '@types/clean-css':
     specifier: ^4.2.2
     version: 4.2.6
+  '@types/gtag.js':
+    specifier: ^0.0.12
+    version: 0.0.12
   '@types/jquery':
     specifier: ^3.3.31
     version: 3.5.16
@@ -2865,6 +2868,10 @@ packages:
       '@types/express-serve-static-core': 4.17.35
       '@types/qs': 6.9.7
       '@types/serve-static': 1.15.2
+
+  /@types/gtag.js@0.0.12:
+    resolution: {integrity: sha512-YQV9bUsemkzG81Ea295/nF/5GijnD2Af7QhEofh7xu+kvCN6RdodgNwwGWXB5GMI3NoyvQo0odNctoH/qLMIpg==}
+    dev: true
 
   /@types/html-minifier-terser@6.1.0:
     resolution: {integrity: sha512-oh/6byDPnL1zeNXFrDXFLyZjkr1MsBG667IM792caf1L2UPOOMf65NFzjUH/ltyfwjAGfs1rsX1eftK0jC/KIg==}
