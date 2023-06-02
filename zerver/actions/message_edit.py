@@ -481,8 +481,12 @@ def do_update_message(
         event["all_bot_user_ids"] = list(info.all_bot_user_ids)
         if rendering_result.mentions_wildcard:
             event["wildcard_mention_user_ids"] = list(info.wildcard_mention_user_ids)
+            event["followed_topic_wildcard_mention_user_ids"] = list(
+                info.followed_topic_wildcard_mention_user_ids
+            )
         else:
             event["wildcard_mention_user_ids"] = []
+            event["followed_topic_wildcard_mention_user_ids"] = []
 
         do_update_mobile_push_notification(
             target_message,
