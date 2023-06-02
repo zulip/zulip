@@ -194,6 +194,52 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
 
+    operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("stream"));
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_negated_operand("stream", "not-is-dm"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+
+    operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("stream"));
+    assert.ok(filter.has_operator("topic"));
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(!filter.has_negated_operand("stream", "foo"));
+    assert.ok(!filter.has_negated_operand("topic", "bar"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(filter.can_bucket_by("stream"));
+    assert.ok(filter.can_bucket_by("stream", "topic"));
+
+    operators = [
+        {operator: "topic", operand: "bar"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("topic"));
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(!filter.has_negated_operand("topic", "bar"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+
     operators = [{operator: "is", operand: "dm"}];
     filter = new Filter(operators);
     assert.ok(filter.contains_only_private_messages());
@@ -201,6 +247,15 @@ test("basics", () => {
     assert.ok(filter.supports_collapsing_recipients());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+
+    operators = [{operator: "is", operand: "dm", negated: true}];
+    filter = new Filter(operators);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.supports_collapsing_recipients());
+    assert.ok(!filter.has_operator("search"));
     assert.ok(!filter.is_personal_filter());
     assert.ok(!filter.is_conversation_view());
 
@@ -444,6 +499,37 @@ test("can_mark_messages_read", () => {
     filter = new Filter(stream_negated_topic_operators);
     assert.ok(!filter.can_mark_messages_read());
 
+    const stream_negated_dm_operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(stream_negated_dm_operators);
+    assert.ok(filter.can_mark_messages_read());
+    assert_not_mark_read_with_has_operands(stream_negated_dm_operators);
+    assert_not_mark_read_with_is_operands(stream_negated_dm_operators);
+    assert_not_mark_read_when_searching(stream_negated_dm_operators);
+
+    const stream_topic_negated_dm_operators = [
+        {operator: "stream", operand: "foo"},
+        {operator: "topic", operand: "bar"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(stream_topic_negated_dm_operators);
+    assert.ok(filter.can_mark_messages_read());
+    assert_not_mark_read_with_has_operands(stream_topic_negated_dm_operators);
+    assert_not_mark_read_with_is_operands(stream_topic_negated_dm_operators);
+    assert_not_mark_read_when_searching(stream_topic_negated_dm_operators);
+
+    const topic_negated_dm_operators = [
+        {operator: "topic", operand: "bar"},
+        {operator: "is", operand: "dm", negated: true},
+    ];
+    filter = new Filter(topic_negated_dm_operators);
+    assert.ok(filter.can_mark_messages_read());
+    assert_not_mark_read_with_is_operands(topic_negated_dm_operators);
+    assert_not_mark_read_when_searching(topic_negated_dm_operators);
+    assert_not_mark_read_when_searching(topic_negated_dm_operators);
+
     const dm = [{operator: "dm", operand: "joe@example.com,"}];
 
     const dm_negated = [{operator: "dm", operand: "joe@example.com,", negated: true}];
@@ -468,6 +554,10 @@ test("can_mark_messages_read", () => {
     assert_not_mark_read_with_is_operands(is_dm);
     assert_not_mark_read_with_has_operands(is_dm);
     assert_not_mark_read_when_searching(is_dm);
+
+    const not_is_dm = [{operator: "is", operand: "dm", negated: true}];
+    filter = new Filter(not_is_dm);
+    assert.ok(filter.can_mark_messages_read());
 
     const in_all = [{operator: "in", operand: "all"}];
     filter = new Filter(in_all);
