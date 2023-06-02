@@ -4573,7 +4573,9 @@ class AbstractRealmAuditLog(models.Model):
                     self.extra_data_json = ast.literal_eval(self.extra_data)
                 else:
                     self.extra_data_json = orjson.loads(self.extra_data)
-            except Exception: # nocoverage # This is not intended to happen at all for correctly written code
+            except (
+                Exception
+            ):  # nocoverage # This is not intended to happen at all for correctly written code
                 raise Exception(
                     "extra_data_json must be explicitly set if extra_data is not str()'d from a dict or JSON-encoded."
                 )

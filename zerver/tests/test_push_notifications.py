@@ -900,7 +900,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.add_mock_response()
 
         def verify_request_with_overridden_extra_data(
-            request_extra_data: object, expected_extra_data: object
+            request_extra_data: object,
+            *,
+            expected_extra_data: object = None,
+            expected_extra_data_json: object = None,
+            skip_audit_log_check: bool = False,
         ) -> None:
             user = self.example_user("hamlet")
             log_entry = RealmAuditLog.objects.create(
@@ -935,27 +939,44 @@ class AnalyticsBouncerTest(BouncerTestCase):
             ):
                 send_analytics_to_remote_server()
 
+            if skip_audit_log_check:
+                return
+
             remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
             assert remote_log_entry is not None
             self.assertEqual(str(remote_log_entry.server.uuid), self.server_uuid)
             self.assertEqual(remote_log_entry.remote_id, log_entry.id)
             self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
             self.assertEqual(remote_log_entry.extra_data, expected_extra_data)
+            self.assertEqual(remote_log_entry.extra_data_json, expected_extra_data_json)
 
         # Pre-migration extra_data
         verify_request_with_overridden_extra_data(
             request_extra_data=orjson.dumps({"fake_data": 42}).decode(),
             expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+            expected_extra_data_json={"fake_data": 42},
         )
-        verify_request_with_overridden_extra_data(request_extra_data=None, expected_extra_data=None)
+        verify_request_with_overridden_extra_data(
+            request_extra_data=None, expected_extra_data=None, expected_extra_data_json={}
+        )
         # Post-migration extra_data
         verify_request_with_overridden_extra_data(
             request_extra_data={"fake_data": 42},
             expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+            expected_extra_data_json={"fake_data": 42},
         )
         verify_request_with_overridden_extra_data(
-            request_extra_data={}, expected_extra_data=orjson.dumps({}).decode()
+            request_extra_data={},
+            expected_extra_data=orjson.dumps({}).decode(),
+            expected_extra_data_json={},
         )
+        # Invalid extra_data
+        with self.assertLogs(level="WARNING") as m:
+            verify_request_with_overridden_extra_data(
+                request_extra_data="{malformedjson:",
+                skip_audit_log_check=True,
+            )
+        self.assertIn("Malformed audit log data", m.output[0])
 
 
 class PushNotificationTest(BouncerTestCase):
