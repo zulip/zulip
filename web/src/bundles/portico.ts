@@ -1,3 +1,4 @@
+import "../portico/page_params";
 import "./common";
 import "../portico/header";
 import "../portico/google-analytics";
