@@ -500,10 +500,9 @@ export class Filter {
         return true;
     }
 
-    calc_can_mark_messages_read() {
-        // Arguably this should match supports_collapsing_recipients.
-        // We may want to standardize on that in the future.  (At
-        // present, this function does not allow combining valid filters).
+    // these filters work for both
+    // calc_can_mark_messages_read and is_common_narrow
+    core_filters() {
         const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ["stream", "topic"])) {
@@ -513,11 +512,6 @@ export class Filter {
         if (_.isEqual(term_types, ["dm"])) {
             return true;
         }
-
-        // TODO: Some users really hate it when Zulip marks messages as read
-        // in interleaved views, so we will eventually have a setting
-        // that early-exits before the subsequent checks.
-        // (in which case, is_common_narrow would also need to be modified)
 
         if (_.isEqual(term_types, ["stream"])) {
             return true;
@@ -547,6 +541,23 @@ export class Filter {
         return false;
     }
 
+    calc_can_mark_messages_read() {
+        // Arguably this should match supports_collapsing_recipients.
+        // We may want to standardize on that in the future.  (At
+        // present, this function does not allow combining valid filters).
+
+        if (this.core_filters()) {
+            return true;
+        }
+
+        // TODO: Some users really hate it when Zulip marks messages as read
+        // in interleaved views, so we will eventually have a setting
+        // that early-exits before the subsequent checks.
+        // (in which case, is_common_narrow would also need to be modified)
+
+        return false;
+    }
+
     can_mark_messages_read() {
         if (this._can_mark_messages_read === undefined) {
             this._can_mark_messages_read = this.calc_can_mark_messages_read();
@@ -569,7 +580,7 @@ export class Filter {
         // stream, stream + topic,
         // is:dm, dm,
         // is:mentioned, is:resolved
-        if (this.can_mark_messages_read()) {
+        if (this.core_filters()) {
             return true;
         }
         // that leaves us with checking:
