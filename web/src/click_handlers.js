@@ -23,6 +23,7 @@ import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
@@ -181,6 +182,21 @@ export function initialize() {
 
         if (message_edit.is_editing(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
+            return;
+        }
+
+        // Clicks on a message from search results should bring the
+        // user to the message's near view instead of opening the
+        // compose box.
+        const current_filter = narrow_state.filter();
+        if (current_filter !== undefined && !current_filter.supports_collapsing_recipients()) {
+            const message = message_store.get(id);
+
+            if (message === undefined) {
+                // This might happen for locally echoed messages, for example.
+                return;
+            }
+            window.location = hash_util.by_conversation_and_time_url(message);
             return;
         }
 
