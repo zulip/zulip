@@ -613,6 +613,9 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     override_rewire(messages_overlay_ui, "set_initial_element", noop);
 
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
 
@@ -627,7 +630,6 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     expected[0].stream_name = "stream-rename";
 
-    const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.launch();
@@ -764,6 +766,9 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     });
 
     override_rewire(messages_overlay_ui, "set_initial_element", noop);
+
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
