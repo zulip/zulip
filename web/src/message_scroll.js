@@ -151,13 +151,18 @@ export function initialize() {
             return;
         }
 
-        if (event.mark_read && event.previously_selected_id !== -1) {
-            // Mark messages between old pointer and new pointer as read
+        if (event.mark_read) {
             let messages;
-            if (event.id < event.previously_selected_id) {
-                messages = event.msg_list.message_range(event.id, event.previously_selected_id);
+            if (event.previously_selected_id !== -1) {
+                // Mark messages between previous and new selected message as read
+                if (event.id < event.previously_selected_id) {
+                    messages = event.msg_list.message_range(event.id, event.previously_selected_id);
+                } else {
+                    messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+                }
             } else {
-                messages = event.msg_list.message_range(event.previously_selected_id, event.id);
+                // Mark new selected message as read
+                messages = [event.msg_list.get(event.id)];
             }
             if (event.msg_list.can_mark_messages_read()) {
                 unread_ops.notify_server_messages_read(messages, {from: "pointer"});
