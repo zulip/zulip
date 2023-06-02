@@ -161,10 +161,6 @@ def get_issue_body(helper: Helper) -> str:
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
     has_assignee = "assignee" in payload
-
-    if action in ("labeled", "unlabeled"):
-        return get_issue_labeled_or_unlabeled_body(helper)
-
     base_message = get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
@@ -732,6 +728,7 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "fork": get_fork_body,
     "gollum": get_wiki_pages_body,
     "issue_comment": get_issue_comment_body,
+    "issue_labeled_or_unlabeled": get_issue_labeled_or_unlabeled_body,
     "issues": get_issue_body,
     "member": get_member_body,
     "membership": get_membership_body,
@@ -884,6 +881,12 @@ def get_zulip_event_name(
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
             raise UnsupportedWebhookEventTypeError(f"unsupported team action {action}")
+    elif header_event == "issues":
+        action = payload["action"].tame(check_string)
+        if action in ("labeled", "unlabeled"):
+            return "issue_labeled_or_unlabeled"
+        else:
+            return "issues"
     elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
         return header_event
     elif header_event in IGNORED_EVENTS:
