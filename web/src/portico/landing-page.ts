@@ -1,21 +1,65 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
 import macbook_image from "../../images/app-screenshots/macbook.png";
 import microsoft_image from "../../images/app-screenshots/microsoft.png";
 import ubuntu_image from "../../images/app-screenshots/ubuntu.png";
 import android_image from "../../images/app-screenshots/zulip-android.png";
 import iphone_image from "../../images/app-screenshots/zulip-iphone-rough.png";
-import {page_params} from "../page_params";
 
+import {page_params} from "./page_params";
+import type {UserOS} from "./tabbed-instructions";
 import {detect_user_os} from "./tabbed-instructions";
 import render_tabs from "./team";
 
-export function path_parts() {
+type VersionInfo = {
+    image: string;
+    alt: string;
+    description: string;
+    show_instructions: boolean;
+    app_type: string;
+} & (
+    | {
+          alt: "Windows";
+          download_link: string;
+          install_guide: string;
+      }
+    | {
+          alt: "macOS";
+          download_link: string;
+          mac_arm64_link: string;
+          install_guide: string;
+      }
+    | {
+          alt: "Android";
+          download_link: string;
+          play_store_link: string;
+      }
+    | {
+          alt: "iOS";
+          app_store_link: string;
+      }
+    | {
+          alt: "Linux";
+          download_link: string;
+          install_guide: string;
+      }
+);
+
+type Info = {
+    windows: VersionInfo;
+    mac: VersionInfo;
+    android: VersionInfo;
+    ios: VersionInfo;
+    linux: VersionInfo;
+};
+
+export function path_parts(): string[] {
     return window.location.pathname.split("/").filter((chunk) => chunk !== "");
 }
 
-const apps_events = function () {
-    const info = {
+const apps_events = function (): void {
+    const info: Info = {
         windows: {
             image: microsoft_image,
             alt: "Windows",
@@ -66,23 +110,23 @@ const apps_events = function () {
         },
     };
 
-    let version;
+    let version: UserOS;
 
-    function get_version_from_path() {
+    function get_version_from_path(): UserOS {
         let result;
         const parts = path_parts();
 
         for (const version of Object.keys(info)) {
             if (parts.includes(version)) {
-                result = version;
+                result = version as UserOS;
             }
         }
 
-        result = result || detect_user_os();
+        result = result ?? detect_user_os();
         return result;
     }
 
-    const update_page = function () {
+    const update_page = function (): void {
         const $download_instructions = $(".download-instructions");
         const $third_party_apps = $("#third-party-apps");
         const $download_android_apk = $("#download-android-apk");
@@ -91,19 +135,32 @@ const apps_events = function () {
         const $download_from_microsoft_store = $("#download-from-microsoft-store");
         const $download_mac_arm64 = $("#download-mac-arm64");
         const $desktop_download_link = $(".desktop-download-link");
-        const version_info = info[version];
+        const version_info: VersionInfo = info[version];
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
-        $desktop_download_link.attr("href", version_info.download_link);
-        $download_from_google_play_store.attr("href", version_info.play_store_link);
-        $download_from_apple_app_store.attr("href", version_info.app_store_link);
-        $download_android_apk.attr("href", version_info.download_link);
-        $download_mac_arm64.attr("href", version_info.mac_arm64_link);
+        if (version_info.alt === "Windows" || version_info.alt === "macOS") {
+            $desktop_download_link.attr("href", version_info.download_link);
+        }
+        if (version_info.alt === "Android") {
+            $download_from_google_play_store.attr("href", version_info.play_store_link);
+            $download_android_apk.attr("href", version_info.download_link);
+        }
+        if (version_info.alt === "iOS") {
+            $download_from_apple_app_store.attr("href", version_info.app_store_link);
+        }
+        if (version_info.alt === "macOS") {
+            $download_mac_arm64.attr("href", version_info.mac_arm64_link);
+        }
         $(".image img").addClass(`app-screenshot-${version_info.app_type}`);
         $(".image img").attr("src", version_info.image);
-        $download_instructions.find("a").attr("href", version_info.install_guide);
-
+        if (
+            version_info.alt === "Windows" ||
+            version_info.alt === "macOS" ||
+            version_info.alt === "Linux"
+        ) {
+            $download_instructions.find("a").attr("href", version_info.install_guide);
+        }
         $download_instructions.toggle(version_info.show_instructions);
 
         $third_party_apps.toggle(version_info.app_type === "desktop");
@@ -120,11 +177,11 @@ const apps_events = function () {
     update_page();
 };
 
-const events = function () {
+const events = function (): void {
     // get the location url like `zulip.com/features/`, cut off the trailing
     // `/` and then split by `/` to get ["zulip.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
-    const location = window.location.pathname.replace(/\/$/, "").split(/\//).pop();
+    const location = window.location.pathname.replace(/\/$/, "").split(/\//).pop()!;
 
     $(`[data-on-page='${CSS.escape(location)}']`).addClass("active");
 
@@ -199,6 +256,7 @@ $(() => {
     if (window.location.pathname === "/team/") {
         const contributors = page_params.contributors;
         delete page_params.contributors;
+        assert(contributors !== undefined, "Expect contributors in page_params");
         render_tabs(contributors);
     }
 
@@ -206,12 +264,12 @@ $(() => {
     // Resize tweet to avoid overlapping with image. Since tweet uses an iframe which doesn't adjust with
     // screen resize, we need to manually adjust its width.
 
-    function resizeIFrameToFitContent(iFrame) {
+    function resizeIFrameToFitContent(iFrame: HTMLIFrameElement): void {
         $(iFrame).width("38vw");
     }
 
     window.addEventListener("resize", () => {
-        const iframes = document.querySelectorAll(".twitter-tweet iframe");
+        const iframes = document.querySelectorAll<HTMLIFrameElement>(".twitter-tweet iframe");
         for (const iframe of iframes) {
             resizeIFrameToFitContent(iframe);
         }
@@ -222,5 +280,5 @@ $(() => {
 // function; this file and help.js are never included on the same
 // page.
 $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
-    window.location.hash = $(this).attr("id");
+    window.location.hash = $(this).attr("id")!;
 });
