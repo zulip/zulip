@@ -188,6 +188,11 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "sbansal1999 labeled [issue #9 idk man](https://github.com/sbansal1999/testing-gh/issues/9):\n\n~~~ quote\nThis is some random Issue description which will be used to test the Zulip GitHub Integration.\n~~~"
         self.check_webhook("issues__labeled", expected_topic, expected_message)
 
+    def test_issue_unlabeled(self) -> None:
+        expected_topic = "testing-gh / issue #9 idk man"
+        expected_message = "sbansal1999 unlabeled [issue #9](https://github.com/sbansal1999/testing-gh/issues/9):\n\n~~~ quote\nThis is some random Issue description which will be used to test the Zulip GitHub Integration.\n~~~"
+        self.check_webhook("issues__unlabeled", expected_topic, expected_message)
+
     def test_membership_msg(self) -> None:
         expected_message = (
             "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
