@@ -774,6 +774,30 @@ def missedmessage_hook(
         internal_data = event.get("internal_data", {})
         sender_id = event["message"]["sender_id"]
 
+        # TODO/compatibility: Translation code for the rename of
+        # `wildcard_mention_push_notify` to `stream_wildcard_mention_push_notify`.
+        # Remove this when one can no longer directly upgrade from 7.x to main.
+        stream_wildcard_mention_push_notify = False
+        if "stream_wildcard_mention_push_notify" in internal_data:
+            stream_wildcard_mention_push_notify = internal_data.get(
+                "stream_wildcard_mention_push_notify"
+            )
+        elif "wildcard_mention_push_notify" in internal_data:
+            stream_wildcard_mention_push_notify = internal_data.get("wildcard_mention_push_notify")
+
+        # TODO/compatibility: Translation code for the rename of
+        # `wildcard_mention_email_notify` to `stream_wildcard_mention_email_notify`.
+        # Remove this when one can no longer directly upgrade from 7.x to main.
+        stream_wildcard_mention_email_notify = False
+        if "stream_wildcard_mention_email_notify" in internal_data:
+            stream_wildcard_mention_email_notify = internal_data.get(
+                "stream_wildcard_mention_email_notify"
+            )
+        elif "wildcard_mention_email_notify" in internal_data:
+            stream_wildcard_mention_email_notify = internal_data.get(
+                "wildcard_mention_email_notify"
+            )
+
         user_notifications_data = UserMessageNotificationsData(
             user_id=user_profile_id,
             sender_is_muted=internal_data.get("sender_is_muted", False),
@@ -781,17 +805,17 @@ def missedmessage_hook(
             pm_email_notify=internal_data.get("pm_email_notify", False),
             mention_push_notify=internal_data.get("mention_push_notify", False),
             mention_email_notify=internal_data.get("mention_email_notify", False),
-            wildcard_mention_push_notify=internal_data.get("wildcard_mention_push_notify", False),
-            wildcard_mention_email_notify=internal_data.get("wildcard_mention_email_notify", False),
+            stream_wildcard_mention_push_notify=stream_wildcard_mention_push_notify,
+            stream_wildcard_mention_email_notify=stream_wildcard_mention_email_notify,
             stream_push_notify=internal_data.get("stream_push_notify", False),
             stream_email_notify=internal_data.get("stream_email_notify", False),
             followed_topic_push_notify=internal_data.get("followed_topic_push_notify", False),
             followed_topic_email_notify=internal_data.get("followed_topic_email_notify", False),
-            followed_topic_wildcard_mention_push_notify=internal_data.get(
-                "followed_topic_wildcard_mention_push_notify", False
+            stream_wildcard_mention_in_followed_topic_push_notify=internal_data.get(
+                "stream_wildcard_mention_in_followed_topic_push_notify", False
             ),
-            followed_topic_wildcard_mention_email_notify=internal_data.get(
-                "followed_topic_wildcard_mention_email_notify", False
+            stream_wildcard_mention_in_followed_topic_email_notify=internal_data.get(
+                "stream_wildcard_mention_in_followed_topic_email_notify", False
             ),
             # Since one is by definition idle, we don't need to check online_push_enabled
             online_push_enabled=False,
@@ -945,11 +969,22 @@ def process_message_event(
     )
     stream_push_user_ids = set(event_template.get("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.get("stream_email_user_ids", []))
-    wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
+
+    # TODO/compatibility: Translation code for the rename of
+    # `wildcard_mention_user_ids` to `stream_wildcard_mention_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    stream_wildcard_mention_user_ids = set()
+    if "stream_wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(
+            event_template.get("stream_wildcard_mention_user_ids", [])
+        )
+    elif "wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
+
     followed_topic_push_user_ids = set(event_template.get("followed_topic_push_user_ids", []))
     followed_topic_email_user_ids = set(event_template.get("followed_topic_email_user_ids", []))
-    followed_topic_wildcard_mention_user_ids = set(
-        event_template.get("followed_topic_wildcard_mention_user_ids", [])
+    stream_wildcard_mention_in_followed_topic_user_ids = set(
+        event_template.get("stream_wildcard_mention_in_followed_topic_user_ids", [])
     )
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
@@ -1000,10 +1035,10 @@ def process_message_event(
             pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
-            wildcard_mention_user_ids=wildcard_mention_user_ids,
+            stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
             followed_topic_push_user_ids=followed_topic_push_user_ids,
             followed_topic_email_user_ids=followed_topic_email_user_ids,
-            followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
+            stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
         )
@@ -1154,11 +1189,22 @@ def process_message_update_event(
     )
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
-    wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
+
+    # TODO/compatibility: Translation code for the rename of
+    # `wildcard_mention_user_ids` to `stream_wildcard_mention_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    stream_wildcard_mention_user_ids = set()
+    if "stream_wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(
+            event_template.pop("stream_wildcard_mention_user_ids")
+        )
+    elif "wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids"))
+
     followed_topic_push_user_ids = set(event_template.pop("followed_topic_push_user_ids", []))
     followed_topic_email_user_ids = set(event_template.pop("followed_topic_email_user_ids", []))
-    followed_topic_wildcard_mention_user_ids = set(
-        event_template.pop("followed_topic_wildcard_mention_user_ids", [])
+    stream_wildcard_mention_in_followed_topic_user_ids = set(
+        event_template.pop("stream_wildcard_mention_in_followed_topic_user_ids", [])
     )
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
@@ -1219,10 +1265,10 @@ def process_message_update_event(
                 pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
                 stream_push_user_ids=stream_push_user_ids,
                 stream_email_user_ids=stream_email_user_ids,
-                wildcard_mention_user_ids=wildcard_mention_user_ids,
+                stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
                 followed_topic_push_user_ids=followed_topic_push_user_ids,
                 followed_topic_email_user_ids=followed_topic_email_user_ids,
-                followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
+                stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
             )
@@ -1343,7 +1389,7 @@ def reformat_legacy_send_message_event(
     modern_event["online_push_user_ids"] = []
     modern_event["stream_push_user_ids"] = []
     modern_event["stream_email_user_ids"] = []
-    modern_event["wildcard_mention_user_ids"] = []
+    modern_event["stream_wildcard_mention_user_ids"] = []
     modern_event["muted_sender_user_ids"] = []
 
     for user in user_dicts:
@@ -1354,7 +1400,7 @@ def reformat_legacy_send_message_event(
         if user.pop("stream_email_notify", False):
             modern_event["stream_email_user_ids"].append(user_id)
         if user.pop("wildcard_mention_notify", False):
-            modern_event["wildcard_mention_user_ids"].append(user_id)
+            modern_event["stream_wildcard_mention_user_ids"].append(user_id)
         if user.pop("sender_is_muted", False):
             modern_event["muted_sender_user_ids"].append(user_id)
 

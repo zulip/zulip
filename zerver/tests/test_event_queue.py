@@ -298,8 +298,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": False},
             )
 
-    def test_wildcard_mention(self) -> None:
-        # By default, wildcard mentions should send notifications, just like regular mentions
+    def test_stream_wildcard_mention(self) -> None:
+        # By default, stream wildcard mentions should send notifications, just like regular mentions
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
@@ -310,13 +310,13 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                wildcard_mention_email_notify=True,
-                wildcard_mention_push_notify=True,
+                stream_wildcard_mention_email_notify=True,
+                stream_wildcard_mention_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
-    def test_wildcard_mention_in_muted_stream(self) -> None:
-        # Wildcard mentions in muted streams don't notify.
+    def test_stream_wildcard_mention_in_muted_stream(self) -> None:
+        # stream wildcard mentions in muted streams don't notify.
         self.change_subscription_properties({"is_muted": True})
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -326,15 +326,15 @@ class MissedMessageHookTest(ZulipTestCase):
 
             self.assert_maybe_enqueue_notifications_call_args(
                 args_dict=args_dict,
-                wildcard_mention_email_notify=False,
-                wildcard_mention_push_notify=False,
+                stream_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_push_notify=False,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
-    def test_wildcard_mention_in_muted_topic(self) -> None:
-        # Wildcard mentions in muted streams don't notify.
+    def test_stream_wildcard_mention_in_muted_topic(self) -> None:
+        # stream wildcard mentions in muted topics don't notify.
         do_set_user_topic_visibility_policy(
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
@@ -351,8 +351,8 @@ class MissedMessageHookTest(ZulipTestCase):
 
             self.assert_maybe_enqueue_notifications_call_args(
                 args_dict=args_dict,
-                wildcard_mention_email_notify=False,
-                wildcard_mention_push_notify=False,
+                stream_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_push_notify=False,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
                 already_notified={"email_notified": False, "push_notified": False},
@@ -373,12 +373,14 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                wildcard_mention_email_notify=False,
-                wildcard_mention_push_notify=False,
+                stream_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_push_notify=False,
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
-    def test_wildcard_mentions_notify_stream_specific_setting(self) -> None:
+    def test_wildcard_mentions_notify_stream_specific_setting(
+        self,
+    ) -> None:
         # If wildcard_mentions_notify=True for a stream and False for a user, we treat the user
         # as mentioned for that stream.
         do_change_user_setting(
@@ -395,8 +397,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                wildcard_mention_email_notify=True,
-                wildcard_mention_push_notify=True,
+                stream_wildcard_mention_email_notify=True,
+                stream_wildcard_mention_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
@@ -423,8 +425,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                wildcard_mention_email_notify=False,
-                wildcard_mention_push_notify=True,
+                stream_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_push_notify=True,
                 already_notified={"email_notified": False, "push_notified": True},
             )
 
@@ -444,8 +446,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                wildcard_mention_email_notify=False,
-                wildcard_mention_push_notify=True,
+                stream_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_push_notify=True,
                 already_notified={"email_notified": False, "push_notified": True},
             )
 
@@ -840,7 +842,7 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": False},
             )
 
-    def test_followed_topic_wildcard_mention_notify(self) -> None:
+    def test_stream_wildcard_mention_in_followed_topic_notify(self) -> None:
         do_change_user_setting(
             self.user_profile, "wildcard_mentions_notify", False, acting_user=None
         )
@@ -870,13 +872,13 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                followed_topic_wildcard_mention_email_notify=True,
-                followed_topic_wildcard_mention_push_notify=True,
+                stream_wildcard_mention_in_followed_topic_email_notify=True,
+                stream_wildcard_mention_in_followed_topic_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
-    def test_followed_topic_wildcard_mention_in_muted_stream(self) -> None:
-        # By default, wildcard mentions in a followed topic with muted stream DO notify.
+    def test_stream_wildcard_mention_in_followed_topic_muted_stream(self) -> None:
+        # By default, stream wildcard mentions in a followed topic with muted stream DO notify.
         do_change_user_setting(
             self.user_profile, "wildcard_mentions_notify", False, acting_user=None
         )
@@ -906,8 +908,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 args_dict=args_dict,
                 message_id=msg_id,
                 user_id=self.user_profile.id,
-                followed_topic_wildcard_mention_email_notify=True,
-                followed_topic_wildcard_mention_push_notify=True,
+                stream_wildcard_mention_in_followed_topic_email_notify=True,
+                stream_wildcard_mention_in_followed_topic_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
@@ -1407,7 +1409,7 @@ class SchemaMigrationsTests(ZulipTestCase):
             online_push_user_ids=[hamlet.id, cordelia.id],
             stream_push_user_ids=[cordelia.id],
             stream_email_user_ids=[hamlet.id],
-            wildcard_mention_user_ids=[cordelia.id],
+            stream_wildcard_mention_user_ids=[cordelia.id],
             muted_sender_user_ids=[],
         )
         with mock.patch("zerver.tornado.event_queue.process_message_event") as m:

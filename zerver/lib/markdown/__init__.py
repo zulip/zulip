@@ -113,7 +113,7 @@ class LinkInfo(TypedDict):
 @dataclass
 class MessageRenderingResult:
     rendered_content: str
-    mentions_wildcard: bool
+    mentions_stream_wildcard: bool
     mentions_user_ids: Set[int]
     mentions_user_group_ids: Set[int]
     alert_words: Set[str]
@@ -1776,7 +1776,7 @@ class UserMentionPattern(CompiledInlineProcessor):
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
-            wildcard = mention.user_mention_matches_wildcard(name)
+            stream_wildcard = mention.user_mention_matches_stream_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
             id_syntax_match = re.match(r"(?P<full_name>.+)?\|(?P<user_id>\d+)$", name)
@@ -1795,9 +1795,9 @@ class UserMentionPattern(CompiledInlineProcessor):
                 # For @**name** syntax.
                 user = db_data.mention_data.get_user_by_name(name)
 
-            if wildcard:
+            if stream_wildcard:
                 if not silent:
-                    self.zmd.zulip_rendering_result.mentions_wildcard = True
+                    self.zmd.zulip_rendering_result.mentions_stream_wildcard = True
                 user_id = "*"
             elif user is not None:
                 assert isinstance(user, FullNameInfo)
@@ -2491,7 +2491,7 @@ def do_convert(
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
         rendered_content="",
-        mentions_wildcard=False,
+        mentions_stream_wildcard=False,
         mentions_user_ids=set(),
         mentions_user_group_ids=set(),
         alert_words=set(),
