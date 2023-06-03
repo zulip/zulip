@@ -654,7 +654,12 @@ export function initialize_everything() {
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
     top_left_corner.initialize();
-    stream_list.initialize({narrow_on_stream_click: narrow.by});
+    stream_list.initialize({
+        on_stream_click(stream_id, trigger) {
+            const sub = sub_store.get(stream_id);
+            narrow.by("stream", sub.name, {trigger});
+        },
+    });
     stream_list_sort.initialize();
     condense.initialize();
     spoilers.initialize();

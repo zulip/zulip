@@ -681,7 +681,7 @@ export function initialize_stream_cursor() {
     });
 }
 
-export function initialize({narrow_on_stream_click}) {
+export function initialize({on_stream_click}) {
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -689,18 +689,17 @@ export function initialize({narrow_on_stream_click}) {
     build_stream_list();
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
-    set_event_handlers({narrow_on_stream_click});
+    set_event_handlers({on_stream_click});
 }
 
-export function set_event_handlers({narrow_on_stream_click}) {
+export function set_event_handlers({on_stream_click}) {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        const sub = sub_store.get(stream_id);
         popovers.hide_all();
-        narrow_on_stream_click("stream", sub.name, {trigger: "sidebar"});
+        on_stream_click(stream_id, "sidebar");
 
         clear_and_hide_search();
 
@@ -754,15 +753,8 @@ export function set_event_handlers({narrow_on_stream_click}) {
             return;
         }
 
-        const sub = sub_store.get(stream_id);
-
-        if (sub === undefined) {
-            blueslip.error("Unknown stream_id for search/enter", {stream_id});
-            return;
-        }
-
         clear_and_hide_search();
-        narrow_on_stream_click("stream", sub.name, {trigger: "sidebar enter key"});
+        on_stream_click(stream_id, "sidebar enter key");
     }
 
     keydown_util.handle({
