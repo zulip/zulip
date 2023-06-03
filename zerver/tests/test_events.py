@@ -456,7 +456,7 @@ class NormalActionsTest(BaseAction):
                 lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
             )
 
-    def test_wildcard_mentioned_send_message_events(self) -> None:
+    def test_stream_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**all** hello " + str(i)
             self.verify_action(

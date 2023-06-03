@@ -398,7 +398,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # actual content of these messages.)
         self.assert_length(info["queue_messages"], 2)
 
-    def test_updates_with_followed_topic_wildcard_mention(self) -> None:
+    def test_updates_with_stream_wildcard_mention_in_followed_topic(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
         self.subscribe(cordelia, "Scotland")
@@ -435,8 +435,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            followed_topic_wildcard_mention_email_notify=True,
-            followed_topic_wildcard_mention_push_notify=True,
+            stream_wildcard_mention_in_followed_topic_email_notify=True,
+            stream_wildcard_mention_in_followed_topic_push_notify=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
@@ -444,7 +444,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # messages will get enqueued.
         self.assert_length(info["queue_messages"], 2)
 
-    def test_updates_with_wildcard_mention(self) -> None:
+    def test_updates_with_stream_wildcard_mention(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
 
@@ -466,8 +466,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            wildcard_mention_email_notify=True,
-            wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)

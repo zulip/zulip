@@ -306,7 +306,7 @@ def get_subscriptions_for_send_message(
     realm_id: int,
     stream_id: int,
     topic_name: str,
-    possible_wildcard_mention: bool,
+    possible_stream_wildcard_mention: bool,
     possibly_mentioned_user_ids: AbstractSet[int],
 ) -> QuerySet[Subscription]:
     """This function optimizes an important use case for large
@@ -342,7 +342,7 @@ def get_subscriptions_for_send_message(
         include_deactivated_users=False,
     )
 
-    if possible_wildcard_mention:
+    if possible_stream_wildcard_mention:
         return query
 
     query = query.filter(

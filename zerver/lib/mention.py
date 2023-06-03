@@ -18,7 +18,7 @@ USER_GROUP_MENTIONS_RE = re.compile(
     rf"{BEFORE_MENTION_ALLOWED_REGEX}@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)"
 )
 
-wildcards = frozenset(["all", "everyone", "stream"])
+stream_wildcards = frozenset(["all", "everyone", "stream"])
 
 
 @dataclass
@@ -46,13 +46,13 @@ class UserFilter:
 @dataclass
 class MentionText:
     text: Optional[str]
-    is_wildcard: bool
+    is_stream_wildcard: bool
 
 
 @dataclass
 class PossibleMentions:
     mention_texts: Set[str]
-    message_has_wildcards: bool
+    message_has_stream_wildcards: bool
 
 
 class MentionBackend:
@@ -147,29 +147,31 @@ class MentionBackend:
         return result
 
 
-def user_mention_matches_wildcard(mention: str) -> bool:
-    return mention in wildcards
+def user_mention_matches_stream_wildcard(mention: str) -> bool:
+    return mention in stream_wildcards
 
 
 def extract_mention_text(m: Match[str]) -> MentionText:
     text = m.group("match")
-    if text in wildcards:
-        return MentionText(text=None, is_wildcard=True)
-    return MentionText(text=text, is_wildcard=False)
+    if text in stream_wildcards:
+        return MentionText(text=None, is_stream_wildcard=True)
+    return MentionText(text=text, is_stream_wildcard=False)
 
 
 def possible_mentions(content: str) -> PossibleMentions:
     # mention texts can either be names, or an extended name|id syntax.
     texts = set()
-    message_has_wildcards = False
+    message_has_stream_wildcards = False
     for m in MENTIONS_RE.finditer(content):
         mention_text = extract_mention_text(m)
         text = mention_text.text
         if text:
             texts.add(text)
-        if mention_text.is_wildcard:
-            message_has_wildcards = True
-    return PossibleMentions(mention_texts=texts, message_has_wildcards=message_has_wildcards)
+        if mention_text.is_stream_wildcard:
+            message_has_stream_wildcards = True
+    return PossibleMentions(
+        mention_texts=texts, message_has_stream_wildcards=message_has_stream_wildcards
+    )
 
 
 def possible_user_group_mentions(content: str) -> Set[str]:
@@ -213,10 +215,10 @@ class MentionData:
         self.full_name_info = {row.full_name.lower(): row for row in possible_mentions_info}
         self.user_id_info = {row.id: row for row in possible_mentions_info}
         self.init_user_group_data(realm_id=realm_id, content=content)
-        self.has_wildcards = mentions.message_has_wildcards
+        self.has_stream_wildcards = mentions.message_has_stream_wildcards
 
-    def message_has_wildcards(self) -> bool:
-        return self.has_wildcards
+    def message_has_stream_wildcards(self) -> bool:
+        return self.has_stream_wildcards
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: Dict[str, UserGroup] = {}

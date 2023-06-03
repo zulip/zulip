@@ -277,10 +277,10 @@ class MarkdownMiscTest(ZulipTestCase):
         assert user is not None
         self.assertEqual(user.full_name, hamlet.full_name)
 
-        self.assertFalse(mention_data.message_has_wildcards())
+        self.assertFalse(mention_data.message_has_stream_wildcards())
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
         mention_data = MentionData(mention_backend, content)
-        self.assertTrue(mention_data.message_has_wildcards())
+        self.assertTrue(mention_data.message_has_stream_wildcards())
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
@@ -1817,7 +1817,7 @@ class MarkdownTest(ZulipTestCase):
             rendering_result.rendered_content,
             '<p><span class="user-mention" data-user-id="*">@all</span> test</p>',
         )
-        self.assertTrue(rendering_result.mentions_wildcard)
+        self.assertTrue(rendering_result.mentions_stream_wildcard)
 
     def test_mention_everyone(self) -> None:
         user_profile = self.example_user("othello")
@@ -1829,7 +1829,7 @@ class MarkdownTest(ZulipTestCase):
             rendering_result.rendered_content,
             '<p><span class="user-mention" data-user-id="*">@everyone</span> test</p>',
         )
-        self.assertTrue(rendering_result.mentions_wildcard)
+        self.assertTrue(rendering_result.mentions_stream_wildcard)
 
     def test_mention_stream(self) -> None:
         user_profile = self.example_user("othello")
@@ -1841,7 +1841,7 @@ class MarkdownTest(ZulipTestCase):
             rendering_result.rendered_content,
             '<p><span class="user-mention" data-user-id="*">@stream</span> test</p>',
         )
-        self.assertTrue(rendering_result.mentions_wildcard)
+        self.assertTrue(rendering_result.mentions_stream_wildcard)
 
     def test_mention_at_wildcard(self) -> None:
         user_profile = self.example_user("othello")
@@ -1850,7 +1850,7 @@ class MarkdownTest(ZulipTestCase):
         content = "@all test"
         rendering_result = render_markdown(msg, content)
         self.assertEqual(rendering_result.rendered_content, "<p>@all test</p>")
-        self.assertFalse(rendering_result.mentions_wildcard)
+        self.assertFalse(rendering_result.mentions_stream_wildcard)
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_mention_at_everyone(self) -> None:
@@ -1860,7 +1860,7 @@ class MarkdownTest(ZulipTestCase):
         content = "@everyone test"
         rendering_result = render_markdown(msg, content)
         self.assertEqual(rendering_result.rendered_content, "<p>@everyone test</p>")
-        self.assertFalse(rendering_result.mentions_wildcard)
+        self.assertFalse(rendering_result.mentions_stream_wildcard)
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_mention_word_starting_with_at_wildcard(self) -> None:
@@ -1870,7 +1870,7 @@ class MarkdownTest(ZulipTestCase):
         content = "test @alleycat.com test"
         rendering_result = render_markdown(msg, content)
         self.assertEqual(rendering_result.rendered_content, "<p>test @alleycat.com test</p>")
-        self.assertFalse(rendering_result.mentions_wildcard)
+        self.assertFalse(rendering_result.mentions_stream_wildcard)
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_mention_at_normal_user(self) -> None:
@@ -1880,7 +1880,7 @@ class MarkdownTest(ZulipTestCase):
         content = "@aaron test"
         rendering_result = render_markdown(msg, content)
         self.assertEqual(rendering_result.rendered_content, "<p>@aaron test</p>")
-        self.assertFalse(rendering_result.mentions_wildcard)
+        self.assertFalse(rendering_result.mentions_stream_wildcard)
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_mention_single(self) -> None:
@@ -1965,7 +1965,7 @@ class MarkdownTest(ZulipTestCase):
                 rendering_result.rendered_content,
                 f'<p><span class="user-mention silent" data-user-id="*">{wildcard}</span></p>',
             )
-            self.assertFalse(rendering_result.mentions_wildcard)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
 
     def test_mention_invalid_followed_by_valid(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2030,10 +2030,14 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
-        def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
+        def assert_mentions(
+            content: str, names: Set[str], has_stream_wildcards: bool = False
+        ) -> None:
             self.assertEqual(
                 possible_mentions(content),
-                PossibleMentions(mention_texts=names, message_has_wildcards=has_wildcards),
+                PossibleMentions(
+                    mention_texts=names, message_has_stream_wildcards=has_stream_wildcards
+                ),
             )
 
         aaron = self.example_user("aaron")
@@ -2127,7 +2131,7 @@ class MarkdownTest(ZulipTestCase):
             )
             rendering_result = render_markdown(message, content)
             self.assertEqual(rendering_result.rendered_content, expected)
-            self.assertFalse(rendering_result.mentions_wildcard)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
 
         wildcards = ["all", "everyone", "stream"]
         for wildcard in wildcards:

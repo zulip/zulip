@@ -2039,7 +2039,9 @@ class EditMessageTest(EditMessageTestCase):
         )
 
     @mock.patch("zerver.actions.message_edit.send_event")
-    def test_followed_topic_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
+    def test_stream_wildcard_mention_in_followed_topic(
+        self, mock_send_event: mock.MagicMock
+    ) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -2072,14 +2074,16 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
 
         # Extract the send_event call where event type is 'update_message'.
-        # Here we assert 'followed_topic_wildcard_mention_user_ids'
+        # Here we assert 'stream_wildcard_mention_in_followed_topic_user_ids'
         # has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
-                self.assertEqual(arg_event["followed_topic_wildcard_mention_user_ids"], [hamlet.id])
+                self.assertEqual(
+                    arg_event["stream_wildcard_mention_in_followed_topic_user_ids"], [hamlet.id]
+                )
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
                 )
@@ -2087,7 +2091,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assertTrue(called)
 
     @mock.patch("zerver.actions.message_edit.send_event")
-    def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
+    def test_stream_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -2113,20 +2117,22 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
 
         # Extract the send_event call where event type is 'update_message'.
-        # Here we assert wildcard_mention_user_ids has been set properly.
+        # Here we assert 'stream_wildcard_mention_user_ids' has been set properly.
         called = False
         for call_args in mock_send_event.call_args_list:
             (arg_realm, arg_event, arg_notified_users) = call_args[0]
             if arg_event["type"] == "update_message":
                 self.assertEqual(arg_event["type"], "update_message")
-                self.assertEqual(arg_event["wildcard_mention_user_ids"], [cordelia.id, hamlet.id])
+                self.assertEqual(
+                    arg_event["stream_wildcard_mention_user_ids"], [cordelia.id, hamlet.id]
+                )
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
                 )
                 called = True
         self.assertTrue(called)
 
-    def test_wildcard_mention_restrictions_when_editing(self) -> None:
+    def test_stream_wildcard_mention_restrictions_when_editing(self) -> None:
         cordelia = self.example_user("cordelia")
         shiva = self.example_user("shiva")
         self.login("cordelia")

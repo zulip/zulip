@@ -456,13 +456,14 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     context.update(
         mention="mentioned" in unique_triggers
-        or "wildcard_mentioned" in unique_triggers
-        or "followed_topic_wildcard_mentioned" in unique_triggers,
+        or "stream_wildcard_mentioned" in unique_triggers
+        or "stream_wildcard_mentioned_in_followed_topic" in unique_triggers,
         personal_mentioned=personal_mentioned,
-        wildcard_mentioned="wildcard_mentioned" in unique_triggers,
+        stream_wildcard_mentioned="stream_wildcard_mentioned" in unique_triggers,
         stream_email_notify="stream_email_notify" in unique_triggers,
         followed_topic_email_notify="followed_topic_email_notify" in unique_triggers,
-        followed_topic_wildcard_mentioned="followed_topic_wildcard_mentioned" in unique_triggers,
+        stream_wildcard_mentioned_in_followed_topic="stream_wildcard_mentioned_in_followed_topic"
+        in unique_triggers,
         mentioned_user_group_name=mentioned_user_group_name,
     )
 
@@ -525,8 +526,9 @@ def do_send_missedmessage_events_reply_in_zulip(
                     m["message"].sender
                     for m in missed_messages
                     if m["trigger"] == NotificationTriggers.MENTION
-                    or m["trigger"] == NotificationTriggers.WILDCARD_MENTION
-                    or m["trigger"] == NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION
+                    or m["trigger"] == NotificationTriggers.STREAM_WILDCARD_MENTION
+                    or m["trigger"]
+                    == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
                 }
             )
         message = missed_messages[0]["message"]

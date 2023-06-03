@@ -407,7 +407,7 @@ def soft_reactivate_if_personal_notification(
     return to Zulip. As a result, it makes sense to optimistically
     soft-reactivate that user, to give them a good return experience.
 
-    It's important that we do nothing for wildcard or group mentions,
+    It's important that we do nothing for stream wildcard or group mentions,
     because soft-reactivating an entire realm would be very expensive
     (and we can't easily check the group's size). The caller is
     responsible for passing a mentioned_user_group_name that is None

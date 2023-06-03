@@ -1675,7 +1675,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"message_id": personal_message_id, "trigger": "private_message"},
             )
 
-        # Followed Topic wildcard mention should NOT soft reactivate the user
+        # Stream wildcard mention in followed topic should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
@@ -1683,18 +1683,18 @@ class HandlePushNotificationTest(PushNotificationTest):
                 self.user_profile.id,
                 {
                     "message_id": stream_mentioned_message_id,
-                    "trigger": "followed_topic_wildcard_mentioned",
+                    "trigger": "stream_wildcard_mentioned_in_followed_topic",
                 },
             )
 
-        # Wildcard mention should NOT soft reactivate the user
+        # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
             # Soft reactivate the user by sending a personal message
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
                 self.user_profile.id,
-                {"message_id": stream_mentioned_message_id, "trigger": "wildcard_mentioned"},
+                {"message_id": stream_mentioned_message_id, "trigger": "stream_wildcard_mentioned"},
             )
 
         # Group mention should NOT soft reactivate the user
@@ -2070,12 +2070,12 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_message_payload_apns_followed_topic_wildcard_mention(self) -> None:
+    def test_get_message_payload_apns_stream_wildcard_mention_in_followed_topic(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION
+            user_profile, message, NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
         )
         expected = {
             "alert": {
@@ -2108,7 +2108,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.WILDCARD_MENTION
+            user_profile, message, NotificationTriggers.STREAM_WILDCARD_MENTION
         )
         expected = {
             "alert": {
@@ -2243,12 +2243,14 @@ class TestGetGCMPayload(PushNotificationTest):
             mentioned_user_group_name="mobile_team",
         )
 
-    def test_get_message_payload_gcm_followed_topic_wildcard_mention(self) -> None:
-        self._test_get_message_payload_gcm_mentions("followed_topic_wildcard_mentioned", "TODO")
-
-    def test_get_message_payload_gcm_wildcard_mention(self) -> None:
+    def test_get_message_payload_gcm_stream_wildcard_mention_in_followed_topic(self) -> None:
         self._test_get_message_payload_gcm_mentions(
-            "wildcard_mentioned", "King Hamlet mentioned everyone in #Verona"
+            "stream_wildcard_mentioned_in_followed_topic", "TODO"
+        )
+
+    def test_get_message_payload_gcm_stream_wildcard_mention(self) -> None:
+        self._test_get_message_payload_gcm_mentions(
+            "stream_wildcard_mentioned", "King Hamlet mentioned everyone in #Verona"
         )
 
     def test_get_message_payload_gcm_private_message(self) -> None:
