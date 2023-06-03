@@ -239,7 +239,7 @@ function set_compose_box_schedule(element) {
     return selected_send_at_time;
 }
 
-export function open_send_later_menu(instance) {
+export function open_send_later_menu() {
     if (!compose_validate.validate(true)) {
         return;
     }
@@ -248,11 +248,12 @@ export function open_send_later_menu(instance) {
     const date = new Date();
     const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
     $("body").append(render_send_later_modal(filtered_send_opts));
+    let interval;
 
     overlays.open_modal("send_later_modal", {
         autoremove: true,
         on_show() {
-            instance._interval = setInterval(
+            interval = setInterval(
                 scheduled_messages.update_send_later_options,
                 scheduled_messages.SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
             );
@@ -312,7 +313,7 @@ export function open_send_later_menu(instance) {
             $send_later_modal_overlay.trigger("focus");
         },
         on_hide() {
-            clearInterval(instance._interval);
+            clearInterval(interval);
         },
     });
 }
@@ -905,7 +906,7 @@ export function initialize() {
                 const send_at_timestamp = get_selected_send_later_timestamp();
                 do_schedule_message(send_at_timestamp);
             });
-            $popper.one("click", ".open_send_later_modal", () => open_send_later_menu(instance));
+            $popper.one("click", ".open_send_later_modal", open_send_later_menu);
         },
         onHidden(instance) {
             instance.destroy();
