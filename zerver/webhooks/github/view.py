@@ -364,7 +364,7 @@ def get_team_body(helper: Helper) -> str:
     payload = helper.payload
     changes = payload["changes"]
     if "description" in changes:
-        actor = payload["sender"]["login"].tame(check_string)
+        actor = get_sender_name(payload)
         new_description = payload["team"]["description"].tame(check_string)
         return f"**{actor}** changed the team description to:\n```quote\n{new_description}\n```"
     if "name" in changes:
@@ -599,7 +599,7 @@ def get_star_body(helper: Helper) -> str:
     payload = helper.payload
     template = "[{user}]({user_url}) {action} the repository [{repo}]({url})."
     return template.format(
-        user=payload["sender"]["login"].tame(check_string),
+        user=get_sender_name(payload),
         user_url=get_sender_url(payload),
         action="starred" if payload["action"].tame(check_string) == "created" else "unstarred",
         repo=get_repository_full_name(payload),
