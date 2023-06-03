@@ -892,6 +892,71 @@ class AnalyticsBouncerTest(BouncerTestCase):
         )
         self.assertEqual(remote_log_entry.event_type, RealmAuditLog.USER_REACTIVATED)
 
+    # This verify that the bouncer is forward-compatible with remote servers using
+    # TextField to store extra_data.
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_realmauditlog_string_extra_data(self) -> None:
+        self.add_mock_response()
+
+        def verify_request_with_overridden_extra_data(
+            request_extra_data: object, expected_extra_data: object
+        ) -> None:
+            user = self.example_user("hamlet")
+            log_entry = RealmAuditLog.objects.create(
+                realm=user.realm,
+                modified_user=user,
+                event_type=RealmAuditLog.USER_REACTIVATED,
+                event_time=self.TIME_ZERO,
+                extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: 0}).decode(),
+            )
+
+            # We use this to patch send_to_push_bouncer so that extra_data in the
+            # legacy format gets sent to the bouncer.
+            def transform_realmauditlog_extra_data(
+                method: str,
+                endpoint: str,
+                post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
+                extra_headers: Mapping[str, str] = {},
+            ) -> Dict[str, Any]:
+                if endpoint == "server/analytics":
+                    assert isinstance(post_data, dict)
+                    assert isinstance(post_data["realmauditlog_rows"], str)
+                    original_data = orjson.loads(post_data["realmauditlog_rows"])
+                    # We replace the extra_data with another fake example to verify that
+                    # the bouncer actually gets requested with extra_data being string
+                    new_data = [{**row, "extra_data": request_extra_data} for row in original_data]
+                    post_data["realmauditlog_rows"] = orjson.dumps(new_data).decode()
+                return send_to_push_bouncer(method, endpoint, post_data, extra_headers)
+
+            with mock.patch(
+                "zerver.lib.remote_server.send_to_push_bouncer",
+                side_effect=transform_realmauditlog_extra_data,
+            ):
+                send_analytics_to_remote_server()
+
+            remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
+            assert remote_log_entry is not None
+            self.assertEqual(str(remote_log_entry.server.uuid), self.server_uuid)
+            self.assertEqual(remote_log_entry.remote_id, log_entry.id)
+            self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
+            self.assertEqual(remote_log_entry.extra_data, expected_extra_data)
+
+        # Pre-migration extra_data
+        verify_request_with_overridden_extra_data(
+            request_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+            expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+        )
+        verify_request_with_overridden_extra_data(request_extra_data=None, expected_extra_data=None)
+        # Post-migration extra_data
+        verify_request_with_overridden_extra_data(
+            request_extra_data={"fake_data": 42},
+            expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+        )
+        verify_request_with_overridden_extra_data(
+            request_extra_data={}, expected_extra_data=orjson.dumps({}).decode()
+        )
+
 
 class PushNotificationTest(BouncerTestCase):
     def setUp(self) -> None:

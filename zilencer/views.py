@@ -4,6 +4,7 @@ from collections import Counter
 from typing import Any, Dict, List, Optional, Type, TypeVar
 from uuid import UUID
 
+import orjson
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
@@ -29,6 +30,7 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
+    check_dict,
     check_dict_only,
     check_float,
     check_int,
@@ -36,6 +38,7 @@ from zerver.lib.validator import (
     check_none_or,
     check_string,
     check_string_fixed_length,
+    check_union,
 )
 from zerver.views.push_notifications import validate_token
 from zilencer.auth import InvalidZulipServerKeyError
@@ -435,7 +438,7 @@ def remote_server_post_analytics(
                     ("realm", check_int),
                     ("event_time", check_float),
                     ("backfilled", check_bool),
-                    ("extra_data", check_none_or(check_string)),
+                    ("extra_data", check_none_or(check_union([check_string, check_dict()]))),
                     ("event_type", check_int),
                 ]
             )
@@ -476,20 +479,29 @@ def remote_server_post_analytics(
     batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 
     if realmauditlog_rows is not None:
-        remote_realm_audit_logs = [
-            RemoteRealmAuditLog(
-                realm_id=row["realm"],
-                remote_id=row["id"],
-                server=server,
-                event_time=datetime.datetime.fromtimestamp(
-                    row["event_time"], tz=datetime.timezone.utc
-                ),
-                backfilled=row["backfilled"],
-                extra_data=row["extra_data"],
-                event_type=row["event_type"],
+        remote_realm_audit_logs = []
+        for row in realmauditlog_rows:
+            # Remote servers that do support JSONField will pass extra_data
+            # as a dict. Otherwise, extra_data will be either a string or None.
+            if isinstance(row["extra_data"], dict):
+                # This is guaranteed to succeed because row["extra_data"] would be parsed
+                # from JSON with our json validator if it is a dict.
+                extra_data = orjson.dumps(row["extra_data"]).decode()
+            else:
+                extra_data = row["extra_data"]
+            remote_realm_audit_logs.append(
+                RemoteRealmAuditLog(
+                    realm_id=row["realm"],
+                    remote_id=row["id"],
+                    server=server,
+                    event_time=datetime.datetime.fromtimestamp(
+                        row["event_time"], tz=datetime.timezone.utc
+                    ),
+                    backfilled=row["backfilled"],
+                    extra_data=extra_data,
+                    event_type=row["event_type"],
+                )
             )
-            for row in realmauditlog_rows
-        ]
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
 
     return json_success(request)
