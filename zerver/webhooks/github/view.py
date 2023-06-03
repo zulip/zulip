@@ -597,9 +597,10 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
 
 def get_star_body(helper: Helper) -> str:
     payload = helper.payload
-    template = "{user} {action} the repository [{repo}]({url})."
+    template = "[{user}]({user_url}) {action} the repository [{repo}]({url})."
     return template.format(
         user=payload["sender"]["login"].tame(check_string),
+        user_url=get_sender_url(payload),
         action="starred" if payload["action"].tame(check_string) == "created" else "unstarred",
         repo=get_repository_full_name(payload),
         url=payload["repository"]["html_url"].tame(check_string),
@@ -625,6 +626,10 @@ def get_organization_name(payload: WildValue) -> str:
 
 def get_sender_name(payload: WildValue) -> str:
     return payload["sender"]["login"].tame(check_string)
+
+
+def get_sender_url(payload: WildValue) -> str:
+    return payload["sender"]["html_url"].tame(check_string)
 
 
 def get_branch_name_from_ref(ref_string: str) -> str:
