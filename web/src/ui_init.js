@@ -99,6 +99,7 @@ import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
 import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as top_left_corner from "./top_left_corner";
@@ -705,7 +706,18 @@ export function initialize_everything() {
     activity.initialize();
     emoji_picker.initialize();
     pm_list.initialize();
-    topic_list.initialize({narrow_on_topic_click: narrow.activate});
+    topic_list.initialize({
+        on_topic_click(stream_id, topic) {
+            const sub = sub_store.get(stream_id);
+            narrow.activate(
+                [
+                    {operator: "stream", operand: sub.name},
+                    {operator: "topic", operand: topic},
+                ],
+                {trigger: "sidebar"},
+            );
+        },
+    });
     topic_zoom.initialize();
     drafts.initialize();
     sent_messages.initialize();

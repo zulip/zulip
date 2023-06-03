@@ -10,7 +10,6 @@ import * as popover_menus from "./popover_menus";
 import * as scroll_util from "./scroll_util";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
-import * as sub_store from "./sub_store";
 import * as topic_list_data from "./topic_list_data";
 import * as vdom from "./vdom";
 
@@ -305,7 +304,7 @@ export function get_topic_search_term() {
     return $filter.val().trim();
 }
 
-export function initialize({narrow_on_topic_click}) {
+export function initialize({on_topic_click}) {
     $("#stream_filters").on("click", ".topic-box", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -314,21 +313,10 @@ export function initialize({narrow_on_topic_click}) {
             return;
         }
 
-        // In a more componentized world, we would delegate some
-        // of this stuff back up to our parents.
-
         const $stream_row = $(e.target).parents(".narrow-filter");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
-        const sub = sub_store.get(stream_id);
         const topic = $(e.target).parents("li").attr("data-topic-name");
-
-        narrow_on_topic_click(
-            [
-                {operator: "stream", operand: sub.name},
-                {operator: "topic", operand: topic},
-            ],
-            {trigger: "sidebar"},
-        );
+        on_topic_click(stream_id, topic);
 
         e.preventDefault();
     });
