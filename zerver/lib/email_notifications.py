@@ -247,6 +247,13 @@ def build_message_list(
         relative_to_full_url(fragment, user.realm.uri)
         fix_emojis(fragment, user.emojiset)
         fix_spoilers_in_html(fragment, user.default_language)
+
+        # Following changes are done to avoid the bad rendering of latex math formulas in emails.
+        # See: #25289 for more details.
+        katex_html_elements = fragment.cssselect("span.katex-html")
+        for element in katex_html_elements:
+            element.getparent().remove(element)
+
         html = lxml.html.tostring(fragment, encoding="unicode")
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)

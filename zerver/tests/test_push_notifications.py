@@ -1567,6 +1567,78 @@ class HandlePushNotificationTest(PushNotificationTest):
             )
             mock_push_notifications.assert_called_once()
 
+    def test_latex_math_formulas_in_push_notification(self) -> None:
+        # TODO: Fix the following test case when content is rendered properly in the push notification.
+        stream = get_stream("Denmark", self.user_profile.realm)
+        topic = "test"
+        message_id = self.send_stream_message(
+            sender=self.example_user("hamlet"),
+            stream_name=stream.name,
+            content="Equation: $$d^* = +\\infty$$",
+            topic_name=topic,
+        )
+        message = Message.objects.get(id=message_id)
+        apns_payload = {
+            "alert": {
+                "title": "#Denmark > test",
+                "subtitle": f'{self.example_user("hamlet").full_name}:',
+                "body": "Equation: d∗=+∞d^* = +\\inftyd∗=+∞",
+            },
+            "sound": "default",
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "server": "testserver",
+                    "realm_id": self.example_user("hamlet").realm.id,
+                    "realm_uri": self.example_user("hamlet").realm.uri,
+                    "user_id": self.user_profile.id,
+                    "sender_id": self.user_profile.id,
+                    "sender_email": self.user_profile.email,
+                    "recipient_type": "stream",
+                    "stream": stream.name,
+                    "stream_id": stream.id,
+                    "topic": topic,
+                    "message_ids": [message_id],
+                }
+            },
+        }
+
+        gcm_payload = {
+            "server": "testserver",
+            "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
+            "user_id": self.user_profile.id,
+            "sender_id": self.user_profile.id,
+            "sender_email": self.user_profile.email,
+            "recipient_type": "stream",
+            "stream": stream.name,
+            "stream_id": stream.id,
+            "topic": topic,
+            "event": "message",
+            "alert": f'New stream message from {self.example_user("hamlet").full_name} in #{stream.name}',
+            "zulip_message_id": message_id,
+            "time": int(message.date_sent.timestamp()),
+            "content": "Equation: d∗=+∞d^* = +\\inftyd∗=+∞",
+            "content_truncated": False,
+            "sender_full_name": self.example_user("hamlet").full_name,
+            "sender_avatar_url": absolute_avatar_url(self.user_profile),
+        }
+        missed_message = {"message_id": message_id, "trigger": "stream_push_notify"}
+        with mock.patch(
+            "zerver.lib.push_notifications.push_notifications_enabled", return_value=True
+        ) as mock_push_notifications, mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android, mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple:
+            handle_push_notification(self.user_profile.id, missed_message)
+            user_identity = UserPushIdentityCompat(user_id=self.user_profile.id)
+            mock_send_apple.assert_called_with(user_identity, [], apns_payload)
+            mock_send_android.assert_called_with(
+                user_identity, [], gcm_payload, {"priority": "high"}
+            )
+            mock_push_notifications.assert_called_once()
+
     def test_user_message_does_not_exist_remove(self) -> None:
         """This simulates a condition that should only be an error if the user is
         not long-term idle; we fake it, though, in the sense that the user should

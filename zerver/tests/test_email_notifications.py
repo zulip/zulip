@@ -1546,6 +1546,43 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = "#Denmark > test"
         self.assertEqual(mail.outbox[0].subject, email_subject)
 
+    def test_latex_math_formulas_in_email(self) -> None:
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("iago"), "Denmark", "Equation: $$d^* = +\\infty$$"
+        )
+        handle_missedmessage_emails(
+            hamlet.id,
+            [
+                {"message_id": msg_id, "trigger": "stream_email_notify"},
+            ],
+        )
+
+        self.assert_length(mail.outbox, 1)
+        self.assertIn("Equation: $$d^* = +\\infty$$", mail.outbox[0].message().as_string())
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        html_content = (
+            '<span class="katex">'
+            '<span class="katex-mathml">'
+            '<math xmlns="http://www.w3.org/1998/Math/MathML">'
+            "<semantics>"
+            "<mrow>"
+            "<msup>"
+            "<mi>d</mi>"
+            "<mo>∗</mo>"
+            "</msup>"
+            "<mo>=</mo>"
+            "<mo>+</mo>"
+            '<mi mathvariant="normal">∞</mi>'
+            "</mrow>"
+            '<annotation encoding="application/x-tex">d^* = +\\infty</annotation>'
+            "</semantics>"
+            "</math>"
+            "</span>"
+            "</span>"
+        )
+        self.assertIn(html_content, str(mail.outbox[0].alternatives[0][0]))
+
     def test_message_access_in_emails(self) -> None:
         # Messages sent to a protected history-private stream shouldn't be
         # accessible/available in emails before subscribing
