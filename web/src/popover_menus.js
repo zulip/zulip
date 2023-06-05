@@ -765,7 +765,7 @@ export function initialize() {
             });
 
             new ClipboardJS($popper.find(".copy_link")[0]).on("success", () => {
-                // Display tippy tool tip above "Copy link to message"
+                // Display tippy tooltip above "Copy link to message"
                 show_copied_confirmation($popper.find(".copy_link")[0]);
             });
         },
