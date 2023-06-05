@@ -1,5 +1,6 @@
 from typing import Dict, Iterable, List, Sequence, TypedDict
 
+from django.db import transaction
 from django.db.models import F, QuerySet
 from django.utils.translation import gettext as _
 from django_cte import With
@@ -215,6 +216,7 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
     return list(subgroup_ids)
 
 
+@transaction.atomic(savepoint=False)
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     """Any changes to this function likely require a migration to adjust
     existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
