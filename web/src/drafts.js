@@ -658,11 +658,13 @@ export function launch() {
 }
 
 function open_overlay() {
+    sync_count();
     overlays.open_overlay({
         name: "drafts",
         $overlay: $("#draft_overlay"),
         on_close() {
             browser_history.exit_overlay();
+            sync_count();
         },
     });
 }
