@@ -49,6 +49,8 @@ from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
     check_add_user_group,
+    do_update_user_group_description,
+    do_update_user_group_name,
     remove_members_from_user_group,
     remove_subgroups_from_user_group,
 )
@@ -1251,3 +1253,44 @@ class TestRealmAuditLog(ZulipTestCase):
                 orjson.loads(assert_is_not_none(audit_log_entries[i].extra_data)),
                 {"supergroup_ids": [user_group.id]},
             )
+
+    def test_user_group_property_change(self) -> None:
+        hamlet = self.example_user("hamlet")
+        user_group = check_add_user_group(
+            hamlet.realm,
+            "demo",
+            [],
+            description="No description",
+            acting_user=hamlet,
+        )
+        now = timezone_now()
+
+        do_update_user_group_name(user_group, "bar", acting_user=hamlet)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            realm=hamlet.realm,
+            event_type=RealmAuditLog.USER_GROUP_NAME_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertDictEqual(
+            orjson.loads(assert_is_not_none(audit_log_entries[0].extra_data)),
+            {
+                RealmAuditLog.OLD_VALUE: "demo",
+                RealmAuditLog.NEW_VALUE: "bar",
+            },
+        )
+
+        do_update_user_group_description(user_group, "Foo", acting_user=hamlet)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            realm=hamlet.realm,
+            event_type=RealmAuditLog.USER_GROUP_DESCRIPTION_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertDictEqual(
+            orjson.loads(assert_is_not_none(audit_log_entries[0].extra_data)),
+            {
+                RealmAuditLog.OLD_VALUE: "No description",
+                RealmAuditLog.NEW_VALUE: "Foo",
+            },
+        )
