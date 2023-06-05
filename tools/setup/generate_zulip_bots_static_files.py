@@ -23,26 +23,30 @@ def generate_zulip_bots_static_files() -> None:
 
     os.makedirs(bots_dir, exist_ok=True)
 
-    def copyfiles(paths: List[str]) -> None:
-        for src_path in paths:
-            bot_name = os.path.basename(os.path.dirname(src_path))
-
-            bot_dir = os.path.join(bots_dir, bot_name)
-            os.makedirs(bot_dir, exist_ok=True)
-
-            dst_path = os.path.join(bot_dir, os.path.basename(src_path))
-            if not os.path.isfile(dst_path):
-                shutil.copyfile(src_path, dst_path)
-
     package_bots_dir = get_bots_directory_path()
 
-    logo_glob_pattern = os.path.join(package_bots_dir, "*/logo.*")
-    logos = glob.glob(logo_glob_pattern)
-    copyfiles(logos)
+    def copy_bots_data(bot_names: List[str]) -> None:
+        for name in bot_names:
+            src_dir = os.path.join(package_bots_dir, name)
+            dst_dir = os.path.join(bots_dir, name)
+            doc_path = os.path.join(src_dir, "doc.md")
 
-    doc_glob_pattern = os.path.join(package_bots_dir, "*/doc.md")
-    docs = glob.glob(doc_glob_pattern)
-    copyfiles(docs)
+            if os.path.isfile(doc_path):
+                os.makedirs(dst_dir, exist_ok=True)
+                shutil.copyfile(doc_path, os.path.join(dst_dir, "doc.md"))
+
+                logo_pattern = os.path.join(src_dir, "logo.*")
+                logos = glob.glob(logo_pattern)
+                for logo in logos:
+                    shutil.copyfile(logo, os.path.join(dst_dir, os.path.basename(logo)))
+
+                assets_path = os.path.join(src_dir, "assets")
+                if os.path.isdir(assets_path):
+                    shutil.copytree(
+                        assets_path, os.path.join(dst_dir, os.path.basename(assets_path))
+                    )
+
+    copy_bots_data(os.listdir(package_bots_dir))
 
 
 if __name__ == "__main__":
