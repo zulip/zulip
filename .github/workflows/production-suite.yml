@@ -75,7 +75,7 @@ jobs:
       - name: Restore pnpm store
         uses: actions/cache@v3
         with:
-          path: ~/.local/share/pnpm/store
+          path: /__w/.pnpm-store
           key: v1-pnpm-store-focal-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore python cache
@@ -101,6 +101,12 @@ jobs:
           name: production-tarball
           path: /tmp/production-build
           retention-days: 1
+
+      - name: Verify pnpm store path
+        run: |
+          set -x
+          path="$(pnpm store path)"
+          [[ "$path" == /__w/.pnpm-store/* ]]
 
       - name: Generate failure report string
         id: failure_report_string
@@ -183,12 +189,6 @@ jobs:
           dirs=(/srv/zulip-{venv,emoji}-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
-
-      - name: Restore pnpm store
-        uses: actions/cache@v3
-        with:
-          path: ~/.local/share/pnpm/store
-          key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('/tmp/pnpm-lock.yaml') }}
 
       - name: Install production
         run: sudo /tmp/production-install ${{ matrix.extra-args }}
