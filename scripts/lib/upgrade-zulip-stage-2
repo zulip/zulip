@@ -207,19 +207,20 @@ def shutdown_server() -> None:
 # previously; fill it in based on what the OS provides.
 if os.path.exists("/etc/init.d/postgresql"):
     postgresql_version = get_config(config_file, "postgresql", "version")
+    django_pg_version = subprocess.check_output(
+        # We use the _current_ deploy's manage.py, since ours has not
+        # yet had its virtualenv configured yet.
+        [
+            "../current/manage.py",
+            "shell",
+            "-c",
+            "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))",
+        ],
+        preexec_fn=su_to_zulip,
+        text=True,
+    ).strip()
     if not postgresql_version:
-        postgresql_version = subprocess.check_output(
-            # We use the _current_ deploy's manage.py, since ours has not
-            # yet had its virtualenv configured yet.
-            [
-                "../current/manage.py",
-                "shell",
-                "-c",
-                "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))",
-            ],
-            preexec_fn=su_to_zulip,
-            text=True,
-        ).strip()
+        postgresql_version = django_pg_version
         subprocess.check_call(
             [
                 "crudini",
@@ -230,6 +231,25 @@ if os.path.exists("/etc/init.d/postgresql"):
                 postgresql_version,
             ]
         )
+    elif postgresql_version != django_pg_version:
+        logging.critical(
+            "PostgreSQL version mismatch: %s (running) vs %s (configured)",
+            django_pg_version,
+            postgresql_version,
+        )
+        logging.info(
+            "/etc/zulip/zulip.conf claims that Zulip is running PostgreSQL\n"
+            "%s, but the server is connected to a PostgreSQL running\n"
+            "version %s.  Check the output from pg_lsclusters to verify\n"
+            "which clusters are running, and update /etc/zulip/zulip.conf to match.\n"
+            "\n"
+            "In general, this results from manually upgrading PostgreSQL; you\n"
+            "should follow our instructions for using our tool to do so:\n"
+            "https://zulip.readthedocs.io/en/latest/production/upgrade.html#upgrading-postgresql",
+            postgresql_version,
+            django_pg_version,
+        )
+        sys.exit(1)
 
     if int(postgresql_version) < 12:
         logging.critical("Unsupported PostgreSQL version: %s", postgresql_version)
