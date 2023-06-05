@@ -208,17 +208,18 @@ def shutdown_server() -> None:
 if os.path.exists("/etc/init.d/postgresql"):
     postgresql_version = get_config(config_file, "postgresql", "version")
     if not postgresql_version:
-        default_postgresql_version = {
-            ("debian", "11"): "13",
-            ("debian", "12"): "15",
-            ("ubuntu", "20.04"): "12",
-            ("ubuntu", "22.04"): "14",
-            ("centos", "7"): "11",
-        }
-        if (vendor, os_version) in default_postgresql_version:
-            postgresql_version = default_postgresql_version[(vendor, os_version)]
-        else:
-            error_desupported_os(vendor, os_version)
+        postgresql_version = subprocess.check_output(
+            # We use the _current_ deploy's manage.py, since ours has not
+            # yet had its virtualenv configured yet.
+            [
+                "../current/manage.py",
+                "shell",
+                "-c",
+                "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))",
+            ],
+            preexec_fn=su_to_zulip,
+            text=True,
+        ).strip()
         subprocess.check_call(
             [
                 "crudini",
