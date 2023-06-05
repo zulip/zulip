@@ -206,22 +206,52 @@ def do_send_user_group_update_event(
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
+@transaction.atomic(savepoint=False)
 def do_update_user_group_name(
     user_group: UserGroup, name: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     try:
+        old_value = user_group.name
         user_group.name = name
         user_group.save(update_fields=["name"])
+        RealmAuditLog.objects.create(
+            realm=user_group.realm,
+            modified_user_group=user_group,
+            event_type=RealmAuditLog.USER_GROUP_NAME_CHANGED,
+            event_time=timezone_now(),
+            acting_user=acting_user,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: name,
+                }
+            ).decode(),
+        )
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{}' already exists.").format(name))
     do_send_user_group_update_event(user_group, dict(name=name))
 
 
+@transaction.atomic(savepoint=False)
 def do_update_user_group_description(
     user_group: UserGroup, description: str, *, acting_user: Optional[UserProfile]
 ) -> None:
+    old_value = user_group.description
     user_group.description = description
     user_group.save(update_fields=["description"])
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        modified_user_group=user_group,
+        event_type=RealmAuditLog.USER_GROUP_DESCRIPTION_CHANGED,
+        event_time=timezone_now(),
+        acting_user=acting_user,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: description,
+            }
+        ).decode(),
+    )
     do_send_user_group_update_event(user_group, dict(description=description))
 
 
