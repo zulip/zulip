@@ -21,6 +21,11 @@ if [ "$UPGRADE_TO" = "$UPGRADE_FROM" ]; then
     exit 1
 fi
 
+if [[ "$UPGRADE_TO" -lt "$UPGRADE_FROM" ]]; then
+    echo "Refusing to downgrade PostgreSQL $UPGRADE_FROM to $UPGRADE_TO!"
+    exit 1
+fi
+
 set -x
 
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
