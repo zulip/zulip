@@ -1,6 +1,6 @@
 import {zxcvbn, zxcvbnOptions} from "@zxcvbn-ts/core";
-import zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
-import zxcvbnEnPackage from "@zxcvbn-ts/language-en";
+import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
+import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en";
 
 import {$t} from "./i18n";
 
@@ -59,5 +59,5 @@ export function password_warning(password: string, $password_field: JQuery): str
             {length: min_length},
         );
     }
-    return zxcvbn(password).feedback.warning || $t({defaultMessage: "Password is too weak"});
+    return zxcvbn(password).feedback.warning ?? $t({defaultMessage: "Password is too weak"});
 }
