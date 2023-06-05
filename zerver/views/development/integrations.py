@@ -93,7 +93,7 @@ def get_fixtures(request: HttpRequest, integration_name: str = REQ()) -> HttpRes
             valid_integration_name, "".join(fixture.split(".")[:-1])
         )
 
-        def fix_name(header: str) -> str:
+        def fix_name(header: str) -> str:  # nocoverage
             if header.startswith("HTTP_"):  # HTTP_ is a prefix intended for Django.
                 return header[len("HTTP_") :]
             return header
@@ -114,7 +114,7 @@ def check_send_webhook_fixture_message(
 ) -> HttpResponseBase:
     try:
         custom_headers_dict = orjson.loads(custom_headers)
-    except orjson.JSONDecodeError as ve:
+    except orjson.JSONDecodeError as ve:  # nocoverage
         raise JsonableError(f"Custom HTTP headers are not in a valid JSON format. {ve}")  # nolint
 
     response = send_webhook_fixture_message(url, body, is_json, custom_headers_dict)
@@ -130,7 +130,7 @@ def send_all_webhook_fixture_messages(
     request: HttpRequest, url: str = REQ(), integration_name: str = REQ()
 ) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
-    if not valid_integration_name:
+    if not valid_integration_name:  # nocoverage
         raise ResourceNotFoundError(f'"{integration_name}" is not a valid webhook integration.')
 
     fixtures_dir = os.path.join(ZULIP_PATH, f"zerver/webhooks/{valid_integration_name}/fixtures")

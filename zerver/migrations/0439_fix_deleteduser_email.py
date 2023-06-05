@@ -28,7 +28,7 @@ def get_fake_email_domain(apps: StateApps, realm_id: int) -> str:
     # Implement get_fake_email_domain
     try:
         validate_email(Address(username="bot", domain=host).addr_spec)
-        return realm.host
+        return host
     except ValidationError:
         pass
 

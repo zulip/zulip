@@ -49,6 +49,18 @@ Options:
 EOF
 }
 
+system_requirements_failure() {
+    set +x
+    echo >&2
+    cat >&2
+    cat <<EOF >&2
+
+For more information, see:
+  https://zulip.readthedocs.io/en/latest/production/requirements.html
+EOF
+    exit 1
+}
+
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
 args="$(getopt -o '' --long help,hostname:,email:,certbot,self-signed-cert,cacert:,postgresql-database-name:,postgresql-database-user:,postgresql-version:,postgresql-missing-dictionaries,no-init-db,no-overwrite-settings,no-dist-upgrade -n "$0" -- "$@")"
@@ -221,9 +233,7 @@ fi
 case "$os_id $os_version_id" in
     'debian 11' | 'debian 12' | 'ubuntu 20.04' | 'ubuntu 22.04') ;;
     *)
-        set +x
-        cat <<EOF
-
+        system_requirements_failure <<EOF
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
@@ -231,13 +241,23 @@ Zulip in production is supported only on:
  - Debian 12
  - Ubuntu 20.04 LTS
  - Ubuntu 22.04 LTS
-
-For more information, see:
-  https://zulip.readthedocs.io/en/latest/production/requirements.html
 EOF
-        exit 1
         ;;
 esac
+
+machine="$(uname -m)"
+if [ "$machine" != x86_64 ] && [ "$machine" != aarch64 ]; then
+    system_requirements_failure <<EOF
+Unsupported CPU architecture: $machine (expected x86_64 or aarch64).
+EOF
+fi
+
+dpkg_architecture="$(dpkg --print-architecture)"
+if [ "$dpkg_architecture" != amd64 ] && [ "$dpkg_architecture" != arm64 ]; then
+    system_requirements_failure <<EOF
+Unsupported OS architecture: $dpkg_architecture (expected amd64 or arm64).
+EOF
+fi
 
 has_universe() {
     apt-cache policy \
@@ -245,19 +265,13 @@ has_universe() {
 }
 
 if [ "$os_id" = ubuntu ] && ! has_universe && ! { apt-get update && has_universe; }; then
-    set +x
-    cat <<'EOF'
-
+    system_requirements_failure <<EOF
 You must enable the Ubuntu Universe repository before installing
 Zulip.  You can do this with:
 
     sudo add-apt-repository universe
     sudo apt update
-
-For more information, see:
-  https://zulip.readthedocs.io/en/latest/production/requirements.html
 EOF
-    exit 1
 fi
 
 case ",$PUPPET_CLASSES," in
