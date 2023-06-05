@@ -17750,10 +17750,32 @@ components:
             called "subjects" and will eventually change.
         submessages:
           type: array
-          items:
-            type: string
           description: |
             Data used for certain experimental Zulip integrations.
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              msg_type:
+                type: string
+                description: |
+                  The type of the message.
+              content:
+                type: string
+                description: |
+                  The new content of the submessage.
+              message_id:
+                type: integer
+                description: |
+                  The ID of the message to which the submessage has been added.
+              sender_id:
+                type: integer
+                description: |
+                  The ID of the user who sent the message.
+              submessage_id:
+                type: integer
+                description: |
+                  The ID of the submessage.
         timestamp:
           type: integer
           description: |
