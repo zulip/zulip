@@ -26,6 +26,27 @@ if [[ "$UPGRADE_TO" -lt "$UPGRADE_FROM" ]]; then
     exit 1
 fi
 
+# Verify that the version in /etc/zulip/zulip.conf is the version that
+# Django actually stores its data in.  We can only do that if the
+# database server is on the same host as the application server.
+if [ -d /home/zulip/deployments/current ]; then
+    DATA_IS_IN=$(su zulip -c '/home/zulip/deployments/current/manage.py shell -c "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))"')
+
+    if [ "$UPGRADE_FROM" != "$DATA_IS_IN" ]; then
+        cat <<EOF
+
+/etc/zulip/zulip.conf claims that Zulip is running PostgreSQL
+$UPGRADE_FROM, but the server is connected to a PostgreSQL running
+version $DATA_IS_IN.  Check the output from pg_lsclusters to verify
+which clusters are running, and update /etc/zulip/zulip.conf to match.
+
+In general, this results from manually upgrading PostgreSQL; you
+should use this tool for all PostgreSQL upgrades.
+EOF
+        exit 1
+    fi
+fi
+
 set -x
 
 "$ZULIP_PATH"/scripts/lib/setup-apt-repo
