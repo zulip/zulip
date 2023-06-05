@@ -202,9 +202,8 @@ export default (
             }),
             new DebugRequirePlugin(),
             new BundleTracker({
-                filename: production
-                    ? "../webpack-stats-production.json"
-                    : "../var/webpack-stats-dev.json",
+                path: path.join(__dirname, production ? ".." : "../var"),
+                filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
             }),
             // Extract CSS from files
             new MiniCssExtractPlugin({
