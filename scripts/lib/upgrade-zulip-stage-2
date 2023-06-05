@@ -230,7 +230,7 @@ if os.path.exists("/etc/init.d/postgresql"):
             ]
         )
 
-    if tuple(map(int, postgresql_version.split("."))) < (12,):
+    if int(postgresql_version) < 12:
         logging.critical("Unsupported PostgreSQL version: %s", postgresql_version)
         logging.info(
             "Please upgrade to PostgreSQL 12 or newer first.\n"
