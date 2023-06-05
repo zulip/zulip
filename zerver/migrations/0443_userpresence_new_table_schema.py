@@ -13,8 +13,20 @@ def rename_indexes_constraints(
     old_table: str, new_table: str
 ) -> Callable[[StateApps, BaseDatabaseSchemaEditor], None]:
     def inner_migration(apps: StateApps, schema_editor: Any) -> None:
+        seen_indexes = set()
         with connection.cursor() as cursor:
             constraints = connection.introspection.get_constraints(cursor, old_table)
+
+            # NOTE: `get_constraints` does not include any information
+            # about if the index name was manually set from Django,
+            # nor if it is a partial index.  This has the theoretical
+            # possibility to cause false positives in the
+            # duplicate-index check below, which would incorrectly
+            # drop one of the wanted indexes.  Neither partial indexes
+            # nor explicit index names are used on the UserPresence
+            # table as of when this migration runs, so this use is
+            # safe, but use caution if reusing this code.
+
             for old_name, infodict in constraints.items():
                 if infodict["check"]:
                     suffix = "_check"
@@ -33,6 +45,22 @@ def rename_indexes_constraints(
                     suffix = "_idx" if len(infodict["columns"]) > 1 else ""
                     is_index = True
                 new_name = schema_editor._create_index_name(new_table, infodict["columns"], suffix)
+                if new_name in seen_indexes:
+                    # This index duplicates one we already renamed,
+                    # and attempting to rename it would cause a
+                    # conflict.  Drop the duplicated index.
+                    if is_index:
+                        raw_query = SQL("DROP INDEX {old_name}").format(
+                            old_name=Identifier(old_name)
+                        )
+                    else:
+                        raw_query = SQL(
+                            "ALTER TABLE {table_name} DROP CONSTRAINT {old_name}"
+                        ).format(table_name=Identifier(old_table), old_name=Identifier(old_name))
+                    cursor.execute(raw_query)
+                    continue
+
+                seen_indexes.add(new_name)
                 if is_index:
                     raw_query = SQL("ALTER INDEX {old_name} RENAME TO {new_name}").format(
                         old_name=Identifier(old_name), new_name=Identifier(new_name)
