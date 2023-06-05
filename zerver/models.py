@@ -4581,6 +4581,7 @@ class AbstractRealmAuditLog(models.Model):
     # 709 to 719 reserved for membership changes
     USER_GROUP_NAME_CHANGED = 720
     USER_GROUP_DESCRIPTION_CHANGED = 721
+    USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
 
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding

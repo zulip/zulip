@@ -67,7 +67,21 @@ def create_user_group_in_database(
             event_type=RealmAuditLog.USER_GROUP_CREATED,
             event_time=creation_time,
             modified_user_group=user_group,
-        )
+        ),
+        RealmAuditLog(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time=creation_time,
+            modified_user_group=user_group,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.OLD_VALUE: None,
+                    RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
+                    "property": "can_mention_group",
+                }
+            ).decode(),
+        ),
     ] + [
         RealmAuditLog(
             realm=realm,
@@ -403,6 +417,7 @@ def check_delete_user_group(
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
 
 
+@transaction.atomic(savepoint=False)
 def do_change_user_group_permission_setting(
     user_group: UserGroup,
     setting_name: str,
@@ -410,11 +425,24 @@ def do_change_user_group_permission_setting(
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
+    old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
     user_group.save()
+    RealmAuditLog.objects.create(
+        realm=user_group.realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+        event_time=timezone_now(),
+        modified_user_group=user_group,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_value.id,
+                RealmAuditLog.NEW_VALUE: setting_value_group.id,
+                "property": setting_name,
+            }
+        ).decode(),
+    )
 
-    # RealmAuditLog changes are being done in a separate PR and will be
-    # added here once that is merged.
     setting_id_name = setting_name + "_id"
     event_data_dict: Dict[str, Union[str, int]] = {setting_id_name: setting_value_group.id}
     do_send_user_group_update_event(user_group, event_data_dict)

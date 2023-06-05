@@ -49,6 +49,7 @@ from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_group,
     check_add_user_group,
+    do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
@@ -1135,12 +1136,42 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(supergroup_id, expected_supergroup_id)
             self.assertEqual(subgroup_id, expected_subgroup_id)
 
+        audit_log_entries = sorted(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+                event_time__gte=now,
+                acting_user=None,
+            ).values_list("modified_user_group_id", "extra_data")
+        )
+        nobody_group = UserGroup.objects.get(name=UserGroup.NOBODY_GROUP_NAME, realm=realm)
+        for (user_group_id, extra_data), expected_user_group_id in zip(
+            audit_log_entries, logged_system_group_ids
+        ):
+            self.assertEqual(user_group_id, expected_user_group_id)
+            self.assertDictEqual(
+                orjson.loads(assert_is_not_none(extra_data)),
+                {
+                    RealmAuditLog.OLD_VALUE: None,
+                    RealmAuditLog.NEW_VALUE: nobody_group.id,
+                    "property": "can_mention_group",
+                },
+            )
+
     def test_user_group_creation(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         now = timezone_now()
+        public_group = UserGroup.objects.get(
+            name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME, realm=hamlet.realm
+        )
         user_group = check_add_user_group(
-            hamlet.realm, "empty", [hamlet, cordelia], acting_user=hamlet, description="lorem"
+            hamlet.realm,
+            "empty",
+            [hamlet, cordelia],
+            acting_user=hamlet,
+            description="lorem",
+            group_settings_map={"can_mention_group": public_group},
         )
 
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1162,6 +1193,27 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 2)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+        )
+        self.assert_length(audit_log_entries, len(UserGroup.GROUP_PERMISSION_SETTINGS))
+        self.assertListEqual(
+            [
+                orjson.loads(assert_is_not_none(audit_log.extra_data))
+                for audit_log in audit_log_entries
+            ],
+            [
+                {
+                    RealmAuditLog.OLD_VALUE: None,
+                    RealmAuditLog.NEW_VALUE: public_group.id,
+                    "property": "can_mention_group",
+                }
+            ],
+        )
 
     def test_change_user_group_memberships(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1292,5 +1344,28 @@ class TestRealmAuditLog(ZulipTestCase):
             {
                 RealmAuditLog.OLD_VALUE: "No description",
                 RealmAuditLog.NEW_VALUE: "Foo",
+            },
+        )
+
+        old_group = user_group.can_mention_group
+        new_group = UserGroup.objects.get(
+            name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME, realm=user_group.realm
+        )
+        self.assertNotEqual(old_group.id, new_group.id)
+        do_change_user_group_permission_setting(
+            user_group, "can_mention_group", new_group, acting_user=None
+        )
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
+            event_time__gte=now,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertIsNone(audit_log_entries[0].acting_user)
+        self.assertDictEqual(
+            orjson.loads(assert_is_not_none(audit_log_entries[0].extra_data)),
+            {
+                RealmAuditLog.OLD_VALUE: old_group.id,
+                RealmAuditLog.NEW_VALUE: new_group.id,
+                "property": "can_mention_group",
             },
         )
