@@ -89,6 +89,10 @@
     }
 }
 
+#user_info_popover:focus {
+    outline: none;
+}
+
 .user_info_popover_action_buttons {
     display: flex;
     margin-left: auto;
@@ -202,6 +206,10 @@
     .popover_sub_unsub_button {
         margin-top: 0;
         float: none;
+    }
+
+    &:focus {
+        outline: none;
     }
 }
 

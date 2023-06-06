@@ -1,12 +1,12 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import * as keydown_util from "./keydown_util";
 import * as scroll_util from "./scroll_util";
 
 export class ListCursor {
-    constructor({highlight_class, list}) {
+    constructor({list, $search_input, on_select, vdot_icon_class}) {
         const config_ok =
-            highlight_class &&
             list &&
             list.scroll_container_sel &&
             list.find_li &&
@@ -18,18 +18,13 @@ export class ListCursor {
             return;
         }
 
-        this.highlight_class = highlight_class;
         this.list = list;
+        this.$search_input = $search_input;
+        this._on_select = on_select;
+        this.vdot_icon_class = vdot_icon_class;
     }
 
     clear() {
-        if (this.curr_key === undefined) {
-            return;
-        }
-        const row = this.get_row(this.curr_key);
-        if (row) {
-            row.clear();
-        }
         this.curr_key = undefined;
     }
 
@@ -59,12 +54,10 @@ export class ListCursor {
         }
 
         return {
+            $li,
             highlight: () => {
-                $li.addClass(this.highlight_class);
+                $li.trigger("focus");
                 this.adjust_scroll($li);
-            },
-            clear: () => {
-                $li.removeClass(this.highlight_class);
             },
         };
     }
@@ -96,7 +89,6 @@ export class ListCursor {
         if (key === this.curr_key) {
             return;
         }
-        this.clear();
         const row = this.get_row(key);
         if (row === undefined) {
             blueslip.error("Cannot highlight key for ListCursor", {key});
@@ -107,7 +99,6 @@ export class ListCursor {
     }
 
     reset() {
-        this.clear();
         const key = this.list.first_key();
         if (key === undefined) {
             this.curr_key = undefined;
@@ -122,7 +113,8 @@ export class ListCursor {
         }
         const key = this.list.prev_key(this.curr_key);
         if (key === undefined) {
-            // leave the current key
+            // leave the current key and focus search input
+            this.$search_input.trigger("focus");
             return;
         }
         this.go_to(key);
@@ -141,5 +133,68 @@ export class ListCursor {
             return;
         }
         this.go_to(key);
+    }
+
+    focus_vdot_icon() {
+        if (this.curr_key !== undefined && this.vdot_icon_class !== undefined) {
+            const row = this.get_row(this.curr_key);
+            const $vdot_icon = row.$li.find(`.${CSS.escape(this.vdot_icon_class)}`);
+
+            $vdot_icon.trigger("focus");
+        }
+    }
+
+    on_select(key) {
+        const row = this.get_row(key);
+        let is_vdot_icon_focused = false;
+        let $vdot_icon;
+        if (this.vdot_icon_class !== undefined) {
+            $vdot_icon = row.$li.find(`.${CSS.escape(this.vdot_icon_class)}`);
+            is_vdot_icon_focused = $vdot_icon.is(":focus");
+        }
+
+        if (is_vdot_icon_focused) {
+            $vdot_icon.trigger("click");
+        } else {
+            this._on_select(key);
+        }
+    }
+
+    handle_navigation() {
+        this.$search_input.on("focus", () => this.clear());
+
+        keydown_util.handle({
+            $elem: this.$search_input,
+            handlers: {
+                ArrowDown: () => {
+                    this.next();
+                    return true;
+                },
+            },
+        });
+
+        keydown_util.handle({
+            $elem: this.list.$container,
+            handlers: {
+                ArrowDown: () => {
+                    this.next();
+                    return true;
+                },
+                ArrowUp: () => {
+                    this.prev();
+                    return true;
+                },
+                Enter: () => {
+                    if (this.curr_key !== undefined) {
+                        this.on_select(this.curr_key);
+                    }
+                    return true;
+                },
+                Tab: () => {
+                    this.focus_vdot_icon();
+                    return true;
+                },
+            },
+        });
     }
 }

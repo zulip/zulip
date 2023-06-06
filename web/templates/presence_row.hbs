@@ -1,4 +1,4 @@
-<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if is_current_user}}user_sidebar_entry_me {{/if}}{{#if num_unread}} user-with-count {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
+<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if is_current_user}}user_sidebar_entry_me {{/if}}{{#if num_unread}} user-with-count {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}" tabindex="0">
     <div class="selectable_sidebar_block">
         <span class="{{user_circle_class}} user_circle"></span>
         <a class="user-presence-link"
@@ -20,5 +20,5 @@
         </a>
         <span class="unread_count">{{#if num_unread}}{{num_unread}}{{/if}}</span>
     </div>
-    <span class="user-list-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
+    <span class="user-list-sidebar-menu-icon" tabindex="0"><i class="zulip-icon zulip-icon-ellipsis-v-solid"></i></span>
 </li>

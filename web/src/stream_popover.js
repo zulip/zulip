@@ -413,6 +413,8 @@ export function register_click_handlers() {
             elt,
             stream_id,
         });
+
+        $(".streams_popover").trigger("focus");
     });
 
     $("body").on("click keypress", ".move-topic-dropdown .list_item", (e) => {

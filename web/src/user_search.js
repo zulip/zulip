@@ -15,13 +15,11 @@ export class UserSearch {
     constructor(opts) {
         this._reset_items = opts.reset_items;
         this._update_list = opts.update_list;
-        this._on_focus = opts.on_focus;
 
         $("#clear_search_people_button").on("click", () => this.clear_search());
         $("#userlist-header").on("click", () => this.toggle_filter_displayed());
 
         this.$input.on("input", opts.update_list);
-        this.$input.on("focus", (e) => this.on_focus(e));
     }
 
     input_field() {
@@ -116,10 +114,5 @@ export class UserSearch {
         } else {
             this.clear_and_hide_search();
         }
-    }
-
-    on_focus(e) {
-        this._on_focus();
-        e.stopPropagation();
     }
 }

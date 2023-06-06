@@ -242,6 +242,8 @@ function buddy_list_add(user_id, $stub) {
         $stub.attr("data-user-id", user_id);
     }
     $stub.length = 1;
+    $stub.set_find_results(".user-list-sidebar-menu-icon", $.create(`menu-icon-${user_id}`));
+
     const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
     $("#user_presences").set_find_results(sel, $stub);
 }
@@ -269,14 +271,19 @@ test("PM_update_dom_counts", () => {
 
 test("handlers", ({override, mock_template}) => {
     let filter_key_handlers;
+    let search_bar_handlers;
 
     mock_template("presence_rows.hbs", false, () => {});
 
     override(keydown_util, "handle", (opts) => {
+        if (opts.$elem.selector === ".user-list-filter") {
+            search_bar_handlers = opts.handlers;
+            return;
+        }
         filter_key_handlers = opts.handlers;
     });
-    override(scroll_util, "scroll_element_into_container", () => {});
     override(padded_widget, "update_padding", () => {});
+    override(scroll_util, "scroll_element_into_container", () => {});
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
     override(popovers, "show_userlist_sidebar", () => {});
@@ -301,6 +308,7 @@ test("handlers", ({override, mock_template}) => {
             keys: [me.user_id, alice.user_id, fred.user_id],
         });
         activity.set_cursor_and_filter();
+        activity.user_cursor.handle_navigation();
         $("#user_presences").empty = () => {};
 
         $me_li = $.create("me stub");
@@ -314,6 +322,7 @@ test("handlers", ({override, mock_template}) => {
 
     (function test_filter_keys() {
         init();
+        search_bar_handlers.ArrowDown();
         activity.user_cursor.go_to(alice.user_id);
         filter_key_handlers.ArrowDown();
         filter_key_handlers.ArrowUp();
@@ -355,6 +364,14 @@ test("handlers", ({override, mock_template}) => {
         filter_key_handlers.Enter();
     })();
 
+    (function test_tab_handler() {
+        init();
+
+        activity.user_cursor.go_to(alice.user_id);
+        filter_key_handlers.Tab();
+        filter_key_handlers.Enter();
+    })();
+
     (function test_click_handler() {
         init();
         // We wire up the click handler in click_handlers.js,
@@ -362,13 +379,6 @@ test("handlers", ({override, mock_template}) => {
         narrowed = false;
         activity.narrow_for_user({$li: $alice_li});
         assert.ok(narrowed);
-    })();
-
-    (function test_blur_filter() {
-        init();
-        const e = {};
-        const handler = $(".user-list-filter").get_on_handler("blur");
-        handler(e);
     })();
 });
 

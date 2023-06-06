@@ -25,7 +25,7 @@ function basic_conf({first_key, prev_key, next_key}) {
 
     const conf = {
         list,
-        highlight_class: "highlight",
+        $search_input: $.create("search-input-stub"),
     };
 
     return conf;
@@ -70,15 +70,20 @@ run_test("single item list", ({override}) => {
     });
     const cursor = new ListCursor(conf);
 
+    let focused = false;
     const $li_stub = {
         length: 1,
         addClass() {},
+        trigger() {
+            focused = true;
+        },
     };
 
     override(conf.list, "find_li", () => $li_stub);
     override(cursor, "adjust_scroll", () => {});
 
     cursor.go_to(valid_key);
+    assert.ok(focused);
 
     // Test prev/next, which should just silently do nothing.
     cursor.prev();
@@ -112,30 +117,27 @@ run_test("multiple item list", ({override}) => {
 
     cursor.go_to(2);
     assert.equal(cursor.get_key(), 2);
-    assert.ok(!list_items[1].hasClass("highlight"));
-    assert.ok(list_items[2].hasClass("highlight"));
-    assert.ok(!list_items[3].hasClass("highlight"));
+    assert.ok(list_items[2].is_focused());
 
     cursor.next();
     cursor.next();
     cursor.next();
 
     assert.equal(cursor.get_key(), 3);
-    assert.ok(!list_items[1].hasClass("highlight"));
-    assert.ok(!list_items[2].hasClass("highlight"));
-    assert.ok(list_items[3].hasClass("highlight"));
+    assert.ok(list_items[3].is_focused());
 
     cursor.prev();
     cursor.prev();
     cursor.prev();
 
     assert.equal(cursor.get_key(), 1);
-    assert.ok(list_items[1].hasClass("highlight"));
-    assert.ok(!list_items[2].hasClass("highlight"));
-    assert.ok(!list_items[3].hasClass("highlight"));
+    assert.ok(list_items[1].is_focused());
 
     cursor.clear();
     assert.equal(cursor.get_key(), undefined);
     cursor.redraw();
-    assert.ok(!list_items[1].hasClass("highlight"));
+
+    // Following is a noop designed to give us test coverage.
+    cursor.go_to(2);
+    cursor.redraw();
 });

@@ -303,9 +303,18 @@ li.show-more-topics {
         background-color: var(--color-background-hover-narrow-filter);
         border-radius: 4px;
     }
+
+    #stream_filters .narrow-filter:focus {
+        outline: none;
+
+        & .bottom_left_row {
+            background-color: var(--color-background-hover-narrow-filter);
+            border-radius: 4px;
+        }
+    }
 }
 
-#stream_filters .narrow-filter.highlighted_stream {
+#stream_filters .narrow-filter:focus {
     &.active-filter > .bottom_left_row {
         background-color: var(--color-background-hover-narrow-filter);
     }
@@ -569,7 +578,8 @@ li.top_left_scheduled_messages {
         show it in black.
     */
 
-    &:hover {
+    &:hover,
+    &:focus {
         color: hsl(0deg 0% 0%) !important;
     }
 
@@ -621,6 +631,7 @@ li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
 li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
 li.top_left_drafts:hover .drafts-sidebar-menu-icon,
 #stream_filters li:hover .stream-sidebar-menu-icon,
+#stream_filters li:focus-within .stream-sidebar-menu-icon,
 li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;
     cursor: pointer;
