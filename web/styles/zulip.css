@@ -3171,3 +3171,46 @@ select.invite-as {
         border-radius: 4px;
     }
 }
+
+.gear-menu-tippy {
+    .tippy-box {
+        border: 0;
+    }
+
+    .tippy-content {
+        padding: 0;
+    }
+
+    .tippy-arrow {
+        position: absolute;
+        left: 50%;
+        top: -5.5px !important;
+        width: 16px;
+        height: 8px;
+        z-index: 1;
+        transform: translateX(-50%);
+        filter: drop-shadow(0 -1.25px 0 hsl(0deg 0% 0% / 40%));
+
+        border: none;
+        border-width: 0;
+        margin: 0 !important;
+
+        &::before {
+            display: none;
+        }
+
+        &::after {
+            border: 0 !important;
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            mask-image: url("../shared/icons/popover-arrow.svg");
+            mask-size: contain;
+            mask-repeat: no-repeat;
+            background-color: var(--bg-popover-light);
+        }
+    }
+}

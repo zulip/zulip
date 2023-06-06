@@ -1588,6 +1588,12 @@
             }
         }
     }
+
+    .gear-menu-tippy {
+        .tippy-arrow::after {
+            background-color: var(--bg-popover-dark);
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {
