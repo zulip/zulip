@@ -527,6 +527,12 @@ p.n-margin {
     display: block;
     position: relative;
     margin: 0;
+    overflow-x: hidden;
+    max-height: 90vh;
+
+    .simplebar-content {
+        min-width: max-content;
+    }
 
     .org-info {
         padding: 6px 5% 10px;
