@@ -94,7 +94,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         )
 
     def _generate_ctag(self, queue_name: str) -> str:
-        return f"{queue_name}_{str(random.getrandbits(16))}"
+        return f"{queue_name}_{random.getrandbits(16)}"
 
     def _reconnect_consumer_callback(self, queue: str, consumer: Consumer[ChannelT]) -> None:
         self.log.info("Queue reconnecting saved consumer %r to queue %s", consumer, queue)
