@@ -963,6 +963,10 @@ export function initialize() {
             const $popper = $(instance.popper);
             $popper.addClass("gear-menu-tippy");
             popover_instances.gear_menu = instance;
+            $(".focus-dropdown").on("focus", (e) => {
+                e.preventDefault();
+                $("#gear-menu").find(".org-version a").trigger("focus");
+            });
         },
         onShow(instance) {
             const rendered_gear_menu = render_gear_menu({
