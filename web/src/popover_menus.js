@@ -90,6 +90,11 @@ export function sidebar_menu_instance_handle_keyboard(instance, key) {
 export function get_visible_instance() {
     return Object.values(popover_instances).find(Boolean);
 }
+
+export function get_current_user_card_instance() {
+    return popover_instances.user_card;
+}
+
 export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
@@ -148,6 +153,11 @@ function get_popover_items_for_instance(instance) {
     }
 
     return $current_elem.find("li:not(.divider):visible a");
+}
+
+export function user_info_popover_handle_keyboard(key) {
+    const $items = get_popover_items_for_instance(get_current_user_card_instance());
+    popovers.popover_items_handle_keyboard(key, $items);
 }
 
 export const default_popover_props = {

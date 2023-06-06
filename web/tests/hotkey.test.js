@@ -65,6 +65,7 @@ const overlays = mock_esm("../src/overlays", {
 });
 const popover_menus = mock_esm("../src/popover_menus", {
     get_visible_instance: () => undefined,
+    get_current_user_card_instance: () => undefined,
 });
 const reactions = mock_esm("../src/reactions");
 const search = mock_esm("../src/search");
