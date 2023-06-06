@@ -104,7 +104,7 @@ class Equals:
     def schema(self, var_name: str) -> str:
         # Treat Equals as the degenerate case of EnumType, which
         # matches how we do things with OpenAPI.
-        return f"{var_name} in {repr([self.expected_value])}"
+        return f"{var_name} in {[self.expected_value]!r}"
 
 
 class NumberType:
