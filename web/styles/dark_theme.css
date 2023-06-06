@@ -685,6 +685,17 @@
     }
 
     #gear-menu {
+        .dropdown-menu {
+            background-color: var(--bg-popover-dark);
+            border-color: hsl(0deg 0% 0%);
+            box-shadow: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+                0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+                0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+                0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+                0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+                0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+        }
+
         .dark-theme {
             display: none;
         }
@@ -695,6 +706,21 @@
 
         .dropdown-menu a:hover {
             color: hsl(0deg 0% 100%);
+        }
+
+        .org-info {
+            color: hsl(0deg 0% 60% / 100%);
+            border-color: hsl(0deg 0% 0% / 40%);
+        }
+
+        .org-name {
+            color: hsl(0deg 0% 100% / 100%);
+        }
+
+        .org-version {
+            & a:hover {
+                color: var(--color-link-blue);
+            }
         }
     }
 
@@ -1535,6 +1561,29 @@
             &:hover {
                 .save-discard-widget-button-text {
                     color: hsl(0deg 0% 100%);
+                }
+            }
+        }
+    }
+
+    .popover-menu {
+        background-color: var(--bg-popover-dark);
+
+        .list {
+            border-color: hsl(0deg 0% 0% / 40%);
+        }
+
+        .link-item {
+            & a {
+                color: hsl(0deg 0% 100% / 80%);
+
+                &:hover,
+                &:focus {
+                    background: hsl(0deg 0% 100% / 5%);
+                }
+
+                &:active {
+                    background: hsl(0deg 0% 100% / 10%);
                 }
             }
         }

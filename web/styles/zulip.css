@@ -154,6 +154,9 @@ body {
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
+    --color-icon-purple: hsl(240deg 35% 60%);
+    --color-link-blue: hsl(217deg 100% 50% / 100%);
+    --bg-popover-light: hsl(0deg 0% 100%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -196,6 +199,7 @@ body {
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-background-modal: hsl(212deg 28% 18%);
+    --bg-popover-dark: hsl(0deg 0% 17%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -520,13 +524,20 @@ p.n-margin {
 }
 
 #gear-menu .dropdown-menu {
-    .org-name,
-    .org-url {
-        padding: 0 20px;
-    }
+    display: block;
+    position: relative;
+    margin: 0;
 
     .org-info {
+        padding: 6px 5% 10px;
+        border-bottom: solid 1px hsl(0deg 0% 0% / 10%);
         text-align: center;
+        white-space: normal;
+    }
+
+    .org-name,
+    .org-url {
+        line-height: 125%;
 
         & a {
             white-space: normal;
@@ -534,25 +545,36 @@ p.n-margin {
     }
 
     .org-name {
-        font-size: large;
+        font-size: 17px;
         font-weight: bold;
+        margin: 0 0 1px;
+        color: hsl(0deg 0% 15% / 100%);
     }
 
     .org-url {
-        line-height: 100%;
-        color: hsl(0deg 0% 52%);
+        font-size: 14px;
+        color: hsl(0deg 0% 40% / 100%);
+        margin-bottom: 7px;
     }
 
     .org-version {
-        padding-top: 3px;
-        white-space: normal;
+        font-size: 15px;
+        line-height: 125%;
+        margin: 0;
+
+        & a {
+            color: var(--color-link-blue);
+
+            &:focus {
+                outline: none;
+            }
+        }
     }
 
     .org-upgrade {
-        color: hsl(226deg 82% 60%);
-
         & a {
-            padding: 0;
+            color: var(--color-link-blue);
+            line-height: 125%;
         }
     }
 
@@ -1008,37 +1030,6 @@ li.actual-dropdown-menu > a:focus {
     background-image: none;
     filter: none;
     outline: 0;
-}
-
-li.actual-dropdown-menu i {
-    /* In gear menu, make icons the same width so labels line up. */
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
-}
-
-#gear_menu_about_zulip {
-    .white_zulip_icon_without_text {
-        position: relative;
-        top: 3px;
-        width: 14px;
-        height: 14px;
-        margin-right: 3px;
-        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
-            brightness(20%) contrast(95%);
-    }
-
-    .about_zulip_text {
-        position: relative;
-        top: 1.4px;
-    }
-
-    :hover {
-        .white_zulip_icon_without_text {
-            filter: none;
-        }
-    }
 }
 
 td.pointer {

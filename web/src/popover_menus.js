@@ -12,6 +12,7 @@ import render_compose_control_buttons_popover from "../templates/compose_control
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
+import render_gear_menu from "../templates/gear_menu.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 import render_send_later_modal from "../templates/send_later_modal.hbs";
@@ -38,6 +39,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
@@ -67,6 +69,7 @@ const popover_instances = {
     compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
+    gear_menu: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -330,6 +333,37 @@ export function do_schedule_message(send_at_time) {
     }
     selected_send_later_timestamp = send_at_time;
     compose.finish(true);
+}
+
+function version_display_string() {
+    const version = page_params.zulip_version;
+    const is_fork = page_params.zulip_merge_base && page_params.zulip_merge_base !== version;
+
+    if (page_params.zulip_version.endsWith("-dev+git")) {
+        // The development environment uses this version string format.
+        return $t({defaultMessage: "Zulip Server dev environment"});
+    }
+
+    if (is_fork) {
+        // For forks, we want to describe the Zulip version this was
+        // forked from, and that it was modified.
+        const display_version = page_params.zulip_merge_base
+            .replace(/\+git.*/, "")
+            .replace(/-dev.*/, "-dev");
+        return $t({defaultMessage: "Zulip Server {display_version} (modified)"}, {display_version});
+    }
+
+    // The below cases are all for official versions; either a
+    // release, or Git commit from one of Zulip's official branches.
+
+    if (version.includes("+git")) {
+        // A version from a Zulip official maintenance branch such as 5.x.
+        const display_version = version.replace(/\+git.*/, "");
+        return $t({defaultMessage: "Zulip Server {display_version} (patched)"}, {display_version});
+    }
+
+    const display_version = version.replace(/\+git.*/, "").replace(/-dev.*/, "-dev");
+    return $t({defaultMessage: "Zulip Server {display_version}"}, {display_version});
 }
 
 export function initialize() {
@@ -919,6 +953,48 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.send_later = undefined;
+        },
+    });
+
+    register_popover_menu("#navbar-buttons", {
+        placement: "bottom",
+        offset: [-50, 0],
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("gear-menu-tippy");
+            popover_instances.gear_menu = instance;
+        },
+        onShow(instance) {
+            const rendered_gear_menu = render_gear_menu({
+                realm_name: page_params.realm_name,
+                realm_url: new URL(page_params.realm_uri).hostname,
+                is_owner: page_params.is_owner,
+                is_admin: page_params.is_admin,
+                is_self_hosted: page_params.realm_plan_type === 1,
+                is_plan_limited: page_params.realm_plan_type === 2,
+                is_plan_standard: page_params.realm_plan_type === 3,
+                is_plan_standard_sponsored_for_free: page_params.realm_plan_type === 4,
+                is_business_org: page_params.realm_org_type === 10,
+                is_education_org:
+                    page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
+                standard_plan_name: "Zulip Cloud Standard",
+                server_needs_upgrade: page_params.server_needs_upgrade,
+                version_display_string: version_display_string(),
+                apps_page_url: page_params.apps_page_url,
+                can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+                corporate_enabled: page_params.corporate_enabled,
+                is_guest: page_params.is_guest,
+                login_link: page_params.development_environment ? "/devlogin/" : "/login/",
+                promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
+                show_billing: page_params.show_billing,
+                show_plans: page_params.show_plans,
+                show_webathena: page_params.show_webathena,
+            });
+            instance.setContent(parse_html(rendered_gear_menu));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.gear_menu = undefined;
         },
     });
 }
