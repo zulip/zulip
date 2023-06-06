@@ -40,6 +40,12 @@ export function get_item(key, config, file_id) {
                 return `#compose_banners .upload_banner.file_${CSS.escape(file_id)}`;
             case "upload_banner":
                 return $(`#compose_banners .upload_banner.file_${CSS.escape(file_id)}`);
+            case "upload_banner_cancel_button":
+                return $(
+                    `#compose_banners .upload_banner.file_${CSS.escape(
+                        file_id,
+                    )} .upload_banner_cancel_button`,
+                );
             case "upload_banner_close_button":
                 return $(
                     `#compose_banners .upload_banner.file_${CSS.escape(
@@ -82,6 +88,12 @@ export function get_item(key, config, file_id) {
                         file_id,
                     )}`,
                 );
+            case "upload_banner_cancel_button":
+                return $(
+                    `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
+                        file_id,
+                    )} .upload_banner_cancel_button`,
+                );
             case "upload_banner_close_button":
                 return $(
                     `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
@@ -117,9 +129,16 @@ export function hide_upload_banner(uppy, config, file_id) {
     }
 }
 
-function add_upload_banner(config, banner_type, banner_text, file_id) {
+function add_upload_banner(
+    config,
+    banner_type,
+    banner_text,
+    file_id,
+    is_upload_process_tracker = false,
+) {
     const new_banner = render_upload_banner({
         banner_type,
+        is_upload_process_tracker,
         banner_text,
         file_id,
     });
@@ -199,8 +218,9 @@ export async function upload_files(uppy, config, files) {
             "info",
             $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name}),
             file.id,
+            true,
         );
-        get_item("upload_banner_close_button", config, file.id).one("click", () => {
+        get_item("upload_banner_cancel_button", config, file.id).one("click", () => {
             compose_ui.replace_syntax(
                 get_translated_status(file),
                 "",
@@ -210,6 +230,9 @@ export async function upload_files(uppy, config, files) {
             get_item("textarea", config).trigger("focus");
 
             uppy.removeFile(file.id);
+            hide_upload_banner(uppy, config, file.id);
+        });
+        get_item("upload_banner_close_button", config, file.id).one("click", () => {
             hide_upload_banner(uppy, config, file.id);
         });
     }
