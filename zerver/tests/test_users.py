@@ -781,6 +781,7 @@ class QueryCountTest(ZulipTestCase):
             user_profile=self.example_user("hamlet"),
             invitee_emails=["fred@zulip.com"],
             streams=streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
@@ -1481,6 +1482,7 @@ class ActivateTest(ZulipTestCase):
             iago,
             ["new1@zulip.com", "new2@zulip.com"],
             [],
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
@@ -1488,6 +1490,7 @@ class ActivateTest(ZulipTestCase):
             desdemona,
             ["new3@zulip.com", "new4@zulip.com"],
             [],
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
@@ -1496,6 +1499,7 @@ class ActivateTest(ZulipTestCase):
             iago,
             ["new5@zulip.com"],
             [],
+            send_notification=True,
             invite_expires_in_minutes=None,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
@@ -1503,6 +1507,7 @@ class ActivateTest(ZulipTestCase):
             desdemona,
             ["new6@zulip.com"],
             [],
+            send_notification=True,
             invite_expires_in_minutes=None,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )

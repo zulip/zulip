@@ -36,6 +36,8 @@ function reset_error_messages() {
 function get_common_invitation_data() {
     const invite_as = Number.parseInt($("#invite_as").val(), 10);
     let expires_in = $("#expires_in").val();
+    const send_notification = $("#send_notification").is(":checked");
+
     // See settings_config.expires_in_values for why we do this conversion.
     if (expires_in === "null") {
         expires_in = JSON.stringify(null);
@@ -59,6 +61,7 @@ function get_common_invitation_data() {
     const data = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
+        send_notification,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: expires_in,
     };
@@ -297,6 +300,7 @@ function open_invite_user_modal(e) {
             );
             $("#multiuse_radio_section").hide();
             $("#invite-method-choice").show();
+            $("#notification").show();
             toggle_invite_submit_button();
             reset_error_messages();
         });
@@ -314,6 +318,7 @@ function open_invite_user_modal(e) {
                 $t({defaultMessage: "Generating link..."}),
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            $("#notification").hide();
             reset_error_messages();
         });
 

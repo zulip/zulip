@@ -3627,6 +3627,7 @@ class UserSignUpTest(ZulipTestCase):
                     "invitee_emails": email,
                     "stream_ids": orjson.dumps(stream_ids).decode(),
                     "invite_as": invite_as,
+                    "send_notification": "true",
                 },
             )
             self.assert_json_success(response)

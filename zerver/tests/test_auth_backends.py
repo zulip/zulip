@@ -1545,7 +1545,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         realm = get_realm("zulip")
 
         iago = self.example_user("iago")
-        do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
+        do_invite_users(
+            iago, [email], [], send_notification=True, invite_expires_in_minutes=2 * 24 * 60
+        )
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1892,6 +1894,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             iago,
             [email],
             [],
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )

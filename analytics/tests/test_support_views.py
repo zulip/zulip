@@ -59,6 +59,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     "stream_ids": orjson.dumps([self.get_stream_id(stream, realm)]).decode(),
                     "invite_expires_in_minutes": invite_expires_in_minutes,
                     "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                    "send_notification": "true",
                 },
                 subdomain=realm.string_id if realm is not None else "zulip",
             )

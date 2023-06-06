@@ -849,6 +849,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
+                send_notification=True,
                 invite_expires_in_minutes=invite_expires_in_minutes,
             ),
             state_change_expected=False,
@@ -881,6 +882,7 @@ class NormalActionsTest(BaseAction):
             user_profile,
             ["foo@zulip.com"],
             [],
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
@@ -902,6 +904,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile,
             ["foo@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         prereg_users = PreregistrationUser.objects.filter(
@@ -947,6 +950,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile,
             ["foo@zulip.com"],
             streams,
+            send_notification=True,
             invite_expires_in_minutes=invite_expires_in_minutes,
         )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
