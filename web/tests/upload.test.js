@@ -50,6 +50,10 @@ test("get_item", () => {
         $("#compose_banners .upload_banner.file_id_1 .upload_msg"),
     );
     assert.equal(
+        upload.get_item("upload_banner_cancel_button", {mode: "compose"}, "id_2"),
+        $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button"),
+    );
+    assert.equal(
         upload.get_item("upload_banner_close_button", {mode: "compose"}, "id_2"),
         $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
     );
@@ -82,6 +86,15 @@ test("get_item", () => {
     assert.equal(
         upload.get_item("upload_banner", {mode: "edit", row: 75}, "id_60"),
         $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`),
+    );
+
+    $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
+        ".upload_banner_cancel_button",
+        $(".upload_banner_cancel_button"),
+    );
+    assert.equal(
+        upload.get_item("upload_banner_cancel_button", {mode: "edit", row: 2}, "id_34"),
+        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .upload_banner_cancel_button`),
     );
 
     $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
@@ -240,7 +253,8 @@ test("upload_files", async ({mock_template, override_rewire}) => {
 
     page_params.max_file_upload_size_mib = 25;
     let on_click_close_button_callback;
-    $("#compose_banners .upload_banner.file_id_123 .main-view-banner-close-button").one = (
+
+    $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").one = (
         event,
         callback,
     ) => {

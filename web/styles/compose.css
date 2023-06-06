@@ -292,7 +292,8 @@
         flex-grow: 1;
     }
 
-    .main-view-banner-action-button {
+    .main-view-banner-action-button,
+    .upload_banner_cancel_button {
         border: none;
         border-radius: 4px;
         padding: 5px 10px;
@@ -431,7 +432,8 @@
             }
         }
 
-        .main-view-banner-action-button {
+        .main-view-banner-action-button,
+        .upload_banner_cancel_button {
             background-color: hsl(204deg 49% 29% / 10%);
             color: inherit;
 
@@ -464,8 +466,13 @@
         bottom: 0;
     }
 
+    .upload_msg {
+        flex-grow: 1;
+    }
+
     .upload_msg,
-    .main-view-banner-close-button {
+    .main-view-banner-close-button,
+    .upload_banner_cancel_button {
         z-index: 1;
         position: relative;
     }

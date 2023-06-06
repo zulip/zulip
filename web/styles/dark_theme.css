@@ -332,7 +332,8 @@
                 }
             }
 
-            .main-view-banner-action-button {
+            .main-view-banner-action-button,
+            .upload_banner_cancel_button {
                 background-color: hsl(205deg 58% 69% / 10%);
                 border-color: transparent;
                 color: hsl(205deg 58% 69%);
