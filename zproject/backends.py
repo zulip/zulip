@@ -867,7 +867,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if "full_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
             full_name = ldap_user.attrs[full_name_attr][0]
-        elif all(key in settings.AUTH_LDAP_USER_ATTR_MAP for key in {"first_name", "last_name"}):
+        elif all(key in settings.AUTH_LDAP_USER_ATTR_MAP for key in ["first_name", "last_name"]):
             first_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["first_name"]
             last_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["last_name"]
             first_name = ldap_user.attrs[first_name_attr][0]
