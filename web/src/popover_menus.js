@@ -1250,4 +1250,28 @@ export function initialize() {
         },
         ...user_card_options,
     });
+
+    const message_user_info_popovers = [".sender_name_user_card", ".profile_picture"];
+
+    for (const target of message_user_info_popovers) {
+        register_popover_menu(target, {
+            placement: "right",
+            onCreate(instance) {
+                const $row = $(instance.reference).closest(".message_row");
+                const message = message_lists.current.get(rows.id($row));
+                const user = people.get_by_user_id(message.sender_id);
+                message_lists.current.select_id(message.id);
+
+                if (user === undefined) {
+                    // This is never supposed to happen, not even for deactivated
+                    // users, so we'll need to debug this error if it occurs.
+                    blueslip.error("Bad sender in message" + message.sender_id);
+                    return;
+                }
+                const is_sender_popover = message.sender_id === user.user_id;
+                instance.context = {user, is_sender_popover, has_message_context: true};
+            },
+            ...user_card_options,
+        });
+    }
 }
