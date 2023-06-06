@@ -2077,34 +2077,27 @@ div.focused_table {
     display: inline-block;
     float: right;
 
+    .dropdown-toggle {
+        font-size: 20px;
+        color: inherit;
+        opacity: 0.5;
+        text-shadow: none;
+        padding-left: 0 !important;
+        background-color: inherit;
+        box-shadow: inherit;
+        display: block;
+        position: absolute;
+        right: 6px;
+        top: -3px;
+    }
+
+    .dropdown-toggle:hover {
+        opacity: 1;
+        text-decoration: none;
+    }
+
     & ul.nav {
         margin: 0;
-
-        .dropdown-toggle,
-        li.active .dropdown-toggle {
-            font-size: 20px;
-            color: inherit;
-            opacity: 0.5;
-            text-shadow: none;
-            padding-left: 0 !important;
-            background-color: inherit;
-            box-shadow: inherit;
-            display: block;
-            position: absolute;
-            right: 6px;
-            top: -3px;
-        }
-
-        .dropdown-toggle:hover,
-        li.active .dropdown-toggle:hover {
-            opacity: 1;
-        }
-
-        & li.dropdown.open .dropdown-toggle {
-            background: none;
-            opacity: 1;
-            text-shadow: none;
-        }
 
         & li.dropdown li.divider {
             margin-left: 15px;
@@ -2160,27 +2153,10 @@ div.focused_table {
 }
 
 .nav .dropdown-menu {
-    left: auto;
-    right: 0;
-    top: 30px;
     /* Match the width of the right sidebar so that we don't have
        the presence dots distracting you when looking at this. */
     min-width: 240px;
     box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
-
-    &::after {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: -7px;
-        right: 19px;
-        display: inline-block;
-        border-right: 7px solid transparent;
-        border-bottom: 7px solid hsl(0deg 0% 67%);
-        border-left: 7px solid transparent;
-        content: "";
-        z-index: 10;
-    }
 }
 
 #gear-menu .zulip-icon-language {
@@ -2955,11 +2931,6 @@ select.invite-as {
         height: var(--header-height);
         padding-top: 0;
         padding-bottom: 0;
-    }
-
-    #navbar-buttons ul.nav .dropdown-toggle,
-    #navbar-buttons ul.nav li.active .dropdown-toggle {
-        top: -8px;
     }
 
     .messagebox-content {
