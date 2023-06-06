@@ -699,6 +699,15 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ################
 ## Miscellaneous settings.
 
+## If you host multiple organizations on the same Zulip server, you
+## can customize the hostname that one of them uses by adding it here.
+## See https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html#other-hostnames
+## Note that you still need SSL certificates for this other custom hostname:
+## https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html#ssl-certificates
+# REALM_HOSTS = {
+#     "example": "hostname.example.com",
+# }
+
 ## How long outgoing webhook requests time out after
 # OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 
