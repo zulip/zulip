@@ -35,7 +35,6 @@ import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
-import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotkey from "./hotkey";
@@ -724,7 +723,6 @@ export function initialize_everything() {
     tutorial.initialize();
     notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
     unread_ops.initialize();
-    gear_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
     settings_display.initialize();
