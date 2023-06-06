@@ -1189,7 +1189,7 @@ Output:
         if actual_count != count:  # nocoverage
             print("\nITEMS:\n")
             for index, query in enumerate(queries):
-                print(f"#{index + 1}\nsql: {str(query['sql'])}\ntime: {query['time']}\n")
+                print(f"#{index + 1}\nsql: {str(query.sql)}\ntime: {query.time}\n")
             print(f"expected count: {count}\nactual count: {actual_count}")
             raise AssertionError(
                 f"""
