@@ -5,6 +5,7 @@ import render_search_list_item from "../templates/search_list_item.hbs";
 import {Filter} from "./filter";
 import * as keydown_util from "./keydown_util";
 import * as message_view_header from "./message_view_header";
+import * as narrow_state from "./narrow_state";
 import * as search_suggestion from "./search_suggestion";
 
 // Exported for unit testing
@@ -72,6 +73,12 @@ export function initialize({on_narrow_search}) {
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
         on_escape: message_view_header.exit_search,
+        closeInputFieldOnHide() {
+            const filter = narrow_state.filter();
+            if (!filter || filter.is_common_narrow()) {
+                message_view_header.close_search_bar_and_open_narrow_description();
+            }
+        },
     });
 
     $searchbox_form.on("compositionend", () => {
