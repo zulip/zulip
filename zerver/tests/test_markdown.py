@@ -51,6 +51,7 @@ from zerver.lib.mention import (
     possible_mentions,
     possible_user_group_mentions,
     stream_wildcards,
+    topic_wildcards,
 )
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
@@ -1826,6 +1827,20 @@ class MarkdownTest(ZulipTestCase):
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)
 
+    def test_mention_topic_wildcard(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        for topic_wildcard in topic_wildcards:
+            content = f"@**{topic_wildcard}** test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f'<p><span class="topic-mention">@{topic_wildcard}</span> test</p>',
+            )
+            self.assertTrue(rendering_result.mentions_topic_wildcard)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+
     def test_mention_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
@@ -1837,7 +1852,20 @@ class MarkdownTest(ZulipTestCase):
                 rendering_result.rendered_content,
                 f'<p><span class="user-mention" data-user-id="*">@{stream_wildcard}</span> test</p>',
             )
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
             self.assertTrue(rendering_result.mentions_stream_wildcard)
+
+    def test_mention_at_topic_wildcard(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        for topic_wildcard in topic_wildcards:
+            content = f"@{topic_wildcard} test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(rendering_result.rendered_content, f"<p>@{topic_wildcard} test</p>")
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_mention_at_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
@@ -1847,6 +1875,7 @@ class MarkdownTest(ZulipTestCase):
             content = f"@{stream_wildcard} test"
             rendering_result = render_markdown(msg, content)
             self.assertEqual(rendering_result.rendered_content, f"<p>@{stream_wildcard} test</p>")
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
             self.assertFalse(rendering_result.mentions_stream_wildcard)
             self.assertEqual(rendering_result.mentions_user_ids, set())
 
@@ -1952,6 +1981,19 @@ class MarkdownTest(ZulipTestCase):
                 f'<p><span class="user-mention silent" data-user-id="*">{wildcard}</span></p>',
             )
             self.assertFalse(rendering_result.mentions_stream_wildcard)
+
+    def test_silent_topic_wildcard_mention(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        for wildcard in topic_wildcards:
+            content = f"@_**{wildcard}**"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f'<p><span class="topic-mention silent">{wildcard}</span></p>',
+            )
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
 
     def test_mention_invalid_followed_by_valid(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2125,8 +2167,30 @@ class MarkdownTest(ZulipTestCase):
             rendering_result = render_markdown(message, content)
             self.assertEqual(rendering_result.rendered_content, expected)
             self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
 
         for wildcard in stream_wildcards:
+            assert_silent_mention(f"> @**{wildcard}**", wildcard)
+            assert_silent_mention(f"> @_**{wildcard}**", wildcard)
+            assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
+            assert_silent_mention(f"```quote\n@_**{wildcard}**\n```", wildcard)
+
+    def test_topic_wildcard_mention_in_quotes(self) -> None:
+        user_profile = self.example_user("othello")
+        message = Message(sender=user_profile, sending_client=get_client("test"))
+
+        def assert_silent_mention(content: str, wildcard: str) -> None:
+            expected = (
+                "<blockquote>\n<p>"
+                f'<span class="topic-mention silent">{wildcard}</span>'
+                "</p>\n</blockquote>"
+            )
+            rendering_result = render_markdown(message, content)
+            self.assertEqual(rendering_result.rendered_content, expected)
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertFalse(rendering_result.mentions_topic_wildcard)
+
+        for wildcard in topic_wildcards:
             assert_silent_mention(f"> @**{wildcard}**", wildcard)
             assert_silent_mention(f"> @_**{wildcard}**", wildcard)
             assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)

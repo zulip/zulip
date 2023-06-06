@@ -113,6 +113,7 @@ class LinkInfo(TypedDict):
 @dataclass
 class MessageRenderingResult:
     rendered_content: str
+    mentions_topic_wildcard: bool
     mentions_stream_wildcard: bool
     mentions_user_ids: Set[int]
     mentions_user_group_ids: Set[int]
@@ -1777,6 +1778,7 @@ class UserMentionPattern(CompiledInlineProcessor):
         silent = m.group("silent") == "_"
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         if db_data is not None:
+            topic_wildcard = mention.user_mention_matches_topic_wildcard(name)
             stream_wildcard = mention.user_mention_matches_stream_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
@@ -1796,10 +1798,14 @@ class UserMentionPattern(CompiledInlineProcessor):
                 # For @**name** syntax.
                 user = db_data.mention_data.get_user_by_name(name)
 
+            user_id = None
             if stream_wildcard:
                 if not silent:
                     self.zmd.zulip_rendering_result.mentions_stream_wildcard = True
                 user_id = "*"
+            elif topic_wildcard:
+                if not silent:
+                    self.zmd.zulip_rendering_result.mentions_topic_wildcard = True
             elif user is not None:
                 assert isinstance(user, FullNameInfo)
 
@@ -1812,13 +1818,16 @@ class UserMentionPattern(CompiledInlineProcessor):
                 return None, None, None
 
             el = Element("span")
-            el.set("data-user-id", user_id)
-            text = f"{name}"
-            if silent:
-                el.set("class", "user-mention silent")
+            if user_id:
+                el.set("data-user-id", user_id)
+            text = f"@{name}"
+            if topic_wildcard:
+                el.set("class", "topic-mention")
             else:
                 el.set("class", "user-mention")
-                text = f"@{text}"
+            if silent:
+                el.set("class", el.get("class", "") + " silent")
+                text = f"{name}"
             el.text = markdown.util.AtomicString(text)
             return el, m.start(), m.end()
         return None, None, None
@@ -2492,6 +2501,7 @@ def do_convert(
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
         rendered_content="",
+        mentions_topic_wildcard=False,
         mentions_stream_wildcard=False,
         mentions_user_ids=set(),
         mentions_user_group_ids=set(),

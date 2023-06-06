@@ -150,6 +150,10 @@ class MentionBackend:
         return result
 
 
+def user_mention_matches_topic_wildcard(mention: str) -> bool:
+    return mention in topic_wildcards
+
+
 def user_mention_matches_stream_wildcard(mention: str) -> bool:
     return mention in stream_wildcards
 
