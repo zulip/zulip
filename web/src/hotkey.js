@@ -962,7 +962,7 @@ export function process_hotkey(e, hotkey) {
             lightbox.show_from_selected_message();
             return true;
         case "show_sender_info":
-            popovers.show_sender_info();
+            popover_menus.show_sender_info();
             return true;
         case "toggle_reactions_popover": // ':': open reactions to message
             reactions.open_reactions_popover();

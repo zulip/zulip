@@ -364,7 +364,7 @@ run_test("misc", ({override}) => {
     assert_mapping("J", navigate, "page_down");
     assert_mapping("k", navigate, "up");
     assert_mapping("K", navigate, "page_up");
-    assert_mapping("u", popovers, "show_sender_info");
+    assert_mapping("u", popover_menus, "show_sender_info");
     assert_mapping("i", popover_menus, "toggle_message_actions_menu");
     assert_mapping(":", reactions, "open_reactions_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
