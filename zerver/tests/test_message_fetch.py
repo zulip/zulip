@@ -3289,7 +3289,7 @@ class GetOldMessagesTest(ZulipTestCase):
             get_messages_backend(request, user_profile)
 
         for query in queries:
-            sql = str(query["sql"])
+            sql = str(query.sql)
             if "/* get_messages */" in sql:
                 sql = sql.replace(" /* get_messages */", "")
                 self.assertEqual(sql, expected)
@@ -3470,9 +3470,9 @@ class GetOldMessagesTest(ZulipTestCase):
             get_messages_backend(request, user_profile)
 
         # Verify the query for old messages looks correct.
-        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
+        queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
-        sql = queries[0]["sql"]
+        sql = queries[0].sql
         self.assertNotIn(f"AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
         self.assertIn("ORDER BY message_id ASC", sql)
 
@@ -3516,9 +3516,9 @@ class GetOldMessagesTest(ZulipTestCase):
             with queries_captured() as all_queries:
                 get_messages_backend(request, user_profile)
 
-        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
+        queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
-        sql = queries[0]["sql"]
+        sql = queries[0].sql
         self.assertNotIn(f"AND message_id = {LARGER_THAN_MAX_MESSAGE_ID}", sql)
         self.assertIn("ORDER BY message_id ASC", sql)
         cond = f"WHERE user_profile_id = {user_profile.id} AND message_id <= {first_unread_message_id - 1}"
@@ -3540,10 +3540,10 @@ class GetOldMessagesTest(ZulipTestCase):
         with queries_captured() as all_queries:
             get_messages_backend(request, user_profile)
 
-        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
+        queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
 
-        sql = queries[0]["sql"]
+        sql = queries[0].sql
 
         self.assertNotIn("AND message_id <=", sql)
         self.assertNotIn("AND message_id >=", sql)
@@ -3553,8 +3553,8 @@ class GetOldMessagesTest(ZulipTestCase):
         with first_visible_id_as(first_visible_message_id):
             with queries_captured() as all_queries:
                 get_messages_backend(request, user_profile)
-            queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
-            sql = queries[0]["sql"]
+            queries = [q for q in all_queries if "/* get_messages */" in q.sql]
+            sql = queries[0].sql
             self.assertNotIn("AND message_id <=", sql)
             self.assertNotIn("AND message_id >=", sql)
 
@@ -3595,20 +3595,20 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Do some tests on the main query, to verify the muting logic
         # runs on this code path.
-        queries = [q for q in all_queries if str(q["sql"]).startswith("SELECT message_id, flags")]
+        queries = [q for q in all_queries if q.sql.startswith("SELECT message_id, flags")]
         self.assert_length(queries, 1)
 
         stream = get_stream("Scotland", realm)
         assert stream.recipient is not None
         recipient_id = stream.recipient.id
         cond = f"AND NOT (recipient_id = {recipient_id} AND upper(subject) = upper('golf'))"
-        self.assertIn(cond, queries[0]["sql"])
+        self.assertIn(cond, queries[0].sql)
 
         # Next, verify the use_first_unread_anchor setting invokes
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
-        queries = [q for q in all_queries if "/* get_messages */" in str(q["sql"])]
+        queries = [q for q in all_queries if "/* get_messages */" in q.sql]
         self.assert_length(queries, 1)
-        self.assertIn(f"AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}", queries[0]["sql"])
+        self.assertIn(f"AND zerver_message.id = {LARGER_THAN_MAX_MESSAGE_ID}", queries[0].sql)
 
     def test_exclude_muting_conditions(self) -> None:
         realm = get_realm("zulip")
