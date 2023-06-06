@@ -112,6 +112,11 @@
  *   before we open the lookahead in case it needs to make UI changes first
  *   (e.g. widening the search bar).
  *     
+ * 12. Add `closeInputFieldOnHide` option:
+ *
+ *   Some input fields like search have visual changes that need to happen
+ *   when the typeahead hides. This callback function is called in `hide()`
+ *   and allows those extra UI changes to happen.
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -265,6 +270,9 @@ import {get_string_diff} from "../../src/util";
   , hide: function () {
       this.$container.hide()
       this.shown = false
+      if (this.options.closeInputFieldOnHide !== null) {
+        this.options.closeInputFieldOnHide();
+      }
       return this
     }
 
@@ -599,6 +607,7 @@ import {get_string_diff} from "../../src/util";
   , dropup: false
   , advanceKeyCodes: []
   , openInputFieldOnKeyUp: null
+  , closeInputFieldOnHide: null
   }
 
   $.fn.typeahead.Constructor = Typeahead
