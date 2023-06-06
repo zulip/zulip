@@ -68,6 +68,7 @@ const popovers = mock_esm("../src/popovers", {
 });
 const popover_menus = mock_esm("../src/popover_menus", {
     get_visible_instance: () => undefined,
+    get_gear_menu_instance: () => undefined,
 });
 const reactions = mock_esm("../src/reactions");
 const search = mock_esm("../src/search");
@@ -311,6 +312,7 @@ run_test("basic mappings", () => {
     assert_mapping("c", compose_actions, "start");
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", narrow, "by");
+    assert_mapping("g", popover_menus, "open_gear_menu");
 });
 
 run_test("drafts open", ({override}) => {

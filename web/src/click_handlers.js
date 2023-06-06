@@ -27,6 +27,7 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -837,6 +838,7 @@ export function initialize() {
     $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popover_menus.get_gear_menu_instance()?.hide();
         settings_display.launch_default_language_setting_modal();
     });
 
@@ -845,19 +847,21 @@ export function initialize() {
     // Also, since these buttons are only visible for spectators which doesn't have events,
     // if theme is changed in a different tab, the theme of this tab remains the same.
     $("body").on("click", "#gear-menu .dark-theme", (e) => {
-        // Allow propagation to close gear menu.
+        e.stopPropagation();
         e.preventDefault();
         requestAnimationFrame(() => {
             dark_theme.enable();
+            popover_menus.get_gear_menu_instance()?.hide();
             message_lists.update_recipient_bar_background_color();
         });
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {
-        // Allow propagation to close gear menu.
+        e.stopPropagation();
         e.preventDefault();
         requestAnimationFrame(() => {
             dark_theme.disable();
+            popover_menus.get_gear_menu_instance()?.hide();
             message_lists.update_recipient_bar_background_color();
         });
     });
@@ -891,7 +895,7 @@ export function initialize() {
             // after a tippy popover has been triggered which hides
             // the popover without being displayed.
             const not_hide_tippy_instances = true;
-            popovers.hide_all(not_hide_tippy_instances);
+            popovers.hide_all({not_hide_tippy_instances});
         }
 
         if (compose_state.composing() && !$(e.target).parents("#compose").length) {

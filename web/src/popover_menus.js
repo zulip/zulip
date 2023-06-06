@@ -84,6 +84,10 @@ export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
 
+export function get_gear_menu_instance() {
+    return popover_instances.gear_menu;
+}
+
 export function get_selected_send_later_timestamp() {
     if (!selected_send_later_timestamp) {
         return undefined;
@@ -364,6 +368,14 @@ function version_display_string() {
 
     const display_version = version.replace(/\+git.*/, "").replace(/-dev.*/, "-dev");
     return $t({defaultMessage: "Zulip Server {display_version}"}, {display_version});
+}
+
+export function open_gear_menu() {
+    $("#settings-dropdown").trigger("click");
+    // there are invisible li tabs, which should not be clicked.
+    $(() => {
+        $("#gear-menu").find(".org-version a").trigger("focus");
+    });
 }
 
 export function initialize() {

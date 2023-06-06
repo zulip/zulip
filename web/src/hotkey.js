@@ -16,7 +16,6 @@ import * as drafts from "./drafts";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
-import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
@@ -270,8 +269,8 @@ export function process_escape_key(e) {
         return true;
     }
 
-    if (gear_menu.is_open()) {
-        gear_menu.close();
+    if (popover_menus.get_gear_menu_instance()) {
+        popover_menus.get_gear_menu_instance().hide();
         return true;
     }
 
@@ -673,12 +672,12 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (hotkey.message_view_only && gear_menu.is_open()) {
+    if (hotkey.message_view_only && popover_menus.get_gear_menu_instance()) {
         // Inside the gear menu, we don't process most hotkeys; the
         // exception is that the gear_menu hotkey should toggle the
         // menu closed again.
         if (event_name === "gear_menu") {
-            gear_menu.close();
+            popover_menus.get_gear_menu_instance().hide();
             return true;
         }
         return false;
@@ -834,7 +833,7 @@ export function process_hotkey(e, hotkey) {
             search.initiate_search();
             return true;
         case "gear_menu":
-            gear_menu.open();
+            popover_menus.open_gear_menu();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");
