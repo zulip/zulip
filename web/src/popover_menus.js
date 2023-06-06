@@ -332,12 +332,10 @@ export function do_schedule_message(send_at_time) {
 export function initialize() {
     register_popover_menu("#streams_inline_icon", {
         onShow(instance) {
-            popover_instances.stream_settings = instance;
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams();
-            on_show_prep(instance);
 
             if (!can_create_streams) {
                 // If the user can't create streams, we directly
@@ -347,7 +345,12 @@ export function initialize() {
                 return false;
             }
 
+            // Assuming that the instance can be shown, track and
+            // prep the instance for showing
+            popover_instances.stream_settings = instance;
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
+            on_show_prep(instance);
+
             //  When showing the popover menu, we want the
             // "Add streams" and the "Filter streams" tooltip
             //  to appear below the "Add streams" icon.
@@ -361,6 +364,8 @@ export function initialize() {
             filter_streams_tooltip._tippy?.setProps({
                 placement: "bottom",
             });
+
+            // The linter complains about unbalanced returns
             return true;
         },
         onHidden(instance) {
