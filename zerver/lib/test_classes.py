@@ -1065,7 +1065,7 @@ Output:
     have decided to send a message to a stream without the sender being
     subscribed.
 
-    Please do self.subscribe(<user for {sender.full_name}>, {repr(stream_name)}) first.
+    Please do self.subscribe(<user for {sender.full_name}>, {stream_name!r}) first.
 
     Or choose a stream that the user is already subscribed to:
 
@@ -1189,7 +1189,7 @@ Output:
         if actual_count != count:  # nocoverage
             print("\nITEMS:\n")
             for index, query in enumerate(queries):
-                print(f"#{index + 1}\nsql: {str(query.sql)}\ntime: {query.time}\n")
+                print(f"#{index + 1}\nsql: {query.sql}\ntime: {query.time}\n")
             print(f"expected count: {count}\nactual count: {actual_count}")
             raise AssertionError(
                 f"""
