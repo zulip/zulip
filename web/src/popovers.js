@@ -1035,7 +1035,7 @@ export function register_click_handlers() {
             // only run `popovers.hide_all()` if the last scroll was more
             // than 250ms ago.
             if (date - last_scroll > 250) {
-                hide_all();
+                hide_all({not_hide_tippy_dropdowns: true});
             }
 
             // update the scroll time on every event to make sure it doesn't
@@ -1084,8 +1084,15 @@ export function any_active() {
 export function hide_all_except_sidebars(opts) {
     $(".has_popover").removeClass("has_popover has_actions_popover has_emoji_popover");
     if (!opts || !opts.not_hide_tippy_instances) {
-        // hideAll hides all tippy instances (tooltips and popovers).
-        hideAll();
+        if (opts && opts.not_hide_tippy_dropdowns) {
+            // don't hide gear menu and personal menu dropdowns
+            hideAll({
+                exclude: popover_menus.get_gear_menu_instance(),
+            });
+        } else {
+            // hideAll hides all tippy instances (tooltips and popovers).
+            hideAll();
+        }
     }
     emoji_picker.hide_emoji_popover();
     giphy.hide_giphy_popover();
@@ -1104,12 +1111,10 @@ export function hide_all_except_sidebars(opts) {
 
 // This function will hide all the popovers, including the mobile web
 // or narrow window sidebars.
-export function hide_all(not_hide_tippy_instances) {
+export function hide_all(opts) {
     hide_userlist_sidebar();
     stream_popover.hide_streamlist_sidebar();
-    hide_all_except_sidebars({
-        not_hide_tippy_instances,
-    });
+    hide_all_except_sidebars(opts);
 }
 
 export function set_userlist_placement(placement) {
