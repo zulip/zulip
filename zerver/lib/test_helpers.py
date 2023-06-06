@@ -4,6 +4,7 @@ import re
 import sys
 import time
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -16,7 +17,6 @@ from typing import (
     Mapping,
     Optional,
     Tuple,
-    TypedDict,
     TypeVar,
     Union,
     cast,
@@ -131,21 +131,22 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         yield cache_queries
 
 
-class CapturedQueryDict(TypedDict):
-    sql: bytes
+@dataclass
+class CapturedQuery:
+    sql: str
     time: str
 
 
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Iterator[List[CapturedQueryDict]]:
+) -> Iterator[List[CapturedQuery]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[CapturedQueryDict] = []
+    queries: List[CapturedQuery] = []
 
     def wrapper_execute(
         self: TimeTrackingCursor,
@@ -161,10 +162,10 @@ def queries_captured(
             duration = stop - start
             if include_savepoints or not isinstance(sql, str) or "SAVEPOINT" not in sql:
                 queries.append(
-                    {
-                        "sql": self.mogrify(sql, params).decode(),
-                        "time": f"{duration:.3f}",
-                    }
+                    CapturedQuery(
+                        sql=self.mogrify(sql, params).decode(),
+                        time=f"{duration:.3f}",
+                    )
                 )
 
     def cursor_execute(

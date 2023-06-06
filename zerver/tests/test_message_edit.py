@@ -76,7 +76,7 @@ class EditMessageTestCase(ZulipTestCase):
 
         self.assert_length(queries, 1)
         for query in queries:
-            self.assertNotIn("message", query["sql"])
+            self.assertNotIn("message", query.sql)
 
         self.assertEqual(
             fetch_message_dict[TOPIC_NAME],
