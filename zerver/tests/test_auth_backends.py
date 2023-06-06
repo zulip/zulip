@@ -1588,7 +1588,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
-        for stream_name in set(stream_names):
+        for stream_name in stream_names:
             stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
@@ -4599,7 +4599,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
 
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
-        for stream_name in set(stream_names):
+        for stream_name in stream_names:
             stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
