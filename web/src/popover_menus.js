@@ -971,6 +971,17 @@ export function initialize() {
     register_popover_menu("#navbar-buttons", {
         placement: "bottom",
         offset: [-50, 0],
+        popperOptions: {
+            strategy: "fixed",
+            modifiers: [
+                {
+                    name: "eventListeners",
+                    options: {
+                        scroll: false,
+                    },
+                },
+            ],
+        },
         onMount(instance) {
             const $popper = $(instance.popper);
             $popper.addClass("gear-menu-tippy");
