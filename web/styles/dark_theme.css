@@ -667,6 +667,10 @@
         background-color: hsl(212deg 32% 14%);
     }
 
+    .tippy_popover {
+        color: hsl(236deg 33% 90%);
+    }
+
     .dropdown-menu a {
         color: inherit;
     }

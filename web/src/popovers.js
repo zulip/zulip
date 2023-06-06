@@ -79,7 +79,7 @@ export function hide_user_info_popover_manage_menu() {
     }
 }
 
-function show_user_info_popover_manage_menu(element, user) {
+export function show_user_info_popover_manage_menu(element, user) {
     const $last_popover_elem = $current_user_info_popover_manage_menu;
     hide_user_info_popover_manage_menu();
     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
@@ -326,6 +326,15 @@ export function hide_playground_links_popover() {
     }
 }
 
+export function open_user_status_modal(e) {
+    hide_all();
+
+    user_status_ui.open_user_status_modal();
+
+    e.stopPropagation();
+    e.preventDefault();
+}
+
 export function register_click_handlers() {
     $("#main_div").on("click", ".user-group-mention", function (e) {
         const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
@@ -376,6 +385,12 @@ export function register_click_handlers() {
         e.stopPropagation();
     });
 
+    // Clicking on one's own status emoji should open the user status modal.
+    $("#user_presences").on(
+        "click",
+        ".user_sidebar_entry_me .status-emoji",
+        open_user_status_modal,
+    );
 
     {
         let last_scroll = 0;

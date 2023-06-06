@@ -18,15 +18,19 @@ import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_popover from "../templates/send_later_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
+import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as flatpickr from "./flatpickr";
@@ -36,21 +40,29 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as muted_users_ui from "./muted_users_ui";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import * as people from "./people";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
+import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
+import * as settings_users from "./settings_users";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
 import * as timerender from "./timerender";
+import * as ui_report from "./ui_report";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
+import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
@@ -67,6 +79,7 @@ const popover_instances = {
     compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
+    user_card: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -917,5 +930,266 @@ export function initialize() {
             instance.destroy();
             popover_instances.send_later = undefined;
         },
+    });
+
+    function user_card_on_mount(instance, user) {
+        popover_menus_data.load_medium_avatar(user, $(".popover-avatar"));
+        const $popper = $(instance.popper);
+        const $user_name_element = $(".user_full_name");
+        if ($user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")) {
+            $user_name_element.addClass("tippy-zulip-tooltip");
+        }
+        popover_menus_data.clipboard_enable($(".copy_mention_syntax")[0]);
+
+        $popper.one("click", ".copy_mention_syntax", () => {
+            popovers.hide_all();
+        });
+
+        $popper.one("click", ".compose_private_message", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const email = people.get_by_user_id(user_id).email;
+            compose_actions.start("private", {
+                trigger: "popover send private",
+                private_message_recipient: email,
+            });
+            popovers.hide_all();
+            if (overlays.is_active()) {
+                overlays.close_active();
+            }
+        });
+
+        $popper.one("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const email = people.get_by_user_id(user_id).email;
+            popovers.hide_all();
+            if (overlays.is_active()) {
+                overlays.close_active();
+            }
+            narrow.by("pm-with", email, {trigger: "user sidebar popover"});
+        });
+
+        $popper.one("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const email = people.get_by_user_id(user_id).email;
+            popovers.hide_all();
+            if (overlays.is_active()) {
+                overlays.close_active();
+            }
+            narrow.by("sender", email, {trigger: "user sidebar popover"});
+        });
+
+        $popper.one("click", ".user_popover .mention_user", (e) => {
+            if (!compose_state.composing()) {
+                compose_actions.start("stream", {trigger: "sidebar user actions"});
+            }
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const name = people.get_by_user_id(user_id).full_name;
+            const mention = people.get_mention_syntax(name, user_id);
+            compose_ui.insert_syntax_and_focus(mention);
+            popovers.hide_all();
+        });
+
+        $popper.one("click", ".info_popover_actions .clear_status", (e) => {
+            const me = popovers.elem_to_user_id($(e.target).parents("ul"));
+            user_status.server_update_status({
+                user_id: me,
+                status_text: "",
+                emoji_name: "",
+                emoji_code: "",
+                success() {
+                    $(".info_popover_actions #status_message").empty();
+                },
+            });
+        });
+
+        $popper.one("click", ".invisible_mode_turn_on", () => {
+            popovers.hide_all();
+            user_status.server_invisible_mode_on();
+        });
+
+        $popper.one("click", ".invisible_mode_turn_off", () => {
+            popovers.hide_all();
+            user_status.server_invisible_mode_off();
+        });
+
+        $popper.one("click", ".update_status_text", popovers.open_user_status_modal);
+
+        $popper.one("click", ".info_popover_actions .view_full_user_profile", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const user = people.get_by_user_id(user_id);
+            user_profile.show_user_profile(user);
+        });
+        popover_menus_data.init_email_clipboard();
+        popover_menus_data.init_email_tooltip(user);
+
+        // manage user popover click handlers:
+        $popper.on("click", ".user_info_popover_manage_menu_btn", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const user = people.get_by_user_id(user_id);
+            popovers.show_user_info_popover_manage_menu(e.target, user);
+        });
+
+        $("body")
+            .off("click", ".sidebar-popover-manage-user")
+            .one("click", ".sidebar-popover-manage-user", (e) => {
+                e.stopPropagation();
+                popovers.hide_all();
+                const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+                const user = people.get_by_user_id(user_id);
+                if (user.is_bot) {
+                    settings_bots.show_edit_bot_info_modal(user_id, true);
+                } else {
+                    settings_users.show_edit_user_info_modal(user_id, true);
+                }
+            });
+
+        $("body")
+            .off("click", ".sidebar-popover-mute-user")
+            .one("click", ".sidebar-popover-mute-user", (e) => {
+                const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+                popovers.hide_all();
+
+                muted_users_ui.confirm_mute_user(user_id);
+            });
+
+        $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            popovers.hide_all();
+            muted_users_ui.unmute_user(user_id);
+        });
+
+        $("body").on("click", ".sidebar-popover-reactivate-user", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            popovers.hide_all();
+
+            function handle_confirm() {
+                const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+                channel.post({
+                    url,
+                    success() {
+                        dialog_widget.close_modal();
+                    },
+                    error(xhr) {
+                        ui_report.error(
+                            $t_html({defaultMessage: "Failed"}),
+                            xhr,
+                            $("#dialog_error"),
+                        );
+                        dialog_widget.hide_dialog_spinner();
+                    },
+                });
+            }
+            settings_users.confirm_reactivation(user_id, handle_confirm, true);
+        });
+
+        $(".simplebar-content-wrapper").on("scroll", () => {
+            instance.hide();
+        });
+    }
+
+    function get_boundary_padding() {
+        const bottomBoundary = $("body").outerHeight() - $("#compose-content").offset().top;
+        return {top: 10, bottom: bottomBoundary};
+    }
+
+    function placement_on_mobile(instance) {
+        if ($("body").outerWidth() < 576) {
+            const $overlay = $("<div>").addClass("tippy-overlay").css({
+                position: "fixed",
+                top: "0",
+                left: "0",
+                width: "100%",
+                height: "100%",
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                zIndex: 9998,
+            });
+
+            $("body").append($overlay);
+            $overlay.on("click", () => {
+                $overlay.remove();
+            });
+            const $user_card_tippy = $(instance.popper);
+            const left = ($("body").innerWidth() - $user_card_tippy.innerWidth()) / 2;
+            const top = ($("body").outerHeight() - $user_card_tippy.outerHeight()) / 2;
+            $user_card_tippy.css({
+                transform: `translate(${left}px, ${top}px)`,
+            });
+        }
+    }
+    const user_card_options = {
+        arrow: false,
+        popperOptions: {
+            modifiers: [
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: "left",
+                    },
+                },
+            ],
+        },
+        onShow(instance) {
+            const {
+                user,
+                is_sender_popover = false,
+                has_message_context = false,
+                template_class = "user_popover",
+            } = instance.context;
+            on_show_prep(instance);
+
+            const args = popover_menus_data.render_user_info_popover(
+                user,
+                is_sender_popover,
+                has_message_context,
+                template_class,
+            );
+
+            const $bot_owner_element = $(".bot_owner");
+            if (
+                args.bot_owner &&
+                $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
+            ) {
+                $bot_owner_element.addClass("tippy-zulip-tooltip");
+            }
+
+            const content = $(render_user_info_popover_content(args)).get(0);
+            instance.setContent(parse_html(content.innerHTML));
+            instance.setProps({
+                popperOptions: {
+                    modifiers: [
+                        {
+                            name: "preventOverflow",
+                            options: {
+                                altAxis: true,
+                                padding: get_boundary_padding(),
+                            },
+                        },
+                    ],
+                },
+            });
+        },
+        onMount(instance) {
+            popover_instances.user_card = instance;
+            placement_on_mobile(instance);
+            const {user} = instance.context;
+            user_card_on_mount(instance, user);
+        },
+        onHidden(instance) {
+            $(".simplebar-content-wrapper").off("scroll");
+            instance.destroy();
+            popover_instances.user_card = undefined;
+            $(".tippy-overlay").remove();
+        },
+    };
+
+    register_popover_menu(".user-list-sidebar-menu-icon", {
+        placement: "left",
+        onCreate(instance) {
+            const $target = $(instance.reference).closest("li");
+            const user_id = popovers.elem_to_user_id($target.find("a"));
+            const user = people.get_by_user_id(user_id);
+            instance.context = {user, template_class: "sidebar_user_popover"};
+        },
+        ...user_card_options,
     });
 }
