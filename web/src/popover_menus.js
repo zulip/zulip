@@ -1012,6 +1012,10 @@ export function initialize() {
             user_status.server_invisible_mode_off();
         });
 
+        $popper.one("click", ".bot-owner-name", (e) => {
+            show_bot_owner_info_popover(instance, e);
+        });
+
         $popper.one("click", ".update_status_text", popovers.open_user_status_modal);
 
         $popper.one("click", ".info_popover_actions .view_full_user_profile", (e) => {
@@ -1181,6 +1185,24 @@ export function initialize() {
             $(".tippy-overlay").remove();
         },
     };
+
+    function show_bot_owner_info_popover(instance, event) {
+        instance.hide();
+        tippy(instance.reference, {
+            ...default_popover_props,
+            placement: "right",
+            showOnCreate: true,
+            onCreate(instance) {
+                const participant_user_id = Number.parseInt(
+                    $(event.target).attr("data-user-id"),
+                    10,
+                );
+                const user = people.get_by_user_id(participant_user_id);
+                instance.context = {user};
+            },
+            ...user_card_options,
+        });
+    }
 
     register_popover_menu(".user-list-sidebar-menu-icon", {
         placement: "left",
