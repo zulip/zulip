@@ -493,7 +493,7 @@ test_people("bot_custom_profile_data", () => {
     assert.equal(people.get_custom_profile_data(bot_botson.user_id, 3), null);
 });
 
-test_people("user_timezone", () => {
+test_people("user_timezone", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
 
     const expected_pref = {
@@ -513,6 +513,10 @@ test_people("user_timezone", () => {
 
     user_settings.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
+
+    // case when timezone is undefined
+    override(people.get_by_user_id(me.user_id), "timezone", undefined);
+    assert.equal(people.get_user_time(me.user_id), undefined);
 });
 
 test_people("utcToZonedTime", ({override}) => {
