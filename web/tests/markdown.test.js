@@ -421,6 +421,21 @@ test("marked", () => {
                 '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
         },
         {
+            input: "Topic Wildcard mention: @**topic**\nTopic Wildcard silent mention: @_**topic**",
+            expected:
+                '<p>Topic Wildcard mention: <span class="topic-mention">@topic</span><br>\nTopic Wildcard silent mention: <span class="topic-mention silent">topic</span></p>',
+        },
+        {
+            input: "> Topic Wildcard mention in quote: @**topic**\n\n> Another topic wildcard mention in quote: @_**topic**",
+            expected:
+                '<blockquote>\n<p>Topic Wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>\n<blockquote>\n<p>Another topic wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>',
+        },
+        {
+            input: "```quote\nTopic Wildcard mention in quote: @**topic**\n```\n\n```quote\nAnother topic wildcard mention in quote: @_**topic**\n```",
+            expected:
+                '<blockquote>\n<p>Topic Wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>\n<blockquote>\n<p>Another topic wildcard mention in quote: <span class="topic-mention silent">topic</span></p>\n</blockquote>',
+        },
+        {
             input: "User group mention: @*backend*\nUser group silent mention: @_*hamletcharacters*",
             expected:
                 '<p>User group mention: <span class="user-group-mention" data-user-group-id="2">@Backend</span><br>\nUser group silent mention: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>',
