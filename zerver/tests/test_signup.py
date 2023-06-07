@@ -50,7 +50,6 @@ from zerver.lib.mobile_auth_otp import (
     xor_hex_strings,
 )
 from zerver.lib.name_restrictions import is_disposable_domain
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
@@ -70,6 +69,7 @@ from zerver.lib.test_helpers import (
     message_stream_count,
     most_recent_message,
     most_recent_usermessage,
+    ratelimit_rule,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.models import (
@@ -586,13 +586,12 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assert_length(outbox, 0)
 
-    @override_settings(RATE_LIMITING=True)
+    @ratelimit_rule(10, 2, domain="password_reset_form_by_email")
     def test_rate_limiting(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
         from django.core.mail import outbox
 
-        add_ratelimit_rule(10, 2, domain="password_reset_form_by_email")
         start_time = time.time()
         with patch("time.time", return_value=start_time):
             self.client_post("/accounts/password/reset/", {"email": email})
@@ -621,8 +620,6 @@ class PasswordResetTest(ZulipTestCase):
             self.client_post("/accounts/password/reset/", {"email": email})
             self.client_post("/accounts/password/reset/", {"email": email})
             self.assert_length(outbox, 6)
-
-        remove_ratelimit_rule(10, 2, domain="password_reset_form_by_email")
 
     def test_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
@@ -837,10 +834,10 @@ class LoginTest(ZulipTestCase):
         self.assert_logged_in_user_id(user.id)
 
     @override_settings(RATE_LIMITING_AUTHENTICATE=True)
+    @ratelimit_rule(10, 2, domain="authenticate_by_username")
     def test_login_bad_password_rate_limiter(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        add_ratelimit_rule(10, 2, domain="authenticate_by_username")
 
         start_time = time.time()
         with patch("time.time", return_value=start_time):
@@ -858,8 +855,6 @@ class LoginTest(ZulipTestCase):
         with patch("time.time", return_value=start_time + 11):
             self.login_with_return(email)
             self.assert_logged_in_user_id(user_profile.id)
-
-        remove_ratelimit_rule(10, 2, domain="authenticate_by_username")
 
     def test_login_with_old_weak_password_after_hasher_change(self) -> None:
         user_profile = self.example_user("hamlet")

@@ -18,11 +18,10 @@ from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedUser,
     RateLimiterLockingError,
-    add_ratelimit_rule,
     get_tor_ips,
-    remove_ratelimit_rule,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import ratelimit_rule
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import PushDeviceToken, UserProfile
 
@@ -74,18 +73,6 @@ class MITNameTest(ZulipTestCase):
     def test_notmailinglist(self) -> None:
         with mock.patch("DNS.dnslookup", return_value=[["POP IMAP.EXCHANGE.MIT.EDU starnine"]]):
             email_is_not_mit_mailing_list("sipbexch@mit.edu")
-
-
-@contextmanager
-def rate_limit_rule(range_seconds: int, num_requests: int, domain: str) -> Iterator[None]:
-    RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
-    add_ratelimit_rule(range_seconds, num_requests, domain=domain)
-    try:
-        yield
-    finally:
-        # We need this in a finally block to ensure the test cleans up after itself
-        # even in case of failure, to avoid polluting the rules state.
-        remove_ratelimit_rule(range_seconds, num_requests, domain=domain)
 
 
 class RateLimitTests(ZulipTestCase):
@@ -194,14 +181,14 @@ class RateLimitTests(ZulipTestCase):
 
             self.assertNotEqual(result.status_code, 429)
 
-    @rate_limit_rule(1, 5, domain="api_by_user")
+    @ratelimit_rule(1, 5, domain="api_by_user")
     def test_hit_ratelimits_as_user(self) -> None:
         user = self.example_user("cordelia")
         RateLimitedUser(user).clear_history()
 
         self.do_test_hit_ratelimits(lambda: self.send_api_message(user, "some stuff"))
 
-    @rate_limit_rule(1, 5, domain="email_change_by_user")
+    @ratelimit_rule(1, 5, domain="email_change_by_user")
     def test_hit_change_email_ratelimit_as_user(self) -> None:
         user = self.example_user("cordelia")
         RateLimitedUser(user).clear_history()
@@ -211,7 +198,7 @@ class RateLimitTests(ZulipTestCase):
             lambda: self.api_patch(user, "/api/v1/settings", {"email": emails.pop()}),
         )
 
-    @rate_limit_rule(1, 5, domain="api_by_ip")
+    @ratelimit_rule(1, 5, domain="api_by_ip")
     def test_hit_ratelimits_as_ip(self) -> None:
         self.do_test_hit_ratelimits(self.send_unauthed_api_request)
 
@@ -219,7 +206,7 @@ class RateLimitTests(ZulipTestCase):
         resp = self.send_unauthed_api_request(REMOTE_ADDR="127.0.0.2")
         self.assertNotEqual(resp.status_code, 429)
 
-    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    @ratelimit_rule(1, 5, domain="sends_email_by_ip")
     def test_create_realm_rate_limiting(self) -> None:
         with self.settings(OPEN_REALM_CREATION=True):
             self.do_test_hit_ratelimits(
@@ -229,14 +216,14 @@ class RateLimitTests(ZulipTestCase):
                 is_json=False,
             )
 
-    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    @ratelimit_rule(1, 5, domain="sends_email_by_ip")
     def test_find_account_rate_limiting(self) -> None:
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com"}),
             is_json=False,
         )
 
-    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    @ratelimit_rule(1, 5, domain="sends_email_by_ip")
     def test_password_reset_rate_limiting(self) -> None:
         with self.assertLogs(level="INFO") as m:
             self.do_test_hit_ratelimits(
@@ -251,7 +238,7 @@ class RateLimitTests(ZulipTestCase):
     # Test whether submitting multiple emails is handled correctly.
     # The limit is set to 10 per second, so 5 requests with 2 emails
     # submitted in each should be allowed.
-    @rate_limit_rule(1, 10, domain="sends_email_by_ip")
+    @ratelimit_rule(1, 10, domain="sends_email_by_ip")
     def test_find_account_rate_limiting_multiple(self) -> None:
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/accounts/find/", {"emails": "new@zulip.com,new2@zulip.com"}),
@@ -260,7 +247,7 @@ class RateLimitTests(ZulipTestCase):
 
     # If I submit with 3 emails and the rate-limit is 2, I should get
     # a 429 and not send any emails.
-    @rate_limit_rule(1, 2, domain="sends_email_by_ip")
+    @ratelimit_rule(1, 2, domain="sends_email_by_ip")
     def test_find_account_rate_limiting_multiple_one_request(self) -> None:
         emails = [
             "iago@zulip.com",
@@ -274,14 +261,14 @@ class RateLimitTests(ZulipTestCase):
 
         self.assert_length(outbox, 0)
 
-    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    @ratelimit_rule(1, 5, domain="sends_email_by_ip")
     def test_register_account_rate_limiting(self) -> None:
         self.do_test_hit_ratelimits(
             lambda: self.client_post("/register/", {"email": "new@zulip.com"}),
             is_json=False,
         )
 
-    @rate_limit_rule(1, 5, domain="sends_email_by_ip")
+    @ratelimit_rule(1, 5, domain="sends_email_by_ip")
     def test_combined_ip_limits(self) -> None:
         # Alternate requests to /new/ and /accounts/find/
         request_count = 0
@@ -332,7 +319,7 @@ class RateLimitTests(ZulipTestCase):
         with mock.patch("builtins.open", selective_mock_open):
             yield tor_open
 
-    @rate_limit_rule(1, 5, domain="api_by_ip")
+    @ratelimit_rule(1, 5, domain="api_by_ip")
     @override_settings(RATE_LIMIT_TOR_TOGETHER=True)
     def test_tor_ip_limits(self) -> None:
         request_count = 0
@@ -354,7 +341,7 @@ class RateLimitTests(ZulipTestCase):
         tor_open.assert_called_once_with(settings.TOR_EXIT_NODE_FILE_PATH, "rb")
         tor_open().read.assert_called_once()
 
-    @rate_limit_rule(1, 5, domain="api_by_ip")
+    @ratelimit_rule(1, 5, domain="api_by_ip")
     @override_settings(RATE_LIMIT_TOR_TOGETHER=True)
     def test_tor_file_empty(self) -> None:
         for ip in ["1.2.3.4", "5.6.7.8", "tor-exit-node"]:
@@ -375,7 +362,7 @@ class RateLimitTests(ZulipTestCase):
         # circuit-breaker, and stopping trying
         tor_open().read.assert_has_calls([mock.call(), mock.call()])
 
-    @rate_limit_rule(1, 5, domain="api_by_ip")
+    @ratelimit_rule(1, 5, domain="api_by_ip")
     @override_settings(RATE_LIMIT_TOR_TOGETHER=True)
     def test_tor_file_not_found(self) -> None:
         for ip in ["1.2.3.4", "5.6.7.8", "tor-exit-node"]:
@@ -415,7 +402,7 @@ class RateLimitTests(ZulipTestCase):
         )
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
-    @rate_limit_rule(1, 5, domain="api_by_remote_server")
+    @ratelimit_rule(1, 5, domain="api_by_remote_server")
     def test_hit_ratelimits_as_remote_server(self) -> None:
         server_uuid = str(uuid.uuid4())
         server = RemoteZulipServer(
