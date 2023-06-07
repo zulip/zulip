@@ -1,6 +1,7 @@
 from typing import Iterable, Optional, Tuple
 
 from django.conf import settings
+from django.db import transaction
 
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.user_groups import create_system_user_groups_for_realm
@@ -20,6 +21,7 @@ def server_initialized() -> bool:
     return Realm.objects.exists()
 
 
+@transaction.atomic(durable=True)
 def create_internal_realm() -> None:
     from zerver.actions.users import do_change_can_forge_sender
 
