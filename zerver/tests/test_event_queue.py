@@ -298,6 +298,69 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": False},
             )
 
+    def test_topic_wildcard_mention(self) -> None:
+        # By default, topic wildcard mentions should send notifications, just like regular mentions
+        self.send_stream_message(self.user_profile, "Denmark")
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="@**topic** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called()
+            args_dict = mock_enqueue.call_args_list[1][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                topic_wildcard_mention_email_notify=True,
+                topic_wildcard_mention_push_notify=True,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
+    def test_topic_wildcard_mention_in_muted_stream(self) -> None:
+        # Topic wildcard mentions in muted streams don't notify.
+        self.change_subscription_properties({"is_muted": True})
+        self.send_stream_message(self.user_profile, "Denmark")
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="@**topic** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called()
+            args_dict = mock_enqueue.call_args_list[1][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                topic_wildcard_mention_email_notify=False,
+                topic_wildcard_mention_push_notify=False,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
+    def test_topic_wildcard_mention_in_muted_topic(self) -> None:
+        # Topic wildcard mentions in muted topics don't notify.
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "mutingtest",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+        self.send_stream_message(self.user_profile, "Denmark")
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", topic_name="mutingtest", content="@**topic** what's up?"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called()
+            args_dict = mock_enqueue.call_args_list[1][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                topic_wildcard_mention_email_notify=False,
+                topic_wildcard_mention_push_notify=False,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
     def test_stream_wildcard_mention(self) -> None:
         # By default, stream wildcard mentions should send notifications, just like regular mentions
         msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
@@ -842,6 +905,42 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": False},
             )
 
+    def test_topic_wildcard_mention_in_followed_topic_notify(self) -> None:
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+        )
+
+        # By default, wildcard mentions in followed topics should send notifications, just like regular mentions.
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        self.send_stream_message(self.user_profile, "Denmark", topic_name="followed_topic_test")
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="@**topic** what's up?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called()
+            args_dict = mock_enqueue.call_args_list[1][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                topic_wildcard_mention_in_followed_topic_email_notify=True,
+                topic_wildcard_mention_in_followed_topic_push_notify=True,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
     def test_stream_wildcard_mention_in_followed_topic_notify(self) -> None:
         do_change_user_setting(
             self.user_profile, "wildcard_mentions_notify", False, acting_user=None
@@ -874,6 +973,42 @@ class MissedMessageHookTest(ZulipTestCase):
                 user_id=self.user_profile.id,
                 stream_wildcard_mention_in_followed_topic_email_notify=True,
                 stream_wildcard_mention_in_followed_topic_push_notify=True,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
+    def test_topic_wildcard_mention_in_followed_topic_muted_stream(self) -> None:
+        # By default, topic wildcard mentions in a followed topic with muted stream DO notify.
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+        )
+
+        self.change_subscription_properties({"is_muted": True})
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        self.send_stream_message(self.user_profile, "Denmark")
+
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="@**topic** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called()
+            args_dict = mock_enqueue.call_args_list[1][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                topic_wildcard_mention_in_followed_topic_email_notify=True,
+                topic_wildcard_mention_in_followed_topic_push_notify=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
 

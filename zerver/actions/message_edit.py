@@ -258,7 +258,7 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
 def update_user_message_flags(
     rendering_result: MessageRenderingResult, ums: Iterable[UserMessage]
 ) -> None:
-    wildcard = rendering_result.mentions_stream_wildcard
+    wildcard_mentioned = rendering_result.has_wildcard_mention()
     mentioned_ids = rendering_result.mentions_user_ids
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
     changed_ums: Set[UserMessage] = set()
@@ -280,7 +280,7 @@ def update_user_message_flags(
         mentioned = um.user_profile_id in mentioned_ids
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
-        update_flag(um, wildcard, UserMessage.flags.wildcard_mentioned)
+        update_flag(um, wildcard_mentioned, UserMessage.flags.wildcard_mentioned)
 
     for um in changed_ums:
         um.save(update_fields=["flags"])
@@ -489,6 +489,15 @@ def do_update_message(
         else:
             event["stream_wildcard_mention_user_ids"] = []
             event["stream_wildcard_mention_in_followed_topic_user_ids"] = []
+
+        if rendering_result.mentions_topic_wildcard:
+            event["topic_wildcard_mention_user_ids"] = list(info.topic_wildcard_mention_user_ids)
+            event["topic_wildcard_mention_in_followed_topic_user_ids"] = list(
+                info.topic_wildcard_mention_in_followed_topic_user_ids
+            )
+        else:
+            event["topic_wildcard_mention_user_ids"] = []
+            event["topic_wildcard_mention_in_followed_topic_user_ids"] = []
 
         do_update_mobile_push_notification(
             target_message,
@@ -1249,7 +1258,7 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
-        if message.is_stream_message() and rendering_result.mentions_stream_wildcard:
+        if message.is_stream_message() and rendering_result.has_wildcard_mention():
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
             if not wildcard_mention_allowed(message.sender, stream):
                 raise JsonableError(

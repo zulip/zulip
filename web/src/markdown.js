@@ -133,6 +133,7 @@ function parse_with_options({raw_content, helper_config, options}) {
                     display_text = mention;
                 } else {
                     // Topic Wildcard mention
+                    mentioned_wildcard = true;
                     display_text = "@" + mention;
                     classes = "topic-mention";
                 }

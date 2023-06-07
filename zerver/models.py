@@ -4268,11 +4268,13 @@ class NotificationTriggers:
     # "private_message" is for 1:1 direct messages as well as huddles
     PRIVATE_MESSAGE = "private_message"
     MENTION = "mentioned"
+    TOPIC_WILDCARD_MENTION = "topic_wildcard_mentioned"
     STREAM_WILDCARD_MENTION = "stream_wildcard_mentioned"
     STREAM_PUSH = "stream_push_notify"
     STREAM_EMAIL = "stream_email_notify"
     FOLLOWED_TOPIC_PUSH = "followed_topic_push_notify"
     FOLLOWED_TOPIC_EMAIL = "followed_topic_email_notify"
+    TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC = "topic_wildcard_mentioned_in_followed_topic"
     STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC = "stream_wildcard_mentioned_in_followed_topic"
 
 
@@ -4289,9 +4291,14 @@ class ScheduledMessageNotificationEmail(models.Model):
     EMAIL_NOTIFICATION_TRIGGER_CHOICES = [
         (NotificationTriggers.PRIVATE_MESSAGE, "Private message"),
         (NotificationTriggers.MENTION, "Mention"),
+        (NotificationTriggers.TOPIC_WILDCARD_MENTION, "Topic wildcard mention"),
         (NotificationTriggers.STREAM_WILDCARD_MENTION, "Stream wildcard mention"),
         (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
         (NotificationTriggers.FOLLOWED_TOPIC_EMAIL, "Followed topic notifications enabled"),
+        (
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+            "Topic wildcard mention in followed topic",
+        ),
         (
             NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
             "Stream wildcard mention in followed topic",
