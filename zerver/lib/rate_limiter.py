@@ -159,23 +159,6 @@ def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"
 
 
-def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = "api_by_user") -> None:
-    """Add a rate-limiting rule to the ratelimiter"""
-    if domain not in rules:
-        # If we don't have any rules for domain yet, the domain key needs to be
-        # added to the rules dictionary.
-        rules[domain] = []
-
-    rules[domain].append((range_seconds, num_requests))
-    rules[domain].sort(key=lambda x: x[0])
-
-
-def remove_ratelimit_rule(
-    range_seconds: int, num_requests: int, domain: str = "api_by_user"
-) -> None:
-    rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
-
-
 class RateLimiterBackend(ABC):
     @classmethod
     @abstractmethod

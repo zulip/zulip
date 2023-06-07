@@ -76,7 +76,6 @@ from zerver.lib.email_validation import (
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.storage import static_path
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
@@ -84,6 +83,7 @@ from zerver.lib.test_helpers import (
     HostRequestMock,
     create_s3_buckets,
     load_subdomain_token,
+    ratelimit_rule,
     read_test_image_file,
     use_s3_backend,
 )
@@ -671,8 +671,9 @@ class RateLimitAuthenticationTests(ZulipTestCase):
             request.session = mock.MagicMock()
             return attempt_authentication_func(request, username, password)
 
-        add_ratelimit_rule(10, 2, domain="authenticate_by_username")
-        with mock.patch.object(RateLimitedAuthenticationByUsername, "key", new=_mock_key):
+        with mock.patch.object(
+            RateLimitedAuthenticationByUsername, "key", new=_mock_key
+        ), ratelimit_rule(10, 2, domain="authenticate_by_username"):
             try:
                 start_time = time.time()
                 with mock.patch("time.time", return_value=start_time):
@@ -708,7 +709,6 @@ class RateLimitAuthenticationTests(ZulipTestCase):
             finally:
                 # Clean up to avoid affecting other tests.
                 RateLimitedAuthenticationByUsername(username).clear_history()
-                remove_ratelimit_rule(10, 2, domain="authenticate_by_username")
 
     def test_email_auth_backend_user_based_rate_limiting(self) -> None:
         user_profile = self.example_user("hamlet")

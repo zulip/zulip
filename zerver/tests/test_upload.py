@@ -11,7 +11,6 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from django.http.response import StreamingHttpResponse
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from PIL import Image
 from urllib3 import encode_multipart_formdata
@@ -31,12 +30,16 @@ from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, read_test_image_file
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    get_test_image_file,
+    ratelimit_rule,
+    read_test_image_file,
+)
 from zerver.lib.upload import delete_message_attachment, upload_message_attachment
 from zerver.lib.upload.base import BadImageError, ZulipUploadBackend, resize_emoji, sanitize_name
 from zerver.lib.upload.local import LocalUploadBackend
@@ -225,7 +228,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get(url)
         self.assertEqual(result.status_code, 403)
 
-    @override_settings(RATE_LIMITING=True)
     def test_serve_file_unauthed(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
@@ -234,34 +236,32 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
         url = self.assert_json_success(result)["uri"]
 
-        add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
-        # Deny file access for non-web-public stream
-        self.subscribe(self.example_user("hamlet"), "Denmark")
-        host = self.example_user("hamlet").realm.host
-        body = f"First message ...[zulip.txt](http://{host}" + url + ")"
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
+            # Deny file access for non-web-public stream
+            self.subscribe(self.example_user("hamlet"), "Denmark")
+            host = self.example_user("hamlet").realm.host
+            body = f"First message ...[zulip.txt](http://{host}" + url + ")"
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
-        self.logout()
-        response = self.client_get(url)
-        self.assertEqual(response.status_code, 403)
+            self.logout()
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 403)
 
-        # Allow file access for web-public stream
-        self.login("hamlet")
-        self.make_stream("web-public-stream", is_web_public=True)
-        self.subscribe(self.example_user("hamlet"), "web-public-stream")
-        body = f"First message ...[zulip.txt](http://{host}" + url + ")"
-        self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
+            # Allow file access for web-public stream
+            self.login("hamlet")
+            self.make_stream("web-public-stream", is_web_public=True)
+            self.subscribe(self.example_user("hamlet"), "web-public-stream")
+            body = f"First message ...[zulip.txt](http://{host}" + url + ")"
+            self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
 
-        self.logout()
-        response = self.client_get(url)
-        self.assertEqual(response.status_code, 200)
-        remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+            self.logout()
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 200)
 
         # Deny file access since rate limited
-        add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
-        response = self.client_get(url)
-        self.assertEqual(response.status_code, 403)
-        remove_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+        with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 403)
 
         # Deny random file access
         response = self.client_get(
@@ -1261,15 +1261,13 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             status_code=401,
         )
 
-        with self.settings(RATE_LIMITING=True):
-            # Allow unauthenticated/spectator requests by ID for a reasonable number of requests.
-            add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+        # Allow unauthenticated/spectator requests by ID for a reasonable number of requests.
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
             response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             self.assertEqual(302, response.status_code)
-            remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
 
-            # Deny file access since rate limited
-            add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+        # Deny file access since rate limited
+        with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             self.assertEqual(429, response.status_code)
 

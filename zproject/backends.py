@@ -293,7 +293,6 @@ def is_subdomain_in_allowed_subdomains_list(subdomain: str, allowed_subdomains: 
 
 
 AuthFuncT = TypeVar("AuthFuncT", bound=Callable[..., Optional[UserProfile]])
-rate_limiting_rules = settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
 
 class RateLimitedAuthenticationByUsername(RateLimitedObject):
@@ -305,7 +304,7 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         return f"{type(self).__name__}:{self.username}"
 
     def rules(self) -> List[Tuple[int, int]]:
-        return rate_limiting_rules
+        return settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
 
 def rate_limit_authentication_by_username(request: HttpRequest, username: str) -> None:
