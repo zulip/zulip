@@ -46,10 +46,10 @@ dependencies:
     version: 3.2.0(@uppy/core@3.2.0)
   '@zxcvbn-ts/core':
     specifier: ^3.0.1
-    version: 3.0.1
+    version: 3.0.2
   '@zxcvbn-ts/language-common':
     specifier: ^3.0.2
-    version: 3.0.2
+    version: 3.0.3
   '@zxcvbn-ts/language-en':
     specifier: ^3.0.1
     version: 3.0.1
@@ -3429,14 +3429,14 @@ packages:
   /@xtuc/long@4.2.2:
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  /@zxcvbn-ts/core@3.0.1:
-    resolution: {integrity: sha512-H8ZCZnSHCpl8hR19C8SoMfOhVgvdn8UI0yK94RyjHyibtEni4YDMgusw0P+x8h6wVGSHmRRoFWL0zBg7ZyHQ8A==}
+  /@zxcvbn-ts/core@3.0.2:
+    resolution: {integrity: sha512-0IcC51nu4ium8H+89RcsEio+BHADtAPElkhHLd2kYr027+cPFg9Y0+tedLAxNKU+iHgMW0n2ajG/JVua5uV/fQ==}
     dependencies:
       fastest-levenshtein: 1.0.16
     dev: false
 
-  /@zxcvbn-ts/language-common@3.0.2:
-    resolution: {integrity: sha512-GPnf4cuSUZXhx3spjRQLtUoI6/+00f9198gcG8hJDBFR4KYfMvLorAk97MU7qeTkyhzhYLR7yLr/E66vH7ZOaw==}
+  /@zxcvbn-ts/language-common@3.0.3:
+    resolution: {integrity: sha512-eDu0X45t43/vXL3UBFxEG6TI5n/vWfKVmokepkLHzSF5qEtlJ4ON1/5VnSzAzPfK0llyx027dZz5Fce201qC5w==}
     dev: false
 
   /@zxcvbn-ts/language-en@3.0.1:
