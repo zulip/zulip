@@ -4,6 +4,7 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from decimal import Decimal
 from typing import Optional
 
 import orjson
@@ -30,6 +31,7 @@ from zerver.lib.test_helpers import use_db_models
 
 USER_ACTIVATED = 102
 USER_FULL_NAME_CHANGED = 124
+REALM_DISCOUNT_CHANGED = 209
 OLD_VALUE = "1"
 NEW_VALUE = "2"
 
@@ -45,6 +47,33 @@ class RealmAuditLogExtraData(MigrationsTestCase):
     # backfill_realmauditlog_extradata_to_json_field, this later is used to test
     # if batching works properly.
     DATA_SIZE = 10005
+    expected_console_output = """Audit log entry 50003 with event type REALM_DISCOUNT_CHANGED is skipped.
+The data consistency needs to be manually checked.
+  Discount data to remove after the upcoming JSONField migration:
+{'old_discount': Decimal('25.0000'), 'new_discount': Decimal('50')}
+  Discount data to keep after the upcoming JSONField migration:
+{}
+
+Audit log entry 50004 with event type REALM_DISCOUNT_CHANGED is skipped.
+The data consistency needs to be manually checked.
+  Discount data to remove after the upcoming JSONField migration:
+{'old_discount': Decimal('25.0000'), 'new_discount': Decimal('50')}
+  Discount data to keep after the upcoming JSONField migration:
+{'new_discount': '50', 'old_discount': '25.0000'}
+
+Audit log entry with id 50001 has extra_data_json been inconsistently overwritten.
+  The old value is:
+{"corrupted":"foo"}
+  The new value is:
+{"key":"value"}
+
+Audit log entry with id 50002 has extra_data_json been inconsistently overwritten.
+  The old value is:
+{"corrupted":"bar"}
+  The new value is:
+{"key":"value"}
+
+"""
 
     @use_db_models
     def setUpBeforeMigration(self, apps: StateApps) -> None:
@@ -82,8 +111,53 @@ class RealmAuditLogExtraData(MigrationsTestCase):
             extra_data=str({"key": "value"}),
         )
 
+        # The following audit log entries have preset ids because we use
+        # them to assert the generated log output that is defined before
+        # the test case is run.
+        inconsistent_json_log = RealmAuditLog(
+            id=50001,
+            realm=realm,
+            event_type=USER_ACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps({"key": "value"}).decode(),
+            extra_data_json={"corrupted": "foo"},
+        )
+
+        inconsistent_str_json_log = RealmAuditLog(
+            id=50002,
+            realm=realm,
+            event_type=USER_ACTIVATED,
+            event_time=event_time,
+            extra_data=str({"key": "value"}),
+            extra_data_json={"corrupted": "bar"},
+        )
+
+        self.old_decimal_log_id = RealmAuditLog.objects.create(
+            id=50003,
+            realm=realm,
+            event_type=REALM_DISCOUNT_CHANGED,
+            event_time=event_time,
+            extra_data=str({"old_discount": Decimal("25.0000"), "new_discount": Decimal("50")}),
+        ).id
+
+        self.new_decimal_log_id = RealmAuditLog.objects.create(
+            id=50004,
+            realm=realm,
+            event_type=REALM_DISCOUNT_CHANGED,
+            event_time=event_time,
+            extra_data=str({"old_discount": Decimal("25.0000"), "new_discount": Decimal("50")}),
+            extra_data_json={"old_discount": Decimal("25.0000"), "new_discount": Decimal("50")},
+        ).id
+
         RealmAuditLog.objects.bulk_create(
-            [full_name_change_log, new_full_name_change_log, valid_json_log, str_json_log]
+            [
+                full_name_change_log,
+                new_full_name_change_log,
+                valid_json_log,
+                str_json_log,
+                inconsistent_json_log,
+                inconsistent_str_json_log,
+            ]
         )
         self.full_name_change_log_id = full_name_change_log.id
         self.new_full_name_change_log_id = new_full_name_change_log.id
@@ -104,16 +178,15 @@ class RealmAuditLogExtraData(MigrationsTestCase):
             audit_log.id for audit_log in RealmAuditLog.objects.bulk_create(other_logs)
         ]
 
-        # No new audit log entry should have extra_data_json populated as of now
+        # No new audit log entry should have extra_data_json populated as of
+        # now except for the entries created with non-default values.
         self.assert_length(
             RealmAuditLog.objects.filter(
                 event_time__gte=event_time,
-            )
-            .exclude(
+            ).exclude(
                 extra_data_json={},
-            )
-            .exclude(id=self.new_full_name_change_log_id),
-            0,
+            ),
+            4,
         )
 
     def test_realmaudit_log_extra_data_to_json(self) -> None:
