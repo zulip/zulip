@@ -137,10 +137,13 @@ def serve_local(
 
 
 def serve_file_download_backend(
-    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+    request: HttpRequest,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    realm_id_str: str,
+    filename: str,
 ) -> HttpResponseBase:
     return serve_file(
-        request, user_profile, realm_id_str, filename, url_only=False, force_download=True
+        request, maybe_user_profile, realm_id_str, filename, url_only=False, force_download=True
     )
 
 
