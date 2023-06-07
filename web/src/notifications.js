@@ -5,14 +5,12 @@ import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic
 
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
 import * as favicon from "./favicon";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_parser from "./message_parser";
-import * as message_store from "./message_store";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -184,48 +182,6 @@ export function notify_above_composebox(
     // clear any unmute_banner associated with this same message.
     compose_banner.clear_message_sent_banners(false);
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
-}
-
-if (window.electron_bridge !== undefined) {
-    // The code below is for sending a message received from notification reply which
-    // is often referred to as inline reply feature. This is done so desktop app doesn't
-    // have to depend on channel.post for setting crsf_token and narrow.by_topic
-    // to narrow to the message being sent.
-    if (window.electron_bridge.set_send_notification_reply_message_supported !== undefined) {
-        window.electron_bridge.set_send_notification_reply_message_supported(true);
-    }
-    window.electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
-        const message = message_store.get(message_id);
-        const data = {
-            type: message.type,
-            content: reply,
-            to: message.type === "private" ? message.reply_to : message.stream,
-            topic: message.topic,
-        };
-
-        function success() {
-            if (message.type === "stream") {
-                narrow.by_topic(message_id, {trigger: "desktop_notification_reply"});
-            } else {
-                narrow.by_recipient(message_id, {trigger: "desktop_notification_reply"});
-            }
-        }
-
-        function error(error) {
-            window.electron_bridge.send_event("send_notification_reply_message_failed", {
-                data,
-                message_id,
-                error,
-            });
-        }
-
-        channel.post({
-            url: "/json/messages",
-            data,
-            success,
-            error,
-        });
-    });
 }
 
 export function process_notification(notification) {
