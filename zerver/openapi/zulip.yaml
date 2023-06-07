@@ -18080,7 +18080,7 @@ components:
                 type: integer
                 description: |
                   The ID of the user who sent the message.
-              submessage_id:
+              id:
                 type: integer
                 description: |
                   The ID of the submessage.
