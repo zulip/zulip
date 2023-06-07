@@ -382,6 +382,19 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: ".view_user_profile .pill-value",
+        appendTo: () => document.body,
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference)[0].textContent;
+            instance.setContent($elem);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
         target: "#send_later",
         delay: LONG_HOVER_DELAY,
         placement: "top",
