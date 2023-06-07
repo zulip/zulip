@@ -32,8 +32,8 @@ preparing a new release.
 ### Final release preparation
 
 - Update the Paper blog post draft with any new commits.
-- _Major releases only:_ Download updated translation strings from
-  Transifex and commit them.
+- Download updated translation strings from Transifex and commit
+  them. Use the `--branch 6.x` parameter for maintenance releases.
 - Use `build-release-tarball` to generate a pre-release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
   release, on Ubuntu 20.04 or 22.04.
@@ -49,6 +49,8 @@ preparing a new release.
   - If the draft post should remain secret until release, avoid using
     a guessable Git branch name for the pull request (the deployment
     preview URL is based on the branch name).
+- _Major releases only (e.g. 4.0):_ Schedule team members to provide
+  extra responsive #production help support following the release.
 
 ### Executing the release
 
