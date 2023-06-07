@@ -3,8 +3,8 @@ from io import StringIO
 import orjson
 from django.test import override_settings
 
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import ratelimit_rule
 
 
 class ThumbnailTest(ZulipTestCase):
@@ -59,34 +59,32 @@ class ThumbnailTest(ZulipTestCase):
         json = orjson.loads(result.content)
         url = json["uri"]
 
-        add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
-        # Deny file access for non-web-public stream
-        self.subscribe(self.example_user("hamlet"), "Denmark")
-        host = self.example_user("hamlet").realm.host
-        body = f"First message ...[zulip.txt](http://{host}" + url + ")"
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
+            # Deny file access for non-web-public stream
+            self.subscribe(self.example_user("hamlet"), "Denmark")
+            host = self.example_user("hamlet").realm.host
+            body = f"First message ...[zulip.txt](http://{host}" + url + ")"
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
-        self.logout()
-        response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
-        self.assertEqual(response.status_code, 403)
+            self.logout()
+            response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+            self.assertEqual(response.status_code, 403)
 
-        # Allow file access for web-public stream
-        self.login("hamlet")
-        self.make_stream("web-public-stream", is_web_public=True)
-        self.subscribe(self.example_user("hamlet"), "web-public-stream")
-        body = f"First message ...[zulip.txt](http://{host}" + url + ")"
-        self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
+            # Allow file access for web-public stream
+            self.login("hamlet")
+            self.make_stream("web-public-stream", is_web_public=True)
+            self.subscribe(self.example_user("hamlet"), "web-public-stream")
+            body = f"First message ...[zulip.txt](http://{host}" + url + ")"
+            self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
 
-        self.logout()
-        response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
-        self.assertEqual(response.status_code, 302)
-        remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+            self.logout()
+            response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+            self.assertEqual(response.status_code, 302)
 
         # Deny file access since rate limited
-        add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
-        response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
-        self.assertEqual(response.status_code, 403)
-        remove_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+        with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
+            response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
+            self.assertEqual(response.status_code, 403)
 
         # Deny random file access
         response = self.client_get(

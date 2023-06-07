@@ -22,6 +22,7 @@ from typing import (
     cast,
 )
 from unittest import mock
+from unittest.mock import patch
 
 import boto3.session
 import fakeldap
@@ -45,6 +46,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import (
@@ -742,4 +744,21 @@ def timeout_mock(mock_path: str) -> Iterator[None]:
         return func()
 
     with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
+        yield
+
+
+@contextmanager
+def ratelimit_rule(
+    range_seconds: int,
+    num_requests: int,
+    domain: str = "api_by_user",
+) -> Iterator[None]:
+    """Temporarily add a rate-limiting rule to the ratelimiter"""
+    RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
+
+    domain_rules = rules.get(domain, []).copy()
+    domain_rules.append((range_seconds, num_requests))
+    domain_rules.sort(key=lambda x: x[0])
+
+    with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield
