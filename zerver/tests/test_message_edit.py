@@ -2039,6 +2039,58 @@ class EditMessageTest(EditMessageTestCase):
         )
 
     @mock.patch("zerver.actions.message_edit.send_event")
+    def test_topic_wildcard_mention_in_followed_topic(
+        self, mock_send_event: mock.MagicMock
+    ) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(hamlet)
+
+        do_set_user_topic_visibility_policy(
+            user_profile=hamlet,
+            stream=get_stream(stream_name, cordelia.realm),
+            topic="test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
+
+        def notify(user_id: int) -> Dict[str, Any]:
+            return {
+                "id": user_id,
+                "flags": ["wildcard_mentioned"],
+            }
+
+        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": "Hello @**topic**",
+            },
+        )
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert 'topic_wildcard_mention_in_followed_topic_user_ids'
+        # has been set properly.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "update_message":
+                self.assertEqual(arg_event["type"], "update_message")
+                self.assertEqual(
+                    arg_event["topic_wildcard_mention_in_followed_topic_user_ids"], [hamlet.id]
+                )
+                self.assertEqual(
+                    sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
+                )
+                called = True
+        self.assertTrue(called)
+
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_stream_wildcard_mention_in_followed_topic(
         self, mock_send_event: mock.MagicMock
     ) -> None:
@@ -2089,6 +2141,95 @@ class EditMessageTest(EditMessageTestCase):
                 )
                 called = True
         self.assertTrue(called)
+
+    @mock.patch("zerver.actions.message_edit.send_event")
+    def test_topic_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Macbeth"
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
+
+        def notify(user_id: int) -> Dict[str, Any]:
+            return {
+                "id": user_id,
+                "flags": ["wildcard_mentioned"],
+            }
+
+        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        result = self.client_patch(
+            f"/json/messages/{message_id}",
+            {
+                "content": "Hello @**topic**",
+            },
+        )
+        self.assert_json_success(result)
+
+        # Extract the send_event call where event type is 'update_message'.
+        # Here we assert topic_wildcard_mention_user_ids has been set properly.
+        called = False
+        for call_args in mock_send_event.call_args_list:
+            (arg_realm, arg_event, arg_notified_users) = call_args[0]
+            if arg_event["type"] == "update_message":
+                self.assertEqual(arg_event["type"], "update_message")
+                self.assertEqual(arg_event["topic_wildcard_mention_user_ids"], [hamlet.id])
+                self.assertEqual(
+                    sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
+                )
+                called = True
+        self.assertTrue(called)
+
+    def test_topic_wildcard_mention_restrictions_when_editing(self) -> None:
+        cordelia = self.example_user("cordelia")
+        shiva = self.example_user("shiva")
+        self.login("cordelia")
+        stream_name = "Macbeth"
+        self.make_stream(stream_name, history_public_to_subscribers=True)
+        self.subscribe(cordelia, stream_name)
+        self.subscribe(shiva, stream_name)
+        message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
+
+        realm = cordelia.realm
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            acting_user=None,
+        )
+
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**topic**",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use wildcard mentions in this stream."
+        )
+
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**topic**",
+                },
+            )
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        message_id = self.send_stream_message(shiva, stream_name, "Hi everyone")
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**topic**",
+                },
+            )
+        self.assert_json_success(result)
 
     @mock.patch("zerver.actions.message_edit.send_event")
     def test_stream_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:

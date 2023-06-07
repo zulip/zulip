@@ -1704,6 +1704,12 @@ Output:
             pm_push_notify=kwargs.get("pm_push_notify", False),
             mention_email_notify=kwargs.get("mention_email_notify", False),
             mention_push_notify=kwargs.get("mention_push_notify", False),
+            topic_wildcard_mention_email_notify=kwargs.get(
+                "topic_wildcard_mention_email_notify", False
+            ),
+            topic_wildcard_mention_push_notify=kwargs.get(
+                "topic_wildcard_mention_push_notify", False
+            ),
             stream_wildcard_mention_email_notify=kwargs.get(
                 "stream_wildcard_mention_email_notify", False
             ),
@@ -1714,6 +1720,12 @@ Output:
             stream_push_notify=kwargs.get("stream_push_notify", False),
             followed_topic_email_notify=kwargs.get("followed_topic_email_notify", False),
             followed_topic_push_notify=kwargs.get("followed_topic_push_notify", False),
+            topic_wildcard_mention_in_followed_topic_email_notify=kwargs.get(
+                "topic_wildcard_mention_in_followed_topic_email_notify", False
+            ),
+            topic_wildcard_mention_in_followed_topic_push_notify=kwargs.get(
+                "topic_wildcard_mention_in_followed_topic_push_notify", False
+            ),
             stream_wildcard_mention_in_followed_topic_email_notify=kwargs.get(
                 "stream_wildcard_mention_in_followed_topic_email_notify", False
             ),

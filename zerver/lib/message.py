@@ -158,9 +158,11 @@ class SendMessageRequest:
     pm_mention_email_disabled_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
-    # IDs of users who have followed the topic the message is being sent to, and have the followed topic push notifications setting ON.
+    # IDs of users who have followed the topic the message is being sent to,
+    # and have the followed topic push notifications setting ON.
     followed_topic_push_user_ids: Set[int]
-    # IDs of users who have followed the topic the message is being sent to, and have the followed topic email notifications setting ON.
+    # IDs of users who have followed the topic the message is being sent to,
+    # and have the followed topic email notifications setting ON.
     followed_topic_email_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
@@ -168,8 +170,26 @@ class SendMessageRequest:
     default_bot_user_ids: Set[int]
     service_bot_tuples: List[Tuple[int, int]]
     all_bot_user_ids: Set[int]
+    # IDs of topic participants who should be notified of topic wildcard mention.
+    # The 'user_allows_notifications_in_StreamTopic' with 'wildcard_mentions_notify'
+    # setting ON should return True.
+    # A user_id can exist in either or both of the 'topic_wildcard_mention_user_ids'
+    # and 'topic_wildcard_mention_in_followed_topic_user_ids' sets.
+    topic_wildcard_mention_user_ids: Set[int]
+    # IDs of users subscribed to the stream who should be notified of
+    # stream wildcard mention.
+    # The 'user_allows_notifications_in_StreamTopic' with 'wildcard_mentions_notify'
+    # setting ON should return True.
+    # A user_id can exist in either or both of the 'stream_wildcard_mention_user_ids'
+    # and 'stream_wildcard_mention_in_followed_topic_user_ids' sets.
     stream_wildcard_mention_user_ids: Set[int]
-    # IDs of users who have followed the topic the message (having stream wildcard) is being sent to, and have the followed topic wildcard mentions notify setting ON.
+    # IDs of topic participants who have followed the topic the message
+    # (having topic wildcard) is being sent to, and have the
+    # 'followed_topic_wildcard_mentions_notify' setting ON.
+    topic_wildcard_mention_in_followed_topic_user_ids: Set[int]
+    # IDs of users who have followed the topic the message
+    # (having stream wildcard) is being sent to, and have the
+    # 'followed_topic_wildcard_mentions_notify' setting ON.
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int]
     links_for_embed: Set[str]
     widget_content: Optional[Dict[str, Any]]

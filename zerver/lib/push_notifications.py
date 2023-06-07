@@ -674,9 +674,16 @@ def get_gcm_alert(
             return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
     elif (
         message.is_stream_message()
+        and trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+    ):
+        return "TODO - 2"
+    elif (
+        message.is_stream_message()
         and trigger == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
     ):
         return "TODO"
+    elif message.is_stream_message() and trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION:
+        return f"{sender_str} mentioned all topic participants in #{display_recipient} > {message.topic_name()}"
     elif message.is_stream_message() and trigger == NotificationTriggers.STREAM_WILDCARD_MENTION:
         return f"{sender_str} mentioned everyone in #{display_recipient}"
     else:
@@ -842,8 +849,14 @@ def get_apns_alert_subtitle(
             )
         else:
             return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
+    elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
+        return _("TODO - 2")
     elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC:
         return _("TODO")
+    elif trigger == NotificationTriggers.TOPIC_WILDCARD_MENTION:
+        return _("{full_name} mentioned all topic participants:").format(
+            full_name=message.sender.full_name
+        )
     elif trigger == NotificationTriggers.STREAM_WILDCARD_MENTION:
         return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
