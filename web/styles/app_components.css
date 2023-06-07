@@ -953,6 +953,7 @@ div.overlay {
             padding: 10px;
 
             .message_content {
+                cursor: pointer;
                 grid-column: 1 / 2;
                 /* to space from restore draft button */
                 margin-right: 5px;
