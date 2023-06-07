@@ -211,7 +211,7 @@ class RateLimitTests(ZulipTestCase):
         with self.settings(OPEN_REALM_CREATION=True):
             self.do_test_hit_ratelimits(
                 lambda: self.submit_realm_creation_form(
-                    email="new@zulip.com", realm_subdomain="zuliptest", realm_name="Zulip test"
+                    email="new@zulip.com", realm_subdomain="custom-test", realm_name="Zulip test"
                 ),
                 is_json=False,
             )
@@ -278,7 +278,7 @@ class RateLimitTests(ZulipTestCase):
             request_count += 1
             if request_count % 2 == 1:
                 return self.submit_realm_creation_form(
-                    email="new@zulip.com", realm_subdomain="zuliptest", realm_name="Zulip test"
+                    email="new@zulip.com", realm_subdomain="custom-test", realm_name="Zulip test"
                 )
             else:
                 return self.client_post("/accounts/find/", {"emails": "new@zulip.com"})
