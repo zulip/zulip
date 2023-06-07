@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
 from django.core.validators import validate_email
-from django.db import connection
+from django.db import connection, transaction
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
@@ -961,49 +961,36 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # import the supporting data structures, which may take a bit.
     realm_properties = dict(**data["zerver_realm"][0])
     realm_properties["deactivated"] = True
-    realm = Realm(**realm_properties)
 
-    if realm.notifications_stream_id is not None:
-        notifications_stream_id: Optional[int] = int(realm.notifications_stream_id)
-    else:
-        notifications_stream_id = None
-    realm.notifications_stream_id = None
-    if realm.signup_notifications_stream_id is not None:
-        signup_notifications_stream_id: Optional[int] = int(realm.signup_notifications_stream_id)
-    else:
-        signup_notifications_stream_id = None
-    realm.signup_notifications_stream_id = None
-    realm.save()
+    with transaction.atomic(durable=True):
+        realm = Realm(**realm_properties)
+        realm.save()
 
-    if "zerver_usergroup" in data:
-        update_model_ids(UserGroup, data, "usergroup")
-        re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-        bulk_import_model(data, UserGroup)
+        if "zerver_usergroup" in data:
+            update_model_ids(UserGroup, data, "usergroup")
+            re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
+            bulk_import_model(data, UserGroup)
 
-    # We expect Zulip server exports to contain these system groups,
-    # this logic here is needed to handle the imports from other services.
-    role_system_groups_dict: Optional[Dict[int, UserGroup]] = None
-    if "zerver_usergroup" not in data:
-        role_system_groups_dict = create_system_user_groups_for_realm(realm)
+        # We expect Zulip server exports to contain these system groups,
+        # this logic here is needed to handle the imports from other services.
+        role_system_groups_dict: Optional[Dict[int, UserGroup]] = None
+        if "zerver_usergroup" not in data:
+            role_system_groups_dict = create_system_user_groups_for_realm(realm)
 
-    # Email tokens will automatically be randomly generated when the
-    # Stream objects are created by Django.
-    fix_datetime_fields(data, "zerver_stream")
-    re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
-    if role_system_groups_dict is not None:
-        fix_streams_can_remove_subscribers_group_column(data, realm)
-    else:
-        re_map_foreign_keys(
-            data, "zerver_stream", "can_remove_subscribers_group", related_table="usergroup"
-        )
-    # Handle rendering of stream descriptions for import from non-Zulip
-    for stream in data["zerver_stream"]:
-        stream["rendered_description"] = render_stream_description(stream["description"], realm)
-    bulk_import_model(data, Stream)
-
-    realm.notifications_stream_id = notifications_stream_id
-    realm.signup_notifications_stream_id = signup_notifications_stream_id
-    realm.save()
+        # Email tokens will automatically be randomly generated when the
+        # Stream objects are created by Django.
+        fix_datetime_fields(data, "zerver_stream")
+        re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
+        if role_system_groups_dict is not None:
+            fix_streams_can_remove_subscribers_group_column(data, realm)
+        else:
+            re_map_foreign_keys(
+                data, "zerver_stream", "can_remove_subscribers_group", related_table="usergroup"
+            )
+        # Handle rendering of stream descriptions for import from non-Zulip
+        for stream in data["zerver_stream"]:
+            stream["rendered_description"] = render_stream_description(stream["description"], realm)
+        bulk_import_model(data, Stream)
 
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
