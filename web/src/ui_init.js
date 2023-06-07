@@ -25,6 +25,7 @@ import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_textarea from "./compose_textarea";
+import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -616,6 +617,7 @@ export function initialize_everything() {
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
+    compose_tooltips.initialize();
     message_list_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(scheduled_messages_params);
