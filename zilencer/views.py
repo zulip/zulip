@@ -481,14 +481,27 @@ def remote_server_post_analytics(
     if realmauditlog_rows is not None:
         remote_realm_audit_logs = []
         for row in realmauditlog_rows:
+            extra_data = {}
+            extra_data_str = None
             # Remote servers that do support JSONField will pass extra_data
             # as a dict. Otherwise, extra_data will be either a string or None.
-            if isinstance(row["extra_data"], dict):
+            if isinstance(row["extra_data"], str):
+                # A valid "extra_data" as a str, if present, should always be generated from
+                # orjson.dumps because the POSTed analytics data for RealmAuditLog is restricted
+                # to event types in SYNC_BILLING_EVENTS.
+                # For these event types, we don't create extra_data that requires special
+                # handling to fit into the JSONField.
+                try:
+                    extra_data = orjson.loads(row["extra_data"])
+                except orjson.JSONDecodeError:
+                    raise JsonableError(_("Malformed audit log data"))
+                extra_data_str = row["extra_data"]
+            elif row["extra_data"] is not None:
+                assert isinstance(row["extra_data"], dict)
+                extra_data = row["extra_data"]
                 # This is guaranteed to succeed because row["extra_data"] would be parsed
                 # from JSON with our json validator if it is a dict.
-                extra_data = orjson.dumps(row["extra_data"]).decode()
-            else:
-                extra_data = row["extra_data"]
+                extra_data_str = orjson.dumps(row["extra_data"]).decode()
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
                     realm_id=row["realm"],
@@ -498,7 +511,8 @@ def remote_server_post_analytics(
                         row["event_time"], tz=datetime.timezone.utc
                     ),
                     backfilled=row["backfilled"],
-                    extra_data=extra_data,
+                    extra_data=extra_data_str,
+                    extra_data_json=extra_data,
                     event_type=row["event_type"],
                 )
             )

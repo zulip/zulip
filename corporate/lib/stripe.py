@@ -654,6 +654,7 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
         server=remote_server,
         event_time=timezone_now(),
         extra_data=str({"old_value": old_value, "new_value": plan_type}),
+        extra_data_json={"old_value": old_value, "new_value": plan_type},
     )
 
 
@@ -738,6 +739,8 @@ def process_initial_upgrade(
             event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
             extra_data=orjson.dumps(plan_params, default=decimal_to_float).decode(),
+            # Note that DjangoJSONEncoder has builtin support for parsing Decimal
+            extra_data_json=plan_params,
         )
 
     if not free_trial:
@@ -974,6 +977,7 @@ def attach_discount_to_realm(
         event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
         event_time=timezone_now(),
         extra_data=str({"old_discount": old_discount, "new_discount": discount}),
+        extra_data_json={"old_discount": old_discount, "new_discount": discount},
     )
 
 
@@ -989,6 +993,7 @@ def update_sponsorship_status(
         event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
         event_time=timezone_now(),
         extra_data=str({"sponsorship_pending": sponsorship_pending}),
+        extra_data_json={"sponsorship_pending": sponsorship_pending},
     )
 
 
@@ -1243,4 +1248,5 @@ def update_billing_method_of_current_plan(
             event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
             event_time=timezone_now(),
             extra_data=str({"charge_automatically": charge_automatically}),
+            extra_data_json={"charge_automatically": charge_automatically},
         )
