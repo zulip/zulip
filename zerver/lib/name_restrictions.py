@@ -13,6 +13,8 @@ def is_reserved_subdomain(subdomain: str) -> bool:
         return True
     if subdomain[-1] == "s" and subdomain[:-1] in GENERIC_RESERVED_SUBDOMAINS:
         return True
+    if settings.CORPORATE_ENABLED and ("zulip" in subdomain or "kandra" in subdomain):
+        return True
     return False
 
 

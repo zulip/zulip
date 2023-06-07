@@ -1249,7 +1249,7 @@ class RealmCreationTest(ZulipTestCase):
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
         signups_stream, _ = create_stream_if_needed(notification_bot.realm, "signups")
 
-        string_id = "zuliptest"
+        string_id = "custom-test"
         org_name = "Zulip Test"
         # Make sure the realm does not exist
         with self.assertRaises(Realm.DoesNotExist):
@@ -1288,7 +1288,7 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertTrue(
-            result["Location"].startswith("http://zuliptest.testserver/accounts/login/subdomain/")
+            result["Location"].startswith("http://custom-test.testserver/accounts/login/subdomain/")
         )
 
         # Make sure the realm is created
@@ -1328,7 +1328,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assert_length(messages, 1)
         # Check organization name, subdomain and organization type are in message content
         self.assertIn("Zulip Test", messages[0].content)
-        self.assertIn("zuliptest", messages[0].content)
+        self.assertIn("custom-test", messages[0].content)
         self.assertIn("Organization type: Business", messages[0].content)
         self.assertEqual("new organizations", messages[0].topic_name())
 
@@ -1360,7 +1360,9 @@ class RealmCreationTest(ZulipTestCase):
 
     def test_create_realm_as_system_bot(self) -> None:
         result = self.submit_realm_creation_form(
-            email="notification-bot@zulip.com", realm_subdomain="zuliptest", realm_name="Zulip test"
+            email="notification-bot@zulip.com",
+            realm_subdomain="custom-test",
+            realm_name="Zulip test",
         )
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("notification-bot@zulip.com is reserved for system bots", result)
@@ -1375,7 +1377,7 @@ class RealmCreationTest(ZulipTestCase):
         with self.settings(OPEN_REALM_CREATION=False):
             # Create new realm with the email, but no creation key.
             result = self.submit_realm_creation_form(
-                email, realm_subdomain="zuliptest", realm_name="Zulip test"
+                email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("Organization creation link required", result)
@@ -1383,7 +1385,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_subdomain(self) -> None:
         password = "test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
 
@@ -1416,7 +1418,7 @@ class RealmCreationTest(ZulipTestCase):
 
         result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://custom-test.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -1429,7 +1431,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_marketing_emails_enabled(self) -> None:
         password = "test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
 
@@ -1466,7 +1468,7 @@ class RealmCreationTest(ZulipTestCase):
 
         result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://custom-test.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -1478,7 +1480,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True, CORPORATE_ENABLED=False)
     def test_create_realm_without_prompting_for_marketing_emails(self) -> None:
         password = "test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
 
@@ -1526,7 +1528,7 @@ class RealmCreationTest(ZulipTestCase):
 
         result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://custom-test.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -1538,7 +1540,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_marketing_emails_disabled(self) -> None:
         password = "test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Zulip test"
 
@@ -1575,7 +1577,7 @@ class RealmCreationTest(ZulipTestCase):
 
         result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://custom-test.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -1587,7 +1589,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_regular_realm_welcome_bot_direct_message(self) -> None:
         password = "test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
 
@@ -1631,9 +1633,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assertNotIn("demo organization", welcome_msg.content)
 
     @override_settings(OPEN_REALM_CREATION=True)
-    def test_create_education_demo_organiztion_welcome_bot_direct_message(self) -> None:
+    def test_create_education_demo_organization_welcome_bot_direct_message(self) -> None:
         password = "test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
 
@@ -1683,7 +1685,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True, FREE_TRIAL_DAYS=30)
     def test_create_realm_during_free_trial(self) -> None:
         password = "test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         email = "user1@test.com"
         realm_name = "Test"
 
@@ -1713,7 +1715,9 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         result = self.client_get(result["Location"], subdomain=string_id)
-        self.assertEqual(result["Location"], "http://zuliptest.testserver/upgrade/?onboarding=true")
+        self.assertEqual(
+            result["Location"], "http://custom-test.testserver/upgrade/?onboarding=true"
+        )
 
         result = self.client_get(result["Location"], subdomain=string_id)
         self.assert_in_success_response(["Not ready to start your trial?"], result)
@@ -1732,8 +1736,8 @@ class RealmCreationTest(ZulipTestCase):
         two pre-generated realm creation links to create two different realms.
         """
         password = "test"
-        first_string_id = "zuliptest"
-        second_string_id = "zuliptest2"
+        first_string_id = "custom-test"
+        second_string_id = "custom-test2"
         email = "user1@test.com"
         first_realm_name = "Test"
         second_realm_name = "Test"
@@ -1816,12 +1820,12 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_invalid_email_signup(self) -> None:
         result = self.submit_realm_creation_form(
-            email="<foo", realm_subdomain="zuliptest", realm_name="Zulip test"
+            email="<foo", realm_subdomain="custom-test", realm_name="Zulip test"
         )
         self.assert_in_response("Please use your real email address.", result)
 
         result = self.submit_realm_creation_form(
-            email="foo\x00bar", realm_subdomain="zuliptest", realm_name="Zulip test"
+            email="foo\x00bar", realm_subdomain="custom-test", realm_name="Zulip test"
         )
         self.assert_in_response("Please use your real email address.", result)
 
@@ -1995,6 +1999,14 @@ class RealmCreationTest(ZulipTestCase):
             check_subdomain_available("stream")
         check_subdomain_available("stream", allow_reserved_subdomain=True)
 
+        # "zulip" and "kandra" are allowed if not CORPORATE_ENABLED or with the flag
+        with self.settings(CORPORATE_ENABLED=False):
+            check_subdomain_available("we-are-zulip-team")
+        with self.settings(CORPORATE_ENABLED=True):
+            with self.assertRaises(ValidationError):
+                check_subdomain_available("we-are-zulip-team")
+            check_subdomain_available("we-are-zulip-team", allow_reserved_subdomain=True)
+
 
 class UserSignUpTest(ZulipTestCase):
     def _assert_redirected_to(self, result: "TestHttpResponse", url: str) -> None:
@@ -2088,7 +2100,7 @@ class UserSignUpTest(ZulipTestCase):
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
             result = self.submit_realm_creation_form(
-                email, realm_subdomain="zuliptest", realm_name="Zulip test"
+                email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
 
         self._assert_redirected_to(result, "/config-error/smtp")
