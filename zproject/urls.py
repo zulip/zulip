@@ -646,7 +646,7 @@ urls += [
     ),
     rest_path(
         "user_uploads/download/<realm_id_str>/<path:filename>",
-        GET=(serve_file_download_backend, {"override_api_url_scheme"}),
+        GET=(serve_file_download_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",
