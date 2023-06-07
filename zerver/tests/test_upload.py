@@ -263,6 +263,15 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
 
+        # Check that the /download/ variant works as well
+        download_url = url.replace("/user_uploads/", "/user_uploads/download/")
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(download_url)
+            self.assertEqual(response.status_code, 200)
+        with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(download_url)
+            self.assertEqual(response.status_code, 403)
+
         # Deny random file access
         response = self.client_get(
             "/user_uploads/2/71/QYB7LA-ULMYEad-QfLMxmI2e/zulip-non-existent.txt"
