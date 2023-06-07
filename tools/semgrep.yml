@@ -134,3 +134,22 @@ rules:
         - zerver/tests/
     message: "Do not fetch a Confirmation object directly, use get_object_from_key instead"
     severity: ERROR
+
+  - id: dont-make-batched-migration-atomic
+    patterns:
+      - pattern: |
+          class Migration(migrations.Migration):
+              ...
+      - pattern-inside: |
+          ...
+          BATCH_SIZE = ...
+          ...
+      - pattern-not: |
+          class Migration(migrations.Migration):
+              atomic = False
+    paths:
+      include:
+        - "**/migrations"
+    message: 'A batched migration should not be atomic. Add "atomic = False" to the Migration class'
+    languages: [python]
+    severity: ERROR
