@@ -739,7 +739,7 @@ $(async () => {
                 error(xhr) {
                     blueslip.error("Spectator failed to register", {
                         status: xhr.status,
-                        bodt: xhr.responseText,
+                        body: xhr.responseText,
                     });
                     reject(new Error("Spectator failed to register"));
                 },
