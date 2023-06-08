@@ -1272,7 +1272,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         prereg_realm = PreregistrationRealm.objects.get(email=email)
         self.assertEqual(prereg_realm.name, "Zulip Test")
         self.assertEqual(prereg_realm.org_type, Realm.ORG_TYPES["business"]["id"])
@@ -1407,7 +1407,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -1453,7 +1453,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -1502,7 +1502,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -1562,7 +1562,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -1607,7 +1607,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -1656,7 +1656,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -1706,7 +1706,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
@@ -1760,7 +1760,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         first_confirmation_url = self.get_confirmation_url_from_outbox(email)
         self.assertEqual(PreregistrationRealm.objects.filter(email=email, status=0).count(), 1)
 
@@ -1774,7 +1774,7 @@ class RealmCreationTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         second_confirmation_url = self.get_confirmation_url_from_outbox(email)
 
         self.assertNotEqual(first_confirmation_url, second_confirmation_url)
@@ -2034,7 +2034,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"], **client_kwargs)
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2117,7 +2117,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2152,7 +2152,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2190,7 +2190,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2223,7 +2223,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2328,7 +2328,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         from django.core.mail import outbox
 
@@ -2350,7 +2350,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2386,7 +2386,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2669,7 +2669,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Visit the confirmation link.
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -2853,7 +2853,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
@@ -2941,7 +2941,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
@@ -3025,7 +3025,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -3102,7 +3102,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -3178,7 +3178,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -3328,7 +3328,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -3383,7 +3383,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # If the user's email is inside the LDAP directory and we just
         # have a wrong password, then we refuse to create an account
@@ -3509,7 +3509,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
@@ -3554,7 +3554,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,
             LDAP_EMAIL_ATTR="mail",
@@ -3715,7 +3715,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         with patch("zerver.views.registration.name_changes_disabled", return_value=True):
             result = self.submit_reg_form_for_user(
@@ -3748,7 +3748,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
@@ -3814,7 +3814,7 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"], subdomain="zephyr")
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
         # Visit the confirmation link.
         from django.core.mail import outbox
 
