@@ -99,8 +99,8 @@ If you haven't already, now is a good time to install the Zulip development envi
 source projects in general, we recommend following our [detailed guide for
 first-time contributors][zulip-rtd-dev-first-time].
 
-If you are in the middle of installing the recommended setup on Windows 10,
-you are ready to [continue with step 8](../development/setup-recommended.md#windows-10).
+If you are in the middle of installing the recommended setup on Windows 10 or 11,
+you are ready to [continue with step 9](../development/setup-recommended.md#windows-10-or-11).
 
 ## Step 3: Configure continuous integration for your fork
 
