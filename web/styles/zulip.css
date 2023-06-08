@@ -147,7 +147,7 @@ body {
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
-    --color-default-text: hsl(0deg 0% 15%);
+    --color-text-message-default: hsl(0deg 0% 15%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
@@ -186,6 +186,9 @@ body {
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
+    /* Unlike the light theme, the dark theme renders message
+       text in the default color. */
+    --color-text-message-default: var(--color-text-default);
     --color-text-message-view-header: hsl(0deg 0% 100% / 80%);
     --color-text-message-header: hsl(0deg 0% 100% / 80%);
     --color-text-sender-name: hsl(0deg 0% 100% / 85%);
@@ -1768,6 +1771,7 @@ div.focused_table {
 }
 
 .message_content {
+    color: var(--color-text-message-default);
     line-height: 1.214;
     min-height: 17px;
     display: block;
