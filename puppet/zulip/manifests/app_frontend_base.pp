@@ -73,8 +73,19 @@ class zulip::app_frontend_base {
   $s3_memory_cache_size = zulipconf('application_server', 's3_memory_cache_size', '1M')
   $s3_disk_cache_size = zulipconf('application_server', 's3_disk_cache_size', '200M')
   $s3_cache_inactive_time = zulipconf('application_server', 's3_cache_inactive_time', '30d')
+  $configured_nginx_resolver = zulipconf('application_server', 'nameserver', '')
+  if $configured_nginx_resolver == '' {
+    # This may fail in the unlikely change that there is no configured
+    # resolver in /etc/resolv.conf, so only call it is unset in zulip.conf
+    $nginx_resolver_ip = resolver_ip()
+  } else {
+    $nginx_resolver_ip = $configured_nginx_resolver
+  }
   file { '/etc/nginx/zulip-include/s3-cache':
-    require => [Package[$zulip::common::nginx], File['/srv/zulip-uploaded-files-cache']],
+    require => [
+      Package[$zulip::common::nginx],
+      File['/srv/zulip-uploaded-files-cache'],
+    ],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',

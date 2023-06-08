@@ -1,3 +1,10 @@
+# nginx does its own DNS resolution, which is necessary here to
+# resolve the IP of the S3 server.  Point it at whatever is configured
+# first in /etc/resolv.conf.  The validity duration is set to match
+# S3's DNS validity.
+resolver <%= @nginx_resolver_ip %> valid=300s;
+resolver_timeout 10s;
+
 # This cache is only used if S3 file storage is configured.
 proxy_cache_path /srv/zulip-uploaded-files-cache
     levels=1:2

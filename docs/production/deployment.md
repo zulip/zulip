@@ -824,6 +824,14 @@ immutable, this serves only as a potential additional limit on the
 size of the contents on disk; `s3_disk_cache_size` is expected to be
 the primary control for cache sizing.
 
+#### `nameserver`
+
+When the [S3 storage backend][s3-backend] is in use, downloads from S3 are
+proxied from nginx, whose configuration requires an explicit value of a DNS
+nameserver to resolve the S3 server's hostname. Zulip defaults to using the
+resolver found in `/etc/resolv.conf`; this setting overrides any value found
+there.
+
 [s3-backend]: upload-backends.md
 
 #### `uwsgi_listen_backlog_limit`
