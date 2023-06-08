@@ -4029,7 +4029,7 @@ def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
         return None
 
 
-@cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600 * 24 * 7)
+@cache_with_key(lambda realm: bot_dicts_in_realm_cache_key(realm.id), timeout=3600 * 24 * 7)
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return list(UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields))
 

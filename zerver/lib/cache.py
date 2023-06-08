@@ -527,8 +527,8 @@ bot_dict_fields: List[str] = [
 ]
 
 
-def bot_dicts_in_realm_cache_key(realm: "Realm") -> str:
-    return f"bot_dicts_in_realm:{realm.id}"
+def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
+    return f"bot_dicts_in_realm:{realm_id}"
 
 
 def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
@@ -605,7 +605,7 @@ def flush_user_profile(
     # Invalidate our bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
     if user_profile.is_bot and changed(update_fields, bot_dict_fields):
-        cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
+        cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm_id))
 
 
 def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None:
@@ -634,7 +634,7 @@ def flush_realm(
     ):
         cache_delete(realm_user_dicts_cache_key(realm.id))
         cache_delete(active_user_ids_cache_key(realm.id))
-        cache_delete(bot_dicts_in_realm_cache_key(realm))
+        cache_delete(bot_dicts_in_realm_cache_key(realm.id))
         cache_delete(realm_alert_words_cache_key(realm))
         cache_delete(realm_alert_words_automaton_cache_key(realm))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
@@ -687,7 +687,7 @@ def flush_stream(
             Q(default_sending_stream=stream) | Q(default_events_register_stream=stream)
         ).exists()
     ):
-        cache_delete(bot_dicts_in_realm_cache_key(stream.realm))
+        cache_delete(bot_dicts_in_realm_cache_key(stream.realm_id))
 
 
 def flush_used_upload_space_cache(
