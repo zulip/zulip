@@ -950,7 +950,9 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
-    @cache_with_key(get_realm_used_upload_space_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(
+        lambda realm: get_realm_used_upload_space_cache_key(realm.id), timeout=3600 * 24 * 7
+    )
     def currently_used_upload_space_bytes(realm) -> int:  # noqa: N805
         used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
         if used_space is None:
