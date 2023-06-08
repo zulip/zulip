@@ -4949,14 +4949,14 @@ class AlertWord(models.Model):
         unique_together = ("user_profile", "word")
 
 
-def flush_realm_alert_words(realm: Realm) -> None:
-    cache_delete(realm_alert_words_cache_key(realm))
-    cache_delete(realm_alert_words_automaton_cache_key(realm))
+def flush_realm_alert_words(realm_id: int) -> None:
+    cache_delete(realm_alert_words_cache_key(realm_id))
+    cache_delete(realm_alert_words_automaton_cache_key(realm_id))
 
 
 def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
-    realm = instance.realm
-    flush_realm_alert_words(realm)
+    realm_id = instance.realm_id
+    flush_realm_alert_words(realm_id)
 
 
 post_save.connect(flush_alert_word, sender=AlertWord)
