@@ -48,8 +48,8 @@ $time_column_max_width: 150px;
             text-align: right;
             letter-spacing: 0.04em;
             color: var(--color-date);
-            /* To match time in message row and date in recipient row. */
-            padding-right: 6px;
+            /* Right padding matches time in message row and date in recipient row. */
+            padding: 8px 6px 8px 4px;
         }
     }
 
