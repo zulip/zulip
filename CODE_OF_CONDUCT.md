@@ -1,14 +1,13 @@
 # Zulip Code of Conduct
 
-Like the technical community as a whole, the Zulip team and community is
-made up of a mixture of professionals and volunteers from all over the
+Like the technical community as a whole, the Zulip team and community comprises of a mixture of professionals and volunteers from all over the
 world, working on every aspect of the mission, including mentorship,
 teaching, and connecting people.
 
 Diversity is one of our huge strengths, but it can also lead to
 communication issues and unhappiness. To that end, we have a few ground
 rules that we ask people to adhere to. This code applies equally to
-founders, mentors, and those seeking help and guidance.
+founders, mentors, and individuals seeking help and guidance.
 
 This isn't an exhaustive list of things that you can't do. Rather, take it
 in the spirit in which it's intended --- a guide to make it easier to enrich
@@ -66,14 +65,14 @@ organizers may take any action they deem appropriate, up to and including a
 temporary ban or permanent expulsion from the community without warning (and
 without refund in the case of a paid event).
 
-If someone outside the development community (e.g. a user of the Zulip
+If someone outside the development community (for example, a user of the Zulip
 software) engages in unacceptable behavior that affects someone in the
 community, we still want to know. Even if we don't have direct control over
 the violator, the community organizers can still support the people
 affected, reduce the chance of a similar violation in the future, and take
 any direct action we can.
 
-The nature of reporting means it can only help after the fact. If you see
+The nature of reporting means it can only provide assistance after the fact. If you see
 something you can do while a violation is happening, do it. A lot of the
 harms of harassment and other violations can be mitigated by the victim
 knowing that the other people present are on their side.
@@ -105,7 +104,7 @@ license.
 
 ## Moderating the Zulip community
 
-Anyone can help moderate the Zulip community by helping make sure that folks are
+Anyone can help moderate the Zulip community by ensuring that folks are
 aware of the [community guidelines](https://zulip.com/development-community/)
 and this Code of Conduct, and that we maintain a positive and respectful
 atmosphere.
@@ -141,7 +140,7 @@ Here are some guidelines for you how can help:
     > https://zulip.com/development-community/#community-norms to learn how to
     > get help in this community.
 
-- Users sometimes think chat.zulip.org is a testing instance. When this happens,
+- Users sometimes think, chat.zulip.org is a testing instance. When this happens,
   kindly direct them to use the **#test here** stream.
 
 - If you see a message that’s posted in the wrong place, go ahead and move it if
@@ -149,7 +148,7 @@ Here are some guidelines for you how can help:
   Leaving the “Send automated notice to new topic” option enabled helps make it
   clear what happened to the person who sent the message.
 
-  If you are responding to a message that's been moved, mention the user in your
+  If you are responding to a message that has been moved, mention the user in your
   reply, so that the mention serves as a notification of the new location for
   their conversation.
 
