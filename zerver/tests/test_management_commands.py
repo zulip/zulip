@@ -342,7 +342,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             result["Location"],
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Original link is now dead
         result = self.client_get(generated_link)

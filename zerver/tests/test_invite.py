@@ -2197,7 +2197,7 @@ class MultiuseInviteTest(ZulipTestCase):
             )
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)

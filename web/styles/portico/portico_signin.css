@@ -170,6 +170,10 @@ html {
             font-size: 19px;
         }
     }
+
+    &.account-email-confirm-container .white-box {
+        max-width: 545px;
+    }
 }
 
 .login-page-container {
