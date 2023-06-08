@@ -48,9 +48,6 @@ body {
 :root {
     color-scheme: light;
 
-    --color-default-text: hsl(0deg 0% 15%);
-    --color-date: hsl(0deg 0% 15% / 75%);
-
     /*
     This is the header, aka the navbar.
     */
@@ -127,6 +124,7 @@ body {
     --max-unexpanded-compose-height: 40vh;
 
     /* Colors used across the app */
+    --color-date: hsl(0deg 0% 15% / 75%);
     --color-background-private-message-header: hsl(46deg 35% 93%);
     --color-background-private-message-content: hsl(45deg 20% 96%);
     --color-background-stream-message-content: hsl(0deg 0% 100%);
@@ -149,6 +147,7 @@ body {
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
+    --color-default-text: hsl(0deg 0% 15%);
     --color-text-message-view-header: hsl(0deg 0% 20% / 100%);
     --color-text-message-header: hsl(0deg 0% 15%);
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
