@@ -1,3 +1,9 @@
+!!! warn ""
+
+    This IRC integration is currently not working. Please consider
+    using [matterbridge](https://github.com/42wim/matterbridge)
+    until we get it working again.
+
 Mirror an IRC channel in Zulip!
 
 ### Install the bridge software
