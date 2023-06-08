@@ -52,7 +52,7 @@ explored all the leading open-source team chat products. They found that while
 Mattermost and Rocket.Chat were similar to Slack (but felt less polished), Zulip
 stood out. “Zulip had all the modern features we were looking for, like
 reliable, flexible notifications. At the same time, the [extensive keyboard
-shortcuts](/help/keyboard-shortcuts) and the ‘All messages‘
+shortcuts](/help/keyboard-shortcuts) and the ‘All messages’
 view offered a UI that the IRC fans loved.”
 
 When End Point moved to Zulip, it was an immediate improvement over the

@@ -70,7 +70,7 @@ feedback.
   possible for others to benefit from the discussion.
 - Don’t ask the same question in multiple places. Moderators read
   every public stream, and make sure every question gets a reply.
-- Use @-mentions sparingly. Unlike IRC or Slack, Zulip‘s topics make
+- Use @-mentions sparingly. Unlike IRC or Slack, Zulip’s topics make
   it easy to see what you’re replying to, so you don’t need to mention
   your conversation partner to make sure they will see or understand
   your reply. Core contributors will often @-mention someone who asked
