@@ -498,8 +498,8 @@ def get_muting_users_cache_key(muted_user_id: int) -> str:
     return f"muting_users_list:{muted_user_id}"
 
 
-def get_realm_used_upload_space_cache_key(realm: "Realm") -> str:
-    return f"realm_used_upload_space:{realm.id}"
+def get_realm_used_upload_space_cache_key(realm_id: int) -> str:
+    return f"realm_used_upload_space:{realm_id}"
 
 
 def active_user_ids_cache_key(realm_id: int) -> str:
@@ -699,7 +699,7 @@ def flush_used_upload_space_cache(
     attachment = instance
 
     if created:
-        cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
+        cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm_id))
 
 
 def to_dict_cache_key_id(message_id: int) -> str:
