@@ -101,6 +101,5 @@ export function confirm_unstar_all_messages_in_topic(stream_id, topic) {
 }
 
 export function initialize() {
-    starred_messages.initialize();
     rerender_ui();
 }

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
-const {page_params, user_settings} = require("./lib/zpage_params");
+const {user_settings} = require("./lib/zpage_params");
 
 const top_left_corner = mock_esm("../src/top_left_corner", {
     update_starred_count() {},
@@ -83,8 +83,10 @@ run_test("initialize", () => {
         starred_messages.starred_ids.add(id);
     }
 
-    page_params.starred_messages = [4, 5, 6];
-    starred_messages.initialize();
+    const starred_messages_params = {
+        starred_messages: [4, 5, 6],
+    };
+    starred_messages.initialize(starred_messages_params);
     assert.deepEqual(starred_messages.get_starred_msg_ids(), [4, 5, 6]);
 });
 

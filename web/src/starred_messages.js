@@ -1,12 +1,11 @@
 import * as message_store from "./message_store";
-import {page_params} from "./page_params";
 
 export const starred_ids = new Set();
 
-export function initialize() {
+export function initialize(starred_messages_params) {
     starred_ids.clear();
 
-    for (const id of page_params.starred_messages) {
+    for (const id of starred_messages_params.starred_messages) {
         starred_ids.add(id);
     }
 }

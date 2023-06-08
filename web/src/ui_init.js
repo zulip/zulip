@@ -91,6 +91,7 @@ import * as settings_realm_user_settings_defaults from "./settings_realm_user_se
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
+import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -558,6 +559,7 @@ export function initialize_everything() {
 
     const presence_params = pop_fields("presences", "server_timestamp");
 
+    const starred_messages_params = pop_fields("starred_messages");
     const stream_data_params = pop_fields(
         "subscriptions",
         "unsubscribed",
@@ -599,6 +601,7 @@ export function initialize_everything() {
 
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
     people.initialize(page_params.user_id, people_params);
+    starred_messages.initialize(starred_messages_params);
 
     let date_joined;
     if (!page_params.is_spectator) {
