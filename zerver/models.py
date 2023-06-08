@@ -245,12 +245,12 @@ def get_recipient_ids(
     return to, recipient_type_str
 
 
-def get_realm_emoji_cache_key(realm: "Realm") -> str:
-    return f"realm_emoji:{realm.id}"
+def get_realm_emoji_cache_key(realm_id: int) -> str:
+    return f"realm_emoji:{realm_id}"
 
 
-def get_active_realm_emoji_cache_key(realm: "Realm") -> str:
-    return f"active_realm_emoji:{realm.id}"
+def get_active_realm_emoji_cache_key(realm_id: int) -> str:
+    return f"active_realm_emoji:{realm_id}"
 
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
@@ -845,13 +845,13 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
-    @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(lambda realm: get_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
     def get_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_realm_emoji_uncached(realm)
+        return get_realm_emoji_uncached(realm.id)
 
-    @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
+    @cache_with_key(lambda realm: get_active_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
     def get_active_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_active_realm_emoji_uncached(realm)
+        return get_active_realm_emoji_uncached(realm.id)
 
     def get_admin_users_and_bots(
         self, include_realm_owners: bool = True
@@ -1165,13 +1165,13 @@ class RealmEmoji(models.Model):
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
-def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
+def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
     # RealmEmoji objects with file_name=None are still in the process
     # of being uploaded, and we expect to be cleaned up by a
     # try/finally block if the upload fails, so it's correct to
     # exclude them.
     query = (
-        RealmEmoji.objects.filter(realm=realm)
+        RealmEmoji.objects.filter(realm_id=realm_id)
         .exclude(
             file_name=None,
         )
@@ -1212,12 +1212,12 @@ def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dic
     return d
 
 
-def get_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
-    return get_realm_emoji_dicts(realm)
+def get_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
+    return get_realm_emoji_dicts(realm_id)
 
 
-def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
-    realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
+def get_active_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
+    realm_emojis = get_realm_emoji_dicts(realm_id, only_active_emojis=True)
     d = {}
     for emoji_id, emoji_dict in realm_emojis.items():
         d[emoji_dict["name"]] = emoji_dict
@@ -1235,13 +1235,15 @@ def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
         # such an object shouldn't have been cached yet, and this
         # function will be called again when file_name is set.
         return
-    realm = instance.realm
+    realm_id = instance.realm_id
     cache_set(
-        get_realm_emoji_cache_key(realm), get_realm_emoji_uncached(realm), timeout=3600 * 24 * 7
+        get_realm_emoji_cache_key(realm_id),
+        get_realm_emoji_uncached(realm_id),
+        timeout=3600 * 24 * 7,
     )
     cache_set(
-        get_active_realm_emoji_cache_key(realm),
-        get_active_realm_emoji_uncached(realm),
+        get_active_realm_emoji_cache_key(realm_id),
+        get_active_realm_emoji_uncached(realm_id),
         timeout=3600 * 24 * 7,
     )
 
