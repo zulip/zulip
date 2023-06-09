@@ -893,3 +893,52 @@ ul {
         padding-bottom: 16px;
     }
 }
+
+
+.c-avatar {
+    border: none;
+    background: none;
+    cursor: pointer;
+    margin-top: 1px;
+    vertical-align: top; 
+  }
+
+  .c-avatar:hover {
+  background-color: #e9e7e7;
+}
+
+  .c-avatar__content {
+    display: flex;
+    align-items: center;
+  }
+
+  .c-avatar__icon {
+    font-size: 1rem;
+    width: 2rem;
+    height: 2rem;
+    color: hsl(0, 0%, 57.65%);
+    background-size: cover; 
+    background-position: center;
+    border-radius: 50%; 
+    image-rendering: crisp-edges;
+    transition: none;
+    vertical-align: top;
+  }
+
+  .c-avatar__name {
+    margin-left: 0.5rem;
+    font-weight: bold;
+    color: #000;
+    font-size: 0.9rem;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1;
+}
+
+.c-avatar:hover .c-avatar__name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+}

@@ -688,6 +688,7 @@ html_rules: List["Rule"] = [
             "web/templates/user_profile_modal.hbs",
             "web/templates/pm_list_item.hbs",
             # Inline styling for an svg; could be moved to CSS files?
+             "web/templates/navbar.hbs"
             "templates/zerver/landing_nav.html",
             "templates/zerver/billing_nav.html",
             "templates/corporate/features.html",

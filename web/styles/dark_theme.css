@@ -1592,6 +1592,56 @@
             }
         }
     }
+    .c-avatar {
+        border: none;
+    
+        background: none;
+    
+        cursor: pointer;
+    
+        margin-top: 1px;
+        vertical-align: top; /* Align the button to the top */
+      }
+    
+      .c-avatar:hover {
+      background-color: #2e2c2c; /* Set the background color for hover state */
+    }
+    
+      .c-avatar__content {
+        display: flex;
+        align-items: center;
+      }
+    
+      .c-avatar__icon {
+        font-size: 1rem;
+        width: 2rem;
+        height: 2rem;
+        color: hsl(0, 0%, 57.65%);
+        background-size: cover; /* Adjust the background-size property */
+        background-position: center; /* Optionally adjust the background-position */
+        border-radius: 50%; /* Make the icon circular */
+        image-rendering: crisp-edges;
+        transition: none;
+        vertical-align: top;
+      }
+    
+      .c-avatar__name {
+        margin-left: 0.5rem;
+        font-weight: bold;
+        color: #ffffff;
+        font-size: 0.9rem;
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1;
+    }
+    
+    .c-avatar:hover .c-avatar__name {
+        white-space: normal; /* Display the full text on hover */
+        overflow: visible;
+        text-overflow: initial;
+    }
 }
 
 @supports (-moz-appearance: none) {

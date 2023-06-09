@@ -4,6 +4,7 @@
 
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import {parseISO} from "date-fns";
 import tippy, {delegate} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
@@ -14,12 +15,16 @@ import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delet
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
+import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_popover from "../templates/send_later_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
+import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
+import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
 
 import * as blueslip from "./blueslip";
+import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
@@ -31,6 +36,7 @@ import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as flatpickr from "./flatpickr";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
@@ -38,11 +44,14 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -50,7 +59,9 @@ import * as stream_popover from "./stream_popover";
 import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
+import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
@@ -67,6 +78,7 @@ const popover_instances = {
     compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
+    personal_menu: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -917,5 +929,101 @@ export function initialize() {
             instance.destroy();
             popover_instances.send_later = undefined;
         },
+    });
+
+    register_popover_menu(".c-avatar", {
+        placement: "bottom",
+        offset: [0, 0],
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("personal-menu-tippy");
+            popover_instances.personal_menu = instance;
+        },
+
+        onShow(instance) {
+        const user = people.get_by_user_id(page_params.user_id);
+        const is_me = people.is_my_user_id(user.user_id);
+
+        let invisible_mode = false;
+
+        if (is_me) {
+            invisible_mode = !user_settings.presence_enabled;
+        }
+
+        const muting_allowed = !is_me && !user.is_bot;
+        const is_active = people.is_active_user_for_popover(user.user_id);
+        const is_system_bot = user.is_system_bot;
+        const status_text = user_status.get_status_text(user.user_id);
+        const status_emoji_info = user_status.get_status_emoji(user.user_id);
+        const spectator_view = page_params.is_spectator;
+
+        // TODO: The show_manage_menu calculation can get a lot simpler
+        // if/when we allow muting bot users.
+        const can_manage_user = page_params.is_admin && !is_me && !is_system_bot;
+        const show_manage_menu = !spectator_view && (muting_allowed || can_manage_user);
+
+        let date_joined;
+        if (spectator_view) {
+            date_joined = timerender.get_localized_date_or_time_for_format(
+                parseISO(user.date_joined),
+                "dayofyear_year",
+            );
+        }
+        // Filtering out only those profile fields that can be display in the popover and are not empty.
+        const field_types = page_params.custom_profile_field_types;
+        const display_profile_fields = page_params.custom_profile_fields
+            .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types))
+            .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
+
+        const args = {
+            invisible_mode,
+            can_send_private_message:
+                is_active &&
+                !is_me &&
+                page_params.realm_private_message_policy !==
+                    settings_config.private_message_policy_values.disabled.code,
+            display_profile_fields,
+            has_message_context: false,
+            is_active,
+            is_bot: user.is_bot,
+            is_me,
+            is_sender_popover: false,
+            pm_with_url: hash_util.pm_with_url(user.email),
+            user_circle_class: buddy_data.get_user_circle_class(user.user_id),
+            private_message_class: "compose_private_message",
+            sent_by_url: hash_util.by_sender_url(user.email),
+            show_manage_menu,
+            user_email: user.delivery_email,
+            user_full_name: user.full_name,
+            user_id: user.user_id,
+            user_last_seen_time_status: buddy_data.user_last_seen_time_status(user.user_id),
+            user_time: people.get_user_time(user.user_id),
+            user_type: people.get_user_type(user.user_id),
+            status_content_available: Boolean(status_text || status_emoji_info),
+            status_text,
+            status_emoji_info,
+            user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
+            date_joined,
+            spectator_view,
+        };
+
+        if (user.is_bot) {
+            const bot_owner_id = user.bot_owner_id;
+            if (is_system_bot) {
+                args.is_system_bot = is_system_bot;
+            } else if (bot_owner_id) {
+                const bot_owner = people.get_by_user_id(bot_owner_id);
+                args.bot_owner = bot_owner;
+            }
+        }
+
+        instance.setContent(parse_html(render_user_info_popover_content(args)));
+    },
+
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.personal_menu = undefined;
+        },
+
     });
 }
