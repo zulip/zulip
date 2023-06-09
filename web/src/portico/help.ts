@@ -16,11 +16,7 @@ type Article = {
 };
 
 const cache = new Map<string, Article>();
-const loading: {
-    name: string | null;
-} = {
-    name: null,
-};
+let current_loading_path: string | null = null;
 
 function register_code_section($code_section: JQuery): void {
     const $li = $code_section.find("ul.nav li");
@@ -164,11 +160,11 @@ const update_page = function (cache: Map<string, Article>, path: string): void {
         render_code_sections();
         scrollToHash(markdownSB);
     } else {
-        loading.name = path;
+        current_loading_path = path;
         fetch_page(path, (article) => {
             cache.set(path, article);
             $(".markdown .content").html(article.html);
-            loading.name = null;
+            current_loading_path = null;
             document.title = article.title;
             scrollToHash(markdownSB);
         });
@@ -190,7 +186,7 @@ $(".sidebar a").on("click", function (e) {
         return;
     }
 
-    if (loading.name === path) {
+    if (current_loading_path === path) {
         return;
     }
 
@@ -249,4 +245,5 @@ window.addEventListener("popstate", () => {
 });
 
 $("body").addClass("noscroll");
+
 $(".highlighted")[0]?.scrollIntoView({block: "center"});
