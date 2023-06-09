@@ -1035,7 +1035,10 @@ div.overlay {
         }
 
         .overlay_message_controls {
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             font-size: 0.9em;
 
             [data-tippy-root] {
@@ -1045,7 +1048,6 @@ div.overlay {
 
             .restore-overlay-message {
                 cursor: pointer;
-                margin-right: 5px;
                 color: hsl(170deg 48% 54%);
                 opacity: 0.7;
 
@@ -1056,7 +1058,6 @@ div.overlay {
 
             .delete-overlay-message {
                 cursor: pointer;
-                margin-left: 5px;
                 color: hsl(357deg 52% 57%);
                 opacity: 0.7;
 
