@@ -2130,6 +2130,21 @@ class TestMissedMessages(ZulipTestCase):
         )
         do_change_user_setting(hamlet, "wildcard_mentions_notify", False, acting_user=None)
 
+        # Topic wildcard mention in followed topic should soft reactivate the user
+        # hamlet should be a topic participant
+        self.send_stream_message(hamlet, "Denmark", "test message")
+        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger="topic_wildcard_mentioned_in_followed_topic"
+                    ),
+                },
+            )
+
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
             mention = "@**all**"
@@ -2151,6 +2166,19 @@ class TestMissedMessages(ZulipTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
         )
         do_change_user_setting(hamlet, "wildcard_mentions_notify", True, acting_user=None)
+
+        # Topic Wildcard mention should soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger="topic_wildcard_mentioned"
+                    ),
+                },
+            )
 
         # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
