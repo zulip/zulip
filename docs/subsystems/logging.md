@@ -21,11 +21,7 @@ The [Django][django-errors] framework provides much of the
 infrastructure needed by our error reporting system:
 
 - The ability to send emails to the server's administrators with any
-  500 errors, using the `mail_admins` function. We enhance these data
-  with extra details (like what user was involved in the error) in
-  `zerver/logging_handlers.py`, and then send them to the
-  administrator in `zerver/lib/error_notify.py` (which also supports
-  sending Zulips to a stream about production errors).
+  500 errors, using `django.utils.log.AdminEmailHandler`.
 - The ability to rate-limit certain errors to avoid sending hundreds
   of emails in an outage (see `_RateLimitFilter` in
   `zerver/lib/logging_util.py`)
@@ -270,7 +266,6 @@ a new view:
 - The time when the browser was idle again after switching views
   (intended to catch issues where we generate a lot of deferred work).
 
-[django-errors]: https://docs.djangoproject.com/en/3.2/howto/error-reporting/
 [python-logging]: https://docs.python.org/3/library/logging.html
 [django-logging]: https://docs.djangoproject.com/en/3.2/topics/logging/
 [sentry]: https://sentry.io

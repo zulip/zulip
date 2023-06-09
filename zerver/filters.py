@@ -1,4 +1,3 @@
-import re
 from typing import Any, Dict, Optional
 
 from django.http import HttpRequest
@@ -30,7 +29,3 @@ class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
             if var in filtered_post:
                 filtered_post[var] = "**********"
         return filtered_post
-
-
-def clean_data_from_query_parameters(val: str) -> str:
-    return re.sub(r"([a-z_-]+=)([^&]+)([&]|$)", r"\1******\3", val)

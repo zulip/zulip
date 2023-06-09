@@ -85,7 +85,6 @@ zulip-workers:zulip_events_email_mirror                         RUNNING   pid 10
 zulip-workers:zulip_events_email_senders                        RUNNING   pid 10769, uptime 19:40:49
 zulip-workers:zulip_events_embed_links                          RUNNING   pid 11035, uptime 19:40:46
 zulip-workers:zulip_events_embedded_bots                        RUNNING   pid 11139, uptime 19:40:43
-zulip-workers:zulip_events_error_reports                        RUNNING   pid 11154, uptime 19:40:40
 zulip-workers:zulip_events_invites                              RUNNING   pid 11261, uptime 19:40:36
 zulip-workers:zulip_events_missedmessage_emails                 RUNNING   pid 11346, uptime 19:40:21
 zulip-workers:zulip_events_missedmessage_mobile_notifications   RUNNING   pid 11351, uptime 19:40:19
