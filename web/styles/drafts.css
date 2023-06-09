@@ -1,87 +1,9 @@
 .drafts-container {
     .drafts-list {
-        .removed-drafts {
-            display: block;
-            text-align: center;
-            font-size: 1em;
-            color: hsl(0deg 0% 67%);
-            pointer-events: none;
-        }
-
         & h2 {
             font-size: 1.1em;
             line-height: normal;
             margin-bottom: 5px;
-        }
-    }
-}
-
-.draft-row {
-    padding: 5px 0;
-
-    > div {
-        display: inline-block;
-        vertical-align: top;
-    }
-
-    .draft-info-box {
-        width: 100%;
-        margin-bottom: 10px;
-
-        &.active {
-            outline: 2px solid hsl(215deg 47% 50%);
-            border-radius: 7px;
-        }
-
-        .message_row {
-            border-radius: 0 0 7px 7px;
-            border: 1px solid var(--color-message-list-border);
-            border-top: 0;
-        }
-
-        .messagebox {
-            cursor: auto;
-            box-shadow: none;
-            border-radius: 0 0 7px 7px;
-        }
-
-        .draft_controls {
-            display: inline-block;
-            font-size: 0.9em;
-
-            [data-tippy-root] {
-                width: max-content;
-                word-wrap: unset;
-            }
-
-            .restore-draft {
-                cursor: pointer;
-                margin-right: 5px;
-                color: hsl(170deg 48% 54%);
-                opacity: 0.7;
-
-                &:hover {
-                    opacity: 1;
-                }
-            }
-
-            .delete-draft {
-                cursor: pointer;
-                margin-left: 5px;
-                color: hsl(357deg 52% 57%);
-                opacity: 0.7;
-
-                &:hover {
-                    opacity: 1;
-                }
-            }
-        }
-
-        .message_header {
-            /* We don't need these effects applied for message list in the drafts overlay. */
-            box-shadow: none !important;
-            border: 0 !important;
-            background: transparent;
         }
     }
 }
