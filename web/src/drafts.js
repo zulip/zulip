@@ -427,12 +427,12 @@ function remove_draft($draft_row) {
 
     $draft_row.remove();
 
-    if ($("#drafts_table .draft-row").length === 0) {
+    if ($("#drafts_table .overlay-message-row").length === 0) {
         $("#drafts_table .no-drafts").show();
     }
     update_rendered_drafts(
-        $("#drafts-from-conversation .draft-row").length > 0,
-        $("#other-drafts .draft-row").length > 0,
+        $("#drafts-from-conversation .overlay-message-row").length > 0,
+        $("#other-drafts .overlay-message-row").length > 0,
     );
 }
 
@@ -551,8 +551,8 @@ const keyboard_handling_context = {
     },
     items_container_selector: "drafts-container",
     items_list_selector: "drafts-list",
-    row_item_selector: "draft-row",
-    box_item_selector: "draft-info-box",
+    row_item_selector: "overlay-message-row",
+    box_item_selector: "overlay-message-info-box",
     id_attribute_name: "data-draft-id",
 };
 
@@ -606,11 +606,11 @@ export function launch() {
         });
         const $drafts_table = $("#drafts_table");
         $drafts_table.append(rendered);
-        if ($("#drafts_table .draft-row").length > 0) {
+        if ($("#drafts_table .overlay-message-row").length > 0) {
             $("#drafts_table .no-drafts").hide();
             // Update possible dynamic elements.
             const $rendered_drafts = $drafts_table.find(
-                ".message_content.rendered_markdown.restore-draft",
+                ".message_content.rendered_markdown.restore-overlay-message",
             );
             $rendered_drafts.each(function () {
                 rendered_markdown.update_elements($(this));
@@ -620,23 +620,26 @@ export function launch() {
     }
 
     function setup_event_handlers() {
-        $(".restore-draft").on("click", function (e) {
+        $("#drafts_table .restore-overlay-message").on("click", function (e) {
             if (document.getSelection().type === "Range") {
                 return;
             }
 
             e.stopPropagation();
 
-            const $draft_row = $(this).closest(".draft-row");
+            const $draft_row = $(this).closest(".overlay-message-row");
             const $draft_id = $draft_row.data("draft-id");
             restore_draft($draft_id);
         });
 
-        $(".draft_controls .delete-draft").on("click", function () {
-            const $draft_row = $(this).closest(".draft-row");
+        $("#drafts_table .overlay_message_controls .delete-overlay-message").on(
+            "click",
+            function () {
+                const $draft_row = $(this).closest(".overlay-message-row");
 
-            remove_draft($draft_row);
-        });
+                remove_draft($draft_row);
+            },
+        );
     }
 
     const drafts = draft_model.get();
@@ -685,7 +688,7 @@ export function initialize() {
 
     set_count(Object.keys(draft_model.get()).length);
 
-    $("body").on("focus", ".draft-info-box", (e) => {
+    $("body").on("focus", "#drafts_table .overlay-message-info-box", (e) => {
         messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
     });
 }

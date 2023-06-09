@@ -609,11 +609,11 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
-    $.create("#drafts_table .draft-row", {children: []});
+    $.create("#drafts_table .overlay-message-row", {children: []});
     drafts.launch();
 
     $.clear_all_elements();
-    $.create("#drafts_table .draft-row", {children: []});
+    $.create("#drafts_table .overlay-message-row", {children: []});
     $("#draft_overlay").css = () => {};
 
     override_rewire(sub_store, "get", (stream_id) => {
@@ -769,6 +769,6 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     compose_state.set_message_type("private");
     compose_state.private_message_recipient(aaron.email);
 
-    $.create("#drafts_table .draft-row", {children: []});
+    $.create("#drafts_table .overlay-message-row", {children: []});
     drafts.launch();
 });

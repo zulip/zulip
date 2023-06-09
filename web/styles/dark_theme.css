@@ -612,7 +612,7 @@
     #compose-content,
     .message_list .recipient_row,
     .message_row,
-    .draft-row .draft-info-box,
+    .overlay-message-row .overlay-message-info-box,
     .preview_message_area {
         border-color: hsl(0deg 0% 0% / 40%);
     }
