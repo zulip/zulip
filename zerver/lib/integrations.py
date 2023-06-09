@@ -609,17 +609,6 @@ INTEGRATIONS: Dict[str, Integration] = {
     ),
     "svn": Integration("svn", "svn", ["version-control"], doc="zerver/integrations/svn.md"),
     "trac": Integration("trac", "trac", ["project-management"], doc="zerver/integrations/trac.md"),
-    "trello-plugin": Integration(
-        "trello-plugin",
-        "trello-plugin",
-        ["project-management"],
-        logo="images/integrations/logos/trello.svg",
-        secondary_line_text="(legacy)",
-        display_name="Trello",
-        doc="zerver/integrations/trello-plugin.md",
-        stream_name="trello",
-        legacy=True,
-    ),
     "twitter": Integration(
         "twitter",
         "twitter",
