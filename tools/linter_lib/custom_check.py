@@ -154,17 +154,9 @@ js_rules = RuleList(
             "exclude": {"web/tests/"},
         },
         {
-            "pattern": r"ui.report_success\(",
-            "description": "Deprecated function, use ui_report.success.",
-        },
-        {
             "pattern": r"""report.success\(["']""",
             "description": "Argument to ui_report.success should be a literal string translated "
             "by $t_html()",
-        },
-        {
-            "pattern": r"ui.report_error\(",
-            "description": "Deprecated function, use ui_report.error.",
         },
         {
             "pattern": r"""report.error\(["'][^'"]""",
