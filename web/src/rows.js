@@ -71,7 +71,7 @@ export function visible_range(start_id, end_id) {
 }
 
 export function is_draft_row($row) {
-    return $row.find(".restore-draft").length >= 1;
+    return $row.find("#drafts_table .restore-overlay-message").length >= 1;
 }
 
 export function id($message_row) {

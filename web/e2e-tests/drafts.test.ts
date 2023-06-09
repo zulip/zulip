@@ -13,7 +13,7 @@ async function wait_for_drafts_to_appear(page: Page): Promise<void> {
 }
 
 async function get_drafts_count(page: Page): Promise<number> {
-    return await page.$$eval(".draft-row", (drafts) => drafts.length);
+    return await page.$$eval("#drafts_table .overlay-message-row", (drafts) => drafts.length);
 }
 
 const drafts_button = ".top_left_drafts";
@@ -76,35 +76,35 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row .message_header_stream .stream_label",
+            "#drafts_table .overlay-message-row .message_header_stream .stream_label",
         ),
         "Denmark",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row .message_header_stream .stream_topic",
+            "#drafts_table .overlay-message-row .message_header_stream .stream_topic",
         ),
         "tests",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
+            "#drafts_table .overlay-message-row:nth-last-child(2) .rendered_markdown.restore-overlay-message",
         ),
         "Test direct message.",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row .message_header_private_message .stream_label",
+            "#drafts_table .overlay-message-row .message_header_private_message .stream_label",
         ),
         "You and Cordelia, Lear's daughter, King Hamlet",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row:last-child .rendered_markdown.restore-draft",
+            "#drafts_table .overlay-message-row:last-child .rendered_markdown.restore-overlay-message",
         ),
         "Test stream message.",
     );
@@ -112,7 +112,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
 
 async function test_restore_message_draft_via_draft_overlay(page: Page): Promise<void> {
     console.log("Restoring stream message draft");
-    await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
+    await page.click("#drafts_table .message_row:not(.private-message) .restore-overlay-message");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#stream_message_recipient_topic", {visible: true});
     await page.waitForSelector("#preview_message_area", {hidden: true});
@@ -145,21 +145,21 @@ async function test_edited_draft_message(page: Page): Promise<void> {
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row .message_header_stream .stream_label",
+            "#drafts_table .overlay-message-row .message_header_stream .stream_label",
         ),
         "Denmark",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row .message_header_stream .stream_topic",
+            "#drafts_table .overlay-message-row .message_header_stream .stream_topic",
         ),
         "tests",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row .message_row:not(.private-message) .rendered_markdown.restore-draft",
+            "#drafts_table .overlay-message-row .message_row:not(.private-message) .rendered_markdown.restore-overlay-message",
         ),
         "Updated stream message",
     );
@@ -167,7 +167,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
 
 async function test_restore_private_message_draft_via_draft_overlay(page: Page): Promise<void> {
     console.log("Restoring direct message draft.");
-    await page.click(".message_row.private-message .restore-draft");
+    await page.click(".message_row.private-message .restore-overlay-message");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#compose-direct-recipient", {visible: true});
     await common.check_compose_state(page, {
@@ -189,7 +189,7 @@ async function test_delete_draft(page: Page): Promise<void> {
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
     await wait_for_drafts_to_appear(page);
-    await page.click("#drafts_table .message_row.private-message .delete-draft");
+    await page.click("#drafts_table .message_row.private-message .delete-overlay-message");
     const drafts_count = await get_drafts_count(page);
     assert.strictEqual(drafts_count, 1, "Draft not deleted.");
     await page.waitForSelector("#drafts_table .message_row.private-message", {hidden: true});
@@ -223,14 +223,14 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row .message_header_private_message .stream_label",
+            "#drafts_table .overlay-message-row .message_header_private_message .stream_label",
         ),
         "You and Cordelia, Lear's daughter",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
-            ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
+            "#drafts_table .overlay-message-row:nth-last-child(2) .rendered_markdown.restore-overlay-message",
         ),
         "Test direct message draft.",
     );

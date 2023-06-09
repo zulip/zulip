@@ -89,7 +89,7 @@ function row_before_focus(context: Context): JQuery {
         $focused_row.parent().attr("id") === "other-drafts" &&
         $("#drafts-from-conversation").is(":visible")
     ) {
-        return $($("#drafts-from-conversation").children(".draft-row:visible").last());
+        return $($("#drafts-from-conversation").children(".overlay-message-row:visible").last());
     }
 
     return $prev_row;
@@ -106,7 +106,7 @@ function row_after_focus(context: Context): JQuery {
         $focused_row.parent().attr("id") === "drafts-from-conversation" &&
         $("#other-drafts").is(":visible")
     ) {
-        return $("#other-drafts").children(".draft-row:visible").first();
+        return $("#other-drafts").children(".overlay-message-row:visible").first();
     }
     return $next_row;
 }
