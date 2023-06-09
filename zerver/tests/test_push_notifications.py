@@ -1690,6 +1690,20 @@ class HandlePushNotificationTest(PushNotificationTest):
             self.user_profile, "wildcard_mentions_notify", False, acting_user=None
         )
 
+        # Topic wildcard mention in followed topic should soft reactivate the user
+        # user should be a topic participant
+        self.send_stream_message(self.user_profile, "Denmark", "topic paticipant")
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": "topic_wildcard_mentioned_in_followed_topic",
+                },
+            )
+
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
             mention = "@**all**"
@@ -1712,6 +1726,15 @@ class HandlePushNotificationTest(PushNotificationTest):
         do_change_user_setting(
             self.user_profile, "wildcard_mentions_notify", True, acting_user=None
         )
+
+        # Topic Wildcard mention should soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {"message_id": stream_mentioned_message_id, "trigger": "topic_wildcard_mentioned"},
+            )
 
         # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):

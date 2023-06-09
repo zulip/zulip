@@ -419,7 +419,11 @@ def soft_reactivate_if_personal_notification(
 
     private_message = "private_message" in unique_triggers
     personal_mention = "mentioned" in unique_triggers and mentioned_user_group_name is None
-    if not private_message and not personal_mention:
+    topic_wildcard_mention = any(
+        trigger in unique_triggers
+        for trigger in ["topic_wildcard_mentioned", "topic_wildcard_mentioned_in_followed_topic"]
+    )
+    if not private_message and not personal_mention and not topic_wildcard_mention:
         return
 
     queue_soft_reactivation(user_profile.id)
