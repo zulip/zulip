@@ -75,7 +75,6 @@ not_yet_fully_covered = [
     "zerver/lib/bot_lib.py",
     "zerver/lib/camo.py",
     "zerver/lib/debug.py",
-    "zerver/lib/error_notify.py",
     "zerver/lib/export.py",
     "zerver/lib/fix_unreads.py",
     "zerver/lib/import_realm.py",

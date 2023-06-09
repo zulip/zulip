@@ -65,7 +65,6 @@ from zerver.lib.email_mirror import (
 )
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
-from zerver.lib.error_notify import do_report_error
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
@@ -817,24 +816,6 @@ class PushNotificationsWorker(QueueProcessingWorker):
                 )
 
             retry_event(self.queue_name, event, failure_processor)
-
-
-@assign_queue("error_reports")
-class ErrorReporter(QueueProcessingWorker):
-    def consume(self, event: Mapping[str, Any]) -> None:
-        error_types = ["browser", "server"]
-        assert event["type"] in error_types
-
-        # Drop any old remaining browser-side errors; these now use
-        # Sentry.
-        if event["type"] == "browser":
-            return
-
-        if not settings.ERROR_REPORTING:
-            return
-
-        logging.info("Processing traceback for %s", event.get("user_email"))
-        do_report_error(event["report"])
 
 
 @assign_queue("digest_emails")
