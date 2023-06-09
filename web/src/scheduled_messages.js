@@ -18,7 +18,8 @@ import * as timerender from "./timerender";
 export const MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS = 5 * 60;
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
-export let scheduled_messages_data = [];
+export let scheduled_messages_data = {};
+// scheduled_messages_data is a dictionary where key=timestamp and value=scheduled_messages
 
 function compute_send_times(now = new Date()) {
     const send_times = {};
@@ -60,9 +61,10 @@ export function is_send_later_timestamp_missing_or_expired(
 }
 
 function sort_scheduled_messages_data() {
-    scheduled_messages_data.sort(
-        (msg1, msg2) => msg1.scheduled_delivery_timestamp - msg2.scheduled_delivery_timestamp,
-    );
+    const messagesArray = Object.entries(scheduled_messages_data);
+    messagesArray.sort(([timestamp1], [timestamp2]) => timestamp1 - timestamp2);
+
+    scheduled_messages_data = Object.fromEntries(messagesArray);
 }
 
 function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
@@ -72,30 +74,37 @@ function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
 }
 
 export function add_scheduled_messages(scheduled_messages) {
-    scheduled_messages_data.push(...scheduled_messages);
+    for (const scheduled_message of scheduled_messages) {
+        const timestamp = scheduled_message.scheduled_delivery_timestamp;
+        scheduled_messages_data[timestamp] = scheduled_message;
+    }
+
     sort_scheduled_messages_data();
 }
 
 export function remove_scheduled_message(scheduled_message_id) {
-    const msg_index = scheduled_messages_data.findIndex(
-        (msg) => msg.scheduled_message_id === scheduled_message_id,
+    const [timestamp, messageObject] = Object.entries(scheduled_messages_data).find(
+        ([, message]) => message.scheduled_message_id === scheduled_message_id,
     );
-    if (msg_index !== undefined) {
-        scheduled_messages_data.splice(msg_index, 1);
+
+    if (timestamp && messageObject) {
+        delete scheduled_messages_data[timestamp];
         hide_scheduled_message_success_compose_banner(scheduled_message_id);
     }
 }
 
 export function update_scheduled_message(scheduled_message) {
-    const msg_index = scheduled_messages_data.findIndex(
-        (msg) => msg.scheduled_message_id === scheduled_message.scheduled_message_id,
+    const timestamp = Object.keys(scheduled_messages_data).find(
+        (timestamp) =>
+            scheduled_messages_data[timestamp].scheduled_message_id ===
+            scheduled_message.scheduled_message_id,
     );
 
-    if (msg_index === undefined) {
+    if (!timestamp) {
         return;
     }
 
-    scheduled_messages_data[msg_index] = scheduled_message;
+    scheduled_messages_data[timestamp] = scheduled_message;
     sort_scheduled_messages_data();
 }
 
@@ -168,13 +177,17 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
 }
 
 export function edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient = true) {
-    const scheduled_msg = scheduled_messages_data.find(
-        (msg) => msg.scheduled_message_id === scheduled_message_id,
+    const [timestamp, scheduled_msg] = Object.entries(scheduled_messages_data).find(
+        ([, msg]) => msg.scheduled_message_id === scheduled_message_id,
     );
-    delete_scheduled_message(scheduled_message_id, () => {
-        open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
-        show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
-    });
+
+    if (!timestamp || !scheduled_msg) {
+        return;
+    }
+
+    delete scheduled_messages_data[timestamp];
+    open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
+    show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
 }
 
 export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
@@ -185,7 +198,7 @@ export function delete_scheduled_message(scheduled_msg_id, success = () => {}) {
 }
 
 export function get_count() {
-    return scheduled_messages_data.length;
+    return Object.keys(scheduled_messages_data).length;
 }
 
 export function get_filtered_send_opts(date) {
@@ -296,7 +309,10 @@ export function get_filtered_send_opts(date) {
 }
 
 export function initialize(scheduled_messages_params) {
-    scheduled_messages_data = scheduled_messages_params.scheduled_messages;
+    for (const scheduled_message of scheduled_messages_params.scheduled_messages) {
+        const timestamp = scheduled_message.scheduled_delivery_timestamp;
+        scheduled_messages_data[timestamp] = scheduled_message;
+    }
 
     $("body").on("click", ".undo_scheduled_message", (e) => {
         const scheduled_message_id = Number.parseInt(
