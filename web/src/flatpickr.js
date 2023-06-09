@@ -2,7 +2,6 @@ import {formatISO} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 
-import {get_keydown_hotkey} from "./hotkey";
 import {$t} from "./i18n";
 import {user_settings} from "./user_settings";
 
@@ -40,9 +39,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
             // onKeyDown function, and the below keydown handler are
             // used, but it's not at all clear in what order they are
             // called, or what the overall control flow is.
-            const hotkey = get_keydown_hotkey(event);
-
-            if (hotkey && ["tab", "shift_tab"].includes(hotkey.name)) {
+            if (event.key === "Tab") {
                 // Ensure that tab/shift_tab navigation work to
                 // navigate between the elements in flatpickr itself
                 // and the confirmation button at the bottom of the
@@ -82,18 +79,12 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
             return true;
         }
 
-        const hotkey = get_keydown_hotkey(e);
-
-        if (!hotkey) {
-            return false;
-        }
-
-        if (hotkey.name === "backspace" || hotkey.name === "delete") {
+        if (e.key === "Backspace" || e.key === "Delete") {
             // Let backspace or delete be handled normally
             return true;
         }
 
-        if (hotkey.name === "enter") {
+        if (e.key === "Enter") {
             if (e.target.classList[0] === "flatpickr-day") {
                 // use flatpickr's built-in behavior to choose the selected day.
                 return true;
@@ -102,18 +93,18 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
             $container.find(".flatpickr-confirm").trigger("click");
         }
 
-        if (hotkey.name === "escape") {
+        if (e.key === "Escape") {
             $(element).toggleClass("has_popover");
             instance.close();
             instance.destroy();
         }
 
-        if (["tab", "shift_tab"].includes(hotkey.name)) {
+        if (e.key === "Tab") {
             // Use flatpickr's built-in navigation between elements.
             return true;
         }
 
-        if (["right_arrow", "up_arrow", "left_arrow", "down_arrow"].includes(hotkey.name)) {
+        if (["ArrowLeft", "ArrowUp", "ArrowRight", "ArrowDown"].includes(e.key)) {
             // use flatpickr's built-in navigation of the date grid.
             return true;
         }
