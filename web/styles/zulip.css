@@ -1416,9 +1416,9 @@ td.pointer {
 }
 
 .recipient_bar_controls {
-    display: flex;
+    /* display: flex; */
     flex-grow: 1;
-    align-items: center;
+    /* align-items: center; */
 }
 
 .recipient_row_date {
@@ -1763,6 +1763,7 @@ div.focused_table {
     width: 206px;
 
     &.header-v {
+        width: calc(100% - 80px);
         height: 18px;
         display: inline-block;
         padding: 0 3px;
@@ -2650,6 +2651,7 @@ select.invite-as {
 
 #topic_edit_form {
     display: inline-block;
+    width:100%;
     margin: 0;
     height: 22px;
     padding-left: 20px;

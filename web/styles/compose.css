@@ -107,6 +107,7 @@
     }
 
     #compose-recipient {
+
         &.compose-recipient-direct-selected {
             #compose_select_recipient_widget {
                 border-radius: 4px !important;
@@ -557,7 +558,7 @@ input.recipient_box {
     /* This width roughly corresponds to how long of a topic can appear in
        the left sidebar with a single digit unread count without being
        cut off. */
-    max-width: 175px;
+    /* max-width: 175px; */
 }
 
 #private_message_recipient.recipient_box {
@@ -654,6 +655,7 @@ input.recipient_box {
 
 #compose-recipient {
     display: flex;
+    flex-direction: row-reverse;
     width: 100%;
     /* Use this containing flex element to
       establish the minimum height of all its
