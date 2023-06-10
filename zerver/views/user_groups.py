@@ -25,6 +25,7 @@ from zerver.lib.user_groups import (
     access_user_group_by_id,
     access_user_groups_as_potential_subgroups,
     get_direct_memberships_of_users,
+    get_recursive_subgroups_for_groups,
     get_subgroup_ids,
     get_user_group_direct_member_ids,
     get_user_group_member_ids,
@@ -237,6 +238,14 @@ def add_subgroups_to_group_backend(
                     group_id=group.id
                 )
             )
+
+    subgroup_ids = [group.id for group in subgroups]
+    if user_group_id in get_recursive_subgroups_for_groups(subgroup_ids):
+        raise JsonableError(
+            _(
+                "User group {user_group_id} is already a subgroup of one of the passed subgroups."
+            ).format(user_group_id=user_group_id)
+        )
 
     add_subgroups_to_user_group(user_group, subgroups, acting_user=user_profile)
     return json_success(request)
