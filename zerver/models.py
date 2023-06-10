@@ -54,6 +54,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
 from django_stubs_ext import StrPromise, ValuesQuerySet
+from tagulous.models import TagField
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -115,7 +116,7 @@ from zerver.lib.validator import (
     validate_select_field,
 )
 
-MAX_TOPIC_NAME_LENGTH = 60
+MAX_TOPIC_NAME_LENGTH = 200
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 SECONDS_PER_DAY = 86400
@@ -296,7 +297,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     MAX_REALM_REDIRECT_URL_LENGTH = 128
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
-    MESSAGE_VISIBILITY_LIMITED = 10000
+    MESSAGE_VISIBILITY_LIMITED = 1000000
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
 
@@ -3019,8 +3020,8 @@ class Message(AbstractMessage):
     #   preferred way to indicate a personal or huddle
     #   Recipient type via the API.
     API_RECIPIENT_TYPES = ["direct", "private", "stream"]
-
     search_tsvector = SearchVectorField(null=True)
+    topic_tags = TagField()
 
     def topic_name(self) -> str:
         """
