@@ -412,6 +412,7 @@ function format_conversation(conversation_data) {
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     } else if (type === "private") {
         // Private message info
+        context.all_pm_url = hash_util.all_pm_url();
         context.user_ids_string = last_msg.to_user_ids;
         context.rendered_pm_with = last_msg.display_recipient
             .filter(

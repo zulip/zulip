@@ -4,7 +4,7 @@
             <div class="left_part recent_topics_focusable">
                 {{#if is_private}}
                 <span class="fa fa-envelope"></span>
-                <a href="{{pm_url}}">Direct messages</a>
+                <a href="{{all_pm_url}}">Direct messages</a>
                 {{else}}
                 <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
                     {{> stream_privacy }}
@@ -22,7 +22,7 @@
                     <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
                     <span class="{{user_circle_class}} user_circle"></span>
-                    {{/if}}
+                {{/if}}
                 </span>
             </div>
             {{/if}}

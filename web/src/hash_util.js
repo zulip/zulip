@@ -144,6 +144,10 @@ export function huddle_with_url(user_ids_string) {
     return "#narrow/dm/" + user_ids_string + "-group";
 }
 
+export function all_pm_url() {
+    return "#narrow/is/dm";
+}
+
 export function by_conversation_and_time_url(message) {
     const absolute_url =
         window.location.protocol +
