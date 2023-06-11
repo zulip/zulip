@@ -4119,8 +4119,11 @@ class UserActivityInterval(models.Model):
     end = models.DateTimeField("end time", db_index=True)
 
     class Meta:
-        index_together = [
-            ("user_profile", "end"),
+        indexes = [
+            models.Index(
+                fields=["user_profile", "end"],
+                name="zerver_useractivityinterval_user_profile_id_end_bb3bfc37_idx",
+            ),
         ]
 
 
@@ -4160,9 +4163,15 @@ class UserPresence(models.Model):
     LEGACY_STATUS_IDLE_INT = 2
 
     class Meta:
-        index_together = [
-            ("realm", "last_active_time"),
-            ("realm", "last_connected_time"),
+        indexes = [
+            models.Index(
+                fields=["realm", "last_active_time"],
+                name="zerver_userpresence_realm_id_last_active_time_1c5aa9a2_idx",
+            ),
+            models.Index(
+                fields=["realm", "last_connected_time"],
+                name="zerver_userpresence_realm_id_last_connected_time_98d2fc9f_idx",
+            ),
         ]
 
     @staticmethod

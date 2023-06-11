@@ -14,8 +14,11 @@ class Migration(migrations.Migration):
             name="realm",
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"),
         ),
-        migrations.AlterIndexTogether(
-            name="userpresence",
-            index_together={("realm", "timestamp")},
+        migrations.AddIndex(
+            model_name="userpresence",
+            index=models.Index(
+                fields=["realm", "timestamp"],
+                name="zerver_userpresence_realm_id_timestamp_25f410da_idx",
+            ),
         ),
     ]

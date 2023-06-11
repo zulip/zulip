@@ -115,8 +115,11 @@ class RemoteInstallationCount(BaseCount):
 
     class Meta:
         unique_together = ("server", "property", "subgroup", "end_time")
-        index_together = [
-            ["server", "remote_id"],
+        indexes = [
+            models.Index(
+                fields=["server", "remote_id"],
+                name="zilencer_remoteinstallat_server_id_remote_id_f72e4c30_idx",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -132,9 +135,15 @@ class RemoteRealmCount(BaseCount):
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
-        index_together = [
-            ["property", "end_time"],
-            ["server", "remote_id"],
+        indexes = [
+            models.Index(
+                fields=["property", "end_time"],
+                name="zilencer_remoterealmcount_property_end_time_506a0b38_idx",
+            ),
+            models.Index(
+                fields=["server", "remote_id"],
+                name="zilencer_remoterealmcount_server_id_remote_id_de1573d8_idx",
+            ),
         ]
 
     def __str__(self) -> str:
