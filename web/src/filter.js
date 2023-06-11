@@ -273,6 +273,8 @@ export class Filter {
                     .toLowerCase()
                     .replaceAll(/[\u201C\u201D]/g, '"');
                 break;
+            case "date":
+                break;
             default:
                 operand = operand.toString().toLowerCase();
         }
@@ -418,9 +420,10 @@ export class Filter {
             // Filter out the embedded narrow (if any).
             (value) =>
                 !(
-                    page_params.narrow_stream !== undefined &&
-                    value.operator === "stream" &&
-                    value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase()
+                    value.operator === "date" ||
+                    (page_params.narrow_stream !== undefined &&
+                        value.operator === "stream" &&
+                        value.operand.toLowerCase() === page_params.narrow_stream.toLowerCase())
                 ),
         );
         return safe_to_return;

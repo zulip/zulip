@@ -480,14 +480,23 @@ export function activate(raw_operators, opts) {
 
         {
             let anchor;
-
+            let anchor_date;
+            let raw_operator;
             // Either we're trying to center the narrow around a
             // particular message ID (which could be max_int), or we're
             // asking the server to figure out for us what the first
             // unread message is, and center the narrow around that.
             switch (id_info.final_select_id) {
                 case undefined:
-                    anchor = "first_unread";
+                    raw_operator = raw_operators.find(
+                        (raw_operator) => raw_operator.operator === "date",
+                    );
+                    if (raw_operator !== undefined) {
+                        anchor = "date";
+                        anchor_date = raw_operator.operand;
+                    } else {
+                        anchor = "first_unread";
+                    }
                     break;
                 case -1:
                     // This case should never happen in this code path; it's
@@ -504,9 +513,12 @@ export function activate(raw_operators, opts) {
 
             message_fetch.load_messages_for_narrow({
                 anchor,
-                cont() {
+                anchor_date,
+                cont(data, opts) {
                     if (!select_immediately) {
                         update_selection({
+                            anchor_type: opts.anchor,
+                            anchor: data.anchor,
                             id_info,
                             select_offset: then_select_offset,
                             msg_list: message_lists.current,
@@ -622,6 +634,13 @@ export function maybe_add_local_messages(opts) {
     const id_info = opts.id_info;
     const msg_data = opts.msg_data;
     const unread_info = narrow_state.get_first_unread_info();
+
+    // If the user has applied the `date` filter, it is recommended to let the
+    // server determine and return the message ID closest to the searched date.
+    if (narrow_state.filter().has_operator("date")) {
+        id_info.final_select_id = undefined;
+        return;
+    }
 
     // If we don't have a specific message we're hoping to select
     // (i.e. no `target_id`) and the narrow's filter doesn't
@@ -774,7 +793,11 @@ export function update_selection(opts) {
 
     let msg_id = id_info.final_select_id;
     if (msg_id === undefined) {
-        msg_id = message_lists.current.first_unread_message_id();
+        if (opts.anchor_type === "date") {
+            msg_id = opts.anchor;
+        } else {
+            msg_id = message_lists.current.first_unread_message_id();
+        }
     }
 
     const preserve_pre_narrowing_screen_position =

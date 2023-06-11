@@ -3595,7 +3595,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(result["found_oldest"], False)
 
         # Case: When only date filter is passed.
-        search_datetime = datetime.datetime(1888, 6, 2, tzinfo=timezone.utc)
+        search_datetime = datetime.datetime(1888, 6, 2, tzinfo=datetime.timezone.utc)
         search_date_str = search_datetime.isoformat()
         result = get_message_search_result(search_date_str)
         self.assertEqual(result["anchor"], 151)

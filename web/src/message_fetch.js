@@ -190,7 +190,14 @@ export function load_messages(opts, attempt = 1) {
         // the nearest integer before sending a request to the server.
         opts.anchor = opts.anchor.toFixed(0);
     }
-    let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
+    let data = {
+        anchor: opts.anchor,
+        num_before: opts.num_before,
+        num_after: opts.num_after,
+        ...(opts.anchor === "date" && opts.anchor_date !== undefined
+            ? {anchor_date: opts.anchor_date}
+            : {}),
+    };
 
     // This block is a hack; structurally, we want to set
     //   data.narrow = opts.msg_list.data.filter.public_operators()
@@ -334,6 +341,7 @@ export function load_messages_for_narrow(opts) {
         num_after: consts.narrow_after,
         msg_list: opts.msg_list,
         cont: opts.cont,
+        anchor_date: opts.anchor_date,
     });
 }
 

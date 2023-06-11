@@ -603,6 +603,10 @@ test("public_operators", ({override}) => {
     filter = new Filter(operators);
     override(page_params, "narrow_stream", "default");
     assert_same_operators(filter.public_operators(), []);
+
+    operators = [{operator: "date", operand: "2023-06-02"}];
+    filter = new Filter(operators);
+    assert_same_operators(filter.public_operators(), []);
 });
 
 test("redundancies", () => {
@@ -1112,6 +1116,10 @@ test("parse", () => {
         {operator: "stream", operand: "separated"},
         {operator: "topic", operand: "with space"},
     ];
+    _test();
+
+    string = "date:2023-06-02";
+    operators = [{operator: "date", operand: "2023-06-02"}];
     _test();
 });
 

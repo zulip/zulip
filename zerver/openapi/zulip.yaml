@@ -5643,9 +5643,10 @@ paths:
             oneOf:
               - type: string
                 format: date-time
+                nullable: true
               - type: string
                 format: date
-            nullable: true
+                nullable: true
           example: "2023-05-18T00:00:00Z"
           x-constraint:
             - name: anchor-date-required
@@ -6427,9 +6428,10 @@ paths:
             oneOf:
               - type: string
                 format: date-time
+                nullable: true
               - type: string
                 format: date
-            nullable: true
+                nullable: true
           example: "2023-05-18T00:00:00Z"
           x-constraint:
             - name: anchor-date-required
