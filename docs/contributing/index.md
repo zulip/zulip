@@ -16,6 +16,6 @@ reviewable-prs
 code-reviewing
 review-process
 zulipbot-usage
-bug-reports
+reporting-bugs
 licensing
 ```

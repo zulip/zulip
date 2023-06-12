@@ -55,8 +55,7 @@ needs doing:
 **Non-code contributions**: Some of the most valuable ways to contribute
 don't require touching the codebase at all. For example, you can:
 
-- [Report issues](#reporting-issues), including both feature requests and
-  bug reports.
+- Report issues, including both feature requests and bug reports.
 - [Give feedback](#user-feedback) if you are evaluating or using Zulip.
 - [Participate
   thoughtfully](https://zulip.readthedocs.io/en/latest/contributing/design-discussions.html)
@@ -313,29 +312,6 @@ experience, these are the best predictors of success:
   server](https://zulip.com/development-community/).
 
 [great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
-
-## Reporting issues
-
-If you find an easily reproducible bug and/or are experienced in reporting
-bugs, feel free to just open an issue on the relevant project on GitHub.
-
-If you have a feature request or are not yet sure what the underlying bug
-is, the best place to post issues is
-[#issues](https://chat.zulip.org/#narrow/stream/9-issues) (or
-[#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) or
-[#desktop](https://chat.zulip.org/#narrow/stream/16-desktop)) on the
-[Zulip community server](https://zulip.com/development-community/).
-This allows us to interactively figure out what is going on, let you know if
-a similar issue has already been opened, and collect any other information
-we need. Choose a 2-4 word topic that describes the issue, explain the issue
-and how to reproduce it if known, your browser/OS if relevant, and a
-[screenshot or screenGIF](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
-if appropriate.
-
-**Reporting security issues**. Please do not report security issues
-publicly, including on public streams on chat.zulip.org. You can
-email [security@zulip.com](mailto:security@zulip.com). We create a CVE for every
-security issue in our released software.
 
 ## User feedback
 

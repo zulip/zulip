@@ -176,15 +176,15 @@ The Zulip community feels strongly that all the little issues are, in
 aggregate, just as important as the big things. Most resolved issues
 do not have any of these priority labels.
 
-We welcome participation from our user community in influencing the
-Zulip roadmap. If a bug or missing feature is causing significant
-pain for you, we'd love to hear from you, either in
+We welcome participation from our user community in influencing the Zulip
+roadmap. If a bug or missing feature is causing significant pain for you, we'd
+love to hear from you, either in
 [chat.zulip.org](https://zulip.com/development-community/) or on the relevant
-GitHub issue. Please an include an explanation of your use case: such
-details can be extremely helpful in designing appropriately general
-solutions, and also helps us identify cases where an existing solution
-can solve your problem. See [Reporting
-issues](../contributing/contributing.md#reporting-issues) for more details.
+GitHub issue. Please an include an explanation of your use case: such details
+can be extremely helpful in designing appropriately general solutions, and also
+helps us identify cases where an existing solution can solve your problem. See
+our guides for [reporting bugs](../contributing/reporting-bugs.md) and [giving
+feedback](../contributing/contributing.md#user-feedback) for more details.
 
 ## Client apps
 
