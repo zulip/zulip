@@ -66,7 +66,9 @@ Collective](https://opencollective.com/zulip).
 
 ## Help improve Zulip
 
-* **Report issues**, including both feature requests and [bug
+* **Report issues**, including both [feature
+  requests](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
+  and [bug
   reports](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html).
   Many improvements to the Zulip app start with a user's suggestion.
 
