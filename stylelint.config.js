@@ -20,6 +20,13 @@ module.exports = {
         "selector-class-pattern": null,
         "selector-id-pattern": null,
 
+        // Modify standard rule to permit grid-template longhand
+        // properties such as grid-template-areas
+        "declaration-block-no-redundant-longhand-properties": [
+            true,
+            {ignoreShorthands: ["/grid-template/"]},
+        ],
+
         // Limit language features
         "color-no-hex": true,
         "color-named": "never",
