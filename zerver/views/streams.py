@@ -591,8 +591,13 @@ def add_subscriptions_backend(
             allow_nobody_group=False,
         )
     else:
+        can_remove_subscribers_group_default = Stream.stream_permission_group_settings[
+            "can_remove_subscribers_group"
+        ].default_group_name
         can_remove_subscribers_group = UserGroup.objects.get(
-            name="@role:administrators", realm=user_profile.realm, is_system_group=True
+            name=can_remove_subscribers_group_default,
+            realm=user_profile.realm,
+            is_system_group=True,
         )
 
     for stream_dict in streams_raw:
