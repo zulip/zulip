@@ -694,6 +694,16 @@ the version of PostgreSQL are no longer linked to upgrades of the
 distribution; that is, you may opt to upgrade to PostgreSQL 15 while
 running Ubuntu 20.04.
 
+Not all versions of Zulip Server support all versions of PostgreSQL, however:
+
+| Zulip Server version | Supported versions of PostgreSQL |
+| -------------------- | -------------------------------- |
+| 3.x                  | 9.3, 9.5, 9.6, 10, 11, 12        |
+| 4.x                  | 9.3, 9.5, 9.6, 10, 11, 12, 13    |
+| 5.x                  | 10, 11, 12, 13, 14               |
+| 6.x                  | 11, 12, 13, 14                   |
+| 7.x                  | 12, 13, 14, 15                   |
+
 To upgrade the version of PostgreSQL on the Zulip server:
 
 1. Upgrade your server to the latest Zulip release (at least 3.0).
