@@ -80,7 +80,9 @@ def do_bulk_backfill_extra_data(
     )
     (
         audit_log_model.objects.filter(
-            extra_data__isnull=False, id__range=(id_lower_bound, id_upper_bound)
+            extra_data__isnull=False,
+            id__range=(id_lower_bound, id_upper_bound),
+            extra_data_json__inconsistent_old_extra_data__isnull=True,
         )
         .exclude(extra_data__startswith="{'")
         .exclude(event_type=USER_FULL_NAME_CHANGED)
@@ -88,7 +90,9 @@ def do_bulk_backfill_extra_data(
     )
 
     python_valued_audit_log_entries = audit_log_model.objects.filter(
-        extra_data__startswith="{'", id__range=(id_lower_bound, id_upper_bound)
+        extra_data__startswith="{'",
+        id__range=(id_lower_bound, id_upper_bound),
+        extra_data_json__inconsistent_old_extra_data__isnull=True,
     )
     for audit_log_entry in python_valued_audit_log_entries:
         # extra_data for entries that store dict stringified with builtins.str()
@@ -123,6 +127,11 @@ def do_bulk_backfill_extra_data(
             new_extra_data_json,
         ) in inconsistent_extra_data_json:
             audit_log_entry = audit_log_model.objects.get(id=audit_log_entry_id)
+            assert isinstance(old_extra_data_json, dict)
+            if "inconsistent_old_extra_data" in old_extra_data_json:
+                # Skip entries that have been backfilled and detected as
+                # anomalies before.
+                continue
             assert isinstance(new_extra_data_json, dict)
             audit_log_entry.extra_data_json = {  # type: ignore[attr-defined] # Explained above.
                 **new_extra_data_json,

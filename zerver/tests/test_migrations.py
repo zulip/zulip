@@ -111,6 +111,18 @@ Audit log entry with id 50002 has extra_data_json been inconsistently overwritte
             extra_data=str({"key": "value"}),
         )
 
+        self.backfilled_inconsistent_log_id = RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=USER_ACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps({"key": "baz"}).decode(),
+            extra_data_json={
+                "key": "baz",
+                "inconsistent_old_extra_data": orjson.dumps({"key": "baz"}).decode(),
+                "inconsistent_old_extra_data_json": {"key": "value corrupted"},
+            },
+        ).id
+
         # The following audit log entries have preset ids because we use
         # them to assert the generated log output that is defined before
         # the test case is run.
@@ -186,7 +198,7 @@ Audit log entry with id 50002 has extra_data_json been inconsistently overwritte
             ).exclude(
                 extra_data_json={},
             ),
-            4,
+            5,
         )
 
     def test_realmaudit_log_extra_data_to_json(self) -> None:
@@ -239,4 +251,17 @@ Audit log entry with id 50002 has extra_data_json been inconsistently overwritte
         self.assertEqual(
             inconsistent_str_json_log.extra_data_json["inconsistent_old_extra_data_json"],
             {"corrupted": "bar"},
+        )
+
+        backfilled_inconsistent_log = RealmAuditLog.objects.get(
+            id=self.backfilled_inconsistent_log_id
+        )
+        self.assertIsNotNone(backfilled_inconsistent_log)
+        self.assertEqual(
+            backfilled_inconsistent_log.extra_data_json,
+            {
+                "key": "baz",
+                "inconsistent_old_extra_data": orjson.dumps({"key": "baz"}).decode(),
+                "inconsistent_old_extra_data_json": {"key": "value corrupted"},
+            },
         )
