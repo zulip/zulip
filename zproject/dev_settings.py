@@ -162,8 +162,6 @@ if FAKE_LDAP_MODE:
         }
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
-THUMBNAIL_IMAGES = True
-
 BILLING_ENABLED = True
 LANDING_PAGE_NAVBAR_MESSAGE: Optional[str] = None
 

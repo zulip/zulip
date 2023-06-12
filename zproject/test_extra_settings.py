@@ -208,8 +208,6 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 
-THUMBNAIL_IMAGES = True
-
 # Logging the emails while running the tests adds them
 # to /emails page.
 DEVELOPMENT_LOG_EMAILS = False

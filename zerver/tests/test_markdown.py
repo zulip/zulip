@@ -428,6 +428,7 @@ class MarkdownTest(ZulipTestCase):
             self.assertTrue(is_unique, message)
             found_names.add(test_name)
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_markdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_markdown_tests()
         valid_keys = {
@@ -572,7 +573,7 @@ class MarkdownTest(ZulipTestCase):
             '<p><a href="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>',
         )
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_thumbnail_url(self) -> None:
         realm = get_realm("zephyr")
         msg = "[foobar](/user_uploads/{realm_id}/50/w2G6ok9kr8AMCQCTNAUOFMln/IMG_0677.JPG)"
@@ -612,7 +613,7 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_preview(self) -> None:
         with_preview = '<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=thumbnail"></a></div>'
         without_preview = '<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>'
@@ -632,7 +633,7 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, without_preview)
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_external_image_preview_use_camo(self) -> None:
         content = "https://example.com/thing.jpeg"
 
@@ -640,7 +641,7 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_static_image_preview_skip_camo(self) -> None:
         content = f"{ settings.STATIC_URL }/thing.jpeg"
 
@@ -648,13 +649,13 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_realm_image_preview_skip_camo(self) -> None:
         content = f"https://zulip.{ settings.EXTERNAL_HOST }/thing.jpeg"
         converted = markdown_convert_wrapper(content)
         self.assertNotIn(converted, get_camo_url(content))
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_cross_realm_image_preview_use_camo(self) -> None:
         content = f"https://otherrealm.{ settings.EXTERNAL_HOST }/thing.jpeg"
 
@@ -694,7 +695,7 @@ class MarkdownTest(ZulipTestCase):
         soup = BeautifulSoup(converted, "html.parser")
         self.assert_length(soup(class_="message_inline_image"), 0)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_quoted_blocks(self) -> None:
         content = "http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"
         expected = '<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=thumbnail"></a></div>'
@@ -717,7 +718,7 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_preview_order(self) -> None:
         realm = get_realm("zulip")
         content = "http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg"
@@ -745,7 +746,7 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_corrected_image_source(self) -> None:
         # testing only Wikipedia because linx.li URLs can be expected to expire
         content = "https://en.wikipedia.org/wiki/File:Wright_of_Derby,_The_Orrery.jpg"
@@ -859,6 +860,7 @@ class MarkdownTest(ZulipTestCase):
             f"""<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="1 photo"><img src="{get_camo_url("https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0")}"></a></div>""",
         )
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_inline_dropbox_negative(self) -> None:
         # Make sure we're not overzealous in our conversion:
         msg = "Look at the new dropbox logo: https://www.dropbox.com/static/images/home_logo.png"
@@ -880,6 +882,7 @@ class MarkdownTest(ZulipTestCase):
             '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>',
         )
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
         msg = "Test: https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"
@@ -2632,6 +2635,7 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_image_preview_title(self) -> None:
         msg = "[My favorite image](https://example.com/testimage.png)"
         converted = markdown_convert_wrapper(msg)
