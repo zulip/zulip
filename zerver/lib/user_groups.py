@@ -226,6 +226,31 @@ def get_recursive_subgroups_for_groups(user_group_ids: List[int]) -> List[int]:
     return list(recursive_subgroups.values_list("id", flat=True))
 
 
+def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, UserGroup]:
+    system_groups = UserGroup.objects.filter(realm=realm, is_system_group=True)
+    system_groups_name_dict = {}
+    for group in system_groups:
+        system_groups_name_dict[group.name] = group
+
+    return system_groups_name_dict
+
+
+def set_defaults_for_group_settings(
+    user_group: UserGroup,
+    system_groups_name_dict: Dict[str, UserGroup],
+) -> UserGroup:
+    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+        if user_group.is_system_group and permission_config.default_for_system_groups is not None:
+            default_group_name = permission_config.default_for_system_groups
+        else:
+            default_group_name = permission_config.default_group_name
+
+        default_group = system_groups_name_dict[default_group_name]
+        setattr(user_group, setting_name, default_group)
+
+    return user_group
+
+
 @transaction.atomic(savepoint=False)
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     """Any changes to this function likely require a migration to adjust
@@ -233,6 +258,12 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     which is a copy of this function from when we introduced system groups.
     """
     role_system_groups_dict: Dict[int, UserGroup] = {}
+
+    # This value will be used to set the temporary initial value for different
+    # settings since we can only set them to the correct values after the groups
+    # are created.
+    initial_group_setting_value = -1
+
     for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP:
         user_group_params = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]
         user_group = UserGroup(
@@ -240,6 +271,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
             description=user_group_params["description"],
             realm=realm,
             is_system_group=True,
+            can_mention_group_id=initial_group_setting_value,
         )
         role_system_groups_dict[role] = user_group
 
@@ -248,18 +280,21 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         description="Members of this organization, not including new accounts and guests",
         realm=realm,
         is_system_group=True,
+        can_mention_group_id=initial_group_setting_value,
     )
     everyone_on_internet_system_group = UserGroup(
         name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
         description="Everyone on the Internet",
         realm=realm,
         is_system_group=True,
+        can_mention_group_id=initial_group_setting_value,
     )
     nobody_system_group = UserGroup(
         name=UserGroup.NOBODY_GROUP_NAME,
         description="Nobody",
         realm=realm,
         is_system_group=True,
+        can_mention_group_id=initial_group_setting_value,
     )
     # Order of this list here is important to create correct GroupGroupMembership objects
     system_user_groups_list = [
@@ -274,6 +309,13 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     ]
 
     UserGroup.objects.bulk_create(system_user_groups_list)
+
+    groups_with_updated_settings = []
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    for group in system_user_groups_list:
+        user_group = set_defaults_for_group_settings(group, system_groups_name_dict)
+        groups_with_updated_settings.append(group)
+    UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 
     subgroup_objects = []
     # "Nobody" system group is not a subgroup of any user group, since it is already empty.

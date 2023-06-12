@@ -969,6 +969,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         if "zerver_usergroup" in data:
             update_model_ids(UserGroup, data, "usergroup")
             re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
+            for setting_name in UserGroup.GROUP_PERMISSION_SETTINGS:
+                re_map_foreign_keys(
+                    data, "zerver_usergroup", setting_name, related_table="usergroup"
+                )
             bulk_import_model(data, UserGroup)
 
         # We expect Zulip server exports to contain these system groups,
