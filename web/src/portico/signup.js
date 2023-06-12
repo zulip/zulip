@@ -116,7 +116,7 @@ $(() => {
         $("[data-page-id='accounts-home']").length > 0 &&
         window.location.hash.slice(0, 1) === "#"
     ) {
-        document.email_form.action += window.location.hash;
+        document.querySelector("#send_form").action += window.location.hash;
     }
 
     // Code in this block will be executed when the user is at login page
