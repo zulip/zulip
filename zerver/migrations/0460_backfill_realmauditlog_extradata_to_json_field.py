@@ -10,6 +10,9 @@ from django.db.migrations.state import StateApps
 from django.db.models import F, JSONField, Model
 from django.db.models.functions import Cast, JSONObject
 
+# This migration is mostly the same as
+# backfill_remote_realmauditlog_extradata_to_json_field in zilencer.
+
 OLD_VALUE = "1"
 NEW_VALUE = "2"
 USER_FULL_NAME_CHANGED = 124
