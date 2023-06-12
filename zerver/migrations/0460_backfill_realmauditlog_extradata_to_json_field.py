@@ -57,7 +57,7 @@ def do_bulk_backfill_extra_data(
         # https://docs.djangoproject.com/en/4.2/ref/models/database-functions/#jsonobject
     ).update(extra_data_json=JSONObject(**{OLD_VALUE: "extra_data", NEW_VALUE: None}))
 
-    inconsistent_extra_data_json: List[Tuple[int, object, object]] = []
+    inconsistent_extra_data_json: List[Tuple[int, str, object, object]] = []
     # A dict converted with str() will start with a open bracket followed by a
     # single quote, as opposed to a JSON-encoded value, which will use a
     # _double_ quote. We use this to filter out those entries with malformed
@@ -76,7 +76,7 @@ def do_bulk_backfill_extra_data(
         .exclude(event_type=USER_FULL_NAME_CHANGED)
         .exclude(extra_data_json={})
         .exclude(extra_data_json=F("new_extra_data_json"))
-        .values_list("id", "extra_data_json", "new_extra_data_json")
+        .values_list("id", "extra_data", "extra_data_json", "new_extra_data_json")
     )
     (
         audit_log_model.objects.filter(
@@ -110,16 +110,26 @@ def do_bulk_backfill_extra_data(
             continue
         new_value = ast.literal_eval(audit_log_entry.extra_data)  # type: ignore[attr-defined] # Explained above.
         if old_value != {} and old_value != new_value:
-            inconsistent_extra_data_json.append((audit_log_entry.id, old_value, new_value))  # type: ignore[attr-defined] # Explained above.
+            inconsistent_extra_data_json.append((audit_log_entry.id, audit_log_entry.extra_data, old_value, new_value))  # type: ignore[attr-defined] # Explained above.
         audit_log_entry.extra_data_json = new_value  # type: ignore[attr-defined] # Explained above.
     audit_log_model.objects.bulk_update(python_valued_audit_log_entries, fields=["extra_data_json"])
 
     if inconsistent_extra_data_json:
+        audit_log_entries = []
         for (
             audit_log_entry_id,
+            old_extra_data,
             old_extra_data_json,
             new_extra_data_json,
         ) in inconsistent_extra_data_json:
+            audit_log_entry = audit_log_model.objects.get(id=audit_log_entry_id)
+            assert isinstance(new_extra_data_json, dict)
+            audit_log_entry.extra_data_json = {  # type: ignore[attr-defined] # Explained above.
+                **new_extra_data_json,
+                "inconsistent_old_extra_data": old_extra_data,
+                "inconsistent_old_extra_data_json": old_extra_data_json,
+            }
+            audit_log_entries.append(audit_log_entry)
             print(
                 OVERWRITE_TEMPLATE.format(
                     id=audit_log_entry_id,
@@ -127,6 +137,7 @@ def do_bulk_backfill_extra_data(
                     new_value=orjson.dumps(new_extra_data_json).decode(),
                 )
             )
+        audit_log_model.objects.bulk_update(audit_log_entries, fields=["extra_data_json"])
 
 
 def backfill_extra_data(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:

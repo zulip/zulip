@@ -220,3 +220,23 @@ Audit log entry with id 50002 has extra_data_json been inconsistently overwritte
         self.assert_length(other_logs, self.DATA_SIZE)
         for index, audit_log in enumerate(other_logs):
             self.assertEqual(audit_log.extra_data_json, {"data": index})
+
+        inconsistent_json_log = RealmAuditLog.objects.get(
+            extra_data_json__inconsistent_old_extra_data=orjson.dumps({"key": "value"}).decode()
+        )
+        self.assertIsNotNone(inconsistent_json_log)
+        self.assertEqual(inconsistent_json_log.id, 50001)
+        self.assertEqual(
+            inconsistent_json_log.extra_data_json["inconsistent_old_extra_data_json"],
+            {"corrupted": "foo"},
+        )
+
+        inconsistent_str_json_log = RealmAuditLog.objects.get(
+            extra_data_json__inconsistent_old_extra_data=str({"key": "value"})
+        )
+        self.assertIsNotNone(inconsistent_str_json_log)
+        self.assertEqual(inconsistent_str_json_log.id, 50002)
+        self.assertEqual(
+            inconsistent_str_json_log.extra_data_json["inconsistent_old_extra_data_json"],
+            {"corrupted": "bar"},
+        )
