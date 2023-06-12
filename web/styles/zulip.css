@@ -1128,9 +1128,6 @@ td.pointer {
 }
 
 .message_controls {
-    display: inline-block;
-    z-index: 1;
-
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
        doesn't disturb the layout.  Usually that would be just

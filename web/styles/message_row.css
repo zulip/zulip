@@ -157,10 +157,6 @@ $time_column_max_width: 150px;
             grid-column-start: 3;
             line-height: 1;
             justify-self: end;
-            /* We need to position it from top and not vertically centered since we want it
-               to have the same position from top when user is editing the message. */
-            position: relative;
-            top: $distance_of_non_text_elements_from_message_box_top;
             padding: 0;
 
             @media (width < $sm_min) {
@@ -188,8 +184,6 @@ $time_column_max_width: 150px;
             text-align: end;
             grid-row-start: 1;
             grid-column-start: 4;
-            position: relative;
-            top: $distance_of_text_elements_from_message_box_top;
 
             &.notvisible {
                 /* This happens when message failed to send. We don't want to
@@ -274,7 +268,7 @@ $time_column_max_width: 150px;
 
             .message_time {
                 align-self: center;
-                position: unset;
+                /* TODO: See if this margin is necessary in a grid context (KAS, 2023-06-012) */
                 margin-top: 1px;
             }
 
@@ -299,7 +293,6 @@ $time_column_max_width: 150px;
 
             .message_controls {
                 align-self: center;
-                position: unset;
             }
 
             .message_sender {
