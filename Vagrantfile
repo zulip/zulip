@@ -9,8 +9,8 @@ Vagrant.configure("2") do |config|
   host_ip_addr = "127.0.0.1"
 
   # System settings for the virtual machine.
-  vm_num_cpus = "2"
-  vm_memory = "2048"
+  vm_num_cpus = "4"
+  vm_memory = "4048"
 
   ubuntu_mirror = ""
   vboxadd_version = nil
