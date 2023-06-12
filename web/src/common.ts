@@ -7,9 +7,9 @@ import {$t} from "./i18n";
 export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
 
 // TODO: Move this to the portico codebase.
-export function autofocus(selector: string): void {
+export function autofocus($elem: JQuery): void {
     $(() => {
-        $(selector).trigger("focus");
+        $elem.trigger("focus");
     });
 }
 

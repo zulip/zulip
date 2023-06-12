@@ -21,7 +21,7 @@ const navigator = set_global("navigator", {});
 const common = zrequire("common");
 
 run_test("basics", () => {
-    common.autofocus("#home");
+    common.autofocus($("#home"));
     $.get_initialize_function()();
     assert.ok($("#home").is_focused());
     $.clear_initialize_function();
