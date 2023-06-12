@@ -29,6 +29,15 @@ core engineering team.
 
 ## Overview and resources
 
+If you encounter issues while self-hosting Zulip, the first thing to
+do is look at Zulip's logs, which are located in `/var/log/zulip/`.
+
+That directory contains one log file for each service, plus
+`errors.log` (has all errors and the first place you should check),
+`server.log` (has logs from the Django and Tornado servers), and
+`workers.log` (has combined logs from the queue workers). Zulip also
+provides a [tool to search through `server.log`][log-search].
+
 Zulip uses [Supervisor](http://supervisord.org/index.html) to monitor
 and control its many Python services. Read the next section, [Using
 supervisorctl](#using-supervisorctl), to learn how to use the
@@ -39,17 +48,10 @@ overview](../overview/architecture-overview.md), particularly the
 [Components](../overview/architecture-overview.md#components) section. This will help you
 understand the many services Zulip uses.
 
-If you encounter issues while running Zulip, take a look at Zulip's
-logs, which are located in `/var/log/zulip/`. That directory contains
-one log file for each service, plus `errors.log` (has all errors),
-`server.log` (has logs from the Django and Tornado servers), and
-`workers.log` (has combined logs from the queue workers). Zulip also
-provides a [tool to search through `server.log`][log-search].
-
-[log-search]: ../subsystems/logging.md#searching-backend-log-files
-
 The section [troubleshooting services](#troubleshooting-services)
 on this page includes details about how to fix common issues with Zulip services.
+
+[log-search]: ../subsystems/logging.md#searching-backend-log-files
 
 ## Using supervisorctl
 
