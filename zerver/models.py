@@ -2256,6 +2256,8 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     description = models.TextField(default="")
     is_system_group = models.BooleanField(default=False)
 
+    can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
+
     # Names for system groups.
     FULL_MEMBERS_GROUP_NAME = "@role:fullmembers"
     EVERYONE_ON_INTERNET_GROUP_NAME = "@role:internet"
@@ -2290,6 +2292,17 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             "name": EVERYONE_GROUP_NAME,
             "description": "Everyone in this organization, including guests",
         },
+    }
+
+    GROUP_PERMISSION_SETTINGS = {
+        "can_mention_group": GroupPermissionSetting(
+            require_system_group=False,
+            allow_internet_group=False,
+            allow_owners_group=False,
+            allow_nobody_group=True,
+            default_group_name=EVERYONE_GROUP_NAME,
+            default_for_system_groups=NOBODY_GROUP_NAME,
+        ),
     }
 
     class Meta:

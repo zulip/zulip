@@ -7,7 +7,11 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.user_groups import access_user_group_by_id
+from zerver.lib.user_groups import (
+    access_user_group_by_id,
+    get_role_based_system_groups_dict,
+    set_defaults_for_group_settings,
+)
 from zerver.models import (
     GroupGroupMembership,
     Realm,
@@ -35,9 +39,14 @@ def create_user_group_in_database(
     description: str = "",
     is_system_group: bool = False,
 ) -> UserGroup:
-    user_group = UserGroup.objects.create(
+    user_group = UserGroup(
         name=name, realm=realm, description=description, is_system_group=is_system_group
     )
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    user_group = set_defaults_for_group_settings(user_group, system_groups_name_dict)
+
+    user_group.save()
+
     UserGroupMembership.objects.bulk_create(
         UserGroupMembership(user_profile=member, user_group=user_group) for member in members
     )

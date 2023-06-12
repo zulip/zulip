@@ -1231,6 +1231,11 @@ class RealmImportExportTest(ExportFile):
             direct_subgroup_names = {group.name for group in direct_subgroups}
             return direct_subgroup_names
 
+        @getter
+        def get_user_group_can_mention_group_setting(r: Realm) -> Set[str]:
+            user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
+            return user_group.can_mention_group.name
+
         # test botstoragedata and botconfigdata
         @getter
         def get_botstoragedata(r: Realm) -> Dict[str, object]:

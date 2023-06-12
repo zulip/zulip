@@ -281,3 +281,4 @@ class GroupPermissionSetting:
     allow_owners_group: bool
     allow_nobody_group: bool
     default_group_name: str
+    default_for_system_groups: Optional[str] = None
