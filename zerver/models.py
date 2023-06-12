@@ -2643,6 +2643,7 @@ class Stream(models.Model):
             allow_internet_group=False,
             allow_owners_group=False,
             allow_nobody_group=False,
+            default_group_name=UserGroup.ADMINISTRATORS_GROUP_NAME,
         ),
     }
 
