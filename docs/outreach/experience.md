@@ -213,8 +213,9 @@ expertise in the subsystem you're working on.
 
 Always keep the following order of priorities in mind:
 
-1. Your top priority should be **fixing any regressions you introduced** with
-   recently merged work.
+1. Your top priorities should be **fixing any regressions you introduced** with
+   recently merged work, and **fixing any important bugs or regressions** that
+   you pick up or are assigned.
 
 2. **Review others' pull requests** promptly. As you'll experience yourself, getting quick
    feedback on your PR helps immensely. As such, if you are asked to review a
