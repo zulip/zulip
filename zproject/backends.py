@@ -504,13 +504,20 @@ class EmailAuthBackend(ZulipAuthMixin):
             return None
 
         try:
-            is_password_correct = user_profile.check_password(password)
+            try:
+                is_password_correct = user_profile.check_password(password)
+            except PasswordTooWeakError:
+                # In some rare cases when password hasher is changed and the user has
+                # a weak password, PasswordTooWeakError will be raised.
+                self.logger.info(
+                    "User %s password can't be rehashed due to being too weak.", user_profile.id
+                )
+                raise PasswordTooWeakError
+
+            if is_password_correct and not check_password_strength(password):
+                raise PasswordTooWeakError
+
         except PasswordTooWeakError:
-            # In some rare cases when password hasher is changed and the user has
-            # a weak password, PasswordTooWeakError will be raised.
-            self.logger.info(
-                "User %s password can't be rehashed due to being too weak.", user_profile.id
-            )
             if return_data is not None:
                 return_data["password_reset_needed"] = True
                 return None

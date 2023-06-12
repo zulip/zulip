@@ -380,6 +380,21 @@ class AuthBackendTest(ZulipTestCase):
                 )
             )
 
+    def test_email_auth_backend_old_weak_password(self) -> None:
+        user_profile = self.example_user("hamlet")
+        password = "a_password_of_22_chars"
+        user_profile.set_password(password)
+        user_profile.save()
+
+        with self.settings(PASSWORD_MIN_LENGTH=30), self.assertRaises(JsonableError) as m:
+            EmailAuthBackend().authenticate(
+                request=mock.MagicMock(),
+                username=self.example_email("hamlet"),
+                password=password,
+                realm=get_realm("zulip"),
+            )
+        self.assertEqual(str(m.exception), "You need to reset your password.")
+
     def test_email_auth_backend_password_hasher_change(self) -> None:
         user_profile = self.example_user("hamlet")
         password = "a_password_of_22_chars"
@@ -4891,6 +4906,19 @@ class FetchAPIKeyTest(ZulipTestCase):
             dict(username=self.email, password=initial_password(self.email)),
         )
         self.assert_json_error_contains(result, "This organization has been deactivated", 401)
+
+    def test_old_weak_password(self) -> None:
+        user_profile = self.example_user("hamlet")
+        password = "a_password_of_22_chars"
+        user_profile.set_password(password)
+        user_profile.save()
+
+        with self.settings(PASSWORD_MIN_LENGTH=30):
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username=self.email, password=password),
+            )
+            self.assert_json_error(result, "You need to reset your password.", 403)
 
     def test_old_weak_password_after_hasher_change(self) -> None:
         user_profile = self.example_user("hamlet")
