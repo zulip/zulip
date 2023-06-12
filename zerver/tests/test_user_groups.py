@@ -92,15 +92,12 @@ class UserGroupTestCase(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
 
-        leadership_group = UserGroup.objects.create(realm=realm, name="Leadership")
-        UserGroupMembership.objects.create(user_profile=desdemona, user_group=leadership_group)
+        leadership_group = check_add_user_group(realm, "Leadership", [desdemona], acting_user=None)
 
-        staff_group = UserGroup.objects.create(realm=realm, name="Staff")
-        UserGroupMembership.objects.create(user_profile=iago, user_group=staff_group)
+        staff_group = check_add_user_group(realm, "Staff", [iago], acting_user=None)
         GroupGroupMembership.objects.create(supergroup=staff_group, subgroup=leadership_group)
 
-        everyone_group = UserGroup.objects.create(realm=realm, name="Everyone")
-        UserGroupMembership.objects.create(user_profile=shiva, user_group=everyone_group)
+        everyone_group = check_add_user_group(realm, "Everyone", [shiva], acting_user=None)
         GroupGroupMembership.objects.create(supergroup=everyone_group, subgroup=staff_group)
 
         self.assertCountEqual(list(get_recursive_subgroups(leadership_group)), [leadership_group])
