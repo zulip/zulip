@@ -12,6 +12,15 @@ type JQueryCaretRange = {
     text: string;
 };
 
+declare namespace JQueryValidation {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface ValidationOptions {
+        // This is only defined so that this.defaultShowErrors!() can be called from showErrors.
+        // It isn't really a validation option to be supplied.
+        defaultShowErrors?: () => void;
+    }
+}
+
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 interface JQuery {
     expectOne(): JQuery;

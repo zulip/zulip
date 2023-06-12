@@ -14,17 +14,17 @@ $(() => {
     if ($password_field.length > 0) {
         $.validator.addMethod(
             "password_strength",
-            (value) => password_quality(value, undefined, $password_field),
-            () => password_warning($password_field.val(), $password_field),
+            (value: string) => password_quality(value, undefined, $password_field),
+            () => password_warning($password_field.val() as string, $password_field),
         );
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
-        password_quality($password_field.val(), $("#pw_strength .bar"), $password_field);
+        password_quality($password_field.val() as string, $("#pw_strength .bar"), $password_field);
 
         $password_field.on("input", function () {
             // Update the password strength bar even if we aren't validating
             // the field yet.
-            password_quality($(this).val(), $("#pw_strength .bar"), $(this));
+            password_quality($(this).val() as string, $("#pw_strength .bar"), $(this));
         });
     }
 
@@ -51,13 +51,13 @@ $(() => {
             new_password1: "password_strength",
         },
         errorElement: "p",
-        errorPlacement($error, $element) {
+        errorPlacement($error: JQuery, $element: JQuery) {
             // NB: this is called at most once, when the error element
             // is created.
             $element.next(".help-inline.alert.alert-error").remove();
-            if ($element.next().is('label[for="' + $element.attr("id") + '"]')) {
+            if ($element.next().is(`label[for="${$element.attr("id")!}"]`)) {
                 $error.insertAfter($element.next()).addClass("help-inline alert alert-error");
-            } else if ($element.parent().is('label[for="' + $element.attr("id") + '"]')) {
+            } else if ($element.parent().is(`label[for="${$element.attr("id")!}"]`)) {
                 // For checkboxes and radio-buttons
                 $error.insertAfter($element.parent()).addClass("help-inline alert alert-error");
             } else {
@@ -95,7 +95,7 @@ $(() => {
     }
 
     $("#registration").on("submit", () => {
-        if ($("#registration").valid()) {
+        if ($<HTMLInputElement>("#registration").valid()) {
             $(".register-button .loader").css("display", "inline-block");
             $(".register-button").prop("disabled", true);
             $(".register-button span").hide();
@@ -112,16 +112,13 @@ $(() => {
 
     // Code in this block will be executed when the user visits /register
     // i.e. accounts_home.html is rendered.
-    if (
-        $("[data-page-id='accounts-home']").length > 0 &&
-        window.location.hash.slice(0, 1) === "#"
-    ) {
-        document.querySelector("#send_form").action += window.location.hash;
+    if ($("[data-page-id='accounts-home']").length > 0 && window.location.hash.startsWith("#")) {
+        document.querySelector<HTMLFormElement>("#send_form")!.action += window.location.hash;
     }
 
     // Code in this block will be executed when the user is at login page
     // i.e. login.html is rendered.
-    if ($("[data-page-id='login-page']").length > 0 && window.location.hash.slice(0, 1) === "#") {
+    if ($("[data-page-id='login-page']").length > 0 && window.location.hash.startsWith("#")) {
         // All next inputs have the same value when the page is
         // rendered, so it's OK that this selector gets N elements.
         const next_value = $("input[name='next']").attr("value");
@@ -130,12 +127,12 @@ $(() => {
         // property, since the server doesn't receive URL fragments
         // (and thus could not have included them when rendering a
         // redirect to this page).
-        $("input[name='next']").attr("value", next_value + window.location.hash);
+        $("input[name='next']").attr("value", `${next_value!}${window.location.hash}`);
     }
 
     $("#send_confirm").validate({
         errorElement: "div",
-        errorPlacement($error) {
+        errorPlacement($error: JQuery) {
             $(".email-frontend-error").empty();
             $("#send_confirm .alert.email-backend-error").remove();
             $error.appendTo(".email-frontend-error").addClass("text-error");
@@ -151,12 +148,12 @@ $(() => {
             // check if it is the "focusout" or if it is a keydown, then check if
             // the keycode was the one for "Enter".
             if (e.type === "focusout" || e.key === "Enter") {
-                $(this).val($(this).val().trim());
+                $(this).val(($(this).val() as string).trim());
             }
         },
     );
 
-    const show_subdomain_section = function (bool) {
+    const show_subdomain_section = function (bool: boolean): void {
         const action = bool ? "hide" : "show";
         $("#subdomain_section")[action]();
     };
@@ -183,13 +180,13 @@ $(() => {
             if (error_map.password) {
                 $("#login_form .alert.alert-error").remove();
             }
-            this.defaultShowErrors();
+            this.defaultShowErrors!();
         },
     });
 
-    function check_subdomain_available(subdomain) {
+    function check_subdomain_available(subdomain: string): void {
         const url = "/json/realm/subdomain/" + subdomain;
-        $.get(url, (response) => {
+        void $.get(url, (response) => {
             if (response.msg !== "available") {
                 $("#id_team_subdomain_error_client").html(response.msg);
                 $("#id_team_subdomain_error_client").show();
@@ -197,7 +194,7 @@ $(() => {
         });
     }
 
-    function update_full_name_section() {
+    function update_full_name_section(): void {
         if ($("#source_realm_select").length && $("#source_realm_select").val() !== "") {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
@@ -207,9 +204,9 @@ $(() => {
             const full_name = $($("#source_realm_select").prop("selectedOptions")).attr(
                 "data-full-name",
             );
-            $("#profile_full_name").text(full_name);
-            $("#id_full_name").val(full_name);
-            $("#profile_avatar").attr("src", avatar_url);
+            $("#profile_full_name").text(full_name!);
+            $("#id_full_name").val(full_name!);
+            $("#profile_avatar").attr("src", avatar_url!);
         } else {
             $("#full_name_input_section").show();
             $("#profile_info_section").hide();
@@ -219,7 +216,7 @@ $(() => {
     $("#source_realm_select").on("change", update_full_name_section);
     update_full_name_section();
 
-    let timer;
+    let timer: number;
     $("#id_team_subdomain").on("keydown", () => {
         $(".team_subdomain_error_server").text("").css("display", "none");
         $("#id_team_subdomain_error_client").css("display", "none");
@@ -243,7 +240,10 @@ $(() => {
     });
 
     $("#change-email-address-visibility-modal .dialog_submit_button").on("click", () => {
-        const selected_val = Number.parseInt($("#new_user_email_address_visibility").val(), 10);
+        const selected_val = Number.parseInt(
+            $("#new_user_email_address_visibility").val() as string,
+            10,
+        );
         $("#email_address_visibility").val(selected_val);
         Micromodal.close("change-email-address-visibility-modal");
 
@@ -295,7 +295,7 @@ $(() => {
         $("#registration .realm-creation-editable-inputs").removeClass("hide");
         $("#id_team_name").trigger("focus");
         // This is a hack to have cursor at end after focussing the input.
-        const name_val = $("#id_team_name").val();
+        const name_val = $("#id_team_name").val()!;
         $("#id_team_name").val("").val(name_val);
 
         $(e.target).hide();
