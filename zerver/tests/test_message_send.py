@@ -2555,15 +2555,12 @@ class CheckMessageTest(ZulipTestCase):
         sender = self.example_user("iago")
         client = make_client(name="test suite")
         stream = get_stream("Denmark", realm)
-        topic_name = "(no topic)"
+        topic_name = "general chat"
         message_content = "whatever"
         addressee = Addressee.for_stream(stream, topic_name)
 
         do_set_realm_property(realm, "mandatory_topics", True, acting_user=None)
         realm.refresh_from_db()
-
-        with self.assertRaisesRegex(JsonableError, "Topics are required in this organization"):
-            check_message(sender, client, addressee, message_content, realm)
 
         do_set_realm_property(realm, "mandatory_topics", False, acting_user=None)
         realm.refresh_from_db()

@@ -275,6 +275,7 @@ test_ui("validate", ({override_rewire, mock_template}) => {
         name: "Denmark",
     };
     stream_data.add_sub(denmark);
+    stream_data.subscribe_myself(denmark);
     compose_state.set_stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
@@ -291,9 +292,9 @@ test_ui("validate", ({override_rewire, mock_template}) => {
     assert.ok(missing_topic_error_rendered);
 
     missing_topic_error_rendered = false;
-    compose_state.topic("(no topic)");
-    assert.ok(!compose_validate.validate());
-    assert.ok(missing_topic_error_rendered);
+    compose_state.topic("general chat");
+    assert.ok(compose_validate.validate());
+    assert.ok(!missing_topic_error_rendered);
 });
 
 test_ui("get_invalid_recipient_emails", ({override_rewire}) => {

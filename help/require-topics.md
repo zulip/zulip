@@ -1,7 +1,7 @@
 # Require topics in stream messages
 
-If a user sends a message without a topic, the message's topic is displayed as
-**(no topic)**. Administrators can configure whether stream messages must have a
+If a user sends a message without a topic, the message's topic is set to
+**"general chat"**. Administrators can configure whether stream messages must have a
 specified topic.
 
 ## Require topics in stream messages

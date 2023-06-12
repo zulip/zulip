@@ -1208,7 +1208,7 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         # topic edit permissions apply on "no topic" messages as well
-        message.set_topic_name("(no topic)")
+        message.set_topic_name("general chat")
         message.save()
         do_edit_message_assert_error(
             id_, "G", "The time limit for editing this message's topic has passed.", "cordelia"

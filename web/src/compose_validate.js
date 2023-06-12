@@ -500,7 +500,7 @@ function validate_stream_message(scheduling_message) {
         const topic = compose_state.topic();
         // TODO: We plan to migrate the empty topic to only using the
         // `""` representation for i18n reasons, but have not yet done so.
-        if (topic === "" || topic === "(no topic)") {
+        if (topic === "") {
             compose_banner.show_error_message(
                 $t({defaultMessage: "Topics are required in this organization."}),
                 compose_banner.CLASSNAMES.topic_missing,
