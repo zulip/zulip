@@ -188,13 +188,7 @@ the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
 the [troubleshooting section](troubleshooting.md) for advice on
 how to debug.
 
-**Community.** If the tips above don't help, please visit [#production
-help][production-help] in the [Zulip development community
-server][chat-zulip-org] for realtime help, and we'll try to help you
-out! Please provide details like the full traceback from the bottom
-of `/var/log/zulip/errors.log` in your report (ideally in a [code
-block][code-block]).
-
-[chat-zulip-org]: https://zulip.com/development-community/
-[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
-[code-block]: https://zulip.com/help/code-blocks
+**Still having trouble?**
+Please see the [troubleshooting and monitoring
+guide](../production/troubleshooting.md) for additional advice and ways to get
+help.

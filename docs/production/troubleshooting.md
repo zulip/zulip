@@ -1,5 +1,34 @@
 # Troubleshooting and monitoring
 
+This page offers detailed guidance for troubleshooting and monitoring your Zulip
+installation. If you suspect that you have encountered a bug, or are otherwise
+unable to resolve an issue with your Zulip installation, best-effort community
+support is available in the [Zulip development community ][chat-zulip-org]. We
+provide free, interactive support for the vast majority of questions about
+running a Zulip server.
+
+To report a problem or ask a question, please start a new topic in the
+[#production help][production-help] stream in the [Zulip development community
+][chat-zulip-org]:
+
+- Describe what you are trying to do and any problems you've encountered.
+- Provide the relevant logs, such as the full traceback from the bottom
+  of `/var/log/zulip/errors.log`, or the installation script logs at
+  `/var/log/zulip/install.log`. Please post logging output using [code
+  blocks][code-block], not screenshots.
+- Be sure to include what version of Zulip Server you are running, or between
+  which versions you are upgrading.
+
+[chat-zulip-org]: https://zulip.com/development-community/
+[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
+[code-block]: https://zulip.com/help/code-blocks
+
+Contact [sales@zulip.com](mailto:sales@zulip.com) if you'd like to
+learn about paid support options, including phone support from Zulip's
+core engineering team.
+
+## Overview and resources
+
 Zulip uses [Supervisor](http://supervisord.org/index.html) to monitor
 and control its many Python services. Read the next section, [Using
 supervisorctl](#using-supervisorctl), to learn how to use the
@@ -21,12 +50,6 @@ provides a [tool to search through `server.log`][log-search].
 
 The section [troubleshooting services](#troubleshooting-services)
 on this page includes details about how to fix common issues with Zulip services.
-
-If you run into additional problems, [please report
-them](https://github.com/zulip/zulip/issues) so that we can update
-this page! The Zulip installation scripts logs its full output to
-`/var/log/zulip/install.log`, so please include the context for any
-tracebacks from that log.
 
 ## Using supervisorctl
 
