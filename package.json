@@ -94,6 +94,7 @@
     "@types/blueimp-md5": "^2.18.0",
     "@types/clean-css": "^4.2.2",
     "@types/jquery": "^3.3.31",
+    "@types/jquery.validation": "^1.16.7",
     "@types/katex": "^0.16.0",
     "@types/lodash": "^4.14.172",
     "@types/micromodal": "^0.3.3",
