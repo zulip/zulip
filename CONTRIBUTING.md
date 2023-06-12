@@ -55,7 +55,8 @@ needs doing:
 **Non-code contributions**: Some of the most valuable ways to contribute
 don't require touching the codebase at all. For example, you can:
 
-- Report issues, including both feature requests and bug reports.
+- Report issues, including both feature requests and [bug
+  reports](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html).
 - [Give feedback](#user-feedback) if you are evaluating or using Zulip.
 - [Participate
   thoughtfully](https://zulip.readthedocs.io/en/latest/contributing/design-discussions.html)
