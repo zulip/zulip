@@ -17,5 +17,6 @@ code-reviewing
 review-process
 zulipbot-usage
 reporting-bugs
+suggesting-features
 licensing
 ```
