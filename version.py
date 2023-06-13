@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "7.0+git"
+ZULIP_VERSION = "7.1"
 
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
@@ -14,8 +14,8 @@ ZULIP_VERSION = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "7.0"
-LATEST_RELEASE_VERSION = "7.0"
-LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2022/11/17/zulip-6-0-released/"
+LATEST_RELEASE_VERSION = "7.1"
+LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/2023/05/31/zulip-7-0-released/"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
 # prevented from connecting to the Zulip server.  Versions above
