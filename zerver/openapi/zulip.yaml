@@ -18776,6 +18776,8 @@ components:
       in: path
       description: |
         The ID of the user to mute/un-mute.
+
+        **Changes**: Before Zulip 8.0 (feature level 188), it was an error to specify a bot user.
       schema:
         type: integer
       example: 10
