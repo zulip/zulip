@@ -9775,6 +9775,15 @@ paths:
           schema:
             type: boolean
           example: false
+        - name: enable_followed_topic_audible_notifications
+          in: query
+          description: |
+            Enable audible desktop notifications for messages sent to followed topics.
+
+            **Changes**: New in Zulip 8.0 (feature level 189).
+          schema:
+            type: boolean
+          example: false
         - name: email_notifications_batching_period_seconds
           in: query
           description: |
@@ -11895,6 +11904,12 @@ paths:
                               Enable push notifications for messages sent to followed topics.
 
                               **Changes**: New in Zulip 8.0 (feature level 189).
+                          enable_followed_topic_audible_notifications:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for messages sent to followed topics.
+
+                              **Changes**: New in Zulip 8.0 (feature level 189).
                           email_notifications_batching_period_seconds:
                             type: integer
                             description: |
@@ -13980,6 +13995,12 @@ paths:
                               Enable push notifications for messages sent to followed topics.
 
                               **Changes**: New in Zulip 8.0 (feature level 189).
+                          enable_followed_topic_audible_notifications:
+                            type: boolean
+                            description: |
+                              Enable audible desktop notifications for messages sent to followed topics.
+
+                              **Changes**: New in Zulip 8.0 (feature level 189).
                           enable_digest_emails:
                             type: boolean
                             description: |
@@ -15142,6 +15163,15 @@ paths:
           in: query
           description: |
             Enable push notifications for messages sent to followed topics.
+
+            **Changes**: New in Zulip 8.0 (feature level 189).
+          schema:
+            type: boolean
+          example: false
+        - name: enable_followed_topic_audible_notifications
+          in: query
+          description: |
+            Enable audible desktop notifications for messages sent to followed topics.
 
             **Changes**: New in Zulip 8.0 (feature level 189).
           schema:
