@@ -195,20 +195,20 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_issue_milestoned(self) -> None:
         expected_topic = "testing-gh / issue #6 This is a sample issue to test GH I..."
-        expected_message = "sbansal1999 milestoned [issue #6](https://github.com/sbansal1999/testing-gh/issues/6):\n\n~~~ quote\nThis tests the functionality of the GH Integration. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sagittis ex. In at malesuada velit. Nulla convallis sem ultrices sapien finibus, a auctor nibh egestas. Cras mattis tristique ex, vitae pretium ante tempor vel. Vestibulum lacus tellus, rutrum ut neque eu, ornare facilisis diam. Curabitur ultrices mauris dolor, at lacinia felis mollis in. Fusce tincidunt magna a erat mollis volutpat. Etiam fringilla, ipsum ac vehicula pellentesque, purus augue viverra nunc, vel lacinia felis lectus ac risus. Morbi magna elit, tempus quis euismod quis, auctor ac diam. Nam quis tristique ligula. Proin ut est accumsan, ornare risus vel, fringilla ipsum.\n~~~"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) to [issue #6](https://github.com/sbansal1999/testing-gh/issues/6)."
 
         self.check_webhook("issues__milestoned", expected_topic, expected_message)
 
     def test_issue_milestoned_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "sbansal1999 milestoned [issue #6 This is a sample issue to test GH Integration Func](https://github.com/sbansal1999/testing-gh/issues/6):\n\n~~~ quote\nThis tests the functionality of the GH Integration. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sagittis ex. In at malesuada velit. Nulla convallis sem ultrices sapien finibus, a auctor nibh egestas. Cras mattis tristique ex, vitae pretium ante tempor vel. Vestibulum lacus tellus, rutrum ut neque eu, ornare facilisis diam. Curabitur ultrices mauris dolor, at lacinia felis mollis in. Fusce tincidunt magna a erat mollis volutpat. Etiam fringilla, ipsum ac vehicula pellentesque, purus augue viverra nunc, vel lacinia felis lectus ac risus. Morbi magna elit, tempus quis euismod quis, auctor ac diam. Nam quis tristique ligula. Proin ut est accumsan, ornare risus vel, fringilla ipsum.\n~~~"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) to [issue #6 This is a sample issue to test GH Integration Func](https://github.com/sbansal1999/testing-gh/issues/6)."
 
         self.check_webhook("issues__milestoned", expected_topic, expected_message)
 
     def test_issue_demilestoned(self) -> None:
         expected_topic = "testing-gh / issue #6 This is a sample issue to test GH I..."
-        expected_message = "sbansal1999 demilestoned [issue #6](https://github.com/sbansal1999/testing-gh/issues/6):\n\n~~~ quote\nThis tests the functionality of the GH Integration. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sagittis ex. In at malesuada velit. Nulla convallis sem ultrices sapien finibus, a auctor nibh egestas. Cras mattis tristique ex, vitae pretium ante tempor vel. Vestibulum lacus tellus, rutrum ut neque eu, ornare facilisis diam. Curabitur ultrices mauris dolor, at lacinia felis mollis in. Fusce tincidunt magna a erat mollis volutpat. Etiam fringilla, ipsum ac vehicula pellentesque, purus augue viverra nunc, vel lacinia felis lectus ac risus. Morbi magna elit, tempus quis euismod quis, auctor ac diam. Nam quis tristique ligula. Proin ut est accumsan, ornare risus vel, fringilla ipsum.\n~~~"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) removed milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) from [issue #6](https://github.com/sbansal1999/testing-gh/issues/6)."
 
         self.check_webhook("issues__demilestoned", expected_topic, expected_message)
 

@@ -29,6 +29,7 @@ from zerver.lib.webhooks.git import (
     get_commits_comment_action_message,
     get_issue_event_message,
     get_issue_labeled_or_unlabeled_event_message,
+    get_issue_milestoned_or_demilestoned_event_message,
     get_pull_request_event_message,
     get_push_commits_event_message,
     get_push_tag_event_message,
@@ -161,6 +162,10 @@ def get_issue_body(helper: Helper) -> str:
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
     has_assignee = "assignee" in payload
+
+    if action in ("milestoned", "demilestoned"):
+        return get_issue_milestoned_or_demilestoned_body(helper)
+
     base_message = get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
@@ -216,6 +221,23 @@ def get_issue_labeled_or_unlabeled_body(helper: Helper) -> str:
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
         label_name=payload["label"]["name"].tame(check_string),
+        user_url=get_sender_url(payload),
+        title=issue["title"].tame(check_string) if include_title else None,
+    )
+
+
+def get_issue_milestoned_or_demilestoned_body(helper: Helper) -> str:
+    payload = helper.payload
+    include_title = helper.include_title
+    issue = payload["issue"]
+
+    return get_issue_milestoned_or_demilestoned_event_message(
+        user_name=get_sender_name(payload),
+        action="added" if payload["action"].tame(check_string) == "milestoned" else "removed",
+        url=issue["html_url"].tame(check_string),
+        number=issue["number"].tame(check_int),
+        milestone_name=payload["milestone"]["title"].tame(check_string),
+        milestone_url=payload["milestone"]["html_url"].tame(check_string),
         user_url=get_sender_url(payload),
         title=issue["title"].tame(check_string) if include_title else None,
     )
