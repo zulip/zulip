@@ -8283,7 +8283,14 @@ paths:
       summary: Get topics in a stream
       tags: ["streams"]
       description: |
-        Get all the topics in a specific stream
+        Get all topics the user has access to in a specific stream.
+
+        Note that for private streams with [protected
+        history](/help/stream-permissions), the user will only have access to
+        topics of messages sent after they [subscribed to](/api/subscribe) the
+        stream. Similarly, a user's [bot](/help/bots-and-integrations#bot-type)
+        will only have access to messages sent after the bot was subscribed to
+        the stream, instead of when the user subscribed.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
       responses:

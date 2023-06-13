@@ -55,6 +55,11 @@ A few more details:
 * Bots can be subscribed to streams, and their role can be modified if
   they need to have permission to do administrative actions.
 
+* [Stream permissions](/help/stream-permissions) are the same for bots
+  as for other users. Therefore, for private streams with protected
+  history, a bot can only access messages sent after it subscribed
+  to the stream.
+
 * **Generic**: A generic bot is like a normal Zulip user account that
   cannot log in via a browser.  Note that if you truly want to
   impersonate yourself (e.g. write messages that come from your Zulip
