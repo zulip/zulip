@@ -189,13 +189,21 @@ function initialize_left_sidebar() {
     $("#left-sidebar-container").html(rendered_sidebar);
 }
 
+export function update_invite_user_option() {
+    if (!settings_data.user_can_invite_others_to_realm()) {
+        $("#right-sidebar .invite-user-link").hide();
+    } else {
+        $("#right-sidebar .invite-user-link").show();
+    }
+}
+
 function initialize_right_sidebar() {
     const rendered_sidebar = render_right_sidebar({
-        can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
         realm_rendered_description: page_params.realm_rendered_description,
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
+    update_invite_user_option();
     if (page_params.is_spectator) {
         rendered_markdown.update_elements(
             $(".right-sidebar .realm-description .rendered_markdown"),
