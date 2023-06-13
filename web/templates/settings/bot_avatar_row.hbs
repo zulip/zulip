@@ -5,19 +5,19 @@
             <div class="name">{{name}}</div>
             {{#if is_active}}
             <div class="edit-bot-buttons">
-                <button type="submit" class="btn open_edit_bot_form" data-sidebar-form="edit-bot" title="{{t 'Edit bot' }}" data-email="{{email}}">
+                <button type="submit" class="btn open_edit_bot_form tippy-zulip-delayed-tooltip" data-sidebar-form="edit-bot" data-tippy-content="{{t 'Edit bot' }}" data-email="{{email}}">
                     <i class="fa fa-pencil blue" aria-hidden="true"></i>
                 </button>
-                <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc" title="{{t 'Download zuliprc' }}" data-email="{{email}}">
+                <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Download zuliprc' }}" data-email="{{email}}">
                     <i class="fa fa-download sea-green" aria-hidden="true"></i>
                 </a>
-                <button type="submit" id="copy_zuliprc" class="btn copy_zuliprc" title="{{t 'Copy zuliprc' }}">
+                <button type="submit" id="copy_zuliprc" class="btn copy_zuliprc tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Copy zuliprc' }}">
                     <i class="fa fa-clipboard copy-gold"></i>
                 </button>
-                <button type="submit" class="btn deactivate_bot danger-red" title="{{t 'Deactivate bot' }}" data-user-id="{{user_id}}">
+                <button type="submit" class="btn deactivate_bot danger-red tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Deactivate bot' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-user-times" aria-hidden="true"></i>
                 </button>
-                <button type="submit" class="btn open_bots_subscribed_streams" title="{{t 'Subscribed streams' }}" data-user-id="{{user_id}}">
+                <button type="submit" class="btn open_bots_subscribed_streams tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Subscribed streams' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-hashtag purple" aria-hidden="true"></i>
                 </button>
             </div>
@@ -39,14 +39,14 @@
             <div class="api-key-value-and-button no-select">
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
                 <span class="value text-select">{{api_key}}</span>
-                <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
+                <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-refresh" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="api_key_error text-error"></div>
         </div>
         {{else}}
-        <button class="button round btn-warning reactivate_bot" title="{{t 'Reactivate bot' }}" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
+        <button class="button round btn-warning reactivate_bot" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
         {{/if}}
     </div>
 </li>
