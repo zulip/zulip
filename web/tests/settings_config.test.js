@@ -17,6 +17,11 @@ run_test("all_notifications", () => {
     user_settings.enable_sounds = true;
     user_settings.enable_offline_push_notifications = false;
     user_settings.enable_offline_email_notifications = true;
+    user_settings.enable_followed_topic_desktop_notifications = false;
+    user_settings.enable_followed_topic_audible_notifications = true;
+    user_settings.enable_followed_topic_push_notifications = false;
+    user_settings.enable_followed_topic_email_notifications = true;
+    user_settings.enable_followed_topic_wildcard_mentions_notify = false;
 
     // Check that it throws error if incorrect settings name
     // is passed. In this case, we articulate that with
@@ -94,6 +99,36 @@ run_test("all_notifications", () => {
                     is_checked: false,
                     is_disabled: true,
                     setting_name: "",
+                },
+            ],
+        },
+        {
+            label: "translated: Followed topics",
+            notification_settings: [
+                {
+                    is_checked: false,
+                    is_disabled: false,
+                    setting_name: "enable_followed_topic_desktop_notifications",
+                },
+                {
+                    is_checked: true,
+                    is_disabled: false,
+                    setting_name: "enable_followed_topic_audible_notifications",
+                },
+                {
+                    is_checked: false,
+                    is_disabled: true,
+                    setting_name: "enable_followed_topic_push_notifications",
+                },
+                {
+                    is_checked: true,
+                    is_disabled: false,
+                    setting_name: "enable_followed_topic_email_notifications",
+                },
+                {
+                    is_checked: false,
+                    is_disabled: false,
+                    setting_name: "enable_followed_topic_wildcard_mentions_notify",
                 },
             ],
         },

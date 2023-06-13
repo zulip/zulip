@@ -5,6 +5,7 @@ import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
 import type {
+    FollowedTopicNotificationSettings,
     PmNotificationSettings,
     StreamNotificationSettings,
     UserSettings,
@@ -649,6 +650,14 @@ export const pm_mention_notification_settings: (keyof PmNotificationSettings)[] 
     "enable_offline_email_notifications",
 ];
 
+export const followed_topic_notification_settings: (keyof FollowedTopicNotificationSettings)[] = [
+    "enable_followed_topic_desktop_notifications",
+    "enable_followed_topic_audible_notifications",
+    "enable_followed_topic_push_notifications",
+    "enable_followed_topic_email_notifications",
+    "enable_followed_topic_wildcard_mentions_notify",
+];
+
 const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
 const mobile_notification_settings = ["enable_online_push_notifications"];
@@ -716,6 +725,7 @@ const other_notification_settings = [
 ];
 
 export const all_notification_settings = [
+    ...followed_topic_notification_settings,
     ...other_notification_settings,
     ...pm_mention_notification_settings,
     ...stream_notification_settings,
@@ -787,6 +797,13 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
             label: $t({defaultMessage: "DMs, mentions, and alerts"}),
             notification_settings: get_notifications_table_row_data(
                 pm_mention_notification_settings,
+                settings_object,
+            ),
+        },
+        {
+            label: $t({defaultMessage: "Followed topics"}),
+            notification_settings: get_notifications_table_row_data(
+                followed_topic_notification_settings,
                 settings_object,
             ),
         },

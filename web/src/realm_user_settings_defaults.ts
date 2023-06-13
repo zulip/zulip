@@ -21,6 +21,11 @@ export type RealmDefaultSettings = {
     enable_stream_desktop_notifications: boolean;
     enable_stream_email_notifications: boolean;
     enable_stream_push_notifications: boolean;
+    enable_followed_topic_desktop_notifications: boolean;
+    enable_followed_topic_audible_notifications: boolean;
+    enable_followed_topic_push_notifications: boolean;
+    enable_followed_topic_email_notifications: boolean;
+    enable_followed_topic_wildcard_mentions_notify: boolean;
     enter_sends: boolean;
     escape_navigates_to_default_view: boolean;
     fluid_layout_width: boolean;
