@@ -9748,6 +9748,15 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: enable_followed_topic_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for messages sent to followed topics.
+
+            **Changes**: New in Zulip 8.0 (feature level 189).
+          schema:
+            type: boolean
+          example: true
         - name: enable_followed_topic_email_notifications
           in: query
           description: |
@@ -11868,6 +11877,12 @@ paths:
                             description: |
                               Enable audible desktop notifications for private messages and
                               @-mentions.
+                          enable_followed_topic_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for messages sent to followed topics.
+
+                              **Changes**: New in Zulip 8.0 (feature level 189).
                           enable_followed_topic_email_notifications:
                             type: boolean
                             description: |
@@ -13947,6 +13962,12 @@ paths:
                             description: |
                               Enable mobile notification for private messages and @-mentions received
                               when the user is online.
+                          enable_followed_topic_desktop_notifications:
+                            type: boolean
+                            description: |
+                              Enable visual desktop notifications for messages sent to followed topics.
+
+                              **Changes**: New in Zulip 8.0 (feature level 189).
                           enable_followed_topic_email_notifications:
                             type: boolean
                             description: |
@@ -15096,6 +15117,15 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/notifications` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: enable_followed_topic_desktop_notifications
+          in: query
+          description: |
+            Enable visual desktop notifications for messages sent to followed topics.
+
+            **Changes**: New in Zulip 8.0 (feature level 189).
           schema:
             type: boolean
           example: true
