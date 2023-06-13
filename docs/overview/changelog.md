@@ -17,6 +17,30 @@ log][commit-log] for an up-to-date list of all changes.
 
 ## Zulip 7.x series
 
+### 7.1 -- 2023-06-13
+
+- Added checks to check that Zulip is being installed on a
+  [supported CPU and OS architecture](../production/requirements.md).
+- Improved error-handling around the
+  [`upgrade-postgresql`](../production/upgrade.md#upgrading-postgresql)
+  tool.
+- Fixed a couple bugs in database migrations as part of the upgrade that could
+  cause the upgrade to fail to complete.
+- Fixed a bug where
+  [scheduled messages](https://zulip.com/help/schedule-a-message) with `@all`
+  would fail to send.
+- Fixed a bug which would sometimes cause the `j` and `k` keys to not be able to
+  be typed in the compose box.
+- Fixed anonymous access to the “download” link on images in
+  [public-access streams](https://zulip.com/help/public-access-option).
+- Changed the default DNS resolver in nginx’s configuration to match the
+  system’s; this fixes deployments which use the
+  [S3 storage backend](../production/upload-backends.md)
+  and did not run `systemd-resolved`, like Docker and some versions of Debian.
+- Updated several pieces of documentation.
+- Updated translations, including new translations for Luri (Bakhtiari),
+  Brazilian Portuguese, and Tagalog.
+
 ### 7.0 -- 2023-05-31
 
 #### Highlights
