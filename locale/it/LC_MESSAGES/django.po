@@ -19,7 +19,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Maxxer <io@maxxer.it>, 2023\n"
+"Last-Translator: Andrea, 2020-2023\n"
 "Language-Team: Italian (http://app.transifex.com/zulip/zulip/language/it/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1751,12 +1751,12 @@ msgstr "\n    Non rispondere a questa email. Questo server Zulip non è configur
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
 msgid "Group DMs with %(huddle_display_name)s"
-msgstr "MD di gruppo con %(huddle_display_name)s"
+msgstr "Messaggi diretti di gruppo con %(huddle_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
 msgid "DMs with %(sender_str)s"
-msgstr "MD con %(sender_str)s"
+msgstr "Messaggio diretto con %(sender_str)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:12
 #, python-format
@@ -3066,7 +3066,7 @@ msgstr "Il tempo massimo per editare il messaggio è trascorso"
 
 #: zerver/actions/message_edit.py:1214
 msgid "The time limit for editing this message's topic has passed."
-msgstr ""
+msgstr "Il limite di tempo per modificare l'argomento di questo messaggio è scaduto."
 
 #: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1428
 msgid "You do not have permission to use wildcard mentions in this stream."
@@ -4786,7 +4786,7 @@ msgstr "Canale con id: {}. non esiste. Non sono stati spediti inviti."
 
 #: zerver/views/invite.py:87
 msgid "You do not have permission to subscribe other users to streams."
-msgstr ""
+msgstr "Non sei autorizzato a iscrivere altri utenti ai canali."
 
 #: zerver/views/invite.py:124 zerver/views/invite.py:127
 #: zerver/views/invite.py:146 zerver/views/invite.py:149
@@ -4993,11 +4993,11 @@ msgstr "Playground non valido"
 
 #: zerver/views/scheduled_messages.py:64
 msgid "Recipient required when updating type of scheduled message."
-msgstr ""
+msgstr "Destinatario richiesto durante l'aggiornamento del tipo di messaggio programmato."
 
 #: zerver/views/scheduled_messages.py:69
 msgid "Topic required when updating scheduled message type to stream."
-msgstr ""
+msgstr "Argomento richiesto durante l'aggiornamento del tipo di messaggio programmato al canale."
 
 #: zerver/views/sentry.py:32
 msgid "Invalid request format"

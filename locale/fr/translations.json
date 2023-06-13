@@ -662,7 +662,7 @@
   "Message {recipient_names}": "Message {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "Message {recipient_name} ({recipient_status})",
   "Messages in all public streams": "Messages dans tous les canaux publics",
-  "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "",
+  "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "Les messages ne seront pas automatiquement marqués comme lus car vous n'êtes pas dans une vue de conversation. <z-link>Modifier paramètre</z-link>",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "Les messages ne seront pas automatiquement marqués comme lus. <z-link>Modifier paramètre</z-link>",
   "Mobile": "Mobile",
   "Mobile message notifications": "Notifications de messages mobiles",

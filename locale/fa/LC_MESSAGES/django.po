@@ -6,6 +6,7 @@
 # abolfazl test <abolfazlgroup@gmail.com>, 2019
 # Mehdi Hamidi, 2021
 # mohammad talaei <mohammadtalaei76@gmail.com>, 2019
+# Reza Askari, 2023
 # Shahin Azad <me@5hah.in>, 2018
 # shahriar nazemi <shahriar.nazemi@gmail.com>, 2020
 msgid ""
@@ -14,7 +15,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Mehdi Hamidi, 2021\n"
+"Last-Translator: Reza Askari, 2023\n"
 "Language-Team: Persian (http://app.transifex.com/zulip/zulip/language/fa/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -41,11 +42,11 @@ msgstr "جریان های خصوصی"
 
 #: analytics/views/stats.py:296
 msgid "Direct messages"
-msgstr ""
+msgstr "پیام خصوصی"
 
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
-msgstr ""
+msgstr "پیام جمعی"
 
 #: analytics/views/stats.py:318
 msgid "Unknown chart name: {}"
@@ -1289,7 +1290,7 @@ msgstr ""
 
 #: templates/zerver/emails/digest.html:27
 msgid "New streams"
-msgstr ""
+msgstr "جریان‌های جدید"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."
@@ -1756,7 +1757,7 @@ msgstr ""
 #: templates/zerver/emails/missed_message.subject.txt:12
 #, python-format
 msgid "[resolved] #%(stream_name)s > %(topic_name)s"
-msgstr ""
+msgstr "[بسته شده] #%(stream_name)s > %(topic_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:17
 msgid "New messages"
@@ -3200,7 +3201,7 @@ msgstr ""
 
 #: zerver/actions/streams.py:76
 msgid "Stream is already deactivated"
-msgstr ""
+msgstr "جریان بسته شده است"
 
 #: zerver/actions/streams.py:841
 #, python-brace-format
