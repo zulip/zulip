@@ -1726,6 +1726,7 @@ class UserBaseSettings(models.Model):
         enable_followed_topic_desktop_notifications=bool,
         enable_followed_topic_email_notifications=bool,
         enable_followed_topic_push_notifications=bool,
+        enable_followed_topic_audible_notifications=bool,
         enable_followed_topic_wildcard_mentions_notify=bool,
     )
 
