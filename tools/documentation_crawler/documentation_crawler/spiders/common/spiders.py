@@ -29,7 +29,6 @@ EXCLUDED_URLS = [
     # Returns 404 to HEAD requests unconditionally
     "https://www.git-tower.com/blog/command-line-cheat-sheet/",
     "https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode",
-    "https://www.transifex.com/zulip/zulip/announcements/",
     "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh",
     # Requires authentication
     "https://www.linkedin.com/company/zulip-project",

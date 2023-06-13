@@ -29,7 +29,7 @@ adapter](https://github.com/zulip/hubot-zulip); integrations with
 [Trello](https://github.com/zulip/trello-to-zulip);
 and [many more](https://github.com/zulip/).
 
-We use [Transifex](https://www.transifex.com/zulip/zulip/) to do
+We use [Transifex](https://explore.transifex.com/zulip/zulip/) to do
 translations.
 
 In this overview, we'll mainly discuss the core Zulip server and web

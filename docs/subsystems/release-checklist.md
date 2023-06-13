@@ -15,7 +15,7 @@ preparing a new release.
   - [Upload strings to
     Transifex](../translating/internationalization.md#translation-process)
     using `push-translations`. Post a Transifex
-    [Announcement](https://www.transifex.com/zulip/zulip/announcements/)
+    [announcement](https://app.transifex.com/zulip/communication/?q=project%3Azulip)
     notifying translators that we're approaching a release.
   - Merge draft updates to the [changelog](../overview/changelog.md)
     with changes since the last release. While doing so, take notes on
