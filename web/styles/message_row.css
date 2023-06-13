@@ -122,7 +122,7 @@ $time_column_max_width: 150px;
 
     .messagebox .messagebox-content {
         display: grid;
-        align-items: start;
+        align-items: baseline;
         padding-left: 10px;
         grid-template:
             25px repeat(3, auto) /
@@ -143,7 +143,6 @@ $time_column_max_width: 150px;
 
         .message_controls {
             grid-area: controls;
-            line-height: 1;
             justify-self: end;
             padding: 0;
 
@@ -160,12 +159,9 @@ $time_column_max_width: 150px;
 
         .message_edit_notice {
             grid-area: edited;
-            position: relative;
-            top: $distance_of_text_elements_from_message_box_top;
         }
 
         .message_time {
-            line-height: 1;
             justify-self: end;
             padding-right: 5px;
             min-width: $time_column_min_width;
@@ -240,9 +236,6 @@ $time_column_max_width: 150px;
             }
 
             .message_time {
-                align-self: center;
-                /* TODO: See if this margin is necessary in a grid context (KAS, 2023-06-012) */
-                margin-top: 1px;
                 grid-area: time;
             }
 
@@ -253,20 +246,16 @@ $time_column_max_width: 150px;
             }
 
             .message_edit_notice {
-                align-self: center;
-                top: 2px;
+                /* When the edit notice is inline, as on edited me-messages,
+                  the inline-block and accompanying vertical-align styles will
+                  apply */
                 display: inline-block;
-                vertical-align: top;
-                line-height: 14px;
+                vertical-align: baseline;
                 /* A bit of margin here helps these not look associated with the name. */
                 margin-left: 4px;
-                position: static;
-                padding: 0;
-                width: auto;
             }
 
             .message_controls {
-                align-self: center;
                 grid-area: controls;
             }
 
@@ -317,11 +306,6 @@ $time_column_max_width: 150px;
                         display: inline;
                         margin: 0;
                         margin-top: 13px;
-
-                        .message_edit_notice {
-                            position: relative;
-                            top: -1px;
-                        }
                     }
                 }
 
@@ -339,6 +323,7 @@ $time_column_max_width: 150px;
                        from start and end vertically in all languages. */
                     line-height: normal;
                     outline: none;
+                    align-self: baseline;
                 }
             }
 
