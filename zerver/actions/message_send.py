@@ -47,6 +47,7 @@ from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
     MessageDict,
     SendMessageRequest,
+    check_user_group_mention_allowed,
     normalize_body,
     render_markdown,
     truncate_topic,
@@ -1486,6 +1487,11 @@ def check_message(
         raise JsonableError(
             _("You do not have permission to use wildcard mentions in this stream.")
         )
+
+    if message_send_dict.rendering_result.mentions_user_group_ids:
+        mentioned_group_ids = list(message_send_dict.rendering_result.mentions_user_group_ids)
+        check_user_group_mention_allowed(sender, mentioned_group_ids)
+
     return message_send_dict
 
 
