@@ -5,6 +5,7 @@ import datetime
 import html
 import logging
 import re
+import string
 import time
 import urllib
 import urllib.parse
@@ -2089,6 +2090,10 @@ class ZulipMarkdown(markdown.Markdown):
                 ),
             ],
         )
+
+        # Extend the list of backslash escapable characters to all
+        # ASCII punctuation characters to follow CommonMark.
+        self.ESCAPED_CHARS = list(string.punctuation)
         self.set_output_format("html")
 
     def build_parser(self) -> markdown.Markdown:
@@ -2155,7 +2160,6 @@ class ZulipMarkdown(markdown.Markdown):
         # We disable the following upstream inline patterns:
         #
         # backtick -        replaced by ours
-        # escape -          probably will re-add at some point.
         # link -            replaced by ours
         # image_link -      replaced by ours
         # autolink -        replaced by ours
@@ -2187,8 +2191,17 @@ class ZulipMarkdown(markdown.Markdown):
         # rules, that preserves the order from upstream but leaves
         # space for us to add our own.
         reg = markdown.util.Registry()
+        # Backtick and Escape have to go before everything else, so
+        # that one can preempt any Markdown patterns by escaping them.
         reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 190)
+        # Tex is given higher priority than Escape so that it doesn't break the use
+        # of backslash in LaTeX for the cases like: $$\{1, 2, 3\}$$
         reg.register(Tex(TEX_RE, self), "tex", 185)
+        reg.register(
+            markdown.inlinepatterns.EscapeInlineProcessor(markdown.inlinepatterns.ESCAPE_RE, self),
+            "escape",
+            180,
+        )
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 178
         )

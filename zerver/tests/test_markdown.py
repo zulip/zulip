@@ -1230,6 +1230,7 @@ class MarkdownTest(ZulipTestCase):
         assert_conversion("#123@")
         assert_conversion(")#123(", False)
         assert_conversion("##123", False)
+        assert_conversion("\\#123", False)
 
         # test nested realm patterns should avoid double matching
         RealmFilter(
@@ -1545,6 +1546,15 @@ class MarkdownTest(ZulipTestCase):
             "<p>/me writes a second line<br>\nline</p>",
         )
         self.assertTrue(Message.is_status_message(content, rendering_result.rendered_content))
+
+        # This should not update the status when Backslash Escaping is used.
+        content = "\\/me is away"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            "<p>/me is away</p>",
+        )
+        self.assertFalse(Message.is_status_message(content, rendering_result.rendered_content))
 
     def test_alert_words(self) -> None:
         user_profile = self.example_user("othello")
@@ -1866,6 +1876,18 @@ class MarkdownTest(ZulipTestCase):
             self.assertFalse(rendering_result.mentions_topic_wildcard)
             self.assertFalse(rendering_result.mentions_stream_wildcard)
             self.assertEqual(rendering_result.mentions_user_ids, set())
+
+    def test_backslash_mention_wildcard(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "\\@**all** test"
+        rendering_result = render_markdown(msg, content)
+        self.assertEqual(
+            rendering_result.rendered_content,
+            "<p>@<strong>all</strong> test</p>",
+        )
+        self.assertFalse(rendering_result.mentions_stream_wildcard)
 
     def test_mention_at_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
@@ -2520,6 +2542,15 @@ class MarkdownTest(ZulipTestCase):
             ),
         )
 
+    def test_backslash_stream(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "\\#**Denmark**"
+        self.assertEqual(
+            render_markdown(msg, content).rendered_content,
+            "<p>#<strong>Denmark</strong></p>",
+        )
+
     def test_invalid_stream_followed_by_valid_mention(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
@@ -2587,6 +2618,15 @@ class MarkdownTest(ZulipTestCase):
             '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20topic">#{d.name} &gt; some topic</a></p>'.format(
                 d=denmark,
             ),
+        )
+
+    def test_backslash_topic(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "\\#**Denmark>some topic**"
+        self.assertEqual(
+            render_markdown(msg, content).rendered_content,
+            "<p>#<strong>Denmark&gt;some topic</strong></p>",
         )
 
     def test_topic_atomic_string(self) -> None:
