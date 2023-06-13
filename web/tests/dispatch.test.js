@@ -27,6 +27,7 @@ const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const composebox_typeahead = mock_esm("../src/composebox_typeahead");
 const dark_theme = mock_esm("../src/dark_theme");
 const emoji_picker = mock_esm("../src/emoji_picker");
+const gear_menu = mock_esm("../src/gear_menu");
 const hotspots = mock_esm("../src/hotspots");
 const linkifiers = mock_esm("../src/linkifiers");
 const message_events = mock_esm("../src/message_events");
@@ -76,6 +77,7 @@ mock_esm("../src/left_sidebar_navigation_area", {
     update_scheduled_messages_row() {},
 });
 const typing_events = mock_esm("../src/typing_events");
+const ui_init = mock_esm("../src/ui_init");
 const unread_ops = mock_esm("../src/unread_ops");
 const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
@@ -415,7 +417,9 @@ run_test("realm settings", ({override}) => {
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
-    override(settings_invites, "update_invite_users_setting_tip", noop);
+    override(settings_invites, "update_invite_user_panel", noop);
+    override(ui_init, "update_invite_user_option", noop);
+    override(gear_menu, "initialize", noop);
     override(notifications, "redraw_title", noop);
 
     function test_electron_dispatch(event, fake_send_event) {

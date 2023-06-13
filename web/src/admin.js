@@ -225,7 +225,7 @@ export function build_page() {
     $("#settings_content .alert").removeClass("show");
 
     settings_bots.update_bot_settings_tip($("#admin-bot-settings-tip"), true);
-    settings_invites.update_invite_users_setting_tip();
+    settings_invites.update_invite_user_panel();
     insert_tip_box();
 
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);

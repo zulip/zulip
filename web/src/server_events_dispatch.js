@@ -15,6 +15,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
+import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
@@ -70,6 +71,7 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
+import * as ui_init from "./ui_init";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
@@ -209,7 +211,7 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_to_realm_policy: settings_invites.update_invite_users_setting_tip,
+                invite_to_realm_policy: noop,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
@@ -244,6 +246,12 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
                             window.electron_bridge.send_event("realm_name", event.value);
+                        }
+
+                        if (event.property === "invite_to_realm_policy") {
+                            settings_invites.update_invite_user_panel();
+                            ui_init.update_invite_user_option();
+                            gear_menu.initialize();
                         }
 
                         const stream_creation_settings = [
