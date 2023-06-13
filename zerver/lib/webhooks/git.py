@@ -55,6 +55,9 @@ ISSUE_LABELED_OR_UNLABELED_MESSAGE_TEMPLATE = (
 )
 ISSUE_LABELED_OR_UNLABELED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({user_url}) {action} the {label_name} label {preposition} [Issue #{id} {title}]({url})."
 
+ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE = "[{user_name}]({user_url}) {action} milestone [{milestone_name}]({milestone_url}) {preposition} [issue #{id}]({url})."
+ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({user_url}) {action} milestone [{milestone_name}]({milestone_url}) {preposition} [issue #{id} {title}]({url})."
+
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action} [{type}{id}]({url})"
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITH_TITLE = (
     "{user_name} {action} [{type}{id} {title}]({url})"
@@ -300,6 +303,32 @@ def get_issue_labeled_or_unlabeled_event_message(
     if title is not None:
         return ISSUE_LABELED_OR_UNLABELED_MESSAGE_TEMPLATE_WITH_TITLE.format(**args)
     return ISSUE_LABELED_OR_UNLABELED_MESSAGE_TEMPLATE.format(**args)
+
+
+def get_issue_milestoned_or_demilestoned_event_message(
+    user_name: str,
+    action: str,
+    url: str,
+    number: int,
+    milestone_name: str,
+    milestone_url: str,
+    user_url: str,
+    title: Optional[str] = None,
+) -> str:
+    args = {
+        "user_name": user_name,
+        "action": action,
+        "url": url,
+        "id": number,
+        "milestone_name": milestone_name,
+        "milestone_url": milestone_url,
+        "user_url": user_url,
+        "title": title,
+        "preposition": "to" if action == "added" else "from",
+    }
+    if title is not None:
+        return ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE_WITH_TITLE.format(**args)
+    return ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE.format(**args)
 
 
 def get_push_tag_event_message(
