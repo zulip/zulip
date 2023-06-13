@@ -59,9 +59,11 @@ class MutedUsersTests(ZulipTestCase):
 
         url = f"/api/v1/users/me/muted_users/{muted_id}"
         result = self.api_post(hamlet, url)
-        # Currently we do not allow muting bots. This is the error message
-        # from `access_user_by_id`.
-        self.assert_json_error(result, "No such user")
+        self.assert_json_success(result)
+
+        url = f"/api/v1/users/me/muted_users/{muted_id}"
+        result = self.api_delete(hamlet, url)
+        self.assert_json_success(result)
 
     def test_add_muted_user_mute_twice(self) -> None:
         hamlet = self.example_user("hamlet")

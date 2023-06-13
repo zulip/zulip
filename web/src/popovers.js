@@ -193,7 +193,7 @@ function show_user_info_popover_manage_menu(element, user) {
     const is_me = people.is_my_user_id(user.user_id);
     const is_muted = muted_users.is_user_muted(user.user_id);
     const is_system_bot = user.is_system_bot;
-    const muting_allowed = !is_me && !user.is_bot;
+    const muting_allowed = !is_me;
 
     const args = {
         can_mute: muting_allowed && !is_muted,
