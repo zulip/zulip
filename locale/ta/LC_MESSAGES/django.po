@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-31 15:33+0000\n"
+"POT-Creation-Date: 2023-06-13 19:19+0000\n"
 "PO-Revision-Date: 2018-04-11 21:06+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Tamil (http://www.transifex.com/zulip/zulip/language/ta/)\n"
@@ -146,7 +146,7 @@ msgstr ""
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr ""
 
-#: corporate/lib/stripe.py:1015
+#: corporate/lib/stripe.py:1020
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! You "
@@ -3101,7 +3101,7 @@ msgid ""
 "invitation. We did send invitations to everyone else!"
 msgstr ""
 
-#: zerver/actions/message_edit.py:92 zerver/views/scheduled_messages.py:59
+#: zerver/actions/message_edit.py:92 zerver/views/scheduled_messages.py:61
 msgid "Nothing to change"
 msgstr ""
 
@@ -3313,7 +3313,7 @@ msgid "Scheduled message was already sent"
 msgstr ""
 
 #: zerver/actions/scheduled_messages.py:166
-#: zerver/views/scheduled_messages.py:87 zerver/views/scheduled_messages.py:127
+#: zerver/views/scheduled_messages.py:89 zerver/views/scheduled_messages.py:129
 msgid "Scheduled delivery time must be in the future."
 msgstr ""
 
@@ -3425,7 +3425,7 @@ msgstr ""
 
 #: zerver/decorator.py:662 zerver/lib/streams.py:699 zerver/lib/streams.py:725
 #: zerver/lib/streams.py:727 zerver/lib/streams.py:742
-#: zerver/lib/user_groups.py:34 zerver/lib/user_groups.py:41
+#: zerver/lib/user_groups.py:35 zerver/lib/user_groups.py:42
 #: zerver/lib/users.py:249 zerver/lib/users.py:278 zerver/views/invite.py:60
 #: zerver/views/realm_emoji.py:31 zerver/views/streams.py:336
 #: zerver/views/streams.py:630
@@ -4188,7 +4188,7 @@ msgid "Invalid GCM options to bouncer: {}"
 msgstr "அறிவிப்புகளை இயக்கு"
 
 #. error
-#: zerver/lib/push_notifications.py:575 zilencer/views.py:205
+#: zerver/lib/push_notifications.py:575 zilencer/views.py:208
 msgid "Token does not exist"
 msgstr ""
 
@@ -4217,7 +4217,6 @@ msgstr ""
 #: zerver/lib/streams.py:276 zerver/lib/streams.py:838
 #: zerver/tornado/views.py:164 zerver/views/events_register.py:94
 #: zerver/views/message_send.py:182 zerver/views/message_send.py:203
-#: zerver/views/users.py:686
 msgid "User not authorized for this query"
 msgstr ""
 
@@ -4379,29 +4378,29 @@ msgstr ""
 msgid "Unknown animated image format."
 msgstr ""
 
-#: zerver/lib/user_groups.py:43
+#: zerver/lib/user_groups.py:44
 msgid "Invalid user group"
 msgstr ""
 
-#: zerver/lib/user_groups.py:55
+#: zerver/lib/user_groups.py:56
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid user group ID: {}"
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zerver/lib/user_groups.py:73
+#: zerver/lib/user_groups.py:74
 msgid "'{}' must be a system user group."
 msgstr ""
 
-#: zerver/lib/user_groups.py:77
+#: zerver/lib/user_groups.py:78
 msgid "'{}' setting cannot be set to '@role:internet' group."
 msgstr ""
 
-#: zerver/lib/user_groups.py:82
+#: zerver/lib/user_groups.py:83
 msgid "'{}' setting cannot be set to '@role:owners' group."
 msgstr ""
 
-#: zerver/lib/user_groups.py:87
+#: zerver/lib/user_groups.py:88
 msgid "'{}' setting cannot be set to '@role:nobody' group."
 msgstr ""
 
@@ -4458,7 +4457,7 @@ msgstr ""
 msgid "Invalid interface type"
 msgstr ""
 
-#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4642
+#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4669
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid user ID: {}"
@@ -4643,213 +4642,213 @@ msgstr ""
 msgid "CSRF error: {reason}"
 msgstr ""
 
-#: zerver/models.py:500
+#: zerver/models.py:503
 #, fuzzy
 #| msgid "Username"
 msgid "stream events"
 msgstr "பயனர்பெயர்"
 
-#: zerver/models.py:631
+#: zerver/models.py:634
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models.py:689
+#: zerver/models.py:692
 msgid "GIPHY integration disabled"
 msgstr ""
 
-#: zerver/models.py:694
+#: zerver/models.py:697
 msgid "Allow GIFs rated Y (Very young audience)"
 msgstr ""
 
-#: zerver/models.py:698
+#: zerver/models.py:701
 msgid "Allow GIFs rated G (General audience)"
 msgstr ""
 
-#: zerver/models.py:702
+#: zerver/models.py:705
 msgid "Allow GIFs rated PG (Parental guidance)"
 msgstr ""
 
-#: zerver/models.py:706
+#: zerver/models.py:709
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
 msgstr ""
 
-#: zerver/models.py:710
+#: zerver/models.py:713
 msgid "Allow GIFs rated R (Restricted)"
 msgstr ""
 
-#: zerver/models.py:1136
+#: zerver/models.py:1139
 msgid "Invalid characters in emoji name"
 msgstr ""
 
-#: zerver/models.py:1260 zerver/models.py:1262
+#: zerver/models.py:1263 zerver/models.py:1265
 msgid "Bad regular expression: {}"
 msgstr ""
 
-#: zerver/models.py:1263
+#: zerver/models.py:1266
 msgid "Unknown regular expression error"
 msgstr ""
 
-#: zerver/models.py:1271
+#: zerver/models.py:1274
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid URL template."
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zerver/models.py:1315
+#: zerver/models.py:1318
 #, python-format
 msgid "Group %(name)r in URL template is not present in linkifier pattern."
 msgstr ""
 
-#: zerver/models.py:1327
+#: zerver/models.py:1330
 #, python-format
 msgid "Group %(name)r in linkifier pattern is not present in URL template."
 msgstr ""
 
-#: zerver/models.py:1405 zerver/views/realm_playgrounds.py:25
+#: zerver/models.py:1408 zerver/views/realm_playgrounds.py:25
 msgid "Invalid characters in pygments language"
 msgstr ""
 
-#: zerver/models.py:1649
+#: zerver/models.py:1652
 msgid "Admins, moderators, members and guests"
 msgstr ""
 
-#: zerver/models.py:1650
+#: zerver/models.py:1653
 msgid "Admins, moderators and members"
 msgstr ""
 
-#: zerver/models.py:1651
+#: zerver/models.py:1654
 #, fuzzy
 #| msgid "Administrators"
 msgid "Admins and moderators"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:1652
+#: zerver/models.py:1655
 msgid "Admins only"
 msgstr ""
 
-#: zerver/models.py:1653
+#: zerver/models.py:1656
 msgid "Nobody"
 msgstr ""
 
-#: zerver/models.py:1957
+#: zerver/models.py:1960
 #, fuzzy
 #| msgid "Administrators"
 msgid "Organization owner"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:1958
+#: zerver/models.py:1961
 #, fuzzy
 #| msgid "Administrators"
 msgid "Organization administrator"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:1959
+#: zerver/models.py:1962
 msgid "Moderator"
 msgstr ""
 
-#: zerver/models.py:1960
+#: zerver/models.py:1963
 msgid "Member"
 msgstr ""
 
-#: zerver/models.py:1961
+#: zerver/models.py:1964
 msgid "Guest"
 msgstr ""
 
-#: zerver/models.py:2528
+#: zerver/models.py:2531
 msgid "Web-public"
 msgstr ""
 
-#: zerver/models.py:2534
+#: zerver/models.py:2537
 #, fuzzy
 #| msgid "All streams"
 msgid "Public"
 msgstr "அனைத்து தகவலரங்கங்கள்"
 
-#: zerver/models.py:2540
+#: zerver/models.py:2543
 #, fuzzy
 #| msgid "Private messages"
 msgid "Private, shared history"
 msgstr "தனிப்பட்ட செய்தி"
 
-#: zerver/models.py:2546
+#: zerver/models.py:2549
 msgid "Private, protected history"
 msgstr ""
 
-#: zerver/models.py:2554
+#: zerver/models.py:2557
 msgid "Public, protected history"
 msgstr ""
 
-#: zerver/models.py:2574
+#: zerver/models.py:2577
 msgid "All stream members can post"
 msgstr ""
 
-#: zerver/models.py:2575
+#: zerver/models.py:2578
 #, fuzzy
 #| msgid "Administrators"
 msgid "Only organization administrators can post"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:2577
+#: zerver/models.py:2580
 #, fuzzy
 #| msgid "Administrators"
 msgid "Only organization administrators and moderators can post"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:2580
+#: zerver/models.py:2583
 #, fuzzy
 #| msgid "Administrators"
 msgid "Only organization full members can post"
 msgstr "நிர்வாகிகள்"
 
-#: zerver/models.py:3206
+#: zerver/models.py:3209
 msgid "Unicode emoji"
 msgstr ""
 
-#: zerver/models.py:3207
+#: zerver/models.py:3210
 msgid "Custom emoji"
 msgstr ""
 
-#: zerver/models.py:3208
+#: zerver/models.py:3211
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:4645
+#: zerver/models.py:4672
 msgid "User with ID {} is deactivated"
 msgstr ""
 
-#: zerver/models.py:4648
+#: zerver/models.py:4675
 msgid "User with ID {} is a bot"
 msgstr ""
 
-#: zerver/models.py:4688
+#: zerver/models.py:4715
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:4691
+#: zerver/models.py:4718
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:4703
+#: zerver/models.py:4730
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:4704
+#: zerver/models.py:4731
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:4705
+#: zerver/models.py:4732
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:4706
+#: zerver/models.py:4733
 msgid "Link"
 msgstr ""
 
-#: zerver/models.py:4709
+#: zerver/models.py:4736
 msgid "External account"
 msgstr ""
 
-#: zerver/models.py:4714
+#: zerver/models.py:4741
 msgid "Pronouns"
 msgstr ""
 
@@ -5147,7 +5146,7 @@ msgid "Only administrators can override default emoji."
 msgstr "நிர்வாகிகள்"
 
 #: zerver/views/realm_emoji.py:46 zerver/views/realm_icon.py:27
-#: zerver/views/realm_logo.py:33 zerver/views/upload.py:275
+#: zerver/views/realm_logo.py:33 zerver/views/upload.py:278
 #: zerver/views/user_settings.py:352
 msgid "Uploaded file is larger than the allowed limit of {} MiB"
 msgstr ""
@@ -5195,11 +5194,11 @@ msgstr ""
 msgid "Invalid playground"
 msgstr "அறிவிப்புகளை இயக்கு"
 
-#: zerver/views/scheduled_messages.py:64
+#: zerver/views/scheduled_messages.py:66
 msgid "Recipient required when updating type of scheduled message."
 msgstr ""
 
-#: zerver/views/scheduled_messages.py:69
+#: zerver/views/scheduled_messages.py:71
 msgid "Topic required when updating scheduled message type to stream."
 msgstr ""
 
@@ -5240,8 +5239,8 @@ msgstr ""
 msgid "Stream already has that name!"
 msgstr ""
 
-#: zerver/views/streams.py:452 zerver/views/user_groups.py:107
-#: zerver/views/user_groups.py:276
+#: zerver/views/streams.py:452 zerver/views/user_groups.py:108
+#: zerver/views/user_groups.py:285
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
@@ -5297,7 +5296,7 @@ msgstr ""
 msgid "Invalid json for submessage"
 msgstr ""
 
-#: zerver/views/thumbnail.py:43 zerver/views/upload.py:182
+#: zerver/views/thumbnail.py:43 zerver/views/upload.py:185
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr ""
 
@@ -5313,56 +5312,63 @@ msgstr ""
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
 
-#: zerver/views/upload.py:180
+#: zerver/views/upload.py:183
 msgid "<p>File not found.</p>"
 msgstr ""
 
-#: zerver/views/upload.py:220
+#: zerver/views/upload.py:223
 msgid "Invalid token"
 msgstr ""
 
-#: zerver/views/upload.py:222
+#: zerver/views/upload.py:225
 msgid "Invalid filename"
 msgstr ""
 
-#: zerver/views/upload.py:265
+#: zerver/views/upload.py:268
 msgid "You must specify a file to upload"
 msgstr ""
 
-#: zerver/views/upload.py:267 zerver/views/users.py:424
+#: zerver/views/upload.py:270 zerver/views/users.py:424
 #: zerver/views/users.py:526
 msgid "You may only upload one file at a time"
 msgstr ""
 
-#: zerver/views/user_groups.py:73
+#: zerver/views/user_groups.py:74
 msgid "No new data supplied"
 msgstr ""
 
-#: zerver/views/user_groups.py:148
+#: zerver/views/user_groups.py:149
 #, python-brace-format
 msgid "{user_full_name} added you to the group {group_name}."
 msgstr ""
 
-#: zerver/views/user_groups.py:153
+#: zerver/views/user_groups.py:154
 #, python-brace-format
 msgid "{user_full_name} removed you from the group {group_name}."
 msgstr ""
 
-#: zerver/views/user_groups.py:184
+#: zerver/views/user_groups.py:185
 #, python-brace-format
 msgid "User {user_id} is already a member of this group"
 msgstr ""
 
-#: zerver/views/user_groups.py:211
+#: zerver/views/user_groups.py:212
 msgid "There is no member '{}' in this user group"
 msgstr ""
 
-#: zerver/views/user_groups.py:236
+#: zerver/views/user_groups.py:237
 #, python-brace-format
 msgid "User group {group_id} is already a subgroup of this group."
 msgstr ""
 
-#: zerver/views/user_groups.py:257
+#: zerver/views/user_groups.py:246
+#, python-brace-format
+msgid ""
+"User group {user_group_id} is already a subgroup of one of the passed "
+"subgroups."
+msgstr ""
+
+#: zerver/views/user_groups.py:266
 #, python-brace-format
 msgid "User group {group_id} is not a subgroup of this group."
 msgstr ""
@@ -5452,6 +5458,10 @@ msgstr ""
 
 #: zerver/views/users.py:510
 msgid "Username already in use"
+msgstr ""
+
+#: zerver/views/users.py:686
+msgid "User not authorized to create users"
 msgstr ""
 
 #: zerver/views/users.py:701
@@ -5602,50 +5612,54 @@ msgid "Must validate with valid Zulip server API key"
 msgstr ""
 
 #. error
-#: zilencer/views.py:62 zilencer/views.py:64
+#: zilencer/views.py:65 zilencer/views.py:67
 #, fuzzy
 #| msgid "Enable notifications"
 msgid "Invalid UUID"
 msgstr "அறிவிப்புகளை இயக்கு"
 
 #. error
-#: zilencer/views.py:69
+#: zilencer/views.py:72
 msgid "Invalid token type"
 msgstr ""
 
-#: zilencer/views.py:106
+#: zilencer/views.py:109
 msgid "{} is not a valid hostname"
 msgstr ""
 
-#: zilencer/views.py:159
+#: zilencer/views.py:162
 msgid "Missing user_id or user_uuid"
 msgstr ""
 
-#: zilencer/views.py:370
+#: zilencer/views.py:373
 msgid "Invalid property {}"
 msgstr ""
 
-#: zilencer/views.py:372
+#: zilencer/views.py:375
 msgid "Data is out of order."
 msgstr ""
 
-#: zilencer/views.py:395
+#: zilencer/views.py:398
 msgid "Invalid data."
 msgstr ""
 
-#: zproject/backends.py:521
+#: zilencer/views.py:497
+msgid "Malformed audit log data"
+msgstr ""
+
+#: zproject/backends.py:520
 msgid "You need to reset your password."
 msgstr ""
 
-#: zproject/backends.py:2203
+#: zproject/backends.py:2202
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:2904
+#: zproject/backends.py:2903
 msgid "Invalid OTP"
 msgstr ""
 
-#: zproject/backends.py:2907
+#: zproject/backends.py:2906
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 

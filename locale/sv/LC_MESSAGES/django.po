@@ -37,11 +37,11 @@ msgstr "Privata strömmar"
 
 #: analytics/views/stats.py:296
 msgid "Direct messages"
-msgstr ""
+msgstr "Direktmeddelanden"
 
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
-msgstr ""
+msgstr "Gruppera direktmeddelanden"
 
 #: analytics/views/stats.py:318
 msgid "Unknown chart name: {}"
