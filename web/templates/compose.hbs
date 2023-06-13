@@ -63,7 +63,10 @@
                             <div class="topic-marker-container">
                                 <i class="fa fa-angle-right" aria-hidden="true"></i>
                             </div>
-                            <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                            <div id="compose_recipient_box">
+                                <input type="text" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
+                                <button type="button" id="recipient_box_new_topic_button" tabindex="-1" class="button">{{t 'New topic'}}</button>
+                            </div>
                             <div id="compose-direct-recipient" class="pill-container" data-before="{{t 'You and' }}">
                                 <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{t 'Add one or more users' }}" data-some-recipients-text="{{t 'Add another user...' }}"></div>
                             </div>

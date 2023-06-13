@@ -582,7 +582,7 @@ textarea.new_message_textarea {
 }
 
 textarea.new_message_textarea,
-.compose_table .recipient_box {
+#compose_recipient_box {
     border: 1px solid hsl(0deg 0% 0% / 20%);
     box-shadow: none;
     transition: border 0.2s ease;
@@ -595,11 +595,51 @@ textarea.new_message_textarea,
     }
 }
 
-input.recipient_box {
-    margin: 0;
-    padding: 0 6px;
-    height: auto;
+#compose_recipient_box {
+    /* Recipient box is the div container that has input and button */
     border-radius: 3px;
+    display: flex;
+    flex-grow: 1;
+    background: hsl(0deg 0% 100%);
+
+    #stream_message_recipient_topic,
+    #recipient_box_new_topic_button {
+        background: none;
+        border: none;
+        color: inherit;
+    }
+
+    /* Styles for input in the recipient_box */
+    #stream_message_recipient_topic {
+        flex-grow: 1;
+
+        /* Adjust flexbox default `min-width` to allow smaller input sizes.  */
+        min-width: 0;
+        text-overflow: ellipsis;
+
+        box-shadow: none;
+        outline: none;
+
+        padding: 4px 6px;
+    }
+
+    /* Styles for new topic button in the recipient_box */
+    #recipient_box_new_topic_button {
+        flex-shrink: 0;
+        /* The button looks better if it have smaller radius than the parent */
+        border-radius: 2px;
+        padding: 3px 10px;
+        margin: 1px;
+
+        &:hover {
+            background-color: hsl(231deg 100% 90% / 20%);
+        }
+    }
+
+    /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
+    & input {
+        margin-bottom: 0;
+    }
 }
 
 #compose_select_recipient_widget {
@@ -610,10 +650,6 @@ input.recipient_box {
     &.dropdown-widget-button {
         padding: 0 6px;
     }
-}
-
-#stream_message_recipient_topic.recipient_box {
-    width: 100%;
 }
 
 #private_message_recipient.recipient_box {
