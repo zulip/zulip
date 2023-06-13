@@ -293,3 +293,12 @@ export function update_invite_users_setting_tip() {
     $(".invite-user-settings-tip").show();
     $(".invite-user-settings-tip").text(tip_text);
 }
+
+export function update_invite_user_panel() {
+    update_invite_users_setting_tip();
+    if (!settings_data.user_can_invite_others_to_realm()) {
+        $("#admin-invites-list .invite-user-link").hide();
+    } else {
+        $("#admin-invites-list .invite-user-link").show();
+    }
+}
