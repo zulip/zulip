@@ -25,8 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
   [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
   Added `enable_followed_topic_email_notifications`, `enable_followed_topic_push_notifications`
-  and `enable_followed_topic_wildcard_mentions_notify` boolean fields to control email, push
-  and wildcard mention notifications, respectively, for messages sent to followed topics.
+  , `enable_followed_topic_wildcard_mentions_notify` and `enable_followed_topic_desktop_notifications`
+  boolean fields to control email, push, wildcard mention, and visual desktop notifications, respectively,
+  for messages sent to followed topics.
 
 **Feature level 188**
 

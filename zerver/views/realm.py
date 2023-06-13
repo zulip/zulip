@@ -426,6 +426,9 @@ def update_realm_user_settings_defaults(
         json_validator=check_bool, default=None
     ),
     wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_followed_topic_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     enable_followed_topic_email_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),
