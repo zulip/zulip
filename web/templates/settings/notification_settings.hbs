@@ -28,16 +28,18 @@
             </thead>
             <tbody>
                 {{#each general_settings}}
-                    <tr>
-                        <td>{{ this.label }}</td>
-                        {{#each this.notification_settings}}
-                            {{> notification_settings_checkboxes
-                              setting_name=this.setting_name
-                              is_checked=this.is_checked
-                              is_disabled=this.is_disabled
-                              prefix=../../prefix }}
-                        {{/each}}
-                    </tr>
+                    {{#unless (and (eq this.label "Followed topics") (not ../development))}}
+                        <tr>
+                            <td>{{ this.label }}</td>
+                            {{#each this.notification_settings}}
+                                {{> notification_settings_checkboxes
+                                  setting_name=this.setting_name
+                                  is_checked=this.is_checked
+                                  is_disabled=this.is_disabled
+                                  prefix=../../prefix }}
+                            {{/each}}
+                        </tr>
+                    {{/unless}}
                 {{/each}}
             </tbody>
             {{#unless for_realm_settings}}
