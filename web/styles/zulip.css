@@ -83,6 +83,11 @@ body {
     --right-sidebar-width: 250px;
 
     /*
+    Message box line-height.
+    */
+    --message-box-line-height: 1.214;
+
+    /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
     it doesn't leak through message header.
     */
@@ -1667,7 +1672,7 @@ div.focused_table {
 
 .message_content {
     color: var(--color-text-message-default);
-    line-height: 1.214;
+    line-height: var(--message-box-line-height);
     min-height: 17px;
     display: block;
     position: relative;
