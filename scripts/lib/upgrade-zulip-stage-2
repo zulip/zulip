@@ -495,12 +495,8 @@ def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
     env["HOME"] = get_zulip_pwent().pw_dir
 
     def resolve_version_string(version: str) -> str:
-        matches = re.search(r"-\d+-g([a-f0-9]{7,})$", version)
-        to_parse = version
-        if matches is not None:
-            to_parse = matches.group(1)
         return subprocess.check_output(
-            ["git", "rev-parse", to_parse], cwd=deploy_path, preexec_fn=su_to_zulip, text=True
+            ["git", "rev-parse", version], cwd=deploy_path, preexec_fn=su_to_zulip, text=True
         ).strip()
 
     if args.from_git:
