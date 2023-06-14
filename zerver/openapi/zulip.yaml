@@ -16164,6 +16164,21 @@ paths:
                   type: integer
               example: [1, 2, 3, 4]
           required: true
+        - name: can_mention_group_id
+          in: query
+          description: |
+            ID of the user group whose members are allowed to mention the new
+            user group.
+
+            This setting cannot be set to `"@role:internet"` and `"@role:owners"`
+            system groups.
+
+            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            could be mentioned if and only if they were not system groups.
+          schema:
+            type: integer
+          example: 11
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"

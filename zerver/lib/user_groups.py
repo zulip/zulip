@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Sequence, TypedDict
+from typing import Dict, Iterable, List, Mapping, Sequence, TypedDict
 
 from django.db import transaction
 from django.db.models import F, QuerySet
@@ -239,9 +239,15 @@ def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, UserGroup]:
 
 def set_defaults_for_group_settings(
     user_group: UserGroup,
+    group_settings_map: Mapping[str, UserGroup],
     system_groups_name_dict: Dict[str, UserGroup],
 ) -> UserGroup:
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+        if setting_name in group_settings_map:
+            # We skip the settings for which a value is passed
+            # in user group creation API request.
+            continue
+
         if user_group.is_system_group and permission_config.default_for_system_groups is not None:
             default_group_name = permission_config.default_for_system_groups
         else:
@@ -315,7 +321,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     groups_with_updated_settings = []
     system_groups_name_dict = get_role_based_system_groups_dict(realm)
     for group in system_user_groups_list:
-        user_group = set_defaults_for_group_settings(group, system_groups_name_dict)
+        user_group = set_defaults_for_group_settings(group, {}, system_groups_name_dict)
         groups_with_updated_settings.append(group)
     UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
 

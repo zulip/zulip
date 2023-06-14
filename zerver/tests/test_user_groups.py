@@ -267,6 +267,88 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group 'support' already exists.")
         self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
+    def test_can_mention_group_setting_during_user_group_creation(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        leadership_group = check_add_user_group(
+            hamlet.realm, "leadership", [hamlet], acting_user=None
+        )
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "support",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Support team",
+            "can_mention_group_id": orjson.dumps(moderators_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
+        self.assertEqual(support_group.can_mention_group, moderators_group)
+
+        params = {
+            "name": "test",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test group",
+            "can_mention_group_id": orjson.dumps(leadership_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        test_group = UserGroup.objects.get(name="test", realm=hamlet.realm)
+        self.assertEqual(test_group.can_mention_group, leadership_group)
+
+        nobody_group = UserGroup.objects.get(
+            name="@role:nobody", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "marketing",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Marketing team",
+            "can_mention_group_id": orjson.dumps(nobody_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+        marketing_group = UserGroup.objects.get(name="marketing", realm=hamlet.realm)
+        self.assertEqual(marketing_group.can_mention_group, nobody_group)
+
+        internet_group = UserGroup.objects.get(
+            name="@role:internet", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "frontend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Frontend team",
+            "can_mention_group_id": orjson.dumps(internet_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(
+            result, "'can_mention_group' setting cannot be set to '@role:internet' group."
+        )
+
+        owners_group = UserGroup.objects.get(
+            name="@role:owners", realm=hamlet.realm, is_system_group=True
+        )
+        params = {
+            "name": "frontend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Frontend team",
+            "can_mention_group_id": orjson.dumps(owners_group.id).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(
+            result, "'can_mention_group' setting cannot be set to '@role:owners' group."
+        )
+
+        params = {
+            "name": "frontend",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Frontend team",
+            "can_mention_group_id": orjson.dumps(1111).decode(),
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "Invalid user group")
+
     def test_user_group_get(self) -> None:
         # Test success
         user_profile = self.example_user("hamlet")
