@@ -222,10 +222,17 @@ $time_column_max_width: 150px;
     &.include-sender {
         .messagebox .messagebox-content {
             grid-template-areas:
-                "sender sender    controls time"
-                ".      message   .        .   "
+                "avatar sender    controls time"
+                "avatar message   .        .   "
                 ".      more      .        .   "
                 ".      reactions .        .   ";
+
+            .inline_profile_picture {
+                grid-area: avatar;
+                /* The picture should not participate in the baseline group. */
+                align-self: start;
+                margin-top: $distance_of_non_text_elements_from_message_box_top;
+            }
 
             .message_content {
                 padding-top: 0;
@@ -267,6 +274,11 @@ $time_column_max_width: 150px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 grid-area: sender;
+                display: flex;
+                /* Ensure flexed sender info (name, status emoji, inline EDITED)
+                   forms a baseline group, which will participate with the
+                   message-box grid's baseline group, too. */
+                align-items: baseline;
 
                 .zulip-icon.zulip-icon-bot {
                     align-self: center;
@@ -313,18 +325,6 @@ $time_column_max_width: 150px;
                     }
                 }
 
-                > span {
-                    display: flex;
-                }
-
-                .inline_profile_picture {
-                    flex-shrink: 0;
-                    /* Let user profile picture take extra height without
-                       having any affect on height of the container. */
-                    position: absolute;
-                    margin-top: $distance_of_non_text_elements_from_message_box_top;
-                }
-
                 .sender_name {
                     margin-top: $sender_name_distance_below_flex_center;
                 }
@@ -339,17 +339,6 @@ $time_column_max_width: 150px;
                        from start and end vertically in all languages. */
                     line-height: normal;
                     outline: none;
-                }
-
-                .sender_name_padding {
-                    /* Add padding to align user name with the content. This region is
-                       important to ensure that the hover region for the sender name
-                       and avatar are continuous with each other. */
-                    padding-left: $avatar_column_width;
-                }
-
-                .sender_name-in-status .sender_name_padding {
-                    margin-left: -$avatar_column_width;
                 }
             }
 
