@@ -287,6 +287,14 @@ $time_column_max_width: 150px;
             .message_edit_notice {
                 align-self: center;
                 top: 2px;
+                display: inline-block;
+                vertical-align: top;
+                line-height: 14px;
+                /* A bit of margin here helps these not look associated with the name. */
+                margin-left: 4px;
+                position: static;
+                padding: 0;
+                width: auto;
             }
 
             .message_controls {
