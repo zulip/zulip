@@ -918,23 +918,32 @@ export function by_recipient(target_id, opts) {
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
 
-    if (
-        user_settings.web_mark_read_on_scroll_policy !==
-        web_mark_read_on_scroll_policy_values.never.code
-    ) {
-        // We don't check message_list.can_mark_messages_read
-        // here because the target message_list isn't initialized;
-        // but the targeted message is about to be marked read
-        // in the new view.
-        unread_ops.notify_server_message_read(message);
-    }
-
     switch (message.type) {
         case "private":
+            if (
+                user_settings.web_mark_read_on_scroll_policy !==
+                web_mark_read_on_scroll_policy_values.never.code
+            ) {
+                // We don't check message_list.can_mark_messages_read
+                // here because the target message_list isn't initialized;
+                // but the targeted message is about to be marked read
+                // in the new view.
+                unread_ops.notify_server_message_read(message);
+            }
             by("dm", message.reply_to, opts);
             break;
 
         case "stream":
+            if (
+                user_settings.web_mark_read_on_scroll_policy ===
+                web_mark_read_on_scroll_policy_values.always.code
+            ) {
+                // We don't check message_list.can_mark_messages_read
+                // here because the target message_list isn't initialized;
+                // but the targeted message is about to be marked read
+                // in the new view.
+                unread_ops.notify_server_message_read(message);
+            }
             by("stream", message.stream, opts);
             break;
     }
