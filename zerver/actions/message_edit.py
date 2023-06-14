@@ -29,6 +29,7 @@ from zerver.lib.mention import MentionBackend, MentionData, silent_mention_synta
 from zerver.lib.message import (
     access_message,
     bulk_access_messages,
+    check_user_group_mention_allowed,
     normalize_body,
     truncate_topic,
     update_to_dict_cache,
@@ -1253,6 +1254,10 @@ def check_update_message(
                 raise JsonableError(
                     _("You do not have permission to use wildcard mentions in this stream.")
                 )
+
+        if rendering_result.mentions_user_group_ids:
+            mentioned_group_ids = list(rendering_result.mentions_user_group_ids)
+            check_user_group_mention_allowed(user_profile, mentioned_group_ids)
 
     new_stream = None
     number_changed = 0
