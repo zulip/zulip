@@ -4841,6 +4841,98 @@ class DeleteMessageTest(ZulipTestCase):
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
 
+    def test_delete_message_sent_by_bots(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        def set_message_deleting_params(
+            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
+        ) -> None:
+            result = self.api_patch(
+                iago,
+                "/api/v1/realm",
+                {
+                    "delete_own_message_policy": delete_own_message_policy,
+                    "message_content_delete_limit_seconds": orjson.dumps(
+                        message_content_delete_limit_seconds
+                    ).decode(),
+                },
+            )
+            self.assert_json_success(result)
+
+        def test_delete_message_by_admin(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(iago, f"/api/v1/messages/{msg_id}")
+            return result
+
+        def test_delete_message_by_bot_owner(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(hamlet, f"/api/v1/messages/{msg_id}")
+            return result
+
+        def test_delete_message_by_other_user(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(cordelia, f"/api/v1/messages/{msg_id}")
+            return result
+
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
+
+        hamlet = self.example_user("hamlet")
+        test_bot = self.create_test_bot("test-bot", hamlet)
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_admin(msg_id)
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = timezone_now() - datetime.timedelta(seconds=700)
+        message.save()
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        result = test_delete_message_by_admin(msg_id)
+        self.assert_json_success(result)
+
+        # Check that the bot can also delete the messages sent by them
+        # depending on the realm permissions for message deletion.
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, 600)
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = timezone_now() - datetime.timedelta(seconds=700)
+        message.save()
+
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        message.date_sent = timezone_now() - datetime.timedelta(seconds=400)
+        message.save()
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_success(result)
+
     def test_delete_message_according_to_delete_own_message_policy(self) -> None:
         def check_delete_message_by_sender(
             sender_name: str, error_msg: Optional[str] = None
