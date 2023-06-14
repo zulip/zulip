@@ -24,11 +24,13 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
   [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
-  Added `enable_followed_topic_email_notifications`, `enable_followed_topic_push_notifications`
-  , `enable_followed_topic_wildcard_mentions_notify`, `enable_followed_topic_desktop_notifications`
-  and `enable_followed_topic_audible_notifications` boolean fields to control email,
-  push, wildcard mention, visual desktop and audible desktop notifications, respectively,
-  for messages sent to followed topics.
+  Added new boolean user settings  `enable_followed_topic_email_notifications`,
+  `enable_followed_topic_push_notifications`,
+  `enable_followed_topic_wildcard_mentions_notify`,
+  `enable_followed_topic_desktop_notifications`
+  and `enable_followed_topic_audible_notifications` to control whether a user
+  receives email, push, wildcard mention, visual desktop and audible desktop
+  notifications, respectively, for messages sent to followed topics.
 
 **Feature level 188**
 
