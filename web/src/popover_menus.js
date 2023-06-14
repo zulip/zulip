@@ -967,6 +967,11 @@ export function initialize() {
                 });
             });
 
+            $(".focus-dropdown").on("focus", (e) => {
+                e.preventDefault();
+                $popper.find("li:not(.divider):visible a").eq(0).trigger("focus");
+            });
+
             instance.popperInstance.update();
         },
         onShow(instance) {
