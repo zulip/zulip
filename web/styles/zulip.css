@@ -3219,6 +3219,13 @@ select.invite-as {
     right: 0;
     border: solid 1px hsl(0deg 0% 0% / 40%);
     background-color: var(--bg-popover-light);
+    max-height: 85vh;
+    min-width: 230px;
+    overflow-x: hidden;
+
+    .simplebar-content {
+        min-width: max-content;
+    }
 
     .arrow {
         left: unset;
