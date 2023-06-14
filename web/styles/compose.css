@@ -602,6 +602,12 @@ textarea.new_message_textarea,
     flex-grow: 1;
     background: hsl(0deg 0% 100%);
 
+    &.focused {
+        outline: 0;
+        border: 1px solid hsl(0deg 0% 67%);
+        box-shadow: none;
+    }
+
     #stream_message_recipient_topic,
     #recipient_box_new_topic_button {
         background: none;

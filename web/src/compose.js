@@ -792,6 +792,16 @@ export function initialize() {
         $button.hide();
     });
 
+    $("#compose_recipient_box").on("focus", "#stream_message_recipient_topic", () => {
+        const $recipient_box = $("#compose_recipient_box");
+        $recipient_box.addClass("focused");
+    });
+
+    $("#compose_recipient_box").on("blur", "#stream_message_recipient_topic", () => {
+        const $recipient_box = $("#compose_recipient_box");
+        $recipient_box.removeClass("focused");
+    });
+
     $("#compose_recipient_box").on("input", "#stream_message_recipient_topic", (e) => {
         const $button = $("#recipient_box_new_topic_button");
         const value = $(e.target).val();
