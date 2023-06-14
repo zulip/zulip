@@ -24,8 +24,9 @@ curl "https://sentry.io/api/0/organizations/$sentry_org/releases/" \
 
 merge_base="${ZULIP_NEW_MERGE_BASE_COMMIT:-}"
 if [ -n "$merge_base" ]; then
+    old_merge_base="$ZULIP_OLD_MERGE_BASE_COMMIT"
     echo "sentry: Setting commit range based on merge-base to upstream of $merge_base"
-    sentry-cli releases --org="$sentry_org" set-commits "$sentry_release" --commit="zulip/zulip@$merge_base"
+    sentry-cli releases --org="$sentry_org" set-commits "$sentry_release" --commit="zulip/zulip@$old_merge_base..$merge_base"
 fi
 
 if [ -n "$sentry_frontend_project" ]; then
