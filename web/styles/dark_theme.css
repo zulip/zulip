@@ -1583,6 +1583,10 @@
     #personal-menu-dropdown {
         background-color: var(--bg-popover-dark);
     }
+
+    .personal-menu-tippy > .tippy-box > .tippy-arrow::after {
+        background-color: var(--bg-popover-dark);
+    }
 }
 
 @supports (-moz-appearance: none) {
