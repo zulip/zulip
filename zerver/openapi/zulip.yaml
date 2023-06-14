@@ -8971,8 +8971,9 @@ paths:
       summary: Mute a user
       tags: ["users"]
       description: |
-        This endpoint [mutes a user](/help/mute-a-user). Messages sent by users
-        you've muted will be automatically marked as read and hidden.
+        [Mute a user](/help/mute-a-user) from the perspective of the requesting
+        user. Messages sent by muted users will be automatically marked as read
+        and hidden for the user who muted them.
 
         Muted users should be implemented by clients as follows:
 
@@ -8980,10 +8981,11 @@ paths:
           user as read. This will automatically clear any existing mobile
           push notifications related to the muted user.
         - The server will mark any new messages sent by the muted user as read
-          for your account, which prevents all email and mobile push notifications.
+          for the requesting user's account, which prevents all email and mobile
+          push notifications.
         - Clients should exclude muted users from presence lists or other UI
-          for viewing or composing 1:1 direct messages. 1:1 direct messages sent by
-          muted users should be hidden everywhere in the Zulip UI.
+          for viewing or composing one-on-one direct messages. One-on-one direct
+          messages sent by muted users should be hidden everywhere in the Zulip UI.
         - Stream messages and group direct messages sent by the muted
           user should avoid displaying the content and name/avatar,
           but should display that N messages by a muted user were
@@ -9031,7 +9033,8 @@ paths:
       summary: Unmute a user
       tags: ["users"]
       description: |
-        This endpoint unmutes a user.
+        [Unmute a user](/help/mute-a-user#see-your-list-of-muted-users)
+        from the perspective of the requesting user.
 
         **Changes**: New in Zulip 4.0 (feature level 48).
       parameters:
@@ -18946,9 +18949,10 @@ components:
       name: muted_user_id
       in: path
       description: |
-        The ID of the user to mute/un-mute.
+        The ID of the user to mute/unmute.
 
-        **Changes**: Before Zulip 8.0 (feature level 188), it was an error to specify a bot user.
+        **Changes**: Before Zulip 8.0 (feature level 188), bot users could not
+        be muted/unmuted, and specifying a bot user's ID returned an error response.
       schema:
         type: integer
       example: 10
