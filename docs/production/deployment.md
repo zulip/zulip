@@ -407,17 +407,22 @@ requests from a reverse proxy as follows:
 1. Finally, restart the Zulip server, using
    `/home/zulip/deployments/current/scripts/restart-server`.
 
+Note that Zulip must be able to accurately determine if its connection to the
+client was over HTTPS or not; if you enable `http_only`, it is very important
+that you correctly configure Zulip to trust the `X-Forwarded-Proto` header from
+its proxy (see the next section), or clients may see infinite redirects.
+
 #### Configuring Zulip to trust proxies
 
-Before placing Zulip behind a reverse proxy, it needs to be configured
-to trust the client IP addresses that the proxy reports via the
-`X-Forwarded-For` header. This is important to have accurate IP
-addresses in server logs, as well as in notification emails which are
-sent to end users. Zulip doesn't default to trusting all
-`X-Forwarded-For` headers, because doing so would allow clients to
-spoof any IP address; we specify which IP addresses are the Zulip
-server's incoming proxies, so we know how much of the
-`X-Forwarded-For` header to trust.
+Before placing Zulip behind a reverse proxy, it needs to be configured to trust
+the client IP addresses that the proxy reports via the `X-Forwarded-For` header,
+and the protocol reported by the `X-Forwarded-Proto` header. This is important
+to have accurate IP addresses in server logs, as well as in notification emails
+which are sent to end users. Zulip doesn't default to trusting all
+`X-Forwarded-*` headers, because doing so would allow clients to spoof any IP
+address, and claim connections were over a secure connection when they were not;
+we specify which IP addresses are the Zulip server's incoming proxies, so we
+know which `X-Forwarded-*` headers to trust.
 
 1. Determine the IP addresses of all reverse proxies you are setting up, as seen
    from the Zulip host. Depending on your network setup, these may not be the
@@ -956,8 +961,8 @@ which have more than 20k users.
 #### `ips`
 
 Comma-separated list of IP addresses or netmasks of external load balancers
-whose `X-Forwarded-For` should be respected. These can be individual IP
-addresses, or CIDR IP address ranges.
+whose `X-Forwarded-For` and `X-Forwarded-Proto` should be respected. These can
+be individual IP addresses, or CIDR IP address ranges.
 
 ### `[http_proxy]`
 
