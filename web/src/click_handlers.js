@@ -887,7 +887,7 @@ export function initialize() {
             // after a tippy popover has been triggered which hides
             // the popover without being displayed.
             const not_hide_tippy_instances = true;
-            popovers.hide_all(not_hide_tippy_instances);
+            popovers.hide_all({not_hide_tippy_instances});
         }
 
         if (compose_state.composing() && !$(e.target).parents("#compose").length) {

@@ -88,6 +88,10 @@ export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
 
+export function get_personal_menu_instance() {
+    return popover_instances.personal_menu;
+}
+
 export function get_selected_send_later_timestamp() {
     if (!selected_send_later_timestamp) {
         return undefined;
