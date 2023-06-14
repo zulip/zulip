@@ -9,6 +9,7 @@ const {page_params} = require("./lib/zpage_params");
 page_params.realm_move_messages_within_stream_limit_seconds = 259200;
 
 const message_edit = zrequire("message_edit");
+const people = zrequire("people");
 
 const is_content_editable = message_edit.is_content_editable;
 
@@ -182,9 +183,25 @@ run_test("get_deletability", ({override}) => {
     page_params.is_admin = true;
     override(settings_data, "user_can_delete_own_message", () => false);
     page_params.realm_message_content_delete_limit_seconds = null;
+    const test_user = {
+        user_id: 1,
+        full_name: "Test user",
+        email: "test@zulip.com",
+    };
+    people.add_active_user(test_user);
+
+    const bot_user = {
+        user_id: 2,
+        full_name: "Test bot user",
+        email: "test-bot@zulip.com",
+        bot_owner_id: 1,
+    };
+    people.add_active_user(bot_user);
+
     const message = {
         sent_by_me: false,
         locally_echoed: true,
+        sender_id: 1,
     };
 
     // Admin can always delete any message
@@ -204,14 +221,36 @@ run_test("get_deletability", ({override}) => {
     override(settings_data, "user_can_delete_own_message", () => true);
     assert.equal(message_edit.get_deletability(message), true);
 
-    const now = new Date();
-    const current_timestamp = now / 1000;
+    message.sent_by_me = false;
+    assert.equal(message_edit.get_deletability(message), false);
+    message.sent_by_me = true;
+
+    let now = new Date();
+    let current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 5;
 
     page_params.realm_message_content_delete_limit_seconds = 10;
     assert.equal(message_edit.get_deletability(message), true);
 
     message.timestamp = current_timestamp - 60;
+    assert.equal(message_edit.get_deletability(message), false);
+
+    message.sender_id = 2;
+    message.sent_by_me = false;
+    people.initialize_current_user(test_user.user_id);
+    page_params.realm_message_content_delete_limit_seconds = null;
+
+    override(settings_data, "user_can_delete_own_message", () => true);
+    assert.equal(message_edit.get_deletability(message), true);
+
+    override(settings_data, "user_can_delete_own_message", () => false);
+    assert.equal(message_edit.get_deletability(message), false);
+
+    now = new Date();
+    current_timestamp = now / 1000;
+    page_params.realm_message_content_delete_limit_seconds = 10;
+    message.timestamp = current_timestamp - 60;
+    override(settings_data, "user_can_delete_own_message", () => true);
     assert.equal(message_edit.get_deletability(message), false);
 });
 
