@@ -46,6 +46,10 @@ export function get_topic_visibility_policy(stream_id, topic) {
     return all_visibility_policies.INHERIT;
 }
 
+export function is_topic_followed(stream_id, topic) {
+    return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.FOLLOWED;
+}
+
 export function is_topic_unmuted(stream_id, topic) {
     return get_topic_visibility_policy(stream_id, topic) === all_visibility_policies.UNMUTED;
 }

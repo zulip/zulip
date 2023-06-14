@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
+import {page_params} from "./page_params";
 import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as user_topics from "./user_topics";
@@ -31,6 +32,7 @@ export function populate_list() {
                 user_topic,
                 user_topic_visibility_policy_values:
                     settings_config.user_topic_visibility_policy_values,
+                development: page_params.development_environment,
             };
             return render_user_topic_ui_row(context);
         },
