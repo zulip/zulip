@@ -192,14 +192,15 @@ log][commit-log] for an up-to-date list of all changes.
 - PostgreSQL 11 is no longer supported; if you are currently using it, you will
   need to [upgrade PostgreSQL](../production/upgrade.md#upgrading-postgresql)
   before upgrading Zulip.
-- Installations that deploy Zulip behind a [reverse
-  proxy][reverse-proxy-docs] should make sure the proxy is configured
-  to set the `X-Forwarded-Proto` HTTP header; the documentation has
-  updated example configuration.
+- Installations that deploy Zulip behind a [reverse proxy][reverse-proxy-docs]
+  should make sure the proxy is configured to set the `X-Forwarded-Proto` HTTP
+  header, and that [`loadbalancer.ips` is accurate][loadbalancer-ips] for the
+  reverse proxy's IP; the documentation has updated its example configurations.
 - Zulip's Twitter preview integration has been disabled due to Twitter
   desupporting the API that it relied on.
 
 [reverse-proxy-docs]: ../production/deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
+[loadbalancer-ips]: ../production/deployment.md#configuring-zulip-to-trust-proxies
 
 ## Zulip 6.x series
 
