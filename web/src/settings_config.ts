@@ -886,6 +886,10 @@ export const system_user_groups_list = [
 ];
 
 export const user_topic_visibility_policy_values = {
+    followed: {
+        code: 3,
+        description: $t({defaultMessage: "Followed"}),
+    },
     muted: {
         code: 1,
         description: $t({defaultMessage: "Muted"}),
