@@ -483,6 +483,18 @@ export function initialize() {
                 return;
             }
 
+            $popper.on("click", ".tab-option", (e) => {
+                $(".tab-option").removeClass("selected-tab");
+                $(e.currentTarget).addClass("selected-tab");
+
+                const visibility_policy = $(e.currentTarget).attr("data-visibility-policy");
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    visibility_policy,
+                );
+            });
+
             $popper.one("click", ".sidebar-popover-unmute-topic", () => {
                 user_topics.set_user_topic_visibility_policy(
                     stream_id,
