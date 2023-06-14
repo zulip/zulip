@@ -25,6 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
   [`GET /user_groups`](/api/get-user-groups): Add `can_mention_group_id` to
   user group objects.
+* [`POST /user_groups/create`](/api/create-user-group): Added `can_mention_group_id`
+  parameter to support setting the user group whose members can mention the new user
+  group.
 
 **Feature level 190**
 
