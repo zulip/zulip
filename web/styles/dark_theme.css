@@ -1539,6 +1539,50 @@
             }
         }
     }
+
+    .user-info-popover-header {
+        background-color: var(--bg-popover-dark);
+
+        .full-name {
+            color: hsl(0deg 0% 100%);
+        }
+
+        .user-type {
+            color: hsl(0deg 0% 50%);
+        }
+    }
+
+    .popover-menu {
+        background-color: var(--bg-popover-dark);
+
+        .list {
+            border-color: hsl(0deg 0% 0% / 40%);
+        }
+
+        .text-item,
+        .user_popover_email a {
+            color: hsl(0deg 0% 50% / 100%);
+        }
+
+        .link-item {
+            & a {
+                color: hsl(0deg 0% 100% / 80%);
+
+                &:hover,
+                &:focus {
+                    background: hsl(0deg 0% 100% / 5%);
+                }
+
+                &:active {
+                    background: hsl(0deg 0% 100% / 10%);
+                }
+            }
+        }
+    }
+
+    #personal-menu-dropdown {
+        background-color: var(--bg-popover-dark);
+    }
 }
 
 @supports (-moz-appearance: none) {

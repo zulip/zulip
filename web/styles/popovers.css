@@ -893,3 +893,138 @@ ul {
         padding-bottom: 16px;
     }
 }
+
+.user-info-popover-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+    text-align: left;
+    padding: 4px;
+    background-color: hsl(0deg 0% 100%);
+
+    .avatar {
+        position: relative;
+        width: 64px;
+        height: 64px;
+    }
+
+    .avatar-image {
+        width: 64px;
+        height: 64px;
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .status-circle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        top: unset;
+        left: unset;
+        right: -1px;
+        bottom: -1px;
+        border: solid 1px hsl(0deg 0% 100%);
+        border-radius: 50%;
+    }
+
+    .text-area {
+        flex-grow: 1;
+        padding-top: 4px;
+
+        & p {
+            margin: 0 0 4px;
+        }
+    }
+
+    .full-name {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 20px;
+        color: hsl(0deg 0% 15%);
+        max-width: 150px;
+        word-break: break-word;
+    }
+
+    .user-type {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        color: hsl(0deg 0% 40%);
+    }
+}
+
+.popover-menu {
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: var(--bg-popover-light);
+
+    .list {
+        margin: 0;
+        padding: 4px 0;
+        list-style: none;
+        border-bottom: solid 1px hsl(0deg 0% 0% / 10%);
+        background: none !important;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .text-item,
+    .link-item a {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        font-size: 15px;
+        line-height: 16px;
+
+        & i {
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+            text-align: center;
+        }
+    }
+
+    .text-item {
+        color: hsl(0deg 0% 40%);
+    }
+
+    .link-item {
+        & i {
+            color: var(--color-icon-purple);
+        }
+
+        & a {
+            color: hsl(0deg 0% 15%);
+            text-decoration: none;
+
+            &:hover,
+            &:focus {
+                background: hsl(0deg 0% 0% / 5%);
+                outline: none;
+            }
+
+            &:active {
+                background: hsl(0deg 0% 0% / 10%);
+            }
+        }
+    }
+
+    .clear_status {
+        margin-left: auto;
+        color: hsl(0deg 0% 40% / 100%);
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .status_emoji {
+        width: 16px;
+        height: 16px;
+    }
+}

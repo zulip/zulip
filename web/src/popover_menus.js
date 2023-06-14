@@ -14,12 +14,14 @@ import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delet
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
+import render_personal_menu from "../templates/personal_menu.hbs";
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_popover from "../templates/send_later_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
 
 import * as blueslip from "./blueslip";
+import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
@@ -31,6 +33,7 @@ import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as flatpickr from "./flatpickr";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
@@ -38,6 +41,8 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
@@ -51,6 +56,7 @@ import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
@@ -67,6 +73,7 @@ const popover_instances = {
     compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
+    personal_menu: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -916,6 +923,91 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.send_later = undefined;
+        },
+    });
+
+    register_popover_menu("#personal-menu", {
+        placement: "bottom",
+        offset: [-50, 0],
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("personal-menu-tippy");
+            popover_instances.personal_menu = instance;
+            $popper.one("click", ".clear_status", (e) => {
+                e.preventDefault();
+                const me = page_params.user_id;
+                user_status.server_update_status({
+                    user_id: me,
+                    status_text: "",
+                    emoji_name: "",
+                    emoji_code: "",
+                });
+                instance.hide();
+            });
+
+            $popper.one("click", ".invisible_mode_turn_on", (e) => {
+                user_status.server_invisible_mode_on();
+                e.stopPropagation();
+                e.preventDefault();
+                instance.hide();
+            });
+
+            $popper.one("click", ".invisible_mode_turn_off", (e) => {
+                user_status.server_invisible_mode_off();
+                e.stopPropagation();
+                e.preventDefault();
+                instance.hide();
+            });
+
+            $popper.find(".clear_status").each(function () {
+                tippy(this, {
+                    placement: "top",
+                    appendTo: document.body,
+                    interactive: true,
+                });
+            });
+
+            instance.popperInstance.update();
+        },
+        onShow(instance) {
+            const my_user_id = page_params.user_id;
+            const invisible_mode = !user_settings.presence_enabled;
+            const status_text = user_status.get_status_text(my_user_id);
+            const status_emoji_info = user_status.get_status_emoji(my_user_id);
+            const my_email = people.my_current_email();
+            instance.setContent(
+                parse_html(
+                    render_personal_menu({
+                        user_id: my_user_id,
+                        invisible_mode,
+                        user_is_guest: page_params.is_guest,
+                        spectator_view: page_params.is_spectator,
+
+                        // narrow urls
+                        sent_by_url: hash_util.by_sender_url(my_email),
+                        pm_with_url: hash_util.pm_with_url(my_email),
+
+                        // user information
+                        user_avatar: page_params.avatar_url_medium,
+                        is_active: people.is_active_user_for_popover(my_user_id),
+                        user_circle_class: buddy_data.get_user_circle_class(my_user_id),
+                        user_last_seen_time_status:
+                            buddy_data.user_last_seen_time_status(my_user_id),
+                        user_full_name: page_params.full_name,
+                        user_type: people.get_user_type(my_user_id),
+
+                        // user status
+                        status_content_available: Boolean(status_text || status_emoji_info),
+                        status_text,
+                        status_emoji_info,
+                        user_time: people.get_user_time(my_user_id),
+                    }),
+                ),
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.personal_menu = undefined;
         },
     });
 }

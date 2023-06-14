@@ -144,6 +144,9 @@ body {
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
+    --color-icon-purple: hsl(240deg 35% 60%);
+    --bg-popover-light: hsl(0deg 0% 100%);
+    --bg-popover-dark: hsl(0deg 0% 17% / 100%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -3204,5 +3207,36 @@ select.invite-as {
         height: 24px;
         background-size: cover;
         border-radius: 4px;
+    }
+}
+
+#personal-menu-dropdown {
+    display: block;
+    margin: 0;
+    position: relative;
+    padding: 0;
+    left: auto;
+    right: 0;
+    border: solid 1px hsl(0deg 0% 0% / 40%);
+    background-color: var(--bg-popover-light);
+
+    .arrow {
+        left: unset;
+        right: 2px;
+    }
+
+    .inner {
+        border-radius: 6px;
+        overflow: hidden;
+    }
+}
+
+.personal-menu-tippy {
+    .tippy-box {
+        border: 0;
+    }
+
+    .tippy-content {
+        padding: 0;
     }
 }
