@@ -933,6 +933,17 @@ export function initialize() {
     register_popover_menu("#personal-menu", {
         placement: "bottom",
         offset: [-50, 0],
+        popperOptions: {
+            strategy: "fixed",
+            modifiers: [
+                {
+                    name: "eventListeners",
+                    options: {
+                        scroll: false,
+                    },
+                },
+            ],
+        },
         onMount(instance) {
             const $popper = $(instance.popper);
             $popper.addClass("personal-menu-tippy");

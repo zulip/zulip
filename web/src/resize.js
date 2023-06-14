@@ -166,7 +166,7 @@ export function handler() {
     // popping up when the user opened that very popover.
     const mobile = util.is_mobile();
     if (!mobile || new_width !== _old_width) {
-        popovers.hide_all();
+        popovers.hide_all({not_hide_tippy_dropdowns: true});
     }
 
     if (new_width !== _old_width) {
