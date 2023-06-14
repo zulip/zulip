@@ -1285,14 +1285,6 @@ def check_update_message(
         assert message.is_stream_message()
         if not user_profile.can_move_messages_between_streams():
             raise JsonableError(_("You don't have permission to move this message"))
-        try:
-            access_stream_by_id(user_profile, message.recipient.type_id)
-        except JsonableError:
-            raise JsonableError(
-                _(
-                    "You don't have permission to move this message due to missing access to its stream"
-                )
-            )
 
         new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
         check_stream_access_based_on_stream_post_policy(user_profile, new_stream)

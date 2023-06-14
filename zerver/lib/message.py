@@ -852,13 +852,9 @@ def has_message_access(
     * The optional stream parameter is validated; is_subscribed is not.
     """
 
-    # If you have a user_message object, you have access.
-    if has_user_message:
-        return True
-
     if message.recipient.type != Recipient.STREAM:
-        # You can't access direct messages you didn't receive
-        return False
+        # You can only access direct messages you received
+        return has_user_message
 
     if stream is None:
         stream = Stream.objects.get(id=message.recipient.type_id)
@@ -869,21 +865,26 @@ def has_message_access(
         # You can't access public stream messages in other realms
         return False
 
-    if not stream.is_history_public_to_subscribers():
-        # You can't access messages you didn't directly receive
-        # unless history is public to subscribers.
-        return False
+    def is_subscribed_helper() -> bool:
+        if is_subscribed is not None:
+            return is_subscribed
+
+        return Subscription.objects.filter(
+            user_profile=user_profile, active=True, recipient=message.recipient
+        ).exists()
 
     if stream.is_public() and user_profile.can_access_public_streams():
         return True
 
-    # is_history_public_to_subscribers, so check if you're subscribed
-    if is_subscribed is not None:
-        return is_subscribed
+    if not stream.is_history_public_to_subscribers():
+        # Unless history is public to subscribers, you need to both:
+        # (1) Have directly received the message.
+        # AND
+        # (2) Be subscribed to the stream.
+        return has_user_message and is_subscribed_helper()
 
-    return Subscription.objects.filter(
-        user_profile=user_profile, active=True, recipient=message.recipient
-    ).exists()
+    # is_history_public_to_subscribers, so check if you're subscribed
+    return is_subscribed_helper()
 
 
 def bulk_access_messages(

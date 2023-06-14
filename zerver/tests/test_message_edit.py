@@ -548,6 +548,69 @@ class EditMessageTest(EditMessageTestCase):
         content = Message.objects.filter(id=msg_id).values_list("content", flat=True)[0]
         self.assertEqual(content, "(deleted)")
 
+    def test_edit_message_in_unsubscribed_private_stream(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        self.make_stream("privatestream", invite_only=True, history_public_to_subscribers=False)
+        self.subscribe(hamlet, "privatestream")
+        msg_id = self.send_stream_message(
+            hamlet, "privatestream", topic_name="editing", content="before edit"
+        )
+
+        # Ensure the user originally could edit the message. This ensures the
+        # loss of the ability is caused by unsubscribing, rather than something
+        # else wrong with the test's setup/assumptions.
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "test can edit before unsubscribing",
+            },
+        )
+        self.assert_json_success(result)
+
+        self.unsubscribe(hamlet, "privatestream")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "after unsubscribing",
+            },
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+        content = Message.objects.get(id=msg_id).content
+        self.assertEqual(content, "test can edit before unsubscribing")
+
+    def test_edit_message_guest_in_unsubscribed_public_stream(self) -> None:
+        guest_user = self.example_user("polonius")
+        self.login("polonius")
+        self.assertEqual(guest_user.role, UserProfile.ROLE_GUEST)
+
+        self.make_stream("publicstream", invite_only=False)
+        self.subscribe(guest_user, "publicstream")
+        msg_id = self.send_stream_message(
+            guest_user, "publicstream", topic_name="editing", content="before edit"
+        )
+
+        # Ensure the user originally could edit the message.
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "test can edit before unsubscribing",
+            },
+        )
+        self.assert_json_success(result)
+
+        self.unsubscribe(guest_user, "publicstream")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "content": "after unsubscribing",
+            },
+        )
+        self.assert_json_error(result, "Invalid message(s)")
+        content = Message.objects.get(id=msg_id).content
+        self.assertEqual(content, "test can edit before unsubscribing")
+
     def test_edit_message_history_disabled(self) -> None:
         user_profile = self.example_user("hamlet")
         do_set_realm_property(user_profile.realm, "allow_edit_history", False, acting_user=None)
@@ -1375,7 +1438,7 @@ class EditMessageTest(EditMessageTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1472,7 +1535,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1503,7 +1566,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(34):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1536,7 +1599,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(31):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1559,7 +1622,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(27):
+        with self.assert_database_query_count(25):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -1658,7 +1721,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(27):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -3046,7 +3109,7 @@ class EditMessageTest(EditMessageTestCase):
 
         self.assert_json_error(
             result,
-            "You don't have permission to move this message due to missing access to its stream",
+            "Invalid message(s)",
         )
 
     def test_move_message_from_private_stream_message_access_checks(
@@ -3704,7 +3767,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(57), self.assert_memcached_count(14):
+        with self.assert_database_query_count(56), self.assert_memcached_count(14):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -4842,3 +4905,30 @@ class DeleteMessageTest(ZulipTestCase):
                     "Events should be sent only after the transaction commits."
                 )
                 do_delete_messages(hamlet.realm, [message])
+
+    def test_delete_message_in_unsubscribed_private_stream(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        self.assertEqual(iago.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("hamlet")
+
+        self.make_stream("privatestream", invite_only=True, history_public_to_subscribers=False)
+        self.subscribe(hamlet, "privatestream")
+        self.subscribe(iago, "privatestream")
+        msg_id = self.send_stream_message(
+            hamlet, "privatestream", topic_name="editing", content="before edit"
+        )
+        self.unsubscribe(iago, "privatestream")
+        self.logout()
+        self.login("iago")
+        result = self.client_delete(f"/json/messages/{msg_id}")
+        self.assert_json_error(result, "Invalid message(s)")
+        self.assertTrue(Message.objects.filter(id=msg_id).exists())
+
+        # Ensure iago can delete the message after resubscribing, to be certain
+        # it's the subscribed/unsubscribed status that's the decisive factor in the
+        # permission to do so.
+        self.subscribe(iago, "privatestream")
+        result = self.client_delete(f"/json/messages/{msg_id}")
+        self.assert_json_success(result)
+        self.assertFalse(Message.objects.filter(id=msg_id).exists())
