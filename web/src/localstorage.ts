@@ -1,6 +1,7 @@
 import {z} from "zod";
 
 import * as blueslip from "./blueslip";
+import {page_params} from "./page_params";
 
 const formDataSchema = z
     .object({
@@ -241,6 +242,11 @@ localstorage.supported = function supports_localstorage(): boolean {
     try {
         return window.localStorage !== undefined && window.localStorage !== null;
     } catch {
+        if (page_params.is_spectator) {
+            // Many spectators are not even real users, and failure to preserve their state over a
+            // reload is not a major issue.
+            return false;
+        }
         if (!warned_of_localstorage) {
             blueslip.error(
                 "Client browser does not support local storage, will lose socket message on reload",
