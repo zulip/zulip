@@ -1061,19 +1061,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.include-sender {
-    .message_edit_notice {
-        display: inline-block;
-        vertical-align: top;
-        line-height: 14px;
-        /* A bit of margin here helps these not look associated with the name. */
-        margin-left: 4px;
-        position: static;
-        padding: 0;
-        width: auto;
-    }
-}
-
 .sender-status {
     display: inline-block;
     margin: 8px 0 8px -3px;
