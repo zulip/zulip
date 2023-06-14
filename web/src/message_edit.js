@@ -32,6 +32,7 @@ import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
@@ -153,12 +154,23 @@ export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
     return false;
 }
 
+export function is_message_sent_by_my_bot(message) {
+    const user = people.get_by_user_id(message.sender_id);
+    if (user.bot_owner_id === undefined || user.bot_owner_id === null) {
+        // The message was not sent by a bot or the message was sent
+        // by a cross-realm bot which does not have an owner.
+        return false;
+    }
+
+    return people.is_my_user_id(user.bot_owner_id);
+}
+
 export function get_deletability(message) {
     if (page_params.is_admin) {
         return true;
     }
 
-    if (!message.sent_by_me) {
+    if (!message.sent_by_me && !is_message_sent_by_my_bot(message)) {
         return false;
     }
     if (message.locally_echoed) {
