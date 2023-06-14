@@ -1698,16 +1698,21 @@ class ActivateTest(ZulipTestCase):
         assert email is not None
         email.users.remove(*to_user_ids)
 
+        email_id = email.id
+        scheduled_at = email.scheduled_timestamp
         with self.assertLogs("zulip.send_email", level="INFO") as info_log:
             deliver_scheduled_emails(email)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
-        self.assertEqual(ScheduledEmail.objects.count(), 1)
+        self.assertEqual(ScheduledEmail.objects.count(), 0)
         self.assertEqual(
             info_log.output,
             [
-                f"ERROR:zulip.send_email:ScheduledEmail id {email.id} has empty users and address attributes."
+                f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
+                "had empty users and address attributes: "
+                "{'template_prefix': 'zerver/emails/followup_day1', 'from_name': None, "
+                "'from_address': None, 'language': None, 'context': {}}"
             ],
         )
 

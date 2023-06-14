@@ -477,10 +477,14 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
     user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
-        # This state doesn't make sense, so something must be mutating,
-        # or in the process of deleting, the object. We assume it will bring
-        # things to a correct state, and we just do nothing except logging this event.
-        logger.error("ScheduledEmail id %s has empty users and address attributes.", email.id)
+        # This state doesn't make sense, so something must have mutated the object
+        logger.warning(
+            "ScheduledEmail %s at %s had empty users and address attributes: %r",
+            email.id,
+            email.scheduled_timestamp,
+            data,
+        )
+        email.delete()
         return
 
     if user_ids:
