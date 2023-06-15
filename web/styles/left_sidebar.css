@@ -791,6 +791,10 @@ li.topic-list-item {
         z-index: 2;
         padding-bottom: 1px;
         background-color: var(--color-background);
+
+        .subscription_block:hover {
+            background-color: var(--color-background-hover-narrow-filter);
+        }
     }
 
     #subscribe-to-more-streams,
