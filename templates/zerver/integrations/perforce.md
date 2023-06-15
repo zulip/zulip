@@ -36,7 +36,7 @@ that fires once a changelist is submitted and committed.
 1.  By default, this hook will send a message to Zulip even if the
     destination stream does not yet exist. Messages to nonexistent
     streams prompt the Zulip Notification Bot to inform the bot's
-    owner by private message that they may wish to create the stream.
+    owner by direct message that they may wish to create the stream.
     If this behaviour is undesirable, for example with a large and busy
     Perforce server, change the `ZULIP_IGNORE_MISSING_STREAM`
     variable in `zulip_perforce_config.py` to `True`.
