@@ -1693,6 +1693,7 @@ group_type = DictType(
         ("direct_subgroup_ids", ListType(int)),
         ("description", str),
         ("is_system_group", bool),
+        ("can_mention_group_id", int),
     ]
 )
 
