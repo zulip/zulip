@@ -148,7 +148,7 @@ With this API, you *cannot*
 
 * modify an intercepted message (you have to send a new message).
 * send messages on behalf of or impersonate other users.
-* intercept private messages (except for PMs with the bot as an
+* intercept direct messages (except for direct messages with the bot as an
 explicit recipient).
 
 ### usage

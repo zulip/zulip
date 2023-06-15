@@ -31,7 +31,7 @@ There are currently two ways to trigger an outgoing webhook:
 
 1.  **@-mention** the bot user in a stream.  If the bot replies, its
     reply will be sent to that stream and topic.
-2.  **Send a private message** with the bot as one of the recipients.
+2.  **Send a direct message** with the bot as one of the recipients.
     If the bot replies, its reply will be sent to that thread.
 
 ## Timeouts
