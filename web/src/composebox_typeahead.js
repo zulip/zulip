@@ -424,6 +424,7 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
         filter_pills: false,
+        filter_groups: !is_silent,
         ...opts,
     };
     return get_person_suggestions(query, opts);
@@ -460,7 +461,12 @@ export function get_person_suggestions(query, opts) {
         return persons.filter((item) => query_matches_person(query, item));
     }
 
-    const groups = user_groups.get_realm_user_groups();
+    let groups;
+    if (opts.filter_groups) {
+        groups = user_groups.get_user_groups_allowed_to_mention();
+    } else {
+        groups = user_groups.get_realm_user_groups();
+    }
 
     const filtered_groups = groups.filter((item) => query_matches_name(query, item));
 

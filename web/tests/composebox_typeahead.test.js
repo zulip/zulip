@@ -7,7 +7,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {user_settings} = require("./lib/zpage_params");
+const {page_params, user_settings} = require("./lib/zpage_params");
 
 const noop = () => {};
 
@@ -324,7 +324,7 @@ const hamletcharacters = {
     description: "Characters of Hamlet",
     members: new Set([100, 104]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([10, 11]),
+    direct_subgroup_ids: new Set([]),
     can_mention_group_id: 2,
 };
 
@@ -332,9 +332,9 @@ const backend = {
     name: "Backend",
     id: 2,
     description: "Backend team",
-    members: new Set([]),
+    members: new Set([101]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set([1]),
     can_mention_group_id: 1,
 };
 
@@ -342,7 +342,7 @@ const call_center = {
     name: "Call Center",
     id: 3,
     description: "folks working in support",
-    members: new Set([]),
+    members: new Set([102]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
     can_mention_group_id: 2,
@@ -1533,18 +1533,38 @@ test("content_highlighter", ({override_rewire}) => {
 test("filter_and_sort_mentions (normal)", () => {
     compose_state.set_message_type("stream");
     const is_silent = false;
-
-    const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    page_params.user_id = 101;
+    let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
     const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
+
+    // call_center group is shown in typeahead even when user is member of
+    // one of the subgroups of can_mention_group.
+    page_params.user_id = 104;
+    suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
+
+    // call_center group is not shown in typeahead when user is neither
+    // a direct member of can_mention_group nor a member of any of its
+    // recursive subgroups.
+    page_params.user_id = 102;
+    suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    assert.deepEqual(suggestions, [mention_all, ali, alice, hal]);
 });
 
 test("filter_and_sort_mentions (silent)", () => {
     const is_silent = true;
 
-    const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
+    assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
+
+    // call_center group is shown in typeahead irrespective of whether
+    // user is member of can_mention_group or its subgroups for a
+    // silent mention.
+    page_params.user_id = 102;
+    suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
 });
 
@@ -1654,7 +1674,7 @@ test("typeahead_results", () => {
     // Earlier user group and stream mentions were autocompleted by their
     // description too. This is now removed as it often led to unexpected
     // behaviour, and did not have any great discoverability advantage.
-
+    page_params.user_id = 101;
     // Autocomplete user group mentions by group name.
     assert_mentions_matches("hamletchar", [hamletcharacters]);
 

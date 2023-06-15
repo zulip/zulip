@@ -1,6 +1,7 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
@@ -86,6 +87,21 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
 export function get_realm_user_groups(): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => !group.is_system_group);
+}
+
+export function get_user_groups_allowed_to_mention(): UserGroup[] {
+    if (page_params.user_id === undefined) {
+        return [];
+    }
+
+    const user_groups = get_realm_user_groups();
+    return user_groups.filter((group) => {
+        const can_mention_group_id = group.can_mention_group_id;
+        return (
+            page_params.user_id !== undefined &&
+            is_user_in_group(can_mention_group_id, page_params.user_id)
+        );
+    });
 }
 
 export function is_direct_member_of(user_id: number, user_group_id: number): boolean {
