@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 191**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups): Add `can_mention_group_id` to
+  user group objects.
+
 **Feature level 190**
 
 * [`DELETE /realm/emoji/{emoji_name}`](/api/deactivate-custom-emoji): This endpoint
