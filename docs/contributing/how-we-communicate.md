@@ -101,7 +101,7 @@ to try something new.
 
 - You can use a variety of channels to express your appreciation. A comment
   directly in a Zulip thread or on a pull request is often best, but in some
-  cases you may also want to send a friendly PM. E.g.:
+  cases you may also want to send a friendly direct message. E.g.:
 
   - “I've noticed that you've been answering lots of questions in #**development
     help** lately. Thanks so much for doing that!”

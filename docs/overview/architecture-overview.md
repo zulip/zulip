@@ -285,7 +285,7 @@ self-explanatory names.
   sidebar and users in right sidebar. To avoid visual clutter
   ellipsis only appears in the web UI upon hover.
 
-- **huddle**: What the codebase calls a "group private message".
+- **huddle**: What the codebase calls a "group direct message".
 
 - **message editing**: If the realm admin allows it, then after a user
   posts a message, the user has a few minutes to click "Edit" and
@@ -296,7 +296,7 @@ self-explanatory names.
 - **realm**: What the codebase calls an "organization" in the UI.
 
 - **recipient bar**: A visual indication of the context of a message
-  or group of messages, displaying the stream and topic or private
+  or group of messages, displaying the stream and topic or direct
   message recipient list, at the top of a group of messages. A
   typical 1-line message to a new recipient shows to the user as
   three lines of content: first the recipient bar, second the

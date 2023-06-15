@@ -148,11 +148,11 @@ strength allowed is controlled by two settings in
   organization.
 
   Being an organization administrator does not generally provide the ability
-  to read other users' private messages or messages sent to private
+  to read other users' direct messages or messages sent to private
   streams to which the administrator is not subscribed. There are two
   exceptions:
 
-  - Organization owners may get access to private messages via some types of
+  - Organization owners may get access to direct messages via some types of
     [data export](https://zulip.com/help/export-your-organization).
 
   - Administrators can change the ownership of a bot. If a bot is subscribed

@@ -211,7 +211,7 @@ A typical doc will then have the following steps.
 ##### "Create the stream" step
 
 - Use the `create-stream` macro. This step should be omitted if the
-  integration only supports notifications via PMs.
+  integration only supports notifications via direct messages.
 
 ##### "Create the bot" step
 

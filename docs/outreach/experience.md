@@ -171,7 +171,7 @@ system at the start of the program:
    review request
    feature](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review)
    to send your request. This makes the PR's status clear to project maintainers.
-   You may also want to send a quick private message to let your buddies know
+   You may also want to send a quick direct message to let your buddies know
    their attention is needed.
 
 4. Please respond to code review requests promptly (within one workday), and

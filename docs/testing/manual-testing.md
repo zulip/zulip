@@ -57,12 +57,12 @@ Try narrowing from the message view:
   - use s to narrow to a stream (select message first
     and verify in sidebar)
   - use S to narrow to the topic (and verify in sidebar)
-  - use v to navigate to private messages
+  - use v to navigate to direct messages
 - Click on the recipient bar
   - narrow to a stream
   - narrow to a topic
-  - narrow to PMs with one user
-  - narrow to a group PM
+  - narrow to direct messages with one user
+  - narrow to a group direct message
 - Click on the Zulip logo
   - narrow to a topic
   - click on the Zulip logo (and verify you're in the Recent conversations view)
@@ -172,9 +172,9 @@ several times in a row, while cycling Cordelia through various narrows.
 Here are the main tasks for Hamlet (and each message gets sent several
 times):
 
-- Send Cordelia/Othello a PM.
-- Send Cordelia a PM.
-- Send Othello a PM.
+- Send Cordelia/Othello a direct message.
+- Send Cordelia a direct message.
+- Send Othello a direct message.
 - Post to Verona/foo.
 - Post to Verona/bar.
 - Post to Denmark/foo.
@@ -185,9 +185,9 @@ through the following views for Cordelia (and have Hamlet send new
 messages after each narrow):
 
 - Go to All messages view.
-- Go to Private messages view.
-- Go to Private messages w/Hamlet.
-- Go to Private messages w/Hamlet and Othello.
+- Go to Direct messages view.
+- Go to Direct messages w/Hamlet.
+- Go to Direct messages w/Hamlet and Othello.
 - Go to Verona view.
 - Go to Verona/bar view.
 - Go to Verona/foo view.
@@ -208,18 +208,18 @@ populated and where the focus is placed.
 - Hotkeys
 
   - use r to reply to a stream message
-  - use r to reply to a PM
-  - use R to reply to the author of a PM
-  - use R to reply to the author of a PM stream
+  - use r to reply to a direct message
+  - use R to reply to the author of a direct message
+  - use R to reply to the author of a direct message stream
   - use c to compose a stream message
-  - use x to compose a new PM
+  - use x to compose a new direct message
 
 - Buttons
 
   - Narrow to a stream and click on "New topic"
-  - Narrow "Private messages" and click on "New topic"
-  - Narrow to a stream and click on "New private message"
-  - Narrow "Private messages" and click on "New private message"
+  - Narrow "Direct messages" and click on "New topic"
+  - Narrow to a stream and click on "New direct message"
+  - Narrow "Direct messages" and click on "New direct message"
 
 - Topics
 
@@ -254,7 +254,7 @@ populated and where the focus is placed.
   - Use "restore drafts" to restore the draft.
   - Start composing a stream message and then abort using
     the little "x" icon in the compose box.
-  - Click on "New private message" and restore the draft. (You
+  - Click on "New direct message" and restore the draft. (You
     should now be sending to a stream.)
 
 - Click to send
@@ -296,9 +296,9 @@ Here are the things to test:
 
   - Verify email
   - Verify date message sent
-  - Send a PM (make sure compose box is filled out ok)
-  - Narrow to PMs with
-  - Narrow to PMs sent by
+  - Send a direct message (make sure compose box is filled out ok)
+  - Narrow to direct messages with
+  - Narrow to direct messages sent by
 
 - Right-pane-pane menus (click on chevron when hovering)
 
@@ -312,7 +312,7 @@ Here are the things to test:
   - Link to this conversation
 
 - Buddy list menus (click ellipsis when hovering over users)
-  - Narrow to PMs with
+  - Narrow to direct messages with
   - Narrow to message sent by
   - Compose a message to
 
@@ -408,8 +408,8 @@ Here are searches you should be able to do with autocomplete:
 - @-mentions
 - starred messages
 - messages sent by Hamlet
-- PMs with Hamlet
-- PMs with Hamlet matching keyword "foo"
+- direct messages with Hamlet
+- direct messages with Hamlet matching keyword "foo"
 
 There are some things you can try that don't come up in autocomplete:
 
@@ -497,12 +497,12 @@ Do these tasks as Cordelia.
       - have Hamlet send a message
       - then turn off notifications for that stream
       - have Hamlet send another message
-  - Private messages and @-mentions
+  - Direct messages and @-mentions
     - Test Desktop/Audible options
     - You can ignore other stuff for now
 - Bots/API key
-  - Create a bot with a generic avatar and send it a PM
-  - Create a bot with a custom avatar and send it a PM
+  - Create a bot with a generic avatar and send it a direct message
+  - Create a bot with a custom avatar and send it a direct message
   - Change your API key
 - Alert words
   - Create an alert word

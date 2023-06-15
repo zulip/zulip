@@ -65,7 +65,7 @@ In either configuration, you will need to do the following:
 
    - their **email address**. Zulip needs this in order to send, for
      example, a notification when they're offline and another user
-     sends a PM.
+     sends a direct message.
    - their **Zulip username**. This means the name the user types into the
      Zulip login form. You might choose for this to be the user's
      email address (`sam@example.com`), or look like a traditional
