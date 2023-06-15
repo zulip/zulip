@@ -10,6 +10,9 @@ TEST_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "t
 
 class TestHtmlBranches(unittest.TestCase):
     def test_get_tag_info(self) -> None:
+        """
+        Verifies that get_tag_info() properly returns tag information.
+        """
         html = """<p id="test" class="test1 test2">foo</p>"""
 
         start_tag, text, end_tag = tools.lib.template_parser.tokenize(html)
@@ -22,6 +25,10 @@ class TestHtmlBranches(unittest.TestCase):
         self.assertEqual(text.s, "foo")
 
     def test_build_id_dict(self) -> None:
+        """
+        Verifies that build_id_dict() properly builds a dictionary
+        given two separate arrays of keys and values, respectively.
+        """
         templates = ["test_template1.html", "test_template2.html"]
         templates = [os.path.join(TEST_TEMPLATES_DIR, fn) for fn in templates]
 
@@ -51,6 +58,9 @@ class TestHtmlBranches(unittest.TestCase):
         )
 
     def test_split_for_id_and_class(self) -> None:
+        """
+        Verifies proper split between object ID and class.
+        """
         id1 = "{{ red|blue }}"
         id2 = "search_box_{{ page }}"
 

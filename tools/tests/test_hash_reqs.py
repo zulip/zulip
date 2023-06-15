@@ -7,6 +7,10 @@ from tools.setup.setup_venvs import DEV_REQS_FILE
 
 class TestHashCreation(unittest.TestCase):
     def test_diff_hash_for_diff_python_version(self) -> None:
+        """
+        Verifies that different python versions hash to
+        different values.
+        """
         with mock.patch("scripts.lib.hash_reqs.python_version", return_value="Python 3.6.9"):
             deps = expand_reqs(DEV_REQS_FILE)
             hash1 = hash_deps(deps)
