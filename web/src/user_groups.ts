@@ -11,6 +11,7 @@ type UserGroup = {
     members: Set<number>;
     is_system_group: boolean;
     direct_subgroup_ids: Set<number>;
+    can_mention_group_id: number;
 };
 
 // The members field is a number array which we convert
@@ -44,6 +45,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
+        can_mention_group_id: user_group_raw.can_mention_group_id,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
