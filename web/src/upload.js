@@ -73,9 +73,7 @@ export function get_item(key, config, file_id) {
             case "textarea":
                 return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`);
             case "send_button":
-                return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`)
-                    .closest(".message_edit_form")
-                    .find(".message_edit_save");
+                return $(`#edit_form_${CSS.escape(config.row)}`).find(".message_edit_save");
             case "banner_container":
                 return $(`#edit_form_${CSS.escape(config.row)} .edit_form_banners`);
             case "upload_banner_identifier":
