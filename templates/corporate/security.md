@@ -34,7 +34,7 @@ priority.
 
 ## Configurable access control policies
 
-- Zulip supports private messages (to one or more individuals), private
+- Zulip supports direct messages (to one or more individuals), private
   streams with any number of subscribers, as well as public streams
   available to all organization members.  We also support guest accounts,
   which only have access to a fixed set of streams, and announcement
