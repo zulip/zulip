@@ -453,6 +453,16 @@ export function should_send_audible_notification(message) {
         return true;
     }
 
+    // enable_followed_topic_audible_notifications determines whether we ding
+    // for messages in followed topics.
+    if (
+        message.type === "stream" &&
+        user_topics.is_topic_followed(message.stream_id, message.topic) &&
+        user_settings.enable_followed_topic_audible_notifications
+    ) {
+        return true;
+    }
+
     // enable_sounds determines whether we ding for direct messages,
     // mentions, and/or alerts.
     if (!user_settings.enable_sounds) {
@@ -473,10 +483,23 @@ export function should_send_audible_notification(message) {
         return true;
     }
 
+    // The following blocks for 'wildcard mentions' and 'Followed topic wildcard mentions'
+    // should be placed below (as they are right now) the 'user_settings.enable_sounds'
+    // block because the global, stream-specific, and followed topic wildcard mention
+    // settings are wrappers around the personal-mention setting.
     // wildcard mentions
     if (
         message.mentioned &&
         stream_data.receives_notifications(message.stream_id, "wildcard_mentions_notify")
+    ) {
+        return true;
+    }
+
+    // Followed topic wildcard mentions
+    if (
+        message.mentioned &&
+        user_topics.is_topic_followed(message.stream_id, message.topic) &&
+        user_settings.enable_followed_topic_wildcard_mentions_notify
     ) {
         return true;
     }
