@@ -8,6 +8,7 @@ import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as info_overlay from "./info_overlay";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
@@ -24,7 +25,6 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as spectators from "./spectators";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as top_left_corner from "./top_left_corner";
 import * as ui_report from "./ui_report";
 import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
@@ -112,7 +112,7 @@ function show_all_message_view() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
     const is_actively_scrolling = message_scroll.is_actively_scrolling();
     narrow.deactivate(coming_from_recent_topics, is_actively_scrolling);
-    top_left_corner.handle_narrow_deactivated();
+    left_sidebar_navigation_area.handle_narrow_deactivated();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
     setTimeout(navigate.maybe_scroll_to_selected, 0);

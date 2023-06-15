@@ -15,6 +15,7 @@ import {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as message_edit from "./message_edit";
 import * as message_feed_loading from "./message_feed_loading";
 import * as message_feed_top_notices from "./message_feed_top_notices";
@@ -39,7 +40,6 @@ import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
-import * as top_left_corner from "./top_left_corner";
 import * as topic_generator from "./topic_generator";
 import * as typing_events from "./typing_events";
 import * as unread from "./unread";
@@ -542,7 +542,7 @@ export function activate(raw_operators, opts) {
 
         const current_filter = narrow_state.filter();
 
-        top_left_corner.handle_narrow_activated(current_filter);
+        left_sidebar_navigation_area.handle_narrow_activated(current_filter);
         pm_list.handle_narrow_activated(current_filter);
         stream_list.handle_narrow_activated(current_filter);
         typing_events.render_notifications_for_narrow();
@@ -991,7 +991,7 @@ export function to_compose_target() {
 function handle_post_narrow_deactivate_processes() {
     compose_fade.update_message_list();
 
-    top_left_corner.handle_narrow_deactivated();
+    left_sidebar_navigation_area.handle_narrow_deactivated();
     pm_list.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
     compose_closed_ui.update_buttons_for_stream();

@@ -15,27 +15,27 @@ const scheduled_messages = mock_esm("../src/scheduled_messages");
 scheduled_messages.get_count = () => 555;
 
 const {Filter} = zrequire("../src/filter");
-const top_left_corner = zrequire("top_left_corner");
+const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
 
 run_test("narrowing", () => {
     let filter = new Filter([{operator: "is", operand: "mentioned"}]);
 
     // activating narrow
 
-    top_left_corner.handle_narrow_activated(filter);
+    left_sidebar_navigation_area.handle_narrow_activated(filter);
     assert.ok($(".top_left_mentions").hasClass("active-filter"));
 
     filter = new Filter([{operator: "is", operand: "starred"}]);
-    top_left_corner.handle_narrow_activated(filter);
+    left_sidebar_navigation_area.handle_narrow_activated(filter);
     assert.ok($(".top_left_starred_messages").hasClass("active-filter"));
 
     filter = new Filter([{operator: "in", operand: "home"}]);
-    top_left_corner.handle_narrow_activated(filter);
+    left_sidebar_navigation_area.handle_narrow_activated(filter);
     assert.ok($(".top_left_all_messages").hasClass("active-filter"));
 
     // deactivating narrow
 
-    top_left_corner.handle_narrow_deactivated();
+    left_sidebar_navigation_area.handle_narrow_deactivated();
 
     assert.ok($(".top_left_all_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
@@ -45,7 +45,7 @@ run_test("narrowing", () => {
     set_global("setTimeout", (f) => {
         f();
     });
-    top_left_corner.narrow_to_recent_topics();
+    left_sidebar_navigation_area.narrow_to_recent_topics();
     assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
@@ -74,10 +74,10 @@ run_test("update_count_in_dom", () => {
 
     make_elem($(".top_left_scheduled_messages"), "<scheduled-count>");
 
-    top_left_corner.update_dom_with_unread_counts(counts, false);
-    top_left_corner.update_starred_count(444);
-    // Calls top_left_corner.update_scheduled_messages_row
-    top_left_corner.initialize();
+    left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
+    left_sidebar_navigation_area.update_starred_count(444);
+    // Calls left_sidebar_navigation_area.update_scheduled_messages_row
+    left_sidebar_navigation_area.initialize();
 
     assert.equal($("<mentioned-count>").text(), "222");
     assert.equal($("<home-count>").text(), "333");
@@ -87,9 +87,9 @@ run_test("update_count_in_dom", () => {
     counts.mentioned_message_count = 0;
     scheduled_messages.get_count = () => 0;
 
-    top_left_corner.update_dom_with_unread_counts(counts, false);
-    top_left_corner.update_starred_count(0);
-    top_left_corner.update_scheduled_messages_row();
+    left_sidebar_navigation_area.update_dom_with_unread_counts(counts, false);
+    left_sidebar_navigation_area.update_starred_count(0);
+    left_sidebar_navigation_area.update_scheduled_messages_row();
 
     assert.ok(!$("<mentioned-count>").visible());
     assert.equal($("<mentioned-count>").text(), "");

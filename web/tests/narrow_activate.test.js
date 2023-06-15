@@ -29,7 +29,7 @@ const message_feed_loading = mock_esm("../src/message_feed_loading");
 const message_view_header = mock_esm("../src/message_view_header");
 const notifications = mock_esm("../src/notifications");
 const stream_list = mock_esm("../src/stream_list");
-const top_left_corner = mock_esm("../src/top_left_corner");
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area");
 const typing_events = mock_esm("../src/typing_events");
 const unread_ops = mock_esm("../src/unread_ops");
 mock_esm("../src/recent_topics_util", {
@@ -89,7 +89,7 @@ function test_helper() {
     stub(notifications, "redraw_title");
     stub(stream_list, "handle_narrow_activated");
     stub(message_view_header, "render_title_area");
-    stub(top_left_corner, "handle_narrow_activated");
+    stub(left_sidebar_navigation_area, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_recipient, "update_narrow_to_recipient_visibility");
     stub(unread_ops, "process_visible");
@@ -192,7 +192,7 @@ run_test("basics", () => {
         [compose_closed_ui, "update_buttons_for_stream"],
         [compose_closed_ui, "update_reply_recipient_label"],
         [compose_actions, "on_narrow"],
-        [top_left_corner, "handle_narrow_activated"],
+        [left_sidebar_navigation_area, "handle_narrow_activated"],
         [stream_list, "handle_narrow_activated"],
         [typing_events, "render_notifications_for_narrow"],
         [message_view_header, "render_title_area"],

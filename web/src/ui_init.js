@@ -42,6 +42,7 @@ import * as hotkey from "./hotkey";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as invite from "./invite";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
 import {localstorage} from "./localstorage";
@@ -104,7 +105,6 @@ import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
-import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
@@ -465,7 +465,7 @@ function initialize_unread_ui() {
         activity.update_dom_with_unread_counts(counts),
     );
     unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
-        top_left_corner.update_dom_with_unread_counts(counts, skip_animations),
+        left_sidebar_navigation_area.update_dom_with_unread_counts(counts, skip_animations),
     );
     unread_ui.register_update_unread_counts_hook((counts) =>
         stream_list.update_dom_with_unread_counts(counts),
@@ -680,7 +680,7 @@ export function initialize_everything() {
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
-    top_left_corner.initialize();
+    left_sidebar_navigation_area.initialize();
     stream_list.initialize({
         on_stream_click(stream_id, trigger) {
             const sub = sub_store.get(stream_id);

@@ -155,7 +155,7 @@ mock_esm("../src/sub_store", {
         };
     },
 });
-mock_esm("../src/top_left_corner", {
+mock_esm("../src/left_sidebar_navigation_area", {
     narrow_to_recent_topics: noop,
 });
 mock_esm("../src/unread", {

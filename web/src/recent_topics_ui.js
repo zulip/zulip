@@ -11,6 +11,7 @@ import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {localstorage} from "./localstorage";
@@ -41,7 +42,6 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
-import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -886,7 +886,7 @@ export function show() {
         return;
     }
     // Hide selected elements in the left sidebar.
-    top_left_corner.narrow_to_recent_topics();
+    left_sidebar_navigation_area.narrow_to_recent_topics();
     stream_list.handle_narrow_deactivated();
 
     // Hide "middle-column" which has html for rendering
