@@ -101,6 +101,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
+    do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
@@ -1396,6 +1397,17 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_group_description(backend, description, acting_user=None)
         )
         check_user_group_update("events[0]", events[0], "description")
+
+        # Test can_mention_group setting update
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=self.user_profile.realm, is_system_group=True
+        )
+        events = self.verify_action(
+            lambda: do_change_user_group_permission_setting(
+                backend, "can_mention_group", moderators_group, acting_user=None
+            )
+        )
+        check_user_group_update("events[0]", events[0], "can_mention_group_id")
 
         # Test add members
         hamlet = self.example_user("hamlet")

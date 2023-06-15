@@ -2946,6 +2946,14 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    can_mention_group_id:
+                                      type: integer
+                                      description: |
+                                        ID of the new user group whose members are allowed to mention the
+                                        group.
+
+                                        **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+                                        could be mentioned if and only if they were not system groups.
                               example:
                                 {
                                   "type": "user_group",
@@ -16301,6 +16309,21 @@ paths:
           schema:
             type: string
           example: The marketing team.
+        - name: can_mention_group_id
+          in: query
+          description: |
+            ID of the new user group whose members are allowed to mention the
+            group.
+
+            This setting cannot be set to `"@role:internet"` and `"@role:owners"`
+            system groups.
+
+            **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
+            could be mentioned if and only if they were not system groups.
+          schema:
+            type: integer
+          example: 12
+          required: false
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
