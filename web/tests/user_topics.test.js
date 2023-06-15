@@ -139,12 +139,56 @@ test("get_mutes", () => {
     ]);
 });
 
+test("get_unmutes", () => {
+    assert.deepEqual(
+        user_topics.get_user_topics_for_visibility_policy(
+            user_topics.all_visibility_policies.UNMUTED,
+        ),
+        [],
+    );
+    user_topics.update_user_topics(
+        office.stream_id,
+        "gossip",
+        all_visibility_policies.UNMUTED,
+        1577836800,
+    );
+    user_topics.update_user_topics(
+        devel.stream_id,
+        "java",
+        all_visibility_policies.UNMUTED,
+        1577836700,
+    );
+    const all_unmuted_topics = user_topics
+        .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.UNMUTED)
+        .sort((a, b) => a.date_updated - b.date_updated);
+
+    assert.deepEqual(all_unmuted_topics, [
+        {
+            date_updated: 1577836700000,
+            date_updated_str: "Dec 31, 2019",
+            stream: devel.name,
+            stream_id: devel.stream_id,
+            topic: "java",
+            visibility_policy: all_visibility_policies.UNMUTED,
+        },
+        {
+            date_updated: 1577836800000,
+            date_updated_str: "Jan 1, 2020",
+            stream: office.name,
+            stream_id: office.stream_id,
+            topic: "gossip",
+            visibility_policy: all_visibility_policies.UNMUTED,
+        },
+    ]);
+});
+
 test("set_user_topics", () => {
     blueslip.expect("warn", "Unknown stream ID in set_user_topic: 999");
 
     user_topics.set_user_topics([]);
     assert.ok(!user_topics.is_topic_muted(social.stream_id, "breakfast"));
     assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
+    assert.ok(!user_topics.is_topic_unmuted(office.stream_id, "lunch"));
 
     page_params.user_topics = [
         {
@@ -164,6 +208,12 @@ test("set_user_topics", () => {
             topic_name: "random",
             last_updated: "1577836800",
             visibility_policy: all_visibility_policies.MUTED,
+        },
+        {
+            stream_id: office.stream_id,
+            topic_name: "lunch",
+            last_updated: "1577836800",
+            visibility_policy: all_visibility_policies.UNMUTED,
         },
     ];
 
@@ -193,6 +243,22 @@ test("set_user_topics", () => {
         ],
     );
 
+    assert.deepEqual(
+        user_topics
+            .get_user_topics_for_visibility_policy(user_topics.all_visibility_policies.UNMUTED)
+            .sort(),
+        [
+            {
+                date_updated: 1577836800000,
+                date_updated_str: "Jan 1, 2020",
+                stream: office.name,
+                stream_id: office.stream_id,
+                topic: "lunch",
+                visibility_policy: all_visibility_policies.UNMUTED,
+            },
+        ],
+    );
+
     user_topics.set_user_topic({
         stream_id: design.stream_id,
         topic_name: "typography",
@@ -200,6 +266,14 @@ test("set_user_topics", () => {
         visibility_policy: all_visibility_policies.INHERIT,
     });
     assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
+
+    user_topics.set_user_topic({
+        stream_id: office.stream_id,
+        topic_name: "lunch",
+        last_updated: "1577836800",
+        visibility_policy: all_visibility_policies.INHERIT,
+    });
+    assert.ok(!user_topics.is_topic_unmuted(devel.stream_id, "lunch"));
 });
 
 test("case_insensitivity", () => {
