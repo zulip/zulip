@@ -78,6 +78,7 @@ function clear_box() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
+    compose_banner.clear_uploads();
 }
 
 export function autosize_message_content() {
