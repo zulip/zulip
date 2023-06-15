@@ -234,17 +234,13 @@ function render_user_info_popover(
         invisible_mode = !user_settings.presence_enabled;
     }
 
-    const muting_allowed = !is_me && !user.is_bot;
     const is_active = people.is_active_user_for_popover(user.user_id);
     const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
     const spectator_view = page_params.is_spectator;
 
-    // TODO: The show_manage_menu calculation can get a lot simpler
-    // if/when we allow muting bot users.
-    const can_manage_user = page_params.is_admin && !is_me && !is_system_bot;
-    const show_manage_menu = !spectator_view && (muting_allowed || can_manage_user);
+    const show_manage_menu = !spectator_view && !is_me;
 
     let date_joined;
     if (spectator_view) {
