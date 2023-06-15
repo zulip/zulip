@@ -86,8 +86,8 @@ help center because they are primarily useful to API clients:
 
 The operands for these search options must be encoded either as an
 integer ID or a JSON list of integer IDs. For example, to query
-messages sent by a user 1234 to a PM thread with yourself, user 1234,
-and user 5678, the correct JSON-encoded query is:
+messages sent by a user 1234 to a direct message thread with yourself,
+user 1234, and user 5678, the correct JSON-encoded query is:
 
 ```json
 [

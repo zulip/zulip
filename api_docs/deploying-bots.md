@@ -36,7 +36,7 @@ Zulip Botserver starts a web server that listens to incoming messages
 from your main Zulip server. The sequence of events in a successful
 Botserver interaction are:
 
-1. Your bot user is mentioned or receives a private message:
+1. Your bot user is mentioned or receives a direct message:
 
     ```
     @**My Bot User** hello world
