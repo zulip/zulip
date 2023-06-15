@@ -266,10 +266,10 @@ Some scenarios to consider:
 
 - Try clicking on any interactive elements, multiple times, in a variety of orders.
 - If the feature affects the **message view**, try it out in different types of
-  narrows: topic, stream, All messages, PMs.
+  narrows: topic, stream, All messages, direct messages.
 - If the feature affects the **compose box** in the web app, try both ways of
   [resizing the compose box](https://zulip.com/help/resize-the-compose-box).
-  Test both stream messages and PMs.
+  Test both stream messages and direct messages.
 - If the feature might require **elevated permissions**, check it out as a user who has
   permissions to use it and one who does not.
 - Think about how the feature might **interact with other features**, and try out
@@ -279,7 +279,7 @@ Some scenarios to consider:
   - If the feature has to do with topic editing, do you need to think
     about what happens when a topic is resolved/unresolved?
   - If it's a message view feature, would anything go wrong if the message was
-    collapsed or muted? If it was colored like an `@`-mention or a PM?
+    collapsed or muted? If it was colored like an `@`-mention or a direct message?
 
 ## Review process and communication
 

@@ -317,7 +317,7 @@ not the total size of the community, then our database write limited
 send latency of 1 second per 2000 users is totally fine. But we need
 to do this in a way that doesn’t create problems if any of the
 thousands of “inactive” users come back (or one of the active users
-sends a private message to one of the inactive users), since it’s
+sends a direct message to one of the inactive users), since it’s
 impossible for the software to know which users are eventually coming
 back or will eventually be interacted with by an existing user.
 
@@ -390,6 +390,6 @@ There are a few details that require special care with this system:
 - Soft-deactivated users experience high loading latency when
   returning after being idle for months. We optimize this by
   triggering a soft reactivation for users who receive email or push
-  notification for private messages or personal mentions, or who
+  notification for direct messages or personal mentions, or who
   request a password reset, since these are good leading indicators
   that a user is likely to return to Zulip.

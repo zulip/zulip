@@ -9,7 +9,7 @@ lifetime of fine-tuning. This page offers some guidelines and resources that the
 ## Where to ask your question
 
 It is almost always best to ask questions and have a conversation in a public
-stream, rather than in private messages. You’ll get better and faster answers
+stream, rather than in direct messages. You’ll get better and faster answers
 since many people can help, and it makes it possible for others to benefit from
 the discussion.
 

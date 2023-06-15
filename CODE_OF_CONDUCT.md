@@ -136,7 +136,8 @@ Here are some guidelines for you how can help:
 
     I’ve gone ahead and moved the other copy of this message to this thread.
 
-  - If asked a question in a PM that is better discussed in a public stream:
+  - If asked a question in a direct message that is better discussed in a public
+    stream:
     > Hi @user! Please start by reviewing
     > https://zulip.com/development-community/#community-norms to learn how to
     > get help in this community.

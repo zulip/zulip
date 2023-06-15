@@ -69,11 +69,11 @@ Usually, this list of users is one of 3 things:
   like new realm emoji).
 - Everyone who would receive a given message (for messages, emoji
   reactions, message editing, etc.); i.e. the subscribers to a stream
-  or the people on a private message thread.
+  or the people on a direct message thread.
 
 It is the responsibility of the caller of `send_event` to choose the
 list of user IDs correctly. There can be security problems if e.g. an
-event containing private message content is sent to the entire
+event containing direct message content is sent to the entire
 organization. However, if an event isn't sent to enough clients,
 there will likely be user-visible real-time sync bugs.
 
