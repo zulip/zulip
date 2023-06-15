@@ -42,6 +42,7 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
+const upload_objects_by_row = new Map();
 
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
@@ -578,11 +579,12 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
     if (edit_box_open_callback) {
         edit_box_open_callback();
     }
-
-    upload.setup_upload({
+    const row_id = rows.id($row);
+    const upload_object = upload.setup_upload({
         mode: "edit",
-        row: rows.id($row),
+        row: row_id,
     });
+    upload_objects_by_row.set(row_id, upload_object);
 }
 
 export function start($row, edit_box_open_callback) {
@@ -762,8 +764,21 @@ export function end_inline_topic_edit($row) {
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
+function remove_uploads_from_row(row_id) {
+    const uploads_for_row = upload_objects_by_row.get(row_id);
+    // We need to cancel all uploads, reset their progress,
+    // and clear the files upon ending the edit.
+    uploads_for_row?.cancelAll();
+    // Since we removed all the uploads from the row, we should
+    // now remove the corresponding upload object from the store.
+    upload_objects_by_row.delete(row_id);
+}
+
 export function end_message_row_edit($row) {
-    const message = message_lists.current.get(rows.id($row));
+    const row_id = rows.id($row);
+    remove_uploads_from_row(row_id);
+
+    const message = message_lists.current.get(row_id);
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
         const original_scrollTop = message_viewport.scrollTop();
