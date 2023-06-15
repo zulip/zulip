@@ -69,10 +69,10 @@ test("get_item", () => {
         $(`#edit_form_${CSS.escape(1)} .message_edit_content`),
     );
 
-    $(`#edit_form_${CSS.escape(2)} .message_edit_content`).closest = () => {
-        $(".message_edit_form").set_find_results(".message_edit_save", $(".message_edit_save"));
-        return $(".message_edit_form");
-    };
+    $(`#edit_form_${CSS.escape(2)}`).set_find_results(
+        ".message_edit_save",
+        $(".message_edit_save"),
+    );
     assert.equal(upload.get_item("send_button", {mode: "edit", row: 2}), $(".message_edit_save"));
 
     assert.equal(
