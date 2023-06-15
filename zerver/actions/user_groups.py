@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List, Mapping, Optional, Sequence, TypedDict
+from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
 import django.db.utils
 from django.db import transaction
@@ -175,7 +175,9 @@ def check_add_user_group(
         raise JsonableError(_("User group '{}' already exists.").format(name))
 
 
-def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, str]) -> None:
+def do_send_user_group_update_event(
+    user_group: UserGroup, data: Dict[str, Union[str, int]]
+) -> None:
     event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
 
@@ -273,3 +275,20 @@ def check_delete_user_group(
     user_group = access_user_group_by_id(user_group_id, user_profile)
     user_group.delete()
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
+
+
+def do_change_user_group_permission_setting(
+    user_group: UserGroup,
+    setting_name: str,
+    setting_value_group: UserGroup,
+    *,
+    acting_user: Optional[UserProfile],
+) -> None:
+    setattr(user_group, setting_name, setting_value_group)
+    user_group.save()
+
+    # RealmAuditLog changes are being done in a separate PR and will be
+    # added here once that is merged.
+    setting_id_name = setting_name + "_id"
+    event_data_dict: Dict[str, Union[str, int]] = {setting_id_name: setting_value_group.id}
+    do_send_user_group_update_event(user_group, event_data_dict)
