@@ -41,12 +41,20 @@ user_topics.update_user_topics(
     user_topics.all_visibility_policies.MUTED,
 );
 
+user_topics.update_user_topics(
+    general.stream_id,
+    "followed topic",
+    user_topics.all_visibility_policies.FOLLOWED,
+);
+
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
+        user_settings.enable_followed_topic_desktop_notifications = true;
         user_settings.enable_desktop_notifications = true;
         user_settings.enable_sounds = true;
+        user_settings.enable_followed_topic_wildcard_mentions_notify = true;
         user_settings.wildcard_mentions_notify = true;
         user_settings.notification_sound = "ding";
         f(helpers);
@@ -119,7 +127,34 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), true);
 
-    // Case 4:
+    // Case 4: If the message has been sent to a followed topic,
+    // DO visually notify the user if 'enable_followed_topic_desktop_notifications'
+    // is enabled.
+    // Messages to followed topics trumps muting
+    message = {
+        id: 30,
+        content: "message number 3",
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: false,
+        mentioned_me_directly: false,
+        type: "stream",
+        stream: "general",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+    };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // But not if 'enable_followed_topic_desktop_notifications' is disabled
+    user_settings.enable_followed_topic_desktop_notifications = false;
+    assert.equal(notifications.should_send_desktop_notification(message), false);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // Reset state
+    user_settings.enable_followed_topic_desktop_notifications = true;
+
+    // Case 5:
     // Mentioning should trigger notification in unmuted topic
     message = {
         id: 40,
@@ -137,7 +172,7 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), true);
 
-    // Case 5:
+    // Case 6:
     // Wildcard mention should trigger notification in unmuted topic
     // if wildcard_mentions_notify
     message = {
@@ -172,7 +207,7 @@ test("message_is_notifiable", () => {
     user_settings.wildcard_mentions_notify = true;
     general.wildcard_mentions_notify = null;
 
-    // Case 6: If a message is in a muted stream
+    // Case 7: If a message is in a muted stream
     //  and does not mention the user DIRECTLY (i.e. wildcard mention),
     //  DO NOT notify the user
     message = {
@@ -191,7 +226,7 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
-    // Case 7: If a message is in a muted stream
+    // Case 8: If a message is in a muted stream
     //  and does mention the user DIRECTLY,
     //  DO notify the user
     message = {
@@ -210,7 +245,7 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), true);
 
-    // Case 8: If a message is in a muted topic
+    // Case 9: If a message is in a muted topic
     //  and does not mention the user DIRECTLY (i.e. wildcard mention),
     //  DO NOT notify the user
     message = {
@@ -229,7 +264,39 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
-    // Case 9: If `None` is selected as the notification sound, send no
+    // Case 10:
+    // Wildcard mentions in a followed topic with 'wildcard_mentions_notify',
+    // 'enable_followed_topic_desktop_notifications' disabled and
+    // 'enable_followed_topic_wildcard_mentions_notify' enabled;
+    // DO visually notify the user
+    user_settings.wildcard_mentions_notify = false;
+    user_settings.enable_followed_topic_desktop_notifications = false;
+    message = {
+        id: 50,
+        content: "message number 5",
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: true,
+        mentioned_me_directly: false,
+        type: "stream",
+        stream: "general",
+        stream_id: general.stream_id,
+        topic: "followed topic",
+    };
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // But not if 'enable_followed_topic_wildcard_mentions_notify' is disabled
+    user_settings.enable_followed_topic_wildcard_mentions_notify = false;
+    assert.equal(notifications.should_send_desktop_notification(message), false);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // Reset state
+    user_settings.wildcard_mentions_notify = true;
+    user_settings.enable_followed_topic_desktop_notifications = true;
+    user_settings.enable_followed_topic_wildcard_mentions_notify = true;
+
+    // Case 11: If `None` is selected as the notification sound, send no
     // audible notification, no matter what other user configurations are.
     message = {
         id: 50,
