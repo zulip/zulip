@@ -325,6 +325,7 @@ const hamletcharacters = {
     members: new Set([100, 104]),
     is_system_group: false,
     direct_subgroup_ids: new Set([10, 11]),
+    can_mention_group_id: 2,
 };
 
 const backend = {
@@ -334,6 +335,7 @@ const backend = {
     members: new Set([]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
+    can_mention_group_id: 1,
 };
 
 const call_center = {
@@ -343,6 +345,7 @@ const call_center = {
     members: new Set([]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
+    can_mention_group_id: 2,
 };
 
 const make_emoji = (emoji_dict) => ({
