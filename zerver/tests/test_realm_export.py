@@ -176,7 +176,7 @@ class RealmExportTest(ZulipTestCase):
         export_path = orjson.loads(extra_data).get("export_path")
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 200)
-        self.assert_streaming_content(response, b"zulip!")
+        self.assertEqual(response.getvalue(), b"zulip!")
 
         result = self.client_get("/json/export/realm")
         response_dict = self.assert_json_success(result)
