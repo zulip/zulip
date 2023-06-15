@@ -9,7 +9,6 @@ from unittest.mock import patch
 
 import orjson
 from django.conf import settings
-from django.http.response import StreamingHttpResponse
 from PIL import Image
 from urllib3 import encode_multipart_formdata
 from urllib3.fields import RequestField
@@ -73,11 +72,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
         response = self.api_get(self.example_user("hamlet"), url)
         self.assertEqual(response.status_code, 200)
-        self.assert_streaming_content(response, b"zulip!")
+        self.assertEqual(response.getvalue(), b"zulip!")
 
         # Files uploaded through the API should be accessible via the web client
         self.login("hamlet")
-        self.assert_streaming_content(self.client_get(url), b"zulip!")
+        self.assertEqual(self.client_get(url).getvalue(), b"zulip!")
 
     def test_mobile_api_endpoint(self) -> None:
         """
@@ -106,7 +105,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         response = self.client_get(url, {"api_key": get_api_key(user_profile)})
         self.assertEqual(response.status_code, 200)
-        self.assert_streaming_content(response, b"zulip!")
+        self.assertEqual(response.getvalue(), b"zulip!")
 
     def test_file_too_big_failure(self) -> None:
         """
@@ -186,12 +185,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenticated and redirected
-        self.assert_streaming_content(self.client_get(url), b"zulip!")
+        self.assertEqual(self.client_get(url).getvalue(), b"zulip!")
 
         # Check the download endpoint
         download_url = url.replace("/user_uploads/", "/user_uploads/download/")
         result = self.client_get(download_url)
-        self.assert_streaming_content(result, b"zulip!")
+        self.assertEqual(result.getvalue(), b"zulip!")
         self.assertIn("attachment;", result.headers["Content-Disposition"])
 
         # check if DB has attachment marked as unclaimed
@@ -215,7 +214,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # The generated URL has a token authorizing the requestor to access the file
         # without being logged in.
         self.logout()
-        self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
+        self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
         # The original url shouldn't work when logged out:
         result = self.client_get(url)
         self.assertEqual(result.status_code, 403)
@@ -306,7 +305,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             url_only_url = data["url"]
 
             self.logout()
-            self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
+            self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
 
         # After over 60 seconds, the token should become invalid:
         with mock.patch("django.core.signing.time.time", return_value=start_time + 61):
@@ -632,7 +631,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.login_user(user_1)
         response = self.client_get(url, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 200)
-        self.assert_streaming_content(response, b"zulip!")
+        self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Confirm other cross-realm users can't read it.
@@ -675,7 +674,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with self.assert_database_query_count(5):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Subscribed user who received the message should be able to view file
@@ -683,7 +682,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with self.assert_database_query_count(6):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         def assert_cannot_access_file(user: UserProfile) -> None:
@@ -736,7 +735,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with self.assert_database_query_count(5):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Originally subscribed user should be able to view file
@@ -744,7 +743,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with self.assert_database_query_count(6):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Subscribed user who did not receive the message should also be able to view file
@@ -752,7 +751,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
         # It takes a few extra queries to verify access because of shared history.
 
@@ -812,7 +811,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         with self.assert_database_query_count(9):
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
 
         with self.assert_database_query_count(6):
             self.assertTrue(validate_attachment_request(user, fp_path_id))
@@ -840,7 +839,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         for user in subscribed_users + unsubscribed_users:
             self.login_user(user)
             response = self.client_get(url)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
             self.logout()
 
     def test_serve_local(self) -> None:
@@ -1200,8 +1199,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
                 if rfname is not None:
                     response = self.client_get(url)
-                    assert isinstance(response, StreamingHttpResponse)
-                    data = b"".join(response.streaming_content)
+                    data = response.getvalue()
                     self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
                 # Verify that the medium-size avatar was created
@@ -1481,8 +1479,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
                 if rfname is not None:
                     response = self.client_get(url)
-                    assert isinstance(response, StreamingHttpResponse)
-                    data = b"".join(response.streaming_content)
+                    data = response.getvalue()
                     self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
     def test_invalid_icons(self) -> None:
@@ -1664,8 +1661,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
                 if rfname is not None:
                     response = self.client_get(logo_url)
-                    assert isinstance(response, StreamingHttpResponse)
-                    data = b"".join(response.streaming_content)
+                    data = response.getvalue()
                     # size should be 100 x 100 because thumbnail keeps aspect ratio
                     # while trying to fit in a 800 x 100 box without losing part of the image
                     self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
