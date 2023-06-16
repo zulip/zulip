@@ -470,18 +470,24 @@ export function update_empty_left_panel_message() {
         has_streams =
             stream_data.subscribed_subs().length ||
             $("#streams_overlay_container .stream-row:not(.notdisplayed)").length;
+    } else if (is_not_subscribed_stream_tab_active()) {
+        has_streams =
+            stream_data.unsubscribed_subs().length ||
+            $("#streams_overlay_container .stream-row:not(.notdisplayed)").length;
     } else {
         has_streams = stream_data.get_unsorted_subs().length;
     }
+
     if (has_streams) {
         $(".no-streams-to-show").hide();
         return;
     }
+    $(".no-streams-to-show").children().hide();
     if (is_subscribed_stream_tab_active()) {
-        $(".all_streams_tab_empty_text").hide();
         $(".subscribed_streams_tab_empty_text").show();
+    } else if (is_not_subscribed_stream_tab_active()) {
+        $(".not_subscribed_streams_tab_empty_text").show();
     } else {
-        $(".subscribed_streams_tab_empty_text").hide();
         $(".all_streams_tab_empty_text").show();
     }
     $(".no-streams-to-show").show();
