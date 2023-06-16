@@ -901,7 +901,7 @@ def bulk_access_messages(
     filtered_messages = []
 
     user_message_set = set(
-        bulk_access_messages_expect_usermessage(
+        get_messages_with_usermessage_rows_for_user(
             user_profile.id, [message.id for message in messages]
         )
     )
@@ -934,21 +934,17 @@ def bulk_access_messages(
     return filtered_messages
 
 
-def bulk_access_messages_expect_usermessage(
+def get_messages_with_usermessage_rows_for_user(
     user_profile_id: int, message_ids: Sequence[int]
 ) -> ValuesQuerySet[UserMessage, int]:
     """
-    Like bulk_access_messages, but faster and potentially stricter.
-
     Returns a subset of `message_ids` containing only messages the
-    user can access.  Makes O(1) database queries.
+    user has a UserMessage for.  Makes O(1) database queries.
+    Note that this is not sufficient for access verification for
+    stream messages.
 
-    Use this function only when the user is expected to have a
-    UserMessage row for every message in `message_ids`.  If a
-    UserMessage row is missing, the message will be omitted even if
-    the user has access (e.g. because it went to a public stream.)
-
-    See also: `access_message`, `bulk_access_messages`.
+    See `access_message`, `bulk_access_messages` for proper message access
+    checks that follow our security model.
     """
     return UserMessage.objects.filter(
         user_profile_id=user_profile_id,

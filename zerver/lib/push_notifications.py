@@ -1009,8 +1009,8 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     # and then (3) it was deleted.  When trying to send the push
     # notification for (2), after (3) has happened, there is no
     # message to fetch -- but we nonetheless want to remove the mobile
-    # notification.  Because of this, the usual access control of
-    # `bulk_access_messages_expect_usermessage` is skipped here.
+    # notification.  Because of this, verification of access to
+    # the messages is skipped here.
     # Because of this, no access to the Message objects should be
     # done; they are treated as a list of opaque ints.
 
