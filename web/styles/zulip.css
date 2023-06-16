@@ -800,6 +800,7 @@ li,
     margin-right: -32px;
     margin-top: -1px;
     padding: 6px 3px 6px 13px;
+    float: right;
 
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {

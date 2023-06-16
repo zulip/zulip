@@ -227,23 +227,6 @@ blockquote small {
 blockquote small:before {
   content: '\2014 \00A0';
 }
-blockquote.pull-right {
-  float: right;
-  padding-right: 15px;
-  padding-left: 0;
-  border-right: 5px solid #eeeeee;
-  border-left: 0;
-}
-blockquote.pull-right p,
-blockquote.pull-right small {
-  text-align: right;
-}
-blockquote.pull-right small:before {
-  content: '';
-}
-blockquote.pull-right small:after {
-  content: '\00A0 \2014';
-}
 q:before,
 q:after,
 blockquote:before,
@@ -619,9 +602,6 @@ input.search-query {
 }
 .nav > li > a > img {
   max-width: none;
-}
-.nav > .pull-right {
-  float: right;
 }
 .nav-header {
   display: block;
@@ -1150,10 +1130,6 @@ input.search-query {
   -moz-background-clip: padding;
   background-clip: padding-box;
 }
-.dropdown-menu.pull-right {
-  right: 0;
-  left: auto;
-}
 .dropdown-menu .divider {
   height: 1px;
   margin: 9px 1px;
@@ -1218,10 +1194,6 @@ input.search-query {
   bottom: 0;
   top: 0;
   z-index: 990;
-}
-.pull-right > .dropdown-menu {
-  right: 0;
-  left: auto;
 }
 .dropup .caret {
   border-top: 0;
@@ -1371,9 +1343,6 @@ button.close {
   border: 0;
   -webkit-appearance: none;
 }
-.pull-right {
-  float: right;
-}
 .pull-left {
   float: left;
 }
@@ -1437,8 +1406,7 @@ button.close {
   }
 }
 @media (max-width: 480px) {
-  .media .pull-left,
-  .media .pull-right {
+  .media .pull-left {
     float: none;
     display: block;
     margin-bottom: 10px;
