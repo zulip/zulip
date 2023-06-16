@@ -110,7 +110,7 @@ def edit_user_group(
     if name is None and description is None and can_mention_group_id is None:
         raise JsonableError(_("No new data supplied"))
 
-    user_group = access_user_group_by_id(user_group_id, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
 
     if name is not None and name != user_group.name:
         name = check_user_group_name(name)
@@ -237,7 +237,7 @@ def add_members_to_group_backend(
     if not members:
         return json_success(request)
 
-    user_group = access_user_group_by_id(user_group_id, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     member_users = user_ids_to_users(members, user_profile.realm)
     existing_member_ids = set(get_direct_memberships_of_users(user_group, member_users))
 
@@ -267,7 +267,7 @@ def remove_members_from_group_backend(
         return json_success(request)
 
     user_profiles = user_ids_to_users(members, user_profile.realm)
-    user_group = access_user_group_by_id(user_group_id, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     group_member_ids = get_user_group_direct_member_ids(user_group)
     for member in members:
         if member not in group_member_ids:
@@ -293,7 +293,7 @@ def add_subgroups_to_group_backend(
         return json_success(request)
 
     subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
-    user_group = access_user_group_by_id(user_group_id, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     existing_direct_subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
     for group in subgroups:
         if group.id in existing_direct_subgroup_ids:
@@ -322,7 +322,7 @@ def remove_subgroups_from_group_backend(
         return json_success(request)
 
     subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
-    user_group = access_user_group_by_id(user_group_id, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     existing_direct_subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
     for group in subgroups:
         if group.id not in existing_direct_subgroup_ids:

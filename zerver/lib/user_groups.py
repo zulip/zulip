@@ -29,7 +29,7 @@ class UserGroupDict(TypedDict):
 
 
 def access_user_group_by_id(
-    user_group_id: int, user_profile: UserProfile, *, for_read: bool = False
+    user_group_id: int, user_profile: UserProfile, *, for_read: bool
 ) -> UserGroup:
     try:
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
