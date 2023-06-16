@@ -460,18 +460,8 @@ input[type="url"]:focus {
   -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
 }
-input[type="file"],
 input[type="image"] {
   width: auto;
-}
-input[type="file"] {
-  height: 30px;
-  line-height: 30px;
-}
-input[type="file"]:focus {
-  outline: thin dotted #333;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
 }
 input:-moz-placeholder {
   color: #999999;
