@@ -138,33 +138,33 @@ run_test("redraw_left_panel", ({mock_template}) => {
     }
 
     // Search with single keyword
-    test_filter({input: "Po", subscribed_only: false}, [poland, pomona]);
+    test_filter({input: "Po", show_subscribed: false}, [poland, pomona]);
     assert.ok(ui_called);
 
     // The denmark row is active, even though it's not displayed.
     assert.ok($denmark_row.hasClass("active"));
 
     // Search with multiple keywords
-    test_filter({input: "Denmark, Pol", subscribed_only: false}, [denmark, poland]);
-    test_filter({input: "Den, Pol", subscribed_only: false}, [denmark, poland]);
+    test_filter({input: "Denmark, Pol", show_subscribed: false}, [denmark, poland]);
+    test_filter({input: "Den, Pol", show_subscribed: false}, [denmark, poland]);
 
     // Search is case-insensitive
-    test_filter({input: "po", subscribed_only: false}, [poland, pomona]);
+    test_filter({input: "po", show_subscribed: false}, [poland, pomona]);
 
     // Search handles unusual characters like C++
-    test_filter({input: "c++", subscribed_only: false}, [cpp]);
+    test_filter({input: "c++", show_subscribed: false}, [cpp]);
 
     // Search subscribed streams only
-    test_filter({input: "d", subscribed_only: true}, [poland]);
+    test_filter({input: "d", show_subscribed: true}, [poland]);
 
     // Search terms match stream description
-    test_filter({input: "Co", subscribed_only: false}, [denmark, pomona]);
+    test_filter({input: "Co", show_subscribed: false}, [denmark, pomona]);
 
     // Search names AND descriptions
-    test_filter({input: "Mon", subscribed_only: false}, [pomona, poland]);
+    test_filter({input: "Mon", show_subscribed: false}, [pomona, poland]);
 
     // Explicitly order streams by name
-    test_filter({input: "", subscribed_only: false, sort_order: "by-stream-name"}, [
+    test_filter({input: "", show_subscribed: false, sort_order: "by-stream-name"}, [
         cpp,
         denmark,
         poland,
@@ -173,7 +173,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     ]);
 
     // Order streams by subscriber count
-    test_filter({input: "", subscribed_only: false, sort_order: "by-subscriber-count"}, [
+    test_filter({input: "", show_subscribed: false, sort_order: "by-subscriber-count"}, [
         poland,
         cpp,
         zzyzx,
@@ -182,7 +182,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     ]);
 
     // Order streams by weekly traffic
-    test_filter({input: "", subscribed_only: false, sort_order: "by-weekly-traffic"}, [
+    test_filter({input: "", show_subscribed: false, sort_order: "by-weekly-traffic"}, [
         poland,
         cpp,
         zzyzx,
@@ -191,7 +191,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     ]);
 
     // Sort for subscribed only.
-    test_filter({input: "", subscribed_only: true, sort_order: "by-subscriber-count"}, [
+    test_filter({input: "", show_subscribed: true, sort_order: "by-subscriber-count"}, [
         poland,
         cpp,
         zzyzx,
@@ -209,7 +209,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
         $(".stream-row-denmark").removeClass("active");
     };
 
-    test_filter({input: "d", subscribed_only: true}, [poland]);
+    test_filter({input: "d", show_subscribed: true}, [poland]);
     assert.ok(!$(".stream-row-denmark").hasClass("active"));
     assert.ok(!$(".right .settings").visible());
     assert.ok($(".nothing-selected").visible());
