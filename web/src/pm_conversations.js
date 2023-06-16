@@ -24,7 +24,7 @@ function filter_muted_pms(conversation) {
     return true;
 }
 
-class RecentPrivateMessages {
+class RecentDirectMessages {
     // This data structure keeps track of the sets of users you've had
     // recent conversations with, sorted by time (implemented via
     // `message_id` sorting, since that's how we time-sort messages).
@@ -90,7 +90,7 @@ class RecentPrivateMessages {
     }
 }
 
-export let recent = new RecentPrivateMessages();
+export let recent = new RecentDirectMessages();
 
 export function process_message(message) {
     const user_ids = people.pm_with_user_ids(message);
@@ -106,6 +106,6 @@ export function process_message(message) {
 }
 
 export function clear_for_testing() {
-    recent = new RecentPrivateMessages();
+    recent = new RecentDirectMessages();
     partners.clear();
 }
