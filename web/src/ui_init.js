@@ -113,6 +113,7 @@ import * as typing from "./typing";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
+import * as upload from "./upload";
 import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_groups from "./user_groups";
@@ -762,6 +763,7 @@ export function initialize_everything() {
     hotspots.initialize();
     typing.initialize();
     starred_messages_ui.initialize();
+    upload.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();

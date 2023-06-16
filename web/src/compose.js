@@ -56,6 +56,9 @@ import * as zcommand from "./zcommand";
 
 let uppy;
 
+export function get_compose_upload_object() {
+    return uppy;
+}
 export function compute_show_video_chat_button() {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (page_params.realm_video_chat_provider === available_providers.disabled.id) {

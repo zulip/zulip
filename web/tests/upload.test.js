@@ -7,6 +7,9 @@ const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
+const compose_state = zrequire("compose_state");
+const rows = zrequire("rows");
+
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
@@ -17,6 +20,7 @@ mock_esm("@uppy/core", {
         return uppy_stub.call(this, options);
     },
 });
+
 mock_esm("@uppy/xhr-upload", {default: class XHRUpload {}});
 
 const compose_actions = mock_esm("../src/compose_actions");
@@ -24,7 +28,7 @@ mock_esm("../src/csrf", {csrf_token: "csrf_token"});
 
 const compose_ui = zrequire("compose_ui");
 const upload = zrequire("upload");
-
+const message_lists = zrequire("message_lists");
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.max_file_upload_size_mib = 25;
@@ -420,10 +424,14 @@ test("file_drop", ({override, override_rewire}) => {
     dragenter_handler(drag_event);
     assert.equal(prevent_default_counter, 2);
 
+    let stop_propogation_counter = 0;
     const files = ["file1", "file2"];
     const drop_event = {
         preventDefault() {
             prevent_default_counter += 1;
+        },
+        stopPropagation() {
+            stop_propogation_counter += 1;
         },
         originalEvent: {
             dataTransfer: {
@@ -443,6 +451,7 @@ test("file_drop", ({override, override_rewire}) => {
     drop_handler(drop_event);
     assert.ok(compose_actions_start_called);
     assert.equal(prevent_default_counter, 3);
+    assert.equal(stop_propogation_counter, 1);
     assert.equal(upload_files_called, true);
 });
 
@@ -620,4 +629,183 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     on_upload_error_callback(file, null);
     assert.ok(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
+});
+
+test("main_file_drop_compose_mode", ({override_rewire}) => {
+    uppy_stub = function () {
+        return {
+            setMeta() {},
+            use() {},
+            cancelAll() {},
+            on() {},
+            getFiles() {},
+            removeFile() {},
+        };
+    };
+    upload.setup_upload({mode: "compose"});
+    upload.initialize();
+
+    let prevent_default_counter = 0;
+    const drag_event = {
+        preventDefault() {
+            prevent_default_counter += 1;
+        },
+    };
+
+    // dragover event test
+    const dragover_handler = $(".app-main").get_on_handler("dragover");
+    dragover_handler(drag_event);
+    assert.equal(prevent_default_counter, 1);
+
+    // dragenter event test
+    const dragenter_handler = $(".app-main").get_on_handler("dragenter");
+    dragenter_handler(drag_event);
+    assert.equal(prevent_default_counter, 2);
+
+    const files = ["file1", "file2"];
+    const drop_event = {
+        target: "target",
+        preventDefault() {
+            prevent_default_counter += 1;
+        },
+        originalEvent: {
+            dataTransfer: {
+                files,
+            },
+        },
+    };
+
+    $(".message_edit_form form").last = () => ({length: 0});
+
+    const drop_handler = $(".app-main").get_on_handler("drop");
+
+    // Test drop on compose box
+    let upload_files_called = false;
+    override_rewire(upload, "upload_files", () => {
+        upload_files_called = true;
+    });
+    compose_state.composing = () => true;
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, true);
+    assert.equal(prevent_default_counter, 3);
+
+    // Test reply to message if no edit and compose box open
+    upload_files_called = false;
+    compose_state.composing = () => false;
+    const msg = {
+        type: "stream",
+        stream: "Denmark",
+        topic: "python",
+        sender_full_name: "Bob Roberts",
+        sender_id: 40,
+    };
+    let compose_actions_start_called = false;
+    let compose_actions_respond_to_message_called = false;
+    override_rewire(message_lists, "current", {
+        selected_message() {
+            return msg;
+        },
+    });
+    compose_actions.start = () => {
+        compose_actions_start_called = true;
+    };
+    compose_actions.respond_to_message = () => {
+        compose_actions_respond_to_message_called = true;
+    };
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, true);
+    assert.equal(compose_actions_start_called, false);
+    assert.equal(compose_actions_respond_to_message_called, true);
+
+    // Test drop on recent topics view
+    compose_actions_respond_to_message_called = false;
+    override_rewire(message_lists, "current", {
+        selected_message() {
+            return undefined;
+        },
+    });
+    upload_files_called = false;
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, true);
+    assert.equal(compose_actions_start_called, true);
+    assert.equal(compose_actions_respond_to_message_called, false);
+});
+
+test("main_file_drop_edit_mode", ({override_rewire}) => {
+    uppy_stub = function () {
+        return {
+            setMeta() {},
+            use() {},
+            cancelAll() {},
+            on() {},
+            getFiles() {},
+            removeFile() {},
+        };
+    };
+
+    upload.setup_upload({mode: "edit", row: 40});
+    upload.initialize();
+    compose_state.composing = () => false;
+    let prevent_default_counter = 0;
+    const drag_event = {
+        preventDefault() {
+            prevent_default_counter += 1;
+        },
+    };
+    const $drag_drop_container = $(`#zfilt${CSS.escape(40)} .message_edit_form`);
+
+    // Dragover event test
+    const dragover_handler = $(".app-main").get_on_handler("dragover");
+    dragover_handler(drag_event);
+    assert.equal(prevent_default_counter, 1);
+    // Dragenter event test
+    const dragenter_handler = $(".app-main").get_on_handler("dragenter");
+    dragenter_handler(drag_event);
+    assert.equal(prevent_default_counter, 2);
+
+    const files = ["file1", "file2"];
+    const drop_event = {
+        target: "target",
+        preventDefault() {
+            prevent_default_counter += 1;
+        },
+        originalEvent: {
+            dataTransfer: {
+                files,
+            },
+        },
+    };
+    const drop_handler = $(".app-main").get_on_handler("drop");
+    let upload_files_called = false;
+    let dropped_row_id = -1;
+    override_rewire(upload, "upload_files", (_, config) => {
+        dropped_row_id = config.row;
+        upload_files_called = true;
+    });
+    $(".message_edit_form form").last = () => ({length: 1});
+    rows.get_message_id = () => 40;
+
+    // Edit box which registered the event handler no longer exists.
+    $drag_drop_container.closest = (element) => {
+        assert.equal(element, "html");
+        return {length: 0};
+    };
+
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, false);
+
+    $drag_drop_container.closest = (element) => {
+        assert.equal(element, "html");
+        return {length: 1};
+    };
+
+    // Drag and dropped in one of the edit boxes. The event would be taken care of by
+    // drag_drop_container event handlers.
+
+    rows.get_message_id = () => 40;
+    // Edit box open
+    $(".message_edit_form form").last = () => ({length: 1});
+    drop_handler(drop_event);
+    assert.equal(upload_files_called, true);
+    assert.equal(dropped_row_id, 40);
 });

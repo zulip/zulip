@@ -742,6 +742,10 @@ export function end_inline_topic_edit($row) {
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
+export function get_upload_object_from_row(row_id) {
+    return upload_objects_by_row.get(row_id);
+}
+
 function remove_uploads_from_row(row_id) {
     const uploads_for_row = upload_objects_by_row.get(row_id);
     // We need to cancel all uploads, reset their progress,
