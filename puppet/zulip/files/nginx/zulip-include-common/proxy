@@ -6,5 +6,6 @@ proxy_set_header Host $host;
 proxy_set_header X-Forwarded-Proto $trusted_x_forwarded_proto;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 proxy_set_header X-Real-Ip $remote_addr;
+proxy_set_header X-Proxy-Misconfiguration $x_proxy_misconfiguration;
 proxy_next_upstream off;
 proxy_redirect off;

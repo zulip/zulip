@@ -616,6 +616,50 @@ class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
             request.META["REMOTE_ADDR"] = real_ip
 
 
+class ProxyMisconfigurationError(JsonableError):
+    http_status_code = 500
+    data_fields = ["proxy_reason"]
+
+    def __init__(self, proxy_reason: str) -> None:
+        self.proxy_reason = proxy_reason
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Reverse proxy misconfiguration: {proxy_reason}")
+
+
+class DetectProxyMisconfiguration(MiddlewareMixin):
+    def process_view(
+        self,
+        request: HttpRequest,
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
+        kwargs: Dict[str, Any],
+    ) -> None:
+        proxy_state_header = request.headers.get("X-Proxy-Misconfiguration", "")
+        # Our nginx configuration sets this header if:
+        #  - there is an X-Forwarded-For set but no proxies configured in Zulip
+        #  - proxies are configured but the request did not come from them
+        #  - proxies are configured and the request came from them,
+        #    but there was no X-Forwarded-Proto header
+        #
+        # Note that the first two may be false-positives.  We only
+        # display the error if the request also came in over HTTP (and
+        # a trusted proxy didn't say they get it over HTTPS), which
+        # should be impossible because Zulip only supports external
+        # https:// URLs in production.  nginx configuration ensures
+        # that request.is_secure() is only true if our nginx is
+        # serving the request over HTTPS, or it came from a trusted
+        # proxy which reports that it is doing so.  This will result
+        # in false negatives if Zulip's nginx is serving responses
+        # over HTTPS to a proxy whose IP is not configured, or
+        # misconfigured, but we cannot distinguish this from a random
+        # client which is providing proxy headers to a correctly
+        # configured Zulip.
+        if proxy_state_header != "" and not request.is_secure():
+            raise ProxyMisconfigurationError(proxy_state_header)
+
+
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
     first_paragraph_text = get_content_description(content, request)
     placeholder_open_graph_description = RequestNotes.get_notes(
