@@ -535,7 +535,7 @@ export function initialize_everything() {
             - tracking all streams
             - tracking presence data
             - tracking user groups and bots
-            - tracking recent PMs
+            - tracking recent direct messages
 
         Using stream data as an example, we use a
         module called `stream_data` to actually track

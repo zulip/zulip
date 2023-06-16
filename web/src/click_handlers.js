@@ -584,7 +584,7 @@ export function initialize() {
         );
     });
 
-    // PM LIST TOOLTIPS (not displayed on touch devices)
+    // DIRECT MESSAGE LIST TOOLTIPS (not displayed on touch devices)
     $("body").on("mouseenter", ".pm_user_status", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
@@ -617,12 +617,12 @@ export function initialize() {
         );
     });
 
-    // Recent conversations PMs (Not displayed on small widths)
+    // Recent conversations direct messages (Not displayed on small widths)
     $("body").on("mouseenter", ".recent_topic_stream .pm_status_icon", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
         const user_ids_string = $elem.attr("data-user-ids-string");
-        // Don't show tooltip for group PMs.
+        // Don't show tooltip for group direct messages.
         if (!user_ids_string || user_ids_string.split(",").length !== 1) {
             return;
         }
@@ -733,7 +733,7 @@ export function initialize() {
         ".private_messages_container.zoom-out #private_messages_section_header",
         (e) => {
             if (e.target.classList.value === "fa fa-align-right") {
-                // Let the browser handle the "all private messages" widget.
+                // Let the browser handle the "all direct messages" widget.
                 return;
             }
 
@@ -745,7 +745,7 @@ export function initialize() {
             const scroll_position = $left_sidebar_scrollbar.scrollTop();
 
             // This next bit of logic is a bit subtle; this header
-            // button scrolls to the top of the private messages
+            // button scrolls to the top of the direct messages
             // section is uncollapsed but out of view; otherwise, we
             // toggle its collapsed state.
             if (scroll_position === 0 || pm_list.is_private_messages_collapsed()) {

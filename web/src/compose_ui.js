@@ -227,7 +227,7 @@ export function compute_placeholder_text(opts) {
         }
     }
 
-    // For private messages
+    // For direct messages
     if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
         const recipient_names = recipient_list

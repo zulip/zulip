@@ -74,7 +74,7 @@ export function compare_function(a, b) {
         return diff;
     }
 
-    // Sort equivalent PM names alphabetically
+    // Sort equivalent direct message names alphabetically
     const person_a = people.get_by_user_id(a);
     const person_b = people.get_by_user_id(b);
 
@@ -188,8 +188,8 @@ export function get_title_data(user_ids_string, is_group) {
         };
     }
 
-    // For buddy list and individual PMS.  Since is_group=False, it's
-    // a single, human, user.
+    // For buddy list and individual direct messages.
+    // Since is_group=False, it's a single, human user.
     const last_seen = user_last_seen_time_status(user_id);
     const is_my_user = people.is_my_user_id(user_id);
 

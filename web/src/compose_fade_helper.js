@@ -34,7 +34,7 @@ export function would_receive_message(user_id) {
         return stream_data.is_user_subscribed(focused_recipient.stream_id, user_id);
     }
 
-    // PM, so check if the given email is in the recipients list.
+    // Direct message, so check if the given email is in the recipients list.
     return is_pm_recipient(user_id);
 }
 

@@ -378,7 +378,7 @@ export function update_placeholder_text() {
         message_type: compose_state.get_message_type(),
         stream: compose_state.stream_name(),
         topic: compose_state.topic(),
-        // TODO: to remove a circular import, PM recipient needs
+        // TODO: to remove a circular import, direct message recipient needs
         // to be calculated in compose_state instead of compose_pm_pill.
         private_message_recipient: compose_pm_pill.get_emails(),
     };

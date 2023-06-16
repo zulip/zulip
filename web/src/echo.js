@@ -171,7 +171,7 @@ export function build_display_recipient(message) {
 
     if (!sender_in_display_recipients) {
         // Ensure that the current user is included in
-        // display_recipient for group PMs.
+        // display_recipient for group direct messages.
         display_recipient.push({
             id: message.sender_id,
             email: message.sender_email,

@@ -36,7 +36,7 @@ export function process_new_message(message) {
         message.status_emoji_info = user_status.get_status_emoji(message.sender_id);
     }
 
-    // Convert topic even for PMs, as legacy code
+    // Convert topic even for direct messages, as legacy code
     // wants the empty field.
     util.convert_message_topic(message);
 

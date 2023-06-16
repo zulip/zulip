@@ -414,7 +414,7 @@ class UnreadTopicCounter {
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
             if (stream_id === undefined) {
-                // This is a private message containing a mention.
+                // This is a direct message containing a mention.
                 continue;
             }
             streams_with_mentions.add(stream_id);
@@ -431,7 +431,7 @@ class UnreadTopicCounter {
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
             if (stream_id === undefined) {
-                // This is a private message containing a mention.
+                // This is a direct message containing a mention.
                 continue;
             }
 
@@ -509,7 +509,7 @@ function add_message_to_unread_mention_topics(message_id) {
 function remove_message_from_unread_mention_topics(message_id) {
     const stream_id = unread_topic_counter.bucketer.reverse_lookup.get(message_id);
     if (!stream_id) {
-        // Private messages and messages that were already not unread
+        // Direct messages and messages that were already not unread
         // exit here.
         return;
     }

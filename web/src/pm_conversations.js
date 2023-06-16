@@ -33,7 +33,7 @@ class RecentDirectMessages {
 
     insert(user_ids, message_id) {
         if (user_ids.length === 0) {
-            // The server sends [] for self-PMs.
+            // The server sends [] for direct messages to oneself.
             user_ids = [people.my_current_user_id()];
         }
         user_ids.sort((a, b) => a - b);
