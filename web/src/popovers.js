@@ -450,7 +450,7 @@ function get_user_info_popover_manage_menu_items() {
 
 function fetch_group_members(member_ids) {
     return member_ids
-        .map((m) => people.get_by_user_id(m))
+        .map((m) => people.maybe_get_user_by_id(m))
         .filter((m) => m !== undefined)
         .map((p) => ({
             ...p,

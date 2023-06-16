@@ -22,7 +22,7 @@ import * as settings_streams from "./settings_streams";
 import * as settings_users from "./settings_users";
 
 export const update_person = function update(person) {
-    const person_obj = people.get_by_user_id(person.user_id);
+    const person_obj = people.maybe_get_user_by_id(person.user_id);
 
     if (!person_obj) {
         blueslip.error("Got update_person event for unexpected user", {user_id: person.user_id});

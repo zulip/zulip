@@ -40,7 +40,7 @@ export function must_be_subscribed(user_id) {
 export function add_user_ids(user_ids) {
     for (const user_id of user_ids) {
         if (!user_id_set.has(user_id)) {
-            const user = people.get_by_user_id(user_id);
+            const user = people.maybe_get_user_by_id(user_id);
             if (user) {
                 user_id_set.add(user_id);
             }
