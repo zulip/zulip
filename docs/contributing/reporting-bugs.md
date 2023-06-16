@@ -91,8 +91,8 @@ Steps and best practices for starting a conversation:
    have an account.
 2. Pick an **appropriate stream** to report your issue:
    - [#issues](https://chat.zulip.org/#narrow/stream/9-issues) for issues with
-     the Zulip web app or server. A good default if you aren't sure which stream
-     to use.
+     the Zulip web app or server. Use this stream if you aren't sure which
+     stream is most appropriate.
    - [#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) for issues with
      the mobile apps.
    - [#desktop](https://chat.zulip.org/#narrow/stream/16-desktop) for issues
@@ -118,9 +118,9 @@ reproducible bug, a GitHub issue will be filed to keep track of it (see below).
 
 ## Managing bug reports
 
-This section describes our bug management process. All community members are
-encouraged to help make sure things run smoothly, whether or not they originally
-reported the bug.
+This section describes our process for managing bugs. All community members are
+encouraged to help make sure this process runs smoothly, whether or not they
+originally reported the bug.
 
 Whenever a bug is tracked in GitHub and also discussed in the development
 community, be sure to cross-link between the issue and the conversation. [Link
@@ -139,16 +139,17 @@ renamed or resolved.
   an actual, reproducible bug, anyone can help out by filing a GitHub issue to
   track it:
   - In some cases, especially if we're planning to fix the issue right away, the
-    issue description can be a quote from a message with a link to the
-    discussion -- no need to stress over making it perfect.
+    GitHub issue description can simply quote and link to a message from the
+    discussion in the development community -- no need to stress over making it
+    perfect.
   - [Use Zulipbot](../contributing/zulipbot-usage.md) to add the appropriate
-    labels, including “bug” and at least one area label; leave a comment if you
-    don't know what area labels to use.
+    labels, including “bug” and at least one area label; leave a comment on
+    the issue if you don't know what area labels to use.
   - You can add the “help wanted” label (and claim the issue if you like) if
     that is appropriate based on the discussion. Note that sometimes we won't
-    mark a reproducible bug as “help wanted”, e.g., if we want a core
-    contributor to take it on, if the fix will happen as part of a larger
-    project, etc.
+    mark a reproducible bug as “help wanted” for various reasons. For example,
+    we might want a core contributor to take it on, or the fix might be planned
+    as part of a larger project.
   - Don't forget to cross-link between the issue and the discussion.
 - If a bug report in GitHub is not sufficiently clear, Zulip maintainers will
   often encourage the reporter to discuss it interactively in the development
