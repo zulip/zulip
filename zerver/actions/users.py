@@ -382,6 +382,7 @@ def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.role
+    old_role_name = user_profile.get_role_name()
     old_system_group = get_system_user_group_for_user(user_profile)
 
     previously_accessible_streams = get_streams_for_user(
@@ -409,6 +410,13 @@ def do_change_user_role(
     )
     send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
+    new_role_name = user_profile.get_role_name()
+    notify_users_on_updated_user_profile(
+        acting_user=acting_user,
+        recipient_user=user_profile,
+        old_role=old_role_name,
+        new_role=new_role_name,
+    )
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group
     ).delete()
@@ -615,6 +623,8 @@ def notify_users_on_updated_user_profile(
     *,
     old_full_name: Optional[str] = None,
     new_full_name: Optional[str] = None,
+    old_role: Optional[str] = None,
+    new_role: Optional[str] = None,
 ) -> None:
     realm = recipient_user.realm
     mention_backend = MentionBackend(realm.id)
@@ -637,6 +647,11 @@ def notify_users_on_updated_user_profile(
             ).format(
                 old_full_name=old_full_name,
                 new_full_name=new_full_name,
+            )
+        if old_role and new_role:
+            message += _("\n- **Old `role`:** {old_role}\n- **New `role`:** {new_role}").format(
+                old_role=old_role,
+                new_role=new_role,
             )
 
     notification.append(
