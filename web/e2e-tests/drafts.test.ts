@@ -44,10 +44,10 @@ async function create_stream_message_draft(page: Page): Promise<void> {
 }
 
 async function create_private_message_draft(page: Page): Promise<void> {
-    console.log("Creating private message draft");
+    console.log("Creating direct message draft");
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#private_message_recipient", {visible: true});
-    await common.fill_form(page, "form#send_message_form", {content: "Test private message."});
+    await common.fill_form(page, "form#send_message_form", {content: "Test direct message."});
     await common.pm_recipient.set(page, "cordelia@zulip.com");
     await common.pm_recipient.set(page, "hamlet@zulip.com");
     await page.click("#compose_close");
@@ -92,7 +92,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
             page,
             ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
         ),
-        "Test private message.",
+        "Test direct message.",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -166,12 +166,12 @@ async function test_edited_draft_message(page: Page): Promise<void> {
 }
 
 async function test_restore_private_message_draft_via_draft_overlay(page: Page): Promise<void> {
-    console.log("Restoring private message draft.");
+    console.log("Restoring direct message draft.");
     await page.click(".message_row.private-message .restore-draft");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#compose-direct-recipient", {visible: true});
     await common.check_compose_state(page, {
-        content: "Test private message.",
+        content: "Test direct message.",
     });
     const cordelia_internal_email = await common.get_internal_email_from_name(page, "cordelia");
     const hamlet_internal_email = await common.get_internal_email_from_name(page, "hamlet");
@@ -179,7 +179,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
         "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
-        "Didn't narrow to the private messages with cordelia and hamlet",
+        "Didn't narrow to the direct messages with cordelia and hamlet",
     );
     await page.click("#compose_close");
 }
@@ -203,12 +203,12 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#compose-direct-recipient", {visible: true});
     await common.fill_form(page, "form#send_message_form", {
-        content: "Test private message draft.",
+        content: "Test direct message draft.",
     });
     await common.pm_recipient.set(page, "cordelia@zulip.com");
     await page.reload();
 
-    // Reloading into a private messages narrow opens compose box.
+    // Reloading into a direct messages narrow opens compose box.
     await page.waitForSelector("#compose-textarea", {visible: true});
     await page.click("#compose_close");
 
@@ -232,7 +232,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
             page,
             ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
         ),
-        "Test private message draft.",
+        "Test direct message draft.",
     );
 }
 
