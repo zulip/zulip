@@ -947,6 +947,16 @@ def delete_in_topic(
     stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
 
     messages = messages_for_topic(assert_is_not_none(stream.recipient_id), topic_name)
+    # Note: It would be better to use bulk_access_messages here, which is our core function
+    # for obtaining the accessible messages - and it's good to use it wherever we can,
+    # so that we have a central place to keep up to date with our security model for
+    # message access.
+    # However, it fetches the full Message objects, which would be bad here for very large
+    # topics.
+    # The access_stream_by_id call above ensures that the acting user currently has access to the
+    # stream (which entails having an active Subscription in case of private streams), meaning
+    # that combined with the UserMessage check below, this is a sufficient replacement for
+    # bulk_access_messages.
     if not stream.is_history_public_to_subscribers():
         # Don't allow the user to delete messages that they don't have access to.
         deletable_message_ids = UserMessage.objects.filter(
