@@ -16,5 +16,6 @@ uwsgi_param SERVER_NAME     $server_name;
 uwsgi_param HTTP_X_REAL_IP  $remote_addr;
 uwsgi_param HTTP_X_FORWARDED_PROTO $trusted_x_forwarded_proto;
 uwsgi_param HTTP_X_FORWARDED_SSL "";
+uwsgi_param HTTP_X_PROXY_MISCONFIGURATION $x_proxy_misconfiguration;
 
 uwsgi_pass django;
