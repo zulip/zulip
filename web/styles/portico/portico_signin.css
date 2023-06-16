@@ -898,6 +898,8 @@ button#register_auth_button_gitlab {
 
     & fieldset {
         margin: 30px;
+        padding: 0;
+        border: 0;
 
         .input-box:last-child {
             margin-bottom: 0;
