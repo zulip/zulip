@@ -405,7 +405,7 @@ def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: 
 def check_delete_user_group(
     user_group_id: int, user_profile: UserProfile, *, acting_user: Optional[UserProfile]
 ) -> None:
-    user_group = access_user_group_by_id(user_group_id, user_profile)
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
     user_group.delete()
     do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
 
