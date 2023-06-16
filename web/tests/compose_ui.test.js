@@ -204,7 +204,7 @@ run_test("compute_placeholder_text", () => {
         $t({defaultMessage: "Message #all > Test"}),
     );
 
-    // PM Narrows
+    // direct message narrows
     opts = {
         message_type: "private",
         stream: "",
@@ -233,7 +233,7 @@ run_test("compute_placeholder_text", () => {
     });
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message Alice"}));
 
-    // Group PM
+    // group direct message
     opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
     assert.equal(
         compose_ui.compute_placeholder_text(opts),

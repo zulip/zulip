@@ -58,7 +58,8 @@ test("insert_recent_private_message", () => {
     // Insert new messages (which should rearrange these entries).
     pmc.recent.insert([1], 1000);
     pmc.recent.insert([1, 2, 3], 999);
-    pmc.recent.insert([], 101); // Self-PM
+    // direct message to oneself
+    pmc.recent.insert([], 101);
 
     // Try to backdate user1's latest message.
     pmc.recent.insert([1], 555);
@@ -91,7 +92,7 @@ test("muted_users", () => {
     muted_users.add_muted_user(2);
 
     // We should now get back only those messages which are either-
-    // 1:1 PMs in which the other user hasn't been muted.
+    // 1:1 direct messages in which the other user hasn't been muted.
     // Huddles where there's at least one non-muted participant.
     assert.deepEqual(pmc.recent.get(), [
         {user_ids_string: "3", max_message_id: 99},

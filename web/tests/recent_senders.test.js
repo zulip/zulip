@@ -340,7 +340,7 @@ test("process_pms", () => {
         participants: [1, 3, 2],
         non_participants: [4],
     });
-    // PM doesn't exist.
+    // Direct message doesn't exist.
     assert.deepEqual(rs.get_pm_recent_senders("1000,2000"), {
         participants: [],
         non_participants: [],

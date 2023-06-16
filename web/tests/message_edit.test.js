@@ -235,7 +235,7 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
     // A non-stream message (object has no stream_id or topic)
     // with content edit history, should return false.
     const private_message = {
-        edit_history: [{prev_content: "content edit to PM"}],
+        edit_history: [{prev_content: "content edit to direct message"}],
     };
     assert.equal(
         message_edit.stream_and_topic_exist_in_edit_history(private_message, 1, "topic match"),

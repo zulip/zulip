@@ -248,7 +248,7 @@ test("get_list_info_unread_messages", ({override}) => {
         "Bob",
     ]);
 
-    // Narrowing to private messages with Alice adds older
+    // Narrowing to direct messages with Alice adds older
     // one-on-one conversation with her to the list and one
     // unread is removed from more_conversations_unread_count.
     set_pm_with_filter("alice@zulip.com");
@@ -325,7 +325,7 @@ test("get_list_info_no_unread_messages", ({override}) => {
         "Bob",
     ]);
 
-    // Narrowing to private messages with Alice adds older
+    // Narrowing to direct messages with Alice adds older
     // one-on-one conversation with her to the list.
     set_pm_with_filter("alice@zulip.com");
     list_info = pm_list_data.get_list_info(false);
