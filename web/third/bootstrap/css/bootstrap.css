@@ -422,11 +422,6 @@ table {
 form {
   margin: 0 0 20px;
 }
-fieldset {
-  padding: 0;
-  margin: 0;
-  border: 0;
-}
 label,
 input,
 button {
