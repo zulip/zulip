@@ -175,7 +175,7 @@ test_ui("validate", ({override_rewire, mock_template}) => {
         $("#compose-textarea").val("foobarfoobar");
     }
 
-    // test validating private messages
+    // test validating direct messages
     compose_state.set_message_type("private");
 
     initialize_pm_pill();

@@ -7,9 +7,9 @@ const {run_test} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
 // In the Zulip app you can narrow your message stream by topic, by
-// sender, by PM recipient, by search keywords, etc.  We will discuss
-// narrows more broadly, but first let's test out a core piece of
-// code that makes things work.
+// sender, by direct message recipient, by search keywords, etc.
+// We will discuss narrows more broadly, but first let's test out a
+// core piece of code that makes things work.
 
 const {Filter} = zrequire("../src/filter");
 const stream_data = zrequire("stream_data");

@@ -183,9 +183,10 @@ test("huddle_data.process_loaded_messages", () => {
         {
             type: "stream",
         },
+        // direct message to myself
         {
             type: "private",
-            display_recipient: [{id: me.user_id}], // PM to myself
+            display_recipient: [{id: me.user_id}],
         },
         {
             type: "private",
@@ -246,7 +247,7 @@ function buddy_list_add(user_id, $stub) {
     $("#user_presences").set_find_results(sel, $stub);
 }
 
-test("PM_update_dom_counts", () => {
+test("direct_message_update_dom_counts", () => {
     const $count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
     const $li = $.create("alice stub");

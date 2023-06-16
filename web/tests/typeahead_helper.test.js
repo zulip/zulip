@@ -334,7 +334,7 @@ test("sort_recipients", () => {
         "a_bot@zulip.com",
     ]);
 
-    // Typeahead for private message [query, "", ""]
+    // Typeahead for direct message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
         "a_user@zulip.org",
         "a_bot@zulip.com",
@@ -352,7 +352,7 @@ test("sort_recipients", () => {
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
 
-    // For splitting based on whether a PM was sent
+    // For splitting based on whether a direct message was sent
     pm_conversations.set_partner(5);
     pm_conversations.set_partner(6);
     pm_conversations.set_partner(2);
@@ -524,7 +524,7 @@ test("sort_recipients dup alls", () => {
     assertSameEmails(recipients, expected);
 });
 
-test("sort_recipients dup alls private", () => {
+test("sort_recipients dup alls direct message", () => {
     compose_state.set_message_type("private");
     const all_obj = ct.broadcast_mentions()[0];
 
@@ -597,7 +597,7 @@ test("sort broadcast mentions for stream message type", () => {
     );
 });
 
-test("sort broadcast mentions for private message type", () => {
+test("sort broadcast mentions for direct message type", () => {
     compose_state.set_message_type("private");
     const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
 
@@ -630,7 +630,7 @@ test("test compare directly for stream message type", () => {
     assert.equal(th.compare_people_for_relevance(zman, all_obj), 1);
 });
 
-test("test compare directly for private message", () => {
+test("test compare directly for direct message", () => {
     compose_state.set_message_type("private");
     const all_obj = ct.broadcast_mentions()[0];
 

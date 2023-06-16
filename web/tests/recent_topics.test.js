@@ -871,7 +871,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 
-    // Process private message
+    // Process direct message
     rt_data.process_message({
         type: "private",
         to_user_ids: "6,7,8",

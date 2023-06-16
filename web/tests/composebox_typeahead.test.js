@@ -72,7 +72,7 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
 });
 
-run_test("verify wildcard mentions typeahead for private message", () => {
+run_test("verify wildcard mentions typeahead for direct message", () => {
     compose_state.set_message_type("private");
     assert.equal(ct.broadcast_mentions().length, 2);
     const mention_all = ct.broadcast_mentions()[0];
@@ -1720,8 +1720,8 @@ test("message people", ({override, override_rewire}) => {
 });
 
 test("muted users excluded from results", () => {
-    // This logic is common to PM recipients as well as
-    // mentions typeaheads, so we need only test once.
+    // This logic is common to direct message recipients as
+    // well as mentions typeaheads, so we need only test once.
     let results;
     const opts = {
         want_broadcast: true,
@@ -1743,11 +1743,13 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [mention_all, call_center]);
 });
 
-test("PM recipients sorted according to stream / topic being viewed", ({override_rewire}) => {
-    // This tests that PM recipient results are sorted with subscribers of
-    // the stream / topic being viewed being given priority. If no stream
-    // is being viewed, the sort is alphabetical (for testing, since we do not
-    // simulate PM history)
+test("direct message recipients sorted according to stream / topic being viewed", ({
+    override_rewire,
+}) => {
+    // This tests that direct message recipient results are sorted with
+    // subscribers of the stream / topic being viewed being given priority.
+    // If no stream is being viewed, the sort is alphabetical (for testing,
+    // since we do not simulate direct message history)
     let results;
 
     // Simulating just cordelia being subscribed to denmark.

@@ -188,7 +188,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.topic(), "");
     stream_data.clear_subscriptions();
 
-    // Start PM
+    // Start direct message
     compose_defaults = {
         private_message_recipient: "foo@example.com",
     };
@@ -251,7 +251,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
 
-    // Test PM
+    // Test direct message
     const person = {
         user_id: 22,
         email: "alice@example.com",

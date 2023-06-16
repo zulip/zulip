@@ -240,7 +240,7 @@ test("compose fade interactions (missing topic)", () => {
     assert.equal(faded(), false);
 });
 
-test("compose fade interactions (PMs)", () => {
+test("compose fade interactions (direct messages)", () => {
     people.add_active_user(fred);
 
     set_presence(fred.user_id, "active");
@@ -252,8 +252,8 @@ test("compose fade interactions (PMs)", () => {
     // Don't fade if we're not in a narrow.
     assert.equal(faded(), false);
 
-    // Fade fred if we are narrowed to a PM narrow that does
-    // not include him.
+    // Fade fred if we are narrowed to a direct message narrow
+    // that does not include him.
     compose_fade_helper.set_focused_recipient({
         type: "private",
         to_user_ids: "9999999",

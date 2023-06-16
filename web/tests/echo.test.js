@@ -249,7 +249,7 @@ run_test("insert_local_message streams", ({override, override_rewire}) => {
     assert.ok(insert_message_called);
 });
 
-run_test("insert_local_message PM", ({override, override_rewire}) => {
+run_test("insert_local_message direct message", ({override, override_rewire}) => {
     const local_id_float = 102.01;
 
     page_params.user_id = 123;
