@@ -207,9 +207,9 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
 
-    // Triggered by new private message
+    // Triggered by new direct message
     opts = {
-        trigger: "new private message",
+        trigger: "new direct message",
     };
 
     start("private", opts);

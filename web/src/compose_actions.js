@@ -204,7 +204,7 @@ export function start(msg_type, opts) {
     if (
         opts.trigger === "compose_hotkey" ||
         opts.trigger === "new topic button" ||
-        opts.trigger === "new private message"
+        opts.trigger === "new direct message"
     ) {
         opts.topic = "";
         opts.private_message_recipient = "";
