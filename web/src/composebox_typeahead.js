@@ -335,14 +335,18 @@ export function tokenize_compose_str(s) {
     return "";
 }
 
-export function broadcast_mentions() {
-    const wildcard_mention_array = ["all", "everyone"];
+export function broadcast_mentions(query) {
+    let wildcard_mention_array = ["all", "everyone"];
     let wildcard_string = "";
     if (compose_state.get_message_type() === "private") {
         wildcard_string = $t({defaultMessage: "Notify recipients"});
     } else {
         wildcard_string = $t({defaultMessage: "Notify stream"});
         wildcard_mention_array.push("stream");
+    }
+    if (query === "") {
+        // before there is any input, show only all #25613
+        wildcard_mention_array = ["all"];
     }
     return wildcard_mention_array.map((mention, idx) => ({
         special_item_text: `${mention} (${wildcard_string})`,
@@ -455,7 +459,7 @@ export function get_person_suggestions(query, opts) {
         persons = muted_users.filter_muted_users(persons);
 
         if (opts.want_broadcast) {
-            persons = [...persons, ...broadcast_mentions()];
+            persons = [...persons, ...broadcast_mentions(query)];
         }
 
         return persons.filter((item) => query_matches_person(query, item));

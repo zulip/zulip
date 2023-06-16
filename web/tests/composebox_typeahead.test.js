@@ -84,6 +84,12 @@ run_test("verify wildcard mentions typeahead for private message", () => {
 
     assert.equal(mention_all.special_item_text, "all (translated: Notify recipients)");
     assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify recipients)");
+    // before there is any input, show only all #25613
+    const mentions = ct.broadcast_mentions("");
+    assert.equal(mentions[0].email, "all");
+    assert.equal(mentions[0].full_name, "all");
+    assert.equal(mentions[0].special_item_text, "all (translated: Notify recipients)");
+    assert.equal(mentions.length, 1);
 });
 
 const emoji_stadium = {
