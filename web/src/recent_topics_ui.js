@@ -89,7 +89,7 @@ export const COLUMNS = {
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
 const MAX_SELECTABLE_TOPIC_COLS = 4;
-const MAX_SELECTABLE_PM_COLS = 3;
+const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
@@ -151,7 +151,7 @@ function get_max_selectable_cols(row) {
     // returns maximum number of columns in stream message or private message row.
     const type = get_row_type(row);
     if (type === "private") {
-        return MAX_SELECTABLE_PM_COLS;
+        return MAX_SELECTABLE_DIRECT_MESSAGE_COLS;
     }
     return MAX_SELECTABLE_TOPIC_COLS;
 }
