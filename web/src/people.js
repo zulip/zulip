@@ -1,5 +1,6 @@
 import md5 from "blueimp-md5";
 import {format, utcToZonedTime} from "date-fns-tz";
+import assert from "minimalistic-assert";
 
 import * as typeahead from "../shared/src/typeahead";
 
@@ -58,9 +59,17 @@ export function get_users_from_ids(user_ids) {
     return user_ids.map((user_id) => get_by_user_id(user_id));
 }
 
-export function get_by_user_id(user_id, ignore_missing) {
-    if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
-        blueslip.error("Unknown user_id in get_by_user_id", {user_id});
+// Use this function only when you are sure that user_id is valid.
+export function get_by_user_id(user_id) {
+    const person = people_by_user_id_dict.get(user_id);
+    assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
+    return person;
+}
+
+// This is type unsafe version of get_by_user_id for the callers that expects undefined values.
+export function maybe_get_user_by_id(user_id) {
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.error("Unknown user_id in maybe_get_user_by_id", {user_id});
         return undefined;
     }
     return people_by_user_id_dict.get(user_id);
@@ -347,7 +356,7 @@ export function get_full_names_for_poll_option(user_ids) {
 }
 
 export function get_display_full_name(user_id) {
-    const person = get_by_user_id(user_id);
+    const person = maybe_get_user_by_id(user_id);
     if (!person) {
         blueslip.error("Unknown user id", {user_id});
         return "?";
@@ -528,7 +537,7 @@ export function pm_with_url(message) {
     if (user_ids.length > 1) {
         suffix = "group";
     } else {
-        const person = get_by_user_id(user_ids[0]);
+        const person = maybe_get_user_by_id(user_ids[0]);
         if (person && person.full_name) {
             suffix = person.full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
         } else {
@@ -772,7 +781,7 @@ export function small_avatar_url(message) {
         // We should always have message.sender_id, except for in the
         // tutorial, where it's ok to fall back to the URL in the fake
         // messages.
-        person = get_by_user_id(message.sender_id);
+        person = maybe_get_user_by_id(message.sender_id);
     }
 
     // The first time we encounter a sender in a message, we may

@@ -795,7 +795,7 @@ test_people("message_methods", () => {
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id");
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     message = {
         avatar_url: undefined,
         sender_email: "foo@example.com",

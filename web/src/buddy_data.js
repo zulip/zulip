@@ -75,8 +75,8 @@ export function compare_function(a, b) {
     }
 
     // Sort equivalent direct message names alphabetically
-    const person_a = people.get_by_user_id(a);
-    const person_b = people.get_by_user_id(b);
+    const person_a = people.maybe_get_user_by_id(a);
+    const person_b = people.maybe_get_user_by_id(b);
 
     const full_name_a = person_a ? person_a.full_name : "";
     const full_name_b = person_b ? person_b.full_name : "";
@@ -253,7 +253,7 @@ function filter_user_ids(user_filter_text, user_ids) {
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
     user_ids = user_ids.filter((user_id) => {
-        const person = people.get_by_user_id(user_id);
+        const person = people.maybe_get_user_by_id(user_id);
 
         if (!person) {
             blueslip.warn("Got user_id in presence but not people: " + user_id);

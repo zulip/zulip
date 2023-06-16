@@ -340,7 +340,7 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
 }
 
 export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
-    const bot = people.get_by_user_id(user_id);
+    const bot = people.maybe_get_user_by_id(user_id);
     const owner_id = bot_data.get(user_id).owner_id;
     const owner_full_name = people.get_full_name(owner_id);
 

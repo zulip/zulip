@@ -191,7 +191,7 @@ function bot_owner_full_name(owner_id) {
         return undefined;
     }
 
-    const bot_owner = people.get_by_user_id(owner_id);
+    const bot_owner = people.maybe_get_user_by_id(owner_id);
     if (!bot_owner) {
         return undefined;
     }
@@ -200,7 +200,7 @@ function bot_owner_full_name(owner_id) {
 }
 
 function bot_info(bot_user_id) {
-    const bot_user = people.get_by_user_id(bot_user_id);
+    const bot_user = people.maybe_get_user_by_id(bot_user_id);
 
     if (!bot_user) {
         return undefined;
@@ -616,7 +616,7 @@ function handle_reactivation($tbody) {
 }
 
 export function show_edit_user_info_modal(user_id, from_user_info_popover) {
-    const person = people.get_by_user_id(user_id);
+    const person = people.maybe_get_user_by_id(user_id);
 
     if (!person) {
         return;

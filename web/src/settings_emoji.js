@@ -102,7 +102,7 @@ export function populate_emoji() {
     for (const emoji of Object.values(emoji_data)) {
         // Add people.js data for the user here.
         if (emoji.author_id !== null) {
-            emoji.author = people.get_by_user_id(emoji.author_id);
+            emoji.author = people.maybe_get_user_by_id(emoji.author_id);
         } else {
             emoji.author = null;
         }
