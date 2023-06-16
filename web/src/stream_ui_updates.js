@@ -201,15 +201,22 @@ export function update_stream_row_in_settings_tab(sub) {
     // This is in the left panel.
     // This function display/hide stream row in stream settings tab,
     // used to display immediate effect of add/removal subscription event.
-    // If user is subscribed to stream, it will show sub row under
-    // "Subscribed" tab, otherwise if stream is not public hide
-    // stream row under tab.
-    if (stream_settings_ui.is_subscribed_stream_tab_active()) {
-        const $sub_row = stream_settings_ui.row_for_stream_id(sub.stream_id);
-        if (sub.subscribed) {
-            $sub_row.removeClass("notdisplayed");
+    // If user is subscribed or unsubscribed to stream, it will show sub or unsub
+    // row under "Subscribed" or "Not subscribed" (only if the stream is public) tab, otherwise
+    // if stream is not public hide stream row under tab.
+    if (
+        stream_settings_ui.is_subscribed_stream_tab_active() ||
+        stream_settings_ui.is_not_subscribed_stream_tab_active()
+    ) {
+        const $row = stream_settings_ui.row_for_stream_id(sub.stream_id);
+
+        if (
+            (stream_settings_ui.is_subscribed_stream_tab_active() && sub.subscribed) ||
+            (stream_settings_ui.is_not_subscribed_stream_tab_active() && !sub.subscribed)
+        ) {
+            $row.removeClass("notdisplayed");
         } else if (sub.invite_only || page_params.is_guest) {
-            $sub_row.addClass("notdisplayed");
+            $row.addClass("notdisplayed");
         }
     }
 }

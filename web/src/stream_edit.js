@@ -54,6 +54,8 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
         browser_history.update("#streams/all");
     } else if (tab_key_value === "subscribed") {
         browser_history.update("#streams/subscribed");
+    } else if(tab_key_value === "not-subscribed") {
+        browser_history.update("#streams/notsubscribed");
     } else {
         blueslip.debug("Unknown tab_key_value: " + tab_key_value);
     }
