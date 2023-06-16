@@ -11,12 +11,12 @@ import * as vdom from "./vdom";
 
 let prior_dom;
 
-// This module manages the "Private messages" section in the upper
+// This module manages the direct messages section in the upper
 // left corner of the app.  This was split out from stream_list.js.
 
 let private_messages_collapsed = false;
 
-// The private messages section can be zoomed in to view more messages.
+// The direct messages section can be zoomed in to view more messages.
 // This keeps track of if we're zoomed in or not.
 let zoomed = false;
 
@@ -94,7 +94,8 @@ export function update_private_messages() {
         const new_dom = _build_private_messages_list();
         set_dom_to(new_dom);
     }
-    // Make sure to update the left sidebar heights after updating PMs.
+    // Make sure to update the left sidebar heights after updating
+    // direct messages.
     setTimeout(resize.resize_stream_filters_container, 0);
 }
 
@@ -115,7 +116,8 @@ export function update_dom_with_unread_counts(counts) {
     // In theory, we could support passing the counts object through
     // to pm_list_data, rather than fetching it directly there. But
     // it's not an important optimization, because it's unlikely a
-    // user would have 10,000s of unread PMs where it could matter.
+    // user would have 10,000s of unread direct messages where it
+    // could matter.
     update_private_messages();
     // This is just the global unread count.
     set_count(counts.private_message_count);
@@ -180,7 +182,8 @@ export function is_private_messages_collapsed() {
 }
 
 export function toggle_private_messages_section() {
-    // change the state of PM section depending on the previous state.
+    // change the state of direct message section depending on
+    // the previous state.
     if (private_messages_collapsed) {
         expand();
     } else {

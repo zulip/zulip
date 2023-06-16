@@ -38,7 +38,7 @@ import {user_settings} from "./user_settings";
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 
-// This is what we use for PM/compose typeaheads.
+// This is what we use for direct message/compose typeaheads.
 // We export it to allow tests to mock it.
 export const max_num_items = 8;
 

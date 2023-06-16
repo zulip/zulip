@@ -1,7 +1,7 @@
 /*
     We keep a set of user_ids for all people
     who have sent stream messages or who have
-    been on PMs sent by the user.
+    been on direct messages sent by the user.
 
     We will use this in search to prevent really
     large result sets for realms that have lots

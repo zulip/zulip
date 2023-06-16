@@ -498,7 +498,7 @@ function filter_drafts_by_compose_box_and_recipient(drafts) {
         else if (draft.type === "stream" && stream_id && !topic && draft.stream_id === stream_id) {
             narrow_drafts_ids.push(id);
         }
-        // Match by private message recipient.
+        // Match by direct message recipient.
         else if (
             draft.type === "private" &&
             private_recipients &&

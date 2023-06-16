@@ -237,11 +237,11 @@ export function get_participants_from_user_ids_string(user_ids_string) {
     let user_ids = user_ids_string_to_ids_array(user_ids_string);
     // Convert to set to ensure there are no duplicate ids.
     user_ids = new Set(user_ids);
-    // For group PMs or 1:1 private messages, the user_ids_string
-    // contains just the other user, so we need to add ourselves if not
-    // already present. For PM to self, the current user is already present,
-    // in user_ids_string, so we don't need to add it which is take care of
-    // by user_ids being a `Set`.
+    // For group or 1:1 direct messages, the user_ids_string contains
+    // just the other user, so we need to add ourselves if not already
+    // present. For a direct message to oneself, the current user is
+    // already present, in user_ids_string, so we don't need to add it
+    // which is take care of by user_ids being a `Set`.
     user_ids.add(my_user_id);
     return user_ids;
 }
@@ -380,7 +380,7 @@ export function get_recipients(user_ids_string) {
     const {other_ids} = _calc_user_and_other_ids(user_ids_string);
 
     if (other_ids.length === 0) {
-        // private message with oneself
+        // direct message with oneself
         return my_full_name();
     }
 
@@ -453,8 +453,8 @@ export function concat_huddle(user_ids, user_id) {
 export function pm_lookup_key_from_user_ids(user_ids) {
     /*
         The server will sometimes include our own user id
-        in keys for PMs, but we only want our user id if
-        we sent a message to ourself.
+        in keys for direct messages, but we only want our
+        user id if we sent a direct message to ourself.
     */
     user_ids = sorted_other_user_ids(user_ids);
     return user_ids.join(",");
@@ -579,7 +579,8 @@ export function pm_with_operand_ids(operand) {
         return undefined;
     }
 
-    // If your email is included in a PM group with other people, just ignore it
+    // If your email is included in a group direct message with other people,
+    // then ignore it.
     if (persons.length > 1) {
         const my_user = people_by_user_id_dict.get(my_user_id);
         persons = persons.filter((person) => person !== my_user);
@@ -616,9 +617,9 @@ export function emails_to_slug(emails_string) {
 export function slug_to_emails(slug) {
     /*
         It's not super important to be flexible about
-        PM-related slugs, since you would rarely post
-        them to the web, but we we do want to support
-        reasonable variations:
+        direct message related slugs, since you would
+        rarely post them to the web, but we we do want
+        to support reasonable variations:
 
             99-alice@example.com
             99
@@ -685,7 +686,7 @@ export function user_can_direct_message(recipient_ids_string) {
     // message to the target user (or group of users) represented by a
     // user ids string.
 
-    // Regardless of policy, we allow sending private messages to bots.
+    // Regardless of policy, we allow sending direct messages to bots.
     const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
     if (recipient_ids.length === 1 && user_is_bot(recipient_ids[0])) {
         return true;
@@ -971,8 +972,8 @@ export function get_recipient_count(person) {
         For searching in the search bar, we will
         have true `person` objects with `user_id`.
 
-        Likewise, we'll have user_id if we
-        are tab-completing a user to send a PM
+        Likewise, we'll have user_id if we are
+        tab-completing a user to send a direct message
         to (but we only get called if we're not
         currently in a stream view).
 
@@ -1002,15 +1003,17 @@ export function get_message_people() {
     /*
         message_people are roughly the people who have
         actually sent messages that are currently
-        showing up on your feed.  These people
+        showing up on your feed. These people
         are important--we give them preference
         over other users in certain search
         suggestions, since non-message-people are
         presumably either not very active or
         possibly subscribed to streams you don't
-        care about.  message_people also includes
-        people whom you have sent PMs, but look
-        at the message_store code to see the precise
+        care about.
+
+        message_people also includes people whom
+        you have sent direct messages, but look at
+        the message_store code to see the precise
         semantics
     */
     const message_people = util.try_parse_as_truthy(
@@ -1263,7 +1266,7 @@ export function add_cross_realm_user(person) {
 export function deactivate(person) {
     // We don't fully remove a person from all of our data
     // structures, because deactivated users can be part
-    // of somebody's PM list.
+    // of somebody's direct message list.
     active_user_dict.delete(person.user_id);
     non_active_user_dict.set(person.user_id, person);
 }
@@ -1362,7 +1365,8 @@ export function maybe_incr_recipient_count(message) {
         return;
     }
 
-    // Track the number of PMs we've sent to this person to improve autocomplete
+    // Track the number of direct messages we've sent to this person
+    // to improve autocomplete
     for (const recip of message.display_recipient) {
         if (recip.unknown_local_echo_user) {
             continue;

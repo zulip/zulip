@@ -200,7 +200,7 @@ export function start(msg_type, opts) {
 
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
-    // PM recipient should be.
+    // direct message recipient should be.
     if (
         opts.trigger === "compose_hotkey" ||
         opts.trigger === "new topic button" ||
@@ -353,7 +353,7 @@ export function respond_to_message(opts) {
     }
 
     // Important note: A reply_type of 'personal' is for the R hotkey
-    // (replying to a message's sender with a private message).  All
+    // (replying to a message's sender with a direct message). All
     // other replies can just copy message.type.
     if (opts.reply_type === "personal" || message.type === "private") {
         msg_type = "private";
@@ -370,8 +370,8 @@ export function respond_to_message(opts) {
     } else {
         pm_recipient = message.reply_to;
         if (opts.reply_type === "personal") {
-            // reply_to for private messages is everyone involved, so for
-            // personals replies we need to set the private message
+            // reply_to for direct messages is everyone involved, so for
+            // personals replies we need to set the direct message
             // recipient to just the sender
             pm_recipient = people.get_by_user_id(message.sender_id).email;
         } else {
@@ -497,9 +497,9 @@ export function quote_and_reply(opts) {
 }
 
 export function on_narrow(opts) {
-    // We use force_close when jumping between PM narrows with the "p" key,
-    // so that we don't have an open compose box that makes it difficult
-    // to cycle quickly through unread messages.
+    // We use force_close when jumping between direct message narrows with
+    // the "p" key, so that we don't have an open compose box that makes
+    // it difficult to cycle quickly through unread messages.
     if (opts.force_close) {
         // This closes the compose box if it was already open, and it is
         // basically a noop otherwise.
@@ -532,7 +532,7 @@ export function on_narrow(opts) {
             return;
         }
         // Do not open compose box if organization has disabled sending
-        // private messages and recipient is not a bot.
+        // direct messages and recipient is not a bot.
         if (
             page_params.realm_private_message_policy ===
                 settings_config.private_message_policy_values.disabled.code &&
@@ -540,7 +540,7 @@ export function on_narrow(opts) {
         ) {
             const emails = opts.private_message_recipient.split(",");
             if (emails.length !== 1 || !people.get_by_email(emails[0]).is_bot) {
-                // If we are navigating between private message conversations,
+                // If we are navigating between direct message conversations,
                 // we want the compose box to close for non-bot users.
                 if (compose_state.composing()) {
                     cancel();

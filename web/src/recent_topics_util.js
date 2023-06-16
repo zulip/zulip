@@ -32,7 +32,7 @@ export function get_topic_key(stream_id, topic) {
 
 export function get_key_from_message(msg) {
     if (msg.type === "private") {
-        // The to_user_ids field on a private message object is a
+        // The to_user_ids field on a direct message object is a
         // string containing the user IDs involved in the message in
         // sorted order.
         return msg.to_user_ids;

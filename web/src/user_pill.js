@@ -4,8 +4,8 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as user_status from "./user_status";
 
-// This will be used for pills for things like composing PMs
-// or adding users to a stream/group.
+// This will be used for pills for things like composing
+// direct messages or adding users to a stream/group.
 
 export function create_item_from_email(email, current_items) {
     // For normal Zulip use, we need to validate the email for our realm.
