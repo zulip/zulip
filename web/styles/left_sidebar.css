@@ -11,8 +11,8 @@ $topic_resolve_width: 13px;
 /* Space between section in the left sidebar. */
 $sections_vertical_gutter: 8px;
 $bottom_scrolling_buffer: 25px;
-/* space PM / stream / topic names from unread counters / @ mention
-indicators by 3px on the right */
+/* space direct message / stream / topic names from unread counters
+and @ mention indicators by 3px on the right */
 $before_unread_count_padding: 3px;
 
 .hashtag {

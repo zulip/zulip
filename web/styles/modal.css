@@ -161,7 +161,7 @@
             /* Setting a minimum height prevents the loading indicator
                appearing/disappearing from resizing the modal in the
                common case that one is requesting read receipts for
-               PMs. */
+               direct messages. */
             min-height: 120px;
             /* Setting a maximum height is just for aesthetics; the modal looks
                weird if its aspect ratio gets too stretched. */
