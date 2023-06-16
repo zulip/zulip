@@ -155,6 +155,9 @@ body {
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
 
+    /* Icon colors */
+    --color-icon-bot: hsl(180deg 8% 65% / 100%);
+
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 52% 95%);
     --color-background-group-mention: hsl(180deg 40% 94%);
@@ -194,6 +197,9 @@ body {
     --color-text-other-mention: hsl(0deg 0% 100% / 80%);
     --color-text-self-direct-mention: hsl(240deg 100% 88% / 100%);
     --color-text-self-group-mention: hsl(184deg 52% 63% / 100%);
+
+    /* Icon colors */
+    --color-icon-bot: hsl(180deg 5% 50% / 100%);
 
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 13% 20%);

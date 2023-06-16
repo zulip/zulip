@@ -94,7 +94,7 @@ a.no-underline:hover {
 }
 
 i.zulip-icon.zulip-icon-bot {
-    color: hsl(180deg 5% 74%);
+    color: var(--color-icon-bot);
     vertical-align: top;
     padding: 0 2px;
 }
