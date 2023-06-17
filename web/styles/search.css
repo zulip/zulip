@@ -101,7 +101,7 @@
                 width: 40px;
             }
 
-            .search-query {
+            .search-input {
                 opacity: 0;
             }
         }
@@ -158,7 +158,7 @@
         margin-bottom: 0;
     }
 
-    .search-query {
+    .search-input {
         font-size: 14px;
         /* override bootstrap padding for input[type="text"] */
         padding: 0;
