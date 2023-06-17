@@ -48,7 +48,7 @@ from zerver.models import (
     bot_owner_user_ids,
     get_system_bot,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
@@ -311,20 +311,12 @@ def notify_created_user(user_profile: UserProfile) -> None:
         event: Dict[str, Any] = dict(
             type="realm_user", op="add", person=person_for_real_email_access_users
         )
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm, event, user_ids_with_real_email_access
-            )
-        )
+        send_event_on_commit(user_profile.realm, event, user_ids_with_real_email_access)
 
     if user_ids_without_real_email_access:
         assert person_for_without_real_email_access_users is not None
         event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm, event, user_ids_without_real_email_access
-            )
-        )
+        send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -361,9 +353,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
 
 def notify_created_bot(user_profile: UserProfile) -> None:
     event = created_bot_event(user_profile)
-    transaction.on_commit(
-        lambda: send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
-    )
+    send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
 def do_create_user(
