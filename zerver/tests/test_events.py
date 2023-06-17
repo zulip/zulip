@@ -3239,7 +3239,7 @@ class UserDisplayActionTest(BaseAction):
         for prop in UserProfile.property_types:
             # Notification settings have a separate test suite, which
             # handles their separate legacy event type.
-            if prop not in UserProfile.notification_settings_legacy:
+            if prop not in UserProfile.notification_setting_types:
                 self.do_change_user_settings_test(prop)
 
     def test_set_user_timezone(self) -> None:
