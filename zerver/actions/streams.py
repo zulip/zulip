@@ -65,7 +65,7 @@ from zerver.models import (
     active_non_guest_user_ids,
     get_system_bot,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 @transaction.atomic(savepoint=False)
@@ -128,7 +128,7 @@ def do_deactivate_stream(
     stream_dict = stream.to_dict()
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
-    transaction.on_commit(lambda: send_event(stream.realm, event, affected_user_ids))
+    send_event_on_commit(stream.realm, event, affected_user_ids)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -501,11 +501,7 @@ def send_peer_subscriber_events(
                 stream_ids=[stream_id],
                 user_ids=sorted(altered_user_ids),
             )
-            transaction.on_commit(
-                lambda event=event, peer_user_ids=peer_user_ids: send_event(
-                    realm, event, peer_user_ids
-                )
-            )
+            send_event_on_commit(realm, event, peer_user_ids)
 
     public_stream_ids = [
         stream_id
@@ -543,11 +539,7 @@ def send_peer_subscriber_events(
                         stream_ids=[stream_id],
                         user_ids=sorted(altered_user_ids),
                     )
-                    transaction.on_commit(
-                        lambda event=event, peer_user_ids=peer_user_ids: send_event(
-                            realm, event, peer_user_ids
-                        )
-                    )
+                    send_event_on_commit(realm, event, peer_user_ids)
 
         for user_id, stream_ids in user_streams.items():
             peer_user_ids = public_peer_ids - {user_id}
@@ -557,11 +549,7 @@ def send_peer_subscriber_events(
                 stream_ids=sorted(stream_ids),
                 user_ids=[user_id],
             )
-            transaction.on_commit(
-                lambda event=event, peer_user_ids=peer_user_ids: send_event(
-                    realm, event, peer_user_ids
-                )
-            )
+            send_event_on_commit(realm, event, peer_user_ids)
 
 
 SubT = Tuple[List[SubInfo], List[SubInfo]]
@@ -1457,6 +1445,4 @@ def do_change_stream_group_based_setting(
         stream_id=stream.id,
         name=stream.name,
     )
-    transaction.on_commit(
-        lambda: send_event(stream.realm, event, can_access_stream_user_ids(stream))
-    )
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))

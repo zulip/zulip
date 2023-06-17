@@ -39,7 +39,7 @@ from zerver.models import (
     get_fake_email_domain,
     get_user_profile_by_id,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
@@ -297,10 +297,8 @@ def do_deactivate_user(
             op="remove",
             person=dict(user_id=user_profile.id, full_name=user_profile.full_name),
         )
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm, event_remove_user, active_user_ids(user_profile.realm_id)
-            )
+        send_event_on_commit(
+            user_profile.realm, event_remove_user, active_user_ids(user_profile.realm_id)
         )
 
         if user_profile.is_bot:
@@ -309,10 +307,8 @@ def do_deactivate_user(
                 op="remove",
                 bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
             )
-            transaction.on_commit(
-                lambda: send_event(
-                    user_profile.realm, event_remove_bot, bot_owner_user_ids(user_profile)
-                )
+            send_event_on_commit(
+                user_profile.realm, event_remove_bot, bot_owner_user_ids(user_profile)
             )
 
 
@@ -342,9 +338,7 @@ def do_change_user_role(
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
-    transaction.on_commit(
-        lambda: send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
-    )
+    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group

@@ -1,6 +1,5 @@
 from typing import Any, Dict, Optional
 
-from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.actions.create_user import create_historical_user_messages
@@ -9,7 +8,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, update_to_dict_cache
 from zerver.lib.stream_subscription import subscriber_ids_with_stream_history_access
 from zerver.models import Message, Reaction, Recipient, Stream, UserMessage, UserProfile
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_reaction_update(
@@ -60,7 +59,7 @@ def notify_reaction_update(
         stream = Stream.objects.get(id=stream_id)
         user_ids |= subscriber_ids_with_stream_history_access(stream)
 
-    transaction.on_commit(lambda: send_event(user_profile.realm, event, list(user_ids)))
+    send_event_on_commit(user_profile.realm, event, list(user_ids))
 
 
 def do_add_reaction(

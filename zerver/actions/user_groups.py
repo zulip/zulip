@@ -16,7 +16,7 @@ from zerver.models import (
     UserProfile,
     active_user_ids,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 class MemberGroupUserDict(TypedDict):
@@ -181,9 +181,7 @@ def do_send_user_group_members_update_event(
     event_name: str, user_group: UserGroup, user_ids: List[int]
 ) -> None:
     event = dict(type="user_group", op=event_name, group_id=user_group.id, user_ids=user_ids)
-    transaction.on_commit(
-        lambda: send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
-    )
+    send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 @transaction.atomic(savepoint=False)
@@ -216,9 +214,7 @@ def do_send_subgroups_update_event(
     event = dict(
         type="user_group", op=event_name, group_id=user_group.id, direct_subgroup_ids=subgroup_ids
     )
-    transaction.on_commit(
-        lambda: send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
-    )
+    send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
 @transaction.atomic

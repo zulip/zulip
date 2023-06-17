@@ -13,12 +13,12 @@ from zerver.models import (
     active_user_ids,
     linkifiers_for_realm,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_linkifiers(realm: Realm, realm_linkifiers: List[LinkifierDict]) -> None:
     event: Dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 # NOTE: Regexes must be simple enough that they can be easily translated to JavaScript

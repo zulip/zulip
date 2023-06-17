@@ -12,12 +12,12 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import upload_emoji_image
 from zerver.models import EmojiInfo, Realm, RealmAuditLog, RealmEmoji, UserProfile, active_user_ids
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_emoji(realm: Realm, realm_emoji: Dict[str, EmojiInfo]) -> None:
     event = dict(type="realm_emoji", op="update", realm_emoji=realm_emoji)
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def check_add_realm_emoji(
