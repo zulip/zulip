@@ -535,11 +535,195 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_stream_send_message_events(self) -> None:
-        user_profile = self.example_user("hamlet")
-        events = self.verify_action(
-            lambda: self.send_stream_message(user_profile, "Verona", "hello"),
-            client_gravatar=False,
+        hamlet = self.example_user("hamlet")
+        for stream_name in ["Verona", "Denmark", "core team"]:
+            stream = get_stream(stream_name, hamlet.realm)
+            sub = get_subscription(stream.name, hamlet)
+            do_change_subscription_property(hamlet, sub, stream, "is_muted", True, acting_user=None)
+
+        def verify_events_generated_and_reset_visibility_policy(
+            events: List[Dict[str, Any]], stream_name: str, topic: str
+        ) -> None:
+            # event-type: muted_topics
+            check_muted_topics("events[0]", events[0])
+            # event-type: user_topic
+            check_user_topic("events[1]", events[1])
+
+            if events[2]["type"] == "message":
+                check_message("events[2]", events[2])
+            else:
+                # event-type: reaction
+                check_reaction_add("events[2]", events[2])
+
+            # Reset visibility policy
+            do_set_user_topic_visibility_policy(
+                hamlet,
+                get_stream(stream_name, hamlet.realm),
+                topic,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+            )
+
+        # Events generated during send message action depends on the 'automatically_follow_topics_policy'
+        # and 'automatically_unmute_topics_in_muted_streams_policy' settings. Here we test all the
+        # possible combinations.
+
+        # action: participation
+        # 'automatically_follow_topics_policy' | 'automatically_unmute_topics_in_muted_streams_policy' | visibility_policy
+        #         ON_PARTICIPATION             |                    ON_INITIATION                      |     FOLLOWED
+        #         ON_PARTICIPATION             |                   ON_PARTICIPATION                    |     FOLLOWED
+        #         ON_PARTICIPATION             |                       ON_SEND                         |     FOLLOWED
+        #         ON_PARTICIPATION             |                        NEVER                          |     FOLLOWED
+        message_id = self.send_stream_message(hamlet, "Verona", "hello", "topic")
+        message = Message.objects.get(id=message_id)
+        do_change_user_setting(
+            user_profile=hamlet,
+            setting_name="automatically_follow_topics_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            acting_user=None,
         )
+        for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
+            do_change_user_setting(
+                user_profile=hamlet,
+                setting_name="automatically_unmute_topics_in_muted_streams_policy",
+                setting_value=setting_value,
+                acting_user=None,
+            )
+            # Three events are generated:
+            # 2 for following the topic and 1 for adding reaction.
+            events = self.verify_action(
+                lambda: do_add_reaction(hamlet, message, "tada", "1f389", "unicode_emoji"),
+                client_gravatar=False,
+                num_events=3,
+            )
+            verify_events_generated_and_reset_visibility_policy(events, "Verona", "topic")
+            do_remove_reaction(hamlet, message, "1f389", "unicode_emoji")
+
+        # action: send
+        # 'automatically_follow_topics_policy' | 'automatically_unmute_topics_in_muted_streams_policy' | visibility_policy
+        #                ON_SEND               |                    ON_INITIATION                      |     FOLLOWED
+        #                ON_SEND               |                   ON_PARTICIPATION                    |     FOLLOWED
+        #                ON_SEND               |                       ON_SEND                         |     FOLLOWED
+        #                ON_SEND               |                        NEVER                          |     FOLLOWED
+        do_change_user_setting(
+            user_profile=hamlet,
+            setting_name="automatically_follow_topics_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+            acting_user=None,
+        )
+        for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
+            do_change_user_setting(
+                user_profile=hamlet,
+                setting_name="automatically_unmute_topics_in_muted_streams_policy",
+                setting_value=setting_value,
+                acting_user=None,
+            )
+            # Three events are generated:
+            # 2 for following the topic and 1 for the message sent.
+            events = self.verify_action(
+                lambda: self.send_stream_message(hamlet, "Verona", "hello", "topic"),
+                client_gravatar=False,
+                num_events=3,
+            )
+            verify_events_generated_and_reset_visibility_policy(events, "Verona", "topic")
+
+        # action: initiation
+        # 'automatically_follow_topics_policy' | 'automatically_unmute_topics_in_muted_streams_policy' | visibility_policy
+        #          ON_INITIATION               |                    ON_INITIATION                      |     FOLLOWED
+        #          ON_INITIATION               |                   ON_PARTICIPATION                    |     FOLLOWED
+        #          ON_INITIATION               |                       ON_SEND                         |     FOLLOWED
+        #          ON_INITIATION               |                        NEVER                          |     FOLLOWED
+        do_change_user_setting(
+            user_profile=hamlet,
+            setting_name="automatically_follow_topics_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+        for index, setting_value in enumerate(
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES
+        ):
+            do_change_user_setting(
+                user_profile=hamlet,
+                setting_name="automatically_unmute_topics_in_muted_streams_policy",
+                setting_value=setting_value,
+                acting_user=None,
+            )
+            # Three events are generated:
+            # 2 for following the topic and 1 for the message sent.
+            send_message = lambda index=index: self.send_stream_message(
+                hamlet, "Denmark", "hello", f"new topic {index}"
+            )
+            events = self.verify_action(
+                send_message,
+                client_gravatar=False,
+                num_events=3,
+            )
+            verify_events_generated_and_reset_visibility_policy(
+                events, "Denmark", f"new topic {index}"
+            )
+
+        # 'automatically_follow_topics_policy' | 'automatically_unmute_topics_in_muted_streams_policy' | visibility_policy
+        #             NEVER                    |                    ON_INITIATION                      |      UNMUTED
+        #             NEVER                    |                  ON_PARTICIPATION                     |      UNMUTED
+        #             NEVER                    |                      ON_SEND                          |      UNMUTED
+        #             NEVER                    |                       NEVER                           |        NA
+        do_change_user_setting(
+            user_profile=hamlet,
+            setting_name="automatically_follow_topics_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+            acting_user=None,
+        )
+        for setting_value in [
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+        ]:
+            do_change_user_setting(
+                user_profile=hamlet,
+                setting_name="automatically_unmute_topics_in_muted_streams_policy",
+                setting_value=setting_value,
+                acting_user=None,
+            )
+            # Three events are generated:
+            # 2 for unmuting the topic and 1 for the message sent.
+            events = self.verify_action(
+                lambda: self.send_stream_message(hamlet, "core team", "hello", "topic"),
+                client_gravatar=False,
+                num_events=3,
+            )
+            verify_events_generated_and_reset_visibility_policy(events, "core team", "topic")
+
+        # If current_visibility_policy is already set to the value the policies would set.
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            get_stream("core team", hamlet.realm),
+            "new Topic",
+            visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+        )
+        do_change_user_setting(
+            user_profile=hamlet,
+            setting_name="automatically_unmute_topics_in_muted_streams_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            acting_user=None,
+        )
+        # 1 event for the message sent
+        events = self.verify_action(
+            lambda: self.send_stream_message(hamlet, "core team", "hello", "new Topic"),
+            client_gravatar=False,
+            num_events=1,
+        )
+
+        do_change_user_setting(
+            user_profile=hamlet,
+            setting_name="automatically_unmute_topics_in_muted_streams_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+            acting_user=None,
+        )
+        # Only one message event is generated
+        events = self.verify_action(
+            lambda: self.send_stream_message(hamlet, "core team", "hello"),
+            client_gravatar=True,
+        )
+        # event-type: message
         check_message("events[0]", events[0])
         assert isinstance(events[0]["message"]["avatar_url"], str)
 
@@ -551,7 +735,7 @@ class NormalActionsTest(BaseAction):
         )
 
         events = self.verify_action(
-            lambda: self.send_stream_message(user_profile, "Verona", "hello"),
+            lambda: self.send_stream_message(hamlet, "core team", "hello"),
             client_gravatar=True,
         )
         check_message("events[0]", events[0])
@@ -560,13 +744,9 @@ class NormalActionsTest(BaseAction):
         # Here we add coverage for the case where 'apply_unread_message_event'
         # should be called and unread messages in unmuted or followed topic in
         # muted stream is treated as unmuted stream message, thus added to 'unmuted_stream_msgs'.
-        stream = get_stream("Verona", user_profile.realm)
-        sub = get_subscription(stream.name, user_profile)
-        do_change_subscription_property(
-            user_profile, sub, stream, "is_muted", True, acting_user=None
-        )
+        stream = get_stream("Verona", hamlet.realm)
         do_set_user_topic_visibility_policy(
-            user_profile,
+            hamlet,
             stream,
             "test",
             visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
@@ -2063,6 +2243,8 @@ class NormalActionsTest(BaseAction):
                 "desktop_icon_count_display",
                 "presence_enabled",
                 "realm_name_in_email_notifications_policy",
+                "automatically_follow_topics_policy",
+                "automatically_unmute_topics_in_muted_streams_policy",
             ]:
                 # These settings are tested in their own tests.
                 continue
@@ -2200,6 +2382,38 @@ class NormalActionsTest(BaseAction):
         )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 2)
+
+    def test_change_automatically_follow_topics_policy(self) -> None:
+        notification_setting = "automatically_follow_topics_policy"
+
+        for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
+            events = self.verify_action(
+                partial(
+                    do_change_user_setting,
+                    self.user_profile,
+                    notification_setting,
+                    setting_value,
+                    acting_user=self.user_profile,
+                ),
+                num_events=1,
+            )
+            check_user_settings_update("events[0]", events[0])
+
+    def test_change_automatically_unmute_topics_in_muted_streams_policy(self) -> None:
+        notification_setting = "automatically_unmute_topics_in_muted_streams_policy"
+
+        for setting_value in UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES:
+            events = self.verify_action(
+                partial(
+                    do_change_user_setting,
+                    self.user_profile,
+                    notification_setting,
+                    setting_value,
+                    acting_user=self.user_profile,
+                ),
+                num_events=1,
+            )
+            check_user_settings_update("events[0]", events[0])
 
     def test_realm_update_org_type(self) -> None:
         realm = self.user_profile.realm
@@ -3129,6 +3343,8 @@ class RealmPropertyActionTest(BaseAction):
             email_notifications_batching_period_seconds=[120, 300],
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES,
             realm_name_in_email_notifications_policy=UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES,
+            automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
+            automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
         )
 
         vals = test_values.get(name)

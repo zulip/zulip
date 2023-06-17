@@ -30,6 +30,7 @@ from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
@@ -824,6 +825,29 @@ class Command(BaseCommand):
         user_profiles: List[UserProfile] = list(
             UserProfile.objects.filter(is_bot=False, realm=zulip_realm)
         )
+
+        # As we plan to change the default values for 'automatically_follow_topics_policy' and
+        # 'automatically_unmute_topics_in_muted_streams_policy' in the future, it will lead to
+        # skewing a lot of our tests, which now need to take into account extra events and database queries.
+        #
+        # We explicitly set the values for both settings to 'AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER'
+        # to make the tests independent of the default values.
+        #
+        # We have separate tests to verify events generated, database query counts,
+        # and other important details related to the above-mentioned settings.
+        for user in user_profiles:
+            do_change_user_setting(
+                user,
+                "automatically_follow_topics_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                acting_user=None,
+            )
+            do_change_user_setting(
+                user,
+                "automatically_unmute_topics_in_muted_streams_policy",
+                UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+                acting_user=None,
+            )
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")

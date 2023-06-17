@@ -230,6 +230,9 @@ python_rules = RuleList(
             "good_lines": ["topic_name"],
             "bad_lines": ['subject="foo"', " MAX_SUBJECT_LEN"],
             "exclude": FILES_WITH_LEGACY_SUBJECT,
+            "exclude_line": {
+                ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+            },
             "include_only": {
                 "zerver/data_import/",
                 "zerver/lib/",
