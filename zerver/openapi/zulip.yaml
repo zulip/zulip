@@ -10206,6 +10206,44 @@ paths:
               - 2
               - 3
           example: 1
+        - name: automatically_follow_topics_policy
+          in: query
+          description: |
+            Which [topics to follow automatically](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+          example: 1
+        - name: automatically_unmute_topics_in_muted_streams_policy
+          in: query
+          description: |
+            Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+          example: 1
         - name: presence_enabled
           in: query
           description: |
@@ -12422,6 +12460,28 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 168), replacing the
                               previous `realm_name_in_notifications` boolean;
                               `true` corresponded to `Always`, and `false` to `Never`.
+                          automatically_follow_topics_policy:
+                            type: integer
+                            description: |
+                              Which [topics to follow automatically](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_unmute_topics_in_muted_streams_policy:
+                            type: integer
+                            description: |
+                              Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -14561,6 +14621,28 @@ paths:
                               **Changes**: New in Zulip 7.0 (feature level 168), replacing the
                               previous `realm_name_in_notifications` boolean;
                               `true` corresponded to `Always`, and `false` to `Never`.
+                          automatically_follow_topics_policy:
+                            type: integer
+                            description: |
+                              Which [topics to follow automatically](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
+                          automatically_unmute_topics_in_muted_streams_policy:
+                            type: integer
+                            description: |
+                              Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+                              - 1 - Topics the user participates in
+                              - 2 - Topics the user sends a message to
+                              - 3 - Topics the user starts
+                              - 4 - Never
+
+                              **Changes**: New in Zulip 8.0 (feature level 214).
                           presence_enabled:
                             type: boolean
                             description: |
@@ -15807,6 +15889,44 @@ paths:
               - 1
               - 2
               - 3
+          example: 1
+        - name: automatically_follow_topics_policy
+          in: query
+          description: |
+            Which [topics to follow automatically](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+          example: 1
+        - name: automatically_unmute_topics_in_muted_streams_policy
+          in: query
+          description: |
+            Which [topics to unmute automatically in muted streams](/help/mute-a-topic).
+
+            - 1 - Topics the user participates in
+            - 2 - Topics the user sends a message to
+            - 3 - Topics the user starts
+            - 4 - Never
+
+            **Changes**: New in Zulip 8.0 (feature level 214).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
           example: 1
         - name: presence_enabled
           in: query

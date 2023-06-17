@@ -1454,18 +1454,81 @@ class StreamMessagesTest(ZulipTestCase):
         topic_name = "foo"
         content = "whatever"
 
+        # Note: We don't need to assert the db query count for each possible
+        # combination of 'automatically_follow_topics_policy' and 'automatically_unmute_topics_in_muted_streams_policy',
+        # as the query count depends only on the actions, i.e., 'ON_INITIATION',
+        # 'ON_PARTICIPATION', and 'NEVER', and is independent of the final visibility_policy set.
+        # Asserting query count using one of the above-mentioned settings fulfils our purpose.
+
         # To get accurate count of the queries, we should make sure that
         # caches don't come into play. If we count queries while caches are
         # filled, we will get a lower count. Caches are not supposed to be
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
         flush_per_request_caches()
+        do_change_user_setting(
+            user_profile=sender,
+            setting_name="automatically_follow_topics_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+            acting_user=None,
+        )
         with self.assert_database_query_count(13):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
                 stream_name=stream_name,
                 topic=topic_name,
+                body=content,
+            )
+
+        do_change_user_setting(
+            user_profile=sender,
+            setting_name="automatically_follow_topics_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+            acting_user=None,
+        )
+        # There will be an increase in the query count of 5 while sending
+        # the first message to a topic.
+        # 5 queries: 1 to check if it is the first message in the topic +
+        # 1 to check if the topic is already followed + 3 to follow the topic.
+        flush_per_request_caches()
+        with self.assert_database_query_count(18):
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic="new topic",
+                body=content,
+            )
+
+        do_change_user_setting(
+            user_profile=sender,
+            setting_name="automatically_follow_topics_policy",
+            setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+            acting_user=None,
+        )
+        self.send_stream_message(self.example_user("iago"), stream_name, "Hello", "topic 2")
+        # There will be an increase in the query count of 4 while sending
+        # a message to a topic with visibility policy other than FOLLOWED.
+        # 1 to check if the topic is already followed + 3 queries to follow the topic.
+        flush_per_request_caches()
+        with self.assert_database_query_count(17):
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic="topic 2",
+                body=content,
+            )
+        # If the topic is already FOLLOWED, there will be an increase in the query
+        # count of 1 to check if the topic is already followed.
+        flush_per_request_caches()
+        with self.assert_database_query_count(14):
+            check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic="topic 2",
                 body=content,
             )
 

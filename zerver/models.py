@@ -1642,6 +1642,30 @@ class UserBaseSettings(models.Model):
         default=REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
     )
 
+    # The following two settings control which topics to automatically
+    # 'follow' or 'unmute in a muted stream', respectively.
+    # Follow or unmute a topic automatically on:
+    # - PARTICIPATION: Send a message, React to a message, Participate in a poll or Edit a TO-DO list.
+    # - SEND: Send a message.
+    # - INITIATION: Send the first message in the topic.
+    # - NEVER: Never automatically follow or unmute a topic.
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION = 1
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND = 2
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION = 3
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER = 4
+    AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES = [
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_PARTICIPATION,
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_SEND,
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_ON_INITIATION,
+        AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
+    ]
+    automatically_follow_topics_policy = models.PositiveSmallIntegerField(
+        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+    )
+    automatically_unmute_topics_in_muted_streams_policy = models.PositiveSmallIntegerField(
+        default=AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+    )
+
     # Whether or not the user wants to sync their drafts.
     enable_drafts_synchronization = models.BooleanField(default=True)
 
@@ -1737,6 +1761,8 @@ class UserBaseSettings(models.Model):
         enable_followed_topic_push_notifications=bool,
         enable_followed_topic_audible_notifications=bool,
         enable_followed_topic_wildcard_mentions_notify=bool,
+        automatically_follow_topics_policy=int,
+        automatically_unmute_topics_in_muted_streams_policy=int,
     )
 
     notification_setting_types = {

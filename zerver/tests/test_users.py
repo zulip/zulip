@@ -1910,6 +1910,7 @@ class RecipientInfoTest(ZulipTestCase):
             service_bot_tuples=[],
             all_bot_user_ids=set(),
             topic_participant_user_ids=set(),
+            sender_muted_stream=False,
         )
 
         self.assertEqual(info, expected_info)
