@@ -402,12 +402,10 @@ def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: 
     send_event(realm, event, active_user_ids(realm_id))
 
 
-def check_delete_user_group(
-    user_group_id: int, user_profile: UserProfile, *, acting_user: Optional[UserProfile]
-) -> None:
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
+def check_delete_user_group(user_group_id: int, *, acting_user: UserProfile) -> None:
+    user_group = access_user_group_by_id(user_group_id, acting_user, for_read=False)
     user_group.delete()
-    do_send_delete_user_group_event(user_profile.realm, user_group_id, user_profile.realm.id)
+    do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
 
 
 @transaction.atomic(savepoint=False)
