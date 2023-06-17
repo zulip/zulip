@@ -1929,7 +1929,7 @@ div.focused_table {
     }
 
     .sub_count,
-    .stream,
+    .message-header-stream-settings-button,
     & > span {
         white-space: nowrap;
         list-style-type: none;
@@ -1965,7 +1965,7 @@ div.focused_table {
         }
     }
 
-    .stream {
+    .message-header-stream-settings-button {
         text-overflow: clip;
         color: inherit;
         text-decoration: none;
