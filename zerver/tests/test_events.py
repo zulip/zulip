@@ -1463,9 +1463,7 @@ class NormalActionsTest(BaseAction):
         check_user_group_remove_subgroups("events[0]", events[0])
 
         # Test remove event
-        events = self.verify_action(
-            lambda: check_delete_user_group(backend.id, acting_user=othello)
-        )
+        events = self.verify_action(lambda: check_delete_user_group(backend, acting_user=othello))
         check_user_group_remove("events[0]", events[0])
 
     def test_default_stream_groups_events(self) -> None:

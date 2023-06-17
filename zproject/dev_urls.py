@@ -10,6 +10,7 @@ from django.urls import path
 from django.views.generic import TemplateView
 from django.views.static import serve
 
+from zerver.lib.rest import rest_path
 from zerver.views.auth import config_error, login_page
 from zerver.views.development.cache import remove_caches
 from zerver.views.development.camo import handle_camo_url
@@ -31,6 +32,7 @@ from zerver.views.development.registration import (
     register_development_realm,
     register_development_user,
 )
+from zerver.views.development.user_groups import dev_update_subgroups
 
 # These URLs are available only in the development environment
 
@@ -97,6 +99,14 @@ urls = [
     # Redirect camo URLs for development
     path("external_content/<digest>/<received_url>", handle_camo_url),
 ]
+
+testing_urls = [
+    rest_path(
+        "testing/user_groups/<int:user_group_id>/subgroups",
+        POST=(dev_update_subgroups, {"intentionally_undocumented"}),
+    ),
+]
+urls += testing_urls
 
 v1_api_mobile_patterns = [
     # This is for the signing in through the devAuthBackEnd on mobile apps.

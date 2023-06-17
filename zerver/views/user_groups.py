@@ -1,6 +1,7 @@
 from typing import List, Optional, Sequence
 
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -25,14 +26,13 @@ from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
     access_user_group_for_setting,
-    access_user_groups_as_potential_subgroups,
     check_user_group_name,
     get_direct_memberships_of_users,
-    get_recursive_subgroups_for_groups,
     get_subgroup_ids,
     get_user_group_direct_member_ids,
     get_user_group_member_ids,
     is_user_in_group,
+    lock_subgroups_with_respect_to_supergroup,
     user_groups_in_realm_serialized,
 )
 from zerver.lib.users import access_user_by_id, user_ids_to_users
@@ -95,6 +95,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
     return json_success(request, data={"user_groups": user_groups})
 
 
+@transaction.atomic
 @require_user_group_edit_permission
 @has_request_variables
 def edit_user_group(
@@ -153,7 +154,11 @@ def delete_user_group(
     user_profile: UserProfile,
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
-    check_delete_user_group(user_group_id, acting_user=user_profile)
+    # For deletion, the user group's recursive subgroups and the user group itself are locked.
+    with lock_subgroups_with_respect_to_supergroup(
+        [user_group_id], user_group_id, acting_user=user_profile
+    ) as context:
+        check_delete_user_group(context.supergroup, acting_user=user_profile)
     return json_success(request)
 
 
@@ -231,6 +236,7 @@ def notify_for_user_group_subscription_changes(
         do_send_messages(notifications)
 
 
+@transaction.atomic
 def add_members_to_group_backend(
     request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
@@ -260,6 +266,7 @@ def add_members_to_group_backend(
     return json_success(request)
 
 
+@transaction.atomic
 def remove_members_from_group_backend(
     request: HttpRequest, user_profile: UserProfile, user_group_id: int, members: Sequence[int]
 ) -> HttpResponse:
@@ -292,28 +299,33 @@ def add_subgroups_to_group_backend(
     if not subgroup_ids:
         return json_success(request)
 
-    subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
-    existing_direct_subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
-    for group in subgroups:
-        if group.id in existing_direct_subgroup_ids:
-            raise JsonableError(
-                _("User group {group_id} is already a subgroup of this group.").format(
-                    group_id=group.id
+    with lock_subgroups_with_respect_to_supergroup(
+        subgroup_ids, user_group_id, user_profile
+    ) as context:
+        existing_direct_subgroup_ids = context.supergroup.direct_subgroups.all().values_list(
+            "id", flat=True
+        )
+        for group in context.direct_subgroups:
+            if group.id in existing_direct_subgroup_ids:
+                raise JsonableError(
+                    _("User group {group_id} is already a subgroup of this group.").format(
+                        group_id=group.id
+                    )
                 )
+
+        recursive_subgroup_ids = {
+            recursive_subgroup.id for recursive_subgroup in context.recursive_subgroups
+        }
+        if user_group_id in recursive_subgroup_ids:
+            raise JsonableError(
+                _(
+                    "User group {user_group_id} is already a subgroup of one of the passed subgroups."
+                ).format(user_group_id=user_group_id)
             )
 
-    subgroup_ids = [group.id for group in subgroups]
-    if user_group_id in get_recursive_subgroups_for_groups(subgroup_ids).values_list(
-        "id", flat=True
-    ):
-        raise JsonableError(
-            _(
-                "User group {user_group_id} is already a subgroup of one of the passed subgroups."
-            ).format(user_group_id=user_group_id)
+        add_subgroups_to_user_group(
+            context.supergroup, context.direct_subgroups, acting_user=user_profile
         )
-
-    add_subgroups_to_user_group(user_group, subgroups, acting_user=user_profile)
     return json_success(request)
 
 
@@ -323,18 +335,27 @@ def remove_subgroups_from_group_backend(
     if not subgroup_ids:
         return json_success(request)
 
-    subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
-    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=False)
-    existing_direct_subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
-    for group in subgroups:
-        if group.id not in existing_direct_subgroup_ids:
-            raise JsonableError(
-                _("User group {group_id} is not a subgroup of this group.").format(
-                    group_id=group.id
+    with lock_subgroups_with_respect_to_supergroup(
+        subgroup_ids, user_group_id, user_profile
+    ) as context:
+        # While the recursive subgroups in the context are not used, it is important that
+        # we acquire a lock for these rows while updating the subgroups to acquire the locks
+        # in a consistent order for subgroup membership changes.
+        existing_direct_subgroup_ids = context.supergroup.direct_subgroups.all().values_list(
+            "id", flat=True
+        )
+        for group in context.direct_subgroups:
+            if group.id not in existing_direct_subgroup_ids:
+                raise JsonableError(
+                    _("User group {group_id} is not a subgroup of this group.").format(
+                        group_id=group.id
+                    )
                 )
-            )
 
-    remove_subgroups_from_user_group(user_group, subgroups, acting_user=user_profile)
+        remove_subgroups_from_user_group(
+            context.supergroup, context.direct_subgroups, acting_user=user_profile
+        )
+
     return json_success(request)
 
 

@@ -1,4 +1,6 @@
-from typing import Dict, Iterable, List, Mapping, Sequence, TypedDict
+from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import Collection, Dict, Iterable, Iterator, List, Mapping, TypedDict
 
 from django.db import transaction
 from django.db.models import F, QuerySet
@@ -28,9 +30,31 @@ class UserGroupDict(TypedDict):
     can_mention_group: int
 
 
+@dataclass
+class LockedUserGroupContext:
+    """User groups in this dataclass are guaranteeed to be locked until the
+    end of the current transaction.
+
+    supergroup is the user group to have subgroups added or removed;
+    direct_subgroups are user groups that are recursively queried for subgroups;
+    recursive_subgroups include direct_subgroups and their descendants.
+    """
+
+    supergroup: UserGroup
+    direct_subgroups: List[UserGroup]
+    recursive_subgroups: List[UserGroup]
+
+
 def has_user_group_access(
-    user_group: UserGroup, user_profile: UserProfile, *, for_read: bool
+    user_group: UserGroup, user_profile: UserProfile, *, for_read: bool, as_subgroup: bool
 ) -> bool:
+    if user_group.realm_id != user_profile.realm_id:
+        return False
+
+    if as_subgroup:
+        # At this time, we only check for realm ID of a potential subgroup.
+        return True
+
     if for_read and not user_profile.is_guest:
         # Everyone is allowed to read a user group and check who
         # are its members. Guests should be unable to reach this
@@ -57,29 +81,87 @@ def access_user_group_by_id(
     user_group_id: int, user_profile: UserProfile, *, for_read: bool
 ) -> UserGroup:
     try:
-        user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        if for_read:
+            user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        else:
+            user_group = UserGroup.objects.select_for_update().get(
+                id=user_group_id, realm=user_profile.realm
+            )
     except UserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
 
-    if not has_user_group_access(user_group, user_profile, for_read=for_read):
+    if not has_user_group_access(user_group, user_profile, for_read=for_read, as_subgroup=False):
         raise JsonableError(_("Insufficient permission"))
 
     return user_group
 
 
-def access_user_groups_as_potential_subgroups(
-    user_group_ids: Sequence[int], acting_user: UserProfile
-) -> List[UserGroup]:
-    user_groups = UserGroup.objects.filter(id__in=user_group_ids, realm=acting_user.realm)
+@contextmanager
+def lock_subgroups_with_respect_to_supergroup(
+    potential_subgroup_ids: Collection[int], potential_supergroup_id: int, acting_user: UserProfile
+) -> Iterator[LockedUserGroupContext]:
+    """This locks the user groups with the given potential_subgroup_ids, as well
+    as their indirect subgroups, followed by the potential supergroup. It
+    ensures that we lock the user groups in a consistent order topologically to
+    avoid unnecessary deadlocks on non-conflicting queries.
 
-    valid_group_ids = [group.id for group in user_groups]
-    invalid_group_ids = [group_id for group_id in user_group_ids if group_id not in valid_group_ids]
-    if invalid_group_ids:
-        raise JsonableError(
-            _("Invalid user group ID: {group_id}").format(group_id=invalid_group_ids[0])
+    Regardless of whether the user groups returned are used, always call this
+    helper before making changes to subgroup memberships. This avoids
+    introducing cycles among user groups when there is a race condition in
+    which one of these subgroups become an ancestor of the parent user group in
+    another transaction.
+
+    Note that it only does a permission check on the potential supergroup,
+    not the potential subgroups or their recursive subgroups.
+    """
+    with transaction.atomic(savepoint=False):
+        # Calling list with the QuerySet forces its evaluation putting a lock on
+        # the queried rows.
+        recursive_subgroups = list(
+            get_recursive_subgroups_for_groups(
+                potential_subgroup_ids, acting_user.realm
+            ).select_for_update(nowait=True)
         )
+        # TODO: This select_for_update query is subject to deadlocking, and
+        # better error handling is needed. We may use
+        # select_for_update(nowait=True) and release the locks held by ending
+        # the transaction with a JsonableError by handling the DatabaseError.
+        # But at the current scale of concurrent requests, we rely on
+        # Postgres's deadlock detection when it occurs.
+        potential_supergroup = access_user_group_by_id(
+            potential_supergroup_id, acting_user, for_read=False
+        )
+        # We avoid making a separate query for user_group_ids because the
+        # recursive query already returns those user groups.
+        potential_subgroups = [
+            user_group
+            for user_group in recursive_subgroups
+            if user_group.id in potential_subgroup_ids
+        ]
 
-    return list(user_groups)
+        # We expect that the passed user_group_ids each corresponds to an
+        # existing user group.
+        group_ids_found = [group.id for group in potential_subgroups]
+        group_ids_not_found = [
+            group_id for group_id in potential_subgroup_ids if group_id not in group_ids_found
+        ]
+        if group_ids_not_found:
+            raise JsonableError(
+                _("Invalid user group ID: {group_id}").format(group_id=group_ids_not_found[0])
+            )
+
+        for subgroup in potential_subgroups:
+            # At this time, we only do a check on the realm ID of the fetched
+            # subgroup. This would be caught by the check earlier, so there is
+            # no coverage here.
+            if not has_user_group_access(subgroup, acting_user, for_read=False, as_subgroup=True):
+                raise JsonableError(_("Insufficient permission"))  # nocoverage
+
+        yield LockedUserGroupContext(
+            direct_subgroups=potential_subgroups,
+            recursive_subgroups=recursive_subgroups,
+            supergroup=potential_supergroup,
+        )
 
 
 def access_user_group_for_setting(
@@ -266,9 +348,11 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
     return list(subgroup_ids)
 
 
-def get_recursive_subgroups_for_groups(user_group_ids: List[int]) -> QuerySet[UserGroup]:
+def get_recursive_subgroups_for_groups(
+    user_group_ids: Iterable[int], realm: Realm
+) -> QuerySet[UserGroup]:
     cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
+        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm)
         .values(group_id=F("id"))
         .union(cte.join(UserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id")))
     )

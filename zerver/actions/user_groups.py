@@ -8,7 +8,6 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.user_groups import (
-    access_user_group_by_id,
     get_role_based_system_groups_dict,
     set_defaults_for_group_settings,
 )
@@ -402,8 +401,8 @@ def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: 
     send_event(realm, event, active_user_ids(realm_id))
 
 
-def check_delete_user_group(user_group_id: int, *, acting_user: UserProfile) -> None:
-    user_group = access_user_group_by_id(user_group_id, acting_user, for_read=False)
+def check_delete_user_group(user_group: UserGroup, *, acting_user: UserProfile) -> None:
+    user_group_id = user_group.id
     user_group.delete()
     do_send_delete_user_group_event(acting_user.realm, user_group_id, acting_user.realm.id)
 

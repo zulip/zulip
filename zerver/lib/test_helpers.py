@@ -517,6 +517,8 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "static/(?P<path>.+)",
             "flush_caches",
             "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
+            # Such endpoints are only used in certain test cases that can be skipped
+            "testing/(?P<path>.+)",
             # These are SCIM2 urls overridden from django-scim2 to return Not Implemented.
             # We actually test them, but it's not being detected as a tested pattern,
             # possibly due to the use of re_path. TODO: Investigate and get them
