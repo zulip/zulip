@@ -1464,7 +1464,7 @@ class NormalActionsTest(BaseAction):
 
         # Test remove event
         events = self.verify_action(
-            lambda: check_delete_user_group(backend.id, othello, acting_user=None)
+            lambda: check_delete_user_group(backend.id, acting_user=othello)
         )
         check_user_group_remove("events[0]", events[0])
 
