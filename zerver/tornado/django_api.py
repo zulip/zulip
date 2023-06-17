@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import orjson
 import requests
 from django.conf import settings
+from django.db import transaction
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
 from urllib3.util import Retry
@@ -186,3 +187,9 @@ def send_event(
             dict(event=event, users=port_users),
             lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
         )
+
+
+def send_event_on_commit(
+    realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+) -> None:
+    transaction.on_commit(lambda: send_event(realm, event, users))

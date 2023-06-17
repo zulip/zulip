@@ -1060,7 +1060,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
             "reaction_type": "unicode_emoji",
         }
         with self.capture_send_event_calls(expected_num_events=1) as events:
-            with mock.patch("zerver.actions.reactions.send_event") as m:
+            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits!"
                 )
@@ -1143,7 +1143,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         )
 
         with self.capture_send_event_calls(expected_num_events=1):
-            with mock.patch("zerver.actions.reactions.send_event") as m:
+            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )

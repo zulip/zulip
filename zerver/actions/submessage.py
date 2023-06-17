@@ -1,9 +1,8 @@
-from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import Realm, SubMessage, UserMessage
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def verify_submessage_sender(
@@ -60,4 +59,4 @@ def do_add_submessage(
     ums = UserMessage.objects.filter(message_id=message_id)
     target_user_ids = [um.user_profile_id for um in ums]
 
-    transaction.on_commit(lambda: send_event(realm, event, target_user_ids))
+    send_event_on_commit(realm, event, target_user_ids)

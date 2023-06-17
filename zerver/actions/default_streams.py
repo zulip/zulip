@@ -13,7 +13,7 @@ from zerver.models import (
     active_non_guest_user_ids,
     get_default_stream_groups,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def check_default_stream_group_name(group_name: str) -> None:
@@ -52,7 +52,7 @@ def notify_default_streams(realm: Realm) -> None:
         type="default_streams",
         default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm.id)),
     )
-    transaction.on_commit(lambda: send_event(realm, event, active_non_guest_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_non_guest_user_ids(realm.id))
 
 
 def notify_default_stream_groups(realm: Realm) -> None:
@@ -62,7 +62,7 @@ def notify_default_stream_groups(realm: Realm) -> None:
             get_default_stream_groups(realm)
         ),
     )
-    transaction.on_commit(lambda: send_event(realm, event, active_non_guest_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_non_guest_user_ids(realm.id))
 
 
 def do_add_default_stream(stream: Stream) -> None:
