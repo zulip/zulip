@@ -253,14 +253,14 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
     return list(subgroup_ids)
 
 
-def get_recursive_subgroups_for_groups(user_group_ids: List[int]) -> List[int]:
+def get_recursive_subgroups_for_groups(user_group_ids: List[int]) -> QuerySet[UserGroup]:
     cte = With.recursive(
         lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
         .values(group_id=F("id"))
         .union(cte.join(UserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id")))
     )
     recursive_subgroups = cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
-    return list(recursive_subgroups.values_list("id", flat=True))
+    return recursive_subgroups
 
 
 def get_role_based_system_groups_dict(realm: Realm) -> Dict[str, UserGroup]:
