@@ -5,7 +5,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Realm, RealmAuditLog, UserProfile, active_user_ids
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 @transaction.atomic(durable=True)
@@ -31,10 +31,8 @@ def do_change_icon_source(
         property="icon",
         data=dict(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
     )
-    transaction.on_commit(
-        lambda: send_event(
-            realm,
-            event,
-            active_user_ids(realm.id),
-        )
+    send_event_on_commit(
+        realm,
+        event,
+        active_user_ids(realm.id),
     )

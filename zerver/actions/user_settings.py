@@ -42,18 +42,16 @@ from zerver.models import (
     get_client,
     get_user_profile_by_id,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
     payload = dict(user_id=user_profile.id, new_email=user_profile.email)
     event = dict(type="realm_user", op="update", person=payload)
-    transaction.on_commit(
-        lambda: send_event(
-            user_profile.realm,
-            event,
-            active_user_ids(user_profile.realm_id),
-        )
+    send_event_on_commit(
+        user_profile.realm,
+        event,
+        active_user_ids(user_profile.realm_id),
     )
 
 
@@ -81,22 +79,18 @@ def send_delivery_email_update_events(
     if delivery_email_now_visible_user_ids:
         person = dict(user_id=user_profile.id, delivery_email=user_profile.delivery_email)
         event = dict(type="realm_user", op="update", person=person)
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm,
-                event,
-                delivery_email_now_visible_user_ids,
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            delivery_email_now_visible_user_ids,
         )
     if delivery_email_now_invisible_user_ids:
         person = dict(user_id=user_profile.id, delivery_email=None)
         event = dict(type="realm_user", op="update", person=person)
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm,
-                event,
-                delivery_email_now_invisible_user_ids,
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            delivery_email_now_invisible_user_ids,
         )
 
 
@@ -116,9 +110,7 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     event = dict(type="realm_user", op="update", person=payload)
     delivery_email_visible_user_ids = get_users_with_access_to_real_email(user_profile)
 
-    transaction.on_commit(
-        lambda: send_event(user_profile.realm, event, delivery_email_visible_user_ids)
-    )
+    send_event_on_commit(user_profile.realm, event, delivery_email_visible_user_ids)
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
@@ -320,12 +312,10 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
                 avatar_url=avatar_url(user_profile),
             ),
         )
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                bot_event,
-                bot_owner_user_ids(user_profile),
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            bot_event,
+            bot_owner_user_ids(user_profile),
         )
 
     payload = dict(
@@ -339,12 +329,10 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
     )
 
     event = dict(type="realm_user", op="update", person=payload)
-    transaction.on_commit(
-        lambda: send_event(
-            user_profile.realm,
-            event,
-            active_user_ids(user_profile.realm_id),
-        )
+    send_event_on_commit(
+        user_profile.realm,
+        event,
+        active_user_ids(user_profile.realm_id),
     )
 
 
@@ -450,7 +438,7 @@ def do_change_user_setting(
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
 
-    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     if setting_name in UserProfile.notification_settings_legacy:
         # This legacy event format is for backwards-compatibility with
@@ -462,9 +450,7 @@ def do_change_user_setting(
             "notification_name": setting_name,
             "setting": setting_value,
         }
-        transaction.on_commit(
-            lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
-        )
+        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
         # This legacy event format is for backwards-compatibility with
@@ -480,9 +466,7 @@ def do_change_user_setting(
             assert isinstance(setting_value, str)
             legacy_event["language_name"] = get_language_name(setting_value)
 
-        transaction.on_commit(
-            lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
-        )
+        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
@@ -492,12 +476,10 @@ def do_change_user_setting(
             timezone=canonicalize_timezone(user_profile.timezone),
         )
         timezone_event = dict(type="realm_user", op="update", person=payload)
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                timezone_event,
-                active_user_ids(user_profile.realm_id),
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            timezone_event,
+            active_user_ids(user_profile.realm_id),
         )
 
     if setting_name == "email_address_visibility":
