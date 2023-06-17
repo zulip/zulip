@@ -304,7 +304,9 @@ def add_subgroups_to_group_backend(
             )
 
     subgroup_ids = [group.id for group in subgroups]
-    if user_group_id in get_recursive_subgroups_for_groups(subgroup_ids):
+    if user_group_id in get_recursive_subgroups_for_groups(subgroup_ids).values_list(
+        "id", flat=True
+    ):
         raise JsonableError(
             _(
                 "User group {user_group_id} is already a subgroup of one of the passed subgroups."
