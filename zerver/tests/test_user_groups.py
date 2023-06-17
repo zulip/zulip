@@ -3,10 +3,13 @@ from typing import Iterable, Optional
 from unittest import mock
 
 import orjson
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
     check_add_user_group,
     create_user_group_in_database,
     promote_new_full_members,
@@ -24,6 +27,7 @@ from zerver.lib.user_groups import (
     get_recursive_subgroups,
     get_subgroup_ids,
     get_user_group_member_ids,
+    has_user_group_access,
     is_user_in_group,
     user_groups_in_realm_serialized,
 )
@@ -228,6 +232,23 @@ class UserGroupTestCase(ZulipTestCase):
 
         self.assertFalse(is_user_in_group(moderators_group, hamlet))
         self.assertFalse(is_user_in_group(moderators_group, hamlet, direct_member_only=True))
+
+    def test_has_user_group_access_to_subgroup(self) -> None:
+        iago = self.example_user("iago")
+        zulip_realm = get_realm("zulip")
+        zulip_group = check_add_user_group(zulip_realm, "zulip", [], acting_user=None)
+        moderators_group = UserGroup.objects.get(
+            name=UserGroup.MODERATORS_GROUP_NAME, realm=zulip_realm, is_system_group=True
+        )
+
+        lear_realm = get_realm("lear")
+        lear_group = check_add_user_group(lear_realm, "test", [], acting_user=None)
+
+        self.assertFalse(has_user_group_access(lear_group, iago, for_read=False, as_subgroup=True))
+        self.assertTrue(has_user_group_access(zulip_group, iago, for_read=False, as_subgroup=True))
+        self.assertTrue(
+            has_user_group_access(moderators_group, iago, for_read=False, as_subgroup=True)
+        )
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
@@ -580,8 +601,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
         self.assertEqual(UserGroupMembership.objects.count(), 44)
         self.assertFalse(UserGroup.objects.filter(id=user_group.id).exists())
-        # Test when invalid user group is supplied
-        result = self.client_delete("/json/user_groups/1111")
+        # Test when invalid user group is supplied; transaction needed for
+        # error handling
+        with transaction.atomic():
+            result = self.client_delete("/json/user_groups/1111")
         self.assert_json_error(result, "Invalid user group")
 
         lear_realm = get_realm("lear")
@@ -804,7 +827,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         def check_delete_user_group(acting_user: str, error_msg: Optional[str] = None) -> None:
             self.login(acting_user)
             user_group = UserGroup.objects.get(name="support")
-            result = self.client_delete(f"/json/user_groups/{user_group.id}")
+            with transaction.atomic():
+                result = self.client_delete(f"/json/user_groups/{user_group.id}")
             if error_msg is None:
                 self.assert_json_success(result)
                 self.assert_length(UserGroup.objects.filter(realm=realm), 9)
@@ -1460,3 +1484,27 @@ class UserGroupAPITestCase(UserGroupTestCase):
             ).content
         )
         self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+
+    def test_add_subgroup_from_wrong_realm(self) -> None:
+        other_realm = do_create_realm("other", "Other Realm")
+        other_user_group = check_add_user_group(other_realm, "user_group", [], acting_user=None)
+
+        realm = get_realm("zulip")
+        zulip_group = check_add_user_group(realm, "zulip_test", [], acting_user=None)
+
+        self.login("iago")
+        result = self.client_post(
+            f"/json/user_groups/{zulip_group.id}/subgroups",
+            {"add": orjson.dumps([other_user_group.id]).decode()},
+        )
+        self.assert_json_error(result, f"Invalid user group ID: {other_user_group.id}")
+
+        # Having a subgroup from another realm is very unlikely because we do
+        # not allow cross-realm subgroups being added in the first place. But we
+        # test the handling in this scenario for completeness.
+        add_subgroups_to_user_group(zulip_group, [other_user_group], acting_user=None)
+        result = self.client_post(
+            f"/json/user_groups/{zulip_group.id}/subgroups",
+            {"delete": orjson.dumps([other_user_group.id]).decode()},
+        )
+        self.assert_json_error(result, f"Invalid user group ID: {other_user_group.id}")

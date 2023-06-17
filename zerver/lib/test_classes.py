@@ -1911,9 +1911,7 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         self.assert_length(lst, expected_num_events)
 
 
-def get_row_ids_in_all_tables() -> (
-    Iterator[Tuple[str, Set[int]]]
-):  # nocoverage # Will be tested with the UserGroup transaction test case
+def get_row_ids_in_all_tables() -> Iterator[Tuple[str, Set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
 
@@ -1947,13 +1945,11 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
     ZulipTransactionTestCase tests if they leak state.
     """
 
-    def setUp(self) -> None:  # nocoverage # Will be tested with the UserGroup transaction test case
+    def setUp(self) -> None:
         super().setUp()
         self.models_ids_set = dict(get_row_ids_in_all_tables())
 
-    def tearDown(
-        self,
-    ) -> None:  # nocoverage # Will be tested with the UserGroup transaction test case
+    def tearDown(self) -> None:
         """Verifies that the test did not adjust the set of rows in the test
         database. This is a sanity check to help ensure that tests
         using this class do not have unintended side effects on the
@@ -1972,7 +1968,6 @@ class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
         TransactionTestCase, so that the test database does not get
         flushed/deleted after each test using this class.
         """
-        # nocoverage # Will be tested with the UserGroup transaction test case
 
 
 class WebhookTestCase(ZulipTestCase):
