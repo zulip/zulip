@@ -417,7 +417,19 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
     }
 }
 
+function setup_compose_actions_hooks() {
+    compose_actions.register_compose_box_clear_hook(clear_invites);
+    compose_actions.register_compose_box_clear_hook(clear_private_stream_alert);
+    compose_actions.register_compose_box_clear_hook(clear_preview_area);
+
+    compose_actions.register_compose_cancel_hook(abort_xhr);
+    compose_actions.register_compose_cancel_hook(abort_video_callbacks);
+}
+
 export function initialize() {
+    // Register hooks for compose_actions.
+    setup_compose_actions_hooks();
+
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
 
     $("#compose-textarea").on("keydown", (event) => {

@@ -229,6 +229,7 @@ test("start", ({override, override_rewire, mock_template}) => {
         abort_xhr_called = true;
     });
 
+    compose_actions.register_compose_cancel_hook(compose.abort_xhr);
     $("#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");
