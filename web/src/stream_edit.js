@@ -413,6 +413,7 @@ export function initialize() {
         stream_settings_ui.sub_or_unsub(sub);
     });
 
+    let loading = true;
     $("#streams_overlay_container").on("click", "#open_stream_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -436,9 +437,13 @@ export function initialize() {
             post_render() {
                 $("#change_stream_info_modal .dialog_submit_button")
                     .addClass("save-button")
+                    
                     .attr("data-stream-id", stream_id);
+                    
             },
+            
         });
+
     });
 
     $("#streams_overlay_container").on("keypress", "#change_stream_description", (e) => {
@@ -450,7 +455,7 @@ export function initialize() {
         return true;
     });
 
-    function save_stream_info(e) {
+    function save_stream_info(e,loading) {
         e.preventDefault();
         e.stopPropagation();
         const sub = get_sub_for_target(e.currentTarget);
@@ -471,10 +476,11 @@ export function initialize() {
         }
 
         const $status_element = $(".stream_change_property_info");
-        dialog_widget.close_modal();
-        settings_ui.do_settings_change(channel.patch, url, data, $status_element);
-    }
 
+        dialog_widget.submit_api_request(channel.patch, url, data);
+       
+    }
+    
     $("#streams_overlay_container").on("click", ".copy_email_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
