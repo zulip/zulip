@@ -6,7 +6,6 @@ import $ from "jquery";
 import * as fenced_code from "../shared/src/fenced_code";
 
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -31,6 +30,23 @@ import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
+
+const compose_clear_box_hooks = [];
+const compose_cancel_hooks = [];
+
+export function register_compose_box_clear_hook(hook) {
+    compose_clear_box_hooks.push(hook);
+}
+
+export function register_compose_cancel_hook(hook) {
+    compose_cancel_hooks.push(hook);
+}
+
+function call_hooks(hooks) {
+    for (const f of hooks) {
+        f();
+    }
+}
 
 export function blur_compose_inputs() {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
@@ -61,16 +77,14 @@ export function clear_textarea() {
 }
 
 function clear_box() {
-    compose.clear_invites();
+    call_hooks(compose_clear_box_hooks);
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
     compose_validate.clear_wildcard_warnings($("#compose_banners"));
-    compose.clear_private_stream_alert();
     compose_validate.set_user_acknowledged_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
-    compose.clear_preview_area();
     clear_textarea();
     compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
@@ -280,8 +294,7 @@ export function cancel() {
     $("#compose_close").hide();
     clear_box();
     compose_banner.clear_message_sent_banners();
-    compose.abort_xhr();
-    compose.abort_video_callbacks(undefined);
+    call_hooks(compose_cancel_hooks);
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");

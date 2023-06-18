@@ -35,7 +35,10 @@ autosize.update = () => {};
 mock_esm("autosize", {default: autosize});
 
 const channel = mock_esm("../src/channel");
-const compose_actions = mock_esm("../src/compose_actions");
+const compose_actions = mock_esm("../src/compose_actions", {
+    register_compose_cancel_hook: noop,
+    register_compose_box_clear_hook: noop,
+});
 const compose_fade = mock_esm("../src/compose_fade");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
