@@ -413,7 +413,7 @@ export function initialize() {
         stream_settings_ui.sub_or_unsub(sub);
     });
 
-    let loading = true;
+    
     $("#streams_overlay_container").on("click", "#open_stream_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -455,7 +455,7 @@ export function initialize() {
         return true;
     });
 
-    function save_stream_info(e,loading) {
+    function save_stream_info(e) {
         e.preventDefault();
         e.stopPropagation();
         const sub = get_sub_for_target(e.currentTarget);
