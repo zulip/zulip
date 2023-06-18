@@ -1112,8 +1112,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
 
     user_settings.enter_sends = false;
+    let compose_finish_called = false;
+    override_rewire(compose, "finish", () => {
+        compose_finish_called = true;
+    });
 
-    ct.initialize();
+    ct.initialize({
+        on_enter_send: compose.finish,
+    });
 
     $("#private_message_recipient").val("othello@zulip.com, ");
     $("#private_message_recipient").trigger("blur");
@@ -1155,10 +1161,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.target.id = "compose-textarea";
     user_settings.enter_sends = false;
     event.metaKey = true;
-    let compose_finish_called = false;
-    override_rewire(compose, "finish", () => {
-        compose_finish_called = true;
-    });
 
     $("form#send_message_form").trigger(event);
     assert.ok(compose_finish_called);
@@ -1211,7 +1213,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").off("keyup");
     $("#private_message_recipient").off("blur");
     $("#send_later").css = noop;
-    ct.initialize();
+    ct.initialize({
+        on_enter_send: compose.finish,
+    });
 
     // Now let's make sure that all the stub functions have been called
     // during the initialization.

@@ -714,7 +714,10 @@ export function initialize_everything() {
     linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     compose.initialize();
-    composebox_typeahead.initialize(); // Must happen after compose.initialize()
+    // Typeahead must be initialized after compose.initialize()
+    composebox_typeahead.initialize({
+        on_enter_send: compose.finish,
+    });
     compose_textarea.initialize();
     search.initialize();
     tutorial.initialize();
