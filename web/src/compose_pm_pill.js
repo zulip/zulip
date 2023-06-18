@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as compose_recipient from "./compose_recipient";
 import * as input_pill from "./input_pill";
 import * as people from "./people";
 import * as user_pill from "./user_pill";
@@ -25,15 +24,15 @@ export function initialize_pill() {
     return pill;
 }
 
-export function initialize() {
+export function initialize({on_pill_create_or_remove}) {
     widget = initialize_pill();
 
     widget.onPillCreate(() => {
-        compose_recipient.update_placeholder_text();
+        on_pill_create_or_remove();
     });
 
     widget.onPillRemove(() => {
-        compose_recipient.update_placeholder_text();
+        on_pill_create_or_remove();
     });
 }
 

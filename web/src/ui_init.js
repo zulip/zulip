@@ -700,7 +700,9 @@ export function initialize_everything() {
     server_events.initialize();
     user_status.initialize(user_status_params);
     compose_recipient.initialize();
-    compose_pm_pill.initialize();
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
     compose_closed_ui.initialize();
     reload.initialize();
     user_groups.initialize(user_groups_params);

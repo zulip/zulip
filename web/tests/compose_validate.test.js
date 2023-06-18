@@ -160,7 +160,9 @@ test_ui("validate", ({override_rewire, mock_template}) => {
         $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
         $("#private_message_recipient").before = () => {};
 
-        compose_pm_pill.initialize();
+        compose_pm_pill.initialize({
+            on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        });
 
         $("#zephyr-mirror-error").is = () => {};
 

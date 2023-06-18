@@ -153,7 +153,9 @@ run_test("pills", ({override}) => {
         callback();
     };
 
-    compose_pm_pill.initialize();
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
     assert.ok(compose_pm_pill.widget);
 
     compose_pm_pill.set_from_typeahead(othello);
