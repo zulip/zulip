@@ -4,7 +4,6 @@ import _ from "lodash";
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
-import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -193,7 +192,7 @@ export function handle_enter($textarea, e) {
 // has reliable information about whether it was a Tab or a Shift+Tab.
 let $nextFocus = false;
 
-function handle_keydown(e) {
+function handle_keydown(e, {on_enter_send}) {
     const key = e.key;
 
     if (keydown_util.is_enter_event(e) || (key === "Tab" && !e.shiftKey)) {
@@ -234,7 +233,7 @@ function handle_keydown(e) {
                         compose_validate.validate_message_length() &&
                         !$("#compose-send-button").prop("disabled")
                     ) {
-                        compose.finish();
+                        on_enter_send();
                     }
                     return;
                 }
@@ -1077,11 +1076,11 @@ export function initialize_compose_typeahead(selector) {
     });
 }
 
-export function initialize() {
+export function initialize({on_enter_send}) {
     update_emoji_data();
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").on("keydown", handle_keydown);
+    $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
     $("#stream_message_recipient_topic").typeahead({
