@@ -705,7 +705,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             appended_names.push(item.display_value);
         },
     }));
-    compose_pm_pill.initialize();
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
 
     let expected_value;
 
