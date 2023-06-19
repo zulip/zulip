@@ -12,15 +12,19 @@ import render_compose_control_buttons_popover from "../templates/compose_control
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
+import render_gear_menu from "../templates/gear_menu.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
+import render_personal_menu from "../templates/personal_menu.hbs";
 import render_send_later_modal from "../templates/send_later_modal.hbs";
 import render_send_later_popover from "../templates/send_later_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
 
 import * as blueslip from "./blueslip";
+import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
+import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
@@ -31,6 +35,7 @@ import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as flatpickr from "./flatpickr";
 import * as giphy from "./giphy";
+import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
@@ -38,11 +43,14 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -51,6 +59,7 @@ import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
@@ -67,6 +76,8 @@ const popover_instances = {
     compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
+    personal_menu: null,
+    gear_menu: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -79,6 +90,14 @@ export function get_visible_instance() {
 }
 export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
+}
+
+export function get_personal_menu_instance() {
+    return popover_instances.personal_menu;
+}
+
+export function get_gear_menu_instance() {
+    return popover_instances.gear_menu;
 }
 
 export function get_selected_send_later_timestamp() {
@@ -134,7 +153,7 @@ function get_popover_items_for_instance(instance) {
         return undefined;
     }
 
-    return $current_elem.find("li:not(.divider):visible a");
+    return $current_elem.find("li:not(.divider):visible a:visible");
 }
 
 export const default_popover_props = {
@@ -327,6 +346,66 @@ export function do_schedule_message(send_at_time) {
     }
     selected_send_later_timestamp = send_at_time;
     compose.finish(true);
+}
+
+function set_current_theme() {
+    let current_theme_position;
+    switch (user_settings.color_scheme) {
+        case 1:
+            current_theme_position = $(".theme-option.automatic").position().left;
+            break;
+        case 2:
+            current_theme_position = $(".theme-option.night").position().left;
+            break;
+        case 3:
+            current_theme_position = $(".theme-option.day").position().left;
+            break;
+    }
+
+    $(".current-theme").css("transition", "none");
+    $(".current-theme").css("transform", `translateX(${current_theme_position}px)`);
+    setTimeout(() => {
+        $(".current-theme").css("transition", "transform 0.5s ease");
+    }, 0);
+}
+
+function version_display_string() {
+    const version = page_params.zulip_version;
+    const is_fork = page_params.zulip_merge_base && page_params.zulip_merge_base !== version;
+
+    if (page_params.zulip_version.endsWith("-dev+git")) {
+        // The development environment uses this version string format.
+        return $t({defaultMessage: "Zulip Server dev environment"});
+    }
+
+    if (is_fork) {
+        // For forks, we want to describe the Zulip version this was
+        // forked from, and that it was modified.
+        const display_version = page_params.zulip_merge_base
+            .replace(/\+git.*/, "")
+            .replace(/-dev.*/, "-dev");
+        return $t({defaultMessage: "Zulip Server {display_version} (modified)"}, {display_version});
+    }
+
+    // The below cases are all for official versions; either a
+    // release, or Git commit from one of Zulip's official branches.
+
+    if (version.includes("+git")) {
+        // A version from a Zulip official maintenance branch such as 5.x.
+        const display_version = version.replace(/\+git.*/, "");
+        return $t({defaultMessage: "Zulip Server {display_version} (patched)"}, {display_version});
+    }
+
+    const display_version = version.replace(/\+git.*/, "").replace(/-dev.*/, "-dev");
+    return $t({defaultMessage: "Zulip Server {display_version}"}, {display_version});
+}
+
+export function open_gear_menu() {
+    $("#settings-dropdown").trigger("click");
+    // there are invisible li tabs, which should not be clicked.
+    $(() => {
+        $("#gear-menu").find(".org-version a").trigger("focus");
+    });
 }
 
 export function initialize() {
@@ -916,6 +995,191 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.send_later = undefined;
+        },
+    });
+
+    register_popover_menu("#personal-menu", {
+        placement: "bottom",
+        offset: [-50, 5],
+        popperOptions: {
+            strategy: "fixed",
+            modifiers: [
+                {
+                    name: "eventListeners",
+                    options: {
+                        scroll: false,
+                    },
+                },
+            ],
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("personal-menu-tippy");
+            popover_instances.personal_menu = instance;
+
+            set_current_theme();
+
+            $popper.one("click", ".clear_status", (e) => {
+                e.preventDefault();
+                const me = page_params.user_id;
+                user_status.server_update_status({
+                    user_id: me,
+                    status_text: "",
+                    emoji_name: "",
+                    emoji_code: "",
+                });
+                instance.hide();
+            });
+
+            $popper.one("click", ".invisible_mode_turn_on", (e) => {
+                user_status.server_invisible_mode_on();
+                e.stopPropagation();
+                e.preventDefault();
+                instance.hide();
+            });
+
+            $popper.one("click", ".invisible_mode_turn_off", (e) => {
+                user_status.server_invisible_mode_off();
+                e.stopPropagation();
+                e.preventDefault();
+                instance.hide();
+            });
+
+            $popper.find(".clear_status").each(function () {
+                tippy(this, {
+                    placement: "top",
+                    appendTo: document.body,
+                    interactive: true,
+                });
+            });
+
+            $popper.on("click", ".theme-option", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const new_theme = $(e.currentTarget).attr("class").split(" ")[1];
+                $(".current-theme").css(
+                    "transform",
+                    `translateX(${$(e.currentTarget).position().left}px)`,
+                );
+
+                channel.patch({
+                    url: "/json/settings",
+                    data: {color_scheme: settings_config.color_scheme_values[new_theme].code},
+                });
+            });
+
+            $(".focus-dropdown").on("focus", (e) => {
+                e.preventDefault();
+                $popper.find("li:not(.divider):visible a").eq(0).trigger("focus");
+            });
+
+            instance.popperInstance.update();
+        },
+        onShow(instance) {
+            const my_user_id = page_params.user_id;
+            const invisible_mode = !user_settings.presence_enabled;
+            const status_text = user_status.get_status_text(my_user_id);
+            const status_emoji_info = user_status.get_status_emoji(my_user_id);
+            const my_email = people.my_current_email();
+            instance.setContent(
+                parse_html(
+                    render_personal_menu({
+                        user_id: my_user_id,
+                        invisible_mode,
+                        user_is_guest: page_params.is_guest,
+                        spectator_view: page_params.is_spectator,
+
+                        // narrow urls
+                        sent_by_url: hash_util.by_sender_url(my_email),
+                        pm_with_url: hash_util.pm_with_url(my_email),
+
+                        // user information
+                        user_avatar: page_params.avatar_url_medium,
+                        is_active: people.is_active_user_for_popover(my_user_id),
+                        user_circle_class: buddy_data.get_user_circle_class(my_user_id),
+                        user_last_seen_time_status:
+                            buddy_data.user_last_seen_time_status(my_user_id),
+                        user_full_name: page_params.full_name,
+                        user_type: people.get_user_type(my_user_id),
+
+                        // user status
+                        status_content_available: Boolean(status_text || status_emoji_info),
+                        status_text,
+                        status_emoji_info,
+                        user_time: people.get_user_time(my_user_id),
+
+                        // login
+                        show_webathena: page_params.show_webathena,
+                        login_link: page_params.development_environment ? "/devlogin/" : "/login/",
+                    }),
+                ),
+            );
+
+            click_handlers.open_animation($("#personal-menu .dropdown-toggle"));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.personal_menu = undefined;
+            click_handlers.close_animation($("#personal-menu .dropdown-toggle"));
+        },
+    });
+
+    register_popover_menu("#navbar-buttons", {
+        placement: "bottom",
+        offset: [-50, 5],
+        popperOptions: {
+            strategy: "fixed",
+            modifiers: [
+                {
+                    name: "eventListeners",
+                    options: {
+                        scroll: false,
+                    },
+                },
+            ],
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.addClass("gear-menu-tippy");
+            popover_instances.gear_menu = instance;
+            $(".focus-dropdown").on("focus", (e) => {
+                e.preventDefault();
+                $("#gear-menu").find(".org-version a").trigger("focus");
+            });
+        },
+        onShow(instance) {
+            const rendered_gear_menu = render_gear_menu({
+                realm_name: page_params.realm_name,
+                realm_url: new URL(page_params.realm_uri).hostname,
+                is_owner: page_params.is_owner,
+                is_admin: page_params.is_admin,
+                is_self_hosted: page_params.realm_plan_type === 1,
+                is_plan_limited: page_params.realm_plan_type === 2,
+                is_plan_standard: page_params.realm_plan_type === 3,
+                is_plan_standard_sponsored_for_free: page_params.realm_plan_type === 4,
+                is_business_org: page_params.realm_org_type === 10,
+                is_education_org:
+                    page_params.realm_org_type === 30 || page_params.realm_org_type === 35,
+                standard_plan_name: "Zulip Cloud Standard",
+                server_needs_upgrade: page_params.server_needs_upgrade,
+                version_display_string: version_display_string(),
+                apps_page_url: page_params.apps_page_url,
+                can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+                corporate_enabled: page_params.corporate_enabled,
+                is_guest: page_params.is_guest,
+                login_link: page_params.development_environment ? "/devlogin/" : "/login/",
+                promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
+                show_billing: page_params.show_billing,
+                show_plans: page_params.show_plans,
+                show_webathena: page_params.show_webathena,
+            });
+            instance.setContent(parse_html(rendered_gear_menu));
+            click_handlers.open_animation($("#settings-dropdown"));
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.gear_menu = undefined;
+            click_handlers.close_animation($("#settings-dropdown"));
         },
     });
 }

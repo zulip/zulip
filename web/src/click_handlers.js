@@ -27,6 +27,7 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
+import * as popover_menus from "./popover_menus";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -45,6 +46,36 @@ import {parse_html} from "./ui_util";
 import * as user_profile from "./user_profile";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
+
+export function open_animation($elem) {
+    const sidebar_visible = $(".app-main .column-right").hasClass("expanded");
+    if (sidebar_visible && !$elem.is($("#userlist-toggle-button"))) {
+        $("#userlist-toggle-button")
+            .find(".status-bar")
+            .addClass("minimized")
+            .removeClass("closed active");
+    }
+    $elem.addClass("open-animation");
+    $elem.find(".status-bar").addClass("active").removeClass("closed minimized");
+    setTimeout(() => {
+        $elem.removeClass("open-animation");
+    }, 700);
+}
+
+export function close_animation($elem) {
+    const sidebar_visible = $(".app-main .column-right").hasClass("expanded");
+    if (sidebar_visible && !$elem.is($("#userlist-toggle-button"))) {
+        $("#userlist-toggle-button")
+            .find(".status-bar")
+            .addClass("active")
+            .removeClass("closed minimized");
+    }
+    $elem.addClass("close-animation");
+    setTimeout(() => {
+        $elem.removeClass("close-animation");
+    }, 700);
+    $elem.find(".status-bar").removeClass("active minimized").addClass("closed");
+}
 
 export function initialize() {
     // MESSAGE CLICKING
@@ -469,6 +500,7 @@ export function initialize() {
         popovers.hide_all();
         if (sidebarHidden) {
             popovers.show_userlist_sidebar();
+            open_animation($("#userlist-toggle-button"));
         }
     });
 
@@ -837,6 +869,7 @@ export function initialize() {
     $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        popover_menus.get_gear_menu_instance()?.hide();
         settings_display.launch_default_language_setting_modal();
     });
 
@@ -845,16 +878,18 @@ export function initialize() {
     // Also, since these buttons are only visible for spectators which doesn't have events,
     // if theme is changed in a different tab, the theme of this tab remains the same.
     $("body").on("click", "#gear-menu .dark-theme", (e) => {
-        // Allow propagation to close gear menu.
+        e.stopPropagation();
         e.preventDefault();
         dark_theme.enable();
+        popover_menus.get_gear_menu_instance()?.hide();
         message_lists.update_recipient_bar_background_color();
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {
-        // Allow propagation to close gear menu.
+        e.stopPropagation();
         e.preventDefault();
         dark_theme.disable();
+        popover_menus.get_gear_menu_instance()?.hide();
         message_lists.update_recipient_bar_background_color();
     });
 
@@ -887,7 +922,7 @@ export function initialize() {
             // after a tippy popover has been triggered which hides
             // the popover without being displayed.
             const not_hide_tippy_instances = true;
-            popovers.hide_all(not_hide_tippy_instances);
+            popovers.hide_all({not_hide_tippy_instances});
         }
 
         if (compose_state.composing() && !$(e.target).parents("#compose").length) {

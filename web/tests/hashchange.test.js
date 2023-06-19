@@ -285,6 +285,10 @@ run_test("hash_interactions", ({override}) => {
     window.location.hash = "#keyboard-shortcuts/whatever";
 
     helper.clear_events();
+
+    const $container = $("#keyboard-shortcut-button");
+    const $child = $(".status-bar");
+    $container.set_find_results(".status-bar", $child);
     $window_stub.trigger("hashchange");
     helper.assert_events([[overlays, "close_for_hash_change"], "info: keyboard-shortcuts"]);
 

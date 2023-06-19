@@ -194,7 +194,6 @@
     }
 
     #navbar-middle .column-middle-inner,
-    #userlist-toggle-button,
     .header-main,
     #message_view_header {
         background-color: hsl(0deg 0% 13%);
@@ -688,6 +687,17 @@
     }
 
     #gear-menu {
+        .dropdown-menu {
+            background-color: var(--bg-popover-dark);
+            border-color: hsl(0deg 0% 0%);
+            box-shadow: 0 2.7798px 4.1129px 0 hsl(0deg 0% 0% / 10%),
+                0 5.5113px 8.5783px 0 hsl(0deg 0% 0% / 9%),
+                0 8.4377px 13.9271px 0 hsl(0deg 0% 0% / 11%),
+                0 12.177px 21.4737px 0 hsl(0deg 0% 0% / 11%),
+                0 18.7257px 35.4802px 0 hsl(0deg 0% 0% / 15%),
+                0 41px 80px 0 hsl(0deg 0% 0% / 20%);
+        }
+
         .dark-theme {
             display: none;
         }
@@ -698,6 +708,21 @@
 
         .dropdown-menu a:hover {
             color: hsl(0deg 0% 100%);
+        }
+
+        .org-info {
+            color: hsl(0deg 0% 60% / 100%);
+            border-color: hsl(0deg 0% 0% / 40%);
+        }
+
+        .org-name {
+            color: hsl(0deg 0% 100% / 100%);
+        }
+
+        .org-version {
+            & a:hover {
+                color: var(--color-link-blue);
+            }
         }
     }
 
@@ -750,10 +775,6 @@
         }
     }
 
-    .spectator_narrow_login_button .login_button i {
-        color: hsl(236deg 33% 90%);
-    }
-
     #user_presences li .user-list-sidebar-menu-icon:hover,
     .all-messages-sidebar-menu-icon:hover,
     .starred-messages-sidebar-menu-icon:hover,
@@ -771,14 +792,6 @@
     #streamlist-toggle-button {
         color: inherit;
         background-color: inherit;
-    }
-
-    #userlist-toggle-button {
-        color: hsl(221deg 9% 54%);
-
-        &:hover {
-            color: inherit;
-        }
     }
 
     .zoom-in {
@@ -1540,6 +1553,82 @@
                     color: hsl(0deg 0% 100%);
                 }
             }
+        }
+    }
+
+    .user-info-popover-header {
+        background-color: var(--bg-popover-dark);
+
+        .full-name {
+            color: hsl(0deg 0% 100%);
+        }
+
+        .user-type {
+            color: hsl(0deg 0% 50%);
+        }
+
+        .status {
+            border-color: hsl(0deg 0% 0% / 100%);
+        }
+    }
+
+    .popover-menu {
+        background-color: var(--bg-popover-dark);
+
+        .list {
+            border-color: hsl(0deg 0% 0% / 40%);
+        }
+
+        .text-item,
+        .user_popover_email a {
+            color: hsl(0deg 0% 50% / 100%);
+        }
+
+        .link-item {
+            & a {
+                color: hsl(0deg 0% 100% / 80%);
+
+                &:hover,
+                &:focus {
+                    background: hsl(0deg 0% 100% / 5%);
+                }
+
+                &:active {
+                    background: hsl(0deg 0% 100% / 10%);
+                }
+            }
+        }
+    }
+
+    #personal-menu-dropdown {
+        background-color: var(--bg-popover-dark);
+    }
+
+    .personal-menu-tippy,
+    .gear-menu-tippy {
+        & > .tippy-box > .tippy-arrow::after {
+            background-color: var(--bg-popover-dark);
+        }
+    }
+
+    .theme-switcher-container {
+        .theme-switcher {
+            background-color: hsl(0deg 0% 0% / 30%);
+        }
+
+        .current-theme {
+            background-color: var(--bg-popover-dark);
+            border: 1px solid hsl(0deg 0% 100% / 12%);
+        }
+    }
+
+    .header-button {
+        color: hsl(240deg 35% 60%);
+
+        &:hover,
+        &:focus {
+            color: hsl(240deg 35% 60%);
+            background: hsl(0deg 0% 100% / 5%);
         }
     }
 }

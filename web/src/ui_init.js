@@ -35,7 +35,6 @@ import * as echo from "./echo";
 import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
-import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotkey from "./hotkey";
@@ -223,6 +222,7 @@ function initialize_right_sidebar() {
 function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
+        user_avatar: page_params.avatar_url_medium,
     });
 
     $("#header-container").html(rendered_navbar);
@@ -718,7 +718,6 @@ export function initialize_everything() {
     tutorial.initialize();
     notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
     unread_ops.initialize();
-    gear_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
     settings_display.initialize();

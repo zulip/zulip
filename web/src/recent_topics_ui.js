@@ -860,7 +860,7 @@ export function complete_rerender() {
         is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Hide popovers on scroll in recent conversations.
-            popovers.hide_all();
+            popovers.hide_all({not_hide_tippy_dropdowns: true});
 
             // Update the focused element for keyboard navigation if needed.
             recenter_focus_if_off_screen();

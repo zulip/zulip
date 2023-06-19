@@ -4,6 +4,7 @@ import * as about_zulip from "./about_zulip";
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
+import * as click_handlers from "./click_handlers";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
@@ -378,6 +379,7 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "keyboard-shortcuts") {
+        click_handlers.open_animation($("#keyboard-shortcut-button"));
         info_overlay.show("keyboard-shortcuts");
         return;
     }

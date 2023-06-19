@@ -10,8 +10,8 @@ async function navigate_using_left_sidebar(page: Page, click_target: string): Pr
     await page.waitForSelector(`#message_feed_container`, {visible: true});
 }
 
-async function open_menu(page: Page): Promise<void> {
-    const menu_selector = "#settings-dropdown";
+async function open_menu(page: Page, selector_string: string): Promise<void> {
+    const menu_selector = selector_string;
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
 }
@@ -19,9 +19,9 @@ async function open_menu(page: Page): Promise<void> {
 async function navigate_to_settings(page: Page): Promise<void> {
     console.log("Navigating to settings");
 
-    await open_menu(page);
+    await open_menu(page, "#personal-menu");
 
-    const settings_selector = ".dropdown-menu a[href^='#settings']";
+    const settings_selector = ".dropdown-menu a[href^='#settings/profile']";
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 
@@ -40,7 +40,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
 async function navigate_to_subscriptions(page: Page): Promise<void> {
     console.log("Navigate to subscriptions");
 
-    await open_menu(page);
+    await open_menu(page, "#settings-dropdown");
 
     const manage_streams_selector = '.dropdown-menu a[href^="#streams"]';
     await page.waitForSelector(manage_streams_selector, {visible: true});

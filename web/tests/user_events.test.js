@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
+const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
 
 const message_live_update = mock_esm("../src/message_live_update");
@@ -205,6 +206,8 @@ run_test("updates", () => {
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
+
+    $("#personal-menu .header-button-avatar").css = () => {};
 
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);

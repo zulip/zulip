@@ -18,11 +18,11 @@ async function get_decoded_url_in_selector(page: Page, selector: string): Promis
 }
 
 async function open_settings(page: Page): Promise<void> {
-    const menu_selector = "#settings-dropdown";
+    const menu_selector = "#personal-menu";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
 
-    const settings_selector = '.dropdown-menu a[href="#settings"]';
+    const settings_selector = '.dropdown-menu a[href="#settings/profile"]';
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 

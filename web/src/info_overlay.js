@@ -5,6 +5,7 @@ import render_markdown_help from "../templates/markdown_help.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 
 import * as browser_history from "./browser_history";
+import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as components from "./components";
 import {$t, $t_html} from "./i18n";
@@ -266,6 +267,7 @@ export function show(target) {
             $overlay,
             on_close() {
                 browser_history.exit_overlay();
+                click_handlers.close_animation($("#keyboard-shortcut-button"));
             },
         });
     }
