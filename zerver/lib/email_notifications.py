@@ -411,12 +411,13 @@ def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: List[Dict[str, Any]], message_count: int
 ) -> None:
     """
-    Send a reminder email to a user if she's missed some PMs by being offline.
+    Send a reminder email to a user if she's missed some direct messages
+    by being offline.
 
     The email will have its reply to address set to a limited used email
     address that will send a Zulip message to the correct recipient. This
-    allows the user to respond to missed PMs, huddles, and @-mentions directly
-    from the email.
+    allows the user to respond to missed direct messages, huddles, and
+    @-mentions directly from the email.
 
     `user_profile` is the user to send the reminder to
     `missed_messages` is a list of dictionaries to Message objects and other data
@@ -639,11 +640,11 @@ def handle_missedmessage_emails(
 
     # We bucket messages by tuples that identify similar messages.
     # For streams it's recipient_id and topic.
-    # For PMs it's recipient id and sender.
+    # For direct messages it's recipient id and sender.
     messages_by_bucket: Dict[Tuple[int, Union[int, str]], List[Message]] = defaultdict(list)
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
-            # For PM's group using (recipient, sender).
+            # For direct messages group using (recipient, sender).
             messages_by_bucket[(msg.recipient_id, msg.sender_id)].append(msg)
         else:
             messages_by_bucket[(msg.recipient_id, msg.topic_name().lower())].append(msg)

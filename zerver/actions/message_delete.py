@@ -17,7 +17,7 @@ class DeleteMessagesEvent(TypedDict, total=False):
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     # messages in delete_message event belong to the same topic
-    # or is a single private message, as any other behaviour is not possible with
+    # or is a single direct message, as any other behaviour is not possible with
     # the current callers to this method.
     messages = list(messages)
     message_ids = [message.id for message in messages]

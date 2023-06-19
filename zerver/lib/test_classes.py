@@ -1945,7 +1945,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         We simulate the delivery of the payload with `content_type`,
         and you can pass other headers via `extra`.
 
-        For the rare cases of webhooks actually sending private messages,
+        For the rare cases of webhooks actually sending direct messages,
         see send_and_test_private_message.
 
         When no message is expected to be sent, set `expect_noop` to True.
@@ -2014,7 +2014,7 @@ one or more new messages.
     ) -> Message:
         """
         For the rare cases that you are testing a webhook that sends
-        private messages, use this function.
+        direct messages, use this function.
 
         Most webhooks send to streams, and you will want to look at
         check_webhook.

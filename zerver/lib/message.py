@@ -833,7 +833,7 @@ def has_message_access(
         return True
 
     if message.recipient.type != Recipient.STREAM:
-        # You can't access private messages you didn't receive
+        # You can't access direct messages you didn't receive
         return False
 
     if stream is None:
@@ -1160,7 +1160,7 @@ def extract_unread_data_from_um_rows(
                 topic = row[MESSAGE__TOPIC]
                 if not is_row_muted(stream_id, recipient_id, topic):
                     mentions.add(message_id)
-            else:  # nocoverage # TODO: Test wildcard mentions in PMs.
+            else:  # nocoverage # TODO: Test wildcard mentions in direct messages.
                 mentions.add(message_id)
 
     # Record whether the user had more than MAX_UNREAD_MESSAGES total
@@ -1497,9 +1497,9 @@ def get_recent_conversations_recipient_id(
 def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dict[str, Any]]:
     """This function uses some carefully optimized SQL queries, designed
     to use the UserMessage index on private_messages.  It is
-    significantly complicated by the fact that for 1:1 private
+    significantly complicated by the fact that for 1:1 direct
     messages, we store the message against a recipient_id of whichever
-    user was the recipient, and thus for 1:1 private messages sent
+    user was the recipient, and thus for 1:1 direct messages sent
     directly to us, we need to look up the other user from the
     sender_id on those messages.  You'll see that pattern repeated
     both here and also in zerver/lib/events.py.
@@ -1579,8 +1579,8 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
 
     # The resulting rows will be (recipient_id, max_message_id)
     # objects for all parties we've had recent (group?) private
-    # message conversations with, including PMs with yourself (those
-    # will generate an empty list of user_ids).
+    # message conversations with, including direct messages with
+    # yourself (those will generate an empty list of user_ids).
     for recipient_id, max_message_id in rows:
         recipient_map[recipient_id] = dict(
             max_message_id=max_message_id,

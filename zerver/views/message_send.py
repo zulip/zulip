@@ -186,7 +186,7 @@ def send_message_backend(
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
         #
-        # For private messages, the message must be (1) both sent and
+        # For direct messages, the message must be (1) both sent and
         # received exclusively by users in your realm, and (2)
         # received by the forwarding user.
         #

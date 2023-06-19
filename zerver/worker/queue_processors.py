@@ -1116,7 +1116,7 @@ class DeferredWorker(QueueProcessingWorker):
             export_event.extra_data = orjson.dumps(extra_data).decode()
             export_event.save(update_fields=["extra_data"])
 
-            # Send a private message notification letting the user who
+            # Send a direct message notification letting the user who
             # triggered the export know the export finished.
             with override_language(user_profile.default_language):
                 content = _(

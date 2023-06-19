@@ -856,7 +856,7 @@ def maybe_enqueue_notifications(
             queue_json_publish("missedmessage_mobile_notifications", notice)
             notified["push_notified"] = True
 
-    # Send missed_message emails if a private message or a
+    # Send missed_message emails if a direct message or a
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
@@ -982,8 +982,8 @@ def process_message_event(
         flags: Collection[str] = user_data.get("flags", [])
         mentioned_user_group_id: Optional[int] = user_data.get("mentioned_user_group_id")
 
-        # If the recipient was offline and the message was a single or group PM to them
-        # or they were @-notified potentially notify more immediately
+        # If the recipient was offline and the message was a (1:1 or group) direct message
+        # to them or they were @-notified potentially notify more immediately
         private_message = recipient_type_name == "private"
         user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
             user_id=user_profile_id,
@@ -1270,8 +1270,9 @@ def maybe_enqueue_notifications_for_message_update(
         return
 
     if private_message:
-        # We don't do offline notifications for PMs, because
-        # we already notified the user of the original message
+        # We don't do offline notifications for direct messages,
+        # because we already notified the user of the original
+        # message.
         return
 
     if prior_mentioned:

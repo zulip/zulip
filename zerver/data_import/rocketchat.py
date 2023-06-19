@@ -675,7 +675,7 @@ def process_messages(
 
         # Add recipient_id to message_dict
         if is_pm_data:
-            # Message is in a PM or a huddle.
+            # Message is in a 1:1 or group direct message.
             rc_channel_id = message["rid"]
             if rc_channel_id in huddle_id_to_huddle_map:
                 huddle_id = huddle_id_mapper.get(rc_channel_id)
@@ -684,7 +684,7 @@ def process_messages(
                 rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
 
                 if len(rc_member_ids) == 1:  # nocoverage
-                    # PMs to yourself only have one user.
+                    # direct messages to yourself only have one user.
                     rc_member_ids.append(rc_member_ids[0])
                 if rc_sender_id == rc_member_ids[0]:
                     zulip_member_id = user_id_mapper.get(rc_member_ids[1])
@@ -1220,7 +1220,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         upload_id_to_upload_data_map=upload_id_to_upload_data_map,
         output_dir=output_dir,
     )
-    # Process private messages
+    # Process direct messages
     process_messages(
         realm_id=realm_id,
         messages=private_messages,

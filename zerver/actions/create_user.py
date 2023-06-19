@@ -213,7 +213,7 @@ def process_new_human_user(
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
     ):
-        # This is a cross-realm private message.
+        # This is a cross-realm direct message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
                 get_system_bot(settings.NOTIFICATION_BOT, prereg_user.referred_by.realm_id),
