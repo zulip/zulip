@@ -188,13 +188,14 @@ export function start(msg_type, opts) {
     expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+    const is_clear_topic_button_triggered = opts.trigger === "clear topic button";
 
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // direct message recipient should be.
     if (
         opts.trigger === "compose_hotkey" ||
-        opts.trigger === "new topic button" ||
+        is_clear_topic_button_triggered ||
         opts.trigger === "new direct message"
     ) {
         opts.topic = "";
@@ -204,7 +205,7 @@ export function start(msg_type, opts) {
     const subbed_streams = stream_data.subscribed_subs();
     if (
         subbed_streams.length === 1 &&
-        (opts.trigger === "new topic button" ||
+        (is_clear_topic_button_triggered ||
             (opts.trigger === "compose_hotkey" && msg_type === "stream"))
     ) {
         opts.stream_id = subbed_streams[0].stream_id;
@@ -262,6 +263,13 @@ export function start(msg_type, opts) {
         // resize the compose box, or display that it's too long.
         compose_ui.autosize_textarea($("#compose-textarea"));
         compose_validate.check_overflow_text();
+    }
+
+    const $clear_topic_button = $("#recipient_box_clear_topic_button");
+    if (is_clear_topic_button_triggered || opts.topic.length === 0) {
+        $clear_topic_button.hide();
+    } else {
+        $clear_topic_button.show();
     }
 
     // Show a warning if topic is resolved
