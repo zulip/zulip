@@ -356,7 +356,8 @@
     width: 206px;
 }
 
-.modal_password_input {
+.modal_password_input,
+.modal_url_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;

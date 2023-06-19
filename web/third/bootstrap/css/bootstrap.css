@@ -420,8 +420,7 @@ label {
   display: block;
   margin-bottom: 5px;
 }
-input[type="text"],
-input[type="url"] {
+input[type="text"] {
   display: inline-block;
   height: 20px;
   padding: 4px 6px;
@@ -434,8 +433,7 @@ input[type="url"] {
   border-radius: 4px;
   vertical-align: middle;
 }
-input[type="text"],
-input[type="url"] {
+input[type="text"] {
   background-color: #ffffff;
   border: 1px solid #cccccc;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
@@ -446,8 +444,7 @@ input[type="url"] {
   -o-transition: border linear .2s, box-shadow linear .2s;
   transition: border linear .2s, box-shadow linear .2s;
 }
-input[type="text"]:focus,
-input[type="url"]:focus {
+input[type="text"]:focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
