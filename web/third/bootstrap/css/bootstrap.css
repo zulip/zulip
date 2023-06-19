@@ -421,7 +421,6 @@ label {
   margin-bottom: 5px;
 }
 input[type="text"],
-input[type="password"],
 input[type="email"],
 input[type="url"] {
   display: inline-block;
@@ -437,7 +436,6 @@ input[type="url"] {
   vertical-align: middle;
 }
 input[type="text"],
-input[type="password"],
 input[type="email"],
 input[type="url"] {
   background-color: #ffffff;
@@ -451,7 +449,6 @@ input[type="url"] {
   transition: border linear .2s, box-shadow linear .2s;
 }
 input[type="text"]:focus,
-input[type="password"]:focus,
 input[type="email"]:focus,
 input[type="url"]:focus {
   border-color: rgba(82, 168, 236, 0.8);
