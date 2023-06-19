@@ -475,7 +475,7 @@ export function initialize() {
             data.description = new_description;
         }
 
-        const $status_element = $(".stream_change_property_info");
+        
 
         dialog_widget.submit_api_request(channel.patch, url, data);
        
