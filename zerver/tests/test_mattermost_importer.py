@@ -427,7 +427,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             user_handler.get_user(zerver_attachments[0]["owner"])["email"], "ron@zulip.com"
         )
-        # TODO: Assert this for False after fixing the file permissions in PMs
+        # TODO: Assert this for False after fixing the file permissions in direct messages
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
@@ -635,8 +635,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
             ],
         )
 
@@ -870,8 +870,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
             ],
         )
 
@@ -897,8 +897,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
             ],
         )
 
