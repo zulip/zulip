@@ -1872,7 +1872,7 @@ paths:
                                 Sent to all users who received the message.
 
                                 **Changes**: Before Zulip 5.0 (feature level 77), events
-                                for private messages contained additional `sender_id` and
+                                for direct messages contained additional `sender_id` and
                                 `recipient_id` fields.
                               properties:
                                 id:
@@ -2446,7 +2446,7 @@ paths:
                                     Type of message being composed. Must be `"stream"` or `"private"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly private messages.
+                                    all typing notifications were implicitly direct messages.
                                   enum:
                                     - private
                                     - stream
@@ -2495,7 +2495,7 @@ paths:
                                     The unique ID of the stream to which message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    typing notifications were only for private messages.
+                                    typing notifications were only for direct messages.
                                 topic:
                                   type: string
                                   description: |
@@ -2504,7 +2504,7 @@ paths:
                                     Topic within the stream where the message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    typing notifications were only for private messages.
+                                    typing notifications were only for direct messages.
                               example:
                                 {
                                   "type": "typing",
@@ -2564,7 +2564,7 @@ paths:
                                     Type of message being composed. Must be `"stream"` or `"private"`.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    all typing notifications were implicitly private messages.
+                                    all typing notifications were implicitly direct messages.
                                   enum:
                                     - private
                                     - stream
@@ -2613,7 +2613,7 @@ paths:
                                     The unique ID of the stream to which message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    typing notifications were only for private messages.
+                                    typing notifications were only for direct messages.
                                 topic:
                                   type: string
                                   description: |
@@ -2622,7 +2622,7 @@ paths:
                                     Topic within the stream where the message is being typed.
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
-                                    typing notifications were only for private messages.
+                                    typing notifications were only for direct messages.
                               example:
                                 {
                                   "type": "typing",
@@ -2803,7 +2803,7 @@ paths:
                                         description: |
                                           Present only if `type` is `private`.
 
-                                          The user IDs of every recipient of this private message, excluding yourself.
+                                          The user IDs of every recipient of this direct message, excluding yourself.
                                           Will be the empty list for a message you had sent to only yourself.
                                       stream_id:
                                         type: integer
@@ -7011,8 +7011,8 @@ paths:
                   - $ref: "#/components/schemas/InvalidMessageError"
                   - description: |
                       An example JSON response for when the specified message does not exist or it
-                      is not visible to the user making the query (e.g. it was a PM between other
-                      two users):
+                      is not visible to the user making the query (e.g. it was a direct message
+                      between two other users):
     patch:
       operationId: update-message
       summary: Edit a message
@@ -8972,14 +8972,14 @@ paths:
         - The server will mark any new messages sent by the muted user as read
           for your account, which prevents all email and mobile push notifications.
         - Clients should exclude muted users from presence lists or other UI
-          for viewing or composing 1:1 private messages. 1:1 private messages sent by
+          for viewing or composing 1:1 direct messages. 1:1 direct messages sent by
           muted users should be hidden everywhere in the Zulip UI.
-        - Stream messages and group private messages sent by the muted
+        - Stream messages and group direct messages sent by the muted
           user should avoid displaying the content and name/avatar,
           but should display that N messages by a muted user were
           hidden (so that it is possible to interpret the messages by
           other users who are talking with the muted user).
-        - Group private message conversations including the muted user
+        - Group direct message conversations including the muted user
           should display muted users as "Muted user", rather than
           showing their name, in lists of such conversations, along with using
           a blank grey avatar where avatars are displayed.
@@ -9736,14 +9736,14 @@ paths:
         - name: enable_desktop_notifications
           in: query
           description: |
-            Enable visual desktop notifications for private messages and @-mentions.
+            Enable visual desktop notifications for direct messages and @-mentions.
           schema:
             type: boolean
           example: true
         - name: enable_sounds
           in: query
           description: |
-            Enable audible desktop notifications for private messages and
+            Enable audible desktop notifications for direct messages and
             @-mentions.
           schema:
             type: boolean
@@ -9795,7 +9795,7 @@ paths:
         - name: enable_offline_email_notifications
           in: query
           description: |
-            Enable email notifications for private messages and @-mentions received
+            Enable email notifications for direct messages and @-mentions received
             when the user is offline.
           schema:
             type: boolean
@@ -9803,7 +9803,7 @@ paths:
         - name: enable_offline_push_notifications
           in: query
           description: |
-            Enable mobile notification for private messages and @-mentions received
+            Enable mobile notification for direct messages and @-mentions received
             when the user is offline.
           schema:
             type: boolean
@@ -9811,7 +9811,7 @@ paths:
         - name: enable_online_push_notifications
           in: query
           description: |
-            Enable mobile notification for private messages and @-mentions received
+            Enable mobile notification for direct messages and @-mentions received
             when the user is online.
           schema:
             type: boolean
@@ -9833,7 +9833,7 @@ paths:
         - name: pm_content_in_desktop_notifications
           in: query
           description: |
-            Include content of private messages in desktop notifications.
+            Include content of direct messages in desktop notifications.
           schema:
             type: boolean
           example: true
@@ -9861,7 +9861,7 @@ paths:
             Unread count badge (appears in desktop sidebar and browser tab)
 
             - 1 - All unreads
-            - 2 - Private messages and mentions
+            - 2 - Direct messages and mentions
             - 3 - None
           schema:
             type: integer
@@ -9920,7 +9920,7 @@ paths:
           in: query
           description: |
             Whether [typing notifications](/help/typing-notifications) be sent when composing
-            private messages.
+            direct messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
@@ -11343,20 +11343,20 @@ paths:
                         description: |
                           Present if `recent_private_conversations` is present in `fetch_event_types`.
 
-                          An array of dictionaries containing data on all private message and group private message
+                          An array of dictionaries containing data on all direct message and group direct message
                           conversations that the user has received (or sent) messages in, organized by
                           conversation. This data set is designed to support UI elements such as the
-                          "Private messages" widget in the web application showing recent private message
+                          "Direct messages" widget in the web application showing recent direct message
                           conversations that the user has participated in.
 
                           "Recent" is defined as the server's discretion; the original implementation
-                          interpreted that as "the 1000 most recent private messages the user received".
+                          interpreted that as "the 1000 most recent direct messages the user received".
                         type: array
                         items:
                           type: object
                           additionalProperties: false
                           description: |
-                            Object describing a single recent private conversation in the user's history.
+                            Object describing a single recent direct conversation in the user's history.
                           properties:
                             max_message_id:
                               type: integer
@@ -11368,8 +11368,8 @@ paths:
                               items:
                                 type: integer
                               description: |
-                                The list of users other than the current user in the private message
-                                conversation. This will be an empty list for private messages sent to
+                                The list of users other than the current user in the direct message
+                                conversation. This will be an empty list for direct messages sent to
                                 oneself.
                       subscriptions:
                         type: array
@@ -11468,18 +11468,18 @@ paths:
                           count:
                             type: integer
                             description: |
-                              The total number of unread messages to display; this includes private
-                              and group private messages, as well as all messages to unmuted topics
+                              The total number of unread messages to display; this includes one-on-one
+                              and group direct messages, as well as all messages to unmuted topics
                               on unmuted streams.
                           pms:
                             type: array
                             description: |
                               An array of dictionaries where each entry contains details
-                              of unread private messages with a specific user.
+                              of unread direct messages with a specific user.
                             items:
                               type: object
                               description: |
-                                Object containing the details of a unread private message with
+                                Object containing the details of unread direct messages with
                                 a specific user. Note that in rare situations, it is possible
                                 for a message that you sent to another user to be marked as
                                 unread and thus appear here.
@@ -11488,7 +11488,7 @@ paths:
                                 other_user_id:
                                   type: integer
                                   description: |
-                                    The user ID of the other participant in this non-group private
+                                    The user ID of the other participant in this non-group direct
                                     message conversation. Will be your own user ID for messages
                                     that you sent to only yourself.
                                 sender_id:
@@ -11505,7 +11505,8 @@ paths:
                                 message_ids:
                                   type: array
                                   description: |
-                                    The message IDs of the recent unread PM messages sent by the other user.
+                                    The message IDs of the recent unread direct messages sent
+                                    by the other user.
                                   items:
                                     type: integer
                           streams:
@@ -11542,22 +11543,21 @@ paths:
                           huddles:
                             type: array
                             description: |
-                              An array of dictionaries where each dictionary contains
-                              details of all unread group private messages of a single
-                              group.
+                              An array of dictionaries where each entry contains details
+                              of unread group direct messages with a specific group of users.
                             items:
                               type: object
                               description: |
-                                Object containing the details of a unread group PM
-                                messages of a single group.
+                                Object containing the details of unread group direct messages
+                                with a specific group of users.
                               additionalProperties: false
                               properties:
                                 user_ids_string:
                                   type: string
                                   description: |
                                     A string containing the IDs of all users in the group
-                                    private message conversation separated by commas
-                                    (,). Example: "1,2,3".
+                                    direct message conversation separated by commas; for
+                                    example: `"1,2,3"`.
                                 message_ids:
                                   type: array
                                   description: |
@@ -11880,11 +11880,11 @@ paths:
                           enable_desktop_notifications:
                             type: boolean
                             description: |
-                              Enable visual desktop notifications for private messages and @-mentions.
+                              Enable visual desktop notifications for direct messages and @-mentions.
                           enable_sounds:
                             type: boolean
                             description: |
-                              Enable audible desktop notifications for private messages and
+                              Enable audible desktop notifications for direct messages and
                               @-mentions.
                           enable_followed_topic_desktop_notifications:
                             type: boolean
@@ -11918,17 +11918,17 @@ paths:
                           enable_offline_email_notifications:
                             type: boolean
                             description: |
-                              Enable email notifications for private messages and @-mentions received
+                              Enable email notifications for direct messages and @-mentions received
                               when the user is offline.
                           enable_offline_push_notifications:
                             type: boolean
                             description: |
-                              Enable mobile notification for private messages and @-mentions received
+                              Enable mobile notification for direct messages and @-mentions received
                               when the user is offline.
                           enable_online_push_notifications:
                             type: boolean
                             description: |
-                              Enable mobile notification for private messages and @-mentions received
+                              Enable mobile notification for direct messages and @-mentions received
                               when the user is online.
                           enable_digest_emails:
                             type: boolean
@@ -11949,7 +11949,7 @@ paths:
                           pm_content_in_desktop_notifications:
                             type: boolean
                             description: |
-                              Include content of private messages in desktop notifications.
+                              Include content of direct messages in desktop notifications.
                           wildcard_mentions_notify:
                             type: boolean
                             description: |
@@ -11968,7 +11968,7 @@ paths:
                               Unread count badge (appears in desktop sidebar and browser tab)
 
                               - 1 - All unreads
-                              - 2 - Private messages and mentions
+                              - 2 - Direct messages and mentions
                               - 3 - None
                           realm_name_in_email_notifications_policy:
                             type: integer
@@ -12026,8 +12026,8 @@ paths:
                             description: |
                               Whether the user has chosen to send [typing
                               notifications](/help/typing-notifications)
-                              when composing private messages. The client should send typing
-                              notifications for private messages if and only if this setting is enabled.
+                              when composing direct messages. The client should send typing
+                              notifications for direct messages if and only if this setting is enabled.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           send_stream_typing_notifications:
@@ -13956,26 +13956,26 @@ paths:
                           enable_desktop_notifications:
                             type: boolean
                             description: |
-                              Enable visual desktop notifications for private messages and @-mentions.
+                              Enable visual desktop notifications for direct messages and @-mentions.
                           enable_sounds:
                             type: boolean
                             description: |
-                              Enable audible desktop notifications for private messages and
+                              Enable audible desktop notifications for direct messages and
                               @-mentions.
                           enable_offline_email_notifications:
                             type: boolean
                             description: |
-                              Enable email notifications for private messages and @-mentions received
+                              Enable email notifications for direct messages and @-mentions received
                               when the user is offline.
                           enable_offline_push_notifications:
                             type: boolean
                             description: |
-                              Enable mobile notification for private messages and @-mentions received
+                              Enable mobile notification for direct messages and @-mentions received
                               when the user is offline.
                           enable_online_push_notifications:
                             type: boolean
                             description: |
-                              Enable mobile notification for private messages and @-mentions received
+                              Enable mobile notification for direct messages and @-mentions received
                               when the user is online.
                           enable_followed_topic_desktop_notifications:
                             type: boolean
@@ -14020,7 +14020,7 @@ paths:
                           pm_content_in_desktop_notifications:
                             type: boolean
                             description: |
-                              Include content of private messages in desktop notifications.
+                              Include content of direct messages in desktop notifications.
                           wildcard_mentions_notify:
                             type: boolean
                             description: |
@@ -14039,7 +14039,7 @@ paths:
                               Unread count badge (appears in desktop sidebar and browser tab)
 
                               - 1 - All unreads
-                              - 2 - Private messages and mentions
+                              - 2 - Direct messages and mentions
                               - 3 - None
                           realm_name_in_email_notifications_policy:
                             type: integer
@@ -14115,7 +14115,7 @@ paths:
                             type: boolean
                             description: |
                               Whether [typing notifications](/help/typing-notifications) be sent when composing
-                              private messages.
+                              direct messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           send_stream_typing_notifications:
@@ -15080,7 +15080,7 @@ paths:
         - name: enable_desktop_notifications
           in: query
           description: |
-            Enable visual desktop notifications for private messages and @-mentions.
+            Enable visual desktop notifications for direct messages and @-mentions.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/notifications` endpoint.
@@ -15090,7 +15090,7 @@ paths:
         - name: enable_sounds
           in: query
           description: |
-            Enable audible desktop notifications for private messages and
+            Enable audible desktop notifications for direct messages and
             @-mentions.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -15111,7 +15111,7 @@ paths:
         - name: enable_offline_email_notifications
           in: query
           description: |
-            Enable email notifications for private messages and @-mentions received
+            Enable email notifications for direct messages and @-mentions received
             when the user is offline.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -15122,7 +15122,7 @@ paths:
         - name: enable_offline_push_notifications
           in: query
           description: |
-            Enable mobile notification for private messages and @-mentions received
+            Enable mobile notification for direct messages and @-mentions received
             when the user is offline.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -15133,7 +15133,7 @@ paths:
         - name: enable_online_push_notifications
           in: query
           description: |
-            Enable mobile notification for private messages and @-mentions received
+            Enable mobile notification for direct messages and @-mentions received
             when the user is online.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -15220,7 +15220,7 @@ paths:
         - name: pm_content_in_desktop_notifications
           in: query
           description: |
-            Include content of private messages in desktop notifications.
+            Include content of direct messages in desktop notifications.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/notifications` endpoint.
@@ -15254,7 +15254,7 @@ paths:
             Unread count badge (appears in desktop sidebar and browser tab)
 
             - 1 - All unreads
-            - 2 - Private messages and mentions
+            - 2 - Direct messages and mentions
             - 3 - None
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -15314,7 +15314,7 @@ paths:
           in: query
           description: |
             Whether [typing notifications](/help/typing-notifications) be sent when composing
-            private messages.
+            direct messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
           schema:
@@ -17896,8 +17896,8 @@ components:
         subject:
           type: string
           description: |
-            The `topic` of the message. Currently always `""` for private messages,
-            though this could change if Zulip adds support for topics in private
+            The `topic` of the message. Currently always `""` for direct messages,
+            though this could change if Zulip adds support for topics in direct
             message conversations.
 
             The field name is a legacy holdover from when topics were
@@ -18027,7 +18027,7 @@ components:
           type: string
           description: |
             The type of the draft. Either unaddressed (empty string), "stream",
-            or "private" (for PMs and private group messages).
+            or "private" (for one-on-one and group direct messages).
           enum:
             - ""
             - stream
@@ -18037,7 +18037,7 @@ components:
           description: |
             An array of the tentative target audience IDs. For "stream"
             messages, this should contain exactly 1 ID, the ID of the
-            target stream. For private messages, this should be an array
+            target stream. For direct messages, this should be an array
             of target user IDs. For unaddressed drafts, this is ignored,
             and clients should send an empty array.
           items:
@@ -18045,7 +18045,7 @@ components:
         topic:
           type: string
           description: |
-            For stream message drafts, the tentative topic name. For private
+            For stream message drafts, the tentative topic name. For direct
             or unaddressed messages, this will be ignored and should ideally
             be the empty string. Should not contain null bytes.
         content:
@@ -18095,7 +18095,7 @@ components:
             The scheduled message's tentative target audience.
 
             For stream messages, it will be the unique ID of the target
-            stream. For private messages, it will be an array with the
+            stream. For direct messages, it will be an array with the
             target users' IDs.
         topic:
           type: string
