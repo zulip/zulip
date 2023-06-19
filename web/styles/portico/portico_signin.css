@@ -535,6 +535,7 @@ html {
 
             &:focus {
                 border: 1px solid hsl(0deg 0% 53%);
+                outline: 0;
             }
         }
 
