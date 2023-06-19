@@ -95,7 +95,7 @@ class RawUnreadStreamDict(TypedDict):
     topic: str
 
 
-class RawUnreadPrivateMessageDict(TypedDict):
+class RawUnreadDirectMessageDict(TypedDict):
     other_user_id: int
 
 
@@ -104,7 +104,7 @@ class RawUnreadHuddleDict(TypedDict):
 
 
 class RawUnreadMessagesResult(TypedDict):
-    pm_dict: Dict[int, RawUnreadPrivateMessageDict]
+    pm_dict: Dict[int, RawUnreadDirectMessageDict]
     stream_dict: Dict[int, RawUnreadStreamDict]
     huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
@@ -119,7 +119,7 @@ class UnreadStreamInfo(TypedDict):
     unread_message_ids: List[int]
 
 
-class UnreadPrivateMessageInfo(TypedDict):
+class UnreadDirectMessageInfo(TypedDict):
     other_user_id: int
     # Deprecated and misleading synonym for other_user_id
     sender_id: int
@@ -132,7 +132,7 @@ class UnreadHuddleInfo(TypedDict):
 
 
 class UnreadMessagesResult(TypedDict):
-    pms: List[UnreadPrivateMessageInfo]
+    pms: List[UnreadDirectMessageInfo]
     streams: List[UnreadStreamInfo]
     huddles: List[UnreadHuddleInfo]
     mentions: List[int]
@@ -1069,7 +1069,7 @@ def get_raw_unread_data(
 def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
-    pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
+    pm_dict: Dict[int, RawUnreadDirectMessageDict] = {}
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
@@ -1197,16 +1197,16 @@ def aggregate_streams(*, input_dict: Dict[int, RawUnreadStreamDict]) -> List[Unr
 
 
 def aggregate_pms(
-    *, input_dict: Dict[int, RawUnreadPrivateMessageDict]
-) -> List[UnreadPrivateMessageInfo]:
-    lookup_dict: Dict[int, UnreadPrivateMessageInfo] = {}
+    *, input_dict: Dict[int, RawUnreadDirectMessageDict]
+) -> List[UnreadDirectMessageInfo]:
+    lookup_dict: Dict[int, UnreadDirectMessageInfo] = {}
     for message_id, attribute_dict in input_dict.items():
         other_user_id = attribute_dict["other_user_id"]
         if other_user_id not in lookup_dict:
             # The `sender_id` field here is only supported for
             # legacy mobile clients. Its actual semantics are the same
             # as `other_user_id`.
-            obj = UnreadPrivateMessageInfo(
+            obj = UnreadDirectMessageInfo(
                 other_user_id=other_user_id,
                 sender_id=other_user_id,
                 unread_message_ids=[],
@@ -1312,7 +1312,7 @@ def apply_unread_message_event(
         else:
             other_user_id = user_profile.id
 
-        state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+        state["pm_dict"][message_id] = RawUnreadDirectMessageDict(
             other_user_id=other_user_id,
         )
 
@@ -1409,11 +1409,11 @@ def add_message_to_unread_msgs(
         user_ids: List[int] = message_details["user_ids"]
         user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
         if user_ids == []:
-            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+            state["pm_dict"][message_id] = RawUnreadDirectMessageDict(
                 other_user_id=my_user_id,
             )
         elif len(user_ids) == 1:
-            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+            state["pm_dict"][message_id] = RawUnreadDirectMessageDict(
                 other_user_id=user_ids[0],
             )
         else:
