@@ -546,7 +546,7 @@ def process_posts(
     post_data_list = []
     for post in post_data:
         if "team" not in post:
-            # Mattermost doesn't specify a team for private messages
+            # Mattermost doesn't specify a team for direct messages
             # in its export format.  This line of code requires that
             # we only be importing data from a single team (checked
             # elsewhere) -- we just assume it's the target team.
@@ -579,9 +579,9 @@ def process_posts(
         if "channel" in post_dict:
             message_dict["channel_name"] = post_dict["channel"]
         elif "channel_members" in post_dict:
-            # This case is for handling posts from PMs and huddles, not channels.
-            # PMs and huddles are known as direct_channels in Slack and hence
-            # the name channel_members.
+            # This case is for handling posts from direct messages and huddles,
+            # not channels. Direct messages and huddles are known as direct_channels
+            # in Slack and hence the name channel_members.
             channel_members = post_dict["channel_members"]
             if len(channel_members) > 2:
                 message_dict["huddle_name"] = generate_huddle_name(channel_members)
@@ -685,7 +685,7 @@ def write_message_data(
     else:
         post_types = ["channel_post"]
         logging.warning(
-            "Skipping importing huddles and PMs since there are multiple teams in the export"
+            "Skipping importing huddles and DMs since there are multiple teams in the export"
         )
 
     for post_type in post_types:
