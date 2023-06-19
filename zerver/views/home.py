@@ -113,7 +113,7 @@ def detect_narrowed_window(
 
     if "stream" in request.GET:
         try:
-            # TODO: We should support stream IDs and PMs here as well.
+            # TODO: We should support stream IDs and direct messages here as well.
             narrow_stream_name = request.GET.get("stream")
             assert narrow_stream_name is not None
             (narrow_stream, ignored_sub) = access_stream_by_name(user_profile, narrow_stream_name)

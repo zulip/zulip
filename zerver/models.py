@@ -1443,11 +1443,11 @@ class Recipient(models.Model):
     which is the ID of the UserProfile/Stream/Huddle object containing
     all the metadata for the audience. There are 3 recipient types:
 
-    1. 1:1 private message: The type_id is the ID of the UserProfile
+    1. 1:1 direct message: The type_id is the ID of the UserProfile
        who will receive any message to this Recipient. The sender
        of such a message is represented separately.
     2. Stream message: The type_id is the ID of the associated Stream.
-    3. Group private message: In Zulip, group private messages are
+    3. Group direct message: In Zulip, group direct messages are
        represented by Huddle objects, which encode the set of users
        in the conversation. The type_id is the ID of the associated Huddle
        object; the set of users is usually retrieved via the Subscription
@@ -1461,11 +1461,11 @@ class Recipient(models.Model):
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, stream, huddle}
 
-    # The type for 1:1 private messages.
+    # The type for 1:1 direct messages.
     PERSONAL = 1
     # The type for stream messages.
     STREAM = 2
-    # The type group private messages.
+    # The type group direct messages.
     HUDDLE = 3
 
     class Meta:
@@ -1596,7 +1596,7 @@ class UserBaseSettings(models.Model):
     enable_followed_topic_audible_notifications = models.BooleanField(default=True)
     enable_followed_topic_wildcard_mentions_notify = models.BooleanField(default=True)
 
-    # PM + @-mention notifications.
+    # Direct message + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)
     pm_content_in_desktop_notifications = models.BooleanField(default=True)
     enable_sounds = models.BooleanField(default=True)
@@ -3330,9 +3330,9 @@ class AbstractUserMessage(models.Model):
         # their history via e.g. starring the message.  This is
         # important accounting for the "Subscribed to stream" dividers.
         "historical",
-        # Whether the message is a private message; this flag is a
+        # Whether the message is a direct message; this flag is a
         # denormalization of message.recipient.type to support an
-        # efficient index on UserMessage for a user's private messages.
+        # efficient index on UserMessage for a user's direct messages.
         "is_private",
         # Whether we've sent a push notification to the user's mobile
         # devices for this message that has not been revoked.
@@ -3685,7 +3685,7 @@ def validate_attachment_request(
 
     messages = attachment.messages.all()
     if UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
-        # If it was sent in a private message or private stream
+        # If it was sent in a direct message or private stream
         # message, then anyone who received that message can access it.
         return True
 
@@ -3751,7 +3751,7 @@ class Subscription(models.Model):
     """Keeps track of which users are part of the
     audience for a given Recipient object.
 
-    For private and group private message Recipient objects, only the
+    For 1:1 and group direct message Recipient objects, only the
     user_profile and recipient fields have any meaning, defining the
     immutable set of users who are in the audience for that Recipient.
 
@@ -4038,7 +4038,7 @@ def is_cross_realm_bot_email(email: str) -> bool:
 class Huddle(models.Model):
     """
     Represents a group of individuals who may have a
-    group private message conversation together.
+    group direct message conversation together.
 
     The membership of the Huddle is stored in the Subscription table just like with
     Streams - for each user in the Huddle, there is a Subscription object
@@ -4282,7 +4282,7 @@ class MissedMessageEmailAddress(models.Model):
 
 
 class NotificationTriggers:
-    # "private_message" is for 1:1 PMs as well as huddles
+    # "private_message" is for 1:1 direct messages as well as huddles
     PRIVATE_MESSAGE = "private_message"
     MENTION = "mentioned"
     WILDCARD_MENTION = "wildcard_mentioned"

@@ -1253,9 +1253,10 @@ def export_partial_message_files(
     #     equates to a recipient object we are exporting)
     #
     # TODO: In theory, you should be able to export messages in
-    # cross-realm PM threads; currently, this only exports cross-realm
-    # messages received by your realm that were sent by Zulip system
-    # bots (e.g. emailgateway, notification-bot).
+    # cross-realm direct message threads; currently, this only
+    # exports cross-realm messages received by your realm that
+    # were sent by Zulip system bots (e.g. emailgateway,
+    # notification-bot).
 
     # Here, "we" and "us" refers to the inner circle of users who
     # were specified as being allowed to be exported.  "Them"
@@ -1345,12 +1346,13 @@ def export_partial_message_files(
             message_queries.append(messages_we_received_in_protected_history_streams)
 
         # The above query is missing some messages that consenting
-        # users have access to, namely, PMs sent by one of the users
-        # in our export to another user (since the only subscriber to
-        # a Recipient object for Recipient.PERSONAL is the recipient,
-        # not the sender).  The `consented_user_ids` list has
-        # precisely those users whose Recipient.PERSONAL recipient ID
-        # was already present in recipient_ids_for_us above.
+        # users have access to, namely, direct messages sent by one
+        # of the users in our export to another user (since the only
+        # subscriber to a Recipient object for Recipient.PERSONAL is
+        # the recipient, not the sender). The `consented_user_ids`
+        # list has precisely those users whose Recipient.PERSONAL
+        # recipient ID was already present in recipient_ids_for_us
+        # above.
         ids_of_non_exported_possible_recipients = ids_of_our_possible_senders - consented_user_ids
 
         recipients_for_them = Recipient.objects.filter(

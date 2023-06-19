@@ -475,7 +475,7 @@ def get_service_bot_events(
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
             trigger = "mention"
-        # PM triggers for personal and huddle messages
+        # Direct message triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
             trigger = "private_message"
         else:
@@ -1192,8 +1192,8 @@ def send_rate_limited_pm_notification_to_bot_owner(
     sender: UserProfile, realm: Realm, content: str
 ) -> None:
     """
-    Sends a PM error notification to a bot's owner if one hasn't already
-    been sent in the last 5 minutes.
+    Sends a direct message error notification to a bot's owner if one
+    hasn't already been sent in the last 5 minutes.
     """
     if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
@@ -1209,7 +1209,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
         return
 
     # We warn the user once every 5 minutes to avoid a flood of
-    # PMs on a misconfigured integration, re-using the
+    # direct messages on a misconfigured integration, re-using the
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
     waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
@@ -1316,8 +1316,8 @@ def check_private_message_policy(
 ) -> None:
     if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
         if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
-            # We allow PMs only between users and bots, to avoid
-            # breaking the tutorial as well as automated
+            # We allow direct messages only between users and bots,
+            # to avoid breaking the tutorial as well as automated
             # notifications from system bots to users.
             return
 

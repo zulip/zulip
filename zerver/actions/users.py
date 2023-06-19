@@ -65,7 +65,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
         user_profile.delete()
         # Recipient objects don't get deleted through CASCADE, so we need to handle
         # the user's personal recipient manually. This will also delete all Messages pointing
-        # to this recipient (all private messages sent to the user).
+        # to this recipient (all direct messages sent to the user).
         assert personal_recipient is not None
         personal_recipient.delete()
         replacement_user = create_user(

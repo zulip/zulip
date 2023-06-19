@@ -28,7 +28,7 @@ def get_recipient_from_user_profiles(
         if forwarder_user_profile.id not in recipient_profiles_map:
             raise ValidationError(_("User not authorized for this query"))
 
-    # If the private message is just between the sender and
+    # If the direct message is just between the sender and
     # another person, force it to be a personal internally
     if len(recipient_profiles_map) == 2 and sender.id in recipient_profiles_map:
         del recipient_profiles_map[sender.id]

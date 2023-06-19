@@ -157,7 +157,7 @@ def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
     if "message_ids" in data:
         # The format sent by 1.6.0, from the earliest pre-1.6.0
         # version with bouncer support up until 613d093d7 pre-1.7.0:
-        #   'alert': str,              # just sender, and text about PM/group-PM/mention
+        #   'alert': str,              # just sender, and text about direct message/mention
         #   'message_ids': List[int],  # always just one
         return {
             "alert": data["alert"],
@@ -817,7 +817,7 @@ def get_apns_alert_title(message: Message) -> str:
         return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_stream_message():
         return f"#{get_display_recipient(message.recipient)} > {message.topic_name()}"
-    # For personal PMs, we just show the sender name.
+    # For 1:1 direct messages, we just show the sender name.
     return message.sender.full_name
 
 
@@ -841,7 +841,8 @@ def get_apns_alert_subtitle(
         return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
-    # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.
+    # For group direct messages, or regular messages to a stream,
+    # just use a colon to indicate this is the sender.
     return message.sender.full_name + ":"
 
 

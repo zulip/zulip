@@ -515,10 +515,12 @@ def fetch_initial_state_data(
         #
         #   [{'max_message_id': 700175, 'user_ids': [801]}]
         #
-        # for all recent private message conversations, ordered by the
-        # highest message ID in the conversation.  The user_ids list
+        # for all recent direct message conversations, ordered by the
+        # highest message ID in the conversation. The user_ids list
         # is the list of users other than the current user in the
-        # private message conversation (so it is [] for PMs to self).
+        # direct message conversation (so it is [] for direct messages
+        # to self).
+        #
         # Note that raw_recent_private_conversations is an
         # intermediate form as a dictionary keyed by recipient_id,
         # which is more efficient to update, and is rewritten to the
