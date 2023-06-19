@@ -1666,7 +1666,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"message_id": stream_mentioned_message_id, "trigger": "mentioned"},
             )
 
-        # Private message should soft reactivate the user
+        # Direct message should soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, self.user_profile, "Message")

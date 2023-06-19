@@ -558,7 +558,7 @@ class RealmImportExportTest(ExportFile):
             [self.example_user("cordelia"), self.example_user("ZOE"), self.example_user("othello")],
         )
 
-        # Create PMs
+        # Create direct messages
         pm_a_msg_id = self.send_personal_message(
             self.example_user("AARON"), self.example_user("othello")
         )

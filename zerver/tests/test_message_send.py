@@ -840,7 +840,7 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_private_message_without_recipients(self) -> None:
         """
-        Sending private message without recipients should fail
+        Sending a direct message without recipients should fail
         """
         self.login("hamlet")
         result = self.client_post(
@@ -1855,7 +1855,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         self, sender: UserProfile, receiver: UserProfile, content: str = "testcontent"
     ) -> None:
         """
-        Send a private message from `sender_email` to `receiver_email` and check
+        Send a direct message from `sender_email` to `receiver_email` and check
         that only those two parties actually received the message.
         """
         sender_messages = message_stream_count(sender)
@@ -1916,7 +1916,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
     def test_non_ascii_personal(self) -> None:
         """
-        Sending a PM containing non-ASCII characters succeeds.
+        Sending a direct message containing non-ASCII characters succeeds.
         """
         self.login("hamlet")
         self.assert_personal(
@@ -2208,15 +2208,16 @@ class TestCrossRealmPMs(ZulipTestCase):
             # cross-realm email, we need to hide this for now.
             support_bot = self.create_user(support_email)
 
-        # Users can PM themselves
+        # Users can send a direct message to themselves.
         self.send_personal_message(user1, user1)
         assert_message_received(user1, user1)
 
-        # Users on the same realm can PM each other
+        # Users on the same realm can send direct messages to each other.
         self.send_personal_message(user1, user1a)
         assert_message_received(user1a, user1)
 
-        # Cross-realm bots in the zulip.com realm can PM any realm
+        # Cross-realm bots in the zulip.com realm can send a direct message
+        # in any realm.
         # (They need lower level APIs to do this.)
         internal_send_private_message(
             sender=notification_bot,
@@ -2225,7 +2226,8 @@ class TestCrossRealmPMs(ZulipTestCase):
         )
         assert_message_received(user2, notification_bot)
 
-        # All users can PM cross-realm bots in the zulip.com realm
+        # All users can send a direct message to cross-realm bots in the
+        # zulip.com realm.
         self.send_personal_message(user1, notification_bot)
         assert_message_received(notification_bot, user1)
         # Verify that internal_send_private_message can also successfully
@@ -2236,43 +2238,48 @@ class TestCrossRealmPMs(ZulipTestCase):
             content="blabla",
         )
         assert_message_received(notification_bot, user2)
-        # Users can PM cross-realm bots on non-zulip realms.
+        # Users can send a direct message to cross-realm bots on non-zulip
+        # realms.
         # (The support bot represents some theoretical bot that we may
         # create in the future that does not have zulip.com as its realm.)
         self.send_personal_message(user1, support_bot)
         assert_message_received(support_bot, user1)
 
-        # Allow sending PMs to two different cross-realm bots simultaneously.
+        # Allow sending direct messages to two different cross-realm bots
+        # simultaneously.
         # (We don't particularly need this feature, but since users can
-        # already individually send PMs to cross-realm bots, we shouldn't
-        # prevent them from sending multiple bots at once.  We may revisit
-        # this if it's a nuisance for huddles.)
+        # already individually send direct messages to cross-realm bots,
+        # we shouldn't prevent them from sending multiple bots at once.
+        # We may revisit this if it's a nuisance for huddles.)
         self.send_huddle_message(user1, [notification_bot, support_bot])
         assert_message_received(notification_bot, user1)
         assert_message_received(support_bot, user1)
 
-        # Prevent old loophole where I could send PMs to other users as long
-        # as I copied a cross-realm bot from the same realm.
+        # Prevent old loophole where I could send direct messages to other
+        # users as long as I copied a cross-realm bot from the same realm.
         with assert_invalid_user():
             self.send_huddle_message(user1, [user3, support_bot])
 
-        # Users on three different realms can't PM each other,
-        # even if one of the users is a cross-realm bot.
+        # Users on three different realms can't send direct messages to
+        # each other, even if one of the users is a cross-realm bot.
         with assert_invalid_user():
             self.send_huddle_message(user1, [user2, notification_bot])
 
         with assert_invalid_user():
             self.send_huddle_message(notification_bot, [user1, user2])
 
-        # Users on the different realms cannot PM each other
+        # Users on the different realms cannot send direct messages to
+        # each other.
         with assert_invalid_user():
             self.send_personal_message(user1, user2)
 
-        # Users on non-zulip realms can't PM "ordinary" Zulip users
+        # Users on non-zulip realms can't send direct messages to
+        # "ordinary" Zulip users.
         with assert_invalid_user():
             self.send_personal_message(user1, self.example_user("hamlet"))
 
-        # Users on three different realms cannot PM each other
+        # Users on three different realms cannot send direct messages
+        # to each other.
         with assert_invalid_user():
             self.send_huddle_message(user1, [user2, user3])
 
@@ -2477,8 +2484,8 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(ret.message.sender.id, sender.id)
 
     def test_bot_pm_feature(self) -> None:
-        """We send a PM to a bot's owner if their bot sends a message to
-        an unsubscribed stream"""
+        """We send a direct message to a bot's owner if their bot sends a
+        message to an unsubscribed stream"""
         parent = self.example_user("othello")
         bot = do_create_user(
             email="othello-bot@zulip.com",
