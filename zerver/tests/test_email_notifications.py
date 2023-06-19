@@ -1435,7 +1435,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_personal_message(
             cordelia,
             self.example_user("hamlet"),
-            "Let's test PM link in email notifications",
+            "Let's test a direct message link in email notifications",
         )
 
         encoded_name = "Cordelia,-Lear's-daughter"
@@ -1483,7 +1483,7 @@ class TestMissedMessages(ZulipTestCase):
         assert isinstance(mail.outbox[2], EmailMultiAlternatives)
         assert isinstance(mail.outbox[2].alternatives[0][0], str)
         self.assertEqual("> Hello\n\n--\n\nReply", mail.outbox[2].body[:18])
-        # Sender name is not appended to message for PM missed messages
+        # Sender name is not appended to message for missed direct messages
         self.assertIn(
             ">\n                    \n                        <div><p>Hello</p></div>\n",
             mail.outbox[2].alternatives[0][0],
@@ -1816,7 +1816,7 @@ class TestMissedMessages(ZulipTestCase):
                 [{"message_id": stream_mentioned_message_id, "trigger": "mentioned"}],
             )
 
-        # Private message should soft reactivate the user
+        # Direct message should soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, hamlet, "Message")

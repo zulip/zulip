@@ -608,7 +608,7 @@ class ReactionEventTest(ZulipTestCase):
         )
         self.assert_json_success(remove)
 
-        # Private message, event should go to both participants.
+        # Direct message, event should go to both participants.
         private_message_id = self.send_personal_message(
             iago,
             hamlet,
@@ -624,7 +624,7 @@ class ReactionEventTest(ZulipTestCase):
         event_user_ids = set(events[0]["users"])
         self.assertEqual(event_user_ids, {iago.id, hamlet.id})
 
-        # Group private message; event should go to all participants.
+        # Group direct message; event should go to all participants.
         huddle_message_id = self.send_huddle_message(
             hamlet,
             [polonius, iago],

@@ -554,7 +554,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
-        # Then, have the owner PM it to another user, giving that other user access.
+        # Then, have it in a direct message to another user, giving that other user access.
         body = f"Second message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
         self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"), body)
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)

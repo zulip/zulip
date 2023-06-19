@@ -400,7 +400,7 @@ class EditMessageTest(EditMessageTestCase):
             user_profile, non_web_public_stream.name, content="non-web-public message"
         )
 
-        # Generate a private message to use in verification.
+        # Generate a direct message to use in verification.
         private_message_id = self.send_personal_message(user_profile, user_profile)
 
         invalid_message_id = private_message_id + 1000
@@ -450,7 +450,7 @@ class EditMessageTest(EditMessageTestCase):
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["raw_content"], "web-public message")
 
-        # Verify private messages are rejected.
+        # Verify direct messages are rejected.
         result = self.client_get("/json/messages/" + str(private_message_id))
         self.assert_json_error(
             result, "Not logged in: API authentication or user session required", 401

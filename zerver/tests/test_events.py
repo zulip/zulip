@@ -469,7 +469,7 @@ class NormalActionsTest(BaseAction):
             ),
         )
 
-        # Verify private message editing - content only edit
+        # Verify direct message editing - content only edit
         pm = Message.objects.order_by("-id")[0]
         content = "new content"
         rendering_result = render_markdown(pm, content)
@@ -3338,14 +3338,14 @@ class ScheduledMessagesEventsTest(BaseAction):
         self.verify_action(action)
 
     def test_private_scheduled_message_create_event(self) -> None:
-        # Create private scheduled message
+        # Create direct scheduled message
         action = lambda: check_schedule_message(
             self.user_profile,
             get_client("website"),
             "private",
             [self.example_user("hamlet").id],
             None,
-            "Private message",
+            "Direct message",
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )

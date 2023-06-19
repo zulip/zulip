@@ -513,7 +513,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Trying to edit `topic` for direct message is ignored
         payload = {
-            "topic": "Private message topic",
+            "topic": "Direct message topic",
         }
         result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
         self.assert_json_success(result)

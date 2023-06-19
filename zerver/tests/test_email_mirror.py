@@ -1003,9 +1003,9 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self) -> None:
-        # build dummy messages for message notification email reply
-        # have Hamlet send Othello a PM. Othello will reply via email
-        # Hamlet will receive the message.
+        # Build dummy messages for message notification email reply.
+        # Have Hamlet send Othello a direct message. Othello will
+        # reply via email Hamlet will receive the message.
         self.login("hamlet")
         othello = self.example_user("othello")
         result = self.client_post(
@@ -1045,9 +1045,10 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
     def test_receive_missed_huddle_message_email_messages(self) -> None:
-        # build dummy messages for message notification email reply
-        # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
-        # Iago and Othello will receive the message.
+        # Build dummy messages for message notification email reply.
+        # Have Othello send Iago and Cordelia a group direct message.
+        # Cordelia will reply via email Iago and Othello will receive
+        # the message.
         self.login("othello")
         cordelia = self.example_user("cordelia")
         iago = self.example_user("iago")

@@ -1283,7 +1283,7 @@ class MessageAccessTests(ZulipTestCase):
             ),
         ]
 
-        # Starring private messages you didn't receive fails.
+        # Starring direct messages you didn't receive fails.
         self.login("cordelia")
         result = self.change_star(message_ids)
         self.assert_json_error(result, "Invalid message(s)")

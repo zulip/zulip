@@ -221,8 +221,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
-    def test_PM(self) -> None:
-        # By default, email and push notifications should be sent for PMs
+    def test_direct_message(self) -> None:
+        # By default, email and push notifications should be sent for direct messages
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
@@ -239,7 +239,8 @@ class MissedMessageHookTest(ZulipTestCase):
             )
 
     def test_enable_offline_email_notifications_setting(self) -> None:
-        # When `enable_offline_email_notifications` is off, email notifications should not be sent for PMs
+        # When `enable_offline_email_notifications` is off, email notifications
+        # should not be sent for direct messages
         do_change_user_setting(
             self.user_profile, "enable_offline_email_notifications", False, acting_user=None
         )
@@ -400,7 +401,7 @@ class MissedMessageHookTest(ZulipTestCase):
             )
 
     def test_wildcard_mentions_notify_global_setting_is_a_wrapper(self) -> None:
-        # If email notifications for PMs and mentions themselves have been turned off,
+        # If email notifications for direct messages and mentions themselves have been turned off,
         # even turning on `wildcard_mentions_notify` should not send email notifications
         do_change_user_setting(
             self.user_profile, "enable_offline_email_notifications", False, acting_user=None
@@ -964,7 +965,7 @@ class MissedMessageHookTest(ZulipTestCase):
         self.destroy_event_queue(hambot, self.client_descriptor.event_queue.id)
         self.client_descriptor = hamlet_client_descriptor
 
-    # Internal PMs
+    # Internal direct messages
     def test_disable_external_notifications(self) -> None:
         # The disable_external_notifications parameter, used for messages sent by welcome bot,
         # should result in no email/push notifications being sent regardless of the message type.
