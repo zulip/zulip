@@ -34,7 +34,7 @@ Get Zulip notifications for your TeamCity builds!
 
 When a user runs a personal build, if Zulip can map their TeamCity
 username to a Zulip user (by comparing it with the Zulip user's email
-address or full name), that Zulip user will receive a private
-message with the result of their personal build.
+address or full name), that Zulip user will receive a direct message
+with the result of their personal build.
 
 ![](/static/images/integrations/teamcity/002.png)

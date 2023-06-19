@@ -130,10 +130,10 @@ def check_send_webhook_message(
             else:
                 check_send_stream_message(user_profile, client, stream, topic, body)
         except StreamDoesNotExistError:
-            # A PM will be sent to the bot_owner by check_message, notifying
-            # that the webhook bot just tried to send a message to a non-existent
-            # stream, so we don't need to re-raise it since it clutters up
-            # webhook-errors.log
+            # A direct message will be sent to the bot_owner by check_message,
+            # notifying that the webhook bot just tried to send a message to a
+            # non-existent stream, so we don't need to re-raise it since it
+            # clutters up webhook-errors.log
             pass
 
 

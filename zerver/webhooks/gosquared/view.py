@@ -47,7 +47,7 @@ def api_gosquared_webhook(
 
     # Live chat message event
     elif payload.get("message") is not None and payload.get("person") is not None:
-        # Only support non-private messages
+        # Only support non-direct messages
         if not payload["message"]["private"].tame(check_bool):
             session_title = payload["message"]["session"]["title"].tame(check_string)
             topic = f"Live chat session - {session_title}"
