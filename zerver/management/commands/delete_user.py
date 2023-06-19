@@ -21,14 +21,14 @@ This will:
 * Delete the user's account, including metadata like name, email
   address, custom profile fields, historical subscriptions, etc.
 
-* Delete any messages they've sent and any non-group private messages
+* Delete any messages they've sent and any non-group direct messages
   they've received.
 
-* Group private messages in which the user participated won't be
+* Group direct messages in which the user participated won't be
   deleted (with the exceptions of those message the deleted user
   sent). An inactive, inaccessible dummy user account named "Deleted
   User <id>" is created to replace the deleted user as a recipient in
-  group private message conversations, in order to somewhat preserve
+  group direct message conversations, in order to somewhat preserve
   their integrity.
 
 * Delete other records of the user's activity, such as emoji reactions.
