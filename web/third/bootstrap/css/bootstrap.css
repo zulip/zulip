@@ -1343,9 +1343,6 @@ button.close {
   border: 0;
   -webkit-appearance: none;
 }
-.pull-left {
-  float: left;
-}
 .hide {
   display: none;
 }
@@ -1406,11 +1403,6 @@ button.close {
   }
 }
 @media (max-width: 480px) {
-  .media .pull-left {
-    float: none;
-    display: block;
-    margin-bottom: 10px;
-  }
   .modal {
     top: 10px;
     left: 10px;
