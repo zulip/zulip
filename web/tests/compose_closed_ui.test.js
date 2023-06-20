@@ -29,7 +29,7 @@ const {MessageList} = zrequire("message_list");
 
 // Helper test function
 function test_reply_label(expected_label) {
-    const label = $(".compose_reply_button_label").text();
+    const label = $("#left_bar_compose_reply_button_big").text();
     const prepend_text_length = "translated: Message ".length;
     assert.equal(
         label.slice(prepend_text_length),
@@ -131,6 +131,6 @@ run_test("test_custom_message_input", () => {
 run_test("empty_narrow", () => {
     message_lists.current.visibly_empty = () => true;
     compose_closed_ui.update_reply_recipient_label();
-    const label = $(".compose_reply_button_label").text();
+    const label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });

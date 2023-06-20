@@ -138,7 +138,7 @@ export function update_buttons_for_recent_view() {
 }
 
 function set_reply_button_label(label) {
-    $(".compose_reply_button_label").text(label);
+    $("#left_bar_compose_reply_button_big").text(label);
 }
 
 export function set_standard_text_for_reply_button() {
