@@ -169,6 +169,35 @@ test("basics", () => {
     assert.equal(sub_store.get(-3), undefined);
     assert.equal(sub_store.get(undefined), undefined);
     assert.equal(sub_store.get(1), denmark);
+
+    assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
+        {
+            name: "social",
+            stream: {
+                color: "red",
+                history_public_to_subscribers: false,
+                invite_only: true,
+                is_muted: false,
+                name: "social",
+                stream_id: 2,
+                stream_post_policy: 2,
+                subscribed: true,
+            },
+            unique_id: 2,
+        },
+        {
+            name: "test",
+            stream: {
+                color: "yellow",
+                invite_only: false,
+                is_muted: true,
+                name: "test",
+                stream_id: 3,
+                subscribed: true,
+            },
+            unique_id: 3,
+        },
+    ]);
 });
 
 test("get_subscribed_streams_for_user", () => {
@@ -980,4 +1009,104 @@ test("can_unsubscribe_others", () => {
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     page_params.is_admin = false;
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
+});
+
+test("options for dropdown widget", () => {
+    const denmark = {
+        subscribed: true,
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+        is_muted: true,
+        invite_only: true,
+        history_public_to_subscribers: true,
+    };
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: true,
+        history_public_to_subscribers: false,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    const test = {
+        subscribed: true,
+        color: "yellow",
+        name: "test",
+        stream_id: 3,
+        is_muted: true,
+        invite_only: false,
+    };
+    const web_public_stream = {
+        subscribed: true,
+        color: "yellow",
+        name: "web_public_stream",
+        stream_id: 4,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        is_web_public: true,
+    };
+    stream_data.add_sub(denmark);
+    stream_data.add_sub(social);
+    stream_data.add_sub(web_public_stream);
+    stream_data.add_sub(test);
+
+    assert.deepEqual(stream_data.get_options_for_dropdown_widget(), [
+        {
+            name: "Denmark",
+            stream: {
+                subscribed: true,
+                color: "blue",
+                name: "Denmark",
+                stream_id: 1,
+                is_muted: true,
+                invite_only: true,
+                history_public_to_subscribers: true,
+            },
+            unique_id: 1,
+        },
+        {
+            name: "social",
+            stream: {
+                color: "red",
+                history_public_to_subscribers: false,
+                invite_only: true,
+                is_muted: false,
+                name: "social",
+                stream_id: 2,
+                stream_post_policy: 2,
+                subscribed: true,
+            },
+            unique_id: 2,
+        },
+        {
+            name: "test",
+            stream: {
+                color: "yellow",
+                invite_only: false,
+                is_muted: true,
+                name: "test",
+                stream_id: 3,
+                subscribed: true,
+            },
+            unique_id: 3,
+        },
+        {
+            name: "web_public_stream",
+            stream: {
+                subscribed: true,
+                color: "yellow",
+                name: "web_public_stream",
+                stream_id: 4,
+                is_muted: false,
+                invite_only: false,
+                history_public_to_subscribers: true,
+                is_web_public: true,
+            },
+            unique_id: 4,
+        },
+    ]);
 });

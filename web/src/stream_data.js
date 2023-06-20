@@ -849,3 +849,25 @@ export function initialize(params) {
 export function remove_default_stream(stream_id) {
     default_stream_ids.delete(stream_id);
 }
+
+export function get_options_for_dropdown_widget() {
+    return (
+        subscribed_subs()
+            .map((stream) => ({
+                name: stream.name,
+                unique_id: stream.stream_id,
+                stream,
+            }))
+            // eslint-disable-next-line consistent-return, array-callback-return
+            .sort((a, b) => {
+                if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                    return -1;
+                }
+                if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                    return 1;
+                }
+                // Not possible since two streams cannot have same name.
+                // return 0;
+            })
+    );
+}
