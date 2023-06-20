@@ -22,11 +22,31 @@
     }
 
     .reply_button_container {
-        flex: 1;
-        min-width: 0;
+        display: flex;
+        flex-grow: 1;
+
+        /* Button-like styling */
+        border-radius: 4px;
+        background-color: hsl(0deg 0% 100%);
+        border: 1px solid hsl(0deg 0% 80%);
+        transition: all 0.2s ease;
+
+        &:hover,
+        &:focus {
+            /* Applying the `border-color` to make `reply_button_container` behave like a `.button`. */
+            border-color: hsl(0deg 0% 60%);
+        }
+
+        .compose_reply_button,
+        .compose_new_topic_button {
+            /* Removing the `border` inherited from the `.button` styles. */
+            border: none;
+            background: none;
+            border-radius: 3px;
+        }
 
         .compose_reply_button {
-            width: 100%;
+            flex-grow: 1;
             text-align: left;
             overflow: hidden;
             white-space: nowrap;
@@ -39,6 +59,7 @@
             /* Removing the `min-width` inherited from the `.button` styles. */
             min-width: inherit;
             margin: 1px;
+            flex-shrink: 0;
 
             transition: background-color 0.2s ease;
 

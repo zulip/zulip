@@ -478,7 +478,8 @@
     #custom-expiration-time-input,
     #org-join-settings .dropdown-widget-button,
     #searchbox #search_query,
-    #compose_recipient_box {
+    #compose_recipient_box,
+    #compose_controls .reply_button_container {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;

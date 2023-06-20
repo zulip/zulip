@@ -12,24 +12,23 @@
     </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
-            <span class="new_message_button reply_button_container" data-tooltip-template-id="compose_reply_message_button_tooltip_template">
-                <button type="button" class="button small rounded compose_reply_button"
-                  id="left_bar_compose_reply_button_big">
+            <div class="new_message_button reply_button_container">
+                <button type="button" class="button small compose_reply_button"
+                  id="left_bar_compose_reply_button_big"
+                  data-tooltip-template-id="compose_reply_message_button_tooltip_template">
                     {{t 'Compose message' }}
                 </button>
-            </span>
+                <button type="button" class="button compose_new_topic_button"
+                  id="new_topic_button"
+                  data-tooltip-template-id="new_topic_message_button_tooltip_template">
+                    {{t 'New topic' }}
+                </button>
+            </div>
             <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"
                   id="left_bar_compose_mobile_button_big"
                   data-tooltip-template-id="left_bar_compose_mobile_button_tooltip_template">
                     +
-                </button>
-            </span>
-            <span class="new_message_button stream_button_container">
-                <button type="button" class="button small rounded compose_new_topic_button"
-                  id="new_topic_button"
-                  data-tooltip-template-id="new_topic_message_button_tooltip_template">
-                    {{t 'New topic' }}
                 </button>
             </span>
             {{#unless embedded }}
