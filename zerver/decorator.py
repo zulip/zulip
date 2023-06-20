@@ -455,7 +455,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Log in with two factor authentication as well.
@@ -930,7 +930,7 @@ def internal_notify_view(
                 raise RuntimeError("Tornado notify view called with no Tornado handler")
             if not is_tornado_view and is_tornado_request:
                 raise RuntimeError("Django notify view called with Tornado handler")
-            request_notes.requestor_for_logs = "internal"
+            request_notes.requester_for_logs = "internal"
             return view_func(request, *args, **kwargs)
 
         return _wrapped_func_arguments

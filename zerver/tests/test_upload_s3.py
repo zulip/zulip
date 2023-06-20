@@ -230,7 +230,7 @@ class S3Test(ZulipTestCase):
         self.assertNotEqual(url_only_url, url)
         self.assertIn("user_uploads/temporary/", url_only_url)
         self.assertTrue(url_only_url.endswith("zulip.txt"))
-        # The generated URL has a token authorizing the requestor to access the file
+        # The generated URL has a token authorizing the requester to access the file
         # without being logged in.
         self.logout()
         with self.settings(DEVELOPMENT=False):

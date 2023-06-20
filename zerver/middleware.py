@@ -124,7 +124,7 @@ def write_log_line(
     path: str,
     method: str,
     remote_ip: str,
-    requestor_for_logs: str,
+    requester_for_logs: str,
     client_name: str,
     client_version: Optional[str] = None,
     status_code: int = 200,
@@ -197,9 +197,9 @@ def write_log_line(
     else:
         extra_request_data = ""
     if client_version is None:
-        logger_client = f"({requestor_for_logs} via {client_name})"
+        logger_client = f"({requester_for_logs} via {client_name})"
     else:
-        logger_client = f"({requestor_for_logs} via {client_name}/{client_version})"
+        logger_client = f"({requester_for_logs} via {client_name}/{client_version})"
     logger_timing = f"{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}"
     logger_line = f"{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}"
     if status_code in [200, 304] and method == "GET" and path.startswith("/static"):
@@ -223,7 +223,7 @@ def write_log_line(
         error_data = repr(error_content)
         if len(error_data) > 200:
             error_data = "[content more than 200 characters]"
-        logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requestor_for_logs)
+        logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requester_for_logs)
 
 
 class RequestContext(MiddlewareMixin):
@@ -337,16 +337,16 @@ class LogRequests(MiddlewareMixin):
 
         remote_ip = request.META["REMOTE_ADDR"]
 
-        # Get the requestor's identifier and client, if available.
+        # Get the requester's identifier and client, if available.
         request_notes = RequestNotes.get_notes(request)
-        requestor_for_logs = request_notes.requestor_for_logs
-        if requestor_for_logs is None:
+        requester_for_logs = request_notes.requester_for_logs
+        if requester_for_logs is None:
             if request_notes.remote_server is not None:
-                requestor_for_logs = request_notes.remote_server.format_requestor_for_logs()
+                requester_for_logs = request_notes.remote_server.format_requester_for_logs()
             elif request.user.is_authenticated:
-                requestor_for_logs = request.user.format_requestor_for_logs()
+                requester_for_logs = request.user.format_requester_for_logs()
             else:
-                requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
+                requester_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
 
         content = response.content if isinstance(response, HttpResponse) else None
 
@@ -357,7 +357,7 @@ class LogRequests(MiddlewareMixin):
             request.path,
             request.method,
             remote_ip,
-            requestor_for_logs,
+            requester_for_logs,
             request_notes.client_name,
             client_version=request_notes.client_version,
             status_code=response.status_code,
@@ -650,7 +650,7 @@ def validate_scim_bearer_token(request: HttpRequest) -> bool:
 
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.realm is not None
-    request_notes.requestor_for_logs = (
+    request_notes.requester_for_logs = (
         f"scim-client:{scim_client_name}:realm:{request_notes.realm.id}"
     )
 

@@ -249,7 +249,7 @@ No changes; feature level used for Zulip 7.0 release.
   [`GET /users/me`](/api/get-own-user), [`GET /events`](/api/get-events):
   The `delivery_email` field is always present in user objects, including
   the case when a user's `email_address_visibility` is set to everyone.
-  The value will be `null` if the requestor does not have access to the
+  The value will be `null` if the requester does not have access to the
   user's real email. For bot users, the `delivery_email` field is always
   set to the bot user's real email.
 * [`GET /events`](/api/get-events): Event for updating a user's
