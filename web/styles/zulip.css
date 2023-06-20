@@ -170,6 +170,7 @@ body {
     --color-background-navbar: hsl(0deg 0% 97%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
+    --color-background-hover-new-topic-button: hsl(231deg 100% 90% / 20%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);

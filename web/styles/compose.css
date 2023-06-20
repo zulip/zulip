@@ -32,6 +32,22 @@
             white-space: nowrap;
             text-overflow: ellipsis;
         }
+
+        .compose_new_topic_button {
+            /* Remove the  `padding` to prevent margin from affecting parent height. */
+            padding: 0 10px;
+            /* Removing the `min-width` inherited from the `.button` styles. */
+            min-width: inherit;
+            margin: 1px;
+
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background-color: var(
+                    --color-background-hover-new-topic-button
+                );
+            }
+        }
     }
 
     .mobile_button_container {
@@ -636,7 +652,7 @@ textarea.new_message_textarea,
         margin: 1px;
 
         &:hover {
-            background-color: hsl(231deg 100% 90% / 20%);
+            background-color: var(--color-background-hover-new-topic-button);
         }
     }
 
