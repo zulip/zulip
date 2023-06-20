@@ -108,7 +108,7 @@ $category-text: hsl(219deg 23% 33%);
             .searchbar-reset {
                 position: relative;
 
-                & input {
+                .search_input {
                     box-shadow: 0 0 7px 2px hsl(0deg 0% 0% / 3%);
 
                     font-size: 1em;
@@ -120,9 +120,13 @@ $category-text: hsl(219deg 23% 33%);
                     border-radius: 40px;
                     border: 1px solid $light-blue-border;
                     display: block;
+                    color: hsl(0deg 0% 33%);
+                    margin-bottom: 10px;
+                    transition: border linear 0.2s, box-shadow linear 0.2s;
 
                     &:focus {
                         border: 1px solid $border-green;
+                        outline: 0;
                     }
 
                     @media (width <= 768px) {
