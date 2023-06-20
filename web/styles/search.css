@@ -77,6 +77,11 @@
         overflow: hidden;
         white-space: nowrap;
         padding-left: 35px;
+        color: hsl(0deg 0% 33%);
+
+        &:focus {
+            outline: 0;
+        }
 
         @media (width < $sm_min) {
             vertical-align: text-bottom;
