@@ -54,7 +54,7 @@ Job `{job_name}` within Pipeline #{pipeline_number} {formatted_status}.
 {commit_details}
 """
 
-ALL_EVENT_TYPES = ["job-completed", "workflow-completed"]
+ALL_EVENT_TYPES = ["ping", "job-completed", "workflow-completed"]
 
 
 @webhook_view("CircleCI", all_event_types=ALL_EVENT_TYPES)
@@ -64,17 +64,24 @@ def api_circleci_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    subject = get_subject(payload)
-    body = get_body(payload)
+    type = payload["type"].tame(check_string)
+    if type == "ping":
+        # Ping events don't have full payloads, so our normal codepath won't work
+        subject = "Test event"
+        body = "Webhook '{name}' test event successful.".format(
+            name=payload["webhook"]["name"].tame(check_string)
+        )
+    else:
+        subject = get_subject(payload)
+        body = get_body(payload)
 
-    pipeline = payload["pipeline"]
-
-    # We currently don't support projects using VCS providers other than GitHub,
-    # BitBucket and GitLab.
-    if "trigger_parameters" in pipeline and pipeline["trigger"]["type"] != "gitlab":
-        raise JsonableError(
-            _("Projects using this version control system provider aren't supported")
-        )  # nocoverage
+        # We currently don't support projects using VCS providers other than GitHub,
+        # BitBucket and GitLab.
+        pipeline = payload["pipeline"]
+        if "trigger_parameters" in pipeline and pipeline["trigger"]["type"] != "gitlab":
+            raise JsonableError(
+                _("Projects using this version control system provider aren't supported")
+            )  # nocoverage
 
     check_send_webhook_message(
         request,
