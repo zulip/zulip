@@ -2,11 +2,10 @@
     text-align: right;
     display: flex;
     flex-direction: row;
+    column-gap: 4px;
     align-items: center;
 
     .new_message_button {
-        margin-left: 4px;
-
         .button.small {
             font-size: 1em;
             padding: 3px 10px;
@@ -25,7 +24,6 @@
     .reply_button_container {
         flex: 1;
         min-width: 0;
-        margin-left: 0;
 
         .compose_reply_button {
             width: 100%;
