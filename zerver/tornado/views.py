@@ -81,7 +81,7 @@ def get_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     user_profile = get_user_profile_by_id(user_profile_id)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
     assert is_current_port(get_user_tornado_port(user_profile))
 
     process_client(request, user_profile, client_name="internal")
