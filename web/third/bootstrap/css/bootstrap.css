@@ -540,14 +540,6 @@ input:focus:invalid:focus {
   -moz-border-radius: 0 4px 4px 0;
   border-radius: 0 4px 4px 0;
 }
-input.search-query {
-  padding-right: 14px;
-  padding-left: 14px;
-  margin-bottom: 0;
-  -webkit-border-radius: 15px;
-  -moz-border-radius: 15px;
-  border-radius: 15px;
-}
 .form-inline input,
 .form-inline .help-inline,
 .form-inline .input-append {
