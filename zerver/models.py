@@ -2210,7 +2210,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         else:
             return -1
 
-    def format_requestor_for_logs(self) -> str:
+    def format_requester_for_logs(self) -> str:
         return "{}@{}".format(self.id, self.realm.string_id or "root")
 
     def set_password(self, password: Optional[str]) -> None:

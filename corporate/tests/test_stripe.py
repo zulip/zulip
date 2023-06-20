@@ -201,9 +201,9 @@ def read_stripe_fixture(
             fixture = orjson.loads(f.read())
         # Check for StripeError fixtures
         if "json_body" in fixture:
-            requestor = stripe.api_requestor.APIRequestor()
+            requester = stripe.api_requestor.APIRequestor()
             # This function will raise the relevant StripeError according to the fixture
-            requestor.interpret_response(
+            requester.interpret_response(
                 fixture["http_body"], fixture["http_status"], fixture["headers"]
             )
         return stripe.util.convert_to_stripe_object(fixture)
