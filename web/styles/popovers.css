@@ -850,14 +850,46 @@ ul {
         margin: 0;
     }
 
-    /* Override the default border-radius to properly align
-       the button corners with `stream_header_colorblock`. */
-    .dropdown-toggle {
-        border-radius: 1px 4px 4px 1px !important;
+    .move-topic-dropdown {
+        display: flex;
+        margin-bottom: 10px;
+
+        .dropdown-widget-button {
+            /* Override the default border-radius to properly align
+            the button corners with `stream_header_colorblock`. */
+            border-radius: 1px 4px 4px 1px !important;
+            outline: none;
+            line-height: 24px;
+            width: auto;
+            max-width: 206px;
+        }
+
+        .stream_header_colorblock {
+            margin: 0;
+        }
+
+        #move_topic_stream_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--color-text-default);
+
+            .stream-privacy-type-icon {
+                font-size: 13px;
+                width: 13px;
+                height: 13px;
+                position: relative;
+                top: 2px;
+            }
+        }
+
+        .fa-chevron-down {
+            padding-left: 5px;
+            color: hsl(0deg 0% 58%);
+            font-weight: lighter;
+        }
     }
 
-    .dropdown-list-widget,
-    .stream_header_colorblock,
     .move_messages_edit_topic {
         margin-bottom: 10px;
     }
