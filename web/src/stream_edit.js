@@ -413,7 +413,6 @@ export function initialize() {
         stream_settings_ui.sub_or_unsub(sub);
     });
 
-    
     $("#streams_overlay_container").on("click", "#open_stream_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -437,13 +436,9 @@ export function initialize() {
             post_render() {
                 $("#change_stream_info_modal .dialog_submit_button")
                     .addClass("save-button")
-                    
                     .attr("data-stream-id", stream_id);
-                    
             },
-            
         });
-
     });
 
     $("#streams_overlay_container").on("keypress", "#change_stream_description", (e) => {
@@ -474,13 +469,9 @@ export function initialize() {
         if (new_description !== sub.description) {
             data.description = new_description;
         }
-
-        
-
         dialog_widget.submit_api_request(channel.patch, url, data);
-       
     }
-    
+
     $("#streams_overlay_container").on("click", ".copy_email_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
