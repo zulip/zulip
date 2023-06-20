@@ -32,7 +32,6 @@ import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
-import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
@@ -408,31 +407,6 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
             $(".tooltip").hide();
         }
     });
-}
-
-export function get_available_streams_for_moving_messages(current_stream_id) {
-    return stream_data
-        .subscribed_subs()
-        .filter((stream) => {
-            if (stream.stream_id === current_stream_id) {
-                return true;
-            }
-            return stream_data.can_post_messages_in_stream(stream);
-        })
-        .map((stream) => ({
-            name: stream.name,
-            value: stream.stream_id.toString(),
-            stream,
-        }))
-        .sort((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
 }
 
 function edit_message($row, raw_content) {
