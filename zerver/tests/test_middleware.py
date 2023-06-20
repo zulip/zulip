@@ -48,7 +48,7 @@ class SlowQueryTest(ZulipTestCase):
                 path="/some/endpoint/",
                 method="GET",
                 remote_ip="123.456.789.012",
-                requestor_for_logs="unknown",
+                requester_for_logs="unknown",
                 client_name="?",
             )
             self.assert_length(middleware_normal_logger.output, 1)
@@ -240,29 +240,29 @@ class OpenGraphTest(ZulipTestCase):
 class LogRequestsTest(ZulipTestCase):
     meta_data = {"REMOTE_ADDR": "127.0.0.1"}
 
-    def test_requestor_for_logs_as_user(self) -> None:
+    def test_requester_for_logs_as_user(self) -> None:
         hamlet = self.example_user("hamlet")
         request = HostRequestMock(user_profile=hamlet, meta_data=self.meta_data)
         RequestNotes.get_notes(request).log_data = None
 
         with self.assertLogs("zulip.requests", level="INFO") as m:
             LogRequests(lambda _: HttpResponse())(request)
-            self.assertIn(hamlet.format_requestor_for_logs(), m.output[0])
+            self.assertIn(hamlet.format_requester_for_logs(), m.output[0])
 
-    def test_requestor_for_logs_as_remote_server(self) -> None:
+    def test_requester_for_logs_as_remote_server(self) -> None:
         remote_server = RemoteZulipServer()
         request = HostRequestMock(remote_server=remote_server, meta_data=self.meta_data)
         RequestNotes.get_notes(request).log_data = None
 
         with self.assertLogs("zulip.requests", level="INFO") as m:
             LogRequests(lambda _: HttpResponse())(request)
-            self.assertIn(remote_server.format_requestor_for_logs(), m.output[0])
+            self.assertIn(remote_server.format_requester_for_logs(), m.output[0])
 
-    def test_requestor_for_logs_unauthenticated(self) -> None:
+    def test_requester_for_logs_unauthenticated(self) -> None:
         request = HostRequestMock(meta_data=self.meta_data)
         RequestNotes.get_notes(request).log_data = None
 
-        expected_requestor = "unauth@root"
+        expected_requester = "unauth@root"
         with self.assertLogs("zulip.requests", level="INFO") as m:
             LogRequests(lambda _: HttpResponse())(request)
-            self.assertIn(expected_requestor, m.output[0])
+            self.assertIn(expected_requester, m.output[0])

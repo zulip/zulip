@@ -57,7 +57,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     client_version: Optional[str] = None
     log_data: Optional[MutableMapping[str, Any]] = None
     rate_limit: Optional[str] = None
-    requestor_for_logs: Optional[str] = None
+    requester_for_logs: Optional[str] = None
     # We use realm_cached to indicate whether the realm is cached or not.
     # Because the default value of realm is None, which can indicate "unset"
     # and "nonexistence" at the same time.

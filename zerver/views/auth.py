@@ -451,7 +451,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
 
     return response
 
@@ -971,7 +971,7 @@ def process_api_key_fetch_authenticate_result(
     # Mark this request as having a logged-in user for our server logs.
     assert isinstance(user_profile, UserProfile)
     process_client(request, user_profile)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
 
     api_key = get_api_key(user_profile)
     return api_key

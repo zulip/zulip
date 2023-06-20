@@ -1021,7 +1021,7 @@ def update_subscription_properties_backend(
 ) -> HttpResponse:
     """
     This is the entry point to changing subscription properties. This
-    is a bulk endpoint: requestors always provide a subscription_data
+    is a bulk endpoint: requesters always provide a subscription_data
     list containing dictionaries for each stream of interest.
 
     Requests are of the form:

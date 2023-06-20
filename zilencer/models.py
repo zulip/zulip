@@ -52,7 +52,7 @@ class RemoteZulipServer(models.Model):
     def __str__(self) -> str:
         return f"{self.hostname} {str(self.uuid)[0:12]}"
 
-    def format_requestor_for_logs(self) -> str:
+    def format_requester_for_logs(self) -> str:
         return "zulip-server:" + str(self.uuid)
 
 
