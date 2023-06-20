@@ -1,7 +1,0 @@
-{
-    "severity": "Average",
-    "status": "PROBLEM",
-    "item": "Agent ping is Up (1)",
-    "trigger": "Zabbix agent on www.example.com is unreachable for 5 minutes",
-    "link": "https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528"
-}

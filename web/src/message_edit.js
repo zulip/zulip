@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
@@ -392,6 +393,20 @@ function timer_text(seconds_left) {
     return $t({defaultMessage: "{seconds} sec to edit"}, {seconds: seconds.toString()});
 }
 
+function copied_notifier() {
+    // Display a tooltip to notify the user about the saved draft.
+    const instance = tippy(".fa .fa-file-code-o .view_source_button .edit_message_button", {
+        content: $t({defaultMessage: "Copied!"}),
+        arrow: true,
+        placement: "right",
+    })[0];
+    instance.show();
+    function remove_instance() {
+        instance.destroy();
+    }
+    setTimeout(remove_instance, 3000);
+}
+
 function create_copy_to_clipboard_handler($row, source, message_id) {
     const clipboard = new ClipboardJS(source, {
         target: () =>
@@ -400,12 +415,7 @@ function create_copy_to_clipboard_handler($row, source, message_id) {
 
     clipboard.on("success", () => {
         end_message_row_edit($row);
-        $row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
-        $row.find(".alert-msg").css("display", "block");
-        $row.find(".alert-msg").delay(1000).fadeOut(300);
-        if ($(".tooltip").is(":visible")) {
-            $(".tooltip").hide();
-        }
+        copied_notifier();
     });
 }
 

@@ -1,8 +1,0 @@
-{
-    "monitor_url": "server2.example.com",
-    "monitor_friendly_name": "Mail Server",
-    "alert_type": "2",
-    "alert_type_friendly_name": "Up",
-    "alert_details": "Host Is Reachable",
-    "alert_friendly_duration": "44 minutes and 37 seconds"
-  }

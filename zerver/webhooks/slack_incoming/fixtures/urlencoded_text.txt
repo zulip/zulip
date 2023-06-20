@@ -1,1 +1,0 @@
-payload=%7B%22username%22%3A%22DeployBot%22%2C%22icon_url%22%3A%22https%3A%2F%2Fraw.githubusercontent.com%2Fphallstrom%2Fslackistrano%2Fmaster%2Fimages%2Fslackistrano.png%22%2C%22icon_emoji%22%3A%22%3Azap%3A%22%2C%22text%22%3A%22chris+has+started+deploying+project+tag+v0.0.2rc10+to+staging%22%2C%22channel%22%3A%22%23devops%22%7D

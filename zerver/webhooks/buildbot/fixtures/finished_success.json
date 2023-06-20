@@ -1,9 +1,0 @@
-{
-	  "event": "finished",
-	  "buildid": 33,
-	  "buildername": "runtests",
-	  "url": "http://exampleurl.com/#builders/1/builds/33",
-	  "project": "buildbot-hello",
-	  "timestamp": 1553910552,
-	  "results": 0
-}

@@ -1,9 +1,0 @@
-{
-    "timestamp":1558960446,
-    "buildid":10434,
-    "project":"zulip\/zulip-zapier",
-    "results":6,
-    "url":"https:\/\/ci.example.org\/#builders\/79\/builds\/307",
-    "event":"finished",
-    "buildername":"AMD64 Ubuntu 18.04 Python 3"
-}

@@ -1,7 +1,0 @@
-{
-    "level": "error",
-    "message": "Movie Gotham City Sirens (tmdbid 416649) was removed from TMDb",
-    "type": "RemovedMovieCheck",
-    "wikiUrl": "https://wiki.servarr.com/Radarr_System#movie_was_removed_from_tmdb",
-    "eventType": "Health"
-}

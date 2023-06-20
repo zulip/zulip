@@ -1,7 +1,0 @@
-{
-    "level": "warning",
-    "message": "Indexers unavailable due to failures for more than 6 hours: Academic Torrents - Jackett, ACG - Jackett, KickAssTorrent - Jackett, EXT Torrents - Jackett, Extra Torrents - Jackett, SkyTorrents - Jackett, iDope - Jackett",
-    "type": "IndexerLongTermStatusCheck",
-    "wikiUrl": "https://github.com/Sonarr/Sonarr/wiki/Health-checks#indexers-are-unavailable-due-to-failures",
-    "eventType": "Health"
-}

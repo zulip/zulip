@@ -1,7 +1,0 @@
-{
-    "level": "error",
-    "message": "No indexers available with RSS sync enabled, Sonarr will not grab new releases automatically",
-    "type": "IndexerRssCheck",
-    "wikiUrl": "https://wiki.servarr.com/Sonarr_System#no_indexers_available_with_rss_sync_enabled_sonarr_will_not_grab_new_releases_automatically",
-    "eventType": "Health"
-}
