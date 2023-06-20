@@ -50,7 +50,7 @@ const HOTSPOT_LOCATIONS = new Map([
     [
         "intro_compose",
         {
-            element: "#left_bar_compose_stream_button_big",
+            element: "#new_topic_button",
             offset_x: 0,
             offset_y: 0,
         },

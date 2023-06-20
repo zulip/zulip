@@ -40,10 +40,7 @@ async function expect_verona_stream_test_topic(page: Page): Promise<void> {
     await common.check_messages_sent(page, "zfilt", [
         ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
     ]);
-    assert.strictEqual(
-        await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
-        "New topic",
-    );
+    assert.strictEqual(await common.get_text_from_selector(page, "#new_topic_button"), "New topic");
 }
 
 async function expect_verona_other_topic(page: Page): Promise<void> {
@@ -274,7 +271,7 @@ async function expect_all_direct_messages(page: Page): Promise<void> {
         ["You and Cordelia, Lear's daughter", ["direct message e"]],
     ]);
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
+        await common.get_text_from_selector(page, "#new_topic_button"),
         "New stream message",
     );
     assert.strictEqual(await page.title(), "Direct messages - Zulip Dev - Zulip");

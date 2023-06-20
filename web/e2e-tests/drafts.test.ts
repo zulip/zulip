@@ -54,7 +54,7 @@ async function create_private_message_draft(page: Page): Promise<void> {
 }
 
 async function open_compose_markdown_preview(page: Page): Promise<void> {
-    const new_topic_button = "#left_bar_compose_stream_button_big";
+    const new_topic_button = "#new_topic_button";
     await page.waitForSelector(new_topic_button, {visible: true});
     await page.click(new_topic_button);
 

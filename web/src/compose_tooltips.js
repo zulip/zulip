@@ -19,7 +19,7 @@ export function initialize() {
             // reply button's actual area is its containing span.
             "#compose_buttons > .reply_button_container",
             "#left_bar_compose_mobile_button_big",
-            "#left_bar_compose_stream_button_big",
+            "#new_topic_button",
             "#left_bar_compose_private_button_big",
         ],
         delay: EXTRA_LONG_HOVER_DELAY,

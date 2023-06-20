@@ -783,20 +783,14 @@ test_ui("narrow_button_titles", ({override}) => {
     override(narrow_state, "pm_ids_string", () => "31");
     override(narrow_state, "is_message_feed_visible", () => true);
     compose_closed_ui.update_buttons_for_private();
-    assert.equal(
-        $("#left_bar_compose_stream_button_big").text(),
-        $t({defaultMessage: "New stream message"}),
-    );
+    assert.equal($("#new_topic_button").text(), $t({defaultMessage: "New stream message"}));
     assert.equal(
         $("#left_bar_compose_private_button_big").text(),
         $t({defaultMessage: "New direct message"}),
     );
 
     compose_closed_ui.update_buttons_for_stream();
-    assert.equal(
-        $("#left_bar_compose_stream_button_big").text(),
-        $t({defaultMessage: "New topic"}),
-    );
+    assert.equal($("#new_topic_button").text(), $t({defaultMessage: "New topic"}));
     assert.equal(
         $("#left_bar_compose_private_button_big").text(),
         $t({defaultMessage: "New direct message"}),
