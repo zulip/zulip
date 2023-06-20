@@ -1650,8 +1650,7 @@ $option_title_width: 180px;
     }
 }
 
-#payload_url_inputbox,
-#service_name_list {
+#payload_url_inputbox {
     & input[type="text"] {
         width: 340px;
     }
