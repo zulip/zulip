@@ -246,22 +246,7 @@ function item_click_callback(event, dropdown) {
 }
 
 function get_options_for_recipient_widget() {
-    const options = stream_data
-        .subscribed_subs()
-        .map((stream) => ({
-            name: stream.name,
-            unique_id: stream.stream_id,
-            stream,
-        }))
-        .sort((a, b) => {
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
-            }
-            return 0;
-        });
+    const options = stream_data.get_options_for_dropdown_widget();
 
     const direct_messages_option = {
         is_direct_message: true,
