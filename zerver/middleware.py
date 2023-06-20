@@ -251,18 +251,18 @@ def parse_client(
     if req_client is not None:
         return req_client, None
     if "User-Agent" in request.headers:
-        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
+        user_agent_dict: Optional[Dict[str, str]] = parse_user_agent(request.headers["User-Agent"])
     else:
-        user_agent = None
-    if user_agent is None:
+        user_agent_dict = None
+    if user_agent_dict is None:
         # In the future, we will require setting USER_AGENT, but for
         # now we just want to tag these requests so we can review them
         # in logs and figure out the extent of the problem
         return "Unspecified", None
 
-    client_name = user_agent["name"]
+    client_name = user_agent_dict["name"]
     if client_name.startswith("Zulip"):
-        return client_name, user_agent.get("version")
+        return client_name, user_agent_dict.get("version")
 
     # We could show browser versions in logs, and it'd probably be a
     # good idea, but the current parsing will just get you Mozilla/5.0.
@@ -289,6 +289,14 @@ class LogRequests(MiddlewareMixin):
             # Avoid re-initializing request_notes.log_data if it's already there.
             return
 
+        # We store the metadata from parsing User-Agent in
+        # request_notes.client_name here. This value is used to
+        # describe the User-Agent for those requests where
+        # process_client does not end up being called, either due to
+        # an error or because the request does not use our
+        # authenticate decorators. process_client sets
+        # request_notes.client and sets request_notes.client.name to
+        # None, to avoid that stale value being used.
         try:
             request_notes.client_name, request_notes.client_version = parse_client(request)
         except JsonableError as e:
@@ -350,7 +358,12 @@ class LogRequests(MiddlewareMixin):
 
         content = response.content if isinstance(response, HttpResponse) else None
 
-        assert request_notes.client_name is not None and request_notes.log_data is not None
+        client_name = (
+            request_notes.client.name
+            if request_notes.client is not None
+            else request_notes.client_name
+        )
+        assert client_name is not None and request_notes.log_data is not None
         assert request.method is not None
         write_log_line(
             request_notes.log_data,
@@ -358,7 +371,7 @@ class LogRequests(MiddlewareMixin):
             request.method,
             remote_ip,
             requestor_for_logs,
-            request_notes.client_name,
+            client_name,
             client_version=request_notes.client_version,
             status_code=response.status_code,
             error_content=content,

@@ -57,7 +57,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
 
     from django.test import Client
 
-    client = Client()
+    client = Client(REMOTE_ADDR="127.0.0.1")
 
     # write fake data for all variables
     registered_email = "hamlet@zulip.com"
@@ -71,34 +71,48 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Password reset emails
     # active account in realm
     result = client.post(
-        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
+        "/accounts/password/reset/",
+        {"client": "internal", "email": registered_email},
+        HTTP_HOST=realm.host,
     )
     assert result.status_code == 302
     # deactivated user
     change_user_is_active(user, False)
     result = client.post(
-        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
+        "/accounts/password/reset/",
+        {"client": "internal", "email": registered_email},
+        HTTP_HOST=realm.host,
     )
     assert result.status_code == 302
     change_user_is_active(user, True)
     # account on different realm
     assert other_realm is not None
     result = client.post(
-        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=other_realm.host
+        "/accounts/password/reset/",
+        {"client": "internal", "email": registered_email},
+        HTTP_HOST=other_realm.host,
     )
     assert result.status_code == 302
     # no account anywhere
     result = client.post(
-        "/accounts/password/reset/", {"email": unregistered_email_1}, HTTP_HOST=realm.host
+        "/accounts/password/reset/",
+        {"client": "internal", "email": unregistered_email_1},
+        HTTP_HOST=realm.host,
     )
     assert result.status_code == 302
 
     # Confirm account email
-    result = client.post("/accounts/home/", {"email": unregistered_email_1}, HTTP_HOST=realm.host)
+    result = client.post(
+        "/accounts/home/",
+        {"client": "internal", "email": unregistered_email_1},
+        HTTP_HOST=realm.host,
+    )
     assert result.status_code == 302
 
     # Find account email
-    result = client.post("/accounts/find/", {"emails": registered_email}, HTTP_HOST=realm.host)
+    result = client.post(
+        "/accounts/find/", {"client": "internal", "emails": registered_email}, HTTP_HOST=realm.host
+    )
     assert result.status_code == 302
 
     # New login email
@@ -110,6 +124,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     result = client.post(
         "/json/invites",
         {
+            "client": "internal",
             "invitee_emails": unregistered_email_2,
             "invite_expires_in_minutes": invite_expires_in_minutes,
             "stream_ids": orjson.dumps([stream.id]).decode(),
@@ -121,7 +136,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Verification for new email
     result = client.patch(
         "/json/settings",
-        urllib.parse.urlencode({"email": "hamlets-new@zulip.com"}),
+        urllib.parse.urlencode({"client": "internal", "email": "hamlets-new@zulip.com"}),
         content_type="application/x-www-form-urlencoded",
         HTTP_HOST=realm.host,
     )
