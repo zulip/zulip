@@ -2781,7 +2781,8 @@ paths:
                                   additionalProperties:
                                     type: object
                                     description: |
-                                      Additional properties.
+                                      `{message_id}`: Object containing details about the
+                                      message with the specified ID.
                                     additionalProperties: false
                                     required: ["type"]
                                     properties:
@@ -2836,7 +2837,7 @@ paths:
                                   "messages": [63],
                                   "message_details":
                                     {
-                                      63:
+                                      "63":
                                         {
                                           "type": "stream",
                                           "stream_id": 22,
