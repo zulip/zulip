@@ -619,7 +619,6 @@ input.recipient_box {
     }
 
     & kbd {
-        height: 16px;
         padding: 0 4px;
     }
 
