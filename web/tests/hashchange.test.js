@@ -11,9 +11,6 @@ const {user_settings} = require("./lib/zpage_params");
 let $window_stub;
 set_global("to_$", () => $window_stub);
 
-mock_esm("../src/search", {
-    update_button_visibility() {},
-});
 set_global("document", "document-stub");
 const history = set_global("history", {});
 
