@@ -1241,8 +1241,10 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 35**
 
-* The peer_add and peer_remove subscription events now have plural
-  versions of `user_ids` and `stream_ids`.
+* [`GET /events`](/api/get-events): The `subscription` events for
+  `peer_add` and `peer_remove` now include `user_ids` and `stream_ids`
+  arrays. Previously, these events included singular `user_id` and
+  `stream_id` integers.
 
 **Feature level 34**
 
@@ -1349,9 +1351,9 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 19**
 
-* [`GET /events`](/api/get-events): `subscriptions` event with
-  `op="peer_add"` and `op="peer_remove"` now identify the modified
-  stream by a `stream_id` field, replacing the old `name` field.
+* [`GET /events`](/api/get-events): The `subscription` events for
+  `peer_add` and `peer_remove` now identify the modified
+  stream by the `stream_id` field, replacing the old `name` field.
 
 **Feature level 18**
 

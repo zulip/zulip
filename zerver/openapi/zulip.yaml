@@ -771,6 +771,15 @@ paths:
                                 Event sent to other users when users have been subscribed to
                                 streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
+
+                                **Changes**: In Zulip 4.0 (feature level 35), the singular
+                                `user_id` and `stream_id` integers included in this event
+                                were replaced with plural `user_ids` and `stream_ids` integer
+                                arrays.
+
+                                In Zulip 3.0 (feature level 19), the `stream_id` field was
+                                added to identify the stream the user subscribed to,
+                                replacing the `name` field.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -787,12 +796,18 @@ paths:
                                   type: array
                                   description: |
                                     The IDs of the streams to which the user has subscribed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `stream_id` integer.
                                   items:
                                     type: integer
                                 user_ids:
                                   type: array
                                   description: |
                                     The IDs of the users who subscribed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `user_id` integer.
                                   items:
                                     type: integer
                               additionalProperties: false
@@ -800,8 +815,8 @@ paths:
                                 {
                                   "type": "subscription",
                                   "op": "peer_add",
-                                  "stream_id": 9,
-                                  "user_id": 12,
+                                  "stream_ids": [9],
+                                  "user_ids": [12],
                                   "id": 0,
                                 }
                             - type: object
@@ -809,6 +824,15 @@ paths:
                                 Event sent to other users when users have been unsubscribed
                                 from streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
+
+                                **Changes**: In Zulip 4.0 (feature level 35), the singular
+                                `user_id` and `stream_id` integers included in this event
+                                were replaced with plural `user_ids` and `stream_ids` integer
+                                arrays.
+
+                                In Zulip 3.0 (feature level 19), the `stream_id` field was
+                                added to identify the stream the user unsubscribed from,
+                                replacing the `name` field.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -826,12 +850,18 @@ paths:
                                   description: |
                                     The IDs of the streams from which the users have been
                                     unsubscribed from.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `stream_id` integer.
                                   items:
                                     type: integer
                                 user_ids:
                                   type: array
                                   description: |
                                     The IDs of the users who have been unsubscribed.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 35), replacing
+                                    the `user_id` integer.
                                   items:
                                     type: integer
                               additionalProperties: false
@@ -839,8 +869,8 @@ paths:
                                 {
                                   "type": "subscription",
                                   "op": "peer_remove",
-                                  "stream_id": 9,
-                                  "user_id": 12,
+                                  "stream_ids": [9],
+                                  "user_ids": [12],
                                   "id": 0,
                                 }
                             - type: object
