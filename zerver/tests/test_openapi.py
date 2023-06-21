@@ -910,6 +910,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
         Checks:
         * All endpoints have `operationId` and `tag` attributes.
         * All example responses match their schema.
+        * All example events in `/get-events` match an event schema.
         * That no opaque object exists.
         """
         EXCLUDE = ["/real-time"]
@@ -929,15 +930,28 @@ class OpenAPIAttributesTest(ZulipTestCase):
             if path in EXCLUDE:
                 continue
             for method, operation in path_item.items():
-                # Check if every file has an operationId
                 assert "operationId" in operation
                 assert "tags" in operation
                 tag = operation["tags"][0]
                 assert tag in VALID_TAGS
                 for status_code, response in operation["responses"].items():
                     schema = response["content"]["application/json"]["schema"]
+                    # Validate the documented examples for each event type
+                    # in api/get-events for the documented event schemas.
+                    if path == "/events" and method == "get" and status_code == "200":
+                        for event_type in schema["properties"]["events"]["items"]["oneOf"]:
+                            event_array = [event_type["example"]]
+                            content = {
+                                "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
+                                "events": event_array,
+                                "msg": "",
+                                "result": "success",
+                            }
+                            assert validate_against_openapi_schema(
+                                content, path, method, status_code
+                            )
                     if "oneOf" in schema:
-                        for _, subschema in enumerate(schema["oneOf"]):
+                        for subschema in schema["oneOf"]:
                             validate_schema(subschema)
                             assert validate_against_openapi_schema(
                                 subschema["example"],
