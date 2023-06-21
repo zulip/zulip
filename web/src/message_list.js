@@ -382,7 +382,11 @@ export class MessageList {
             return;
         }
         $row.find(".message_edit_form").append(edit_obj.$form);
-        $row.find(".message_content, .status-message, .message_controls").hide();
+        // Hide the original message with visibility: hidden,
+        // so its baseline is still detectable on other columns
+        // in the grid for a consistent layout in the edit state
+        $row.find(".message_content").css("visibility", "hidden");
+        $row.find(".status-message, .message_controls").hide();
         $row.find(".sender-status").toggleClass("sender-status-edit");
         $row.find(".messagebox-content").addClass("content_edit_mode");
         $row.find(".message_edit").css("display", "block");
@@ -390,7 +394,8 @@ export class MessageList {
     }
 
     hide_edit_message($row) {
-        $row.find(".message_content, .status-message, .message_controls").show();
+        $row.find(".message_content").css("visibility", "visible");
+        $row.find(".status-message, .message_controls").show();
         $row.find(".sender-status").toggleClass("sender-status-edit");
         $row.find(".message_edit_form").empty();
         $row.find(".messagebox-content").removeClass("content_edit_mode");

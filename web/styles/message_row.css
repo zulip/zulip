@@ -202,6 +202,11 @@ $time_column_max_width: 150px;
 
         .message_edit {
             grid-area: message;
+            /* Align self to start, rather than baseline, so the baseline
+              is preserved from the message itself--keeping the time,
+              edit message, and controls at the same vertical alignment. */
+            align-self: start;
+            margin-top: $distance_of_non_text_elements_from_message_box;
         }
 
         .alert-msg {
@@ -222,6 +227,11 @@ $time_column_max_width: 150px;
                 "avatar message   .        .   "
                 ".      more      .        .   "
                 ".      reactions .        .   ";
+
+            .message_edit {
+                /* No top margin when there's a sender row */
+                margin-top: 0;
+            }
 
             &.is-me-message {
                 grid-template-areas:
@@ -245,6 +255,19 @@ $time_column_max_width: 150px;
                     .sender_name {
                         white-space: normal;
                         display: inline;
+                    }
+                }
+
+                &.content_edit_mode {
+                    .message_sender {
+                        /* Keep the me-message participating in the baseline */
+                        visibility: hidden;
+                    }
+
+                    .message_edit {
+                        /* Use the sender grid area for the me-message edit/view-source box */
+                        grid-area: sender;
+                        margin-top: $distance_of_non_text_elements_from_message_box;
                     }
                 }
             }
@@ -322,16 +345,6 @@ $time_column_max_width: 150px;
                     line-height: normal;
                     outline: none;
                     align-self: baseline;
-                }
-            }
-
-            &.content_edit_mode {
-                .is_me_message {
-                    & ~ .alert-msg,
-                    & ~ .message_time,
-                    & ~ .message_controls {
-                        grid-row: 1 / 2;
-                    }
                 }
             }
         }
