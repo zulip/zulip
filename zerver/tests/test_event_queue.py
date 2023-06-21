@@ -875,6 +875,42 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
+    def test_followed_topic_wildcard_mention_in_muted_stream(self) -> None:
+        # By default, wildcard mentions in a followed topic with muted stream DO notify.
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+        )
+
+        self.change_subscription_properties({"is_muted": True})
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        self.send_stream_message(self.user_profile, "Denmark")
+
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called()
+            args_dict = mock_enqueue.call_args_list[1][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_wildcard_mention_email_notify=True,
+                followed_topic_wildcard_mention_push_notify=True,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
     def test_followed_topic_wildcard_mentions_notify_global_setting(self) -> None:
         do_change_user_setting(
             self.user_profile, "wildcard_mentions_notify", False, acting_user=None

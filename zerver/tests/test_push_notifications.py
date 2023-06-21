@@ -1675,7 +1675,19 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"message_id": personal_message_id, "trigger": "private_message"},
             )
 
-        # Wild card mention should NOT soft reactivate the user
+        # Followed Topic wildcard mention should NOT soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
+            mention = "@**all**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": "followed_topic_wildcard_mentioned",
+                },
+            )
+
+        # Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
             # Soft reactivate the user by sending a personal message
             mention = "@**all**"

@@ -691,6 +691,47 @@ class TestMissedMessages(ZulipTestCase):
             trigger="mentioned",
         )
 
+    def _extra_context_in_missed_stream_messages_followed_topic_wildcard_mention(
+        self, send_as_user: bool, show_message_content: bool = True
+    ) -> None:
+        for i in range(1, 6):
+            self.send_stream_message(self.example_user("othello"), "Denmark", content=str(i))
+        self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
+        msg_id = self.send_stream_message(self.example_user("othello"), "Denmark", "@**all**")
+
+        if show_message_content:
+            verify_body_include = [
+                "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**all** -- ",
+                "You are receiving this because you have wildcard mention notifications enabled for topics you follow.",
+            ]
+            email_subject = "#Denmark > test"
+            verify_body_does_not_include: List[str] = []
+        else:
+            # Test in case if message content in missed email message are disabled.
+            verify_body_include = [
+                "This email does not include message content because you have disabled message ",
+                "http://zulip.testserver/help/pm-mention-alert-notifications ",
+                "View or reply in Zulip Dev Zulip",
+                " Manage email preferences: http://zulip.testserver/#settings/notifications",
+            ]
+            email_subject = "New messages"
+            verify_body_does_not_include = [
+                "Othello, the Moor of Venice",
+                "1 2 3 4 5 @**all**",
+                "private",
+                "group",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
+            ]
+        self._test_cases(
+            msg_id,
+            verify_body_include,
+            email_subject,
+            send_as_user,
+            show_message_content=show_message_content,
+            verify_body_does_not_include=verify_body_does_not_include,
+            trigger="followed_topic_wildcard_mentioned",
+        )
+
     def _extra_context_in_missed_stream_messages_wildcard_mention(
         self, send_as_user: bool, show_message_content: bool = True
     ) -> None:
@@ -1281,6 +1322,10 @@ class TestMissedMessages(ZulipTestCase):
         )
         self._extra_context_in_missed_stream_messages_mention(False, show_message_content=False)
         mail.outbox = []
+        self._extra_context_in_missed_stream_messages_followed_topic_wildcard_mention(
+            False, show_message_content=False
+        )
+        mail.outbox = []
         self._extra_context_in_missed_stream_messages_wildcard_mention(
             False, show_message_content=False
         )
@@ -1297,6 +1342,15 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_extra_context_in_missed_stream_messages(self) -> None:
         self._extra_context_in_missed_stream_messages_mention(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_missed_stream_messages_as_user_followed_topic_wildcard(
+        self,
+    ) -> None:
+        self._extra_context_in_missed_stream_messages_followed_topic_wildcard_mention(True)
+
+    def test_extra_context_in_missed_stream_messages_followed_topic_wildcard(self) -> None:
+        self._extra_context_in_missed_stream_messages_followed_topic_wildcard_mention(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user_wildcard(self) -> None:
@@ -1891,7 +1945,21 @@ class TestMissedMessages(ZulipTestCase):
                 [{"message_id": personal_message_id, "trigger": "private_message"}],
             )
 
-        # Wild card mention should NOT soft reactivate the user
+        # Followed Topic wildcard mention should NOT soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
+            mention = "@**all**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_missedmessage_emails(
+                hamlet.id,
+                [
+                    {
+                        "message_id": stream_mentioned_message_id,
+                        "trigger": "followed_topic_wildcard_mentioned",
+                    }
+                ],
+            )
+
+        # Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
             # Soft reactivate the user by sending a personal message
             mention = "@**all**"
