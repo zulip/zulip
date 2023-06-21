@@ -21,7 +21,7 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
-            "--token", metavar="<slack_token>", help="Slack legacy token of the organization"
+            "--token", metavar="<slack_token>", help="Bot user OAuth token, starting xoxb-"
         )
 
         parser.add_argument(
