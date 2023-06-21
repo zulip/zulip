@@ -90,7 +90,7 @@ function test_helper() {
     stub(notifications, "redraw_title");
     stub(search, "update_button_visibility");
     stub(stream_list, "handle_narrow_activated");
-    stub(message_view_header, "initialize");
+    stub(message_view_header, "render_title_area");
     stub(top_left_corner, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_recipient, "update_narrow_to_recipient_visibility");
@@ -198,7 +198,7 @@ run_test("basics", () => {
         [top_left_corner, "handle_narrow_activated"],
         [stream_list, "handle_narrow_activated"],
         [typing_events, "render_notifications_for_narrow"],
-        [message_view_header, "initialize"],
+        [message_view_header, "render_title_area"],
         [compose_recipient, "update_narrow_to_recipient_visibility"],
     ]);
 
