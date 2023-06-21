@@ -526,6 +526,7 @@ def do_send_missedmessage_events_reply_in_zulip(
                     for m in missed_messages
                     if m["trigger"] == NotificationTriggers.MENTION
                     or m["trigger"] == NotificationTriggers.WILDCARD_MENTION
+                    or m["trigger"] == NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION
                 }
             )
         message = missed_messages[0]["message"]
