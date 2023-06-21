@@ -549,7 +549,7 @@ export function activate(raw_operators, opts) {
         pm_list.handle_narrow_activated(current_filter);
         stream_list.handle_narrow_activated(current_filter);
         typing_events.render_notifications_for_narrow();
-        message_view_header.initialize();
+        message_view_header.render_title_area();
         unread_ui.update_unread_banner();
 
         // It is important to call this after other important updates
@@ -991,7 +991,7 @@ function handle_post_narrow_deactivate_processes() {
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
-    message_view_header.initialize();
+    message_view_header.render_title_area();
     update_narrow_title(narrow_state.filter());
     message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
 }
