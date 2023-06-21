@@ -846,6 +846,10 @@ paths:
                             - type: object
                               description: |
                                 Event type for messages.
+
+                                **Changes**: In Zulip 3.1 (feature level 26), the
+                                `sender_short_name` field was removed from message
+                                objects.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -888,7 +892,6 @@ paths:
                                       "reactions": [],
                                       "submessages": [],
                                       "sender_full_name": "King Hamlet",
-                                      "sender_short_name": "hamlet",
                                       "sender_email": "user10@zulip.testserver",
                                       "sender_realm_str": "zulip",
                                       "display_recipient": "Denmark",
@@ -5791,8 +5794,11 @@ paths:
                       messages:
                         type: array
                         description: |
-                          An array of `message` objects, each containing the following
-                          fields:
+                          An array of `message` objects.
+
+                          **Changes**: In Zulip 3.1 (feature level 26), the
+                          `sender_short_name` field was removed from message
+                          objects.
                         items:
                           allOf:
                             - $ref: "#/components/schemas/MessagesBase"
