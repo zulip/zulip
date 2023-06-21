@@ -3623,8 +3623,7 @@ paths:
                                 {
                                   "type": "realm_bot",
                                   "op": "delete",
-                                  "bot":
-                                    {"user_id": 35, "full_name": "Foo Bot"},
+                                  "bot": {"user_id": 35},
                                   "id": 1,
                                 }
                             - type: object
