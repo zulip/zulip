@@ -29,12 +29,17 @@ from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfi
 INVITATION_LINK_VALIDITY_MINUTES: Optional[int] = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
 
 
-def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
+def check_role_based_permissions(
+    invited_as: int, user_profile: UserProfile, *, require_admin: bool
+) -> None:
     if (
         invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]
         and not user_profile.is_realm_owner
     ):
         raise OrganizationOwnerRequiredError
+
+    if require_admin and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
 
 
 @require_member_or_admin
@@ -58,16 +63,13 @@ def invite_users_backend(
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
         raise JsonableError(_("Insufficient permission"))
-    check_if_owner_required(invite_as, user_profile)
-    if (
-        invite_as
-        in [
-            PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-            PreregistrationUser.INVITE_AS["MODERATOR"],
-        ]
-        and not user_profile.is_realm_admin
-    ):
-        raise JsonableError(_("Must be an organization administrator"))
+
+    require_admin = invite_as in [
+        PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        PreregistrationUser.INVITE_AS["MODERATOR"],
+    ]
+    check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
+
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
 
@@ -129,9 +131,7 @@ def revoke_user_invite(
         raise JsonableError(_("No such invitation"))
 
     if prereg_user.referred_by_id != user_profile.id:
-        check_if_owner_required(prereg_user.invited_as, user_profile)
-        if not user_profile.is_realm_admin:
-            raise JsonableError(_("Must be an organization administrator"))
+        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
 
     do_revoke_user_invite(prereg_user)
     return json_success(request)
@@ -150,7 +150,7 @@ def revoke_multiuse_invite(
     if invite.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
-    check_if_owner_required(invite.invited_as, user_profile)
+    check_role_based_permissions(invite.invited_as, user_profile, require_admin=True)
 
     if invite.status == confirmation_settings.STATUS_REVOKED:
         raise JsonableError(_("Invitation has already been revoked"))
@@ -175,9 +175,7 @@ def resend_user_invite_email(
         raise JsonableError(_("No such invitation"))
 
     if prereg_user.referred_by_id != user_profile.id:
-        check_if_owner_required(prereg_user.invited_as, user_profile)
-        if not user_profile.is_realm_admin:
-            raise JsonableError(_("Must be an organization administrator"))
+        check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
 
     timestamp = do_resend_user_invite_email(prereg_user)
     return json_success(request, data={"timestamp": timestamp})
@@ -199,7 +197,7 @@ def generate_multiuse_invite_backend(
     ),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
-    check_if_owner_required(invite_as, user_profile)
+    check_role_based_permissions(invite_as, user_profile, require_admin=True)
 
     streams = []
     for stream_id in stream_ids:
