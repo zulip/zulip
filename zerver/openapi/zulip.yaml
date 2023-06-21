@@ -4448,7 +4448,7 @@ paths:
                               example:
                                 {
                                   "type": "drafts",
-                                  "op": "update",
+                                  "op": "remove",
                                   "draft_id": 17,
                                 }
                             - type: object
