@@ -87,10 +87,9 @@
         box-shadow: inset 0 0 0 2px hsl(204deg 20% 74%);
     }
 
-    .search_close_button,
-    .search_close_button:disabled:hover {
+    .search_close_button {
         position: absolute;
-        right: 35px;
+        right: 0;
         top: 6px;
         background: none;
         border-radius: 0;
@@ -104,10 +103,6 @@
         box-shadow: none;
         text-shadow: none;
         z-index: 5;
-    }
-
-    .search_close_button {
-        right: 0;
 
         &:hover {
             opacity: 1;

@@ -539,8 +539,6 @@ export function activate(raw_operators, opts) {
         }
         compose_closed_ui.update_reply_recipient_label();
 
-        search.update_button_visibility();
-
         compose_actions.on_narrow(opts);
 
         const current_filter = narrow_state.filter();
