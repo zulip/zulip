@@ -1296,8 +1296,9 @@ releases.
 
 **Feature level 26**
 
-* [`GET /messages`](/api/get-messages): `sender_short_name` field is no
-  longer included in return values for this endpoint.
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
+  The `sender_short_name` field is no longer included in message objects
+  returned by these endpoints.
 * [`GET /messages`](/api/get-messages) : Removed `short_name` field from
   `display_recipient` array objects.
 
