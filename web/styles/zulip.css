@@ -3220,3 +3220,12 @@ select.invite-as {
         }
     }
 }
+
+.keyboard-shortcut-option {
+    & span.tooltip-hotkey-hint {
+        margin-left: auto;
+        padding: 0 4px;
+        color: hsl(227deg 78% 59%);
+        border-color: hsl(227deg 78% 59%);
+    }
+}
