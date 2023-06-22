@@ -27,11 +27,11 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-language="{data_language}" tabindex="0">{label}</li>
+<li data-tab-key="{data_language}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div data-language="{data_language}" markdown="1">
+<div data-tab-key="{data_language}" markdown="1">
 {content}
 </div>
 """.strip()

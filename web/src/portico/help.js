@@ -14,13 +14,13 @@ function registerCodeSection($codeSection) {
     const $blocks = $codeSection.find(".blocks div");
 
     $li.on("click", function () {
-        const language = this.dataset.language;
+        const tab_key = this.dataset.tabKey;
 
         $li.removeClass("active");
-        $li.filter("[data-language=" + language + "]").addClass("active");
+        $li.filter("[data-tab-key=" + tab_key + "]").addClass("active");
 
         $blocks.removeClass("active");
-        $blocks.filter("[data-language=" + language + "]").addClass("active");
+        $blocks.filter("[data-tab-key=" + tab_key + "]").addClass("active");
     });
 
     $li.on("keydown", (e) => {
