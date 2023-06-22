@@ -8439,7 +8439,10 @@ paths:
 
         If any of the specified streams do not exist, they are automatically
         created. The initial [stream settings](/api/update-stream) will be determined
-        by the optional parameters like `invite_only` detailed below.
+        by the optional parameters, like `invite_only`, detailed below.
+
+        Note that the ability to subscribe oneself and/or other users to a specified
+        stream depends on the [stream's privacy settings](/help/stream-permissions).
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -15662,6 +15665,7 @@ paths:
       tags: ["streams"]
       description: |
         [Archive the stream](/help/archive-a-stream) with the ID `stream_id`.
+      x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
       responses:
@@ -15695,6 +15699,10 @@ paths:
         - Stream [permissions](/help/stream-permissions), including
           [privacy](/help/change-the-privacy-of-a-stream) and [who can
           send](/help/stream-sending-policy).
+
+        Note that an organization administrator's ability to change a
+        [private stream's permissions](/help/stream-permissions#private-streams)
+        depends on them being subscribed to the stream.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -15841,14 +15849,16 @@ paths:
         data structure), so deleting all the messages in the topic
         deletes the topic from Zulip.
 
-        **Changes**: Before Zulip 6.0 (feature level 147), this
-        request did a single atomic operation, which could time out
-        for very large topics. It now deletes messages in batches,
-        starting with the newest messages, so that progress will be
-        made even if the request times out.
+        **Changes**: As of Zulip 6.0 (feature level 154), in case
+        of timeout, a success response with "partially_completed"
+        result will now be returned.
 
-        As of feature level 154, in case of timeout, a success response
-        with "partially_completed" result will now be returned.
+        Before Zulip 6.0 (feature level 147), this request did a
+        single atomic operation, which could time out for very large
+        topics. It now deletes messages in batches, starting with
+        the newest messages, so that progress will be made even if
+        the request times out.
+      x-requires-administrator: true
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: topic_name
