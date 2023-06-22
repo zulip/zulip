@@ -19,7 +19,6 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
-import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -1088,7 +1087,6 @@ export function hide_all_except_sidebars(opts) {
         hideAll();
     }
     emoji_picker.hide_emoji_popover();
-    giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
