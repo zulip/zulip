@@ -54,7 +54,7 @@ test("get_item", () => {
         $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_close_button", {mode: "compose"}, "id_2"),
+        upload.get_item("upload_banner_hide_button", {mode: "compose"}, "id_2"),
         $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
     );
     assert.equal(
@@ -102,7 +102,7 @@ test("get_item", () => {
         $(".main-view-banner-close-button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_close_button", {mode: "edit", row: 2}, "id_34"),
+        upload.get_item("upload_banner_hide_button", {mode: "edit", row: 2}, "id_34"),
         $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`),
     );
 

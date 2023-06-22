@@ -46,7 +46,7 @@ export function get_item(key, config, file_id) {
                         file_id,
                     )} .upload_banner_cancel_button`,
                 );
-            case "upload_banner_close_button":
+            case "upload_banner_hide_button":
                 return $(
                     `#compose_banners .upload_banner.file_${CSS.escape(
                         file_id,
@@ -94,7 +94,7 @@ export function get_item(key, config, file_id) {
                         file_id,
                     )} .upload_banner_cancel_button`,
                 );
-            case "upload_banner_close_button":
+            case "upload_banner_hide_button":
                 return $(
                     `#edit_form_${CSS.escape(config.row)} .upload_banner.file_${CSS.escape(
                         file_id,
@@ -232,7 +232,7 @@ export async function upload_files(uppy, config, files) {
             uppy.removeFile(file.id);
             hide_upload_banner(uppy, config, file.id);
         });
-        get_item("upload_banner_close_button", config, file.id).one("click", () => {
+        get_item("upload_banner_hide_button", config, file.id).one("click", () => {
             hide_upload_banner(uppy, config, file.id);
         });
     }
