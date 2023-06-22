@@ -273,6 +273,7 @@ export function initialize_custom_date_type_fields(element_id) {
         altInput: true,
         altFormat: "F j, Y",
         allowInput: true,
+        static: true,
     });
 
     $(element_id)
