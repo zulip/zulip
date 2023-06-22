@@ -21,11 +21,14 @@ import * as channel from "./channel";
 import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
 import * as compose_textarea from "./compose_textarea";
 import * as compose_tooltips from "./compose_tooltips";
+import * as compose_ui from "./compose_ui";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -480,6 +483,32 @@ function initialize_unread_ui() {
     unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
+function initialize_scheduled_messages(scheduled_message_params) {
+    // Add required hooks.
+    scheduled_messages.register_post_open_scheduled_message_hook(
+        "compose",
+        compose.clear_compose_box,
+    );
+    scheduled_messages.register_post_open_scheduled_message_hook(
+        "compose_banner",
+        compose_banner.clear_message_sent_banners,
+    );
+    scheduled_messages.register_post_open_scheduled_message_hook(
+        "compose_actions",
+        compose_actions.start,
+    );
+    scheduled_messages.register_post_open_scheduled_message_hook(
+        "compose_ui",
+        compose_ui.autosize_textarea,
+    );
+    scheduled_messages.register_post_open_scheduled_message_hook(
+        "popover_menus",
+        popover_menus.set_selected_schedule_timestamp,
+    );
+
+    scheduled_messages.initialize(scheduled_message_params);
+}
+
 export function initialize_everything() {
     /*
         When we initialize our various modules, a lot
@@ -619,8 +648,8 @@ export function initialize_everything() {
     tippyjs.initialize();
     compose_tooltips.initialize();
     message_list_tooltips.initialize();
-    // This populates data for scheduled messages.
-    scheduled_messages.initialize(scheduled_messages_params);
+    // This populates data for scheduled messages and sets up the required hooks.
+    initialize_scheduled_messages(scheduled_messages_params);
     popovers.initialize();
     popover_menus.initialize();
 

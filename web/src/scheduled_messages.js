@@ -4,14 +4,10 @@ import render_compose_banner from "../templates/compose_banner/compose_banner.hb
 import render_send_later_modal_options from "../templates/send_later_modal_options.hbs";
 
 import * as channel from "./channel";
-import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
-import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
 import * as people from "./people";
-import * as popover_menus from "./popover_menus";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
@@ -20,6 +16,19 @@ export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 
 // scheduled_messages_data is a dictionary where key=scheduled_message_id and value=scheduled_messages
 export const scheduled_messages_data = {};
+
+const post_open_scheduled_message_hooks = new Map();
+
+export const register_post_open_scheduled_message_hook = (module, f) => {
+    const name = f.name;
+    post_open_scheduled_message_hooks.set(`${module}.${name}`, f);
+};
+
+const run_post_open_scheduled_message_hooks = (args) => {
+    for (const id of post_open_scheduled_message_hooks.keys()) {
+        post_open_scheduled_message_hooks.get(id)(...args[id]);
+    }
+};
 
 function compute_send_times(now = new Date()) {
     const send_times = {};
@@ -130,11 +139,18 @@ export function open_scheduled_message_in_compose(scheduled_msg, should_narrow_t
         narrow_via_edit_scheduled_message(compose_args);
     }
 
-    compose.clear_compose_box();
-    compose_banner.clear_message_sent_banners(false);
-    compose_actions.start(compose_args.type, compose_args);
-    compose_ui.autosize_textarea($("#compose-textarea"));
-    popover_menus.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
+    // See `initialize_scheduled_messages` in `ui_init` for all the hooks.
+    // We need to give hooks proper arguments to work with, so we pass a
+    // dictionary of arguments to each hook.
+    run_post_open_scheduled_message_hooks({
+        "compose.clear_compose_box": [],
+        "compose_banner.clear_message_sent_banners": [false],
+        "compose_actions.start": [compose_args.type, compose_args],
+        "compose_ui.autosize_textarea": [$("#compose-textarea")],
+        "popover_menus.set_selected_schedule_timestamp": [
+            scheduled_msg.scheduled_delivery_timestamp,
+        ],
+    });
 }
 
 function show_message_unscheduled_banner(scheduled_delivery_timestamp) {
