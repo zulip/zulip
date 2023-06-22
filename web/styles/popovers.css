@@ -735,6 +735,14 @@ ul {
     left: -1px;
 }
 
+.giphy-popover {
+    .tippy-content {
+        /* We remove the default padding from this container
+           as it is not necessary for the Giphy popover. */
+        padding: 0;
+    }
+}
+
 #giphy_grid_in_popover {
     /* 300px of GIPHY grid + 5px is the extra gutter space
      * between gif columns. */
@@ -762,6 +770,10 @@ ul {
             flex-grow: 1;
             margin: 5px;
             border-radius: 3px;
+
+            /* By resetting to the default color from the `body`,
+             * we can ignore the colors applied from `tippy-box`. */
+            color: var(--color-text-default);
         }
 
         .clear_search_button {
@@ -787,7 +799,12 @@ ul {
     .popover-footer {
         text-align: center;
         background-color: hsl(0deg 0% 0%);
-        border-radius: 0 0 6px 6px;
+        /* The border radius corresponds to the default radius value from `tippy-box`. */
+        border-radius: 0 0 4px 4px;
+
+        /* This prevents the footer from experiencing height
+           fluctuations at the moment when the image is uploaded. */
+        min-height: 25px;
 
         & img {
             width: 120px;
