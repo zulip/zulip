@@ -9,6 +9,7 @@ import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
 import * as info_overlay from "./info_overlay";
 import * as message_lists from "./message_lists";
+import * as message_scroll from "./message_scroll";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
@@ -109,7 +110,8 @@ export function save_narrow(operators) {
 
 function show_all_message_view() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
-    narrow.deactivate(coming_from_recent_topics);
+    const is_actively_scrolling = message_scroll.is_actively_scrolling();
+    narrow.deactivate(coming_from_recent_topics, is_actively_scrolling);
     top_left_corner.handle_narrow_deactivated();
     // We need to maybe scroll to the selected message
     // once we have the proper viewport set up
