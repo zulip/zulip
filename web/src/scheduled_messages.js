@@ -10,8 +10,10 @@ import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
 import {$t} from "./i18n";
 import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
+import * as scroll_util from "./scroll_util";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 
@@ -74,6 +76,7 @@ function hide_scheduled_message_success_compose_banner(scheduled_message_id) {
 export function add_scheduled_messages(scheduled_messages) {
     scheduled_messages_data.push(...scheduled_messages);
     sort_scheduled_messages_data();
+    show_scheduled_message_banner();
 }
 
 export function remove_scheduled_message(scheduled_message_id) {
@@ -83,6 +86,7 @@ export function remove_scheduled_message(scheduled_message_id) {
     if (msg_index !== undefined) {
         scheduled_messages_data.splice(msg_index, 1);
         hide_scheduled_message_success_compose_banner(scheduled_message_id);
+        show_scheduled_message_banner();
     }
 }
 
@@ -333,5 +337,25 @@ export function update_send_later_options() {
     if (should_update_send_later_options(now)) {
         const filtered_send_opts = get_filtered_send_opts(now);
         $("#send_later_options").replaceWith(render_send_later_modal_options(filtered_send_opts));
+    }
+}
+
+export function show_scheduled_message_banner() {
+    const messages = [];
+    for (const element of scheduled_messages_data) {
+        if (
+            element.to === narrow_state.stream_sub().stream_id &&
+            element.topic === narrow_state.topic()
+        ) {
+            messages.push(element);
+        }
+    }
+    const $banner_container = $("#scheduled_message_banner");
+    scroll_util.get_content_element($(`#scheduled_message_banner`)).empty();
+    if (messages.length !== 0) {
+        compose_banner.append_compose_banner_to_banner_list(
+            `You have ${messages.length} scheduled message(s) for this conversation.`,
+            $banner_container,
+        );
     }
 }

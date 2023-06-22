@@ -26,6 +26,7 @@ import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload_state from "./reload_state";
 import * as resize from "./resize";
+import * as scheduled_messages from "./scheduled_messages";
 import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
@@ -483,6 +484,7 @@ export function quote_and_reply(opts) {
 }
 
 export function on_narrow(opts) {
+    scheduled_messages.show_scheduled_message_banner();
     // We use force_close when jumping between PM narrows with the "p" key,
     // so that we don't have an open compose box that makes it difficult
     // to cycle quickly through unread messages.

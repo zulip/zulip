@@ -2360,6 +2360,12 @@ nav {
     height: var(--max-unexpanded-compose-height);
 }
 
+#scheduled_message_banner {
+    display: inline-block;
+    text-align: center;
+    height: 24px;
+}
+
 .operator_value {
     font-family: "Source Code Pro", monospace;
     color: hsl(353deg 70% 65%);
