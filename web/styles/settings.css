@@ -379,13 +379,6 @@ td .button {
     }
 }
 
-.settings_text_input,
-.settings_url_input {
-    /* 311px + 2 * 6px (padding) + 2 * 1px (border) = 325px (min width of select
-    elements in settings) */
-    width: 311px;
-}
-
 #admin-user-list,
 #admin-bot-list {
     .table tr:first-of-type td {
@@ -1967,7 +1960,8 @@ $option_title_width: 180px;
     }
 }
 
-.settings_url_input {
+.settings_url_input,
+.settings_text_input {
     padding: 4px 6px;
     color: hsl(0deg 0% 33%);
     border-radius: 4px;
@@ -1975,6 +1969,10 @@ $option_title_width: 180px;
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition: border linear 0.2s, box-shadow linear 0.2s;
     margin-bottom: 10px;
+
+    /* 311px + 2 * 6px (padding) + 2 * 1px (border) = 325px (min width of select
+    elements in settings) */
+    width: 311px;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
