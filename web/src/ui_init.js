@@ -719,7 +719,9 @@ export function initialize_everything() {
         on_enter_send: compose.finish,
     });
     compose_textarea.initialize();
-    search.initialize();
+    search.initialize({
+        on_narrow_search: narrow.activate,
+    });
     tutorial.initialize();
     notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
     unread_ops.initialize();

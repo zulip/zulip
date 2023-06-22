@@ -5,13 +5,12 @@ import render_search_list_item from "../templates/search_list_item.hbs";
 import {Filter} from "./filter";
 import * as keydown_util from "./keydown_util";
 import * as message_view_header from "./message_view_header";
-import * as narrow from "./narrow";
 import * as search_suggestion from "./search_suggestion";
 
 // Exported for unit testing
 export let is_using_input_method = false;
 
-export function narrow_or_search_for_term(search_string) {
+export function narrow_or_search_for_term(search_string, {on_narrow_search}) {
     const $search_query_box = $("#search_query");
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
@@ -21,7 +20,7 @@ export function narrow_or_search_for_term(search_string) {
     }
 
     const operators = Filter.parse(search_string);
-    narrow.activate(operators, {trigger: "search"});
+    on_narrow_search(operators, {trigger: "search"});
 
     // It's sort of annoying that this is not in a position to
     // blur the search box, because it means that Esc won't
@@ -33,7 +32,7 @@ export function narrow_or_search_for_term(search_string) {
     return $search_query_box.val();
 }
 
-export function initialize() {
+export function initialize({on_narrow_search}) {
     const $search_query_box = $("#search_query");
     const $searchbox_form = $("#searchbox_form");
 
@@ -64,7 +63,7 @@ export function initialize() {
             return true;
         },
         updater(search_string) {
-            return narrow_or_search_for_term(search_string);
+            return narrow_or_search_for_term(search_string, {on_narrow_search});
         },
         sorter(items) {
             return items;
@@ -109,7 +108,7 @@ export function initialize() {
                 // indicate that they've done what they need to do)
 
                 // Pill is already added during keydown event of input pills.
-                narrow_or_search_for_term($search_query_box.val());
+                narrow_or_search_for_term($search_query_box.val(), {on_narrow_search});
                 $search_query_box.trigger("blur");
             }
         });
