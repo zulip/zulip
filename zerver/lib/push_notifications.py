@@ -672,6 +672,11 @@ def get_gcm_alert(
             return f"{sender_str} mentioned you in #{display_recipient}"
         else:
             return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
+    elif (
+        message.is_stream_message()
+        and trigger == NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION
+    ):
+        return "TODO"
     elif message.is_stream_message() and trigger == NotificationTriggers.WILDCARD_MENTION:
         return f"{sender_str} mentioned everyone in #{display_recipient}"
     else:
@@ -837,6 +842,8 @@ def get_apns_alert_subtitle(
             )
         else:
             return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
+    elif trigger == NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION:
+        return _("TODO")
     elif trigger == NotificationTriggers.WILDCARD_MENTION:
         return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:

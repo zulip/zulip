@@ -2058,6 +2058,39 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    def test_get_message_payload_apns_followed_topic_wildcard_mention(self) -> None:
+        user_profile = self.example_user("othello")
+        stream = Stream.objects.filter(name="Verona").get()
+        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
+        payload = get_message_payload_apns(
+            user_profile, message, NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION
+        )
+        expected = {
+            "alert": {
+                "title": "#Verona > Test topic",
+                "subtitle": "TODO",
+                "body": message.content,
+            },
+            "sound": "default",
+            "badge": 0,
+            "custom": {
+                "zulip": {
+                    "message_ids": [message.id],
+                    "recipient_type": "stream",
+                    "sender_email": self.sender.email,
+                    "sender_id": self.sender.id,
+                    "stream": get_display_recipient(message.recipient),
+                    "stream_id": stream.id,
+                    "topic": message.topic_name(),
+                    "server": settings.EXTERNAL_HOST,
+                    "realm_id": self.sender.realm.id,
+                    "realm_uri": self.sender.realm.uri,
+                    "user_id": user_profile.id,
+                },
+            },
+        }
+        self.assertDictEqual(payload, expected)
+
     def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
@@ -2197,6 +2230,9 @@ class TestGetGCMPayload(PushNotificationTest):
             mentioned_user_group_id=3,
             mentioned_user_group_name="mobile_team",
         )
+
+    def test_get_message_payload_gcm_followed_topic_wildcard_mention(self) -> None:
+        self._test_get_message_payload_gcm_mentions("followed_topic_wildcard_mentioned", "TODO")
 
     def test_get_message_payload_gcm_wildcard_mention(self) -> None:
         self._test_get_message_payload_gcm_mentions(
