@@ -1016,7 +1016,7 @@ div.settings-radio-input-parent {
         /* Match with select elements in settings page */
         min-width: 325px;
         max-width: 100%;
-        height: fit-content;
+        height: 30px;
     }
 
     & select.stream_post_policy_setting {
