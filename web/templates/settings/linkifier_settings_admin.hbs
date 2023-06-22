@@ -40,12 +40,12 @@
                     <div class="alert" id="admin-linkifier-status"></div>
                     <div class="input-group">
                         <label for="linkifier_pattern">{{t "Pattern" }}</label>
-                        <input type="text" id="linkifier_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
+                        <input type="text" id="linkifier_pattern" class="settings_text_input" name="pattern" placeholder="#(?P<id>[0-9]+)" />
                         <div class="alert" id="admin-linkifier-pattern-status"></div>
                     </div>
                     <div class="input-group">
                         <label for="linkifier_template">{{t "URL template" }}</label>
-                        <input type="text" id="linkifier_template" name="url_template" placeholder="https://github.com/zulip/zulip/issues/{id}" />
+                        <input type="text" id="linkifier_template" class="settings_text_input" name="url_template" placeholder="https://github.com/zulip/zulip/issues/{id}" />
                         <div class="alert" id="admin-linkifier-template-status"></div>
                     </div>
                     <button type="submit" class="button rounded sea-green">
