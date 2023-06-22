@@ -4,6 +4,7 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as fenced_code from "../shared/src/fenced_code";
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
@@ -70,6 +71,23 @@ function show_compose_box(msg_type, opts) {
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
     compose_ui.set_focus(msg_type, opts);
+    const filter = narrow_state.filter();
+    if (filter && filter.is_search()) {
+        show_compose_in_search_view_banner();
+    }
+}
+
+function show_compose_in_search_view_banner() {
+    const search_view_banner = render_compose_banner({
+        banner_type: compose_banner.WARNING,
+        classname: compose_banner.CLASSNAMES.compose_in_search_view,
+        banner_text: $t({
+            defaultMessage:
+                "You are composing a message from a search view, which may not include the latest messages in the conversation.",
+        }),
+        button_text: $t({defaultMessage: "Go to conversation"}),
+    });
+    compose_banner.append_compose_banner_to_banner_list(search_view_banner, $("#compose_banners"));
 }
 
 export function clear_textarea() {

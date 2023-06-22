@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
+const {mock_compose_banner} = require("./lib/search_view_banner");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params} = require("./lib/zpage_params");
@@ -37,6 +38,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
 const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
+    filter: () => ({is_search: () => true}),
 });
 
 mock_esm("../src/reload_state", {
@@ -121,6 +123,8 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", () => {});
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
+
+    mock_template("compose_banner/compose_banner.hbs", false, mock_compose_banner());
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -248,6 +252,8 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
     mock_stream_header_colorblock();
 
+    mock_template("compose_banner/compose_banner.hbs", false, mock_compose_banner());
+
     // Test direct message
     const person = {
         user_id: 22,
@@ -301,6 +307,8 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "check_posting_policy_for_compose_box", noop);
     mock_template("inline_decorated_stream_name.hbs", false, () => {});
 
+    mock_template("compose_banner/compose_banner.hbs", false, mock_compose_banner());
+
     const denmark = {
         subscribed: true,
         color: "blue",
@@ -348,7 +356,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-test("quote_and_reply", ({disallow, override, override_rewire}) => {
+test("quote_and_reply", ({disallow, override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     mock_banners();
@@ -360,6 +368,8 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
         full_name: "Steve Stephenson",
     };
     people.add_active_user(steve);
+
+    mock_template("compose_banner/compose_banner.hbs", false, mock_compose_banner());
 
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});

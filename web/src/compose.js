@@ -534,6 +534,31 @@ export function initialize() {
         },
     );
 
+    $("body").on(
+        "click",
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.compose_in_search_view,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            const stream_name = compose_state.stream_name();
+            const recipient = compose_state.private_message_recipient();
+            if (stream_name) {
+                narrow.activate([
+                    {operator: "stream", operand: stream_name},
+                    {operator: "topic", operand: compose_state.topic()},
+                ]);
+            } else {
+                narrow.activate([{operator: "dm", operand: recipient}]);
+            }
+            $(`.${CSS.escape(compose_banner.CLASSNAMES.compose_in_search_view)}`).remove();
+        },
+    );
+
+    $("body").on("mouseup", ".topic-name", () => {
+        $(`.${CSS.escape(compose_banner.CLASSNAMES.compose_in_search_view)}`).remove();
+    });
+
     const user_not_subscribed_selector = `.${CSS.escape(
         compose_banner.CLASSNAMES.user_not_subscribed,
     )}`;
