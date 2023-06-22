@@ -37,6 +37,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
 const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
+    filter: () => ({is_common_narrow: () => true}),
 });
 
 mock_esm("../src/reload_state", {
