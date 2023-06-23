@@ -300,7 +300,7 @@ h4.user_group_setting_subsection_title {
     width: 97%;
     overflow: hidden;
     max-width: 1200px;
-    max-height: 1000px;
+    max-height: var(--modal-container-max-height);
 
     .search-container .tab-switcher .ind-tab {
         width: auto;
@@ -700,10 +700,18 @@ h4.user_group_setting_subsection_title {
         -webkit-overflow-scrolling: touch;
 
         .stream-creation-simplebar-container {
-            /*
-                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer)
-            */
-            height: calc(95vh - 149px);
+            height: calc(
+                var(--modal-container-height) -
+                    var(--modal-container-subscriptions-header-height) -
+                    var(--modal-container-subscriptions-display-type-height) -
+                    var(--modal-container-subscriptions-modal-footer-height)
+            );
+            max-height: calc(
+                var(--modal-container-max-height) -
+                    var(--modal-container-subscriptions-header-height) -
+                    var(--modal-container-subscriptions-display-type-height) -
+                    var(--modal-container-subscriptions-modal-footer-height)
+            );
         }
 
         .user-group-creation-body,
