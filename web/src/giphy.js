@@ -214,7 +214,7 @@ export function initialize() {
 
     $("body").on("click", "#giphy_search_clear", async (e) => {
         e.stopPropagation();
-        $("#giphy-search-query").val("");
+        $("#giphy-search-query").val("").trigger("focus");
         await update_grid_with_search_term();
     });
 
