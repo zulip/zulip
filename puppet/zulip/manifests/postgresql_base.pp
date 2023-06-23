@@ -89,20 +89,10 @@ class zulip::postgresql_base {
     }
 
     $dbname = zulipconf('postgresql', 'database_name', 'zulip')
-    $dbuser = zulipconf('postgresql', 'database_user', 'zulip')
-    file { $pgroonga_setup_sql_path:
-      ensure  => file,
-      require => Package["${postgresql}-pgdg-pgroonga"],
-      owner   => 'postgres',
-      group   => 'postgres',
-      mode    => '0640',
-      content => template('zulip/postgresql/pgroonga_setup.sql.template.erb'),
-    }
-
     exec{'create_pgroonga_extension':
-      require => File[$pgroonga_setup_sql_path],
+      require => Package["${postgresql}-pgdg-pgroonga"],
       # lint:ignore:140chars
-      command => "bash -c 'cat ${pgroonga_setup_sql_path} | su postgres -c \"psql -v ON_ERROR_STOP=1 ${dbname}\" && touch ${pgroonga_setup_sql_path}.applied'",
+      command => "bash -c 'echo \"CREATE EXTENSION PGROONGA\" | su postgres -c \"psql -v ON_ERROR_STOP=1 ${dbname}\" && touch ${pgroonga_setup_sql_path}.applied'",
       # lint:endignore
       creates => "${pgroonga_setup_sql_path}.applied",
     }
