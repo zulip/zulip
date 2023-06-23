@@ -336,6 +336,9 @@ export function tokenize_compose_str(s) {
 }
 
 export function broadcast_mentions() {
+    if (!compose_validate.wildcard_mention_allowed()) {
+        return [];
+    }
     const wildcard_mention_array = ["all", "everyone"];
     let wildcard_string = "";
     if (compose_state.get_message_type() === "private") {
