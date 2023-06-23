@@ -186,6 +186,7 @@ export function clear_compose_box() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
+    compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     popover_menus.reset_selected_schedule_timestamp();
 }
