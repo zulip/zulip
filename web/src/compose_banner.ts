@@ -106,6 +106,10 @@ export function clear_warnings(): void {
     $(`#compose_banners .${CSS.escape(WARNING)}`).remove();
 }
 
+export function clear_uploads(): void {
+    $("#compose_banners .upload_banner").remove();
+}
+
 export function clear_unmute_topic_notifications(): void {
     $(`#compose_banners .${CLASSNAMES.unmute_topic_notification.replaceAll(" ", ".")}`).remove();
 }

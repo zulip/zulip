@@ -199,6 +199,7 @@ export function update_compose_for_message_type(message_type, opts) {
     }
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
+    compose_banner.clear_uploads();
 }
 
 export function on_compose_select_recipient_update() {

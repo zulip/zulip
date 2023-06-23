@@ -12,6 +12,7 @@ exports.mock_banners = () => {
     }
     $("#compose_banners .warning").remove = () => {};
     $("#compose_banners .error").remove = () => {};
+    $("#compose_banners .upload_banner").remove = () => {};
 
     const $stub = $.create("stub_to_remove");
     const $cb = $("#compose_banners");
