@@ -30,17 +30,19 @@ function registerCodeSection($codeSection) {
     });
 }
 
-// Display the copy-to-clipboard button inside the markdown.pre element
+// Display the copy-to-clipboard button inside the .codehilite element
 // within the API and Help Center docs using clipboard.js
-function add_copy_to_clipboard_element($pre) {
+function add_copy_to_clipboard_element($codehilite) {
     const $copy_button = $("<button>").addClass("copy-codeblock");
     $copy_button.html(copy_to_clipboard_svg());
 
-    $($pre).append($copy_button);
+    $($codehilite).append($copy_button);
 
     const clipboard = new ClipboardJS($copy_button[0], {
         text(copy_element) {
-            return $(copy_element).siblings("code").text();
+            // trim to remove trailing whitespace introduced
+            // by additional elements inside <pre>
+            return $(copy_element).siblings("pre").text().trim();
         },
     });
 
@@ -90,8 +92,8 @@ function render_code_sections() {
         registerCodeSection($(this));
     });
 
-    // Add a copy-to-clipboard button for each pre element
-    $(".markdown pre").each(function () {
+    // Add a copy-to-clipboard button for each .codehilite element
+    $(".markdown .codehilite").each(function () {
         add_copy_to_clipboard_element($(this));
     });
 
