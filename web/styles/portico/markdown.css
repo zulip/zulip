@@ -381,11 +381,13 @@
         background-color: hsl(0deg 0% 93%);
     }
 
-    & pre {
+    .codehilite {
         /* Relative positioning is used to place the copy-to-clipboard button
            in the top-right corner. */
         position: relative;
+    }
 
+    & pre {
         & code {
             font-size: 14px;
             white-space: pre-wrap;
