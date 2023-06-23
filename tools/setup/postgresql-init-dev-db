@@ -116,8 +116,6 @@ SELECT unnest(
         ARRAY['ALTER SYSTEM SET pgroonga.enable_wal = ''on''', 'SELECT pg_reload_conf()']
     END
 ) \gexec
-
-GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
 EOF
 
 psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF
