@@ -108,7 +108,6 @@ EOF
 
 "${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" <<EOF
 CREATE EXTENSION pgroonga;
-GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
 EOF
 
 psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF
