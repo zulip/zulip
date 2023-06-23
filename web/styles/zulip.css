@@ -115,6 +115,16 @@ body {
        We expect `resize.js` to update this once UI is initialized. */
     --recent-topics-filters-height: 50px;
 
+    /* Overlay heights for streams modal */
+    --modal-container-height: 95vh;
+    --modal-container-max-height: 1000px;
+    /* .subscriptions-header */
+    --modal-container-subscriptions-header-height: 45px;
+    /* .display-type */
+    --modal-container-subscriptions-display-type-height: 44px;
+    /* .modal-footer */
+    --modal-container-subscriptions-modal-footer-height: 60px;
+
     /*
     Maximum height of the compose box when it is not in expanded state. This
     is equal to the height of `#bottom_whitespace`. We expect resize.js to
