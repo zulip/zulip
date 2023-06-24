@@ -26,7 +26,6 @@ import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -48,6 +47,7 @@ import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_topics_ui from "./user_topics_ui";
 
 function do_narrow_action(action) {
     action(message_lists.current.selected_id(), {trigger: "hotkey"});
@@ -1027,7 +1027,7 @@ export function process_hotkey(e, hotkey) {
             return true;
         }
         case "toggle_topic_visibility_policy":
-            muted_topics_ui.toggle_topic_visibility_policy(msg);
+            user_topics_ui.toggle_topic_visibility_policy(msg);
             return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
