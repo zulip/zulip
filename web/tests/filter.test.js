@@ -1275,6 +1275,10 @@ test("describe", () => {
     string = "exclude messages with one or more image, stream devel";
     assert.equal(Filter.describe(narrow), string);
 
+    narrow = [{operator: "date", operand: "2023-06-22"}];
+    string = "messages sent on date 2023-06-22";
+    assert.equal(Filter.describe(narrow), string);
+
     narrow = [];
     string = "all messages";
     assert.equal(Filter.describe(narrow), string);

@@ -973,3 +973,26 @@ test("queries_with_spaces", () => {
     expected = ["stream:offi", "stream:office"];
     assert.deepEqual(suggestions.strings, expected);
 });
+
+test("date_suggestions", ({override}) => {
+    override(narrow_state, "stream", () => undefined);
+
+    let suggestions;
+    let expected;
+    let query;
+
+    query = "da";
+    suggestions = get_suggestions("", query);
+    expected = ["da", "date:"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "date:2023-06-16";
+    suggestions = get_suggestions("", query);
+    expected = ["date:2023-06-16"];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = "stream:Denmark date:2023-06-16";
+    suggestions = get_suggestions("", query);
+    expected = ["stream:Denmark date:2023-06-16", "stream:Denmark"];
+    assert.deepEqual(suggestions.strings, expected);
+});

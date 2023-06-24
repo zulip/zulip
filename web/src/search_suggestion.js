@@ -668,6 +668,23 @@ function get_operator_suggestions(last) {
     });
 }
 
+function get_date_filter_suggestions(last, operators) {
+    let search_string = "";
+    if (last.operator === "search") {
+        search_string = "date:";
+    } else if (last.operator === "date") {
+        search_string = `date:${last.operand}`;
+    }
+    const suggestions = [
+        {
+            search_string,
+            description_html: `messages sent on date`,
+            invalid: [{operator: "date"}],
+        },
+    ];
+    return get_special_filter_suggestions(last, operators, suggestions);
+}
+
 class Attacher {
     result = [];
     prev = new Set();
@@ -777,6 +794,7 @@ export function get_search_result(base_query, query) {
         get_topic_suggestions,
         get_operator_suggestions,
         get_has_filter_suggestions,
+        get_date_filter_suggestions,
     ];
 
     if (page_params.is_spectator) {
@@ -787,6 +805,7 @@ export function get_search_result(base_query, query) {
             get_topic_suggestions,
             get_operator_suggestions,
             get_has_filter_suggestions,
+            get_date_filter_suggestions,
         ];
     }
 

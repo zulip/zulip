@@ -1029,6 +1029,8 @@ export class Filter {
             // Note: We hack around using this in "describe" below.
             case "is":
                 return verb + "messages that are";
+            case "date":
+                return verb + "messages sent on date";
         }
         return "";
     }
