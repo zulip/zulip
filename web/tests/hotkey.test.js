@@ -47,7 +47,7 @@ const lightbox = mock_esm("../src/lightbox");
 const list_util = mock_esm("../src/list_util");
 const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
-const muted_topics_ui = mock_esm("../src/muted_topics_ui");
+const user_topics_ui = mock_esm("../src/user_topics_ui");
 const narrow = mock_esm("../src/narrow");
 const narrow_state = mock_esm("../src/narrow_state", {
     is_message_feed_visible: () => true,
@@ -425,7 +425,7 @@ run_test("emoji picker", ({override}) => {
 run_test("G/M keys", () => {
     // TODO: move
     assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", muted_topics_ui, "toggle_topic_visibility_policy");
+    assert_mapping("M", user_topics_ui, "toggle_topic_visibility_policy");
 });
 
 run_test("n/p keys", () => {

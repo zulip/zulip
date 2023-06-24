@@ -23,7 +23,6 @@ import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
@@ -80,6 +79,7 @@ import * as user_groups from "./user_groups";
 import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
+import * as user_topics_ui from "./user_topics_ui";
 
 export function dispatch_normal_event(event) {
     const noop = function () {};
@@ -904,7 +904,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "user_topic":
-            muted_topics_ui.handle_topic_updates(event);
+            user_topics_ui.handle_topic_updates(event);
             break;
     }
 }
