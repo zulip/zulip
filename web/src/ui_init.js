@@ -783,21 +783,21 @@ $(async () => {
             }),
             client_gravatar: false,
         };
-        const {result, msg, ...state} = await new Promise((resolve, reject) => {
-            channel.post({
-                url: "/json/register",
-                data,
-                success: resolve,
-                error(xhr) {
-                    blueslip.error("Spectator failed to register", {
-                        status: xhr.status,
-                        body: xhr.responseText,
-                    });
-                    reject(new Error("Spectator failed to register"));
-                },
-            });
+        channel.post({
+            url: "/json/register",
+            data,
+            success(response_data) {
+                Object.assign(page_params, response_data);
+                initialize_everything();
+            },
+            error() {
+                $("#app-loading-middle-content").hide();
+                $("#app-loading-bottom-content").hide();
+                $(".app").hide();
+                $("#app-loading-error").css({visibility: "visible"});
+            },
         });
-        Object.assign(page_params, state);
+    } else {
+        initialize_everything();
     }
-    initialize_everything();
 });
