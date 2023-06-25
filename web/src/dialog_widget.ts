@@ -190,6 +190,8 @@ export function launch(conf: DialogWidgetConfig): void {
 
     // Set up handlers.
     $submit_button.on("click", (e) => {
+        e.preventDefault();
+
         if (conf.validate_input && !conf.validate_input(e)) {
             return;
         }
