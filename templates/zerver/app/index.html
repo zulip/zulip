@@ -47,6 +47,13 @@
     animation-fill-mode: forwards;
     visibility: hidden;
     }
+    #app-loading-error {
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    }
     :root.dark-theme #app-loading {
     background-color: hsl(0, 0%, 11%);
     color: hsl(236, 33%, 90%);
@@ -118,16 +125,19 @@
         </div>
     </div>
     <div id="app-loading-bottom-content">
-        <p>{% trans %}If this message does not go away, try <a id="reload-lnk">reloading</a> the page.{% endtrans %}</p>
-        <script nonce="{{ csp_nonce }}">
-            document.addEventListener('DOMContentLoaded', function () {
-                function reload() {
-                    location.reload(true);
-                }
-                document.getElementById('reload-lnk').addEventListener('click', reload);
-            });
-        </script>
+        <p>{% trans %}If this message does not go away, try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
     </div>
+    <div id="app-loading-error">
+        <p>{% trans %}Error loading Zulip. Try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
+    </div>
+    <script nonce="{{ csp_nonce }}">
+        document.addEventListener('DOMContentLoaded', function () {
+            function reload() {
+                location.reload(true);
+            }
+            document.querySelectorAll('.reload-lnk').forEach(lnk => lnk.addEventListener('click', reload));
+        });
+    </script>
 </div>
 
 <div id="tooltip-templates-container"></div>
