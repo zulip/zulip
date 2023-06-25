@@ -1587,6 +1587,13 @@
     .personal-menu-tippy > .tippy-box > .tippy-arrow::after {
         background-color: var(--bg-popover-dark);
     }
+
+    .keyboard-shortcut-option {
+        & span.tooltip-hotkey-hint {
+            color: hsl(225deg 100% 84%);
+            border-color: hsl(225deg 100% 84%);
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {
