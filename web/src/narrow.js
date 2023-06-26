@@ -801,7 +801,7 @@ export function activate_stream_for_cycle_hotkey(stream_name) {
 }
 
 export function stream_cycle_backward() {
-    const curr_stream = narrow_state.stream();
+    const curr_stream = narrow_state.stream_name();
 
     if (!curr_stream) {
         return;
@@ -817,7 +817,7 @@ export function stream_cycle_backward() {
 }
 
 export function stream_cycle_forward() {
-    const curr_stream = narrow_state.stream();
+    const curr_stream = narrow_state.stream_name();
 
     if (!curr_stream) {
         return;
@@ -834,7 +834,7 @@ export function stream_cycle_forward() {
 
 export function narrow_to_next_topic(opts = {}) {
     const curr_info = {
-        stream: narrow_state.stream(),
+        stream: narrow_state.stream_name(),
         topic: narrow_state.topic(),
     };
 

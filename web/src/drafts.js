@@ -451,7 +451,7 @@ function current_recipient_data() {
     // Prioritize recipients from the compose box first. If the compose
     // box isn't open, just return data from the current narrow.
     if (!compose_state.composing()) {
-        const stream_name = narrow_state.stream();
+        const stream_name = narrow_state.stream_name();
         return {
             stream_name,
             topic: narrow_state.topic(),

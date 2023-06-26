@@ -82,7 +82,7 @@ function test(label, f) {
 test("basic_get_suggestions", ({override}) => {
     const query = "fred";
 
-    override(narrow_state, "stream", () => "office");
+    override(narrow_state, "stream_name", () => "office");
 
     const suggestions = get_suggestions(query);
 
@@ -240,7 +240,7 @@ test("dm_suggestions", ({override, mock_template}) => {
 
     // "pm-with" operator returns search result
     // and "dm" operator as a suggestions
-    override(narrow_state, "stream", () => undefined);
+    override(narrow_state, "stream_name", () => undefined);
     query = "pm-with";
     suggestions = get_suggestions(query);
     expected = ["pm-with", "dm:"];
@@ -460,7 +460,7 @@ test("has_suggestions", ({override, mock_template}) => {
     let query = "h";
     stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream", () => {});
+    override(narrow_state, "stream_name", () => {});
 
     let suggestions = get_suggestions(query);
     let expected = ["h", "has:link", "has:image", "has:attachment"];
@@ -519,7 +519,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
 
     stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream", () => {});
+    override(narrow_state, "stream_name", () => {});
 
     let query = "i";
     let suggestions = get_suggestions(query);
@@ -600,7 +600,7 @@ test("check_is_suggestions", ({override, mock_template}) => {
 test("sent_by_me_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    override(narrow_state, "stream", () => {});
+    override(narrow_state, "stream_name", () => {});
 
     let query = "";
     let suggestions = get_suggestions(query);
@@ -678,7 +678,7 @@ test("topic_suggestions", ({override, mock_template}) => {
 
     override(stream_topic_history_util, "get_server_history", () => {});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    override(narrow_state, "stream", () => "office");
+    override(narrow_state, "stream_name", () => "office");
 
     const devel_id = 44;
     const office_id = 77;
@@ -817,7 +817,7 @@ test("stream_completion", ({override, mock_template}) => {
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
 
-    override(narrow_state, "stream", () => {});
+    override(narrow_state, "stream_name", () => {});
 
     let query = "stream:of";
     let suggestions = get_suggestions(query);
@@ -840,7 +840,7 @@ test("people_suggestions", ({override, mock_template}) => {
 
     let query = "te";
 
-    override(narrow_state, "stream", () => {});
+    override(narrow_state, "stream_name", () => {});
 
     const ted = {
         email: "ted@zulip.com",
@@ -942,7 +942,7 @@ test("people_suggestions", ({override, mock_template}) => {
 test("operator_suggestions", ({override, mock_template}) => {
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    override(narrow_state, "stream", () => undefined);
+    override(narrow_state, "stream_name", () => undefined);
 
     // Completed operator should return nothing
     let query = "stream:";

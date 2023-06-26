@@ -927,7 +927,7 @@ export class MessageListView {
                 last_message_group.message_containers.at(-1).msg.historical;
         }
 
-        const stream_name = narrow_state.stream();
+        const stream_name = narrow_state.stream_name();
         if (stream_name !== undefined) {
             // If user narrows to a stream, doesn't update
             // trailing bookend if user is subscribed.

@@ -110,7 +110,7 @@ export function set_compose_defaults() {
     return opts;
 }
 
-export function stream() {
+export function stream_name() {
     if (current_filter === undefined) {
         return undefined;
     }

@@ -401,7 +401,7 @@ function get_topic_suggestions(last, operators) {
             if (filter.has_operator("stream")) {
                 stream = filter.operands("stream")[0];
             } else {
-                stream = narrow_state.stream();
+                stream = narrow_state.stream_name();
                 suggest_operators.push({operator: "stream", operand: stream});
             }
             break;
