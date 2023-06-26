@@ -159,7 +159,7 @@ ALLOWED_HOSTS += [EXTERNAL_HOST_WITHOUT_PORT, "." + EXTERNAL_HOST_WITHOUT_PORT]
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
-MIDDLEWARE = (
+MIDDLEWARE = [
     "zerver.middleware.TagRequests",
     "zerver.middleware.SetRemoteAddrFromRealIpHeader",
     "zerver.middleware.RequestContext",
@@ -182,7 +182,7 @@ MIDDLEWARE = (
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
     # Needs to be after CommonMiddleware, which sets Content-Length
     "zerver.middleware.FinalizeOpenGraphDescription",
-)
+]
 
 AUTH_USER_MODEL = "zerver.UserProfile"
 
