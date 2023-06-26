@@ -61,7 +61,7 @@ function check_validity(last, operators, valid, invalid) {
 
 function format_as_suggestion(terms) {
     return {
-        description_html: Filter.describe(terms),
+        description_html: Filter.search_description_as_html(terms),
         search_string: Filter.unparse(terms),
     };
 }

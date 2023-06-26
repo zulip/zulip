@@ -1104,7 +1104,7 @@ export class Filter {
         return [...parts, ...more_parts].join(", ");
     }
 
-    static describe(operators) {
+    static search_description_as_html(operators) {
         return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
     }
 
