@@ -738,14 +738,6 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    blueslip.expect("error", "Unable to select stream: BOGUS STREAM");
-    compose_state.set_stream_name("BOGUS STREAM");
-    blueslip.expect("error", "Trying to send message with bad stream name.");
-    message = compose.create_message_object();
-    assert.equal(message.to, "");
-    assert.equal(message.topic, "lunch");
-    assert.equal(message.content, "burrito");
-
     compose_state.set_message_type("private");
     override(compose_pm_pill, "get_emails", () => "alice@example.com,bob@example.com");
 

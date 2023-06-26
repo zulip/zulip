@@ -6,7 +6,6 @@ import _ from "lodash";
 
 import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 
-import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
@@ -153,21 +152,12 @@ export function create_message_object() {
             message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
     } else {
-        const stream_name = compose_state.stream_name();
-        message.stream = stream_name;
-        if (stream_name) {
-            message.stream_id = compose_recipient.selected_recipient_id;
-            message.to = compose_recipient.selected_recipient_id;
-        } else {
-            // We should be validating streams in calling code.  We'll
-            // try to fall back to stream_name here just in case the
-            // user started composing to the old stream name and
-            // manually entered the stream name, and it got past
-            // validation. We should try to kill this code off eventually.
-            blueslip.error("Trying to send message with bad stream name.");
-            message.to = stream_name;
-        }
         message.topic = topic;
+        const stream_id = compose_state.stream_id();
+        message.stream_id = stream_id;
+        message.to = stream_id;
+        const stream = stream_data.get_sub_by_id(stream_id);
+        message.stream = stream ? stream.name : "";
     }
     return message;
 }
