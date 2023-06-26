@@ -36,7 +36,7 @@ export function set_selected_recipient_id(recipient_id) {
 
 function composing_to_current_topic_narrow() {
     return (
-        util.lower_same(compose_state.stream_name(), narrow_state.stream() || "") &&
+        util.lower_same(compose_state.stream_name(), narrow_state.stream_name() || "") &&
         util.lower_same(compose_state.topic(), narrow_state.topic() || "")
     );
 }

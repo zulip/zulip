@@ -403,7 +403,7 @@ export function on_topic_narrow() {
         return;
     }
 
-    if (compose_state.stream_name() !== narrow_state.stream()) {
+    if (compose_state.stream_name() !== narrow_state.stream_name()) {
         // If we changed streams, then we only leave the
         // compose box open if there is content or if the recipient was edited.
         if (compose_state.has_message_content() || compose_state.is_recipient_edited_manually()) {

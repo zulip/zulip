@@ -326,7 +326,7 @@ export class MessageList {
         if (!this.narrowed) {
             return;
         }
-        const stream_name = narrow_state.stream();
+        const stream_name = narrow_state.stream_name();
         if (stream_name === undefined) {
             return;
         }

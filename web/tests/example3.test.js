@@ -79,7 +79,7 @@ run_test("narrow_state", () => {
     // As we often do, first make assertions about the starting
     // state:
 
-    assert.equal(narrow_state.stream(), undefined);
+    assert.equal(narrow_state.stream_name(), undefined);
 
     // Now set up a Filter object.
     const filter_terms = [
@@ -92,6 +92,6 @@ run_test("narrow_state", () => {
     // And here is where we actually change state.
     narrow_state.set_current_filter(filter);
 
-    assert.equal(narrow_state.stream(), "Denmark");
+    assert.equal(narrow_state.stream_name(), "Denmark");
     assert.equal(narrow_state.topic(), "copenhagen");
 });

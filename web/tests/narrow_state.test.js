@@ -42,7 +42,7 @@ test("stream", () => {
     ]);
     assert.ok(narrow_state.active());
 
-    assert.equal(narrow_state.stream(), "Test");
+    assert.equal(narrow_state.stream_name(), "Test");
     assert.equal(narrow_state.stream_sub().stream_id, test_stream.stream_id);
     assert.equal(narrow_state.topic(), "Bar");
     assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
@@ -268,14 +268,14 @@ test("topic", () => {
 
 test("stream_sub", () => {
     set_filter([]);
-    assert.equal(narrow_state.stream(), undefined);
+    assert.equal(narrow_state.stream_name(), undefined);
     assert.equal(narrow_state.stream_sub(), undefined);
 
     set_filter([
         ["stream", "Foo"],
         ["topic", "Bar"],
     ]);
-    assert.equal(narrow_state.stream(), "Foo");
+    assert.equal(narrow_state.stream_name(), "Foo");
     assert.equal(narrow_state.stream_sub(), undefined);
 
     const sub = {name: "Foo", stream_id: 55};
@@ -286,7 +286,7 @@ test("stream_sub", () => {
         ["sender", "someone"],
         ["topic", "random"],
     ]);
-    assert.equal(narrow_state.stream(), undefined);
+    assert.equal(narrow_state.stream_name(), undefined);
 });
 
 test("pm_ids_string", () => {

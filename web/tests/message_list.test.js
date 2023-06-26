@@ -332,7 +332,7 @@ run_test("bookend", ({override}) => {
     list.view.clear_trailing_bookend = noop;
     list.narrowed = true;
 
-    override(narrow_state, "stream", () => "IceCream");
+    override(narrow_state, "stream_name", () => "IceCream");
 
     let is_subscribed = true;
     let invite_only = false;

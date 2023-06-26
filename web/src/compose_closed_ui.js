@@ -20,7 +20,7 @@ export function get_recipient_label(message) {
             // we label the button as replying to the thread.
             if (narrow_state.narrowed_to_topic()) {
                 message = {
-                    stream: narrow_state.stream(),
+                    stream: narrow_state.stream_name(),
                     topic: narrow_state.topic(),
                 };
             } else if (narrow_state.pm_ids_string()) {

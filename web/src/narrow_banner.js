@@ -243,7 +243,7 @@ function pick_empty_narrow_banner() {
                 }
 
                 function can_toggle_narrowed_stream() {
-                    const stream_name = narrow_state.stream();
+                    const stream_name = narrow_state.stream_name();
 
                     if (!stream_name) {
                         return false;
