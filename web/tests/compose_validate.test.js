@@ -42,6 +42,13 @@ const bob = {
     full_name: "Bob",
 };
 
+const social_sub = {
+    stream_id: 101,
+    name: "social",
+    subscribed: true,
+};
+stream_data.add_sub(social_sub);
+
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
@@ -77,16 +84,17 @@ function stub_message_row($textarea) {
 
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
     mock_banners();
-    const sub = {
+
+    const party_sub = {
         stream_id: 101,
-        name: "social",
+        name: "party",
         subscribed: true,
     };
-    stream_data.add_sub(sub);
+    stream_data.add_sub(party_sub);
     assert.ok(compose_validate.validate_stream_message_address_info("social"));
 
-    sub.subscribed = false;
-    stream_data.add_sub(sub);
+    party_sub.subscribed = false;
+    stream_data.add_sub(party_sub);
     $("#compose_banners .user_not_subscribed").length = 0;
     let user_not_subscribed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
@@ -105,9 +113,9 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     };
     assert.ok(compose_validate.validate_stream_message_address_info("social"));
 
-    sub.name = "Frontend";
-    sub.stream_id = 102;
-    stream_data.add_sub(sub);
+    party_sub.name = "Frontend";
+    party_sub.stream_id = 102;
+    stream_data.add_sub(party_sub);
     channel.post = (payload) => {
         assert.equal(payload.data.stream, "Frontend");
         payload.data.subscribed = false;
@@ -262,7 +270,7 @@ test_ui("validate", ({override_rewire, mock_template}) => {
 
     // test validating stream messages
     compose_state.set_message_type("stream");
-    compose_state.set_stream_name("");
+    compose_state.set_stream_id("");
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
@@ -277,7 +285,7 @@ test_ui("validate", ({override_rewire, mock_template}) => {
         name: "Denmark",
     };
     stream_data.add_sub(denmark);
-    compose_state.set_stream_name("Denmark");
+    compose_state.set_stream_id(denmark.stream_id);
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
     let missing_topic_error_rendered = false;
@@ -379,13 +387,15 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     page_params.user_id = me.user_id;
     page_params.realm_mandatory_topics = false;
-    const sub = {
+
+    const special_sub = {
         stream_id: 101,
-        name: "social",
+        name: "special",
         subscribed: true,
     };
-    stream_data.add_sub(sub);
-    compose_state.set_stream_name("social");
+    stream_data.add_sub(special_sub);
+
+    compose_state.set_stream_id(special_sub.stream_id);
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
@@ -433,16 +443,16 @@ test_ui(
         mock_banners();
         override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
         page_params.is_admin = false;
-        const sub = {
+        const sub_stream_102 = {
             stream_id: 102,
             name: "stream102",
             subscribed: true,
             stream_post_policy: stream_data.stream_post_policy_values.admins.code,
         };
 
-        stream_data.add_sub(sub);
+        stream_data.add_sub(sub_stream_102);
         compose_state.topic("topic102");
-        compose_state.set_stream_name("stream102");
+        compose_state.set_stream_id(sub_stream_102.stream_id);
 
         let banner_rendered = false;
         mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -459,13 +469,13 @@ test_ui(
         assert.ok(banner_rendered);
 
         // Reset error message.
-        compose_state.set_stream_name("social");
+        compose_state.set_stream_id(social_sub.stream_id);
 
         page_params.is_admin = false;
         page_params.is_guest = true;
 
         compose_state.topic("topic102");
-        compose_state.set_stream_name("stream102");
+        compose_state.set_stream_id(sub_stream_102.stream_id);
         banner_rendered = false;
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
@@ -491,7 +501,7 @@ test_ui(
 
         stream_data.add_sub(sub);
         compose_state.topic("topic104");
-        compose_state.set_stream_name("stream104");
+        compose_state.set_stream_id(sub.stream_id);
         let banner_rendered = false;
         mock_template("compose_banner/compose_banner.hbs", false, (data) => {
             assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
@@ -506,7 +516,7 @@ test_ui(
         assert.ok(!compose_validate.validate());
         assert.ok(banner_rendered);
         // Reset error message.
-        compose_state.set_stream_name("social");
+        compose_state.set_stream_id(social_sub.stream_id);
 
         page_params.is_guest = true;
         assert.ok(!compose_validate.validate());
@@ -530,7 +540,7 @@ test_ui(
 
         stream_data.add_sub(sub);
         compose_state.topic("topic103");
-        compose_state.set_stream_name("stream103");
+        compose_state.set_stream_id(sub.stream_id);
         let banner_rendered = false;
         mock_template("compose_banner/compose_banner.hbs", false, (data) => {
             assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
@@ -692,7 +702,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
-    compose_state.set_stream_name("");
+    compose_state.set_stream_id("");
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned_details = {
@@ -737,7 +747,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         name: "random",
     };
     stream_data.add_sub(sub);
-    compose_state.set_stream_name("random");
+    compose_state.set_stream_id(sub.stream_id);
 
     // Test with invalid stream in compose box. It should return noop.
     new_banner_rendered = false;
@@ -804,8 +814,7 @@ test_ui("test warn_if_topic_resolved", ({override, override_rewire, mock_templat
     stream_data.add_sub(sub);
 
     compose_state.set_message_type("stream");
-    blueslip.expect("error", "Unable to select stream: Do not exist");
-    compose_state.set_stream_name("Do not exist");
+    compose_state.set_stream_id("");
     compose_state.topic(resolved_topic.resolve_name("hello"));
     compose_state.message_content("content");
 
@@ -813,7 +822,7 @@ test_ui("test warn_if_topic_resolved", ({override, override_rewire, mock_templat
     compose_validate.warn_if_topic_resolved(true);
     assert.ok(!error_shown);
 
-    compose_state.set_stream_name("random");
+    compose_state.set_stream_id(sub.stream_id);
 
     // Show the warning now as stream also exists
     error_shown = false;

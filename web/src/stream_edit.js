@@ -135,7 +135,7 @@ function show_subscription_settings(sub) {
     const $edit_container = stream_settings_containers.get_edit_container(sub);
 
     const $colorpicker = $edit_container.find(".colorpicker");
-    const color = stream_data.get_color(sub.name);
+    const color = stream_data.get_color(sub.stream_id);
     stream_color.set_colorpicker_color($colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 

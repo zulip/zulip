@@ -93,7 +93,7 @@ export function set_compose_defaults() {
         // So we look up the resolved stream and return that if appropriate.
         const sub = stream_sub();
         if (sub !== undefined) {
-            opts.stream = sub.name;
+            opts.stream_id = sub.stream_id;
         }
     }
 

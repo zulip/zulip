@@ -275,7 +275,7 @@ test("stream delete (stream is selected in compose)", ({override, override_rewir
     }
 
     stream_data.subscribe_myself(event.streams[0]);
-    compose_state.set_stream_name(event.streams[0].name);
+    compose_state.set_stream_id(event.streams[0].stream_id);
 
     override(settings_streams, "update_default_streams_table", noop);
 

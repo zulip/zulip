@@ -453,8 +453,8 @@ export function canonicalized_name(stream_name) {
     return stream_name.toString().toLowerCase();
 }
 
-export function get_color(stream_name) {
-    const sub = get_sub(stream_name);
+export function get_color(stream_id) {
+    const sub = get_sub_by_id(stream_id);
     if (sub === undefined) {
         return DEFAULT_COLOR;
     }

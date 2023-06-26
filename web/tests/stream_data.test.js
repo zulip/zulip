@@ -136,8 +136,8 @@ test("basics", () => {
     assert.ok(stream_data.is_invite_only_by_stream_name("social"));
     assert.ok(!stream_data.is_invite_only_by_stream_name("unknown"));
 
-    assert.equal(stream_data.get_color("social"), "red");
-    assert.equal(stream_data.get_color("unknown"), "#c2c2c2");
+    assert.equal(stream_data.get_color(social.stream_id), "red");
+    assert.equal(stream_data.get_color(""), "#c2c2c2");
 
     assert.equal(stream_data.get_name("denMARK"), "Denmark");
     assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");

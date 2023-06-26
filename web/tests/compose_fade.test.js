@@ -71,7 +71,7 @@ run_test("set_focused_recipient", ({override_rewire}) => {
     assert.equal(compose_fade_helper.would_receive_message(bob.user_id), true);
 
     stream_data.add_sub(sub);
-    compose_state.set_stream_name("social");
+    compose_state.set_stream_id(sub.stream_id);
     peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
     compose_fade.set_focused_recipient("stream");
 

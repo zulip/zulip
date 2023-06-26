@@ -9,7 +9,6 @@ const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
@@ -318,7 +317,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
     // Test sending a message with content.
     compose_state.set_message_type("stream");
-    compose_state.set_stream_name("social");
+    compose_state.set_stream_id(social.stream_id);
 
     $("#compose-textarea").val("message me");
     $("#compose-textarea").hide();
@@ -727,7 +726,7 @@ test_ui("create_message_object", ({override, override_rewire}) => {
     mock_banners();
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
-    compose_state.set_stream_name("social");
+    compose_state.set_stream_id(social.stream_id);
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
 

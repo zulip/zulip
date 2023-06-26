@@ -436,7 +436,7 @@ export function get_pm_people(query) {
     const opts = {
         want_broadcast: false,
         filter_pills: true,
-        stream: compose_state.stream_name(),
+        stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
     };
     return get_person_suggestions(query, opts);
@@ -509,7 +509,7 @@ export function get_person_suggestions(query, opts) {
     return typeahead_helper.sort_recipients({
         users: filtered_persons,
         query,
-        current_stream: opts.stream,
+        current_stream_id: opts.stream_id,
         current_topic: opts.topic,
         groups: filtered_groups,
         max_num_items,
@@ -520,14 +520,14 @@ export function get_stream_topic_data(hacky_this) {
     const opts = {};
     const $message_row = hacky_this.$element.closest(".message_row");
     if ($message_row.length === 1) {
-        // we are editing a message so we try to use it's keys.
+        // we are editing a message so we try to use its keys.
         const msg = message_store.get(rows.id($message_row));
         if (msg.type === "stream") {
-            opts.stream = msg.stream;
+            opts.stream_id = msg.stream_id;
             opts.topic = msg.topic;
         }
     } else {
-        opts.stream = compose_state.stream_name();
+        opts.stream_id = compose_state.stream_id();
         opts.topic = compose_state.topic();
     }
     return opts;
