@@ -68,8 +68,7 @@ export function update_emoji_data() {
     }
 }
 
-export function topics_seen_for(stream_name) {
-    const stream_id = stream_data.get_stream_id(stream_name);
+export function topics_seen_for(stream_id) {
     if (!stream_id) {
         return [];
     }
@@ -729,7 +728,8 @@ export function get_candidates(query) {
                     return false;
                 }
 
-                const topic_list = topics_seen_for(stream_name);
+                const stream_id = stream_data.get_stream_id(stream_name);
+                const topic_list = topics_seen_for(stream_id);
                 if (should_show_custom_query(this.token, topic_list)) {
                     topic_list.push(this.token);
                 }
@@ -1017,7 +1017,8 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
             return sorted;
         },
         source() {
-            return topics_seen_for(stream_name);
+            const stream_id = stream_data.get_stream_id(stream_name);
+            return topics_seen_for(stream_id);
         },
         items: 5,
     };
@@ -1094,8 +1095,7 @@ export function initialize({on_enter_send}) {
 
     $("#stream_message_recipient_topic").typeahead({
         source() {
-            const stream_name = compose_state.stream_name();
-            return topics_seen_for(stream_name);
+            return topics_seen_for(compose_state.stream_id());
         },
         items: 3,
         fixed: true,

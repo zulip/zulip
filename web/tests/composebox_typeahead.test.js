@@ -407,14 +407,14 @@ test("topics_seen_for", ({override, override_rewire}) => {
         assert.equal(stream_id, denmark_stream.stream_id);
     });
 
-    assert.deepEqual(ct.topics_seen_for("Denmark"), [
+    assert.deepEqual(ct.topics_seen_for(denmark_stream.stream_id), [
         "With Twisted Metal",
         "acceptance",
         "civil fears",
     ]);
 
     // Test when the stream doesn't exist (there are no topics)
-    assert.deepEqual(ct.topics_seen_for("non-existing-stream"), []);
+    assert.deepEqual(ct.topics_seen_for(""), []);
 });
 
 test("content_typeahead_selected", ({override}) => {
