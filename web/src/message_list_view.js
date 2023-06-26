@@ -187,7 +187,7 @@ function populate_group_from_message_container(group, message_container) {
     group.is_private = message_container.msg.is_private;
 
     if (group.is_stream) {
-        const color = stream_data.get_color(message_container.msg.stream);
+        const color = stream_data.get_color(message_container.msg.stream_id);
         group.recipient_bar_color = stream_color.get_recipient_bar_color(color);
         group.stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
         group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
@@ -409,7 +409,7 @@ export class MessageListView {
         message_container.small_avatar_url = people.small_avatar_url(message_container.msg);
         if (message_container.msg.stream) {
             message_container.background_color = stream_data.get_color(
-                message_container.msg.stream,
+                message_container.msg.stream_id,
             );
         }
 

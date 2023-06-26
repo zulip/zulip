@@ -41,7 +41,7 @@ run_test("has_full_recipient", ({override, override_rewire}) => {
     override(compose_pm_pill, "get_emails", () => emails);
 
     compose_state.set_message_type("stream");
-    compose_state.set_stream_name("");
+    compose_state.set_stream_id("");
     compose_state.topic("");
     assert.equal(compose_state.has_full_recipient(), false);
 
@@ -49,7 +49,7 @@ run_test("has_full_recipient", ({override, override_rewire}) => {
     assert.equal(compose_state.has_full_recipient(), false);
 
     stream_data.add_sub({name: "bar", stream_id: 99});
-    compose_state.set_stream_name("bar");
+    compose_state.set_stream_id(99);
     assert.equal(compose_state.has_full_recipient(), true);
 
     compose_state.set_message_type("private");

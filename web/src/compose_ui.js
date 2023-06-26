@@ -11,6 +11,7 @@ import * as loading from "./loading";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
+import * as stream_data from "./stream_data";
 import * as user_status from "./user_status";
 
 export let compose_spinner_visible = false;
@@ -35,10 +36,10 @@ export function autosize_textarea($textarea) {
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === "stream" && opts.stream && !opts.topic) {
+    if (msg_type === "stream" && opts.stream_id && !opts.topic) {
         return "#stream_message_recipient_topic";
     } else if (
-        (msg_type === "stream" && opts.stream) ||
+        (msg_type === "stream" && opts.stream_id) ||
         (msg_type === "private" && opts.private_message_recipient)
     ) {
         if (opts.trigger === "new topic button") {
@@ -224,13 +225,16 @@ export function compute_placeholder_text(opts) {
     // because the caller is expected to insert this into the
     // placeholder field in a way that does HTML escaping.
     if (opts.message_type === "stream") {
-        if (opts.topic) {
+        const stream = stream_data.get_sub_by_id(opts.stream_id);
+        const stream_name = stream ? stream.name : "";
+
+        if (stream_name && opts.topic) {
             return $t(
                 {defaultMessage: "Message #{stream_name} > {topic_name}"},
-                {stream_name: opts.stream, topic_name: opts.topic},
+                {stream_name, topic_name: opts.topic},
             );
-        } else if (opts.stream) {
-            return $t({defaultMessage: "Message #{stream_name}"}, {stream_name: opts.stream});
+        } else if (stream_name) {
+            return $t({defaultMessage: "Message #{stream_name}"}, {stream_name});
         }
     }
 

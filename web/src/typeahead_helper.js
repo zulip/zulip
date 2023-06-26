@@ -233,26 +233,29 @@ export function compare_people_for_relevance(
     return tertiary_compare(person_a, person_b);
 }
 
-export function sort_people_for_relevance(objs, current_stream_name, current_topic) {
+export function sort_people_for_relevance(objs, current_stream_id, current_topic) {
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
-    let current_stream = false;
-    if (current_stream_name) {
-        current_stream = stream_data.get_sub(current_stream_name);
+    let current_stream = null;
+    if (current_stream_id) {
+        current_stream = stream_data.get_sub_by_id(current_stream_id);
     }
     if (!current_stream) {
         objs.sort((person_a, person_b) =>
             compare_people_for_relevance(person_a, person_b, compare_by_pms),
         );
     } else {
-        const stream_id = current_stream.stream_id;
-
         objs.sort((person_a, person_b) =>
             compare_people_for_relevance(
                 person_a,
                 person_b,
                 (user_a, user_b) =>
-                    recent_senders.compare_by_recency(user_a, user_b, stream_id, current_topic),
-                current_stream.stream_id,
+                    recent_senders.compare_by_recency(
+                        user_a,
+                        user_b,
+                        current_stream_id,
+                        current_topic,
+                    ),
+                current_stream_id,
             ),
         );
     }
@@ -348,13 +351,13 @@ export function sort_languages(matches, query) {
 export function sort_recipients({
     users,
     query,
-    current_stream,
+    current_stream_id,
     current_topic,
     groups = [],
     max_num_items = 20,
 }) {
     function sort_relevance(items) {
-        return sort_people_for_relevance(items, current_stream, current_topic);
+        return sort_people_for_relevance(items, current_stream_id, current_topic);
     }
 
     const users_name_results = typeahead.triage(query, users, (p) => p.full_name);

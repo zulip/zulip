@@ -119,7 +119,10 @@ export function complete_starting_tasks(msg_type, opts) {
 
     maybe_scroll_up_selected_message();
     compose_fade.start_compose(msg_type);
-    stream_bar.decorate(opts.stream, $("#stream_message_recipient_topic .message_header_stream"));
+    stream_bar.decorate(
+        opts.stream_id,
+        $("#stream_message_recipient_topic .message_header_stream"),
+    );
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     compose_recipient.update_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -153,7 +156,7 @@ export function maybe_scroll_up_selected_message() {
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     return {
         message_type: msg_type,
-        stream: "",
+        stream_id: "",
         topic: "",
         private_message_recipient: "",
         trigger: "unknown",
@@ -171,7 +174,7 @@ function same_recipient_as_before(msg_type, opts) {
     return (
         compose_state.get_message_type() === msg_type &&
         ((msg_type === "stream" &&
-            opts.stream === compose_state.stream_name() &&
+            opts.stream_id === compose_state.stream_id() &&
             opts.topic === compose_state.topic()) ||
             (msg_type === "private" &&
                 opts.private_message_recipient === compose_state.private_message_recipient()))
@@ -216,7 +219,7 @@ export function start(msg_type, opts) {
         (opts.trigger === "new topic button" ||
             (opts.trigger === "compose_hotkey" && msg_type === "stream"))
     ) {
-        opts.stream = subbed_streams[0].name;
+        opts.stream_id = subbed_streams[0].stream_id;
     }
 
     if (compose_state.composing() && !same_recipient_as_before(msg_type, opts)) {
@@ -227,12 +230,12 @@ export function start(msg_type, opts) {
     const $stream_header_colorblock = $(
         "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
     );
-    stream_bar.decorate(opts.stream, $stream_header_colorblock);
+    stream_bar.decorate(opts.stream_id, $stream_header_colorblock);
 
     if (msg_type === "private") {
         compose_state.set_compose_recipient_id(compose_recipient.DIRECT_MESSAGE_ID);
-    } else if (opts.stream) {
-        compose_state.set_stream_name(opts.stream);
+    } else if (opts.stream_id) {
+        compose_state.set_stream_id(opts.stream_id);
     } else {
         // Open stream selection dropdown if no stream is selected.
         compose_recipient.open_compose_recipient_dropdown();
@@ -361,11 +364,11 @@ export function respond_to_message(opts) {
         msg_type = message.type;
     }
 
-    let stream = "";
+    let stream_id = "";
     let topic = "";
     let pm_recipient = "";
     if (msg_type === "stream") {
-        stream = message.stream;
+        stream_id = message.stream_id;
         topic = message.topic;
     } else {
         pm_recipient = message.reply_to;
@@ -380,7 +383,7 @@ export function respond_to_message(opts) {
     }
 
     start(msg_type, {
-        stream,
+        stream_id,
         topic,
         private_message_recipient: pm_recipient,
         trigger: opts.trigger,

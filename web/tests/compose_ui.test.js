@@ -20,6 +20,7 @@ mock_esm("../src/message_lists", {
 });
 
 const compose_ui = zrequire("compose_ui");
+const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const hash_util = mock_esm("../src/hash_util");
@@ -184,7 +185,7 @@ run_test("replace_syntax", ({override}) => {
 run_test("compute_placeholder_text", () => {
     let opts = {
         message_type: "stream",
-        stream: "",
+        stream_id: "",
         topic: "",
         private_message_recipient: "",
     };
@@ -195,7 +196,13 @@ run_test("compute_placeholder_text", () => {
         $t({defaultMessage: "Compose your message here"}),
     );
 
-    opts.stream = "all";
+    const stream_all = {
+        subscribed: true,
+        name: "all",
+        stream_id: 2,
+    };
+    stream_data.add_sub(stream_all);
+    opts.stream_id = stream_all.stream_id;
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
 
     opts.topic = "Test";
@@ -207,7 +214,7 @@ run_test("compute_placeholder_text", () => {
     // direct message narrows
     opts = {
         message_type: "private",
-        stream: "",
+        stream_id: "",
         topic: "",
         private_message_recipient: "",
     };
@@ -748,10 +755,20 @@ run_test("get_focus_area", () => {
         "#compose-textarea",
     );
     assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget_wrapper");
-    assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
-    assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
     assert.equal(
-        get_focus_area("stream", {stream: "fun", topic: "more", trigger: "new topic button"}),
+        get_focus_area("stream", {stream_name: "fun", stream_id: 4}),
+        "#stream_message_recipient_topic",
+    );
+    assert.equal(
+        get_focus_area("stream", {stream_name: "fun", stream_id: 4, topic: "more"}),
+        "#compose-textarea",
+    );
+    assert.equal(
+        get_focus_area("stream", {
+            stream_id: 4,
+            topic: "more",
+            trigger: "new topic button",
+        }),
         "#stream_message_recipient_topic",
     );
 });

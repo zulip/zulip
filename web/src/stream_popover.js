@@ -334,11 +334,9 @@ export function build_move_topic_to_stream_popover(
     }
 
     function render_selected_stream() {
-        const stream_name = sub_store.maybe_get_stream_name(
-            Number.parseInt(stream_widget_value, 10),
-        );
-        stream_bar.decorate(stream_name, $stream_header_colorblock);
-        const stream = stream_data.get_sub_by_name(stream_name);
+        const stream_id = Number.parseInt(stream_widget_value, 10);
+        stream_bar.decorate(stream_id, $stream_header_colorblock);
+        const stream = stream_data.get_sub_by_id(stream_id);
         if (stream === undefined) {
             $("#move_topic_to_stream_widget .dropdown_widget_value").text(
                 $t({defaultMessage: "Select a stream"}),

@@ -1,9 +1,7 @@
 import $ from "jquery";
 
-import * as blueslip from "./blueslip";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
-import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 
 let message_type = false; // 'stream', 'private', or false-y
@@ -88,20 +86,7 @@ export function stream_name() {
     return "";
 }
 
-export function set_stream_name(stream_name) {
-    if (!stream_name) {
-        compose_recipient.set_selected_recipient_id("");
-        return;
-    }
-
-    // If we fail to select a stream that the caller expects
-    // us to do successfully, we should throw an error.
-    const stream_id = stream_data.get_stream_id(stream_name);
-    if (stream_id === undefined) {
-        blueslip.error("Unable to select stream: " + stream_name);
-        compose_recipient.set_selected_recipient_id("");
-        return;
-    }
+export function set_stream_id(stream_id) {
     compose_recipient.set_selected_recipient_id(stream_id);
 }
 

@@ -744,7 +744,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             return sweden_topics_to_show;
         });
 
-        compose_state.set_stream_name("Sweden");
+        compose_state.set_stream_id(sweden_stream.stream_id);
         let actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
         let expected_value = sweden_topics_to_show;
@@ -800,8 +800,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
         topic_typeahead_called = true;
 
-        // Unset the stream name.
-        compose_state.set_stream_name("");
+        // Unset the stream.
+        compose_state.set_stream_id("");
     };
 
     let pm_recipient_typeahead_called = false;
@@ -881,7 +881,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             return typeahead_helper.sort_recipients({
                 users: people,
                 query,
-                current_stream: compose_state.stream_name(),
+                current_stream_id: compose_state.stream_id(),
                 current_topic: compose_state.topic(),
             });
         }
@@ -1139,7 +1139,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.equal($("#private_message_recipient").val(), "othello@zulip.com");
 
     // the UI of selecting a stream is tested in puppeteer tests.
-    compose_state.set_stream_name("Sweden");
+    compose_state.set_stream_id(sweden_stream.stream_id);
 
     let event = {
         type: "keydown",
@@ -1199,7 +1199,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").trigger(event);
 
     // the UI of selecting a stream is tested in puppeteer tests.
-    compose_state.set_stream_name("Sweden");
+    compose_state.set_stream_id(sweden_stream.stream_id);
     // handle_keyup()
     event = {
         type: "keydown",
@@ -1800,12 +1800,12 @@ test("direct message recipients sorted according to stream / topic being viewed"
     override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     // When viewing no stream, sorting is alphabetical
-    compose_state.set_stream_name("");
+    compose_state.set_stream_id("");
     results = ct.get_pm_people("li");
     assert.deepEqual(results, [ali, alice, cordelia]);
 
     // When viewing denmark stream, subscriber cordelia is placed higher
-    compose_state.set_stream_name("Denmark");
+    compose_state.set_stream_id(denmark_stream.stream_id);
     results = ct.get_pm_people("li");
     assert.deepEqual(results, [cordelia, ali, alice]);
 

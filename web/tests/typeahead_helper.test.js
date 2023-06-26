@@ -95,10 +95,20 @@ for (const person of matches) {
     people.add_active_user(person);
 }
 
-stream_data.create_streams([
-    {name: "Dev", color: "blue", stream_id: 1},
-    {name: "Linux", color: "red", stream_id: 2},
-]);
+const dev_sub = {
+    name: "Dev",
+    color: "blue",
+    stream_id: 1,
+};
+
+const linux_sub = {
+    name: "Linux",
+    color: "red",
+    stream_id: 2,
+};
+stream_data.create_streams([dev_sub, linux_sub]);
+stream_data.add_sub(dev_sub);
+stream_data.add_sub(linux_sub);
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -312,11 +322,11 @@ test("sort_languages", () => {
     assert.deepEqual(test_langs, ["js", "java"]);
 });
 
-function get_typeahead_result(query, current_stream, current_topic) {
+function get_typeahead_result(query, current_stream_id, current_topic) {
     const result = th.sort_recipients({
         users: people.get_realm_users(),
         query,
-        current_stream,
+        current_stream_id,
         current_topic,
     });
     return result.map((person) => person.email);
@@ -378,8 +388,8 @@ test("sort_recipients", () => {
         id: (next_id += 1),
     });
 
-    // Typeahead for stream message [query, stream-name, topic-name]
-    assert.deepEqual(get_typeahead_result("b", "Dev", "Dev topic"), [
+    // Typeahead for stream message [query, stream-id, topic-name]
+    assert.deepEqual(get_typeahead_result("b", dev_sub.stream_id, "Dev topic"), [
         subscriber_email_3,
         subscriber_email_2,
         subscriber_email_1,
@@ -403,7 +413,7 @@ test("sort_recipients", () => {
     });
 
     // No match
-    assert.deepEqual(get_typeahead_result("h", "Linux", "Linux topic"), [
+    assert.deepEqual(get_typeahead_result("h", linux_sub.stream_id, "Linux topic"), [
         "zman@test.net",
         "b_user_3@zulip.net",
         "a_user@zulip.org",
@@ -427,7 +437,7 @@ test("sort_recipients all mention", () => {
     const results = th.sort_recipients({
         users: test_objs,
         query: "a",
-        current_stream: "Linux",
+        current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
     });
 
@@ -454,10 +464,9 @@ test("sort_recipients pm counts", () => {
     ]);
 
     // Now prioritize stream membership over pm counts.
-    const linux_sub = stream_data.get_sub("Linux");
     peer_data.add_subscriber(linux_sub.stream_id, b_user_3.user_id);
 
-    assert.deepEqual(get_typeahead_result("b", "Linux", "Linux topic"), [
+    assert.deepEqual(get_typeahead_result("b", linux_sub.stream_id, "Linux topic"), [
         "b_user_3@zulip.net",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
@@ -489,7 +498,7 @@ test("sort_recipients dup bots", () => {
     const recipients = th.sort_recipients({
         users: dup_objects,
         query: "b",
-        current_stream: "",
+        current_stream_id: "",
         current_topic: "",
     });
     const recipients_email = recipients.map((person) => person.email);
@@ -516,7 +525,7 @@ test("sort_recipients dup alls", () => {
     const recipients = th.sort_recipients({
         users: test_objs,
         query: "a",
-        current_stream: "Linux",
+        current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
     });
 
@@ -546,7 +555,7 @@ test("sort_recipients subscribers", () => {
     const recipients = th.sort_recipients({
         users: small_matches,
         query: "b",
-        current_stream: "Dev",
+        current_stream_id: dev_sub.stream_id,
         current_topic: "Dev topic",
     });
     const recipients_email = recipients.map((person) => person.email);
@@ -561,7 +570,7 @@ test("sort_recipients pm partners", () => {
     const recipients = th.sort_recipients({
         users: small_matches,
         query: "b",
-        current_stream: "Linux",
+        current_stream_id: linux_sub.stream_id,
         current_topic: "Linux topic",
     });
     const recipients_email = recipients.map((person) => person.email);

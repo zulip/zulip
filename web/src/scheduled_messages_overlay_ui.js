@@ -70,7 +70,7 @@ function format(scheduled_messages) {
             msg_render_context.stream_name = sub_store.maybe_get_stream_name(
                 msg_render_context.stream_id,
             );
-            const color = stream_data.get_color(msg_render_context.stream_name);
+            const color = stream_data.get_color(msg_render_context.stream_id);
             msg_render_context.recipient_bar_color = stream_color.get_recipient_bar_color(color);
             msg_render_context.stream_privacy_icon_color =
                 stream_color.get_stream_privacy_icon_color(color);

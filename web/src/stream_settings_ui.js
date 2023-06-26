@@ -13,6 +13,7 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dropdown_widget from "./dropdown_widget";
@@ -167,8 +168,6 @@ export function is_subscribed_stream_tab_active() {
 }
 
 export function update_stream_name(sub, new_name) {
-    const old_name = sub.name;
-
     // Rename the stream internally.
     stream_data.rename_sub(sub, new_name);
     const stream_id = sub.stream_id;
@@ -186,9 +185,9 @@ export function update_stream_name(sub, new_name) {
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
 
-    // Update compose_state if needed
-    if (compose_state.stream_name() === old_name) {
-        compose_state.set_stream_name(new_name);
+    // Update compose UI if needed
+    if (compose_state.stream_id() === stream_id) {
+        compose_recipient.on_compose_select_recipient_update();
     }
 
     // Update navbar if needed

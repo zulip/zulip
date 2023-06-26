@@ -153,7 +153,7 @@ function switch_message_type(message_type) {
 
     const opts = {
         message_type,
-        stream: compose_state.stream_name(),
+        stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
         private_message_recipient: compose_state.private_message_recipient(),
     };
@@ -162,8 +162,8 @@ function switch_message_type(message_type) {
     compose_ui.set_focus(message_type, opts);
 }
 
-function update_recipient_label(stream_name) {
-    const stream = stream_data.get_sub_by_name(stream_name);
+function update_recipient_label(stream_id) {
+    const stream = stream_data.get_sub_by_id(stream_id);
     if (stream === undefined) {
         $("#compose_select_recipient_widget .dropdown_widget_value").text(
             $t({defaultMessage: "Select a stream"}),
@@ -182,7 +182,7 @@ export function update_compose_for_message_type(message_type, opts) {
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
-        update_recipient_label(opts.stream);
+        update_recipient_label(opts.stream_id);
     } else {
         $("#compose-direct-recipient").show();
         $("#stream_message_recipient_topic").hide();
@@ -220,9 +220,9 @@ export function on_compose_select_recipient_update() {
         const $stream_header_colorblock = $(
             "#compose_select_recipient_widget_wrapper .stream_header_colorblock",
         );
-        const stream_name = compose_state.stream_name();
-        update_recipient_label(stream_name);
-        stream_bar.decorate(stream_name, $stream_header_colorblock);
+        const stream_id = compose_state.stream_id();
+        update_recipient_label(stream_id);
+        stream_bar.decorate(stream_id, $stream_header_colorblock);
     }
 
     check_posting_policy_for_compose_box();
@@ -351,7 +351,7 @@ export function update_placeholder_text() {
 
     const opts = {
         message_type: compose_state.get_message_type(),
-        stream: compose_state.stream_name(),
+        stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
         // TODO: to remove a circular import, direct message recipient needs
         // to be calculated in compose_state instead of compose_pm_pill.

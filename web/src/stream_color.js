@@ -11,18 +11,16 @@ import * as row from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as sub_store from "./sub_store";
 
 extend([lchPlugin, mixPlugin]);
 
 export function update_stream_recipient_color($stream_header) {
     if ($stream_header.length) {
         const stream_id = Number.parseInt($($stream_header).attr("data-stream-id"), 10);
-        const stream_name = sub_store.maybe_get_stream_name(stream_id);
-        if (!stream_name) {
+        if (!stream_id) {
             return;
         }
-        const stream_color = stream_data.get_color(stream_name);
+        const stream_color = stream_data.get_color(stream_id);
         const recipient_bar_color = get_recipient_bar_color(stream_color);
         $stream_header
             .find(".message-header-contents")

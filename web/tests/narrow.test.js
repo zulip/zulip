@@ -662,7 +662,7 @@ run_test("narrow_to_compose_target errors", ({override_rewire, disallow_rewire})
 
     // No-op when empty stream.
     compose_state.set_message_type("stream");
-    compose_state.set_stream_name("");
+    compose_state.set_stream_id("");
     narrow.to_compose_target();
 });
 
@@ -677,7 +677,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
 
     compose_state.set_message_type("stream");
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    compose_state.set_stream_name("ROME");
+    compose_state.set_stream_id(99);
 
     // Test with existing topic
     compose_state.topic("one");

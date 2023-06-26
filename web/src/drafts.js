@@ -360,9 +360,14 @@ export function format_draft(draft) {
                     draft_model.editDraft(id, draft);
                 }
             }
+        } else {
+            const sub = stream_data.get_sub(stream_name);
+            if (sub !== undefined) {
+                draft.stream_id = sub.stream_id;
+            }
         }
         const draft_topic = draft.topic || compose.empty_topic_placeholder();
-        const draft_stream_color = stream_data.get_color(stream_name);
+        const draft_stream_color = stream_data.get_color(draft.stream_id);
 
         formatted = {
             draft_id: draft.id,
