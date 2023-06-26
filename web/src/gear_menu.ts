@@ -126,7 +126,7 @@ export function initialize(): void {
         server_needs_upgrade: page_params.server_needs_upgrade,
         version_display_string: version_display_string(),
         apps_page_url: page_params.apps_page_url,
-        can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+        can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         corporate_enabled: page_params.corporate_enabled,
         is_guest: page_params.is_guest,
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",

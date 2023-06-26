@@ -160,7 +160,7 @@ export function build_page() {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         waiting_period_threshold_dropdown_values:
             settings_config.waiting_period_threshold_dropdown_values,
-        can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+        can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         realm_invite_required: page_params.realm_invite_required,
         can_edit_user_groups: settings_data.user_can_edit_user_groups(),
         policy_values: settings_config.common_policy_values,

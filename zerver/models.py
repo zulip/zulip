@@ -2177,7 +2177,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
 
-    def can_invite_others_to_realm(self) -> bool:
+    def can_invite_users_by_email(self) -> bool:
         return self.has_permission("invite_to_realm_policy")
 
     def can_create_multiuse_invite_to_realm(self) -> bool:
