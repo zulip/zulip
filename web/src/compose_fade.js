@@ -9,7 +9,6 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as people from "./people";
 import * as rows from "./rows";
-import * as stream_data from "./stream_data";
 import * as util from "./util";
 
 let normal_display = false;
@@ -26,12 +25,10 @@ export function set_focused_recipient(msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        const stream_name = compose_state.stream_name();
+        const stream_id = compose_state.stream_id();
         focused_recipient.topic = compose_state.topic();
-        focused_recipient.stream = stream_name;
-        const sub = stream_data.get_sub(stream_name);
-        if (sub) {
-            focused_recipient.stream_id = sub.stream_id;
+        if (stream_id) {
+            focused_recipient.stream_id = stream_id;
         }
     } else {
         // Normalize the recipient list so it matches the one used when
