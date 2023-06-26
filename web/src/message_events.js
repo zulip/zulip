@@ -268,8 +268,7 @@ export function update_messages(events) {
                 event.propagate_mode,
             );
 
-            const stream_name = stream_archived ? undefined : old_stream.name;
-            const compose_stream_name = compose_state.stream_name();
+            const compose_stream_id = compose_state.stream_id();
             const orig_topic = util.get_edit_event_orig_topic(event);
 
             const current_filter = narrow_state.filter();
@@ -289,9 +288,9 @@ export function update_messages(events) {
 
             if (
                 going_forward_change &&
-                stream_name &&
-                compose_stream_name &&
-                stream_name.toLowerCase() === compose_stream_name.toLowerCase() &&
+                !stream_archived &&
+                compose_stream_id &&
+                old_stream.stream_id === compose_stream_id &&
                 orig_topic === compose_state.topic()
             ) {
                 changed_compose = true;
@@ -373,6 +372,7 @@ export function update_messages(events) {
                 });
             }
 
+            const old_stream_name = stream_archived ? undefined : old_stream.name;
             if (
                 going_forward_change &&
                 // This logic is a bit awkward.  What we're trying to
@@ -390,7 +390,7 @@ export function update_messages(events) {
                 // messages within a narrow.
                 selection_changed_topic &&
                 current_filter &&
-                current_filter.has_topic(stream_name, orig_topic)
+                current_filter.has_topic(old_stream_name, orig_topic)
             ) {
                 let new_filter = current_filter;
                 if (new_filter && stream_changed) {
