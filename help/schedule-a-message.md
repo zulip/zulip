@@ -34,8 +34,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left
-   sidebar. If you do not see this link, you have no scheduled messages.
+{relative|message|scheduled}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
    want to edit or reschedule.
@@ -61,8 +60,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left
-   sidebar. If you do not see this link, you have no scheduled messages.
+{relative|message|scheduled}
 
 1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the message you
    want to send now.
@@ -84,8 +82,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left
-   sidebar. If you do not see this link, you have no scheduled messages.
+{relative|message|scheduled}
 
 1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the message you
    want to delete.
@@ -98,8 +95,7 @@ can schedule a message for next morning to avoid disturbing others.
 
 {tab|desktop-web}
 
-1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left sidebar.
-   If you do not see this link, you have no scheduled messages.
+{relative|message|scheduled}
 
 !!! tip ""
 
