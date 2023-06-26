@@ -11,13 +11,13 @@ import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
-import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
+import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
@@ -29,6 +29,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
+import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
@@ -156,14 +157,21 @@ function set_timestr(message_container) {
 function set_topic_edit_properties(group, message) {
     group.always_visible_topic_edit = false;
     group.on_hover_topic_edit = false;
+
+    const is_topic_editable = message_edit.is_topic_editable(message);
+
     // if a user who can edit a topic, can resolve it as well
-    group.user_can_resolve_topic = message_edit.is_topic_editable(message);
+    group.user_can_resolve_topic = is_topic_editable;
+
+    if (!is_topic_editable) {
+        return;
+    }
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
     if (message.topic === compose.empty_topic_placeholder()) {
         group.always_visible_topic_edit = true;
-    } else if (message_edit.is_topic_editable(message)) {
+    } else {
         group.on_hover_topic_edit = true;
     }
 }
@@ -173,8 +181,9 @@ function populate_group_from_message_container(group, message_container) {
     group.is_private = message_container.msg.is_private;
 
     if (group.is_stream) {
-        group.background_color = stream_data.get_color(message_container.msg.stream);
-        group.color_class = color_class.get_css_class(group.background_color);
+        const color = stream_data.get_color(message_container.msg.stream);
+        group.recipient_bar_color = stream_color.get_recipient_bar_color(color);
+        group.stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
         group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
         group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
         group.topic = message_container.msg.topic;
@@ -190,9 +199,11 @@ function populate_group_from_message_container(group, message_container) {
             group.stream_id = -1;
         } else {
             group.stream_id = sub.stream_id;
+            group.stream_muted = sub.is_muted;
         }
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
         group.topic_muted = user_topics.is_topic_muted(group.stream_id, group.topic);
+        group.topic_unmuted = user_topics.is_topic_unmuted(group.stream_id, group.topic);
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
@@ -221,7 +232,7 @@ export class MessageListView {
         // These three data structures keep track of groups of messages in the DOM.
         //
         // The message_groups are blocks of messages rendered into the
-        // DOM that will share a common recipent bar heading.
+        // DOM that will share a common recipient bar heading.
         //
         // A message_container an object containing a Message object
         // plus additional computed metadata needed for rendering it
@@ -767,7 +778,7 @@ export class MessageListView {
 
         const save_scroll_position = () => {
             if (orig_scrolltop_offset === undefined && this.selected_row().length > 0) {
-                orig_scrolltop_offset = this.selected_row().offset().top;
+                orig_scrolltop_offset = this.selected_row().get_offset_to_window().top;
             }
         };
 
@@ -966,7 +977,7 @@ export class MessageListView {
         // it's the max amount that we can scroll down (or "skooch
         // up" the messages) before knocking the selected message
         // out of the feed.
-        const selected_row_top = $selected_row.offset().top;
+        const selected_row_top = $selected_row.get_offset_to_window().top;
         let scroll_limit = selected_row_top - viewport_info.visible_top;
 
         if (scroll_limit < 0) {
@@ -1135,7 +1146,7 @@ export class MessageListView {
         const $selected_row = this.selected_row();
         const selected_in_view = $selected_row.length > 0;
         if (selected_in_view) {
-            old_offset = $selected_row.offset().top;
+            old_offset = $selected_row.get_offset_to_window().top;
         }
         if (discard_rendering_state) {
             // If we know that the existing render is invalid way
@@ -1144,15 +1155,15 @@ export class MessageListView {
             this.clear_rendering_state(true);
             this.update_render_window(this.list.selected_idx(), false);
         }
-        return this.rerender_with_target_scrolltop($selected_row, old_offset);
+        return this.rerender_with_target_scrolltop(old_offset);
     }
 
     set_message_offset(offset) {
         const $msg = this.selected_row();
-        message_viewport.scrollTop(message_viewport.scrollTop() + $msg.offset().top - offset);
+        message_viewport.scrollTop($msg.offset().top - offset);
     }
 
-    rerender_with_target_scrolltop(selected_row, target_offset) {
+    rerender_with_target_scrolltop(target_offset) {
         // target_offset is the target number of pixels between the top of the
         // viewable window and the selected message
         this.clear_table();
@@ -1165,7 +1176,7 @@ export class MessageListView {
         // window such that the newly selected message is at the
         // same location as it would have been before we
         // re-rendered.
-        if (target_offset !== undefined) {
+        if (target_offset !== undefined && message_lists.current === this.list) {
             if (this.selected_row().length === 0 && this.list.selected_id() > -1) {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
@@ -1242,8 +1253,9 @@ export class MessageListView {
         this._post_process($rendered_msg);
         $row.replaceWith($rendered_msg);
 
-        if (was_selected) {
-            this.list.select_id(message_container.msg.id);
+        // If this list not currently displayed, we don't need to select the message.
+        if (was_selected && this.list === message_lists.current) {
+            this.list.reselect_selected_id(message_container.msg.id);
         }
     }
 
@@ -1264,6 +1276,9 @@ export class MessageListView {
     }
 
     rerender_messages(messages, message_content_edited) {
+        // We need to destroy all the tippy instances from the DOM before re-rendering to
+        // prevent the appearance of tooltips whose reference has been removed.
+        message_list_tooltips.destroy_all_message_list_tooltips();
         // Convert messages to list messages
         let message_containers = messages.map((message) => this.message_containers.get(message.id));
         // We may not have the message_container if the stream or topic was muted
@@ -1321,6 +1336,21 @@ export class MessageListView {
     }
 
     prepend(messages) {
+        if (this._render_win_end - this._render_win_start === 0) {
+            // If the message list previously contained no visible
+            // messages, appending and prepending are equivalent, but
+            // the prepend logic will throw an exception, so just
+            // handle this as an append request.
+            //
+            // This is somewhat hacky, but matches how we do rendering
+            // for the first messages in a new msg_list_data object.
+            this.append(messages, false);
+            return;
+        }
+
+        // If we already have some messages rendered, then prepending
+        // will effectively change the meaning of the existing
+        // numbers.
         this._render_win_start += messages.length;
         this._render_win_end += messages.length;
 
@@ -1370,6 +1400,8 @@ export class MessageListView {
         just_unsubscribed,
         can_toggle_subscription,
         is_spectator,
+        invite_only,
+        is_web_public,
     ) {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
@@ -1382,6 +1414,8 @@ export class MessageListView {
                 just_unsubscribed,
                 is_spectator,
                 is_trailing_bookend: true,
+                invite_only,
+                is_web_public,
             }),
         );
         rows.get_table(this.table_name).append($rendered_trailing_bookend);
@@ -1453,7 +1487,7 @@ export class MessageListView {
             // header has a box-shodow of `1px` at top but since it doesn't impact
             // `y` position of the header, we don't take it into account during calculations.
             const header_props = header.getBoundingClientRect();
-            // This value is dependent upon margin-bottom applied to recipient row.
+            // This value is dependent upon space between two `recipient_row` message groups.
             const margin_between_recipient_rows = 10;
             const sticky_or_about_to_be_sticky_header_position =
                 visible_top + header_props.height + margin_between_recipient_rows;
@@ -1503,10 +1537,14 @@ export class MessageListView {
         } else {
             $sticky_header.addClass("sticky_header");
             const sticky_header_props = $sticky_header[0].getBoundingClientRect();
+            /* date separator starts to be hidden at this height difference. */
+            const date_separator_padding = 7;
+            const sticky_header_bottom = sticky_header_props.top + sticky_header_props.height;
+            const possible_new_date_separator_start = sticky_header_bottom - date_separator_padding;
             /* Get `message_row` under the sticky header. */
             const elements_below_sticky_header = document.elementsFromPoint(
                 sticky_header_props.left,
-                sticky_header_props.top,
+                possible_new_date_separator_start,
             );
             $message_row = $(
                 elements_below_sticky_header.filter((element) =>
@@ -1554,5 +1592,33 @@ export class MessageListView {
                 $prev_header_date_row.addClass("hide-date-separator-header");
             }
         }
+    }
+
+    update_recipient_bar_background_color() {
+        const $table = rows.get_table(this.table_name);
+        const $stream_headers = $table.find(".message_header_stream");
+        for (const stream_header of $stream_headers) {
+            const $stream_header = $(stream_header);
+            stream_color.update_stream_recipient_color($stream_header);
+        }
+    }
+
+    show_message_as_read(message, options) {
+        const $row = this.get_row(message.id);
+        if (options.from === "pointer" || options.from === "server") {
+            $row.find(".unread_marker").addClass("fast_fade");
+        } else {
+            $row.find(".unread_marker").addClass("slow_fade");
+        }
+        $row.removeClass("unread");
+    }
+
+    show_messages_as_unread(message_ids) {
+        const $table = rows.get_table(this.table_name);
+        const $rows_to_show_as_unread = $table.find(".message_row").filter((index, $row) => {
+            const message_id = Number.parseFloat($row.getAttribute("zid"));
+            return message_ids.includes(message_id);
+        });
+        $rows_to_show_as_unread.addClass("unread");
     }
 }

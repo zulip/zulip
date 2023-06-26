@@ -9,8 +9,13 @@ import orjson
 from zerver.data_import.gitter import do_convert_data, get_usermentions
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Realm, UserProfile, get_realm
-from zproject.backends import GitHubAuthBackend, auth_enabled_helper, github_auth_enabled
+from zerver.models import Message, UserProfile, get_realm
+from zproject.backends import (
+    AUTH_BACKEND_NAME_MAP,
+    GitHubAuthBackend,
+    auth_enabled_helper,
+    github_auth_enabled,
+)
 
 
 class GitterImporter(ZulipTestCase):
@@ -131,7 +136,7 @@ class GitterImporter(ZulipTestCase):
             self.assertIsNotNone(message.rendered_content, None)
 
         self.assertTrue(github_auth_enabled(realm))
-        for auth_backend_name in Realm.AUTHENTICATION_FLAGS:
+        for auth_backend_name in AUTH_BACKEND_NAME_MAP:
             if auth_backend_name == GitHubAuthBackend.auth_backend_name:
                 continue
 

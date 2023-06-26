@@ -1,6 +1,10 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_recipient from "./compose_recipient";
+import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 
 let message_type = false; // 'stream', 'private', or false-y
 let recipient_edited_manually = false;
@@ -66,15 +70,40 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
     };
 }
 
+// NOTE: See `selected_recipient_id` in compose_recipient to for
+// documentation on the variable and how it is used.
 export function stream_name() {
-    return $("#stream_message_recipient_stream").val().trim();
+    const stream_id = compose_recipient.selected_recipient_id;
+    if (typeof stream_id === "number") {
+        return sub_store.maybe_get_stream_name(stream_id) || "";
+    }
+    return "";
 }
 
-export function set_stream_name(newval) {
-    if (newval !== undefined) {
-        const $elem = $("#stream_message_recipient_stream");
-        $elem.val(newval);
+export function set_stream_name(stream_name) {
+    if (!stream_name) {
+        compose_recipient.set_selected_recipient_id("");
+        return;
     }
+
+    // If we fail to select a stream that the caller expects
+    // us to do successfully, we should throw an error.
+    const stream_id = stream_data.get_stream_id(stream_name);
+    if (stream_id === undefined) {
+        blueslip.error("Unable to select stream: " + stream_name);
+        compose_recipient.set_selected_recipient_id("");
+        return;
+    }
+    compose_recipient.set_selected_recipient_id(stream_id);
+}
+
+export function set_compose_recipient_id(value) {
+    let recipient_id = compose_recipient.DIRECT_MESSAGE_ID;
+    if (typeof value === "number") {
+        // value is stream name
+        recipient_id = sub_store.maybe_get_stream_name(value) || "";
+    }
+    compose_recipient.set_selected_recipient_id(recipient_id);
 }
 
 // TODO: Break out setter and getter into their own functions.
@@ -127,7 +156,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
             return private_message_recipient().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
-        case "stream_message_recipient_stream":
+        case "compose_select_recipient_name":
             return stream_name() === "";
     }
 

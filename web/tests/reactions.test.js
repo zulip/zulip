@@ -358,6 +358,7 @@ test("sending", ({override, override_rewire}) => {
             reaction_type: "zulip_extra_emoji",
             emoji_name: "zulip",
             emoji_code: "zulip",
+            still_url: null,
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
         });
     }
@@ -890,7 +891,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             class: "message_reaction",
             message_id,
             label: "translated: Bob van Roberts reacted with :zulip:",
-            still_url: undefined,
+            still_url: null,
             reaction_type: clean_reaction_object.reaction_type,
             vote_text: "",
         });
@@ -1148,7 +1149,7 @@ test("view.remove_reaction (last person)", () => {
 test("error_handling", ({override, override_rewire}) => {
     override(message_store, "get", () => {});
 
-    blueslip.expect("error", "reactions: Bad message id: 55");
+    blueslip.expect("error", "reactions: Bad message id");
 
     const bogus_event = {
         message_id: 55,
@@ -1304,26 +1305,20 @@ test("duplicates", () => {
         ],
     };
 
-    blueslip.expect(
-        "error",
-        "server sent duplicate reactions for user 5 (key=unicode_emoji,1f642)",
-    );
+    blueslip.expect("error", "server sent duplicate reactions");
     reactions.set_clean_reactions(dup_reaction_message);
 });
 
 test("process_reaction_click undefined", ({override}) => {
     override(message_store, "get", () => undefined);
-    blueslip.expect("error", "reactions: Bad message id: 55");
-    blueslip.expect("error", "message_id for reaction click is unknown: 55");
+    blueslip.expect("error", "reactions: Bad message id");
+    blueslip.expect("error", "message_id for reaction click is unknown");
     reactions.process_reaction_click(55, "whatever");
 });
 
 test("process_reaction_click bad local id", ({override}) => {
     const stub_message = {id: 4001, reactions: []};
     override(message_store, "get", () => stub_message);
-    blueslip.expect(
-        "error",
-        "Data integrity problem for reaction bad-local-id (message some-msg-id)",
-    );
+    blueslip.expect("error", "Data integrity problem for reaction");
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });

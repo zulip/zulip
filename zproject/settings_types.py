@@ -12,6 +12,7 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     entity_id: str
     url: str
     slo_url: str
+    sp_initiated_logout_enabled: bool
     attr_user_permanent_id: str
     attr_first_name: str
     attr_last_name: str

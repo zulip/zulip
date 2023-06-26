@@ -60,12 +60,12 @@ the Zulip server itself (E.g. `https://zulip.example.com/help/`).
 Many Zulip servers run versions from Git that have not been published
 in a stable release.
 
-- [Zulip Cloud](https://zulip.com) essentially runs the `main`
-  branch. It is usually a few days behind `main` (with some
-  cherry-picked bug fixes), but can fall up to 2 weeks behind when
-  major UI or internals changes mean we'd like to bake changes longer
-  on chat.zulip.org before exposing them to the full Zulip Cloud
-  userbase.
+- [Zulip Cloud](https://zulip.com) runs the `zulip-cloud-current`
+  branch; this the `main` branch, with some cherry-picked bug fixes,
+  but delayed somewhat. It is usually one to two weeks behind `main`,
+  depending on the complexity of recent major UI or internals changes
+  that we'd like to bake longer on chat.zulip.org before exposing them
+  to the full Zulip Cloud userbase.
 - [chat.zulip.org][chat-zulip-org], the bleeding-edge server for the
   Zulip development community, is upgraded to `main` several times
   every week. We also often "test deploy" changes not yet in `main`
@@ -176,15 +176,15 @@ The Zulip community feels strongly that all the little issues are, in
 aggregate, just as important as the big things. Most resolved issues
 do not have any of these priority labels.
 
-We welcome participation from our user community in influencing the
-Zulip roadmap. If a bug or missing feature is causing significant
-pain for you, we'd love to hear from you, either in
+We welcome participation from our user community in influencing the Zulip
+roadmap. If a bug or missing feature is causing significant pain for you, we'd
+love to hear from you, either in
 [chat.zulip.org](https://zulip.com/development-community/) or on the relevant
-GitHub issue. Please an include an explanation of your use case: such
-details can be extremely helpful in designing appropriately general
-solutions, and also helps us identify cases where an existing solution
-can solve your problem. See [Reporting
-issues](../contributing/contributing.md#reporting-issues) for more details.
+GitHub issue. Please an include an explanation of your use case: such details
+can be extremely helpful in designing appropriately general solutions, and also
+helps us identify cases where an existing solution can solve your problem. See
+our guides for [reporting bugs](../contributing/reporting-bugs.md) and [giving
+feedback](../contributing/contributing.md#user-feedback) for more details.
 
 ## Client apps
 

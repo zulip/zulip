@@ -10,12 +10,11 @@ import render_settings_edit_embedded_bot_service from "../templates/settings/edi
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
 
 import * as avatar from "./avatar";
-import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
-import {DropdownListWidget} from "./dropdown_list_widget";
+import * as dropdown_widget from "./dropdown_widget";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -82,13 +81,13 @@ export function render_bots() {
     }
 }
 
-export function generate_zuliprc_uri(bot_id) {
+export function generate_zuliprc_url(bot_id) {
     const bot = bot_data.get(bot_id);
     const data = generate_zuliprc_content(bot);
-    return encode_zuliprc_as_uri(data);
+    return encode_zuliprc_as_url(data);
 }
 
-export function encode_zuliprc_as_uri(zuliprc) {
+export function encode_zuliprc_as_url(zuliprc) {
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 }
 
@@ -206,12 +205,12 @@ export function add_a_new_bot() {
     let create_avatar_widget;
 
     function create_a_new_bot() {
-        const bot_type = $("#create_bot_type :selected").val();
+        const bot_type = $("#create_bot_type").val();
         const full_name = $("#create_bot_name").val();
         const short_name = $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
         const payload_url = $("#create_payload_url").val();
         const interface_type = $("#create_interface_type").val();
-        const service_name = $("#select_service_name :selected").val();
+        const service_name = $("#select_service_name").val();
         const formData = new FormData();
 
         formData.append("csrfmiddlewaretoken", csrf_token);
@@ -267,7 +266,7 @@ export function add_a_new_bot() {
         create_avatar_widget = avatar.build_bot_create_widget();
 
         $("#create_bot_type").on("change", () => {
-            const bot_type = $("#create_bot_type :selected").val();
+            const bot_type = $("#create_bot_type").val();
             // For "generic bot" or "incoming webhook" both these fields need not be displayed.
             $("#service_name_list").hide();
             $("#select_service_name").removeClass("required");
@@ -288,7 +287,7 @@ export function add_a_new_bot() {
 
         $("#select_service_name").on("change", () => {
             $("#config_inputbox").children().hide();
-            const selected_bot = $("#select_service_name :selected").val();
+            const selected_bot = $("#select_service_name").val();
             $(`[name*='${CSS.escape(selected_bot)}']`).show();
         });
     }
@@ -342,6 +341,8 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
 
 export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
     const bot = people.get_by_user_id(user_id);
+    const owner_id = bot_data.get(user_id).owner_id;
+    const owner_full_name = people.get_full_name(owner_id);
 
     if (!bot) {
         return;
@@ -354,9 +355,10 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: !page_params.is_admin || (bot.is_owner && !page_params.is_owner),
         bot_avatar_url: bot.avatar_url,
+        owner_full_name,
+        current_bot_owner: bot.bot_owner_id,
     });
 
-    let owner_widget;
     let avatar_widget;
 
     const bot_type = bot.bot_type.toString();
@@ -371,18 +373,16 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         formData.append("csrfmiddlewaretoken", csrf_token);
         formData.append("full_name", $full_name.val());
         formData.append("role", JSON.stringify(role));
-
-        if (owner_widget === undefined) {
-            blueslip.error("get_bot_owner_widget not called");
-        }
-        const human_user_id = owner_widget.value();
-        if (human_user_id) {
-            formData.append("bot_owner_id", human_user_id);
+        const new_bot_owner_id = $("#bot_owner_dropdown_widget .bot_owner_name").attr(
+            "data-user-id",
+        );
+        if (new_bot_owner_id) {
+            formData.append("bot_owner_id", new_bot_owner_id);
         }
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             const service_payload_url = $("#edit_service_base_url").val();
-            const service_interface = $("#edit_service_interface :selected").val();
+            const service_interface = $("#edit_service_interface").val();
             formData.append("service_payload_url", JSON.stringify(service_payload_url));
             formData.append("service_interface", service_interface);
         } else if (bot_type === EMBEDDED_BOT_TYPE && service !== undefined) {
@@ -416,27 +416,39 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
 
     function edit_bot_post_render() {
         $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
-        const owner_id = bot_data.get(user_id).owner_id;
 
-        const user_ids = people.get_active_human_ids();
-        const users_list = user_ids.map((user_id) => ({
-            name: people.get_full_name(user_id),
-            value: user_id.toString(),
-        }));
+        function get_options() {
+            const user_ids = people.get_active_human_ids();
+            return user_ids.map((user_id) => ({
+                name: people.get_full_name(user_id),
+                unique_id: user_id,
+            }));
+        }
 
-        const opts = {
-            widget_name: "edit_bot_owner",
-            data: users_list,
-            default_text: $t({defaultMessage: "No owner"}),
-            value: owner_id,
-            on_update(value) {
-                $("#edit_bot_modal .dialog_submit_button").prop("disabled", value === null);
+        function item_click_callback(event, dropdown) {
+            const $user = $(event.currentTarget);
+            const user_full_name = $user.attr("data-name");
+            const new_bot_owner_id = Number.parseInt($user.attr("data-unique-id"), 10);
+            const $bot_owner = $("#bot_owner_dropdown_widget .bot_owner_name");
+            $bot_owner.text(user_full_name);
+            $bot_owner.attr("data-user-id", new_bot_owner_id);
+            $("#edit_bot_modal .bot_owner_id").val(new_bot_owner_id).trigger("input");
+            dropdown.hide();
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        dropdown_widget.setup(
+            {
+                target: "#bot_owner_dropdown_widget",
+                placement: "bottom-start",
             },
-        };
-        // Note: Rendering this is quite expensive in
-        // organizations with 10Ks of users.
-        owner_widget = new DropdownListWidget(opts);
-        owner_widget.setup();
+            get_options,
+            item_click_callback,
+            {
+                show_on_target_enter_keypress: true,
+            },
+        );
 
         $("#bot-role-select").val(bot.role);
         if (!page_params.is_owner) {
@@ -471,6 +483,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         // Show the avatar if the user has cleared the image
         $("#bot-edit-form").on("click", ".edit_bot_avatar_clear_button", () => {
             $("#current_bot_avatar_image").show();
+            $(".edit_bot_avatar_file_input").trigger("input");
         });
 
         $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
@@ -485,16 +498,6 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
                 confirm_bot_deactivation(bot_id, handle_confirm, true);
             dialog_widget.close_modal(open_deactivate_modal_callback);
         });
-
-        $("#bot-edit-form").on("input", "input, select", (e) => {
-            if ($(e.target).hasClass("no-input-change-detection")) {
-                // Don't enable the save button if the target element is a
-                // dropdown_list_widget, since it is handled by the dropdown_list_widget's
-                // `on_update` function.
-                return;
-            }
-            $("#edit_bot_modal .dialog_submit_button").prop("disabled", false);
-        });
     }
 
     dialog_widget.launch({
@@ -504,6 +507,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         on_click: submit_bot_details,
         post_render: edit_bot_post_render,
         loading_spinner: from_user_info_popover,
+        update_submit_disabled_state_on_change: true,
     });
 }
 
@@ -596,7 +600,7 @@ export function set_up() {
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
         const $bot_info = $(this).closest(".bot-information-box").find(".bot_info");
         const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
-        $(this).attr("href", generate_zuliprc_uri(bot_id));
+        $(this).attr("href", generate_zuliprc_url(bot_id));
     });
 
     $("#active_bots_list").on("click", "button.open_bots_subscribed_streams", (e) => {

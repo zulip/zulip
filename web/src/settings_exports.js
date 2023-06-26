@@ -10,8 +10,8 @@ import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
+import * as scroll_util from "./scroll_util";
 import * as timerender from "./timerender";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -46,13 +46,13 @@ export function populate_exports_table(exports) {
             let deleted_timestamp = data.deleted_timestamp;
 
             if (failed_timestamp !== null) {
-                failed_timestamp = timerender.last_seen_status_from_date(
+                failed_timestamp = timerender.relative_time_string_from_date(
                     new Date(failed_timestamp * 1000),
                 );
             }
 
             if (deleted_timestamp !== null) {
-                deleted_timestamp = timerender.last_seen_status_from_date(
+                deleted_timestamp = timerender.relative_time_string_from_date(
                     new Date(deleted_timestamp * 1000),
                 );
             }
@@ -62,7 +62,7 @@ export function populate_exports_table(exports) {
                     id: data.id,
                     acting_user: people.get_full_name(data.acting_user_id),
                     // Convert seconds -> milliseconds
-                    event_time: timerender.last_seen_status_from_date(
+                    event_time: timerender.relative_time_string_from_date(
                         new Date(data.export_time * 1000),
                     ),
                     url: data.export_url,
@@ -78,7 +78,7 @@ export function populate_exports_table(exports) {
                 return people.get_full_name(item.acting_user_id).toLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar($exports_table);
+                scroll_util.reset_scrollbar($exports_table);
             },
         },
         $parent_container: $("#data-exports").expectOne(),

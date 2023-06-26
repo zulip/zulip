@@ -1,3 +1,7 @@
+:root {
+    --padded-content-padding: 50px;
+}
+
 html {
     width: 100vw;
     overflow-x: hidden;
@@ -125,7 +129,7 @@ ol a:hover {
 }
 
 .padded-content {
-    padding: 50px;
+    padding: var(--padded-content-padding);
 }
 
 .clear-float {
@@ -221,6 +225,24 @@ button {
 
     &.show {
         opacity: 1;
+    }
+
+    &.why-page,
+    &.case-studies-page {
+        /* Move top padding to inner-content for better scroll positions on URL fragments. */
+        .padded-content {
+            padding-top: 0;
+        }
+
+        .inner-content {
+            padding-top: var(--padded-content-padding);
+        }
+    }
+
+    :target {
+        /* Keep elements targeted by URL fragments visible below the
+        floating top menu; coordinate the value here with the menu's height. */
+        scroll-margin-top: 60px;
     }
 }
 
@@ -2044,7 +2066,7 @@ button {
 
 .portico-landing.why-page .photo-description {
     position: relative;
-    top: -40px;
+    top: 10px; /* Place in padding gap below photo */
     height: 0;
 
     font-size: 0.8em;
@@ -2576,11 +2598,7 @@ button {
     margin: 20px 0 7px;
 }
 
-.portico-landing.jobs .open-positions-top .padded-content {
-    padding-bottom: 0;
-}
-
-.portico-landing.jobs .how-we-work .padded-content {
+.portico-landing.jobs .how-we-work {
     padding-top: 25px;
 }
 
@@ -3384,6 +3402,7 @@ button {
     }
 }
 
+#download-from-microsoft-store,
 #download-android-apk,
 #download-mac-arm64 {
     display: inline-block;

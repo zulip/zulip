@@ -82,7 +82,10 @@ def noop_would_change(puppet_cmd: List[str]) -> bool:
 
         with open(lastrun_file.name) as lastrun:
             lastrun_data = yaml.safe_load(lastrun)
-            return lastrun_data.get("resources", {}).get("out_of_sync", 0) != 0
+            resources = lastrun_data.get("resources", {})
+            if resources.get("failed", 0) != 0:
+                sys.exit(2)
+            return resources.get("out_of_sync", 0) != 0
     except subprocess.CalledProcessError:
         sys.exit(2)
     finally:

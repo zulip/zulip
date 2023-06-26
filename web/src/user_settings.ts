@@ -13,13 +13,24 @@ export type PmNotificationSettings = {
     enable_offline_email_notifications: boolean;
 };
 
-export type UserSettings = (StreamNotificationSettings & PmNotificationSettings) & {
+export type FollowedTopicNotificationSettings = {
+    enable_followed_topic_desktop_notifications: boolean;
+    enable_followed_topic_audible_notifications: boolean;
+    enable_followed_topic_push_notifications: boolean;
+    enable_followed_topic_email_notifications: boolean;
+    enable_followed_topic_wildcard_mentions_notify: boolean;
+};
+
+export type UserSettings = (StreamNotificationSettings &
+    PmNotificationSettings &
+    FollowedTopicNotificationSettings) & {
     color_scheme: number;
     default_language: string;
     default_view: string;
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
     dense_mode: boolean;
+    web_mark_read_on_scroll_policy: number;
     email_notifications_batching_period_seconds: number;
     emojiset: string;
     enable_digest_emails: boolean;

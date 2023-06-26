@@ -1,65 +1,73 @@
 {
-   "object_kind":"note",
-   "user":{
-      "name":"Tomasz Kolek",
-      "username":"tomaszkolek0",
-      "avatar_url":"https://secure.gravatar.com/avatar/116a6fdbcfd00466297a39174da11fbb?s=80\u0026d=identicon"
-   },
-   "project_id":1534233,
-   "project":{
-      "name":"my-awesome-project",
-      "description":"",
-      "web_url":"https://gitlab.com/tomaszkolek0/my-awesome-project",
-      "avatar_url":null,
-      "git_ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
-      "git_http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.git",
-      "namespace":"tomaszkolek0",
-      "visibility_level":0,
-      "path_with_namespace":"tomaszkolek0/my-awesome-project",
-      "default_branch":"master",
-      "homepage":"https://gitlab.com/tomaszkolek0/my-awesome-project",
-      "url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
-      "ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
-      "http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.git"
-   },
-   "object_attributes":{
-      "id":14169211,
-      "note":"nice commit",
-      "noteable_type":"Commit",
-      "author_id":670043,
-      "created_at":"2016-08-22 19:17:30 UTC",
-      "updated_at":"2016-08-22 19:17:30 UTC",
-      "project_id":1534233,
-      "attachment":null,
-      "line_code":null,
-      "commit_id":"66abd2da28809ffa128ed0447965cf11d7f863a7",
-      "noteable_id":null,
-      "st_diff":null,
-      "system":false,
-      "updated_by_id":null,
-      "type":null,
-      "position":null,
-      "original_position":null,
-      "resolved_at":null,
-      "resolved_by_id":null,
-      "discussion_id":"c748ca8fd85ec719e2d4d75c849cf7c616dc3955",
-      "original_discussion_id":null,
-      "url":"https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7#note_14169211"
-   },
-   "repository":{
-      "name":"my-awesome-project",
-      "url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
-      "description":"",
-      "homepage":"https://gitlab.com/tomaszkolek0/my-awesome-project"
-   },
-   "commit":{
-      "id":"66abd2da28809ffa128ed0447965cf11d7f863a7",
-      "message":"b\n",
-      "timestamp":"2016-08-17T21:17:54+02:00",
-      "url":"https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7",
-      "author":{
-         "name":"Tomasz Kolek",
-         "email":"tomasz-kolek@o2.pl"
-      }
-   }
+  "object_kind": "note",
+  "event_type": "note",
+  "user": {
+    "id": 14613894,
+    "name": "Satyam Bansal",
+    "username": "sbansal1999",
+    "avatar_url": "https://secure.gravatar.com/avatar/f4dd7cfc79fac91db4d9ecbb443a0519?s=80&d=identicon",
+    "email": "[REDACTED]"
+  },
+  "project_id": 46186758,
+  "project": {
+    "id": 46186758,
+    "name": "testing-zulip-gitlab-integration",
+    "description": null,
+    "web_url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration",
+    "avatar_url": null,
+    "git_ssh_url": "git@gitlab.com:sbansal1999/testing-zulip-gitlab-integration.git",
+    "git_http_url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration.git",
+    "namespace": "Satyam Bansal",
+    "visibility_level": 0,
+    "path_with_namespace": "sbansal1999/testing-zulip-gitlab-integration",
+    "default_branch": "main",
+    "ci_config_path": "",
+    "homepage": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration",
+    "url": "git@gitlab.com:sbansal1999/testing-zulip-gitlab-integration.git",
+    "ssh_url": "git@gitlab.com:sbansal1999/testing-zulip-gitlab-integration.git",
+    "http_url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration.git"
+  },
+  "object_attributes": {
+    "attachment": null,
+    "author_id": 14613894,
+    "change_position": null,
+    "commit_id": "82689ddf00fd7bdadb5c2afb3b94bd555edc9d01",
+    "created_at": "2023-05-25 18:18:17 UTC",
+    "discussion_id": "10ffd7c627f00f19cc2fa9cbbed9d13f3ff91375",
+    "id": 1406241063,
+    "line_code": null,
+    "note": "Wow what a beautiful commit.",
+    "noteable_id": null,
+    "noteable_type": "Commit",
+    "original_position": null,
+    "position": null,
+    "project_id": 46186758,
+    "resolved_at": null,
+    "resolved_by_id": null,
+    "resolved_by_push": null,
+    "st_diff": null,
+    "system": false,
+    "type": null,
+    "updated_at": "2023-05-25 18:18:17 UTC",
+    "updated_by_id": null,
+    "description": "Wow what a beautiful commit.",
+    "url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/commit/82689ddf00fd7bdadb5c2afb3b94bd555edc9d01#note_1406241063"
+  },
+  "repository": {
+    "name": "testing-zulip-gitlab-integration",
+    "url": "git@gitlab.com:sbansal1999/testing-zulip-gitlab-integration.git",
+    "description": null,
+    "homepage": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration"
+  },
+  "commit": {
+    "id": "82689ddf00fd7bdadb5c2afb3b94bd555edc9d01",
+    "message": "added some lines in second file\n",
+    "title": "added some lines in second file",
+    "timestamp": "2023-05-25T22:21:16+05:30",
+    "url": "https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/commit/82689ddf00fd7bdadb5c2afb3b94bd555edc9d01",
+    "author": {
+      "name": "Satyam Bansal",
+      "email": "sbansal1999@gmail.com"
+    }
+  }
 }

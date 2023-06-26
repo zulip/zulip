@@ -12,8 +12,9 @@ from zerver.lib.url_redirects import (
     LANDING_PAGE_REDIRECTS,
     POLICY_DOCUMENTATION_REDIRECTS,
 )
-from zerver.models import Realm, Stream
+from zerver.models import Stream
 from zproject import urls
+from zproject.backends import AUTH_BACKEND_NAME_MAP
 
 
 class PublicURLTest(ZulipTestCase):
@@ -115,7 +116,7 @@ class PublicURLTest(ZulipTestCase):
         Here we simply sanity-check that all the URLs load
         correctly.
         """
-        auth_types = [auth.lower() for auth in Realm.AUTHENTICATION_FLAGS]
+        auth_types = [auth.lower() for auth in AUTH_BACKEND_NAME_MAP]
         for auth in [
             "azuread",
             "email",

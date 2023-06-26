@@ -1,5 +1,4 @@
-#searchbox,
-#searchbox_legacy {
+#searchbox {
     width: 100%;
     height: var(--header-height);
 
@@ -15,14 +14,8 @@
         width: calc(100% - 2px);
         position: absolute;
 
-        @media (width < $xl_min) {
-            width: calc(100% - 84px);
-        }
-
         @media (width < $md_min) {
-            /* todo: Figure out why this has to be different
-               from top-navbar-border at this width and resolve it */
-            width: calc(100% - 123px);
+            width: calc(100% - 42px);
         }
 
         .search_close_button {
@@ -32,6 +25,15 @@
 
         .zulip-icon-close {
             font-size: 15px;
+        }
+    }
+
+    .typeahead.dropdown-menu {
+        /* Match the typeahead's width to its parent container. */
+        right: 0;
+
+        @media (width < $md_min) {
+            margin-left: 40px;
         }
     }
 
@@ -62,9 +64,9 @@
     #search_query {
         width: 100%;
         font-size: 16px;
-        height: var(--header-height);
+        height: calc(var(--header-height) - 1px);
+        min-height: 30px;
         padding: 0;
-        padding-left: 5px;
         padding-right: 40px;
         border: none;
         border-radius: 0;
@@ -74,6 +76,7 @@
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+        padding-left: 35px;
 
         @media (width < $sm_min) {
             vertical-align: text-bottom;
@@ -104,6 +107,8 @@
     }
 
     .search_close_button {
+        right: 0;
+
         &:hover {
             opacity: 1;
         }
@@ -130,58 +135,7 @@
     #search_arrows {
         font-size: 90%;
         letter-spacing: normal;
-    }
-}
-
-/* in progress: searchbox with pills */
-#searchbox {
-    #search_arrows {
-        padding-left: 35px;
-    }
-
-    .pill-container {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        border: none;
-        padding: 0;
-    }
-
-    @media (width >= $sm_min) {
-        .pill {
-            padding: 2px 0 !important;
-            font-size: 14px;
-        }
-    }
-
-    @media (width < $sm_min) {
-        #search_arrows .pill {
-            line-height: 20px;
-
-            .exit {
-                top: 0;
-            }
-        }
-    }
-}
-
-#searchbox_legacy {
-    #search_arrows {
         padding-left: 0;
-    }
-
-    #search_query {
-        padding-left: 35px;
-    }
-
-    .search_close_button {
-        right: 0;
-    }
-
-    .navbar-search.expanded {
-        .search_close_button {
-            margin-right: 5px;
-        }
     }
 }
 

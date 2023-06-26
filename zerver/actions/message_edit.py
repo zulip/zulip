@@ -1,6 +1,7 @@
 import datetime
+import itertools
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -21,7 +22,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, MessageMoveError
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -36,7 +37,11 @@ from zerver.lib.message import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.streams import access_stream_by_id, check_stream_access_based_on_stream_post_policy
+from zerver.lib.streams import (
+    access_stream_by_id,
+    can_access_stream_history,
+    check_stream_access_based_on_stream_post_policy,
+)
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
@@ -50,6 +55,7 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.types import EditHistoryEvent
+from zerver.lib.url_encoding import near_stream_message_url
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -103,22 +109,6 @@ def validate_message_edit_payload(
     # Right now, we prevent users from editing widgets.
     if content is not None and is_widget_message(message):
         raise JsonableError(_("Widgets cannot be edited."))
-
-
-def can_edit_topic(
-    user_profile: UserProfile,
-    is_no_topic_msg: bool,
-) -> bool:
-    # We allow anyone to edit (no topic) messages to help tend them.
-    if is_no_topic_msg:
-        return True
-
-    # The can_move_messages_to_another_topic helper returns whether the user can edit
-    # the topic or not based on edit_topic_policy setting and the user's role.
-    if user_profile.can_move_messages_to_another_topic():
-        return True
-
-    return False
 
 
 def maybe_send_resolve_topic_notifications(
@@ -187,6 +177,7 @@ def maybe_send_resolve_topic_notifications(
 
 
 def send_message_moved_breadcrumbs(
+    target_message: Message,
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
@@ -207,6 +198,13 @@ def send_message_moved_breadcrumbs(
     user_mention = silent_mention_syntax_for_user(user_profile)
     old_topic_link = f"#**{old_stream.name}>{old_topic}**"
     new_topic_link = f"#**{new_stream.name}>{new_topic}**"
+    message = {
+        "id": target_message.id,
+        "stream_id": new_stream.id,
+        "display_recipient": new_stream.name,
+        "topic": new_topic,
+    }
+    moved_message_link = near_stream_message_url(target_message.realm, message)
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
@@ -215,6 +213,7 @@ def send_message_moved_breadcrumbs(
                 new_stream,
                 new_topic,
                 new_thread_notification_string.format(
+                    message_link=moved_message_link,
                     old_location=old_topic_link,
                     user=user_mention,
                     changed_messages_count=changed_messages_count,
@@ -324,6 +323,27 @@ def do_update_embedded_data(
         }
 
     send_event(user_profile.realm, event, list(map(user_info, ums)))
+
+
+def get_visibility_policy_after_merge(
+    orig_topic_visibility_policy: int, target_topic_visibility_policy: int
+) -> int:
+    # This function determines the final visibility_policy after the merge
+    # operation, based on the visibility policies of the original and target
+    # topics.
+    #
+    # The algorithm to decide is based on:
+    # Whichever of the two policies is most visible is what we keep.
+    # The general motivation is to err on the side of showing messages
+    # rather than hiding them.
+    if orig_topic_visibility_policy == target_topic_visibility_policy:
+        return orig_topic_visibility_policy
+    elif (
+        orig_topic_visibility_policy == UserTopic.VisibilityPolicy.UNMUTED
+        or target_topic_visibility_policy == UserTopic.VisibilityPolicy.UNMUTED
+    ):
+        return UserTopic.VisibilityPolicy.UNMUTED
+    return UserTopic.VisibilityPolicy.INHERIT
 
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
@@ -453,14 +473,20 @@ def do_update_message(
         event["pm_mention_email_disabled_user_ids"] = list(info.pm_mention_email_disabled_user_ids)
         event["stream_push_user_ids"] = list(info.stream_push_user_ids)
         event["stream_email_user_ids"] = list(info.stream_email_user_ids)
+        event["followed_topic_push_user_ids"] = list(info.followed_topic_push_user_ids)
+        event["followed_topic_email_user_ids"] = list(info.followed_topic_email_user_ids)
         event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
         event["all_bot_user_ids"] = list(info.all_bot_user_ids)
         if rendering_result.mentions_wildcard:
             event["wildcard_mention_user_ids"] = list(info.wildcard_mention_user_ids)
+            event["followed_topic_wildcard_mention_user_ids"] = list(
+                info.followed_topic_wildcard_mention_user_ids
+            )
         else:
             event["wildcard_mention_user_ids"] = []
+            event["followed_topic_wildcard_mention_user_ids"] = []
 
         do_update_mobile_push_notification(
             target_message,
@@ -474,6 +500,7 @@ def do_update_message(
         orig_topic_name = target_message.topic_name()
         event["propagate_mode"] = propagate_mode
 
+    losing_access_user_ids: List[int] = []
     if new_stream is not None:
         assert content is None
         assert target_message.is_stream_message()
@@ -504,12 +531,12 @@ def do_update_message(
             ).select_related("user_profile")
         )
 
-        old_stream_sub_ids = [user.user_profile_id for user in subs_to_old_stream]
-        new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
+        old_stream_user_ids = {user.user_profile_id for user in subs_to_old_stream}
+        new_stream_user_ids = {user.user_profile_id for user in subs_to_new_stream}
 
         # Get users who aren't subscribed to the new_stream.
         subs_losing_usermessages = [
-            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_sub_ids
+            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_user_ids
         ]
         # Users who can longer access the message without some action
         # from administrators.
@@ -518,18 +545,20 @@ def do_update_message(
             for sub in subs_losing_usermessages
             if sub.user_profile.is_guest or not new_stream.is_public()
         ]
+        losing_access_user_ids = [sub.user_profile_id for sub in subs_losing_access]
+
         ums = ums.exclude(
             user_profile_id__in=[sub.user_profile_id for sub in subs_losing_usermessages]
         )
 
-        subs_gaining_usermessages = []
+        gaining_usermessage_user_ids = []
         if not new_stream.is_history_public_to_subscribers():
             # For private streams, with history not public to subscribers,
             # We find out users who are not present in the msgs' old stream
             # and create new UserMessage for these users so that they can
             # access this message.
-            subs_gaining_usermessages += [
-                user_id for user_id in new_stream_sub_ids if user_id not in old_stream_sub_ids
+            gaining_usermessage_user_ids += [
+                user_id for user_id in new_stream_user_ids if user_id not in old_stream_user_ids
             ]
 
     # We save the full topic name so that checks that require comparison
@@ -549,7 +578,23 @@ def do_update_message(
 
     update_edit_history(target_message, timestamp, edit_history_event)
 
-    delete_event_notify_user_ids: List[int] = []
+    # 'target_topic_has_messages', 'target_stream', and 'target_topic'
+    # will be used while migrating user_topic records later in this function.
+    #
+    # We need to calculate 'target_topic_has_messages' here,
+    # as we are moving the messages in the next step.
+    if topic_name is not None or new_stream is not None:
+        assert stream_being_edited is not None
+        assert orig_topic_name is not None
+
+        target_stream: Stream = new_stream if new_stream is not None else stream_being_edited
+        target_topic: str = topic_name if topic_name is not None else orig_topic_name
+
+        assert target_stream.recipient_id is not None
+        target_topic_has_messages = messages_for_topic(
+            target_stream.recipient_id, target_topic
+        ).exists()
+
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
         assert stream_being_edited is not None
@@ -583,10 +628,10 @@ def do_update_message(
             assert stream_being_edited is not None
             changed_message_ids = [msg.id for msg in changed_messages]
 
-            if subs_gaining_usermessages:
+            if gaining_usermessage_user_ids:
                 ums_to_create = []
                 for message_id in changed_message_ids:
-                    for user_profile_id in subs_gaining_usermessages:
+                    for user_profile_id in gaining_usermessage_user_ids:
                         # The fact that the user didn't have a UserMessage originally means we can infer that the user
                         # was not mentioned in the original message (even if mention syntax was present, it would not
                         # take effect for a user who was not subscribed). If we were editing the message's content, we
@@ -617,8 +662,7 @@ def do_update_message(
                 "stream_id": stream_being_edited.id,
                 "topic": orig_topic_name,
             }
-            delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
-            send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
+            send_event(user_profile.realm, delete_event, losing_access_user_ids)
 
             # Reset the Attachment.is_*_public caches for all messages
             # moved to another stream with different access permissions.
@@ -683,8 +727,7 @@ def do_update_message(
         )
 
         if new_stream is not None:
-            assert delete_event_notify_user_ids is not None
-            subscriptions = subscriptions.exclude(user_profile_id__in=delete_event_notify_user_ids)
+            subscriptions = subscriptions.exclude(user_profile_id__in=losing_access_user_ids)
 
         # All users that are subscribed to the stream must be
         # notified when a message is edited
@@ -759,28 +802,61 @@ def do_update_message(
     #   the acting user has moved the entire topic (as visible to them).
     #
     # This rule corresponds to checking moved_all_visible_messages.
-    #
-    # We may want more complex behavior in cases where one appears to
-    # be merging topics (E.g. there are existing messages in the
-    # target topic).
     if moved_all_visible_messages:
         assert stream_being_edited is not None
-        assert topic_name is not None or new_stream is not None
+        assert target_stream is not None
+        assert target_topic is not None
 
-        user_profiles_for_visibility_policy: Dict[int, List[UserProfile]] = defaultdict(list)
         stream_inaccessible_to_user_profiles: List[UserProfile] = []
+        orig_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
+        target_topic_user_profile_to_visibility_policy: Dict[UserProfile, int] = {}
         for user_topic in get_users_with_user_topic_visibility_policy(
             stream_being_edited.id, orig_topic_name
         ):
-            if (
-                new_stream is not None
-                and user_topic.user_profile_id in delete_event_notify_user_ids
-            ):
+            if new_stream is not None and user_topic.user_profile_id in losing_access_user_ids:
                 stream_inaccessible_to_user_profiles.append(user_topic.user_profile)
             else:
-                user_profiles_for_visibility_policy[user_topic.visibility_policy].append(
+                orig_topic_user_profile_to_visibility_policy[
                     user_topic.user_profile
-                )
+                ] = user_topic.visibility_policy
+
+        for user_topic in get_users_with_user_topic_visibility_policy(
+            target_stream.id, target_topic
+        ):
+            target_topic_user_profile_to_visibility_policy[
+                user_topic.user_profile
+            ] = user_topic.visibility_policy
+
+        # User profiles having any of the visibility policies set for either the original or target topic.
+        user_profiles_having_visibility_policy: Set[UserProfile] = set(
+            itertools.chain(
+                orig_topic_user_profile_to_visibility_policy.keys(),
+                target_topic_user_profile_to_visibility_policy.keys(),
+            )
+        )
+
+        user_profiles_for_visibility_policy_pair: Dict[
+            Tuple[int, int], List[UserProfile]
+        ] = defaultdict(list)
+        for user_profile_with_policy in user_profiles_having_visibility_policy:
+            if user_profile_with_policy not in target_topic_user_profile_to_visibility_policy:
+                target_topic_user_profile_to_visibility_policy[
+                    user_profile_with_policy
+                ] = UserTopic.VisibilityPolicy.INHERIT
+            elif user_profile_with_policy not in orig_topic_user_profile_to_visibility_policy:
+                orig_topic_user_profile_to_visibility_policy[
+                    user_profile_with_policy
+                ] = UserTopic.VisibilityPolicy.INHERIT
+
+            orig_topic_visibility_policy = orig_topic_user_profile_to_visibility_policy[
+                user_profile_with_policy
+            ]
+            target_topic_visibility_policy = target_topic_user_profile_to_visibility_policy[
+                user_profile_with_policy
+            ]
+            user_profiles_for_visibility_policy_pair[
+                (orig_topic_visibility_policy, target_topic_visibility_policy)
+            ].append(user_profile_with_policy)
 
         # If the messages are being moved to a stream the user
         # cannot access, then we treat this as the
@@ -799,29 +875,66 @@ def do_update_message(
         # can access. We move the user topic records for such
         # users, but removing the old topic visibility_policy
         # and then creating a new one.
-        for visibility_policy in UserTopic.VisibilityPolicy.values:
-            # Using the dict, we get the user_profiles lists for the original_topic
-            # that corresponds to each visibility_policy.
-            # Perform the remove and create operation for each of
-            # these user_profiles lists.
-            if visibility_policy in user_profiles_for_visibility_policy:
+        #
+        # Algorithm used for the 'merge userTopic states' case:
+        # Using the 'user_profiles_for_visibility_policy_pair' dictionary,
+        # we have 'orig_topic_visibility_policy', 'target_topic_visibility_policy',
+        # and a list of 'user_profiles' having the mentioned visibility policies.
+        #
+        # For every 'orig_topic_visibility_policy and target_topic_visibility_policy' pair,
+        # we determine the final visibility_policy that should be after the merge.
+        # Update the visibility_policy for the concerned set of user_profiles.
+        for (
+            visibility_policy_pair,
+            user_profiles,
+        ) in user_profiles_for_visibility_policy_pair.items():
+            orig_topic_visibility_policy, target_topic_visibility_policy = visibility_policy_pair
+
+            if orig_topic_visibility_policy != UserTopic.VisibilityPolicy.INHERIT:
                 bulk_do_set_user_topic_visibility_policy(
-                    user_profiles_for_visibility_policy[visibility_policy],
+                    user_profiles,
                     stream_being_edited,
                     orig_topic_name,
                     visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
-                    # do_set_user_topic_visibility_policy with visibility_policy
+                    # bulk_do_set_user_topic_visibility_policy with visibility_policy
                     # set to 'new_visibility_policy' will send an updated muted topic
                     # event, which contains the full set of muted
                     # topics, just after this.
                     skip_muted_topics_event=True,
                 )
 
+            new_visibility_policy = orig_topic_visibility_policy
+
+            if target_topic_has_messages:
+                # Here, we handle the complex case when target_topic already has
+                # some messages. We determine the resultant visibility_policy
+                # based on the visibility_policy of the orig_topic + target_topic.
+                # Finally, bulk_update the user_topic rows with the new visibility_policy.
+                new_visibility_policy = get_visibility_policy_after_merge(
+                    orig_topic_visibility_policy, target_topic_visibility_policy
+                )
+                if new_visibility_policy == target_topic_visibility_policy:
+                    continue
                 bulk_do_set_user_topic_visibility_policy(
-                    user_profiles_for_visibility_policy[visibility_policy],
-                    new_stream if new_stream is not None else stream_being_edited,
-                    topic_name if topic_name is not None else orig_topic_name,
-                    visibility_policy=visibility_policy,
+                    user_profiles,
+                    target_stream,
+                    target_topic,
+                    visibility_policy=new_visibility_policy,
+                )
+            else:
+                # This corresponds to the case when messages are moved
+                # to a stream-topic pair that didn't exist. There can
+                # still be UserTopic rows for the stream-topic pair
+                # that didn't exist if the messages in that topic had
+                # been deleted.
+                if new_visibility_policy == target_topic_visibility_policy:
+                    # This avoids unnecessary db operations and INFO logs.
+                    continue
+                bulk_do_set_user_topic_visibility_policy(
+                    user_profiles,
+                    target_stream,
+                    target_topic,
+                    visibility_policy=new_visibility_policy,
                 )
 
     send_event(user_profile.realm, event, users_to_be_notified)
@@ -925,7 +1038,7 @@ def do_update_message(
             else:
                 if changed_messages_count == 1:
                     new_thread_notification_string = gettext_lazy(
-                        "A message was moved here from {old_location} by {user}."
+                        "[A message]({message_link}) was moved here from {old_location} by {user}."
                     )
                 else:
                     new_thread_notification_string = gettext_lazy(
@@ -933,6 +1046,7 @@ def do_update_message(
                     )
 
         send_message_moved_breadcrumbs(
+            target_message,
             user_profile,
             stream_being_edited,
             orig_topic_name,
@@ -944,6 +1058,98 @@ def do_update_message(
         )
 
     return len(changed_messages)
+
+
+def check_time_limit_for_change_all_propagate_mode(
+    message: Message,
+    user_profile: UserProfile,
+    topic_name: Optional[str] = None,
+    stream_id: Optional[int] = None,
+) -> None:
+    realm = user_profile.realm
+    message_move_limit_buffer = 20
+
+    topic_edit_deadline_seconds = None
+    if topic_name is not None and realm.move_messages_within_stream_limit_seconds is not None:
+        # We set topic_edit_deadline_seconds only if topic is actually
+        # changed and there is some time limit to edit topic.
+        topic_edit_deadline_seconds = (
+            realm.move_messages_within_stream_limit_seconds + message_move_limit_buffer
+        )
+
+    stream_edit_deadline_seconds = None
+    if stream_id is not None and realm.move_messages_between_streams_limit_seconds is not None:
+        # We set stream_edit_deadline_seconds only if stream is
+        # actually changed and there is some time limit to edit
+        # stream.
+        stream_edit_deadline_seconds = (
+            realm.move_messages_between_streams_limit_seconds + message_move_limit_buffer
+        )
+
+    # Calculate whichever of the applicable topic and stream moving
+    # limits is stricter, and use that.
+    if topic_edit_deadline_seconds is not None and stream_edit_deadline_seconds is not None:
+        # When both stream and topic are changed, we consider the
+        # minimum of the two limits to make sure that we raise the
+        # error even when user cannot change one of topic or stream.
+        message_move_deadline_seconds = min(
+            topic_edit_deadline_seconds, stream_edit_deadline_seconds
+        )
+    elif topic_edit_deadline_seconds is not None:
+        message_move_deadline_seconds = topic_edit_deadline_seconds
+    elif stream_edit_deadline_seconds is not None:
+        message_move_deadline_seconds = stream_edit_deadline_seconds
+    else:
+        # There is no applicable time limit for this move request, so
+        # approve it.
+        return
+
+    stream = get_stream_by_id_in_realm(message.recipient.type_id, realm)
+
+    if not can_access_stream_history(user_profile, stream):
+        # If the user doesn't have full access to the stream's
+        # history, check if the user can move the entire portion that
+        # they do have access to.
+        accessible_messages_in_topic = UserMessage.objects.filter(
+            user_profile=user_profile,
+            message__recipient_id=message.recipient_id,
+            message__subject__iexact=message.topic_name(),
+        ).values_list("message_id", flat=True)
+        messages_allowed_to_move: List[int] = list(
+            Message.objects.filter(
+                id__in=accessible_messages_in_topic,
+                date_sent__gt=timezone_now()
+                - datetime.timedelta(seconds=message_move_deadline_seconds),
+            )
+            .order_by("date_sent")
+            .values_list("id", flat=True)
+        )
+        total_messages_requested_to_move = len(accessible_messages_in_topic)
+    else:
+        all_messages_in_topic = (
+            messages_for_topic(message.recipient_id, message.topic_name())
+            .order_by("id")
+            .values_list("id", "date_sent")
+        )
+        oldest_allowed_message_date = timezone_now() - datetime.timedelta(
+            seconds=message_move_deadline_seconds
+        )
+        messages_allowed_to_move = [
+            message[0]
+            for message in all_messages_in_topic
+            if message[1] > oldest_allowed_message_date
+        ]
+        total_messages_requested_to_move = len(all_messages_in_topic)
+
+    if total_messages_requested_to_move == len(messages_allowed_to_move):
+        # We return if all messages are allowed to move.
+        return
+
+    raise MessageMoveError(
+        first_message_id_allowed_to_move=messages_allowed_to_move[0],
+        total_messages_in_topic=total_messages_requested_to_move,
+        total_messages_allowed_to_move=len(messages_allowed_to_move),
+    )
 
 
 def check_update_message(
@@ -984,9 +1190,7 @@ def check_update_message(
     ):
         raise JsonableError(_("You don't have permission to edit this message"))
 
-    is_no_topic_msg = message.topic_name() == "(no topic)"
-
-    if topic_name is not None and not can_edit_topic(user_profile, is_no_topic_msg):
+    if topic_name is not None and not user_profile.can_move_messages_to_another_topic():
         raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
@@ -1008,13 +1212,12 @@ def check_update_message(
         and user_profile.realm.move_messages_within_stream_limit_seconds is not None
         and not user_profile.is_realm_admin
         and not user_profile.is_moderator
-        and not is_no_topic_msg
     ):
         deadline_seconds = (
             user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
         )
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
-            raise JsonableError(_("The time limit for editing this message's topic has passed"))
+            raise JsonableError(_("The time limit for editing this message's topic has passed."))
 
     rendering_result = None
     links_for_embed: Set[str] = set()
@@ -1082,6 +1285,14 @@ def check_update_message(
                 raise JsonableError(
                     _("The time limit for editing this message's stream has passed")
                 )
+
+    if (
+        propagate_mode == "change_all"
+        and not user_profile.is_realm_admin
+        and not user_profile.is_moderator
+        and (topic_name is not None or stream_id is not None)
+    ):
+        check_time_limit_for_change_all_propagate_mode(message, user_profile, topic_name, stream_id)
 
     number_changed = do_update_message(
         user_profile,

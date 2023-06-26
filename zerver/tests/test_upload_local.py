@@ -1,11 +1,10 @@
 import os
 import re
 import urllib
-from io import StringIO
+from io import BytesIO, StringIO
 from urllib.parse import urlparse
 
 from django.conf import settings
-from django.http.response import StreamingHttpResponse
 from PIL import Image
 
 import zerver.lib.upload
@@ -20,6 +19,7 @@ from zerver.lib.upload import (
     delete_export_tarball,
     delete_message_attachment,
     delete_message_attachments,
+    save_attachment_contents,
     upload_emoji_image,
     upload_export_tarball,
     upload_message_attachment,
@@ -41,13 +41,13 @@ from zerver.models import (
 class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
     def test_upload_message_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
-        uri = upload_message_attachment(
+        url = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
 
         base = "/user_uploads/"
-        self.assertEqual(base, uri[: len(base)])
-        path_id = re.sub("/user_uploads/", "", uri)
+        self.assertEqual(base, url[: len(base)])
+        path_id = re.sub("/user_uploads/", "", url)
         assert settings.LOCAL_UPLOADS_DIR is not None
         assert settings.LOCAL_FILES_DIR is not None
         file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
@@ -55,6 +55,17 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assert_length(b"zulip!", uploaded_file.size)
+
+    def test_save_attachment_contents(self) -> None:
+        user_profile = self.example_user("hamlet")
+        url = upload_message_attachment(
+            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+        )
+
+        path_id = re.sub("/user_uploads/", "", url)
+        output = BytesIO()
+        save_attachment_contents(path_id, output)
+        self.assertEqual(output.getvalue(), b"zulip!")
 
     def test_upload_message_attachment_local_cross_realm_path(self) -> None:
         """
@@ -67,11 +78,11 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         self.assertEqual(user_profile.realm, internal_realm)
 
-        uri = upload_message_attachment(
+        url = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile, zulip_realm
         )
         # Ensure the correct realm id of the target realm is used instead of the bot's realm.
-        self.assertTrue(uri.startswith(f"/user_uploads/{zulip_realm.id}/"))
+        self.assertTrue(url.startswith(f"/user_uploads/{zulip_realm.id}/"))
 
     def test_delete_message_attachment(self) -> None:
         self.login("hamlet")
@@ -96,12 +107,12 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("hamlet")
         path_ids = []
         for n in range(1, 1005):
-            uri = upload_message_attachment(
+            url = upload_message_attachment(
                 "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
             )
             base = "/user_uploads/"
-            self.assertEqual(base, uri[: len(base)])
-            path_id = re.sub("/user_uploads/", "", uri)
+            self.assertEqual(base, url[: len(base)])
+            path_id = re.sub("/user_uploads/", "", url)
             path_ids.append(path_id)
             file_path = os.path.join(settings.LOCAL_FILES_DIR, path_id)
             self.assertTrue(os.path.isfile(file_path))
@@ -138,8 +149,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         # We get a resized avatar from it
         image_data = read_test_image_file("img.png")
         resized_avatar = resize_avatar(image_data)
-        assert isinstance(result, StreamingHttpResponse)
-        self.assertEqual(resized_avatar, b"".join(result.streaming_content))
+        self.assertEqual(resized_avatar, result.getvalue())
 
         with self.settings(DEVELOPMENT=False):
             # In production, this is an X-Accel-Redirect to the
@@ -244,14 +254,14 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             f.write("dummy")
 
         assert settings.LOCAL_AVATARS_DIR is not None
-        uri = upload_export_tarball(user_profile.realm, tarball_path)
+        url = upload_export_tarball(user_profile.realm, tarball_path)
         self.assertTrue(os.path.isfile(os.path.join(settings.LOCAL_AVATARS_DIR, tarball_path)))
 
-        result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), uri)
+        result = re.search(re.compile(r"([A-Za-z0-9\-_]{24})"), url)
         if result is not None:
             random_name = result.group(1)
         expected_url = f"http://zulip.testserver/user_avatars/exports/{user_profile.realm_id}/{random_name}/tarball.tar.gz"
-        self.assertEqual(expected_url, uri)
+        self.assertEqual(expected_url, url)
 
         # Delete the tarball.
         with self.assertLogs(level="WARNING") as warn_log:
@@ -260,5 +270,5 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
             warn_log.output,
             ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
         )
-        path_id = urllib.parse.urlparse(uri).path
+        path_id = urllib.parse.urlparse(url).path
         self.assertEqual(delete_export_tarball(path_id), path_id)

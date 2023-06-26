@@ -842,13 +842,13 @@ class TestRealmAuditLog(ZulipTestCase):
         linkifier_id = do_add_linkifier(
             user.realm,
             pattern="#(?P<id>[123])",
-            url_format_string="https://realm.com/my_realm_filter/%(id)s",
+            url_template="https://realm.com/my_realm_filter/{id}",
             acting_user=user,
         )
 
         added_linkfier = LinkifierDict(
             pattern="#(?P<id>[123])",
-            url_format="https://realm.com/my_realm_filter/%(id)s",
+            url_template="https://realm.com/my_realm_filter/{id}",
             id=linkifier_id,
         )
         expected_extra_data = {
@@ -871,12 +871,12 @@ class TestRealmAuditLog(ZulipTestCase):
             user.realm,
             id=linkifier_id,
             pattern="#(?P<id>[0-9]+)",
-            url_format_string="https://realm.com/my_realm_filter/issues/%(id)s",
+            url_template="https://realm.com/my_realm_filter/issues/{id}",
             acting_user=user,
         )
         changed_linkifier = LinkifierDict(
             pattern="#(?P<id>[0-9]+)",
-            url_format="https://realm.com/my_realm_filter/issues/%(id)s",
+            url_template="https://realm.com/my_realm_filter/issues/{id}",
             id=linkifier_id,
         )
         expected_extra_data = {
@@ -902,7 +902,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         removed_linkifier = {
             "pattern": "#(?P<id>[0-9]+)",
-            "url_format": "https://realm.com/my_realm_filter/issues/%(id)s",
+            "url_template": "https://realm.com/my_realm_filter/issues/{id}",
         }
         expected_extra_data = {
             "realm_linkifiers": initial_linkifiers,

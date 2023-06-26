@@ -163,6 +163,10 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # For stream messages we need to check messages against data from
     # RealmAuditLog for visibility to user. So we fetch the subscription logs.
     stream_ids = [sub["recipient__type_id"] for sub in all_stream_subs]
+
+    # We have a partial index on RealmAuditLog for these rows -- if
+    # this set changes, the partial index must be updated as well, to
+    # keep this query performant
     events = [
         RealmAuditLog.SUBSCRIPTION_CREATED,
         RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
@@ -174,13 +178,15 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # That second tiebreak is important in case a user is subscribed
     # and then unsubscribed without any messages being sent in the
     # meantime.  Without that tiebreak, we could end up incorrectly
-    # processing the ordering of those two subscription changes.
+    # processing the ordering of those two subscription changes.  Note
+    # that this means we cannot backfill events unless there are no
+    # pre-existing events for this stream/user pair!
     subscription_logs = list(
-        RealmAuditLog.objects.select_related("modified_stream")
-        .filter(
+        RealmAuditLog.objects.filter(
             modified_user=user_profile, modified_stream_id__in=stream_ids, event_type__in=events
         )
         .order_by("event_last_message_id", "id")
+        .only("id", "event_type", "modified_stream_id", "event_last_message_id")
     )
 
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]] = defaultdict(list)

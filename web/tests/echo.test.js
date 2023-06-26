@@ -15,14 +15,15 @@ const notifications = mock_esm("../src/notifications");
 
 let disparities = [];
 
-mock_esm("../src/ui", {
-    show_failed_message_success() {},
+mock_esm("../src/message_live_update", {
+    update_message_in_all_views() {},
 });
 
 mock_esm("../src/sent_messages", {
     mark_disparity(local_id) {
         disparities.push(local_id);
     },
+    report_event_received() {},
 });
 
 const message_store = mock_esm("../src/message_store", {

@@ -9,13 +9,25 @@ import * as keydown_util from "./keydown_util";
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 export function place_caret_at_end(el: HTMLElement): void {
     el.focus();
+    if (el instanceof HTMLInputElement) {
+        el.setSelectionRange(el.value.length, el.value.length);
+    } else {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+    }
+}
 
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(range);
+export function replace_emoji_with_text($element: JQuery): void {
+    $element.find(".emoji").replaceWith(function () {
+        if ($(this).is("img")) {
+            return $(this).attr("alt") ?? "";
+        }
+        return $(this).text();
+    });
 }
 
 export function blur_active_element(): void {
@@ -92,5 +104,20 @@ export async function play_audio(elem: HTMLVideoElement): Promise<void> {
             throw error;
         }
         blueslip.debug(`Unable to play audio. ${error.name}: ${error.message}`);
+    }
+}
+
+export function listener_for_preferred_color_scheme_change(callback: () => void): void {
+    const media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
+    // MediaQueryList.addEventListener is missing in Safari < 14
+    const listener: () => void = () => {
+        if ($(":root").hasClass("color-scheme-automatic")) {
+            callback();
+        }
+    };
+    if ("addEventListener" in media_query_list) {
+        media_query_list.addEventListener("change", listener);
+    } else {
+        (media_query_list as MediaQueryList).addListener(listener);
     }
 }

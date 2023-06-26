@@ -1,6 +1,6 @@
 import * as pm_conversations from "./pm_conversations";
 import * as stream_data from "./stream_data";
-import * as stream_sort from "./stream_sort";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_topic_history from "./stream_topic_history";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
@@ -50,7 +50,7 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
 }
 
 export function get_next_topic(curr_stream, curr_topic) {
-    let my_streams = stream_sort.get_streams();
+    let my_streams = stream_list_sort.get_streams();
 
     my_streams = my_streams.filter((stream_name) => {
         if (!stream_data.is_stream_muted_by_name(stream_name)) {
@@ -99,7 +99,7 @@ export function get_next_unread_pm_string(curr_pm) {
 }
 
 export function get_next_stream(curr_stream) {
-    const my_streams = stream_sort.get_streams();
+    const my_streams = stream_list_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[
         curr_stream_index < 0 || curr_stream_index === my_streams.length - 1
@@ -109,7 +109,7 @@ export function get_next_stream(curr_stream) {
 }
 
 export function get_prev_stream(curr_stream) {
-    const my_streams = stream_sort.get_streams();
+    const my_streams = stream_list_sort.get_streams();
     const curr_stream_index = my_streams.indexOf(curr_stream);
     return my_streams[curr_stream_index <= 0 ? my_streams.length - 1 : curr_stream_index - 1];
 }

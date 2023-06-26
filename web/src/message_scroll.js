@@ -2,12 +2,9 @@ import $ from "jquery";
 import _ from "lodash";
 
 import * as compose_banner from "./compose_banner";
-import * as hash_util from "./hash_util";
-import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
-import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as recent_topics_util from "./recent_topics_util";
 import * as unread from "./unread";
@@ -32,114 +29,10 @@ export function mark_keyboard_triggered_current_scroll() {
     keyboard_triggered_current_scroll = true;
 }
 
-let loading_older_messages_indicator_showing = false;
-let loading_newer_messages_indicator_showing = false;
-
-export function show_loading_older() {
-    if (!loading_older_messages_indicator_showing) {
-        loading.make_indicator($("#loading_older_messages_indicator"), {abs_positioned: true});
-        loading_older_messages_indicator_showing = true;
-    }
-}
-
-export function hide_loading_older() {
-    if (loading_older_messages_indicator_showing) {
-        loading.destroy_indicator($("#loading_older_messages_indicator"));
-        loading_older_messages_indicator_showing = false;
-    }
-}
-
-export function show_loading_newer() {
-    if (!loading_newer_messages_indicator_showing) {
-        $(".bottom-messages-logo").show();
-        loading.make_indicator($("#loading_newer_messages_indicator"), {abs_positioned: true});
-        loading_newer_messages_indicator_showing = true;
-    }
-}
-
-export function hide_loading_newer() {
-    if (loading_newer_messages_indicator_showing) {
-        $(".bottom-messages-logo").hide();
-        loading.destroy_indicator($("#loading_newer_messages_indicator"));
-        loading_newer_messages_indicator_showing = false;
-    }
-}
-
-export function hide_indicators() {
-    hide_loading_older();
-    hide_loading_newer();
-}
-
-export function show_history_limit_notice() {
-    $(".top-messages-logo").hide();
-    $(".history-limited-box").show();
-    narrow_banner.hide_empty_narrow_message();
-}
-
-export function hide_history_limit_notice() {
-    $(".top-messages-logo").show();
-    $(".history-limited-box").hide();
-}
-
-export function hide_end_of_results_notice() {
-    $(".all-messages-search-caution").hide();
-}
-
-export function show_end_of_results_notice() {
-    $(".all-messages-search-caution").show();
-
-    // Set the link to point to this search with streams:public added.
-    // Note that element we adjust is not visible to spectators.
-    const operators = narrow_state.filter().operators();
-    const update_hash = hash_util.search_public_streams_notice_url(operators);
-    $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
-}
-
-export function update_top_of_narrow_notices(msg_list) {
-    // Assumes that the current state is all notices hidden (i.e. this
-    // will not hide a notice that should not be there)
-    if (msg_list !== message_lists.current) {
-        return;
-    }
-
-    if (
-        msg_list.data.fetch_status.has_found_oldest() &&
-        message_lists.current !== message_lists.home
-    ) {
-        const filter = narrow_state.filter();
-        if (filter === undefined && !narrow_state.is_message_feed_visible()) {
-            // user moved away from the narrow / filter to recent topics.
-            return;
-        }
-        // Potentially display the notice that lets users know
-        // that not all messages were searched.  One could
-        // imagine including `filter.is_search()` in these
-        // conditions, but there's a very legitimate use case
-        // for moderation of searching for all messages sent
-        // by a potential spammer user.
-        if (
-            !filter.contains_only_private_messages() &&
-            !filter.includes_full_stream_history() &&
-            !filter.is_personal_filter()
-        ) {
-            show_end_of_results_notice();
-        }
-    }
-
-    if (msg_list.data.fetch_status.history_limited()) {
-        show_history_limit_notice();
-    }
-}
-
-export function hide_top_of_narrow_notices() {
-    hide_end_of_results_notice();
-    hide_history_limit_notice();
-}
-
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
-    if (message_viewport.bottom_message_visible() || message_lists.current.empty()) {
+    if (message_viewport.bottom_message_visible() || message_lists.current.visibly_empty()) {
         // If last message is visible, just hide the
         // scroll to bottom button.
         $show_scroll_to_bottom_button.removeClass("show");
@@ -198,7 +91,7 @@ export function scroll_finished() {
             compose_banner.scroll_to_message_banner_message_id,
         );
         if ($message_row.length > 0 && !message_viewport.is_message_below_viewport($message_row)) {
-            compose_banner.clear_message_sent_banners();
+            compose_banner.clear_message_sent_banners(false);
         }
     }
 
@@ -243,7 +136,7 @@ function scroll_finish() {
 }
 
 export function initialize() {
-    message_viewport.$message_pane.on(
+    $(document).on(
         "scroll",
         _.throttle(() => {
             unread_ops.process_visible();
@@ -272,7 +165,7 @@ export function initialize() {
                 // The below checks might seem redundant, but it's
                 // possible this logic, which runs after a delay, lost
                 // a race with switching to another view, like Recent
-                // Topics, and we don't want to displ[ay this banner
+                // Topics, and we don't want to display this banner
                 // in such a view.
                 //
                 // This can likely be fixed more cleanly with another approach.

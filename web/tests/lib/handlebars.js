@@ -24,7 +24,7 @@ hb.JavaScriptCompiler = ZJavaScriptCompiler;
 
 function compile_hbs(module, filename) {
     const code = fs.readFileSync(filename, "utf8");
-    const pc = hb.precompile(code, {preventIndent: true, srcName: filename});
+    const pc = hb.precompile(code, {preventIndent: true, srcName: filename, strict: true});
     const node = new SourceNode();
     node.add([
         'const Handlebars = require("handlebars/runtime");\n',

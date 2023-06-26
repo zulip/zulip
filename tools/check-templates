@@ -23,7 +23,7 @@ EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
     "tools/tests/test_template_data",
     # Our parser doesn't handle the way its conditionals are layered
-    "templates/zerver/emails/missed_message.source.html",
+    "templates/zerver/emails/missed_message.html",
     # Previously unchecked and our parser doesn't like its indentation
     "web/images/icons/template.hbs",
     # Template checker recommends very hard to read indentation.

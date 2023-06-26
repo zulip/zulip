@@ -73,8 +73,22 @@ class zulip::app_frontend_base {
   $s3_memory_cache_size = zulipconf('application_server', 's3_memory_cache_size', '1M')
   $s3_disk_cache_size = zulipconf('application_server', 's3_disk_cache_size', '200M')
   $s3_cache_inactive_time = zulipconf('application_server', 's3_cache_inactive_time', '30d')
+  $configured_nginx_resolver = zulipconf('application_server', 'nameserver', '')
+  if $configured_nginx_resolver == '' {
+    # This may fail in the unlikely change that there is no configured
+    # resolver in /etc/resolv.conf, so only call it is unset in zulip.conf
+    $nginx_resolver_ip = resolver_ip()
+  } elsif (':' in $configured_nginx_resolver) and ! ('.' in $configured_nginx_resolver)  and ! ('[' in $configured_nginx_resolver) {
+    # Assume this is IPv6, which needs square brackets.
+    $nginx_resolver_ip = "[${configured_nginx_resolver}]"
+  } else {
+    $nginx_resolver_ip = $configured_nginx_resolver
+  }
   file { '/etc/nginx/zulip-include/s3-cache':
-    require => [Package[$zulip::common::nginx], File['/srv/zulip-uploaded-files-cache']],
+    require => [
+      Package[$zulip::common::nginx],
+      File['/srv/zulip-uploaded-files-cache'],
+    ],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -152,6 +166,7 @@ class zulip::app_frontend_base {
     notify  => Service[$zulip::common::supervisor_service],
   }
 
+  $uwsgi_rolling_restart = zulipconf('application_server', 'rolling_restart', false)
   $uwsgi_listen_backlog_limit = zulipconf('application_server', 'uwsgi_listen_backlog_limit', 128)
   $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
   $somaxconn = 2 * Integer($uwsgi_listen_backlog_limit)
@@ -200,6 +215,14 @@ class zulip::app_frontend_base {
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0750',
+  }
+  $access_log_retention_days = zulipconf('application_server','access_log_retention_days', 14)
+  file { '/etc/logrotate.d/zulip':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/logrotate/zulip.template.erb'),
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":

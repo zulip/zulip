@@ -201,9 +201,9 @@ def read_stripe_fixture(
             fixture = orjson.loads(f.read())
         # Check for StripeError fixtures
         if "json_body" in fixture:
-            requestor = stripe.api_requestor.APIRequestor()
+            requester = stripe.api_requestor.APIRequestor()
             # This function will raise the relevant StripeError according to the fixture
-            requestor.interpret_response(
+            requester.interpret_response(
                 fixture["http_body"], fixture["http_status"], fixture["headers"]
             )
         return stripe.util.convert_to_stripe_object(fixture)
@@ -2060,6 +2060,14 @@ class StripeTest(StripeTestCase):
         check_success(True, self.seat_count + MIN_INVOICED_LICENSES)
         # Invoice
         check_success(True, MAX_INVOICED_LICENSES)
+
+        # By default, an organization on a "Pay by card" plan with Manual license
+        # management cannot purchase less licenses than the current seat count.
+        # If exempt_from_license_number_check is enabled, they should be able to though.
+        customer = Customer.objects.get_or_create(realm=hamlet.realm)[0]
+        customer.exempt_from_license_number_check = True
+        customer.save()
+        check_success(False, self.seat_count - 1, {"license_management": "manual"})
 
     def test_upgrade_with_uncaught_exception(self) -> None:
         hamlet = self.example_user("hamlet")

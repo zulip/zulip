@@ -7,12 +7,12 @@ type Hook = () => void;
 
 type OverlayOptions = {
     name: string;
-    $overlay: JQuery<HTMLElement>;
+    $overlay: JQuery;
     on_close: () => void;
 };
 
 type Overlay = {
-    $element: JQuery<HTMLElement>;
+    $element: JQuery;
     close_handler: () => void;
 };
 
@@ -47,6 +47,20 @@ function call_hooks(func_list: Hook[]): void {
     for (const element of func_list) {
         element();
     }
+}
+
+export function disable_scrolling(): void {
+    // Why disable scrolling?
+    // Since fixed / absolute positined elements don't capture the scroll event unless
+    // they overflow their defined container. Since fixed / absolute elements are not treated
+    // as part of the document flow, we cannot capture `scroll` events on them and prevent propagation
+    // as event bubbling doesn't work naturally.
+    const scrollbar_width = window.innerWidth - document.documentElement.clientWidth;
+    $("html").css({"overflow-y": "hidden", "--disabled-scrollbar-width": `${scrollbar_width}px`});
+}
+
+function enable_scrolling(): void {
+    $("html").css({"overflow-y": "scroll", "--disabled-scrollbar-width": "0px"});
 }
 
 export function is_active(): boolean {
@@ -85,6 +99,10 @@ export function drafts_open(): boolean {
     return open_overlay_name === "drafts";
 }
 
+export function scheduled_messages_open(): boolean {
+    return open_overlay_name === "scheduled";
+}
+
 export function active_modal(): string | undefined {
     if (!is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
@@ -104,12 +122,10 @@ export function open_overlay(opts: OverlayOptions): void {
     }
 
     if (active_overlay || open_overlay_name) {
-        blueslip.error(
-            `Programming error - trying to open ${opts.name} before closing ${
-                open_overlay_name || "undefined"
-            }`,
-        );
-
+        blueslip.error("Programming error - trying to open overlay before closing other", {
+            name: opts.name,
+            open_overlay_name,
+        });
         return;
     }
 
@@ -132,10 +148,11 @@ export function open_overlay(opts: OverlayOptions): void {
         },
     };
 
+    disable_scrolling();
     opts.$overlay.addClass("show");
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
-    $(".header").attr("aria-hidden", "true");
+    $("#navbar-fixed-container").attr("aria-hidden", "true");
 }
 
 // If conf.autoremove is true, the modal element will be removed from the DOM
@@ -157,7 +174,7 @@ export function open_modal(
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
     if (modal_id.startsWith("#")) {
-        blueslip.error("hash-based selector passed in to open_modal: " + modal_id);
+        blueslip.error("hash-based selector passed in to open_modal", {modal_id});
         return;
     }
 
@@ -179,7 +196,7 @@ export function open_modal(
             conf.recursive_call_count += 1;
         }
         if (conf.recursive_call_count > 50) {
-            blueslip.error("Modal incorrectly is still open: " + modal_id);
+            blueslip.error("Modal incorrectly is still open", {modal_id});
             return;
         }
 
@@ -239,11 +256,25 @@ export function open_modal(
         close_modal(modal_id);
     });
 
+    function on_show_callback(): void {
+        if (conf.on_show) {
+            conf.on_show();
+        }
+        disable_scrolling();
+    }
+
+    function on_close_callback(): void {
+        if (conf.on_hide) {
+            conf.on_hide();
+        }
+        enable_scrolling();
+    }
+
     Micromodal.show(modal_id, {
         disableFocus: true,
         openClass: "modal--opening",
-        onShow: conf?.on_show,
-        onClose: conf?.on_hide,
+        onShow: on_show_callback,
+        onClose: on_close_callback,
     });
 }
 
@@ -251,7 +282,7 @@ export function close_overlay(name: string): void {
     call_hooks(pre_close_hooks);
 
     if (name !== open_overlay_name) {
-        blueslip.error(`Trying to close ${name} when ${open_overlay_name || "undefined"} is open.`);
+        blueslip.error("Trying to close overlay with another open", {name, open_overlay_name});
         return;
     }
 
@@ -266,14 +297,14 @@ export function close_overlay(name: string): void {
     }
 
     blueslip.debug("close overlay: " + name);
-
     active_overlay.$element.removeClass("show");
 
     active_overlay.$element.attr("aria-hidden", "true");
     $(".app").attr("aria-hidden", "false");
-    $(".header").attr("aria-hidden", "false");
+    $("#navbar-fixed-container").attr("aria-hidden", "false");
 
     active_overlay.close_handler();
+    enable_scrolling();
 }
 
 export function close_active(): void {
@@ -299,9 +330,7 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
     }
 
     if (active_modal() !== `#${CSS.escape(modal_id)}`) {
-        blueslip.error(
-            `Trying to close ${modal_id} modal when ${active_modal() || "undefined"} is open.`,
-        );
+        blueslip.error("Trying to close modal when other is open", {modal_id, active_modal});
         return;
     }
 
@@ -324,6 +353,27 @@ export function close_modal(modal_id: string, conf: Pick<ModalConfig, "on_hidden
     Micromodal.close(modal_id);
 }
 
+export function close_modal_if_open(modal_id: string): void {
+    if (modal_id === undefined) {
+        blueslip.error("Undefined id was passed into close_modal_if_open");
+        return;
+    }
+
+    if (!is_modal_open()) {
+        return;
+    }
+
+    const $micromodal = $(".micromodal.modal--open");
+    const active_modal_id = CSS.escape(`${CSS.escape($micromodal.attr("id") ?? "")}`);
+    if (active_modal_id === `${CSS.escape(modal_id)}`) {
+        Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
+    } else {
+        blueslip.info(
+            `${active_modal_id} is the currently active modal and ${modal_id} is already closed.`,
+        );
+    }
+}
+
 export function close_active_modal(): void {
     if (!is_modal_open()) {
         blueslip.warn("close_active_modal() called without checking is_modal_open()");
@@ -331,13 +381,12 @@ export function close_active_modal(): void {
     }
 
     const $micromodal = $(".micromodal.modal--open");
-    Micromodal.close(`${CSS.escape($micromodal.attr("id") || "")}`);
+    Micromodal.close(`${CSS.escape($micromodal.attr("id") ?? "")}`);
 }
 
 export function close_for_hash_change(): void {
-    $("div.overlay.show").removeClass("show");
-    if (active_overlay) {
-        active_overlay.close_handler();
+    if (open_overlay_name) {
+        close_overlay(open_overlay_name);
     }
 }
 

@@ -70,8 +70,6 @@ def invite_users_backend(
         raise JsonableError(_("Must be an organization administrator"))
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
-    if not stream_ids:
-        raise JsonableError(_("You must specify at least one stream for invitees to join."))
 
     invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
@@ -84,6 +82,9 @@ def invite_users_backend(
                 _("Stream does not exist with id: {}. No invites were sent.").format(stream_id)
             )
         streams.append(stream)
+
+    if len(streams) and not user_profile.can_subscribe_other_users():
+        raise JsonableError(_("You do not have permission to subscribe other users to streams."))
 
     do_invite_users(
         user_profile,

@@ -39,6 +39,7 @@ function assert_msg_ids(messages, msg_ids) {
 run_test("basics", () => {
     const mld = new MessageListData({
         excludes_muted_topics: false,
+        filter: new Filter(),
     });
 
     assert.equal(mld.is_search(), false);
@@ -126,7 +127,7 @@ run_test("basics", () => {
 run_test("muting", () => {
     let mld = new MessageListData({
         excludes_muted_topics: false,
-        filter: new Filter([{operator: "pm-with", operand: "alice@example.com"}]),
+        filter: new Filter([{operator: "dm", operand: "alice@example.com"}]),
     });
 
     const msgs = [
@@ -143,7 +144,7 @@ run_test("muting", () => {
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
     ];
 
-    user_topics.add_muted_topic(1, "muted");
+    user_topics.update_user_topics(1, "muted", user_topics.all_visibility_policies.MUTED);
     muted_users.add_muted_user(10);
 
     // `messages_filtered_for_topic_mutes` should skip filtering
@@ -205,6 +206,7 @@ run_test("muting", () => {
     // and keep `_all_items` up-to-date.
     mld = new MessageListData({
         excludes_muted_topics: true,
+        filter: new Filter(),
     });
     assert.deepEqual(mld._all_items, []);
 
@@ -239,6 +241,7 @@ run_test("muting", () => {
     // filtering the messages.
     mld = new MessageListData({
         excludes_muted_topics: true,
+        filter: new Filter(),
     });
 
     const orig_messages = [
@@ -286,6 +289,7 @@ run_test("muting", () => {
 run_test("errors", () => {
     const mld = new MessageListData({
         excludes_muted_topics: false,
+        filter: new Filter(),
     });
     assert.equal(mld.get("bogus-id"), undefined);
 

@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Optional
 from unittest import mock
 from urllib.parse import urlsplit
 
@@ -324,7 +324,7 @@ class GetEventsTest(ZulipTestCase):
         check_send_message(
             sender=user_profile,
             client=get_client("whatever"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=[recipient_email],
             topic_name=None,
             message_content="hello",
@@ -357,7 +357,7 @@ class GetEventsTest(ZulipTestCase):
         check_send_message(
             sender=user_profile,
             client=get_client("whatever"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=[recipient_email],
             topic_name=None,
             message_content="hello",
@@ -743,6 +743,35 @@ class FetchInitialStateDataTest(ZulipTestCase):
                 # Only legacy settings are included in the top level.
                 self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
+
+    def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+
+        data = {
+            "pattern": "#(?P<id>[123])",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+        }
+        post_result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(post_result)
+
+        result = fetch_initial_state_data(
+            user_profile=user,
+            linkifier_url_template=True,
+        )
+        self.assertEqual(result["realm_filters"], [])
+        self.assertEqual(result["realm_linkifiers"][0]["pattern"], "#(?P<id>[123])")
+        self.assertEqual(
+            result["realm_linkifiers"][0]["url_template"],
+            "https://realm.com/my_realm_filter/{id}",
+        )
+
+        # The default behavior should be `linkifier_url_template=False`
+        result = fetch_initial_state_data(
+            user_profile=user,
+        )
+        self.assertEqual(result["realm_filters"], [])
+        self.assertEqual(result["realm_linkifiers"], [])
 
     def test_pronouns_field_type_support(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1211,7 +1240,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         flush_per_request_caches()
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(38):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1226,19 +1255,20 @@ class FetchQueriesTest(ZulipTestCase):
             muted_topics=1,
             muted_users=1,
             presence=1,
-            realm=0,
+            realm=1,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
             realm_incoming_webhook_bots=0,
             realm_emoji=1,
-            realm_filters=1,
-            realm_linkifiers=1,
+            realm_filters=0,
+            realm_linkifiers=0,
             realm_playgrounds=1,
             realm_user=3,
             realm_user_groups=3,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
+            scheduled_messages=1,
             starred_messages=1,
             stream=2,
             stop_words=0,
@@ -1367,21 +1397,20 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
     # force_send_update is passed.
     @override_settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=3)
     def test_presence_events_disabled_on_larger_realm(self) -> None:
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1):
             do_update_user_presence(
                 self.example_user("cordelia"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
                 force_send_update=True,
             )
 
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0):
             do_update_user_presence(
                 self.example_user("hamlet"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
                 force_send_update=False,
             )

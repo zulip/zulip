@@ -107,10 +107,28 @@ def get_deploy_root() -> str:
     )
 
 
-def parse_version_from(deploy_path: str) -> str:
+def parse_version_from(deploy_path: str, merge_base: bool = False) -> str:
+    if not os.path.exists(os.path.join(deploy_path, "zulip-git-version")):
+        try:
+            # Pull this tool from _our_ deploy root, since it may not
+            # exist historically, but run it the cwd of the old
+            # deploy, so we set up its remote.
+            subprocess.check_call(
+                [os.path.join(get_deploy_root(), "scripts", "lib", "update-git-upstream")],
+                cwd=deploy_path,
+                preexec_fn=su_to_zulip,
+            )
+            subprocess.check_call(
+                [os.path.join(deploy_path, "tools", "cache-zulip-git-version")],
+                cwd=deploy_path,
+                preexec_fn=su_to_zulip,
+            )
+        except subprocess.CalledProcessError:
+            pass
     try:
+        varname = "ZULIP_MERGE_BASE" if merge_base else "ZULIP_VERSION"
         return subprocess.check_output(
-            [sys.executable, "-c", "from version import ZULIP_VERSION; print(ZULIP_VERSION)"],
+            [sys.executable, "-c", f"from version import {varname}; print({varname})"],
             cwd=deploy_path,
             text=True,
         ).strip()
@@ -574,6 +592,16 @@ def get_config(
 ) -> str:
     if config_file.has_option(section, key):
         return config_file.get(section, key)
+    return default_value
+
+
+def get_config_bool(
+    config_file: configparser.RawConfigParser, section: str, key: str, default_value: bool = False
+) -> bool:
+    if config_file.has_option(section, key):
+        val = config_file.get(section, key)
+        # This list is parallel to puppet/zulip/lib/puppet/parser/functions/zulipconf.rb
+        return val in ["1", "y", "t", "true", "yes", "enable", "enabled"]
     return default_value
 
 

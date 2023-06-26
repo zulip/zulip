@@ -23,6 +23,9 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_recipient from "./compose_recipient";
+import * as compose_textarea from "./compose_textarea";
+import * as compose_tooltips from "./compose_tooltips";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -47,11 +50,13 @@ import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
+import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
@@ -72,9 +77,11 @@ import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as scheduled_messages from "./scheduled_messages";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
+import * as scroll_util from "./scroll_util";
 import * as search from "./search";
-import * as search_pill_widget from "./search_pill_widget";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as settings from "./settings";
@@ -87,20 +94,23 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
-import * as stream_bar from "./stream_bar";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
+import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typing from "./typing";
-import * as ui from "./ui";
 import * as unread from "./unread";
+import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as user_group_edit from "./user_group_edit";
 import * as user_group_edit_members from "./user_group_edit_members";
@@ -213,10 +223,9 @@ function initialize_right_sidebar() {
 function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,
-        search_pills_enabled: page_params.search_pills_enabled,
     });
 
-    $("#navbar-container").html(rendered_navbar);
+    $("#header-container").html(rendered_navbar);
 }
 
 function initialize_compose_box() {
@@ -258,7 +267,7 @@ export function initialize_kitchen_sink_stuff() {
         message_viewport.set_last_movement_direction(delta);
     }, 50);
 
-    message_viewport.$message_pane.on("wheel", (e) => {
+    message_viewport.$scroll_container.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
         if (!overlays.is_overlay_or_modal_open() && narrow_state.is_message_feed_visible()) {
             // In the message view, we use a throttled mousewheel handler.
@@ -276,7 +285,7 @@ export function initialize_kitchen_sink_stuff() {
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
     $(".modal-body, .scrolling_list, input, textarea").on("wheel", function (e) {
-        const $self = ui.get_scroll_element($(this));
+        const $self = scroll_util.get_scroll_element($(this));
         const scroll = $self.scrollTop();
         const delta = e.originalEvent.deltaY;
 
@@ -292,6 +301,13 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
+        // Except for the stream select dropdown and compose banners, which still needs scroll events.
+        if (
+            $(e.target).closest(".dropdown-list-body").length ||
+            $(e.target).closest("#compose_banners").length
+        ) {
+            return;
+        }
         e.stopPropagation();
         e.preventDefault();
     });
@@ -364,14 +380,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $("#main_div").on("mouseleave", ".embed-video a", function () {
         $(this).removeClass("fa fa-play");
-    });
-
-    $("#stream_message_recipient_stream").on("change", function () {
-        stream_bar.decorate(
-            this.value,
-            $("#compose-stream-recipient .message_header_stream"),
-            true,
-        );
     });
 
     $(window).on("blur", () => {
@@ -449,6 +457,27 @@ export function initialize_kitchen_sink_stuff() {
     if (page_params.realm_presence_disabled) {
         $("#user-list").hide();
     }
+}
+
+function initialize_unread_ui() {
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        activity.update_dom_with_unread_counts(counts),
+    );
+    unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
+        top_left_corner.update_dom_with_unread_counts(counts, skip_animations),
+    );
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        stream_list.update_dom_with_unread_counts(counts),
+    );
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        pm_list.update_dom_with_unread_counts(counts),
+    );
+    unread_ui.register_update_unread_counts_hook(() => topic_list.update());
+    unread_ui.register_update_unread_counts_hook((counts) =>
+        notifications.update_unread_counts(counts),
+    );
+
+    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
 }
 
 export function initialize_everything() {
@@ -553,6 +582,7 @@ export function initialize_everything() {
 
     const presence_params = pop_fields("presences", "server_timestamp");
 
+    const starred_messages_params = pop_fields("starred_messages");
     const stream_data_params = pop_fields(
         "subscriptions",
         "unsubscribed",
@@ -570,7 +600,11 @@ export function initialize_everything() {
     const i18n_params = pop_fields("language_list");
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
+    const scheduled_messages_params = pop_fields("scheduled_messages");
 
+    /* To store theme data for spectators, we need to initialize
+       user_settings before setting the theme. */
+    initialize_user_settings(user_settings_params);
     if (page_params.is_spectator) {
         const ls = localstorage();
         const preferred_theme = ls.get("spectator-theme-preference");
@@ -583,12 +617,16 @@ export function initialize_everything() {
 
     i18n.initialize(i18n_params);
     tippyjs.initialize();
+    compose_tooltips.initialize();
+    message_list_tooltips.initialize();
+    // This populates data for scheduled messages.
+    scheduled_messages.initialize(scheduled_messages_params);
     popovers.initialize();
     popover_menus.initialize();
 
-    initialize_user_settings(user_settings_params);
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
     people.initialize(page_params.user_id, people_params);
+    starred_messages.initialize(starred_messages_params);
 
     let date_joined;
     if (!page_params.is_spectator) {
@@ -629,9 +667,8 @@ export function initialize_everything() {
     scroll_bar.initialize();
     message_viewport.initialize();
     navbar_alerts.initialize();
-    compose_closed_ui.initialize();
     initialize_kitchen_sink_stuff();
-    echo.initialize();
+    echo.initialize({on_send_message_success: compose.send_message_success});
     stream_edit.initialize();
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
@@ -642,11 +679,19 @@ export function initialize_everything() {
     muted_users.initialize(muted_users_params);
     stream_settings_ui.initialize();
     user_group_settings_ui.initialize();
-    stream_list.initialize();
+    top_left_corner.initialize();
+    stream_list.initialize({
+        on_stream_click(stream_id, trigger) {
+            const sub = sub_store.get(stream_id);
+            narrow.by("stream", sub.name, {trigger});
+        },
+    });
+    stream_list_sort.initialize();
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
     click_handlers.initialize();
+    scheduled_messages_overlay_ui.initialize();
     copy_and_paste.initialize();
     overlays.initialize();
     invite.initialize();
@@ -654,8 +699,11 @@ export function initialize_everything() {
     message_view_header.initialize();
     server_events.initialize();
     user_status.initialize(user_status_params);
-    compose_pm_pill.initialize();
-    search_pill_widget.initialize();
+    compose_recipient.initialize();
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
+    compose_closed_ui.initialize();
     reload.initialize();
     user_groups.initialize(user_groups_params);
     unread.initialize(unread_params);
@@ -666,10 +714,15 @@ export function initialize_everything() {
     linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     compose.initialize();
-    composebox_typeahead.initialize(); // Must happen after compose.initialize()
+    // Typeahead must be initialized after compose.initialize()
+    composebox_typeahead.initialize({
+        on_enter_send: compose.finish,
+    });
+    compose_textarea.initialize();
     search.initialize();
     tutorial.initialize();
-    notifications.initialize();
+    notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
+    unread_ops.initialize();
     gear_menu.initialize();
     giphy.initialize();
     presence.initialize(presence_params);
@@ -684,18 +737,28 @@ export function initialize_everything() {
     // All overlays must be initialized before hashchange.js
     hashchange.initialize();
 
-    unread_ui.initialize();
+    initialize_unread_ui();
     activity.initialize();
     emoji_picker.initialize();
     pm_list.initialize();
-    topic_list.initialize();
+    topic_list.initialize({
+        on_topic_click(stream_id, topic) {
+            const sub = sub_store.get(stream_id);
+            narrow.activate(
+                [
+                    {operator: "stream", operand: sub.name},
+                    {operator: "topic", operand: topic},
+                ],
+                {trigger: "sidebar"},
+            );
+        },
+    });
     topic_zoom.initialize();
     drafts.initialize();
     sent_messages.initialize();
     hotspots.initialize();
-    ui.initialize();
     typing.initialize();
-    starred_messages.initialize();
+    starred_messages_ui.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
@@ -718,12 +781,21 @@ $(async () => {
             }),
             client_gravatar: false,
         };
-        const {result, msg, ...state} = await new Promise((success, error) => {
-            channel.post({url: "/json/register", data, success, error});
+        const {result, msg, ...state} = await new Promise((resolve, reject) => {
+            channel.post({
+                url: "/json/register",
+                data,
+                success: resolve,
+                error(xhr) {
+                    blueslip.error("Spectator failed to register", {
+                        status: xhr.status,
+                        body: xhr.responseText,
+                    });
+                    reject(new Error("Spectator failed to register"));
+                },
+            });
         });
         Object.assign(page_params, state);
     }
-    blueslip.measure_time("initialize_everything", () => {
-        initialize_everything();
-    });
+    initialize_everything();
 });

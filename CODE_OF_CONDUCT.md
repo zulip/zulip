@@ -136,7 +136,8 @@ Here are some guidelines for you how can help:
 
     I’ve gone ahead and moved the other copy of this message to this thread.
 
-  - If asked a question in a PM that is better discussed in a public stream:
+  - If asked a question in a direct message that is better discussed in a public
+    stream:
     > Hi @user! Please start by reviewing
     > https://zulip.com/development-community/#community-norms to learn how to
     > get help in this community.
@@ -166,7 +167,7 @@ Here are some guidelines for you how can help:
 
 - Try to assume the best intentions from others (given the range of
   possibilities presented by their visible behavior), and stick with a friendly
-  and positive tone even when someone‘s behavior is poor or disrespectful.
+  and positive tone even when someone’s behavior is poor or disrespectful.
   Everyone has bad days and stressful situations that can result in them
   behaving not their best, and while we should be firm about our community
   rules, we should also enforce them with kindness.

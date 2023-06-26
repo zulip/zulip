@@ -21,9 +21,15 @@ def get_message_data(payload: WildValue) -> Tuple[str, str, str, str]:
 
 
 def get_source_name(payload: WildValue) -> str:
-    first_name = payload["source"]["data"]["first_name"].tame(check_string)
-    last_name = payload["source"]["data"]["last_name"].tame(check_string)
-    return f"{first_name} {last_name}"
+    type = payload["source"]["_meta"]["type"].tame(check_string)
+    if type == "teammate":
+        first_name = payload["source"]["data"]["first_name"].tame(check_string)
+        last_name = payload["source"]["data"]["last_name"].tame(check_string)
+        return f"{first_name} {last_name}"
+    elif type == "rule":
+        name = payload["source"]["data"]["name"].tame(check_string)
+        return f"'{name}' rule"
+    return f"({type})"
 
 
 def get_target_name(payload: WildValue) -> str:

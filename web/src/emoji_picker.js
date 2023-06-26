@@ -17,8 +17,8 @@ import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
+import * as scroll_util from "./scroll_util";
 import * as spectators from "./spectators";
-import * as ui from "./ui";
 import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
 
@@ -272,7 +272,7 @@ function filter_emojis() {
             message_id,
         });
         $(".emoji-search-results").html(rendered_search_results);
-        ui.reset_scrollbar($(".emoji-search-results-container"));
+        scroll_util.reset_scrollbar($(".emoji-search-results-container"));
         if (!search_results_visible) {
             show_search_results();
         }
@@ -285,7 +285,7 @@ function toggle_reaction(emoji_name, event) {
     const message_id = message_lists.current.selected_id();
     const message = message_store.get(message_id);
     if (!message) {
-        blueslip.error("reactions: Bad message id: " + message_id);
+        blueslip.error("reactions: Bad message id", {message_id});
         return;
     }
 
@@ -348,7 +348,7 @@ function update_emoji_showcase($focused_emoji) {
     const canonical_name = emoji.get_canonical_name(focused_emoji_name);
 
     if (!canonical_name) {
-        blueslip.error("Invalid focused_emoji_name: " + focused_emoji_name);
+        blueslip.error("Invalid focused_emoji_name", {focused_emoji_name});
         return;
     }
 
@@ -356,7 +356,7 @@ function update_emoji_showcase($focused_emoji) {
 
     const emoji_dict = {
         ...focused_emoji_dict,
-        name: focused_emoji_name.replace(/_/g, " "),
+        name: focused_emoji_name.replaceAll("_", " "),
     };
     const rendered_showcase = render_emoji_showcase({
         emoji_dict,
@@ -373,10 +373,10 @@ function maybe_change_focused_emoji($emoji_map, next_section, next_index, preser
         if (!preserve_scroll) {
             $next_emoji.trigger("focus");
         } else {
-            const start = ui.get_scroll_element($emoji_map).scrollTop();
+            const start = scroll_util.get_scroll_element($emoji_map).scrollTop();
             $next_emoji.trigger("focus");
-            if (ui.get_scroll_element($emoji_map).scrollTop() !== start) {
-                ui.get_scroll_element($emoji_map).scrollTop(start);
+            if (scroll_util.get_scroll_element($emoji_map).scrollTop() !== start) {
+                scroll_util.get_scroll_element($emoji_map).scrollTop(start);
             }
         }
         update_emoji_showcase($next_emoji);
@@ -393,7 +393,7 @@ function maybe_change_active_section(next_section) {
         current_index = 0;
         const offset = section_head_offsets[current_section];
         if (offset) {
-            ui.get_scroll_element($emoji_map).scrollTop(offset.position_y);
+            scroll_util.get_scroll_element($emoji_map).scrollTop(offset.position_y);
             maybe_change_focused_emoji($emoji_map, current_section, current_index);
         }
     }
@@ -480,7 +480,7 @@ export function navigate(event_name, e) {
         if (event_name === "down_arrow" || (is_cursor_at_end && event_name === "right_arrow")) {
             $selected_emoji.trigger("focus");
             if (current_section === 0 && current_index < 6) {
-                ui.get_scroll_element($emoji_map).scrollTop(0);
+                scroll_util.get_scroll_element($emoji_map).scrollTop(0);
             }
             update_emoji_showcase($selected_emoji);
             return true;
@@ -504,8 +504,8 @@ export function navigate(event_name, e) {
             // consistent (cursor goes to the end of the filter
             // string).
             $(".emoji-popover-filter").trigger("focus").caret(Number.POSITIVE_INFINITY);
-            ui.get_scroll_element($emoji_map).scrollTop(0);
-            ui.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
+            scroll_util.get_scroll_element($emoji_map).scrollTop(0);
+            scroll_util.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
             current_index = 0;
             reset_emoji_showcase();
@@ -601,8 +601,8 @@ export function emoji_select_tab($elt) {
 function register_popover_events($popover) {
     const $emoji_map = $popover.find(".emoji-popover-emoji-map");
 
-    ui.get_scroll_element($emoji_map).on("scroll", () => {
-        emoji_select_tab(ui.get_scroll_element($emoji_map));
+    scroll_util.get_scroll_element($emoji_map).on("scroll", () => {
+        emoji_select_tab(scroll_util.get_scroll_element($emoji_map));
     });
 
     $(".emoji-popover-filter").on("input", filter_emojis);
@@ -649,6 +649,7 @@ export function build_emoji_popover($elt, id) {
         content: generate_emoji_picker_content(id),
         html: true,
         trigger: "manual",
+        fixed: true,
     });
     $elt.popover("show");
 
@@ -760,7 +761,7 @@ export function register_click_handlers() {
         );
 
         if (offset) {
-            ui.get_scroll_element($emoji_map).scrollTop(offset.position_y);
+            scroll_util.get_scroll_element($emoji_map).scrollTop(offset.position_y);
         }
     });
 

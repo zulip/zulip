@@ -6,7 +6,9 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
+import * as compose_textarea from "./compose_textarea";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as deprecated_feature_notice from "./deprecated_feature_notice";
@@ -21,10 +23,8 @@ import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
-import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -36,14 +36,15 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
 import * as settings_data from "./settings_data";
 import * as spectators from "./spectators";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
@@ -136,10 +137,10 @@ const keypress_mappings = {
     71: {name: "G_end", message_view_only: true}, // 'G'
     74: {name: "vim_page_down", message_view_only: true}, // 'J'
     75: {name: "vim_page_up", message_view_only: true}, // 'K'
-    77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
+    77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
-    83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
+    83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
     85: {name: "mark_unread", message_view_only: true}, // 'U'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
@@ -157,7 +158,7 @@ const keypress_mappings = {
     112: {name: "p_key", message_view_only: false}, // 'p'
     113: {name: "query_streams", message_view_only: true}, // 'q'
     114: {name: "reply_message", message_view_only: true}, // 'r'
-    115: {name: "narrow_by_recipient", message_view_only: true}, // 's'
+    115: {name: "toggle_conversation_view", message_view_only: true}, // 's'
     116: {name: "open_recent_topics", message_view_only: true}, // 't'
     117: {name: "show_sender_info", message_view_only: true}, // 'u'
     118: {name: "show_lightbox", message_view_only: true}, // 'v'
@@ -308,25 +309,13 @@ export function process_escape_key(e) {
             }
 
             // Check for errors in compose box; close errors if they exist
-            if ($(".compose_banner").length) {
-                compose_banner.clear_errors();
-                compose_banner.clear_warnings();
+            if ($("main-view-banner").length) {
+                compose_banner.clear_all();
                 return true;
             }
 
             // If the user hit the Esc key, cancel the current compose
             compose_actions.cancel();
-            return true;
-        }
-
-        if ($("#searchbox").has(":focus")) {
-            $("input:focus,textarea:focus").trigger("blur");
-            if (page_params.search_pills_enabled) {
-                $("#searchbox .pill").trigger("blur");
-                $("#searchbox #search_query").trigger("blur");
-            } else {
-                message_view_header.exit_search();
-            }
             return true;
         }
 
@@ -392,18 +381,13 @@ function handle_popover_events(event_name) {
         return true;
     }
 
-    if (stream_popover.topic_popped()) {
-        stream_popover.topic_sidebar_menu_handle_keyboard(event_name);
-        return true;
-    }
-
     return false;
 }
 
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
-    if ($(".dropdown.open").length && $(e.target).attr("role") === "menuitem") {
-        // on #gear-menu li a[tabindex] elements, force a click and prevent default.
+    if ($(".dropdown.open, .dropup.open").length > 0 && $(e.target).attr("role") === "menuitem") {
+        // on dropdown menu elements, force a click and prevent default.
         // this is because these links do not have an href and so don't force a
         // default action.
         e.target.click();
@@ -448,7 +432,20 @@ export function process_enter_key(e) {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
-        drafts.drafts_handle_events(e, "enter");
+        drafts.handle_keyboard_events(e, "enter");
+        return true;
+    }
+
+    if (overlays.scheduled_messages_open()) {
+        scheduled_messages_overlay_ui.handle_keyboard_events(e, "enter");
+        return true;
+    }
+
+    // Transfer the enter keypress from button to the `<i>` tag inside
+    // it since it is the trigger for the popover. <button> is already used
+    // to trigger the tooltip so it cannot be used to trigger the popover.
+    if (e.target.id === "send_later") {
+        $("#send_later i").trigger("click");
         return true;
     }
 
@@ -554,7 +551,7 @@ export function process_shift_tab_key() {
     if ($("#compose-send-button").is(":focus")) {
         // Shift-Tab: go back to content textarea and restore
         // cursor position.
-        ui.restore_compose_cursor();
+        compose_textarea.restore_compose_cursor();
         return true;
     }
 
@@ -577,6 +574,11 @@ export function process_shift_tab_key() {
     // Shift-Tabbing from emoji catalog/search results takes you back to search textbox.
     if (emoji_picker.reactions_popped()) {
         return emoji_picker.navigate("shift_tab");
+    }
+
+    if ($("#stream_message_recipient_topic").is(":focus")) {
+        compose_recipient.open_compose_recipient_dropdown();
+        return true;
     }
 
     return false;
@@ -628,7 +630,8 @@ export function process_hotkey(e, hotkey) {
         return emoji_picker.navigate(event_name);
     }
 
-    if (overlays.is_modal_open()) {
+    // `list_util` will process the event in send later modal.
+    if (overlays.is_modal_open() && overlays.active_modal() !== "#send_later_modal") {
         return false;
     }
 
@@ -642,7 +645,11 @@ export function process_hotkey(e, hotkey) {
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
-                drafts.drafts_handle_events(e, event_name);
+                drafts.handle_keyboard_events(e, event_name);
+                return true;
+            }
+            if (overlays.scheduled_messages_open()) {
+                scheduled_messages_overlay_ui.handle_keyboard_events(e, event_name);
                 return true;
             }
     }
@@ -651,7 +658,7 @@ export function process_hotkey(e, hotkey) {
         if (processing_text()) {
             return false;
         }
-        if (event_name === "narrow_by_topic" && overlays.streams_open()) {
+        if (event_name === "toggle_stream_subscription" && overlays.streams_open()) {
             stream_settings_ui.keyboard_sub();
             return true;
         }
@@ -667,6 +674,13 @@ export function process_hotkey(e, hotkey) {
     }
 
     if (hotkey.message_view_only && gear_menu.is_open()) {
+        // Inside the gear menu, we don't process most hotkeys; the
+        // exception is that the gear_menu hotkey should toggle the
+        // menu closed again.
+        if (event_name === "gear_menu") {
+            gear_menu.close();
+            return true;
+        }
         return false;
     }
 
@@ -807,7 +821,7 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "narrow_private":
             return do_narrow_action((target, opts) => {
-                narrow.by("is", "private", opts);
+                narrow.by("is", "dm", opts);
             });
         case "query_streams":
             stream_list.initiate_search();
@@ -866,7 +880,7 @@ export function process_hotkey(e, hotkey) {
             browser_history.go_to_location("drafts");
             return true;
         case "C_deprecated":
-            deprecated_feature_notice.maybe_show_deprecation_notice("C");
+            deprecated_feature_notice.maybe_show_deprecation_notice("Shift + C");
             return true;
         case "star_deprecated":
             deprecated_feature_notice.maybe_show_deprecation_notice("*");
@@ -875,7 +889,7 @@ export function process_hotkey(e, hotkey) {
 
     // Hotkeys below this point are for the message feed, and so
     // should only function if the message feed is visible and nonempty.
-    if (!narrow_state.is_message_feed_visible() || message_lists.current.empty()) {
+    if (!narrow_state.is_message_feed_visible() || message_lists.current.visibly_empty()) {
         return false;
     }
 
@@ -921,9 +935,7 @@ export function process_hotkey(e, hotkey) {
     if (
         // Allow UI only features for spectators which they can perform.
         page_params.is_spectator &&
-        !["narrow_by_topic", "narrow_by_recipient", "show_lightbox", "show_sender_info"].includes(
-            event_name,
-        )
+        !["toggle_conversation_view", "show_lightbox", "show_sender_info"].includes(event_name)
     ) {
         spectators.login_to_access();
         return true;
@@ -935,12 +947,21 @@ export function process_hotkey(e, hotkey) {
         case "message_actions":
             return popover_menus.toggle_message_actions_menu(msg);
         case "star_message":
-            message_flags.toggle_starred_and_update_server(msg);
+            starred_messages_ui.toggle_starred_and_update_server(msg);
             return true;
-        case "narrow_by_recipient":
-            return do_narrow_action(narrow.by_recipient);
-        case "narrow_by_topic":
+        case "toggle_conversation_view":
+            if (narrow_state.narrowed_by_topic_reply()) {
+                // narrow to stream if user is in topic view
+                return do_narrow_action(narrow.by_recipient);
+            } else if (narrow_state.narrowed_by_pm_reply()) {
+                // do nothing if user is in DM view
+                return false;
+            }
+            // else narrow to conversation view (topic / DM)
             return do_narrow_action(narrow.by_topic);
+        case "toggle_stream_subscription":
+            deprecated_feature_notice.maybe_show_deprecation_notice("Shift + S");
+            return true;
         case "respond_to_author": // 'R': respond to author
             compose_actions.respond_to_message({reply_type: "personal", trigger: "hotkey pm"});
             return true;
@@ -981,8 +1002,8 @@ export function process_hotkey(e, hotkey) {
             reactions.toggle_emoji_reaction(msg.id, first_reaction.emoji_name);
             return true;
         }
-        case "toggle_topic_mute":
-            muted_topics_ui.toggle_topic_mute(msg);
+        case "toggle_topic_visibility_policy":
+            muted_topics_ui.toggle_topic_visibility_policy(msg);
             return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
@@ -1003,7 +1024,7 @@ export function process_hotkey(e, hotkey) {
                 return false;
             }
 
-            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, msg);
+            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, false, msg);
             return true;
         }
         case "zoom_to_message_near": {
@@ -1014,7 +1035,7 @@ export function process_hotkey(e, hotkey) {
                 case "private":
                     narrow.activate(
                         [
-                            {operator: "pm-with", operand: msg.reply_to},
+                            {operator: "dm", operand: msg.reply_to},
                             {operator: "near", operand: msg.id},
                         ],
                         {trigger: "hotkey"},

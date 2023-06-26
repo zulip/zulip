@@ -1,5 +1,6 @@
+import * as Sentry from "@sentry/browser";
+
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as server_events from "./server_events";
 
 export let next_local_id;
@@ -15,44 +16,41 @@ export function get_new_local_id() {
     return "loc-" + local_id.toString();
 }
 
-function report_send_time(send_time, receive_time, locally_echoed, rendered_changed) {
-    const data = {
-        time: send_time.toString(),
-        received: receive_time.toString(),
-        locally_echoed,
-    };
-
-    if (locally_echoed) {
-        data.rendered_content_disparity = rendered_changed;
-    }
-
-    channel.post({
-        url: "/json/report/send_times",
-        data,
-    });
-}
-
 export class MessageState {
-    start = new Date();
+    local_id = undefined;
+    locally_echoed = undefined;
+    rendered_changed = false;
 
-    received = undefined;
-    send_finished = undefined;
-    rendered_content_disparity = false;
+    server_acked = false;
+    saw_event = false;
+
+    txn = undefined;
+    event_span = undefined;
 
     constructor(opts) {
         this.local_id = opts.local_id;
         this.locally_echoed = opts.locally_echoed;
     }
 
-    start_resend() {
-        this.start = new Date();
-        this.received = undefined;
-        this.send_finished = undefined;
-        this.rendered_content_disparity = false;
+    start_send() {
+        this.txn = Sentry.startTransaction({
+            op: "function",
+            description: "message send",
+            name: "message send",
+        });
+        this.event_span = this.txn.startChild({
+            op: "function",
+            description: "message send (server event loop)",
+        });
+        return this.txn;
+    }
+
+    mark_disparity() {
+        this.rendered_changed = true;
     }
 
     maybe_restart_event_loop() {
-        if (this.received) {
+        if (this.saw_event) {
             // We got our event, no need to do anything
             return;
         }
@@ -64,31 +62,9 @@ export class MessageState {
         server_events.restart_get_events();
     }
 
-    maybe_report_send_times() {
-        if (!this.ready()) {
-            return;
-        }
-        report_send_time(
-            this.send_finished - this.start,
-            this.received - this.start,
-            this.locally_echoed,
-            this.rendered_content_disparity,
-        );
-    }
-
-    report_event_received() {
-        this.received = new Date();
-        this.maybe_report_send_times();
-    }
-
-    mark_disparity() {
-        this.rendered_content_disparity = true;
-    }
-
     report_server_ack() {
-        this.send_finished = new Date();
-        this.maybe_report_send_times();
-
+        this.server_acked = true;
+        this.maybe_finish_txn();
         // We only start our timer for events coming in here,
         // since it's plausible the server rejected our message,
         // or took a while to process it, but there is nothing
@@ -99,8 +75,28 @@ export class MessageState {
         }
     }
 
-    ready() {
-        return this.send_finished !== undefined && this.received !== undefined;
+    report_event_received() {
+        if (!this.event_span) {
+            return;
+        }
+        this.saw_event = true;
+        this.event_span.finish();
+        this.maybe_finish_txn();
+    }
+
+    maybe_finish_txn() {
+        if (!this.saw_event || !this.server_acked) {
+            return;
+        }
+        const setTag = (name, val) => {
+            const str_val = val ? "true" : "false";
+            this.event_span.setTag(name, str_val);
+            this.txn.setTag(name, str_val);
+        };
+        setTag("rendered_changed", this.rendered_changed);
+        setTag("locally_echoed", this.locally_echoed);
+        this.txn.finish();
+        messages.delete(this.local_id);
     }
 }
 
@@ -132,30 +128,13 @@ export function get_message_state(local_id) {
     return state;
 }
 
-export function mark_disparity(local_id) {
+export function start_send(local_id) {
     const state = get_message_state(local_id);
     if (!state) {
-        return;
-    }
-    state.mark_disparity();
-}
-
-export function report_event_received(local_id) {
-    const state = get_message_state(local_id);
-    if (!state) {
-        return;
+        return undefined;
     }
 
-    state.report_event_received();
-}
-
-export function start_resend(local_id) {
-    const state = get_message_state(local_id);
-    if (!state) {
-        return;
-    }
-
-    state.start_resend();
+    return state.start_send();
 }
 
 export function report_server_ack(local_id) {
@@ -165,6 +144,26 @@ export function report_server_ack(local_id) {
     }
 
     state.report_server_ack();
+}
+
+export function mark_disparity(local_id) {
+    const state = get_message_state(local_id);
+    if (!state) {
+        return;
+    }
+    state.mark_disparity();
+}
+
+export function report_event_received(local_id) {
+    if (local_id === undefined) {
+        return;
+    }
+    const state = get_message_state(local_id);
+    if (!state) {
+        return;
+    }
+
+    state.report_event_received();
 }
 
 export function initialize() {

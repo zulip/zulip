@@ -1,0 +1,14 @@
+<ul id="send_later_popover" class="nav nav-list">
+    <li>
+        <a class="open_send_later_modal" tabindex="0">{{t "Schedule message" }}</a>
+    </li>
+    {{#if formatted_send_later_time}}
+        <li>
+            <a class="send_later_selected_send_later_time" tabindex="0">{{t 'Schedule for {formatted_send_later_time}' }}</a>
+        </li>
+    {{/if}}
+    <hr />
+    <li>
+        <a href="#scheduled" tabindex="0">{{t "View scheduled messages" }}</a>
+    </li>
+</ul>

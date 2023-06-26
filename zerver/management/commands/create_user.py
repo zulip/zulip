@@ -6,6 +6,7 @@ from django.db.utils import IntegrityError
 
 from zerver.actions.create_user import do_create_user
 from zerver.lib.management import ZulipBaseCommand
+from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
@@ -38,11 +39,13 @@ prompted to accept the Terms of Service the first time they login.
                 create_user_params.password,
                 realm,
                 create_user_params.full_name,
-                # Explicitly set tos_version=None. For servers that
-                # have configured Terms of Service, this means that
-                # users created via this mechanism will be prompted to
-                # accept the Terms of Service on first login.
-                tos_version=None,
+                # Explicitly set tos_version=-1. This means that users
+                # created via this mechanism would be prompted to set
+                # the email_address_visibility setting on first login.
+                # For servers that have configured Terms of Service,
+                # users will also be prompted to accept the Terms of
+                # Service on first login.
+                tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
                 acting_user=None,
             )
         except IntegrityError:

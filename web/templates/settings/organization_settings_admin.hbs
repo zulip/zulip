@@ -7,6 +7,35 @@
                 {{> settings_save_discard_widget section_name="notifications" }}
             </div>
             <div class="inline-block organization-settings-parent">
+                <div class="realm_default_language">
+                    {{> language_selection_widget
+                      section_name="realm_default_language"
+                      setting_value=realm_default_language_name
+                      language_code=realm_default_language_code
+                      section_title=admin_settings_label.realm_default_language
+                      help_link_widget_link="/help/configure-organization-language"}}
+                </div>
+
+                {{> dropdown_list_widget
+                  widget_name="realm_notifications_stream_id"
+                  list_placeholder=(t 'Filter streams')
+                  reset_button_text=(t '[Disable]')
+                  label=admin_settings_label.realm_notifications_stream
+                  value_type="number" }}
+
+                {{> dropdown_list_widget
+                  widget_name="realm_signup_notifications_stream_id"
+                  list_placeholder=(t 'Filter streams')
+                  reset_button_text=(t '[Disable]')
+                  label=admin_settings_label.realm_signup_notifications_stream
+                  value_type="number" }}
+
+                {{> settings_checkbox
+                  setting_name="realm_message_content_allowed_in_email_notifications"
+                  prefix="id_"
+                  is_checked=realm_message_content_allowed_in_email_notifications
+                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
+
                 {{> settings_checkbox
                   setting_name="realm_send_welcome_emails"
                   prefix="id_"
@@ -34,28 +63,6 @@
                         <option value="6">{{t "Sunday" }}</option>
                     </select>
                 </div>
-            </div>
-
-            {{> dropdown_list_widget
-              widget_name="realm_notifications_stream_id"
-              list_placeholder=(t 'Filter streams')
-              reset_button_text=(t '[Disable]')
-              label=admin_settings_label.realm_notifications_stream
-              value_type="number" }}
-
-            {{> dropdown_list_widget
-              widget_name="realm_signup_notifications_stream_id"
-              list_placeholder=(t 'Filter streams')
-              reset_button_text=(t '[Disable]')
-              label=admin_settings_label.realm_signup_notifications_stream
-              value_type="number" }}
-            <div class="realm_default_language">
-                {{> language_selection_widget
-                  section_name="realm_default_language"
-                  setting_value=realm_default_language_name
-                  language_code=realm_default_language_code
-                  section_title=admin_settings_label.realm_default_language
-                  help_link_widget_link="/help/configure-organization-language"}}
             </div>
         </div>
 
@@ -130,12 +137,6 @@
                   reset_button_text=(t '[Unset]')
                   label=admin_settings_label.realm_default_code_block_language
                   value_type="string" }}
-
-                {{> settings_checkbox
-                  setting_name="realm_message_content_allowed_in_email_notifications"
-                  prefix="id_"
-                  is_checked=realm_message_content_allowed_in_email_notifications
-                  label=admin_settings_label.realm_message_content_allowed_in_email_notifications}}
 
                 {{> settings_checkbox
                   setting_name="realm_mandatory_topics"

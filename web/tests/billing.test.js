@@ -42,6 +42,11 @@ run_test("initialize", ({override}) => {
 
 run_test("card_update", ({override}) => {
     override(helpers, "set_tab", () => {});
+    override(helpers, "stripe_session_url_schema", {
+        parse(obj) {
+            return obj;
+        },
+    });
     let create_ajax_request_called = false;
     function card_change_ajax(url, form_name, ignored_inputs, method, success_callback) {
         assert.equal(url, "/json/billing/session/start_card_update_session");

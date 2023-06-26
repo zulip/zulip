@@ -45,7 +45,7 @@ $(() => {
         "#id_new_password2 ~ .password_visibility_toggle",
     );
 
-    $("#registration, #password_reset", "#create_realm").validate({
+    $("#registration, #password_reset, #create_realm").validate({
         rules: {
             password: "password_strength",
             new_password1: "password_strength",
@@ -198,14 +198,15 @@ $(() => {
     }
 
     function update_full_name_section() {
-        if (
-            $("#source_realm_select").length &&
-            $("#source_realm_select").find(":selected").val() !== ""
-        ) {
+        if ($("#source_realm_select").length && $("#source_realm_select").val() !== "") {
             $("#full_name_input_section").hide();
             $("#profile_info_section").show();
-            const avatar_url = $("#source_realm_select").find(":selected").attr("data-avatar");
-            const full_name = $("#source_realm_select").find(":selected").attr("data-full-name");
+            const avatar_url = $($("#source_realm_select").prop("selectedOptions")).attr(
+                "data-avatar",
+            );
+            const full_name = $($("#source_realm_select").prop("selectedOptions")).attr(
+                "data-full-name",
+            );
             $("#profile_full_name").text(full_name);
             $("#id_full_name").val(full_name);
             $("#profile_avatar").attr("src", avatar_url);

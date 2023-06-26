@@ -101,7 +101,7 @@ export function page_down_the_right_amount() {
 }
 
 export function page_up() {
-    if (message_viewport.at_top() && !message_lists.current.empty()) {
+    if (message_viewport.at_top() && !message_lists.current.visibly_empty()) {
         message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
     } else {
         page_up_the_right_amount();
@@ -109,7 +109,7 @@ export function page_up() {
 }
 
 export function page_down() {
-    if (message_viewport.at_bottom() && !message_lists.current.empty()) {
+    if (message_viewport.at_bottom() && !message_lists.current.visibly_empty()) {
         message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
         unread_ops.process_scrolled_to_bottom();
     } else {

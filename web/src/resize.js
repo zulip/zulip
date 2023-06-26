@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
@@ -11,19 +12,18 @@ import * as navigate from "./navigate";
 import * as popovers from "./popovers";
 import * as util from "./util";
 
+function get_bottom_whitespace_height() {
+    return message_viewport.height() * 0.4;
+}
+
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
-    const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
     const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
-
-    res.bottom_whitespace_height = viewport_height * 0.4;
-
-    res.main_div_min_height = viewport_height - top_navbar_height;
 
     res.stream_filters_max_height =
         viewport_height -
-        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
+        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
@@ -36,7 +36,7 @@ function get_new_heights() {
 
     const usable_height =
         viewport_height -
-        Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
+        Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
         right_sidebar_shortcuts_height;
@@ -50,7 +50,7 @@ export function watch_manual_resize(element) {
     const box = document.querySelector(element);
 
     if (!box) {
-        blueslip.error("Bad selector in watch_manual_resize: " + element);
+        blueslip.error("Bad selector in watch_manual_resize", {element});
         return undefined;
     }
 
@@ -91,9 +91,8 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
     // the last message of the current stream.
 
     // Compute bottom_whitespace_height if not provided by caller.
-    if (bottom_whitespace_height === undefined) {
-        const h = get_new_heights();
-        bottom_whitespace_height = h.bottom_whitespace_height;
+    if (typeof bottom_whitespace_height !== "number") {
+        bottom_whitespace_height = get_bottom_whitespace_height();
     }
 
     const compose_height = $("#compose").get(0).getBoundingClientRect().height;
@@ -116,11 +115,12 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
         // subtract 10 for the selected message border.
         bottom_whitespace_height - compose_non_textarea_height - 10,
     );
+    $("#scroll-to-bottom-button-container").css("bottom", compose_height);
 }
 
-export function resize_bottom_whitespace(h) {
-    $("#bottom_whitespace").height(h.bottom_whitespace_height);
-
+export function resize_bottom_whitespace() {
+    const bottom_whitespace_height = get_bottom_whitespace_height();
+    $("html").css("--max-unexpanded-compose-height", `${bottom_whitespace_height}px`);
     // The height of the compose box is tied to that of
     // bottom_whitespace, so update it if necessary.
     //
@@ -128,13 +128,13 @@ export function resize_bottom_whitespace(h) {
     // height correctly while compose is hidden. This is OK, because
     // we also resize compose every time it is opened.
     if (compose_state.composing()) {
-        reset_compose_message_max_height(h.bottom_whitespace_height);
+        reset_compose_message_max_height(bottom_whitespace_height);
     }
 }
 
 export function resize_stream_filters_container() {
     const h = get_new_heights();
-    resize_bottom_whitespace(h);
+    resize_bottom_whitespace();
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
@@ -143,6 +143,11 @@ export function resize_sidebars() {
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
     return h;
+}
+
+export function update_recent_topics_filters_height() {
+    const recent_topics_filters_height = $("#recent_topics_filter_buttons").safeOuterHeight(true);
+    $("html").css("--recent-topics-filters-height", `${recent_topics_filters_height}px`);
 }
 
 export function resize_page_components() {
@@ -169,6 +174,8 @@ export function handler() {
         condense.clear_message_content_height_cache();
     }
     resize_page_components();
+    compose_ui.autosize_textarea($("#compose-textarea"));
+    update_recent_topics_filters_height();
 
     // Re-compute and display/remove [More] links to messages
     condense.condense_and_collapse($(".message_table .message_row"));

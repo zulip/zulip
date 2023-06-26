@@ -40,6 +40,8 @@ const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
+const scheduled_messages = mock_esm("../src/scheduled_messages");
+const scheduled_messages_overlay_ui = mock_esm("../src/scheduled_messages_overlay_ui");
 const scroll_bar = mock_esm("../src/scroll_bar");
 const settings_account = mock_esm("../src/settings_account");
 const settings_bots = mock_esm("../src/settings_bots");
@@ -63,14 +65,19 @@ const stream_data = mock_esm("../src/stream_data");
 const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
+const stream_list_sort = mock_esm("../src/stream_list_sort");
 const stream_topic_history = mock_esm("../src/stream_topic_history");
+const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
+    update_announce_stream_option() {},
+});
 const submessage = mock_esm("../src/submessage");
 mock_esm("../src/top_left_corner", {
     update_starred_count() {},
+    update_scheduled_messages_row() {},
 });
 const typing_events = mock_esm("../src/typing_events");
-const ui = mock_esm("../src/ui");
 const unread_ops = mock_esm("../src/unread_ops");
+const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
 const user_groups = mock_esm("../src/user_groups");
 const user_group_edit = mock_esm("../src/user_group_edit");
@@ -80,13 +87,16 @@ mock_esm("../src/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
 
+message_lists.update_recipient_bar_background_color = noop;
 message_lists.current = {
+    get_row: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
     },
 };
 message_lists.home = {
+    get_row: noop,
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
@@ -364,6 +374,38 @@ run_test("reaction", ({override}) => {
         const args = stub.get_args("event");
         assert_same(args.event.emoji_name, event.emoji_name);
         assert_same(args.event.message_id, event.message_id);
+    }
+});
+
+run_test("scheduled_messages", ({override}) => {
+    override(scheduled_messages_overlay_ui, "rerender", noop);
+    override(scheduled_messages_overlay_ui, "remove_scheduled_message_id", noop);
+    let event = event_fixtures.scheduled_messages__add;
+    {
+        const stub = make_stub();
+        override(scheduled_messages, "add_scheduled_messages", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("scheduled_messages");
+        assert_same(args.scheduled_messages, event.scheduled_messages);
+    }
+    event = event_fixtures.scheduled_messages__update;
+    {
+        const stub = make_stub();
+        override(scheduled_messages, "update_scheduled_message", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("scheduled_message");
+        assert_same(args.scheduled_message, event.scheduled_message);
+    }
+    event = event_fixtures.scheduled_messages__remove;
+    {
+        const stub = make_stub();
+        override(scheduled_messages, "remove_scheduled_message", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("scheduled_message_id");
+        assert_same(args.scheduled_message_id, event.scheduled_message_id);
     }
 });
 
@@ -777,6 +819,7 @@ run_test("user_settings", ({override}) => {
     let event = event_fixtures.user_settings__default_language;
     user_settings.default_language = "en";
     override(settings_display, "update_page", noop);
+    override(overlays, "settings_open", () => true);
     dispatch(event);
     assert_same(user_settings.default_language, "fr");
 
@@ -822,19 +865,18 @@ run_test("user_settings", ({override}) => {
     assert_same(user_settings.high_contrast_mode, true);
     assert_same(toggled, ["high-contrast"]);
 
+    event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
+    user_settings.web_mark_read_on_scroll_policy = 3;
+    override(unread_ui, "update_unread_banner", noop);
+    dispatch(event);
+    assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
+
     event = event_fixtures.user_settings__dense_mode;
     user_settings.dense_mode = false;
     toggled = [];
     dispatch(event);
     assert_same(user_settings.dense_mode, true);
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
-
-    $("body").fadeOut = (secs) => {
-        assert_same(secs, 300);
-    };
-    $("body").fadeIn = (secs) => {
-        assert_same(secs, 300);
-    };
 
     override(realm_logo, "render", noop);
 
@@ -909,7 +951,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__demote_inactive_streams;
-        override(stream_data, "set_filter_out_inactives", noop);
+        override(stream_list_sort, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
         user_settings.demote_inactive_streams = 1;
         dispatch(event);
@@ -947,14 +989,17 @@ run_test("user_settings", ({override}) => {
     {
         event = event_fixtures.user_settings__enable_stream_audible_notifications;
         const stub = make_stub();
-        override(notifications, "handle_global_notification_updates", stub.f);
+        override(stream_ui_updates, "update_notification_setting_checkbox", stub.f);
         override(settings_notifications, "update_page", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("name", "setting");
-        assert_same(args.name, event.property);
-        assert_same(args.setting, event.value);
+        const args = stub.get_args("notification_name");
+        assert_same(args.notification_name, "audible_notifications");
     }
+
+    event = event_fixtures.user_settings__notification_sound;
+    override(notifications, "update_notification_sound_source", noop);
+    dispatch(event);
 
     event = event_fixtures.user_settings__email_address_visibility;
     user_settings.email_address_visibility = 3;
@@ -987,28 +1032,16 @@ run_test("update_message (unread)", ({override}) => {
     });
 });
 
-run_test("update_message (add star)", ({override}) => {
+run_test("update_message (add star)", () => {
     const event = event_fixtures.update_message_flags__starred_add;
-    const stub = make_stub();
-    override(ui, "update_starred_view", stub.f);
     dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("message_id", "new_value");
-    assert_same(args.message_id, test_message.id);
-    assert_same(args.new_value, true); // for 'add'
     const msg = message_store.get(test_message.id);
     assert.equal(msg.starred, true);
 });
 
-run_test("update_message (remove star)", ({override}) => {
+run_test("update_message (remove star)", () => {
     const event = event_fixtures.update_message_flags__starred_remove;
-    const stub = make_stub();
-    override(ui, "update_starred_view", stub.f);
     dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("message_id", "new_value");
-    assert_same(args.message_id, test_message.id);
-    assert_same(args.new_value, false);
     const msg = message_store.get(test_message.id);
     assert.equal(msg.starred, false);
 });

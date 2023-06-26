@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import Subscription, UserPresence, get_client
+from zerver.models import Subscription, UserPresence
 from zerver.tornado.event_queue import maybe_enqueue_notifications
 
 
@@ -269,12 +269,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def _make_cordelia_present_on_web(self) -> None:
         cordelia = self.example_user("cordelia")
+        now = timezone_now()
         UserPresence.objects.create(
             user_profile_id=cordelia.id,
             realm_id=cordelia.realm_id,
-            status=UserPresence.ACTIVE,
-            client=get_client("web"),
-            timestamp=timezone_now(),
+            last_connected_time=now,
+            last_active_time=now,
         )
 
     def test_stream_push_notify_for_fully_present_user(self) -> None:

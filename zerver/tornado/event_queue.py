@@ -42,7 +42,6 @@ from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
-from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
@@ -96,6 +95,7 @@ class ClientDescriptor:
         stream_typing_notifications: bool = False,
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
+        linkifier_url_template: bool = False,
     ) -> None:
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
@@ -120,6 +120,7 @@ class ClientDescriptor:
         self.stream_typing_notifications = stream_typing_notifications
         self.user_settings_object = user_settings_object
         self.pronouns_field_type_supported = pronouns_field_type_supported
+        self.linkifier_url_template = linkifier_url_template
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -148,6 +149,7 @@ class ClientDescriptor:
             stream_typing_notifications=self.stream_typing_notifications,
             user_settings_object=self.user_settings_object,
             pronouns_field_type_supported=self.pronouns_field_type_supported,
+            linkifier_url_template=self.linkifier_url_template,
         )
 
     def __repr__(self) -> str:
@@ -181,6 +183,7 @@ class ClientDescriptor:
             d.get("stream_typing_notifications", False),
             d.get("user_settings_object", False),
             d.get("pronouns_field_type_supported", True),
+            d.get("linkifier_url_template", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -561,8 +564,6 @@ def gc_event_queues(port: int) -> None:
             len(clients),
             handler_stats_string(),
         )
-    statsd.gauge("tornado.active_queues", len(clients))
-    statsd.gauge("tornado.active_users", len(user_clients))
 
 
 def persistent_queue_filename(port: int, last: bool = False) -> str:
@@ -779,6 +780,14 @@ def missedmessage_hook(
             wildcard_mention_email_notify=internal_data.get("wildcard_mention_email_notify", False),
             stream_push_notify=internal_data.get("stream_push_notify", False),
             stream_email_notify=internal_data.get("stream_email_notify", False),
+            followed_topic_push_notify=internal_data.get("followed_topic_push_notify", False),
+            followed_topic_email_notify=internal_data.get("followed_topic_email_notify", False),
+            followed_topic_wildcard_mention_push_notify=internal_data.get(
+                "followed_topic_wildcard_mention_push_notify", False
+            ),
+            followed_topic_wildcard_mention_email_notify=internal_data.get(
+                "followed_topic_wildcard_mention_email_notify", False
+            ),
             # Since one is by definition idle, we don't need to check online_push_enabled
             online_push_enabled=False,
             disable_external_notifications=internal_data.get(
@@ -847,7 +856,7 @@ def maybe_enqueue_notifications(
             queue_json_publish("missedmessage_mobile_notifications", notice)
             notified["push_notified"] = True
 
-    # Send missed_message emails if a private message or a
+    # Send missed_message emails if a direct message or a
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
@@ -932,6 +941,11 @@ def process_message_event(
     stream_push_user_ids = set(event_template.get("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.get("stream_email_user_ids", []))
     wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
+    followed_topic_push_user_ids = set(event_template.get("followed_topic_push_user_ids", []))
+    followed_topic_email_user_ids = set(event_template.get("followed_topic_email_user_ids", []))
+    followed_topic_wildcard_mention_user_ids = set(
+        event_template.get("followed_topic_wildcard_mention_user_ids", [])
+    )
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
@@ -949,7 +963,7 @@ def process_message_event(
 
     sender_id: int = wide_dict["sender_id"]
     message_id: int = wide_dict["id"]
-    message_type: str = wide_dict["type"]
+    recipient_type_name: str = wide_dict["type"]
     sending_client: str = wide_dict["client"]
 
     @lru_cache(maxsize=None)
@@ -968,9 +982,9 @@ def process_message_event(
         flags: Collection[str] = user_data.get("flags", [])
         mentioned_user_group_id: Optional[int] = user_data.get("mentioned_user_group_id")
 
-        # If the recipient was offline and the message was a single or group PM to them
-        # or they were @-notified potentially notify more immediately
-        private_message = message_type == "private"
+        # If the recipient was offline and the message was a (1:1 or group) direct message
+        # to them or they were @-notified potentially notify more immediately
+        private_message = recipient_type_name == "private"
         user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
             user_id=user_profile_id,
             flags=flags,
@@ -982,6 +996,9 @@ def process_message_event(
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
             wildcard_mention_user_ids=wildcard_mention_user_ids,
+            followed_topic_push_user_ids=followed_topic_push_user_ids,
+            followed_topic_email_user_ids=followed_topic_email_user_ids,
+            followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
         )
@@ -1133,6 +1150,11 @@ def process_message_update_event(
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
     wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
+    followed_topic_push_user_ids = set(event_template.pop("followed_topic_push_user_ids", []))
+    followed_topic_email_user_ids = set(event_template.pop("followed_topic_email_user_ids", []))
+    followed_topic_wildcard_mention_user_ids = set(
+        event_template.pop("followed_topic_wildcard_mention_user_ids", [])
+    )
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
     disable_external_notifications = event_template.pop("disable_external_notifications", False)
@@ -1193,6 +1215,9 @@ def process_message_update_event(
                 stream_push_user_ids=stream_push_user_ids,
                 stream_email_user_ids=stream_email_user_ids,
                 wildcard_mention_user_ids=wildcard_mention_user_ids,
+                followed_topic_push_user_ids=followed_topic_push_user_ids,
+                followed_topic_email_user_ids=followed_topic_email_user_ids,
+                followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
             )
@@ -1245,8 +1270,9 @@ def maybe_enqueue_notifications_for_message_update(
         return
 
     if private_message:
-        # We don't do offline notifications for PMs, because
-        # we already notified the user of the original message
+        # We don't do offline notifications for direct messages,
+        # because we already notified the user of the original
+        # message.
         return
 
     if prior_mentioned:
@@ -1265,7 +1291,12 @@ def maybe_enqueue_notifications_for_message_update(
         # without extending the UserMessage data model.
         return
 
-    if user_notifications_data.stream_push_notify or user_notifications_data.stream_email_notify:
+    if (
+        user_notifications_data.stream_push_notify
+        or user_notifications_data.stream_email_notify
+        or user_notifications_data.followed_topic_push_notify
+        or user_notifications_data.followed_topic_email_notify
+    ):
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
         # so we short circuit.  We may handle this more rigorously

@@ -146,6 +146,7 @@ export default (
                             "rendered_markdown",
                             "tooltip_hotkey_hints",
                         ],
+                        precompileOptions: {strict: true},
                         preventIndent: true,
                         // This replaces relative image resources with
                         // a computed require() path to them, so their
@@ -170,6 +171,7 @@ export default (
                   // (https://github.com/webpack/webpack/issues/11937)
                   (pathData) => "files" + path.join("/", pathData.filename!),
             chunkFilename: production ? "[contenthash].js" : "[id].js",
+            crossOriginLoading: "anonymous",
         },
         resolve: {
             ...baseConfig.resolve,
@@ -196,13 +198,12 @@ export default (
         },
         plugins: [
             new DefinePlugin({
-                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION || "development"),
+                ZULIP_VERSION: JSON.stringify(env.ZULIP_VERSION ?? "development"),
             }),
             new DebugRequirePlugin(),
             new BundleTracker({
-                filename: production
-                    ? "../webpack-stats-production.json"
-                    : "../var/webpack-stats-dev.json",
+                path: path.join(__dirname, production ? ".." : "../var"),
+                filename: production ? "webpack-stats-production.json" : "webpack-stats-dev.json",
             }),
             // Extract CSS from files
             new MiniCssExtractPlugin({
@@ -233,6 +234,7 @@ export default (
             },
             headers: {
                 "Access-Control-Allow-Origin": "*",
+                "Timing-Allow-Origin": "*",
             },
         },
         infrastructureLogging: {

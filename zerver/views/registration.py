@@ -2,10 +2,11 @@ import logging
 import urllib
 from contextlib import suppress
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urljoin
 
+import orjson
 from django.conf import settings
-from django.contrib.auth import authenticate, get_backends
+from django.contrib.auth import REDIRECT_FIELD_NAME, authenticate, get_backends
 from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -58,7 +59,13 @@ from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import get_accounts_for_email
-from zerver.lib.validator import to_converted_or_fallback, to_non_negative_int, to_timezone_or_empty
+from zerver.lib.validator import (
+    check_capped_string,
+    check_int_in,
+    to_converted_or_fallback,
+    to_non_negative_int,
+    to_timezone_or_empty,
+)
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
     DisposableEmailError,
@@ -83,7 +90,6 @@ from zerver.views.auth import (
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
-    get_safe_redirect_to,
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
 )
@@ -474,9 +480,32 @@ def registration_helper(
                 return_data=return_data,
             )
             if user is None:
-                can_use_different_backend = email_auth_enabled(realm) or (
-                    len(get_external_method_dicts(realm)) > 0
-                )
+                # This logic is security-sensitive. The user has NOT been successfully authenticated
+                # with LDAP and we need to carefully decide whether they should be permitted to proceed
+                # with account creation anyway or be stopped. There are three scenarios to consider:
+                #
+                # 1. EmailAuthBackend is enabled for the realm. That explicitly means that a user
+                #    with a valid confirmation link should be able to create an account, because
+                #    they were invited or organization permissions allowed sign up.
+                # 2. EmailAuthBackend is disabled - that means the organization wants to be authenticating
+                #    users with an external source (LDAP or one of the ExternalAuthMethods). If the user
+                #    came here through one of the ExternalAuthMethods, their identity can be considered
+                #    verified and account creation can proceed.
+                # 3. EmailAuthBackend is disabled and the user did not come here through an ExternalAuthMethod.
+                #    That means they came here by entering their email address on the registration page
+                #    and clicking the confirmation link received. That means their identity needs to be
+                #    verified with LDAP - and that has just failed above. Thus the account should NOT be
+                #    created.
+                #
+                if email_auth_enabled(realm):
+                    can_use_different_backend = True
+                # We can identify the user came here through an ExternalAuthMethod by password_required
+                # being set to False on the PreregistrationUser object.
+                elif len(get_external_method_dicts(realm)) > 0 and not password_required:
+                    can_use_different_backend = True
+                else:
+                    can_use_different_backend = False
+
                 if settings.LDAP_APPEND_DOMAIN:
                     # In LDAP_APPEND_DOMAIN configurations, we don't allow making a non-LDAP account
                     # if the email matches the ldap domain.
@@ -619,7 +648,17 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
-        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+        params_to_store_in_authenticated_session = orjson.loads(
+            get_expirable_session_var(
+                request.session,
+                "registration_desktop_flow_params_to_store_in_authenticated_session",
+                default_value="{}",
+                delete=True,
+            )
+        )
+        return finish_desktop_flow(
+            request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
+        )
 
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks
@@ -687,6 +726,7 @@ def send_confirm_registration_email(
         context={
             "create_realm": (realm is None),
             "activate_url": activation_url,
+            "corporate_enabled": settings.CORPORATE_ENABLED,
         },
         realm=realm,
         request=request,
@@ -756,7 +796,14 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
             if key_record is not None:
                 key_record.delete()
             new_realm_send_confirm_url = reverse("new_realm_send_confirm")
-            query = urlencode({"email": email})
+            query = urlencode(
+                {
+                    "email": email,
+                    "realm_name": realm_name,
+                    "realm_type": realm_type,
+                    "realm_subdomain": realm_subdomain,
+                }
+            )
             url = append_url_query_string(new_realm_send_confirm_url, query)
             return HttpResponseRedirect(url)
     else:
@@ -787,11 +834,26 @@ def signup_send_confirm(request: HttpRequest, email: str = REQ("email")) -> Http
 
 @add_google_analytics
 @has_request_variables
-def new_realm_send_confirm(request: HttpRequest, email: str = REQ("email")) -> HttpResponse:
+def new_realm_send_confirm(
+    request: HttpRequest,
+    email: str = REQ("email"),
+    realm_name: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_NAME_LENGTH)),
+    realm_type: int = REQ(json_validator=check_int_in(Realm.ORG_TYPE_IDS)),
+    realm_subdomain: str = REQ(str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH)),
+) -> HttpResponse:
     return TemplateResponse(
         request,
         "zerver/accounts_send_confirm.html",
-        context={"email": email, "realm_creation": True},
+        context={
+            "email": email,
+            # Using "new_realm_name" key here since "realm_name" key is already present in
+            # the context provided by zulip_default_context and it is "None" during realm
+            # creation.
+            "new_realm_name": realm_name,
+            "realm_type": realm_type,
+            "realm_subdomain": realm_subdomain,
+            "realm_creation": True,
+        },
     )
 
 
@@ -988,7 +1050,13 @@ def realm_redirect(request: HttpRequest, next: str = REQ(default="")) -> HttpRes
         if form.is_valid():
             subdomain = form.cleaned_data["subdomain"]
             realm = get_realm(subdomain)
-            redirect_to = get_safe_redirect_to(next, realm.uri)
+            redirect_to = urljoin(realm.uri, settings.HOME_NOT_LOGGED_IN)
+
+            if next:
+                redirect_to = append_url_query_string(
+                    redirect_to, urlencode({REDIRECT_FIELD_NAME: next})
+                )
+
             return HttpResponseRedirect(redirect_to)
     else:
         form = RealmRedirectForm()

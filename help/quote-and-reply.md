@@ -21,7 +21,7 @@ to avoid unnecessarily mentioning someone twice.
 
 {!message-actions-menu.md!}
 
-1. Click **Quote and reply or forward**.
+1. Click **Quote and reply**.
 
 1. *(optional)* Delete any parts of the quoted message that are not
    relevant to your reply.
@@ -30,7 +30,7 @@ to avoid unnecessarily mentioning someone twice.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>></kbd> to **quote and reply or forward** the
+    You can also use <kbd>></kbd> to **quote and reply** to the
     selected message.
 
 {tab|mobile}
@@ -44,16 +44,55 @@ to avoid unnecessarily mentioning someone twice.
 
 1. Send your message.
 
-!!! tip ""
+{end_tabs}
 
-    If you are in a stream view, you can set a different destination
-    topic by tapping the compose box and selecting an existing topic
-    or typing a new topic name.
+## Forward a message
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{!message-actions-menu.md!}
+
+1. Click **Quote and reply**.
+
+1. *(optional)* Delete any parts of the quoted message that you don't want to
+   forward.
+
+1. Select the desired destination stream or **Direct message** from the dropdown
+   in the top left of the compose box.
+
+1. Enter a topic name, or recipient names for a direct message.
+
+1. Send your message.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>></kbd> to forward the selected message.
+
+{tab|mobile}
+
+{!message-long-press-menu.md!}
+
+1. Tap **Quote and reply**.
+
+1. *(optional)* Delete any parts of the quoted message that you don't want to
+   forward.
+
+1. If you are in a stream view, choose a destination topic by tapping the
+   compose box and selecting an existing topic or typing a new topic name.
+
+1. Send your message.
+
+!!! tip ""
+    To forward a message to a different stream or direct message recipient,
+    you will need to copy-paste the contents of the compose box.
 
 {end_tabs}
 
 ## Related articles
 
+* [Replying to messages](/help/replying-to-messages)
 * [Format a quote](/help/format-a-quote)
 * [Link to a message or conversation][link-to-message]
 * [Mention a user or group](/help/mention-a-user-or-group)

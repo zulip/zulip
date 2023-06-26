@@ -685,7 +685,7 @@ def create_user_backend(
 ) -> HttpResponse:
     user_group = None
     if not user_profile.can_create_users:
-        raise JsonableError(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized to create users"))
 
     full_name = check_full_name(full_name_raw)
     form = CreateUserForm({"full_name": full_name, "email": email})
@@ -723,11 +723,13 @@ def create_user_backend(
         password,
         realm,
         full_name,
-        # Explicitly set tos_version=None. For servers that have
-        # configured Terms of Service, this means that users created
-        # via this mechanism will be prompted to accept the Terms of
+        # Explicitly set tos_version=-1. This means that users
+        # created via this mechanism would be prompted to set
+        # the email_address_visibility setting on first login.
+        # For servers that have configured Terms of Service,
+        # users will also be prompted to accept the Terms of
         # Service on first login.
-        tos_version=None,
+        tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
         acting_user=user_profile,
     )
     if group_name:

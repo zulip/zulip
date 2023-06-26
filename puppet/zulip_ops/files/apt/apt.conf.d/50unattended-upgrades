@@ -22,6 +22,7 @@ Unattended-Upgrade::Package-Blacklist {
     "nginx-full$";
     "postgresql-\d+$";
     "rabbitmq-server$";
+    "erlang-base$";
     "redis-server$";
     "supervisor$";
 };

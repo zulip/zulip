@@ -42,7 +42,7 @@ emoji. Using REST API endpoints requires some technical expertise;
 You can replace a default emoji by adding a custom emoji of the same
 name. If an emoji has several names, you must use the emoji's primary name
 to replace it. You can find the primary name of an emoji by hovering over it
-in the [emoji picker](/help/emoji-and-emoticons#select-from-the-emoji-picker),
+in the [emoji picker](/help/emoji-and-emoticons#select-an-emoji-from-the-emoji-picker),
 while the search box is empty (you may have to scroll down a bit to find it).
 
 ## Deactivate custom emoji
@@ -51,7 +51,7 @@ while the search box is empty (you may have to scroll down a bit to find it).
 
 {settings_tab|emoji-settings}
 
-1. Click the trash icon (<i class="fa fa-trash-o"></i>) next to the
+1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon next to the
    emoji that you would like to deactivate.
 
 {end_tabs}

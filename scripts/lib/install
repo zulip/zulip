@@ -32,7 +32,7 @@ Options:
       Sets the PostgreSQL database name.
   --postgresql-database-user=zulip
       Sets the PostgreSQL database user.
-  --postgresql-version=14
+  --postgresql-version=15
       Sets the version of PostgreSQL that will be installed.
   --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
@@ -47,6 +47,18 @@ Options:
       Skip the initial `apt-get dist-upgrade`.
 
 EOF
+}
+
+system_requirements_failure() {
+    set +x
+    echo >&2
+    cat >&2
+    cat <<EOF >&2
+
+For more information, see:
+  https://zulip.readthedocs.io/en/latest/production/requirements.html
+EOF
+    exit 1
 }
 
 # Shell option parsing.  Over time, we'll want to move some of the
@@ -140,7 +152,7 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
-POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-14}"
+POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-15}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
@@ -176,8 +188,8 @@ if [ "$EXTERNAL_HOST" = zulip.example.com ] \
 fi
 
 case "$POSTGRESQL_VERSION" in
-    [0-9] | [0-9].* | 10 | 10.*)
-        echo "error: PostgreSQL 11 or newer is required." >&2
+    [0-9] | [0-9].* | 1[01] | 1[01].*)
+        echo "error: PostgreSQL 12 or newer is required." >&2
         exit 1
         ;;
 esac
@@ -219,24 +231,33 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id $os_version_id" in
-    'debian 11' | 'ubuntu 20.04' | 'ubuntu 22.04') ;;
+    'debian 11' | 'debian 12' | 'ubuntu 20.04' | 'ubuntu 22.04') ;;
     *)
-        set +x
-        cat <<EOF
-
+        system_requirements_failure <<EOF
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
  - Debian 11
+ - Debian 12
  - Ubuntu 20.04 LTS
  - Ubuntu 22.04 LTS
-
-For more information, see:
-  https://zulip.readthedocs.io/en/latest/production/requirements.html
 EOF
-        exit 1
         ;;
 esac
+
+machine="$(uname -m)"
+if [ "$machine" != x86_64 ] && [ "$machine" != aarch64 ]; then
+    system_requirements_failure <<EOF
+Unsupported CPU architecture: $machine (expected x86_64 or aarch64).
+EOF
+fi
+
+dpkg_architecture="$(dpkg --print-architecture)"
+if [ "$dpkg_architecture" != amd64 ] && [ "$dpkg_architecture" != arm64 ]; then
+    system_requirements_failure <<EOF
+Unsupported OS architecture: $dpkg_architecture (expected amd64 or arm64).
+EOF
+fi
 
 has_universe() {
     apt-cache policy \
@@ -244,19 +265,13 @@ has_universe() {
 }
 
 if [ "$os_id" = ubuntu ] && ! has_universe && ! { apt-get update && has_universe; }; then
-    set +x
-    cat <<'EOF'
-
+    system_requirements_failure <<EOF
 You must enable the Ubuntu Universe repository before installing
 Zulip.  You can do this with:
 
     sudo add-apt-repository universe
     sudo apt update
-
-For more information, see:
-  https://zulip.readthedocs.io/en/latest/production/requirements.html
 EOF
-    exit 1
 fi
 
 case ",$PUPPET_CLASSES," in
@@ -538,6 +553,13 @@ ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
 mkdir -p "$deploy_path"/prod-static/serve
 cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
 chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
+
+if ! [ -e /home/zulip/deployments/current/zulip-git-version ]; then
+    mkdir /srv/zulip.git
+    chown zulip:zulip /srv/zulip.git
+    su zulip -c 'git clone --bare --mirror /home/zulip/deployments/current /srv/zulip.git'
+    su zulip -c 'cd /home/zulip/deployments/current && ./scripts/lib/update-git-upstream && ./tools/cache-zulip-git-version'
+fi
 
 if ! [ -e "/home/zulip/prod-static/generated" ]; then
     # If we're installing from a Git checkout, we need to run

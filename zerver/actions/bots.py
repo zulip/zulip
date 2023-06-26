@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_user import created_bot_event
 from zerver.models import RealmAuditLog, Stream, UserProfile, active_user_ids, bot_owner_user_ids
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 @transaction.atomic(durable=True)
@@ -41,12 +41,10 @@ def do_change_bot_owner(
             ),
         )
         previous_owner_id = previous_owner.id
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                delete_event,
-                {previous_owner_id},
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            delete_event,
+            {previous_owner_id},
         )
         # Do not send update event for previous bot owner.
         update_users = update_users - {previous_owner.id}
@@ -54,7 +52,7 @@ def do_change_bot_owner(
     # Notify the new owner that the bot has been added.
     if not bot_owner.is_realm_admin:
         add_event = created_bot_event(user_profile)
-        transaction.on_commit(lambda: send_event(user_profile.realm, add_event, {bot_owner.id}))
+        send_event_on_commit(user_profile.realm, add_event, {bot_owner.id})
         # Do not send update event for bot_owner.
         update_users = update_users - {bot_owner.id}
 
@@ -66,12 +64,10 @@ def do_change_bot_owner(
             owner_id=user_profile.bot_owner.id,
         ),
     )
-    transaction.on_commit(
-        lambda: send_event(
-            user_profile.realm,
-            bot_event,
-            update_users,
-        )
+    send_event_on_commit(
+        user_profile.realm,
+        bot_event,
+        update_users,
     )
 
     # Since `bot_owner_id` is included in the user profile dict we need
@@ -84,9 +80,7 @@ def do_change_bot_owner(
             bot_owner_id=user_profile.bot_owner.id,
         ),
     )
-    transaction.on_commit(
-        lambda: send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
-    )
+    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 
 @transaction.atomic(durable=True)
@@ -125,12 +119,10 @@ def do_change_default_sending_stream(
                 default_sending_stream=stream_name,
             ),
         )
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                event,
-                bot_owner_user_ids(user_profile),
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            bot_owner_user_ids(user_profile),
         )
 
 
@@ -171,12 +163,10 @@ def do_change_default_events_register_stream(
                 default_events_register_stream=stream_name,
             ),
         )
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                event,
-                bot_owner_user_ids(user_profile),
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            bot_owner_user_ids(user_profile),
         )
 
 
@@ -212,10 +202,8 @@ def do_change_default_all_public_streams(
                 default_all_public_streams=user_profile.default_all_public_streams,
             ),
         )
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                event,
-                bot_owner_user_ids(user_profile),
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            bot_owner_user_ids(user_profile),
         )

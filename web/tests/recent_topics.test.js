@@ -107,10 +107,11 @@ mock_esm("../src/user_topics", {
         }
         return false;
     },
+    is_topic_unmuted: () => false,
 });
 const narrow = mock_esm("../src/narrow", {
     update_narrow_title: noop,
-    hide_mark_as_read_turned_off_banner: noop,
+    hide_unread_banner: noop,
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
 });
@@ -136,8 +137,8 @@ mock_esm("../src/stream_list", {
     handle_narrow_deactivated: noop,
 });
 mock_esm("../src/timerender", {
-    last_seen_status_from_date: () => "Just now",
-    get_full_datetime: () => "date at time",
+    relative_time_string_from_date: () => "Just now",
+    get_full_datetime_clarification: () => "date at time",
 });
 mock_esm("../src/sub_store", {
     get(stream) {
@@ -168,6 +169,9 @@ mock_esm("../src/unread", {
         return 0;
     },
     topic_has_any_unread_mentions: () => false,
+});
+mock_esm("../src/resize", {
+    update_recent_topics_filters_height: noop,
 });
 
 const {all_messages_data} = zrequire("all_messages_data");
@@ -354,6 +358,7 @@ function generate_topic_data(topic_info_array) {
             stream: "stream" + stream_id,
             stream_color: "",
             stream_id,
+            stream_muted: undefined,
             stream_url: "https://www.example.com",
             topic,
             conversation_key: get_topic_key(stream_id, topic),
@@ -361,6 +366,7 @@ function generate_topic_data(topic_info_array) {
             unread_count,
             mention_in_unread: false,
             topic_muted: muted,
+            topic_unmuted: false,
         });
     }
     return data;
@@ -422,7 +428,7 @@ test("test_recent_topics_show", ({mock_template, override}) => {
 
     stub_out_filter_buttons();
     // We don't test the css calls; we just skip over them.
-    $("#mark_as_read_turned_off_banner").toggleClass = () => {};
+    $("#mark_read_on_scroll_state_banner").toggleClass = () => {};
 
     rt.clear_for_tests();
     rt.process_messages(messages);
@@ -918,13 +924,13 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         "1:topic-7,1:topic-3,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
     );
 
-    // update_topic_is_muted now relies on external libraries completely
+    // update_topic_visibility_policy now relies on external libraries completely
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, false]]);
     $(".home-page-input").trigger("focus");
-    assert.equal(rt.update_topic_is_muted(stream1, topic1), true);
+    assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
     // a topic gets muted which we are not tracking
-    assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
+    assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);
 });
 
 test("test_reify_local_echo_message", ({mock_template}) => {

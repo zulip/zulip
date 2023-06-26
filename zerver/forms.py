@@ -204,7 +204,21 @@ class RegistrationForm(RealmDetailsForm):
 
 
 class ToSForm(forms.Form):
-    terms = forms.BooleanField(required=True)
+    terms = forms.BooleanField(required=False)
+    email_address_visibility = forms.TypedChoiceField(
+        required=False,
+        coerce=int,
+        empty_value=None,
+        choices=[
+            (value, name)
+            for value, name in UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.items()
+        ],
+    )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        if settings.TERMS_OF_SERVICE_VERSION is not None:
+            self.fields["terms"] = forms.BooleanField(required=True)
 
 
 class HomepageForm(forms.Form):

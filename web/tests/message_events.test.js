@@ -133,6 +133,7 @@ run_test("update_messages", () => {
             is_stream: true,
             last_edit_timestamp: undefined,
             mentioned: false,
+            wildcard_mentioned: false,
             mentioned_me_directly: false,
             raw_content: "**new content**",
             reactions: [],

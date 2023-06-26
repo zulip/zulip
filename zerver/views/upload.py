@@ -21,6 +21,7 @@ from django.http import (
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
+from django.utils.http import content_disposition_header
 from django.utils.translation import gettext as _
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -38,34 +39,11 @@ from zerver.models import UserProfile, validate_attachment_request
 
 
 def patch_disposition_header(response: HttpResponse, url: str, is_attachment: bool) -> None:
-    """
-    This replicates django.utils.http.content_disposition_header's
-    algorithm, which is introduced in Django 4.2.
-
-    """
-    # TODO: Replace this with django.utils.http.content_disposition_header when we upgrade in Django 4.2
-    disposition = "attachment" if is_attachment else "inline"
-
-    # Trim to only the filename part of the URL
     filename = os.path.basename(urlparse(url).path)
+    content_disposition = content_disposition_header(is_attachment, filename)
 
-    # Content-Disposition is defined in RFC 6266:
-    # https://datatracker.ietf.org/doc/html/rfc6266
-    #
-    # For the 'filename' attribute of it, see RFC 8187:
-    # https://datatracker.ietf.org/doc/html/rfc8187
-    try:
-        # If the filename is pure-ASCII (determined by trying to
-        # encode it as such), then we escape slashes and quotes, and
-        # provide a filename="..."
-        filename.encode("ascii")
-        file_expr = 'filename="{}"'.format(filename.replace("\\", "\\\\").replace('"', r"\""))
-    except UnicodeEncodeError:
-        # If it contains non-ASCII characters, we URI-escape it and
-        # provide a filename*=encoding'language'value
-        file_expr = f"filename*=utf-8''{quote(filename)}"
-
-    response.headers["Content-Disposition"] = f"{disposition}; {file_expr}"
+    if content_disposition is not None:
+        response.headers["Content-Disposition"] = content_disposition
 
 
 def internal_nginx_redirect(internal_path: str, content_type: Optional[str] = None) -> HttpResponse:
@@ -159,10 +137,13 @@ def serve_local(
 
 
 def serve_file_download_backend(
-    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+    request: HttpRequest,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    realm_id_str: str,
+    filename: str,
 ) -> HttpResponseBase:
     return serve_file(
-        request, user_profile, realm_id_str, filename, url_only=False, force_download=True
+        request, maybe_user_profile, realm_id_str, filename, url_only=False, force_download=True
     )
 
 

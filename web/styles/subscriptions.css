@@ -355,6 +355,20 @@ h4.user_group_setting_subsection_title {
         margin: 0 -2px;
     }
 
+    .left .no-streams-to-show,
+    .right .nothing-selected {
+        display: block;
+        margin-top: calc(45vh - 75px);
+        text-align: center;
+        font-size: 1em;
+        margin-left: 2em;
+        margin-right: 2em;
+
+        & span {
+            color: hsl(0deg 0% 67%);
+        }
+    }
+
     .left {
         border-right: 1px solid hsl(0deg 0% 87%);
 
@@ -370,17 +384,6 @@ h4.user_group_setting_subsection_title {
         width: calc(50% + 1px);
 
         .nothing-selected {
-            display: block;
-            margin-top: calc(45vh - 75px);
-            text-align: center;
-            font-size: 1em;
-            margin-left: 2em;
-            margin-right: 2em;
-
-            & span {
-                color: hsl(0deg 0% 67%);
-            }
-
             & button {
                 padding: 6px 10px 8px;
                 display: block;
@@ -407,15 +410,18 @@ h4.user_group_setting_subsection_title {
                 display: none;
                 font-size: 1.5em;
                 line-height: 1;
-                margin: 9px 0;
+                margin: 9px;
                 font-weight: 600;
+                word-break: break-all;
 
                 .large-icon {
                     display: inline-block;
-                }
 
-                .fa-lock {
-                    position: relative;
+                    .zulip-icon {
+                        font-size: 20px;
+                        position: relative;
+                        top: 3px;
+                    }
                 }
 
                 .zulip-icon-globe {
@@ -580,10 +586,6 @@ h4.user_group_setting_subsection_title {
             font-size: 1.1em;
         }
 
-        .fa-lock {
-            font-size: 1.4em;
-        }
-
         .hashtag {
             font-size: 1.4em;
             font-weight: 600;
@@ -675,6 +677,20 @@ h4.user_group_setting_subsection_title {
     color: hsl(0deg 0% 67%);
 }
 
+.subscriber_list_settings {
+    .add_subscribers_disabled {
+        cursor: not-allowed;
+
+        .pill-container {
+            cursor: not-allowed;
+        }
+    }
+
+    & button[disabled] {
+        pointer-events: none;
+    }
+}
+
 #groups_overlay,
 #subscription_overlay {
     #user-group-creation,
@@ -683,12 +699,15 @@ h4.user_group_setting_subsection_title {
         outline: none;
         -webkit-overflow-scrolling: touch;
 
+        .stream-creation-simplebar-container {
+            /*
+                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer)
+            */
+            height: calc(95vh - 149px);
+        }
+
         .user-group-creation-body,
         .stream-creation-body {
-            /*
-                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer) + 15px (padding for .simplebar-content)
-            */
-            height: calc(95vh - 164px);
             padding: 15px 15px 0;
         }
 
@@ -697,6 +716,12 @@ h4.user_group_setting_subsection_title {
             bottom: 0;
             width: calc(100% - 27px);
             padding-top: 9px;
+        }
+
+        @media (width > $md_min) {
+            .modal-footer {
+                border-radius: 0 0 6px;
+            }
         }
 
         .add_all_users_to_user_group,
@@ -767,7 +792,7 @@ h4.user_group_setting_subsection_title {
         .button-group {
             padding-top: 5px;
             margin-left: auto;
-            margin-right: 15px;
+            margin-right: 18px;
 
             .subscribe-button,
             #preview-stream-button,
@@ -787,25 +812,29 @@ h4.user_group_setting_subsection_title {
 
         .group-name-wrapper,
         .stream-name {
-            display: inline-block;
             position: relative;
             font-size: 1.5em;
             font-weight: 600;
             margin-left: -3px;
             margin-top: -5px;
             white-space: nowrap;
+            max-width: 90%;
+            flex: auto;
+            min-width: 0;
+            overflow-x: clip;
+            text-overflow: ellipsis;
 
             .group-name,
             .sub-stream-name {
                 display: block;
-                max-width: 100%;
+                width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
         }
 
         .button-group {
-            margin-left: 1rem;
+            margin-left: auto;
 
             .deactivate {
                 margin-right: 3px;
@@ -825,9 +854,8 @@ h4.user_group_setting_subsection_title {
         .large-icon {
             display: inline-block;
             vertical-align: top;
-            margin-right: 5px;
+            margin-right: 8px;
             margin-top: -5px;
-            font-size: 1.5em;
 
             &.hash::after {
                 top: -1px;
@@ -835,15 +863,17 @@ h4.user_group_setting_subsection_title {
                 font-weight: 800;
             }
 
-            .zulip-icon-globe {
-                font-size: 15px;
+            .zulip-icon {
+                font-size: 18px;
+                position: relative;
+                top: 1px;
             }
         }
 
         .group_change_property_info,
         .stream_change_property_info {
             vertical-align: top;
-            margin: -5px 0 0;
+            margin: 0 5px 0 0;
         }
     }
 
@@ -986,7 +1016,7 @@ div.settings-radio-input-parent {
         /* Match with select elements in settings page */
         min-width: 325px;
         max-width: 100%;
-        height: fit-content;
+        height: 30px;
     }
 
     & select.stream_post_policy_setting {
@@ -1092,7 +1122,7 @@ div.settings-radio-input-parent {
         left: 101%;
 
         top: 45px;
-        background-color: hsl(0deg 0% 98%);
+        background-color: var(--color-background-modal);
         border-top: none;
 
         transition: all 0.3s ease;

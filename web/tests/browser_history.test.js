@@ -6,7 +6,9 @@ const {zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
+const {user_settings} = require("./lib/zpage_params");
 
+user_settings.default_view = "recent";
 window.location.hash = "#bogus";
 
 const browser_history = zrequire("browser_history");
@@ -21,7 +23,7 @@ function test(label, f) {
 
 test("basics", () => {
     const hash1 = "#settings/profile";
-    const hash2 = "#narrow/is/private";
+    const hash2 = "#narrow/is/dm";
     browser_history.go_to_location(hash1);
     assert.equal(window.location.hash, hash1);
 
@@ -45,7 +47,7 @@ test("update with same hash", () => {
 
 test("error for bad hashes", () => {
     const hash = "bogus";
-    blueslip.expect("error", "programming error: prefix hashes with #: bogus");
+    blueslip.expect("error", "programming error: prefix hashes with #");
     browser_history.update(hash);
 });
 
@@ -69,9 +71,9 @@ test("update internal hash if required", ({override_rewire}) => {
 test("web-public view hash restore", () => {
     browser_history.update("#");
     assert.equal(window.location.hash, "");
-    const new_hash = "#narrow/is/private";
+    const new_hash = "#narrow/is/dm";
     browser_history.update(new_hash);
     assert.equal(window.location.hash, new_hash);
     browser_history.return_to_web_public_hash();
-    assert.equal(window.location.hash, "");
+    assert.equal(window.location.hash, "#recent");
 });

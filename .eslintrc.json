@@ -51,7 +51,7 @@
         "import/first": "error",
         "import/newline-after-import": "error",
         "import/no-self-import": "error",
-        "import/no-unresolved": ["error", {"ignore": ["^date-fns-tz$|^js-cookie$|^katex$"]}],
+        "import/no-unresolved": "off",
         "import/no-useless-path-segments": "error",
         "import/order": ["error", {"alphabetize": {"order": "asc"}, "newlines-between": "always"}],
         "import/unambiguous": "error",
@@ -148,6 +148,7 @@
             "extends": [
                 "plugin:@typescript-eslint/recommended",
                 "plugin:@typescript-eslint/recommended-requiring-type-checking",
+                "plugin:@typescript-eslint/strict",
                 "plugin:import/typescript"
             ],
             "parserOptions": {
@@ -166,11 +167,9 @@
             "rules": {
                 // Disable base rule to avoid conflict
                 "no-duplicate-imports": "off",
-                "no-useless-constructor": "off",
                 "no-use-before-define": "off",
 
-                "@typescript-eslint/array-type": "error",
-                "@typescript-eslint/consistent-type-assertions": "error",
+                "@typescript-eslint/consistent-type-definitions": ["error", "type"],
                 "@typescript-eslint/consistent-type-imports": "error",
                 "@typescript-eslint/explicit-function-return-type": [
                     "error",
@@ -178,9 +177,9 @@
                 ],
                 "@typescript-eslint/member-ordering": "error",
                 "@typescript-eslint/no-duplicate-imports": "error",
-                "@typescript-eslint/no-extraneous-class": "error",
                 "@typescript-eslint/no-non-null-assertion": "off",
                 "@typescript-eslint/no-parameter-properties": "error",
+                "@typescript-eslint/no-unnecessary-condition": "off",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
                 "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
@@ -189,11 +188,7 @@
                 "@typescript-eslint/no-unsafe-return": "off",
                 "@typescript-eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}],
                 "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
-                "@typescript-eslint/no-useless-constructor": "error",
-                "@typescript-eslint/prefer-includes": "error",
-                "@typescript-eslint/prefer-string-starts-ends-with": "error",
                 "@typescript-eslint/promise-function-async": "error",
-                "@typescript-eslint/unified-signatures": "error",
                 "import/no-cycle": "error",
                 "no-undef": "error"
             }
@@ -271,7 +266,8 @@
                             }
                         ]
                     }
-                ]
+                ],
+                "unicorn/prefer-string-replace-all": "off"
             }
         }
     ]

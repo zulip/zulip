@@ -18,7 +18,11 @@
     <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>
 {{/if}}
 <strong>
-    {{~ primary ~}}
+    {{~#if stream}}
+        {{> inline_decorated_stream_name stream=stream }}
+    {{else}}
+        {{~ primary ~}}
+    {{/if}}
 </strong>
 {{~#if has_status}}
 {{> status_emoji status_emoji_info}}

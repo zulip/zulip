@@ -23,13 +23,6 @@ class zulip::profile::app_frontend {
     content => template('zulip/nginx/zulip-enterprise.template.erb'),
     notify  => Service['nginx'],
   }
-  file { '/etc/logrotate.d/zulip':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/logrotate/zulip',
-  }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
     ensure  => link,
     require => Package[$zulip::common::nginx],

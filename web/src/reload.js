@@ -14,11 +14,23 @@ import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
-import * as server_events from "./server_events";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
+
+const reload_hooks = [];
+
+export function add_reload_hook(hook) {
+    reload_hooks.push(hook);
+}
+
+function call_reload_hooks() {
+    for (const hook of reload_hooks) {
+        hook();
+    }
+}
+
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
@@ -67,7 +79,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         const $row = message_lists.home.selected_row();
         if (!narrow_state.active()) {
             if ($row.length > 0) {
-                url += "+offset=" + $row.offset().top;
+                url += "+offset=" + $row.get_offset_to_window().top;
             }
         } else {
             url += "+offset=" + message_lists.home.pre_narrow_offset;
@@ -80,7 +92,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
             }
             const $narrow_row = message_lists.current.selected_row();
             if ($narrow_row.length > 0) {
-                url += "+narrow_offset=" + $narrow_row.offset().top;
+                url += "+narrow_offset=" + $narrow_row.get_offset_to_window().top;
             }
         }
     }
@@ -228,7 +240,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
         try {
             preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
         } catch (error) {
-            blueslip.error("Failed to preserve state", undefined, error.stack);
+            blueslip.error("Failed to preserve state", undefined, error);
         }
     }
 
@@ -255,9 +267,9 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     util.call_function_periodically(retry_reload, 30000);
 
     try {
-        server_events.cleanup_event_queue();
+        call_reload_hooks();
     } catch (error) {
-        blueslip.error("Failed to clean up before reloading", undefined, error.stack);
+        blueslip.error("Failed to clean up before reloading", undefined, error);
     }
 
     window.location.reload(true);

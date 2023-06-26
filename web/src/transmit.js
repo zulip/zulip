@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/browser";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {page_params} from "./page_params";
@@ -6,38 +8,47 @@ import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 
-export function send_message(request, on_success, error, future_message) {
-    channel.post({
-        url: "/json/messages",
-        data: request,
-        success: function success(data) {
-            // Call back to our callers to do things like closing the compose
-            // box and turning off spinners and reifying locally echoed messages.
-            on_success(data);
-
-            // For /schedule or /reminder messages don't ack.
-            if (!future_message) {
+export function send_message(request, on_success, error) {
+    if (!request.resend) {
+        sent_messages.start_tracking_message({
+            local_id: request.local_id,
+            locally_echoed: request.locally_echoed,
+        });
+    }
+    const txn = sent_messages.start_send(request.local_id);
+    try {
+        const scope = Sentry.getCurrentHub().pushScope();
+        scope.setSpan(txn);
+        channel.post({
+            url: "/json/messages",
+            data: request,
+            success: function success(data) {
+                // Call back to our callers to do things like closing the compose
+                // box and turning off spinners and reifying locally echoed messages.
+                on_success(data);
                 // Once everything is done, get ready to report times to the server.
                 sent_messages.report_server_ack(request.local_id);
-            }
-        },
-        error(xhr, error_type) {
-            if (error_type !== "timeout" && reload_state.is_pending()) {
-                // The error might be due to the server changing
-                reload.initiate({
-                    immediate: true,
-                    save_pointer: true,
-                    save_narrow: true,
-                    save_compose: true,
-                    send_after_reload: true,
-                });
-                return;
-            }
+            },
+            error(xhr, error_type) {
+                if (error_type !== "timeout" && reload_state.is_pending()) {
+                    // The error might be due to the server changing
+                    reload.initiate({
+                        immediate: true,
+                        save_pointer: true,
+                        save_narrow: true,
+                        save_compose: true,
+                        send_after_reload: true,
+                    });
+                    return;
+                }
 
-            const response = channel.xhr_error_message("Error sending message", xhr);
-            error(response);
-        },
-    });
+                const response = channel.xhr_error_message("Error sending message", xhr);
+                error(response);
+            },
+        });
+    } finally {
+        Sentry.getCurrentHub().popScope();
+    }
 }
 
 export function reply_message(opts) {
@@ -106,5 +117,5 @@ export function reply_message(opts) {
         return;
     }
 
-    blueslip.error("unknown message type: " + message.type);
+    blueslip.error("unknown message type", {message, content});
 }

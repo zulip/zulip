@@ -61,7 +61,6 @@ from .configured_settings import (
     SOCIAL_AUTH_SAML_SECURITY_CONFIG,
     SOCIAL_AUTH_SUBDOMAIN,
     STATIC_URL,
-    STATSD_HOST,
     TORNADO_PORTS,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
@@ -174,7 +173,7 @@ MIDDLEWARE = (
     "zerver.middleware.JsonErrorHandler",
     "zerver.middleware.RateLimitMiddleware",
     "zerver.middleware.FlushDisplayRecipientCache",
-    "zerver.middleware.ZulipCommonMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "zerver.middleware.LocaleMiddleware",
     "zerver.middleware.HostDomainMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -515,17 +514,6 @@ if PRODUCTION:
     ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
-
-########################################################################
-# STATSD CONFIGURATION
-########################################################################
-
-# Statsd is not super well supported; if you want to use it you'll need
-# to set STATSD_HOST and STATSD_PREFIX.
-if STATSD_HOST != "":
-    INSTALLED_APPS += ["django_statsd"]
-    STATSD_PORT = 8125
-    STATSD_CLIENT = "django_statsd.clients.normal"
 
 ########################################################################
 # CAMO HTTPS CACHE CONFIGURATION
@@ -1120,6 +1108,15 @@ if PRODUCTION:
     SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = get_from_file_if_exists(
         "/etc/zulip/saml/zulip-private-key.key"
     )
+
+    if SOCIAL_AUTH_SAML_SP_PUBLIC_CERT and SOCIAL_AUTH_SAML_SP_PRIVATE_KEY:
+        # If the certificates are set up, it's certainly desirable to sign
+        # LogoutRequests and LogoutResponses unless explicitly specified otherwise
+        # in the configuration.
+        if "logoutRequestSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+            SOCIAL_AUTH_SAML_SECURITY_CONFIG["logoutRequestSigned"] = True
+        if "logoutResponseSigned" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
+            SOCIAL_AUTH_SAML_SECURITY_CONFIG["logoutResponseSigned"] = True
 
 if "signatureAlgorithm" not in SOCIAL_AUTH_SAML_SECURITY_CONFIG:
     # If the configuration doesn't explicitly specify the algorithm,

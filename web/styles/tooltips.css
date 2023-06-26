@@ -4,7 +4,7 @@
      * for tooltips here.
      */
     font-family: "Source Sans 3", sans-serif !important;
-    word-wrap: break-word;
+    overflow-wrap: anywhere;
     /* Contains stylistic variant of upper-case character "I" in Source Sans 3 */
     font-feature-settings: "ss01" on;
 
@@ -77,14 +77,27 @@
         gap: 4px;
     }
 
-    .tooltip-hotkey-hint {
-        box-sizing: inherit;
+    & span.tooltip-hotkey-hint {
         border: 1px solid hsl(225deg 100% 84%);
         border-radius: 3px;
         color: hsl(225deg 100% 84%);
-        padding: 2px 5px;
-        min-width: 20px;
+        padding: 0 5px;
         text-align: center;
-        line-height: 14px;
+    }
+
+    /* If the reference of the tooltip is went offscreen while scrolling,
+       the tooltip will be visible until the scrolling stops. Popper adds
+       `data-reference-hidden` attribute to those tooltips whole reference is
+       hidden. Since tooltips have `absolute` position, they can occupy scroll
+       space offscreen and cause document to have the wrong scroll height.
+       Setting `display: none` makes sure it doesn't occupy any offscreen space.
+
+       NOTE: This data attribtute has changed each time in the past 3 releases and
+       if we upgrade tippy from v6, we should check if this attribute is still valid.
+
+       See https://github.com/atomiks/tippyjs/issues/555 for some discussion on this.
+    */
+    [data-reference-hidden] {
+        display: none;
     }
 }

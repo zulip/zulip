@@ -16,17 +16,6 @@
     </div>
 </div>
 
-{{#if ask_to_announce_stream}}
-    <div id="announce-new-stream">
-        <label class="checkbox">
-            <input type="checkbox" name="announce" value="announce" checked />
-            <span></span>
-            {{t "Announce stream" }}
-        </label>
-        <span class="fa fa-info-circle settings-info-icon" aria-hidden="true" id="announce-stream-docs"></span>
-    </div>
-{{/if}}
-
 <div class="input-group">
     <label class="dropdown-title">{{t 'Who can post to the stream?'}}
         {{> ../help_link_widget link="/help/stream-sending-policy" }}

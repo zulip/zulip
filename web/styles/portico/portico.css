@@ -248,6 +248,30 @@ html {
     background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
+
+    & :target,
+    & .scroll-target {
+        /* Match to where simplebar scrolls */
+        scroll-margin-top: 20px;
+    }
+    /* Highlight the headings as well as the first child
+      of any targeted div, as in the API documentation. */
+    & h1.scroll-target,
+    & h2.scroll-target,
+    & h3.scroll-target,
+    & h4.scroll-target,
+    & h5.scroll-target,
+    & h6.scroll-target,
+    & div.scroll-target > :first-child {
+        /* Increase the highlighted space around the text... */
+        padding: 6px 8px;
+        border-radius: 7px 7px 0 0;
+        /* ...but maintain apparent top and bottom margin;
+        pull left and right into the gutter. */
+        margin: 20px -8px 10px;
+        /* Derive highlight color from sidebar, here with 30% alpha */
+        background-color: hsl(152deg 70% 50% / 25%);
+    }
 }
 
 .help-center ol,
@@ -920,13 +944,22 @@ input.new-organization-button {
 }
 
 #registration-email {
+    margin-bottom: 18px;
+
     & label {
         float: left;
-        padding-top: 5px;
         width: 100%;
         display: block;
-        margin: 0;
+        margin-left: 2px;
+        margin-bottom: 0;
         text-align: left;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .controls {
+        padding-top: 25px;
+        margin: 2px;
     }
 }
 
@@ -1115,7 +1148,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-height: 600px) {
+@media (height <= 600px) {
     .password-container {
         margin-top: 10px;
     }

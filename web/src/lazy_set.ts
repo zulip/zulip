@@ -94,7 +94,7 @@ export class LazySet {
 
     _clean(v: number | string): number {
         if (typeof v !== "number") {
-            blueslip.error("not a number");
+            blueslip.error("not a number", {v});
             return Number.parseInt(v, 10);
         }
         return v;

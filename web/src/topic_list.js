@@ -6,13 +6,11 @@ import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 
 import * as blueslip from "./blueslip";
-import * as narrow from "./narrow";
-import * as stream_popover from "./stream_popover";
+import * as popover_menus from "./popover_menus";
+import * as scroll_util from "./scroll_util";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
-import * as sub_store from "./sub_store";
 import * as topic_list_data from "./topic_list_data";
-import * as ui from "./ui";
 import * as vdom from "./vdom";
 
 /*
@@ -35,7 +33,7 @@ export function update() {
 }
 
 export function clear() {
-    stream_popover.hide_topic_popover();
+    popover_menus.get_topic_menu_popover()?.hide();
 
     for (const widget of active_widgets.values()) {
         widget.remove();
@@ -81,11 +79,16 @@ export function keyed_topic_li(conversation) {
     };
 }
 
-export function more_li(more_topics_unreads, more_topics_have_unread_mention_messages) {
+export function more_li(
+    more_topics_unreads,
+    more_topics_have_unread_mention_messages,
+    more_topics_unread_count_muted,
+) {
     const render = () =>
         render_more_topics({
             more_topics_unreads,
             more_topics_have_unread_mention_messages,
+            more_topics_unread_count_muted,
         });
 
     const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
@@ -125,7 +128,11 @@ export class TopicListWidget {
     }
 
     build_list(spinner) {
-        const list_info = topic_list_data.get_list_info(this.my_stream_id, zoomed);
+        const list_info = topic_list_data.get_list_info(
+            this.my_stream_id,
+            zoomed,
+            get_topic_search_term(),
+        );
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
@@ -143,7 +150,13 @@ export class TopicListWidget {
         if (spinner) {
             nodes.push(spinner_li());
         } else if (!is_showing_all_possible_topics) {
-            nodes.push(more_li(more_topics_unreads, more_topics_have_unread_mention_messages));
+            nodes.push(
+                more_li(
+                    more_topics_unreads,
+                    more_topics_have_unread_mention_messages,
+                    list_info.more_topics_unread_count_muted,
+                ),
+            );
         }
 
         const dom = vdom.ul({
@@ -275,7 +288,7 @@ export function zoom_in() {
         active_widget.build();
     }
 
-    ui.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
+    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
 
     const spinner = true;
     active_widget.build(spinner);
@@ -291,7 +304,7 @@ export function get_topic_search_term() {
     return $filter.val().trim();
 }
 
-export function initialize() {
+export function initialize({on_topic_click}) {
     $("#stream_filters").on("click", ".topic-box", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -300,21 +313,10 @@ export function initialize() {
             return;
         }
 
-        // In a more componentized world, we would delegate some
-        // of this stuff back up to our parents.
-
         const $stream_row = $(e.target).parents(".narrow-filter");
         const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
-        const sub = sub_store.get(stream_id);
         const topic = $(e.target).parents("li").attr("data-topic-name");
-
-        narrow.activate(
-            [
-                {operator: "stream", operand: sub.name},
-                {operator: "topic", operand: topic},
-            ],
-            {trigger: "sidebar"},
-        );
+        on_topic_click(stream_id, topic);
 
         e.preventDefault();
     });

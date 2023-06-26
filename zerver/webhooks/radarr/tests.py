@@ -14,6 +14,14 @@ class RadarrHookTests(WebhookTestCase):
         expected_message = "Radarr webhook has been successfully configured."
         self.check_webhook("radarr_test", expected_topic, expected_message)
 
+    def test_radarr_application_update(self) -> None:
+        """
+        Tests if radarr application update payload is handled correctly
+        """
+        expected_topic = "Radarr - Application update"
+        expected_message = "Radarr was updated from 4.2.0.6370 to 4.2.0.6372."
+        self.check_webhook("radarr_application_update", expected_topic, expected_message)
+
     def test_radarr_health_check_warning(self) -> None:
         """
         Tests if radarr health check warning payload is handled correctly
@@ -61,3 +69,29 @@ class RadarrHookTests(WebhookTestCase):
         expected_topic = "Greenland"
         expected_message = "The movie Greenland has been grabbed."
         self.check_webhook("radarr_movie_grabbed", expected_topic, expected_message)
+
+    def test_radarr_movie_deleted(self) -> None:
+        """
+        Tests if radarr movie deleted payload is handled correctly
+        """
+        expected_topic = "Batman v Superman: Dawn of Justice"
+        expected_message = (
+            "The movie Batman v Superman: Dawn of Justice was deleted; its files were also deleted."
+        )
+        self.check_webhook("radarr_movie_deleted", expected_topic, expected_message)
+
+    def test_radarr_movie_file_deleted(self) -> None:
+        """
+        Tests if radarr movie file deleted payload is handled correctly
+        """
+        expected_topic = "Marley & Me"
+        expected_message = "A file with quality Bluray-1080p for the movie Marley & Me was deleted, because it is missing from disk."
+        self.check_webhook("radarr_movie_file_deleted", expected_topic, expected_message)
+
+    def test_radarr_movie_added(self) -> None:
+        """
+        Tests if radarr movie added payload is handled correctly
+        """
+        expected_topic = "Batman v Superman: Dawn of Justice"
+        expected_message = "The movie Batman v Superman: Dawn of Justice was added."
+        self.check_webhook("radarr_movie_added", expected_topic, expected_message)

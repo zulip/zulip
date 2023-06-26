@@ -28,7 +28,9 @@ from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
     get_config,
+    get_config_bool,
     get_config_file,
+    get_zulip_pwent,
     listening_publicly,
     parse_os_release,
     parse_version_from,
@@ -149,11 +151,14 @@ if args.from_git:
     logging.info("Caching Zulip Git version...")
     subprocess.check_call(["./tools/cache-zulip-git-version"], preexec_fn=su_to_zulip)
 
+from version import ZULIP_MERGE_BASE as NEW_ZULIP_MERGE_BASE
 from version import ZULIP_VERSION as NEW_ZULIP_VERSION
 
 old_version = parse_version_from(DEPLOYMENTS_DIR + "/current")
 logging.info("Upgrading from %s to %s, in %s", old_version, NEW_ZULIP_VERSION, deploy_path)
-
+old_merge_base = (
+    parse_version_from(DEPLOYMENTS_DIR + "/current", merge_base=True) if args.from_git else ""
+)
 
 # Check if rabbitmq port 25672 is listening on anything except 127.0.0.1
 rabbitmq_dist_listen = listening_publicly(25672)
@@ -201,19 +206,23 @@ def shutdown_server() -> None:
 
 # postgresql.version is required for database servers, but wasn't
 # previously; fill it in based on what the OS provides.
+postgresql_version = None
 if os.path.exists("/etc/init.d/postgresql"):
     postgresql_version = get_config(config_file, "postgresql", "version")
+    django_pg_version = subprocess.check_output(
+        # We use the _current_ deploy's manage.py, since ours has not
+        # yet had its virtualenv configured yet.
+        [
+            "../current/manage.py",
+            "shell",
+            "-c",
+            "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))",
+        ],
+        preexec_fn=su_to_zulip,
+        text=True,
+    ).strip()
     if not postgresql_version:
-        default_postgresql_version = {
-            ("debian", "11"): "13",
-            ("ubuntu", "20.04"): "12",
-            ("ubuntu", "22.04"): "14",
-            ("centos", "7"): "11",
-        }
-        if (vendor, os_version) in default_postgresql_version:
-            postgresql_version = default_postgresql_version[(vendor, os_version)]
-        else:
-            error_desupported_os(vendor, os_version)
+        postgresql_version = django_pg_version
         subprocess.check_call(
             [
                 "crudini",
@@ -224,11 +233,30 @@ if os.path.exists("/etc/init.d/postgresql"):
                 postgresql_version,
             ]
         )
+    elif postgresql_version != django_pg_version:
+        logging.critical(
+            "PostgreSQL version mismatch: %s (running) vs %s (configured)",
+            django_pg_version,
+            postgresql_version,
+        )
+        logging.info(
+            "/etc/zulip/zulip.conf claims that Zulip is running PostgreSQL\n"
+            "%s, but the server is connected to a PostgreSQL running\n"
+            "version %s.  Check the output from pg_lsclusters to verify\n"
+            "which clusters are running, and update /etc/zulip/zulip.conf to match.\n"
+            "\n"
+            "In general, this results from manually upgrading PostgreSQL; you\n"
+            "should follow our instructions for using our tool to do so:\n"
+            "https://zulip.readthedocs.io/en/latest/production/upgrade.html#upgrading-postgresql",
+            postgresql_version,
+            django_pg_version,
+        )
+        sys.exit(1)
 
-    if tuple(map(int, postgresql_version.split("."))) < (11,):
+    if int(postgresql_version) < 12:
         logging.critical("Unsupported PostgreSQL version: %s", postgresql_version)
         logging.info(
-            "Please upgrade to PostgreSQL 11 or newer first.\n"
+            "Please upgrade to PostgreSQL 12 or newer first.\n"
             "See https://zulip.readthedocs.io/en/latest/production/"
             "upgrade-or-modify.html#upgrading-postgresql"
         )
@@ -243,9 +271,20 @@ if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 
 if not (minimal_change or args.skip_puppet):
+    # We need to temporarily hold pgroonga, if installed -- upgrading
+    # it without running the appropriate upgrade SQL can cause
+    # PostgreSQL to crash
+    if postgresql_version is not None and get_config_bool(config_file, "machine", "pgroonga"):
+        subprocess.check_call(
+            ["apt-mark", "hold", f"postgresql-{postgresql_version}-pgdg-pgroonga"]
+        )
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
+    if postgresql_version is not None and get_config_bool(config_file, "machine", "pgroonga"):
+        subprocess.check_call(
+            ["apt-mark", "unhold", f"postgresql-{postgresql_version}-pgdg-pgroonga"]
+        )
 
 # To bootstrap zulip-puppet-apply, we need to install the system yaml
 # package; new installs get this, but old installs may not have it.
@@ -445,11 +484,35 @@ def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
     path = f"/etc/zulip/hooks/{kind}.d"
     if not os.path.exists(path):
         return
+    # Pass in, via environment variables, the old/new "version
+    # string" (which is a `git describe` output)
+    env = os.environ.copy()
+    env["ZULIP_OLD_VERSION"] = old_version
+    env["ZULIP_NEW_VERSION"] = NEW_ZULIP_VERSION
+
+    # preexec_fn=su_to_zulip normally handles this, but our explicit
+    # env overrides that
+    env["HOME"] = get_zulip_pwent().pw_dir
+
+    def resolve_version_string(version: str) -> str:
+        return subprocess.check_output(
+            ["git", "rev-parse", version], cwd=deploy_path, preexec_fn=su_to_zulip, text=True
+        ).strip()
+
+    if args.from_git:
+        # If we have a git repo, we also resolve those `git describe`
+        # values to full commit hashes, as well as provide the
+        # merge-base of the old/new commits with mainline.
+        env["ZULIP_OLD_COMMIT"] = resolve_version_string(old_version)
+        env["ZULIP_NEW_COMMIT"] = resolve_version_string(NEW_ZULIP_VERSION)
+        env["ZULIP_OLD_MERGE_BASE_COMMIT"] = resolve_version_string(old_merge_base)
+        env["ZULIP_NEW_MERGE_BASE_COMMIT"] = resolve_version_string(NEW_ZULIP_MERGE_BASE)
     for script_name in sorted(f for f in os.listdir(path) if f.endswith(".hook")):
         subprocess.check_call(
-            [os.path.join(path, script_name), old_version, NEW_ZULIP_VERSION],
+            [os.path.join(path, script_name)],
             cwd=deploy_path,
             preexec_fn=su_to_zulip,
+            env=env,
         )
 
 

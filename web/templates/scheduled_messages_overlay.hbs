@@ -1,0 +1,23 @@
+<div id="scheduled_messages_overlay" class="overlay new-style" data-overlay="scheduled">
+    <div class="flex overlay-content">
+        <div class="overlay-messages-container modal-bg">
+            <div class="overlay-messages-header">
+                <h1>{{t 'Scheduled messages' }}</h1>
+                <div class="exit">
+                    <span class="exit-sign">&times;</span>
+                </div>
+                <div class="removed-drafts">
+                    {{#tr}}
+                        Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.
+                        {{#*inline "z-pencil-icon"}}<i class="fa fa-pencil"></i>{{/inline}}
+                    {{/tr}}
+                </div>
+            </div>
+            <div class="overlay-messages-list">
+                <div class="no-overlay-messages">
+                    {{t 'No scheduled messages.'}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

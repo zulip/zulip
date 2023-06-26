@@ -1,55 +1,33 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
+import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
 import render_stream_privacy_icon from "../templates/stream_settings/stream_privacy_icon.hbs";
 import render_stream_settings_tip from "../templates/stream_settings/stream_settings_tip.hbs";
 
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
+import * as settings_data from "./settings_data";
 import * as settings_org from "./settings_org";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_ui from "./stream_settings_ui";
 
-export function initialize_disable_btn_hint_popover(
-    $btn_wrapper,
-    $popover_btn,
-    $disabled_btn,
-    hint_text,
-) {
-    // Disabled button blocks mouse events(hover) from reaching
-    // to it's parent div element, so popover don't get triggered.
-    // Add css to prevent this.
-    $disabled_btn.css("pointer-events", "none");
-    $popover_btn.popover({
-        placement: "bottom",
-        content: $("<div>").addClass("sub_disable_btn_hint").text(hint_text).prop("outerHTML"),
-        trigger: "manual",
-        html: true,
+export function initialize_disable_btn_hint_popover($btn_wrapper, hint_text) {
+    tippy($btn_wrapper[0], {
+        content: hint_text,
         animation: false,
-    });
-
-    $btn_wrapper.on("mouseover", (e) => {
-        $popover_btn.popover("show");
-        e.stopPropagation();
-    });
-
-    $btn_wrapper.on("mouseout", (e) => {
-        $popover_btn.popover("hide");
-        e.stopPropagation();
+        hideOnClick: false,
+        placement: "bottom",
     });
 }
 
-export function initialize_cant_subscribe_popover(sub) {
-    const $button_wrapper = stream_settings_containers
-        .get_edit_container(sub)
-        .find(".sub_unsub_button_wrapper");
-    const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
+export function initialize_cant_subscribe_popover() {
+    const $button_wrapper = $(".settings .stream_settings_header .sub_unsub_button_wrapper");
     initialize_disable_btn_hint_popover(
         $button_wrapper,
-        $settings_button,
-        $settings_button,
         $t({defaultMessage: "Only stream members can add users to a private stream"}),
     );
 }
@@ -92,6 +70,10 @@ export function enable_or_disable_subscribers_tab(sub) {
 }
 
 export function update_settings_button_for_sub(sub) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
     if (sub.subscribed) {
@@ -101,11 +83,11 @@ export function update_settings_button_for_sub(sub) {
     }
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
-        $settings_button.popover("destroy");
+        $settings_button.parent()[0]._tippy?.destroy();
         $settings_button.css("pointer-events", "");
     } else {
         $settings_button.attr("title", "");
-        initialize_cant_subscribe_popover(sub);
+        initialize_cant_subscribe_popover();
         $settings_button.prop("disabled", true);
     }
 }
@@ -155,6 +137,24 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
     );
 }
 
+export function update_announce_stream_option() {
+    if (!hash_util.is_create_new_stream_narrow()) {
+        return;
+    }
+    if (stream_data.get_notifications_stream() === "") {
+        $("#announce-new-stream").hide();
+        return;
+    }
+    $("#announce-new-stream").show();
+
+    const notifications_stream = stream_data.get_notifications_stream();
+    const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+    const rendered_announce_stream = render_announce_stream_checkbox({
+        notifications_stream_sub,
+    });
+    $("#announce-new-stream").expectOne().html(rendered_announce_stream);
+}
+
 export function update_stream_privacy_icon_in_settings(sub) {
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
@@ -180,7 +180,7 @@ export function update_permissions_banner(sub) {
 
 export function update_notification_setting_checkbox(notification_name) {
     // This is in the right panel (Personal settings).
-    const $stream_row = $("#manage_streams_container .stream-row.active");
+    const $stream_row = $("#streams_overlay_container .stream-row.active");
     if (!$stream_row.length) {
         return;
     }
@@ -214,7 +214,7 @@ export function update_add_subscriptions_elements(sub) {
     }
 
     // We are only concerned with the Subscribers tab for editing streams.
-    const $add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
 
     if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_subscribers feature.
@@ -224,27 +224,23 @@ export function update_add_subscriptions_elements(sub) {
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    const $input_element = $add_subscribers_container.find(".input").expectOne();
-    const $button_element = $add_subscribers_container
-        .find('button[name="add_subscriber"]')
-        .expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
 
-    if (allow_user_to_add_subs) {
-        $input_element.prop("disabled", false);
-        $button_element.prop("disabled", false);
-        $button_element.css("pointer-events", "");
-        $input_element.popover("destroy");
-    } else {
-        $input_element.prop("disabled", true);
-        $button_element.prop("disabled", true);
+    enable_or_disable_add_subscribers_elements($add_subscribers_container, allow_user_to_add_subs);
 
-        initialize_disable_btn_hint_popover(
-            $add_subscribers_container,
-            $input_element,
-            $button_element,
-            $t({defaultMessage: "Only stream members can add users to a private stream"}),
-        );
+    if (!allow_user_to_add_subs) {
+        let tooltip_message;
+        if (!settings_data.user_can_subscribe_other_users()) {
+            tooltip_message = $t({
+                defaultMessage:
+                    "You do not have permission to add other users to streams in this organization.",
+            });
+        } else {
+            tooltip_message = $t({
+                defaultMessage: "Only stream members can add users to a private stream.",
+            });
+        }
+        initialize_disable_btn_hint_popover($add_subscribers_container, tooltip_message);
     }
 }
 
@@ -255,4 +251,42 @@ export function update_setting_element(sub, setting_name) {
 
     const $elem = $(`#id_${CSS.escape(setting_name)}`);
     settings_org.discard_property_element_changes($elem, false, sub);
+}
+
+export function enable_or_disable_add_subscribers_elements(
+    $container_elem,
+    enable_elem,
+    stream_creation = false,
+) {
+    const $input_element = $container_elem.find(".input").expectOne();
+    const $add_subscribers_button = $container_elem
+        .find('button[name="add_subscriber"]')
+        .expectOne();
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
+
+    $input_element.prop("contenteditable", enable_elem);
+    $add_subscribers_button.prop("disabled", !enable_elem);
+
+    if (enable_elem) {
+        $add_subscribers_button.css("pointer-events", "");
+        $add_subscribers_container[0]?._tippy?.destroy();
+        $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
+    } else {
+        $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");
+    }
+
+    if (stream_creation) {
+        const $subscribe_all_users_button = $container_elem.find("button.add_all_users_to_stream");
+        $subscribe_all_users_button.prop("disabled", !enable_elem);
+
+        if (enable_elem) {
+            $container_elem
+                .find(".add_all_users_to_stream_btn_container")
+                .removeClass("add_subscribers_disabled");
+        } else {
+            $container_elem
+                .find(".add_all_users_to_stream_btn_container")
+                .addClass("add_subscribers_disabled");
+        }
+    }
 }

@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django[argon2]==4.1.*
+Django[argon2]==4.2.*
 
 # needed for NotRequired, ParamSpec
 typing-extensions
@@ -16,6 +16,7 @@ Markdown
 importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
+uri-template
 
 # Needed for manage.py
 ipython
@@ -44,19 +45,17 @@ django-auth-ldap
 # Django extension providing bitfield support
 django-bitfield
 
-# Django extension for sending data to statsd
-django-statsd-mozilla
-
 # Needed for Android push notifications
 python-gcm
 
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
-https://github.com/zulip/talon/archive/137ea31ca506069f9a8bbddde0d0174f395a6893.zip#egg=talon-core==1.6.0.zulip1&subdirectory=talon-core
+# and to use a maintained cchardet fork: https://github.com/mailgun/talon/pull/233
+https://github.com/zulip/talon/archive/5529af43ff5172ff30c1a7b99111a68dcd997810.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
-premailer
+css-inline
 
 # Needed for JWT-based auth
 PyJWT
@@ -81,9 +80,6 @@ https://github.com/andersk/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65a
 
 # Needed for Redis
 redis
-
-# Needed to parse source maps for error reporting
-sourcemap
 
 # Tornado used for server->client push system
 tornado

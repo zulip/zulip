@@ -18,7 +18,7 @@ function get_key(group: number[]): string {
 
 export function add_typist(group: number[], typist: number): void {
     const key = get_key(group);
-    const current = typist_dct.get(key) || [];
+    const current = typist_dct.get(key) ?? [];
     if (!current.includes(typist)) {
         current.push(typist);
     }
@@ -27,7 +27,7 @@ export function add_typist(group: number[], typist: number): void {
 
 export function remove_typist(group: number[], typist: number): boolean {
     const key = get_key(group);
-    let current = typist_dct.get(key) || [];
+    let current = typist_dct.get(key) ?? [];
 
     if (!current.includes(typist)) {
         return false;
@@ -41,7 +41,7 @@ export function remove_typist(group: number[], typist: number): boolean {
 
 export function get_group_typists(group: number[]): number[] {
     const key = get_key(group);
-    const user_ids = typist_dct.get(key) || [];
+    const user_ids = typist_dct.get(key) ?? [];
     return muted_users.filter_muted_user_ids(user_ids);
 }
 

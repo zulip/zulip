@@ -6,15 +6,22 @@ const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespac
 const {run_test} = require("./lib/test");
 
 const channel = mock_esm("../src/channel");
-const ui = mock_esm("../src/ui");
+const message_live_update = mock_esm("../src/message_live_update");
+
+set_global("document", {hasFocus: () => true});
 
 mock_esm("../src/starred_messages", {
     add() {},
+    get_count: () => 5,
     get_starred_msg_ids: () => [1, 2, 3, 4, 5],
     remove() {},
 });
+mock_esm("../src/top_left_corner", {
+    update_starred_count() {},
+});
 
 const message_flags = zrequire("message_flags");
+const starred_messages_ui = zrequire("starred_messages_ui");
 
 run_test("starred", ({override}) => {
     const message = {
@@ -22,7 +29,7 @@ run_test("starred", ({override}) => {
     };
     let ui_updated;
 
-    override(ui, "update_starred_view", () => {
+    override(message_live_update, "update_starred_view", () => {
         ui_updated = true;
     });
 
@@ -33,7 +40,7 @@ run_test("starred", ({override}) => {
         posted_data = opts.data;
     });
 
-    message_flags.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message);
 
     assert.ok(ui_updated);
 
@@ -50,7 +57,7 @@ run_test("starred", ({override}) => {
 
     ui_updated = false;
 
-    message_flags.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message);
 
     assert.ok(ui_updated);
 
@@ -74,9 +81,9 @@ run_test("starring local echo", () => {
         locally_echoed: true,
     };
 
-    message_flags.toggle_starred_and_update_server(locally_echoed_message);
+    starred_messages_ui.toggle_starred_and_update_server(locally_echoed_message);
 
-    // ui.update_starred_view not called
+    // message_live_update.update_starred_view not called
 
     // channel post request not made
 

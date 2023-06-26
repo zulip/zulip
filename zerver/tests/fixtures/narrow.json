@@ -166,6 +166,30 @@
         "narrow":[
             [
                 "is",
+                "dm"
+            ]
+        ]
+    },
+    {
+        "accept_events":[
+            {
+                "message":{
+                    "type":"private"
+                },
+                "flags":null
+            }
+        ],
+        "reject_events":[
+            {
+                "message":{
+                    "type":"stream"
+                },
+                "flags":null
+            }
+        ],
+        "narrow":[
+            [
+                "is",
                 "private"
             ]
         ]

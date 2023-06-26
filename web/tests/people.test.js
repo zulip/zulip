@@ -411,7 +411,7 @@ test_people("check_active_non_active_users", () => {
     active_users = people.get_realm_users();
     assert.equal(active_users.length, 5);
     // Invalid ID
-    blueslip.expect("error", "No user found.");
+    blueslip.expect("error", "No user found");
     people.is_person_active(1000001);
     assert.equal(people.is_person_active(maria.user_id), true);
     assert.equal(people.is_person_active(linus.user_id), true);
@@ -522,7 +522,7 @@ test_people("utcToZonedTime", ({override}) => {
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
     override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
-    blueslip.expect("error", "Got invalid date for timezone: Eriador/Rivendell");
+    blueslip.expect("error", "Got invalid date for timezone");
     people.get_user_time(me.user_id);
 });
 
@@ -746,8 +746,8 @@ test_people("message_methods", () => {
         people.medium_avatar_url_for_person(maria),
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=500",
     );
-    assert.equal(people.medium_avatar_url_for_person(charles), "/avatar/301/medium");
-    assert.equal(people.medium_avatar_url_for_person(ashton), "/avatar/303/medium");
+    assert.equal(people.medium_avatar_url_for_person(charles), "/avatar/301/medium?version=0");
+    assert.equal(people.medium_avatar_url_for_person(ashton), "/avatar/303/medium?version=0");
 
     muted_users.add_muted_user(30);
     assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [
@@ -771,8 +771,8 @@ test_people("message_methods", () => {
         display_recipient: [{id: maria.user_id}, {id: me.user_id}, {id: charles.user_id}],
         sender_id: charles.user_id,
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/301,302-group");
-    assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,301,302-group");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/301,302-group");
+    assert.equal(people.pm_perma_link(message), "#narrow/dm/30,301,302-group");
     assert.equal(people.pm_reply_to(message), "Athens@example.com,charles@example.com");
     assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png?s=50");
 
@@ -781,8 +781,8 @@ test_people("message_methods", () => {
         display_recipient: [{id: maria.user_id}, {id: me.user_id}],
         avatar_url: "legacy.png",
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/302-Maria-Athens");
-    assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30,302-pm");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/302-Maria-Athens");
+    assert.equal(people.pm_perma_link(message), "#narrow/dm/30,302-dm");
     assert.equal(people.pm_reply_to(message), "Athens@example.com");
     assert.equal(people.small_avatar_url(message), "http://zulip.zulipdev.com/legacy.png?s=50");
 
@@ -795,7 +795,7 @@ test_people("message_methods", () => {
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 9999999");
+    blueslip.expect("error", "Unknown user_id in get_by_user_id");
     message = {
         avatar_url: undefined,
         sender_email: "foo@example.com",
@@ -818,8 +818,8 @@ test_people("message_methods", () => {
         type: "private",
         display_recipient: [{id: me.user_id}],
     };
-    assert.equal(people.pm_with_url(message), "#narrow/pm-with/30-Me-Myself");
-    assert.equal(people.pm_perma_link(message), "#narrow/pm-with/30-pm");
+    assert.equal(people.pm_with_url(message), "#narrow/dm/30-Me-Myself");
+    assert.equal(people.pm_perma_link(message), "#narrow/dm/30-dm");
 
     message = {type: "stream"};
     assert.equal(people.pm_with_user_ids(message), undefined);
@@ -868,7 +868,7 @@ test_people("extract_people_from_message", () => {
     };
     assert.ok(!people.is_known_user_id(maria.user_id));
 
-    blueslip.expect("error", `Added user late: user_id=${maria.user_id} email=${maria.email}`);
+    blueslip.expect("error", "Added user late");
     people.extract_people_from_message(message);
     assert.ok(people.is_known_user_id(maria.user_id));
     blueslip.reset();

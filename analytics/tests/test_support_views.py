@@ -249,6 +249,12 @@ class TestSupportEndpoint(ZulipTestCase):
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
 
+        # Search should be case-insensitive:
+        assert self.example_email("hamlet") != self.example_email("hamlet").upper()
+        result = get_check_query_result(self.example_email("hamlet").upper(), 1)
+        check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
+
         result = get_check_query_result(lear_user.email, 1)
         check_lear_user_query_result(result)
         check_lear_realm_query_result(result)
@@ -303,7 +309,7 @@ class TestSupportEndpoint(ZulipTestCase):
 
             email = self.nonreg_email("alice")
             self.submit_realm_creation_form(
-                email, realm_subdomain="zuliptest", realm_name="Zulip test"
+                email, realm_subdomain="custom-test", realm_name="Zulip test"
             )
             result = get_check_query_result(email, 1)
             check_realm_creation_query_result(result, email)
@@ -627,7 +633,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 "/activity/support",
                 {
                     "realm_id": f"{iago.realm_id}",
-                    "downgrade_method": "downgrade_at_billing_cycle_end",
+                    "modify_plan": "downgrade_at_billing_cycle_end",
                 },
             )
             m.assert_called_once_with(get_realm("zulip"))
@@ -642,7 +648,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 "/activity/support",
                 {
                     "realm_id": f"{iago.realm_id}",
-                    "downgrade_method": "downgrade_now_without_additional_licenses",
+                    "modify_plan": "downgrade_now_without_additional_licenses",
                 },
             )
             m.assert_called_once_with(get_realm("zulip"))
@@ -658,7 +664,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     "/activity/support",
                     {
                         "realm_id": f"{iago.realm_id}",
-                        "downgrade_method": "downgrade_now_void_open_invoices",
+                        "modify_plan": "downgrade_now_void_open_invoices",
                     },
                 )
                 m1.assert_called_once_with(get_realm("zulip"))
@@ -666,6 +672,17 @@ class TestSupportEndpoint(ZulipTestCase):
                 self.assert_in_success_response(
                     ["zulip downgraded and voided 1 open invoices"], result
                 )
+
+        with mock.patch("analytics.views.support.switch_realm_from_standard_to_plus_plan") as m:
+            result = self.client_post(
+                "/activity/support",
+                {
+                    "realm_id": f"{iago.realm_id}",
+                    "modify_plan": "upgrade_to_plus",
+                },
+            )
+            m.assert_called_once_with(get_realm("zulip"))
+            self.assert_in_success_response(["zulip upgraded to Plus"], result)
 
     def test_scrub_realm(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -691,3 +708,26 @@ class TestSupportEndpoint(ZulipTestCase):
             result = self.client_post("/activity/support", {"realm_id": f"{lear_realm.id}"})
             self.assert_json_error(result, "Invalid parameters")
             m.assert_not_called()
+
+    def test_delete_user(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        hamlet_email = hamlet.delivery_email
+        realm = get_realm("zulip")
+        self.login_user(cordelia)
+
+        result = self.client_post(
+            "/activity/support", {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id}
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/login/")
+
+        self.login("iago")
+
+        with mock.patch("analytics.views.support.do_delete_user_preserving_messages") as m:
+            result = self.client_post(
+                "/activity/support",
+                {"realm_id": f"{realm.id}", "delete_user_by_id": hamlet.id},
+            )
+            m.assert_called_once_with(hamlet)
+            self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)

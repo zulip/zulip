@@ -20,12 +20,12 @@ export function clear_for_testing() {
 
 export function get(message_id) {
     if (message_id === undefined || message_id === null) {
-        blueslip.error("message_store.get got bad value: " + message_id);
+        blueslip.error("message_store.get got bad value", {message_id});
         return undefined;
     }
 
     if (typeof message_id !== "number") {
-        blueslip.error("message_store got non-number: " + message_id);
+        blueslip.error("message_store got non-number", {message_id});
 
         // Try to soldier on, assuming the caller treats message
         // ids as strings.
@@ -41,7 +41,7 @@ export function get_pm_emails(message) {
         .map((user_id) => {
             const person = people.get_by_user_id(user_id);
             if (!person) {
-                blueslip.error("Unknown user id " + user_id);
+                blueslip.error("Unknown user id", {user_id});
                 return "?";
             }
             return person.email;
@@ -70,6 +70,7 @@ export function set_message_booleans(message) {
     message.starred = convert_flag("starred");
     message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
     message.mentioned_me_directly = convert_flag("mentioned");
+    message.wildcard_mentioned = convert_flag("wildcard_mentioned");
     message.collapsed = convert_flag("collapsed");
     message.alerted = convert_flag("has_alert_word");
 
@@ -89,6 +90,7 @@ export function update_booleans(message, flags) {
 
     message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
     message.mentioned_me_directly = convert_flag("mentioned");
+    message.wildcard_mentioned = convert_flag("wildcard_mentioned");
     message.alerted = convert_flag("has_alert_word");
 }
 

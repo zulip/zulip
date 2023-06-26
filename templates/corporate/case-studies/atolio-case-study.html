@@ -1,0 +1,37 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Case study: Atolio | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Learn how Zulip helps create an open communication
+  culture at Atolio, a distributed tech startup." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page case-study-page">
+    <div class="hero bg-education">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">Case study: Atolio</h1>
+            <p>Distributed startup</p>
+        </div>
+        <div class="hero-text">
+            Learn more about using Zulip for <a href="/for/business/">business</a>.
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/case-studies/atolio-case-study.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

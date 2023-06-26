@@ -12,7 +12,7 @@ export function clear_for_testing() {
 
 function assert_number(id) {
     if (typeof id !== "number") {
-        blueslip.error(`You must pass ids as numbers to peer_data. id = ${id}`);
+        blueslip.error("You must pass ids as numbers to peer_data", {id});
     }
 }
 

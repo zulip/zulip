@@ -30,3 +30,10 @@
 {% if is_realm_admin %}
 {% trans %} We also have a guide for Setting up your organization ({{ getting_organization_started_link }}).{% endtrans %}
 {% endif %}
+
+
+{% if corporate_enabled %}
+    {% trans %}Questions? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
+{% else %}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at {{ support_email }}.{% endtrans %}
+{% endif %}

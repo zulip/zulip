@@ -49,10 +49,6 @@ else:
     CAMO_URI = "https://external-content.zulipcdn.net/external_content/"
     CAMO_KEY = "dummy"
 
-if PUPPETEER_TESTS:
-    # Disable search pills prototype for production use
-    SEARCH_PILLS_ENABLED = False
-
 if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
     RUNNING_OPENAPI_CURL_TEST = True
 
@@ -212,8 +208,6 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 
-THUMBNAIL_IMAGES = True
-
 # Logging the emails while running the tests adds them
 # to /emails page.
 DEVELOPMENT_LOG_EMAILS = False
@@ -245,6 +239,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
         "slo_url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/Logout",
+        "sp_initiated_logout_enabled": True,
         "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",

@@ -2,12 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
-
-mock_esm("../src/ui", {
-    get_scroll_element: (element) => element,
-});
 
 const scroll_util = zrequire("scroll_util");
 
@@ -100,6 +96,7 @@ run_test("scroll_element_into_container", () => {
                 top = arg;
                 return this;
             },
+            __zjquery: true,
         };
     })();
 

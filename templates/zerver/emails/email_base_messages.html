@@ -1,8 +1,10 @@
+{% import 'zerver/emails/email.css' as css_styles %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <title>Zulip</title>
+        <style>{{css_styles}}</style>
     </head>
     {% if has_preheader %}
     <span style="display:none !important;

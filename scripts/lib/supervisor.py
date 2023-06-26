@@ -1,4 +1,5 @@
 import socket
+import time
 from http.client import HTTPConnection
 from typing import Dict, List, Optional, Tuple, Union
 from xmlrpc import client
@@ -7,7 +8,19 @@ from xmlrpc import client
 class UnixStreamHTTPConnection(HTTPConnection):
     def connect(self) -> None:
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.sock.connect(self.host)
+        connected = False
+        for i in range(0, 2):
+            try:
+                self.sock.connect(self.host)
+                connected = True
+                break
+            except FileNotFoundError:
+                # Backoff and retry
+                time.sleep(2**i)
+        if not connected:
+            raise Exception(
+                "Failed to connect to supervisor -- check that it is running, by running 'service supervisor status'"
+            )
 
 
 class UnixStreamTransport(client.Transport):
@@ -56,6 +69,7 @@ def list_supervisor_processes(
 
         if only_running is None:
             results.append(name)
-        elif only_running == (process["statename"] == "RUNNING"):
+        elif only_running == (process["statename"] in ("RUNNING", "STARTING")):
             results.append(name)
+
     return results

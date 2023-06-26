@@ -37,16 +37,24 @@ $before_unread_count_padding: 3px;
         position: relative;
         top: 1px;
     }
+
+    .zulip-icon.zulip-icon-hashtag {
+        font-size: 13px;
+        position: relative;
+        top: 1.5px;
+    }
+
+    .zulip-icon.zulip-icon-lock {
+        font-size: 13px;
+    }
 }
 
-/* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
-.stream-privacy span.hashtag,
 #left-sidebar .filter-icon i {
     padding-right: 3px;
 
-    &.fa-lock {
+    &.zulip-icon-lock {
         position: relative;
-        top: 1px;
+        top: 2px;
     }
 }
 
@@ -124,7 +132,6 @@ li.show-more-topics {
                     position: sticky;
                     top: calc($sections_vertical_gutter + 43px);
                     z-index: 2;
-                    background-color: hsl(0deg 0% 100%);
                 }
             }
         }
@@ -180,7 +187,6 @@ li.show-more-topics {
 }
 
 .private_messages_container {
-    background: hsl(0deg 0% 100%);
     margin-right: 16px;
     margin-left: 6px;
     z-index: 1;
@@ -248,6 +254,10 @@ li.show-more-topics {
 
             .pm_left_col {
                 min-width: $left_col_size;
+
+                & span:not(.user_circle) {
+                    opacity: 0.7;
+                }
             }
         }
 
@@ -289,10 +299,23 @@ li.show-more-topics {
 
 :not(.active-sub-filter) {
     &.top_left_row:hover,
-    &.bottom_left_row:hover,
-    &#stream_filters li.highlighted_stream {
-        background-color: hsl(120deg 12.3% 71.4% / 38%);
+    &.bottom_left_row:hover {
+        background-color: var(--color-background-hover-narrow-filter);
         border-radius: 4px;
+    }
+}
+
+#stream_filters .narrow-filter.highlighted_stream {
+    &.active-filter > .bottom_left_row {
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    &.active-filter .topic-list .bottom_left_row {
+        background-color: var(--color-background-active-narrow-filter);
+    }
+
+    .bottom_left_row:not(.active-sub-filter) {
+        background-color: var(--color-background-hover-narrow-filter);
     }
 }
 
@@ -315,9 +338,14 @@ li.show-more-topics {
 ul.filters {
     list-style-type: none;
     margin-left: 0;
+    color: hsl(0deg 0% 20% / 100%);
 
     & a {
         color: inherit;
+
+        &:focus {
+            text-decoration: none;
+        }
     }
 
     & hr {
@@ -325,14 +353,71 @@ ul.filters {
         margin-bottom: 10px;
     }
 
+    .has-only-muted-unreads {
+        .unread_count {
+            opacity: 0.5;
+        }
+    }
+
+    .has-only-muted-mentions .unread_mention_info {
+        opacity: 0.5;
+    }
+
+    /* This is a noop in the current design, because unread counts for
+       muted streams have the same opacity, but the logic is here to
+       be explicit and because the design may change in the future. */
+    .more_topic_unreads_muted_only .unread_count {
+        opacity: 0.5;
+    }
+
     & li.muted_topic,
     li.out_of_home_view {
-        opacity: 0.5;
+        color: hsl(0deg 0% 20% / 50%);
+
+        .has-unmuted-mentions .unread_mention_info {
+            color: hsl(0deg 0% 20%);
+        }
+
+        .stream-privacy {
+            opacity: 0.5;
+        }
+
+        & .unread_count {
+            opacity: 0.5;
+        }
+
+        .has-unmuted-unreads {
+            .unread_count {
+                opacity: 1;
+            }
+        }
+
+        & li.unmuted_topic {
+            color: hsl(0deg 0% 20%);
+
+            .unread_count {
+                opacity: 1;
+            }
+        }
     }
 
     & li.out_of_home_view {
         &:hover {
-            opacity: 0.75;
+            color: hsla(0deg 0% 20% / 75%);
+
+            .stream-privacy {
+                opacity: 0.75;
+            }
+
+            .unread_count {
+                opacity: 0.75;
+            }
+
+            .has-unmuted-unreads {
+                .unread_count {
+                    opacity: 1;
+                }
+            }
         }
 
         & li.muted_topic {
@@ -347,15 +432,15 @@ ul.filters {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background-color: hsl(202deg 56% 91%);
     position: relative;
     border-radius: 4px;
+    background-color: var(--color-background-active-narrow-filter);
 }
 
 #stream_filters .narrow-filter.active-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
-        background-color: hsl(202deg 56% 91%);
+        background-color: var(--color-background-active-narrow-filter);
         border-radius: 4px;
     }
 }
@@ -376,7 +461,8 @@ li.active-sub-filter {
     }
 
     .top_left_starred_messages .unread_count,
-    .top_left_drafts .unread_count {
+    .top_left_drafts .unread_count,
+    .top_left_scheduled_messages .unread_count {
         background-color: inherit;
         color: inherit;
         border: 0.5px solid hsl(105deg 2% 50%);
@@ -394,7 +480,8 @@ li.top_left_all_messages,
 li.top_left_mentions,
 li.top_left_starred_messages,
 li.top_left_drafts,
-li.top_left_recent_topics {
+li.top_left_recent_topics,
+li.top_left_scheduled_messages {
     position: relative;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -560,7 +647,7 @@ li.topic-list-item {
 
 .pm-box {
     margin-right: 16px;
-    align-items: center;
+    align-items: baseline; /* Sets .user_circle alignment relative to text; standard icons do not participate in flex. */
 
     .user_circle {
         min-width: 8px;
@@ -570,6 +657,11 @@ li.topic-list-item {
         margin-left: 2px;
         position: relative;
         top: 0;
+    }
+
+    .zulip-icon.zulip-icon-bot {
+        font-size: 90%; /* Reduce the bulkiness of this icon */
+        padding: 3px 0 3px 1px; /* Shift reduced icon a pixel left to maintain horizontal centering. */
     }
 }
 
@@ -591,11 +683,11 @@ li.topic-list-item {
 #topics_header {
     position: sticky;
     top: 0;
-    background-color: hsl(0deg 0% 100%);
     z-index: 2;
     margin-right: 10px;
     padding-top: $sections_vertical_gutter;
     color: hsl(0deg 0% 43%);
+    background-color: var(--color-background);
 
     .show-all-streams {
         color: inherit;
@@ -616,10 +708,10 @@ li.topic-list-item {
     cursor: pointer;
     padding: $sections_vertical_gutter 0 3px calc($far_left_gutter_size + 2px);
     position: sticky;
+    background-color: var(--color-background);
     /* Ideally, 0px should work here, but maybe simplebar is doing something
        that is creating `0.5px` extra gap in zoomed-in windows. */
     top: -0.5px;
-    background: hsl(0deg 0% 100%);
     z-index: 1;
 
     & input {
@@ -634,6 +726,7 @@ li.topic-list-item {
     cursor: pointer;
     text-align: center;
     margin-right: 12px;
+    color: hsl(240deg 10% 50%);
 
     & span {
         display: flex;
@@ -650,8 +743,8 @@ li.topic-list-item {
         flex: 1 1;
         vertical-align: middle;
         margin: auto;
-        border-top: 1px solid hsl(0deg 0% 88%);
-        border-bottom: 1px solid hsl(0deg 0% 100%);
+        border: 0.5px solid hsl(240deg 10% 50%);
+        opacity: 0.2;
     }
 
     & span::before {
@@ -682,6 +775,10 @@ li.topic-list-item {
     visibility: hidden;
 }
 
+.zero-topic-unreads.show-more-topics .topic-box {
+    margin-right: 30px;
+}
+
 .searching-for-more-topics img {
     height: 16px;
     margin-left: 6px;
@@ -693,7 +790,7 @@ li.topic-list-item {
         top: calc($sections_vertical_gutter + 20px);
         z-index: 2;
         padding-bottom: 1px;
-        background-color: hsl(0deg 0% 100%);
+        background-color: var(--color-background);
     }
 
     #subscribe-to-more-streams,

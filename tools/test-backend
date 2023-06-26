@@ -31,38 +31,19 @@ import responses
 from django.conf import settings
 from django.test.utils import get_runner
 
-target_fully_covered = [
-    "analytics/lib/*.py",
-    "analytics/models.py",
-    "analytics/tests/*.py",
-    "analytics/views/*.py",
-    # zerver/ and zerver/lib/ are important core files
-    "zerver/*.py",
-    "zerver/lib/*.py",
-    "zerver/lib/*/*.py",
-    "zerver/lib/*/*/*.py",
-    "zerver/data_import/*.py",
-    "zerver/templatetags/*.py",
-    "zerver/tornado/*.py",
-    # Billing files require 100% test coverage
-    "corporate/lib/stripe.py",
-    "corporate/views.py",
-    # Test files should have 100% coverage; test code that isn't run
-    # is likely a bug in the test.
-    "zerver/tests/*.py",
-    "corporate/tests/*.py",
-    # As a project, we require 100% test coverage in the views files.
-    "zerver/views/*.py",
-    "zproject/backends.py",
-    "confirmation/*.py",
-    "zerver/webhooks/*/*.py",
-    # Once we have a nice negative tests system, we can add these:
-    # 'zerver/webhooks/*/*.py',
-    # 'zerver/webhooks/*/*/*.py',
-    "zerver/worker/*.py",
+source_files = [
+    "analytics/**/*.py",
+    "confirmation/**/*.py",
+    "corporate/**/*.py",
+    "pgroonga/**/*.py",
+    "zerver/**/*.py",
+    "zilencer/**/*.py",
+    "zproject/**/*.py",
 ]
 
 not_yet_fully_covered = [
+    "*/migrations/*.py",
+    "*/management/commands/*.py",
     # Analytics fixtures library is used to generate test fixtures;
     # isn't properly accounted for in test coverage analysis since it
     # runs before tests.
@@ -74,6 +55,7 @@ not_yet_fully_covered = [
     "analytics/views/stats.py",
     "analytics/views/support.py",
     # Major lib files should have 100% coverage
+    "zerver/actions/presence.py",
     "zerver/lib/addressee.py",
     "zerver/lib/markdown/__init__.py",
     "zerver/lib/cache.py",
@@ -98,16 +80,12 @@ not_yet_fully_covered = [
     "zerver/lib/fix_unreads.py",
     "zerver/lib/import_realm.py",
     "zerver/lib/logging_util.py",
-    "zerver/lib/migrate.py",
     "zerver/lib/profile.py",
     "zerver/lib/queue.py",
     "zerver/lib/sqlalchemy_utils.py",
     "zerver/lib/storage.py",
-    "zerver/lib/unminify.py",
-    "zerver/lib/utils.py",
     "zerver/lib/zephyr.py",
     "zerver/lib/templates.py",
-    "zerver/templatetags/minified_js.py",
     # Low priority for coverage
     "zerver/lib/ccache.py",
     "zerver/lib/generate_test_data.py",
@@ -115,7 +93,10 @@ not_yet_fully_covered = [
     "zerver/lib/test_fixtures.py",
     "zerver/lib/test_runner.py",
     "zerver/lib/test_console_output.py",
+    "zerver/openapi/curl_param_value_generators.py",
+    "zerver/openapi/javascript_examples.py",
     "zerver/openapi/python_examples.py",
+    "zerver/openapi/test_curl_examples.py",
     # Tornado should ideally have full coverage, but we're not there.
     "zerver/tornado/descriptors.py",
     "zerver/tornado/django_api.py",
@@ -142,11 +123,18 @@ not_yet_fully_covered = [
     # Cannot have coverage, as tests run in a transaction
     "zerver/lib/safe_session_cached_db.py",
     "zerver/lib/singleton_bmemcached.py",
+    # Branches in Django settings files are hard to test
+    "zproject/computed_settings.py",
+    "zproject/dev_settings.py",
+    "zproject/test_extra_settings.py",
+    # Better tested in a full deployment
+    "zproject/sentry.py",
+    "zproject/wsgi.py",
 ]
 
 enforce_fully_covered = sorted(
-    {path for target in target_fully_covered for path in glob.glob(target)}
-    - {path for target in not_yet_fully_covered for path in glob.glob(target)}
+    {path for target in source_files for path in glob.glob(target, recursive=True)}
+    - {path for target in not_yet_fully_covered for path in glob.glob(target, recursive=True)}
 )
 
 FAILED_TEST_PATH = "var/last_test_failure.json"
@@ -473,7 +461,7 @@ def main() -> None:
         for path in not_yet_fully_covered:
             try:
                 missing_lines = cov.analysis2(path)[3]
-                if len(missing_lines) == 0 and path != "zerver/lib/migrate.py":
+                if not missing_lines:
                     print(
                         f"ERROR: {path} has complete backend test coverage but is still in not_yet_fully_covered."
                     )

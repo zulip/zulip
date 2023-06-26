@@ -9,7 +9,7 @@
     {{ new_streams.plain|display_list(1000) }}.
 {% endif %}
 
-{% trans organization_uri=realm_uri %}Click here to log in to Zulip and catch up: {{ organization_uri }}.{% endtrans %}
+{% trans organization_url=realm_uri %}Click here to log in to Zulip and catch up: {{ organization_url }}.{% endtrans %}
 
 --
 {% trans %}Manage email preferences:{% endtrans %}

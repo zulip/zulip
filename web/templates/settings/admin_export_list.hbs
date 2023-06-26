@@ -18,11 +18,11 @@
         {{/if}}
     </td>
     <td class="actions">
-        {{#unless time_deleted}}
+        {{#if url}}
         <button class="button rounded small delete btn-danger" data-export-id="{{id}}">
             <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
-        {{/unless}}
+        {{/if}}
     </td>
 </tr>
 {{/with}}

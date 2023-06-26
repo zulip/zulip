@@ -1,6 +1,9 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import SimpleBar from "simplebar";
+import tippy from "tippy.js";
 
+import copy_to_clipboard_svg from "../../templates/copy_to_clipboard_svg.hbs";
 import * as common from "../common";
 
 import * as google_analytics from "./google-analytics";
@@ -11,19 +14,52 @@ function registerCodeSection($codeSection) {
     const $blocks = $codeSection.find(".blocks div");
 
     $li.on("click", function () {
-        const language = this.dataset.language;
+        const tab_key = this.dataset.tabKey;
 
         $li.removeClass("active");
-        $li.filter("[data-language=" + language + "]").addClass("active");
+        $li.filter("[data-tab-key=" + tab_key + "]").addClass("active");
 
         $blocks.removeClass("active");
-        $blocks.filter("[data-language=" + language + "]").addClass("active");
+        $blocks.filter("[data-tab-key=" + tab_key + "]").addClass("active");
     });
 
     $li.on("keydown", (e) => {
         if (e.key === "Enter") {
             e.target.click();
         }
+    });
+}
+
+// Display the copy-to-clipboard button inside the .codehilite element
+// within the API and Help Center docs using clipboard.js
+function add_copy_to_clipboard_element($codehilite) {
+    const $copy_button = $("<button>").addClass("copy-codeblock");
+    $copy_button.html(copy_to_clipboard_svg());
+
+    $($codehilite).append($copy_button);
+
+    const clipboard = new ClipboardJS($copy_button[0], {
+        text(copy_element) {
+            // trim to remove trailing whitespace introduced
+            // by additional elements inside <pre>
+            return $(copy_element).siblings("pre").text().trim();
+        },
+    });
+
+    // Show a tippy tooltip when the code is copied
+    clipboard.on("success", () => {
+        const tooltip = tippy($copy_button[0], {
+            content: "Copied!",
+            trigger: "manual",
+            placement: "top",
+        });
+
+        tooltip.show();
+
+        // Show the tooltip for 1s
+        setTimeout(() => {
+            tooltip.hide();
+        }, 1000);
     });
 }
 
@@ -56,6 +92,11 @@ function render_code_sections() {
         registerCodeSection($(this));
     });
 
+    // Add a copy-to-clipboard button for each .codehilite element
+    $(".markdown .codehilite").each(function () {
+        add_copy_to_clipboard_element($(this));
+    });
+
     highlight_current_article();
 
     common.adjust_mac_kbd_tags(".markdown kbd");
@@ -70,6 +111,10 @@ function scrollToHash(simplebar) {
     const scrollbar = simplebar.getScrollElement();
     if (hash !== "" && $(hash).length > 0) {
         const position = $(hash).position().top - $(scrollbar.firstChild).position().top;
+        // Preserve a reference to the scroll target, so it is not lost (and the highlight
+        // along with it) when the page is updated via fetch
+        const $scroll_target = $(hash);
+        $scroll_target.addClass("scroll-target");
         scrollbar.scrollTop = position;
     } else {
         scrollbar.scrollTop = 0;
@@ -181,4 +226,4 @@ window.addEventListener("popstate", () => {
 
 $("body").addClass("noscroll");
 
-$(".highlighted")[0].scrollIntoView({block: "center"});
+$(".highlighted")[0]?.scrollIntoView({block: "center"});

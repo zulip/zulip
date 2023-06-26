@@ -45,7 +45,7 @@ def get_push_event_body(payload: WildValue, include_title: bool) -> str:
 
 
 def get_normal_push_event_body(payload: WildValue) -> str:
-    compare_url = "{}/compare/{}...{}".format(
+    compare_url = "{}/-/compare/{}...{}".format(
         get_project_homepage(payload),
         payload["before"].tame(check_string),
         payload["after"].tame(check_string),
@@ -216,10 +216,7 @@ def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> 
 def get_commented_merge_request_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
-    url = "{}/merge_requests/{}".format(
-        payload["project"]["web_url"].tame(check_string),
-        payload["merge_request"]["iid"].tame(check_int),
-    )
+    url = payload["merge_request"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
         user_name=get_issue_user_name(payload),
@@ -235,10 +232,7 @@ def get_commented_merge_request_event_body(payload: WildValue, include_title: bo
 def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
-    url = "{}/issues/{}".format(
-        payload["project"]["web_url"].tame(check_string),
-        payload["issue"]["iid"].tame(check_int),
-    )
+    url = payload["issue"]["url"].tame(check_string)
 
     return get_pull_request_event_message(
         user_name=get_issue_user_name(payload),
@@ -254,10 +248,14 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> s
 def get_commented_snippet_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
-    url = "{}/snippets/{}".format(
-        payload["project"]["web_url"].tame(check_string),
-        payload["snippet"]["id"].tame(check_int),
-    )
+    # Snippet URL is only available in GitLab 16.1+
+    if "url" in payload["snippet"]:
+        url = payload["snippet"]["url"].tame(check_string)
+    else:
+        url = "{}/-/snippets/{}".format(
+            payload["project"]["web_url"].tame(check_string),
+            payload["snippet"]["id"].tame(check_int),
+        )
 
     return get_pull_request_event_message(
         user_name=get_issue_user_name(payload),
@@ -308,7 +306,7 @@ def get_pipeline_event_body(payload: WildValue, include_title: bool) -> str:
         action = f"changed status to {pipeline_status}"
 
     project_homepage = get_project_homepage(payload)
-    pipeline_url = "{}/pipelines/{}".format(
+    pipeline_url = "{}/-/pipelines/{}".format(
         project_homepage,
         payload["object_attributes"]["id"].tame(check_int),
     )

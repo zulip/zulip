@@ -156,6 +156,10 @@ def json_change_settings(
     new_password: Optional[str] = REQ(default=None),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_mark_read_on_scroll_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
+        default=None,
+    ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -190,6 +194,21 @@ def json_change_settings(
         json_validator=check_bool, default=None
     ),
     wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_followed_topic_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_push_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_audible_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_wildcard_mentions_notify: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     notification_sound: Optional[str] = REQ(default=None),
     enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),

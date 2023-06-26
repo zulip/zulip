@@ -46,12 +46,12 @@ test("feature_check", ({override}) => {
 test("get_item", () => {
     assert.equal(upload.get_item("textarea", {mode: "compose"}), $("#compose-textarea"));
     assert.equal(
-        upload.get_item("upload_banner_message", {mode: "compose"}),
-        $("#compose_banners .upload_banner .upload_msg"),
+        upload.get_item("upload_banner_message", {mode: "compose"}, "id_1"),
+        $("#compose_banners .upload_banner.file_id_1 .upload_msg"),
     );
     assert.equal(
-        upload.get_item("upload_banner_close_button", {mode: "compose"}),
-        $("#compose_banners .upload_banner .compose_banner_close_button"),
+        upload.get_item("upload_banner_close_button", {mode: "compose"}, "id_2"),
+        $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
     );
     assert.equal(
         upload.get_item("file_input_identifier", {mode: "compose"}),
@@ -76,30 +76,30 @@ test("get_item", () => {
     assert.equal(upload.get_item("send_button", {mode: "edit", row: 2}), $(".message_edit_save"));
 
     assert.equal(
-        upload.get_item("upload_banner_identifier", {mode: "edit", row: 11}),
-        `#edit_form_${CSS.escape(11)} .upload_banner`,
+        upload.get_item("upload_banner_identifier", {mode: "edit", row: 11}, "id_3"),
+        `#edit_form_${CSS.escape(11)} .upload_banner.file_id_3`,
     );
     assert.equal(
-        upload.get_item("upload_banner", {mode: "edit", row: 75}),
-        $(`#edit_form_${CSS.escape(75)} .upload_banner`),
+        upload.get_item("upload_banner", {mode: "edit", row: 75}, "id_60"),
+        $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`),
     );
 
     $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
-        ".compose_banner_close_button",
-        $(".compose_banner_close_button"),
+        ".main-view-banner-close-button",
+        $(".main-view-banner-close-button"),
     );
     assert.equal(
-        upload.get_item("upload_banner_close_button", {mode: "edit", row: 2}),
-        $(`#edit_form_${CSS.escape(2)} .upload_banner .compose_banner_close_button`),
+        upload.get_item("upload_banner_close_button", {mode: "edit", row: 2}, "id_34"),
+        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`),
     );
 
-    $(`#edit_form_${CSS.escape(22)} .upload_banner`).set_find_results(
+    $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234`).set_find_results(
         ".upload_msg",
         $(".upload_msg"),
     );
     assert.equal(
-        upload.get_item("upload_banner_message", {mode: "edit", row: 22}),
-        $(`#edit_form_${CSS.escape(22)} .upload_banner .upload_msg`),
+        upload.get_item("upload_banner_message", {mode: "edit", row: 22}, "id_234"),
+        $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234 .upload_msg`),
     );
 
     assert.equal(
@@ -163,20 +163,6 @@ test("get_item", () => {
     );
 });
 
-test("hide_upload_status", () => {
-    let banner_removed = false;
-    $("#compose_banners .upload_banner").remove = () => {
-        banner_removed = true;
-    };
-    $("#compose-send-button").prop("disabled", true);
-
-    upload.hide_upload_status({mode: "compose"});
-
-    assert.ok(banner_removed);
-    assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.equal($("#compose-send-button").visible(), false);
-});
-
 test("show_error_message", ({mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
@@ -207,7 +193,6 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
 
-    let uppy_cancel_all_called = false;
     let files = [
         {
             name: "budapest.png",
@@ -215,22 +200,23 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         },
     ];
     let uppy_add_file_called = false;
+    let remove_file_called = false;
     const uppy = {
-        cancelAll() {
-            uppy_cancel_all_called = true;
-        },
         addFile(params) {
             uppy_add_file_called = true;
             assert.equal(params.source, "compose-file-input");
             assert.equal(params.name, "budapest.png");
             assert.equal(params.type, "image/png");
             assert.equal(params.data, files[0]);
+            return "id_123";
         },
-        getFiles: () => [...files],
+        removeFile() {
+            remove_file_called = true;
+        },
     };
-    let hide_upload_status_called = false;
-    override_rewire(upload, "hide_upload_status", (config) => {
-        hide_upload_status_called = true;
+    let hide_upload_banner_called = false;
+    override_rewire(upload, "hide_upload_banner", (uppy, config) => {
+        hide_upload_banner_called = true;
         assert.equal(config.mode, "compose");
     });
     const config = {mode: "compose"};
@@ -254,14 +240,15 @@ test("upload_files", async ({mock_template, override_rewire}) => {
 
     page_params.max_file_upload_size_mib = 25;
     let on_click_close_button_callback;
-    $("#compose_banners .upload_banner .compose_banner_close_button").one = (event, callback) => {
+    $("#compose_banners .upload_banner.file_id_123 .main-view-banner-close-button").one = (
+        event,
+        callback,
+    ) => {
         assert.equal(event, "click");
         on_click_close_button_callback = callback;
     };
     let compose_ui_insert_syntax_and_focus_called = false;
-    override_rewire(compose_ui, "insert_syntax_and_focus", (syntax, textarea) => {
-        assert.equal(syntax, "[translated: Uploading budapest.png…]()");
-        assert.equal(textarea, $("#compose-textarea"));
+    override_rewire(compose_ui, "insert_syntax_and_focus", () => {
         compose_ui_insert_syntax_and_focus_called = true;
     });
     let compose_ui_autosize_textarea_called = false;
@@ -277,9 +264,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     $("#compose .undo_markdown_preview").show();
 
     banner_shown = false;
-    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
-        assert.equal(data.banner_type, "info");
-        assert.equal(data.banner_text, "translated: Uploading…");
+    mock_template("compose_banner/upload_banner.hbs", false, () => {
         banner_shown = true;
     });
     await upload.upload_files(uppy, config, files);
@@ -303,23 +288,19 @@ test("upload_files", async ({mock_template, override_rewire}) => {
     ];
     let add_file_counter = 0;
     uppy.addFile = (file) => {
-        assert.equal(file.name, "budapest.png");
         add_file_counter += 1;
-        throw new Error("some error");
+        if (file.name === "budapest.png") {
+            throw new Error("some error");
+        }
+        return `id_${add_file_counter}`;
     };
     await upload.upload_files(uppy, config, files);
     assert.ok(banner_shown);
-    assert.equal(add_file_counter, 1);
+    assert.equal(add_file_counter, 2);
 
-    hide_upload_status_called = false;
-    uppy_cancel_all_called = false;
+    hide_upload_banner_called = false;
     let compose_ui_replace_syntax_called = false;
-    files = [
-        {
-            name: "budapest.png",
-            type: "image/png",
-        },
-    ];
+
     override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading budapest.png…]()");
@@ -327,15 +308,18 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         assert.equal(textarea, $("#compose-textarea"));
     });
     on_click_close_button_callback();
-    assert.ok(uppy_cancel_all_called);
-    assert.ok(hide_upload_status_called);
+    assert.ok(remove_file_called);
+    assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
     assert.ok(compose_ui_replace_syntax_called);
-    hide_upload_status_called = false;
+    hide_upload_banner_called = false;
     compose_ui_replace_syntax_called = false;
+    remove_file_called = false;
     $("#compose-textarea").val("user modified text");
+
     on_click_close_button_callback();
-    assert.ok(hide_upload_status_called);
+    assert.ok(remove_file_called);
+    assert.ok(hide_upload_banner_called);
     assert.ok(compose_ui_autosize_textarea_called);
     assert.ok(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
@@ -405,7 +389,7 @@ test("file_input", ({override_rewire}) => {
     assert.ok(upload_files_called);
 });
 
-test("file_drop", ({override_rewire}) => {
+test("file_drop", ({override, override_rewire}) => {
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -438,12 +422,17 @@ test("file_drop", ({override_rewire}) => {
     override_rewire(upload, "upload_files", () => {
         upload_files_called = true;
     });
+    let compose_actions_start_called = false;
+    override(compose_actions, "respond_to_message", () => {
+        compose_actions_start_called = true;
+    });
     drop_handler(drop_event);
+    assert.ok(compose_actions_start_called);
     assert.equal(prevent_default_counter, 3);
     assert.equal(upload_files_called, true);
 });
 
-test("copy_paste", ({override_rewire}) => {
+test("copy_paste", ({override, override_rewire}) => {
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -469,11 +458,15 @@ test("copy_paste", ({override_rewire}) => {
     override_rewire(upload, "upload_files", () => {
         upload_files_called = true;
     });
+    let compose_actions_start_called = false;
+    override(compose_actions, "respond_to_message", () => {
+        compose_actions_start_called = true;
+    });
 
     paste_handler(event);
     assert.ok(get_as_file_called);
     assert.ok(upload_files_called);
-
+    assert.ok(compose_actions_start_called);
     upload_files_called = false;
     event = {
         originalEvent: {},
@@ -482,29 +475,21 @@ test("copy_paste", ({override_rewire}) => {
     assert.equal(upload_files_called, false);
 });
 
-test("uppy_events", ({override, override_rewire, mock_template}) => {
+test("uppy_events", ({override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
 
     const callbacks = {};
-    let uppy_cancel_all_called = false;
     let state = {};
-    let files = [];
 
     uppy_stub = function () {
         return {
             setMeta() {},
             use() {},
-            cancelAll() {
-                uppy_cancel_all_called = true;
-            },
             on(event_name, callback) {
                 callbacks[event_name] = callback;
             },
-            getFiles: () => [...files],
-            removeFile(file_id) {
-                files = files.filter((file) => file.id !== file_id);
-            },
+            removeFile() {},
             getState: () => ({
                 info: [
                     {
@@ -517,21 +502,19 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
         };
     };
     upload.setup_upload({mode: "compose"});
-    assert.equal(Object.keys(callbacks).length, 6);
+    assert.equal(Object.keys(callbacks).length, 5);
 
     const on_upload_success_callback = callbacks["upload-success"];
     const file = {
         name: "copenhagen.png",
+        id: "123",
     };
     let response = {
         body: {
             uri: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
         },
     };
-    let compose_actions_start_called = false;
-    override(compose_actions, "start", () => {
-        compose_actions_start_called = true;
-    });
+
     let compose_ui_replace_syntax_called = false;
     override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;
@@ -547,7 +530,7 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
         compose_ui_autosize_textarea_called = true;
     });
     on_upload_success_callback(file, response);
-    assert.ok(compose_actions_start_called);
+
     assert.ok(compose_ui_replace_syntax_called);
     assert.ok(compose_ui_autosize_textarea_called);
 
@@ -556,65 +539,11 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
             uri: undefined,
         },
     };
-    compose_actions_start_called = false;
     compose_ui_replace_syntax_called = false;
     compose_ui_autosize_textarea_called = false;
     on_upload_success_callback(file, response);
-    assert.equal(compose_actions_start_called, false);
     assert.equal(compose_ui_replace_syntax_called, false);
     assert.equal(compose_ui_autosize_textarea_called, false);
-
-    const on_complete_callback = callbacks.complete;
-    set_global("setTimeout", (func) => {
-        func();
-    });
-    let hide_upload_status_called = false;
-    override_rewire(upload, "hide_upload_status", () => {
-        hide_upload_status_called = true;
-    });
-    $("#compose_banner .upload_banner").removeClass("error");
-    files = [
-        {
-            id: "uppy-zulip/jpeg-1e-image/jpeg-163515-1578367331279",
-            progress: {
-                uploadComplete: true,
-            },
-        },
-        {
-            id: "uppy-github/avatar/png-2v-1e-image/png-329746-1576507125831",
-            progress: {
-                uploadComplete: true,
-            },
-        },
-    ];
-    on_complete_callback();
-    assert.ok(hide_upload_status_called);
-    assert.equal(files.length, 0);
-
-    hide_upload_status_called = false;
-    $("#compose_banners .upload_banner").addClass("error");
-    on_complete_callback();
-    assert.ok(!hide_upload_status_called);
-
-    $("#compose_banners .upload_banner").removeClass("error");
-    hide_upload_status_called = false;
-    files = [
-        {
-            id: "uppy-zulip/jpeg-1e-image/jpeg-163515-1578367331279",
-            progress: {
-                uploadComplete: true,
-            },
-        },
-        {
-            id: "uppy-github/avatar/png-2v-1e-image/png-329746-1576507125831",
-            progress: {
-                uploadComplete: false,
-            },
-        },
-    ];
-    on_complete_callback();
-    assert.ok(!hide_upload_status_called);
-    assert.equal(files.length, 1);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
@@ -627,11 +556,9 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
     };
     const on_info_visible_callback = callbacks["info-visible"];
     $("#compose_banners .upload_banner .upload_msg").text("");
-    uppy_cancel_all_called = false;
     compose_ui_replace_syntax_called = false;
     const on_restriction_failed_callback = callbacks["restriction-failed"];
     on_info_visible_callback();
-    assert.ok(uppy_cancel_all_called);
     override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, textarea) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
@@ -650,47 +577,32 @@ test("uppy_events", ({override, override_rewire, mock_template}) => {
         type: "error",
         message: "No Internet connection",
     };
-    uppy_cancel_all_called = false;
     on_info_visible_callback();
 
     state = {
         type: "error",
         details: "Upload Error",
     };
-    uppy_cancel_all_called = false;
     on_info_visible_callback();
 
     const on_upload_error_callback = callbacks["upload-error"];
     $("#compose_banners .upload_banner .upload_msg").text("");
-    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
-        assert.equal(data.banner_type, "error");
-        assert.equal(data.banner_text, "Response message");
-    });
     compose_ui_replace_syntax_called = false;
     response = {
         body: {
             msg: "Response message",
         },
     };
-    uppy_cancel_all_called = false;
     on_upload_error_callback(file, null, response);
-    assert.ok(uppy_cancel_all_called);
     assert.ok(compose_ui_replace_syntax_called);
 
-    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
-        assert.equal(data.banner_type, "error");
-        assert.equal(data.banner_text, "translated: An unknown error occurred.");
-    });
     compose_ui_replace_syntax_called = false;
-    uppy_cancel_all_called = false;
     on_upload_error_callback(file, null, null);
-    assert.ok(uppy_cancel_all_called);
     assert.ok(compose_ui_replace_syntax_called);
+
     $("#compose_banners .upload_banner .upload_msg").text("");
     $("#compose-textarea").val("user modified text");
-    uppy_cancel_all_called = false;
     on_upload_error_callback(file, null);
-    assert.ok(uppy_cancel_all_called);
     assert.ok(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
 });

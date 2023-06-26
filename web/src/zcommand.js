@@ -1,10 +1,12 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
 import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as markdown from "./markdown";
-import * as scroll_bar from "./scroll_bar";
+import * as message_lists from "./message_lists";
 
 /*
 
@@ -48,7 +50,11 @@ export function send(opts) {
 export function tell_user(msg) {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
-    compose_banner.show_error_message(msg, compose_banner.CLASSNAMES.generic_compose_error);
+    compose_banner.show_error_message(
+        msg,
+        compose_banner.CLASSNAMES.generic_compose_error,
+        $("#compose_banners"),
+    );
 }
 
 export function switch_to_light_theme() {
@@ -56,6 +62,7 @@ export function switch_to_light_theme() {
         command: "/day",
         on_success(data) {
             dark_theme.disable();
+            message_lists.update_recipient_bar_background_color();
             feedback_widget.show({
                 populate($container) {
                     const rendered_msg = markdown.parse_non_message(data.msg);
@@ -78,6 +85,7 @@ export function switch_to_dark_theme() {
         command: "/night",
         on_success(data) {
             dark_theme.enable();
+            message_lists.update_recipient_bar_background_color();
             feedback_widget.show({
                 populate($container) {
                     const rendered_msg = markdown.parse_non_message(data.msg);
@@ -90,50 +98,6 @@ export function switch_to_dark_theme() {
                 },
                 title_text: $t({defaultMessage: "Dark theme"}),
                 undo_button_text: $t({defaultMessage: "Light theme"}),
-            });
-        },
-    });
-}
-
-export function enter_fluid_mode() {
-    send({
-        command: "/fluid-width",
-        on_success(data) {
-            scroll_bar.set_layout_width();
-            feedback_widget.show({
-                populate($container) {
-                    const rendered_msg = markdown.parse_non_message(data.msg);
-                    $container.html(rendered_msg);
-                },
-                on_undo() {
-                    send({
-                        command: "/fixed-width",
-                    });
-                },
-                title_text: $t({defaultMessage: "Fluid width mode"}),
-                undo_button_text: $t({defaultMessage: "Fixed width"}),
-            });
-        },
-    });
-}
-
-export function enter_fixed_mode() {
-    send({
-        command: "/fixed-width",
-        on_success(data) {
-            scroll_bar.set_layout_width();
-            feedback_widget.show({
-                populate($container) {
-                    const rendered_msg = markdown.parse_non_message(data.msg);
-                    $container.html(rendered_msg);
-                },
-                on_undo() {
-                    send({
-                        command: "/fluid-width",
-                    });
-                },
-                title_text: $t({defaultMessage: "Fixed width mode"}),
-                undo_button_text: $t({defaultMessage: "Fluid width"}),
             });
         },
     });
@@ -167,16 +131,6 @@ export function process(message_content) {
     const night_commands = ["/night", "/dark"];
     if (night_commands.includes(content)) {
         switch_to_dark_theme();
-        return true;
-    }
-
-    if (content === "/fluid-width") {
-        enter_fluid_mode();
-        return true;
-    }
-
-    if (content === "/fixed-width") {
-        enter_fixed_mode();
         return true;
     }
 

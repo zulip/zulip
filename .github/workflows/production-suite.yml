@@ -75,7 +75,7 @@ jobs:
       - name: Restore pnpm store
         uses: actions/cache@v3
         with:
-          path: ~/.local/share/pnpm/store
+          path: /__w/.pnpm-store
           key: v1-pnpm-store-focal-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore python cache
@@ -102,6 +102,12 @@ jobs:
           path: /tmp/production-build
           retention-days: 1
 
+      - name: Verify pnpm store path
+        run: |
+          set -x
+          path="$(pnpm store path)"
+          [[ "$path" == /__w/.pnpm-store/* ]]
+
       - name: Generate failure report string
         id: failure_report_string
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
@@ -126,22 +132,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        extra-args: [""]
         include:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
           - docker_image: zulip/ci:focal
-            name: Ubuntu 20.04 production install
+            name: Ubuntu 20.04 production install and PostgreSQL upgrade with pgroonga
             os: focal
+            extra-args: ""
 
           - docker_image: zulip/ci:jammy
             name: Ubuntu 22.04 production install
             os: jammy
+            extra-args: ""
 
           - docker_image: zulip/ci:bullseye
             name: Debian 11 production install with custom db name and user
             os: bullseye
             extra-args: --test-custom-db
+
+          - docker_image: zulip/ci:bookworm
+            name: Debian 12 production install
+            os: bookworm
+            extra-args: ""
 
     name: ${{ matrix.name  }}
     container:
@@ -177,12 +189,6 @@ jobs:
           dirs=(/srv/zulip-{venv,emoji}-cache)
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
-
-      - name: Restore pnpm store
-        uses: actions/cache@v3
-        with:
-          path: ~/.local/share/pnpm/store
-          key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('/tmp/pnpm-lock.yaml') }}
 
       - name: Install production
         run: sudo /tmp/production-install ${{ matrix.extra-args }}

@@ -1,6 +1,5 @@
 import datetime
 
-from zerver.decorator import statsd_increment
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserActivity, UserActivityInterval, UserProfile
@@ -32,7 +31,6 @@ def do_update_user_activity_interval(
     )
 
 
-@statsd_increment("user_activity")
 def do_update_user_activity(
     user_profile_id: int, client_id: int, query: str, count: int, log_time: datetime.datetime
 ) -> None:

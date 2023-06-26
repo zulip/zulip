@@ -40,6 +40,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
+from zproject.backends import all_implemented_backend_names
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -83,10 +84,8 @@ def build_zerver_realm(
         string_id=realm_subdomain,
         description=f"Organization imported from {other_product}!",
     )
-    auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude=["authentication_methods"])
+    realm_dict = model_to_dict(realm)
     realm_dict["date_created"] = time
-    realm_dict["authentication_methods"] = auth_methods
     return [realm_dict]
 
 
@@ -373,6 +372,10 @@ def build_realm(
         zerver_realmemoji=[],
         zerver_realmfilter=[],
         zerver_realmplayground=[],
+        zerver_realmauthenticationmethod=[
+            {"realm": realm_id, "name": name, "id": i}
+            for i, name in enumerate(all_implemented_backend_names(), start=1)
+        ],
     )
     return realm
 

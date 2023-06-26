@@ -8,7 +8,7 @@ const $ = require("./lib/zjquery");
 
 const denmark_stream_id = 101;
 
-const ui = mock_esm("../src/ui", {
+const scroll_util = mock_esm("../src/scroll_util", {
     get_content_element: ($element) => $element,
 });
 
@@ -114,10 +114,10 @@ run_test("redraw_left_panel", ({mock_template}) => {
         $(sub_row).detach = () => sub_row;
     }
 
-    $.create("#manage_streams_container .stream-row", {children: sub_stubs});
+    $.create("#streams_overlay_container .stream-row", {children: sub_stubs});
 
     let ui_called = false;
-    ui.reset_scrollbar = ($elem) => {
+    scroll_util.reset_scrollbar = ($elem) => {
         ui_called = true;
         assert.equal($elem, $("#subscription_overlay .streams-list"));
     };
@@ -129,6 +129,7 @@ run_test("redraw_left_panel", ({mock_template}) => {
     assert.ok(!$denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
+        $("#streams_overlay_container .stream-row:not(.notdisplayed)").length = 0;
         const stream_ids = stream_settings_ui.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,

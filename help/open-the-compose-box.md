@@ -35,7 +35,7 @@ arrow if the box is empty.
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Starting a new topic](/help/starting-a-new-topic)
-* [Starting a new private thread](/help/starting-a-new-private-thread)
+* [Starting a new direct message](/help/starting-a-new-direct-message)
 * [Replying to messages](/help/replying-to-messages)
 * [Messaging tips & tricks](/help/messaging-tips)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)

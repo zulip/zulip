@@ -3,7 +3,7 @@
 {!admin-only.md!}
 
 Zulip supports using SAML authentication for single sign-on, both for Zulip
-Cloud and self-hosted Zulip servers.
+Cloud and self-hosted Zulip servers. SAML Single Logout is also supported.
 
 This page describes how to configure SAML authentication with several common providers:
 

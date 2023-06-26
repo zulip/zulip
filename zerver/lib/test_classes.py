@@ -36,7 +36,6 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
-from django.http.response import StreamingHttpResponse
 from django.test import TestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
@@ -846,7 +845,7 @@ Output:
             if any(
                 addr == email_address or addr.endswith(f" <{email_address}>") for addr in message.to
             ):
-                match = re.search(url_pattern, message.body)
+                match = re.search(url_pattern, str(message.body))
                 assert match is not None
 
                 if email_subject_contains:
@@ -1065,7 +1064,7 @@ Output:
     have decided to send a message to a stream without the sender being
     subscribed.
 
-    Please do self.subscribe(<user for {sender.full_name}>, {repr(stream_name)}) first.
+    Please do self.subscribe(<user for {sender.full_name}>, {stream_name!r}) first.
 
     Or choose a stream that the user is already subscribed to:
 
@@ -1110,11 +1109,6 @@ Output:
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
 
         return [subscription.user_profile for subscription in subscriptions]
-
-    def assert_streaming_content(self, response: "TestHttpResponse", result: bytes) -> None:
-        assert isinstance(response, StreamingHttpResponse)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(result, data)
 
     def assert_json_success(
         self,
@@ -1171,7 +1165,7 @@ Output:
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError(f"{str(type(items))} is of unexpected size!")
+            raise AssertionError(f"{type(items)} is of unexpected size!")
 
     @contextmanager
     def assert_database_query_count(
@@ -1189,7 +1183,7 @@ Output:
         if actual_count != count:  # nocoverage
             print("\nITEMS:\n")
             for index, query in enumerate(queries):
-                print(f"#{index + 1}\nsql: {str(query['sql'])}\ntime: {query['time']}\n")
+                print(f"#{index + 1}\nsql: {query.sql}\ntime: {query.time}\n")
             print(f"expected count: {count}\nactual count: {actual_count}")
             raise AssertionError(
                 f"""
@@ -1455,7 +1449,7 @@ Output:
         This raises a failure inside of the try/except block of
         markdown.__init__.do_convert.
         """
-        with self.settings(ERROR_BOT=None), mock.patch(
+        with mock.patch(
             "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
         ), self.assertLogs(
             level="ERROR"
@@ -1692,10 +1686,10 @@ Output:
         )
 
     @contextmanager
-    def tornado_redirected_to_list(
-        self, lst: List[Mapping[str, Any]], expected_num_events: int
-    ) -> Iterator[None]:
-        lst.clear()
+    def capture_send_event_calls(
+        self, expected_num_events: int
+    ) -> Iterator[List[Mapping[str, Any]]]:
+        lst: List[Mapping[str, Any]] = []
 
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
@@ -1711,7 +1705,7 @@ Output:
             # never be sent in tests, and we would be unable to verify them. Hence, we use
             # this helper to make sure the `send_event` calls actually run.
             with self.captureOnCommitCallbacks(execute=True):
-                yield
+                yield lst
 
         self.assert_length(lst, expected_num_events)
 
@@ -1729,6 +1723,14 @@ Output:
             wildcard_mention_push_notify=kwargs.get("wildcard_mention_push_notify", False),
             stream_email_notify=kwargs.get("stream_email_notify", False),
             stream_push_notify=kwargs.get("stream_push_notify", False),
+            followed_topic_email_notify=kwargs.get("followed_topic_email_notify", False),
+            followed_topic_push_notify=kwargs.get("followed_topic_push_notify", False),
+            followed_topic_wildcard_mention_email_notify=kwargs.get(
+                "followed_topic_wildcard_mention_email_notify", False
+            ),
+            followed_topic_wildcard_mention_push_notify=kwargs.get(
+                "followed_topic_wildcard_mention_push_notify", False
+            ),
             sender_is_muted=kwargs.get("sender_is_muted", False),
             disable_external_notifications=kwargs.get("disable_external_notifications", False),
         )
@@ -1943,7 +1945,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         We simulate the delivery of the payload with `content_type`,
         and you can pass other headers via `extra`.
 
-        For the rare cases of webhooks actually sending private messages,
+        For the rare cases of webhooks actually sending direct messages,
         see send_and_test_private_message.
 
         When no message is expected to be sent, set `expect_noop` to True.
@@ -2012,7 +2014,7 @@ one or more new messages.
     ) -> Message:
         """
         For the rare cases that you are testing a webhook that sends
-        private messages, use this function.
+        direct messages, use this function.
 
         Most webhooks send to streams, and you will want to look at
         check_webhook.

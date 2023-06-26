@@ -13,7 +13,6 @@ from django.http import HttpRequest
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.utils import statsd
 from zerver.models import UserProfile
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
@@ -158,23 +157,6 @@ class RateLimitedIPAddr(RateLimitedObject):
 def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
     KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"
-
-
-def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = "api_by_user") -> None:
-    """Add a rate-limiting rule to the ratelimiter"""
-    if domain not in rules:
-        # If we don't have any rules for domain yet, the domain key needs to be
-        # added to the rules dictionary.
-        rules[domain] = []
-
-    rules[domain].append((range_seconds, num_requests))
-    rules[domain].sort(key=lambda x: x[0])
-
-
-def remove_ratelimit_rule(
-    range_seconds: int, num_requests: int, domain: str = "api_by_user"
-) -> None:
-    rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
 
 
 class RateLimiterBackend(ABC):
@@ -322,7 +304,6 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
 
             if ratelimited:
-                statsd.incr(f"ratelimiter.limited.{entity_key}")
                 break
 
         return ratelimited, time_till_free
@@ -491,10 +472,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     ) -> Tuple[bool, float]:
         ratelimited, time = cls.is_ratelimited(entity_key, rules)
 
-        if ratelimited:
-            statsd.incr(f"ratelimiter.limited.{entity_key}")
-
-        else:
+        if not ratelimited:
             try:
                 cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
             except RateLimiterLockingError:

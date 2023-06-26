@@ -1,38 +1,18 @@
 <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
     {{#if msg/sent_by_me}}
     <div class="edit_content message_control_button" data-tooltip-template-id="view-source-tooltip-template"></div>
-    <template id="edit-content-tooltip-template">
-        {{t "Edit message" }}
-        {{tooltip_hotkey_hints "E"}}
-    </template>
-    <template id="move-message-tooltip-template">
-        {{t "Move message" }}
-        {{tooltip_hotkey_hints "M"}}
-    </template>
-    <template id="view-source-tooltip-template">
-        {{t "View message source" }}
-        {{tooltip_hotkey_hints "E"}}
-    </template>
     {{/if}}
 
     {{#unless msg/sent_by_me}}
     <div class="reaction_button message_control_button" data-tooltip-template-id="add-emoji-tooltip-template">
         <i class="fa fa-smile-o" aria-label="{{t 'Add emoji reaction' }} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
     </div>
-    <template id="add-emoji-tooltip-template">
-        {{t "Add emoji reaction" }}
-        {{tooltip_hotkey_hints ":"}}
-    </template>
     {{/unless}}
 
     {{#unless msg/locally_echoed}}
     <div class="actions_hover message_control_button" data-tooltip-template-id="message-actions-tooltip-template" >
         <i class="zulip-icon zulip-icon-ellipsis-v-solid" role="button" aria-haspopup="true" tabindex="0" aria-label="{{t 'Message actions' }}"></i>
     </div>
-    <template id="message-actions-tooltip-template">
-        {{t "Message actions" }}
-        {{tooltip_hotkey_hints "I"}}
-    </template>
     {{/unless}}
 
     <div class="message_failed {{#unless msg.failed_request}}hide{{/unless}}">
@@ -49,14 +29,6 @@
     <div class="star_container message_control_button {{#if msg/starred}}{{else}}empty-star{{/if}}" data-tooltip-template-id="{{#if msg/starred}}unstar{{else}}star{{/if}}-message-tooltip-template">
         <i role="button" tabindex="0" class="star fa {{#if msg/starred}}fa-star{{else}}fa-star-o{{/if}}"></i>
     </div>
-    <template id="star-message-tooltip-template">
-        <span class="starred-status">{{t "Star this message" }}</span>
-        {{tooltip_hotkey_hints "Ctrl" "S"}}
-    </template>
-    <template id="unstar-message-tooltip-template">
-        <span class="starred-status">{{t "Unstar this message" }}</span>
-        {{tooltip_hotkey_hints "Ctrl" "S"}}
-    </template>
     {{/unless}}
 
 </div>

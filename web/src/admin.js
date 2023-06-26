@@ -168,6 +168,8 @@ export function build_page() {
             settings_config.common_message_policy_values.by_admins_only.code,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
+        web_mark_read_on_scroll_policy_values:
+            settings_config.web_mark_read_on_scroll_policy_values,
         user_list_style_values: settings_config.user_list_style_values,
         color_scheme_values: settings_config.color_scheme_values,
         default_view_values: settings_config.default_view_values,
@@ -229,8 +231,6 @@ export function build_page() {
 }
 
 export function launch(section) {
-    settings.build_page();
-    build_page();
     settings_sections.reset_sections();
 
     settings.open_settings_overlay();

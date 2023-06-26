@@ -126,7 +126,7 @@ def add_emoji_to_message() -> Dict[str, object]:
 
     # The message ID here is hardcoded based on the corresponding value
     # for the example message IDs we use in zulip.yaml.
-    message_id = 46
+    message_id = 47
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
@@ -241,7 +241,7 @@ def delete_event_queue() -> Dict[str, object]:
 def get_user_presence() -> Dict[str, object]:
     iago = helpers.example_user("iago")
     client = Client.objects.create(name="curl-test-client-3")
-    update_user_presence(iago, client, timezone_now(), UserPresence.ACTIVE, False)
+    update_user_presence(iago, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT, False)
     return {}
 
 
@@ -274,7 +274,7 @@ def remove_realm_filters() -> Dict[str, object]:
     filter_id = do_add_linkifier(
         get_realm("zulip"),
         "#(?P<id>[0-9]{2,8})",
-        "https://github.com/zulip/zulip/pull/%(id)s",
+        "https://github.com/zulip/zulip/pull/{id}",
         acting_user=None,
     )
     return {

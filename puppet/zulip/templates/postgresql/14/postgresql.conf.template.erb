@@ -828,14 +828,14 @@ work_mem = <%= scope["zulip::profile::postgresql::work_mem"] %>MB
 shared_buffers = <%= scope["zulip::profile::postgresql::shared_buffers"] %>MB
 wal_buffers = 4MB
 checkpoint_completion_target = 0.7
-<% if @random_page_cost != '' -%>
+<% unless @random_page_cost.nil? -%>
 random_page_cost = <%= @random_page_cost %>
 <% end -%>
-<% if @effective_io_concurrency != '' -%>
+<% unless @effective_io_concurrency.nil? -%>
 effective_io_concurrency = <%= @effective_io_concurrency %>
 <% end -%>
 
-<% if @listen_addresses != '' -%>
+<% unless @listen_addresses.nil? -%>
 listen_addresses = <%= @listen_addresses %>
 <% end -%>
 
@@ -845,20 +845,20 @@ max_wal_senders = 5
 archive_mode = on
 archive_command = '/usr/bin/timeout 10m /usr/local/bin/env-wal-g wal-push %p'
 restore_command = '/usr/local/bin/env-wal-g wal-fetch "%f" "%p"'
-<% if @replication_primary != '' && @replication_user != '' -%>
+<% unless @replication_primary.nil? || @replication_user.nil? -%>
 primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user -%>
 <% if @replication_password != '' %> password=<%= @replication_password %><% end -%>
-<% if @ssl_mode != '' %> sslmode=<%= @ssl_mode %><% end -%>
+<% unless @ssl_mode.nil? %> sslmode=<%= @ssl_mode %><% end -%>
 '
 <% end -%>
 <% end -%>
 
-<% if @ssl_cert_file != '' -%>
+<% unless @ssl_cert_file.nil? -%>
 ssl_cert_file = '<%= @ssl_cert_file %>'		# (change requires restart)
 <% end -%>
-<% if @ssl_key_file != '' -%>
+<% unless @ssl_key_file.nil? -%>
 ssl_key_file = '<%= @ssl_key_file %>'		# (change requires restart)
 <% end -%>
-<% if @ssl_ca_file != '' -%>
+<% unless @ssl_ca_file.nil? -%>
 ssl_ca_file = '<%= @ssl_ca_file %>'		# (change requires restart)
 <% end -%>

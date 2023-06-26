@@ -16,7 +16,7 @@ config_file.read("/etc/zulip/zulip.conf")
 PRODUCTION = config_file.has_option("machine", "deploy_type")
 DEVELOPMENT = not PRODUCTION
 secrets_file = configparser.RawConfigParser()
-if PRODUCTION:
+if PRODUCTION:  # nocoverage
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
@@ -37,7 +37,7 @@ def get_secret(
 def get_secret(
     key: str, default_value: Optional[str] = None, development_only: bool = False
 ) -> Optional[str]:
-    if development_only and PRODUCTION:
+    if development_only and PRODUCTION:  # nocoverage
         return default_value
     return secrets_file.get("secrets", key, fallback=default_value)
 

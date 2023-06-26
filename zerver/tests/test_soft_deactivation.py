@@ -631,6 +631,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                     get_subscriptions_for_send_message(
                         realm_id=realm_id,
                         stream_id=stream_id,
+                        topic_name=topic_name,
                         possible_wildcard_mention=possible_wildcard_mention,
                         possibly_mentioned_user_ids=possibly_mentioned_user_ids,
                     )
@@ -729,10 +730,10 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         long_term_idle_user.save()
         assert_stream_message_not_sent_to_idle_user("User no email")
 
-        # Test sending a private message to soft deactivated user creates
+        # Test sending a direct message to soft deactivated user creates
         # UserMessage row.
         soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
-        message = "Test PM"
+        message = "Test direct message"
         send_personal_message(message)
         assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
         assert_last_um_content(long_term_idle_user, message)

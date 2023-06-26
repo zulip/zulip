@@ -3,13 +3,13 @@ import $ from "jquery";
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
-import * as compose from "./compose";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
+import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
@@ -23,7 +23,6 @@ import * as sent_messages from "./sent_messages";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as transmit from "./transmit";
-import * as ui from "./ui";
 import * as util from "./util";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -61,12 +60,28 @@ function insert_message(message) {
     message_events.insert_new_messages([message], true);
 }
 
-function failed_message_success(message_id) {
-    message_store.get(message_id).failed_request = false;
-    ui.show_failed_message_success(message_id);
+function show_message_failed(message_id, failed_msg) {
+    // Failed to send message, so display inline retry/cancel
+    message_live_update.update_message_in_all_views(message_id, ($row) => {
+        const $failed_div = $row.find(".message_failed");
+        $failed_div.toggleClass("hide", false);
+        $failed_div.find(".failed_text").attr("title", failed_msg);
+    });
 }
 
-function resend_message(message, $row) {
+function show_failed_message_success(message_id) {
+    // Previously failed message succeeded
+    message_live_update.update_message_in_all_views(message_id, ($row) => {
+        $row.find(".message_failed").toggleClass("hide", true);
+    });
+}
+
+function failed_message_success(message_id) {
+    message_store.get(message_id).failed_request = false;
+    show_failed_message_success(message_id);
+}
+
+function resend_message(message, $row, on_send_message_success) {
     message.content = message.raw_content;
     if (show_retry_spinner($row)) {
         // retry already in in progress
@@ -76,6 +91,7 @@ function resend_message(message, $row) {
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
     message.queue_id = page_params.queue_id;
+    message.resend = true;
 
     const local_id = message.local_id;
 
@@ -85,7 +101,7 @@ function resend_message(message, $row) {
 
         hide_retry_spinner($row);
 
-        compose.send_message_success(local_id, message_id, locally_echoed);
+        on_send_message_success(local_id, message_id, locally_echoed);
 
         // Resend succeeded, so mark as no longer failed
         failed_message_success(message_id);
@@ -99,7 +115,6 @@ function resend_message(message, $row) {
         blueslip.log("Manual resend of message failed");
     }
 
-    sent_messages.start_resend(local_id);
     transmit.send_message(message, on_success, on_error);
 }
 
@@ -384,6 +399,7 @@ export function process_from_server(messages) {
             // the "main" codepath that doesn't have to id reconciliation.
             // We simply return non-echo messages to our caller.
             non_echo_messages.push(message);
+            sent_messages.report_event_received(local_id);
             continue;
         }
 
@@ -397,6 +413,7 @@ export function process_from_server(messages) {
             client_message.content = message.content;
             sent_messages.mark_disparity(local_id);
         }
+        sent_messages.report_event_received(local_id);
 
         message_store.update_booleans(client_message, message.flags);
 
@@ -442,7 +459,7 @@ export function _patch_waiting_for_ack(data) {
 export function message_send_error(message_id, error_response) {
     // Error sending message, show inline
     message_store.get(message_id).failed_request = true;
-    ui.show_message_failed(message_id, error_response);
+    show_message_failed(message_id, error_response);
 }
 
 function abort_message(message) {
@@ -453,7 +470,18 @@ function abort_message(message) {
     }
 }
 
-export function initialize() {
+export function display_slow_send_loading_spinner(message) {
+    const $row = $(`div[zid="${message.id}"]`);
+    if (message.locally_echoed && !message.failed_request) {
+        $row.find(".slow-send-spinner").removeClass("hidden");
+        // We don't need to do anything special to ensure this gets
+        // cleaned up if the message is delivered, because the
+        // message's HTML gets replaced once the message is
+        // successfully sent.
+    }
+}
+
+export function initialize({on_send_message_success}) {
     function on_failed_action(selector, callback) {
         $("#main_div").on("click", selector, function (e) {
             e.stopPropagation();
@@ -470,7 +498,7 @@ export function initialize() {
                 );
                 return;
             }
-            callback(message, $row);
+            callback(message, $row, on_send_message_success);
         });
     }
 

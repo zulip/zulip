@@ -36,6 +36,10 @@ mock_esm("../src/stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
+set_global("document", {
+    to_$: () => $("document-stub"),
+});
+
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const popovers = zrequire("popovers");
@@ -175,10 +179,9 @@ test_ui("sender_hover", ({override, mock_template}) => {
             user_time: undefined,
             user_type: $t({defaultMessage: "Member"}),
             user_circle_class: "user_circle_empty",
-            user_last_seen_time_status:
-                "translated: Last active: translated: More than 2 weeks ago",
-            pm_with_url: "#narrow/pm-with/42-Alice-Smith",
-            sent_by_uri: "#narrow/sender/42-Alice-Smith",
+            user_last_seen_time_status: "translated: Active more than 2 weeks ago",
+            pm_with_url: "#narrow/dm/42-Alice-Smith",
+            sent_by_url: "#narrow/sender/42-Alice-Smith",
             private_message_class: "respond_personal_button",
             show_manage_menu: true,
             is_me: false,
@@ -197,6 +200,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     });
 
     $.create(".user_popover_email", {children: []});
+    $("#userlist-title").get_offset_to_window = () => 10;
     $popover_content.get = () => {};
     const $user_name_element = $.create("user_full_name");
     const $bot_owner_element = $.create("bot_owner");
@@ -207,7 +211,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     handler.call($target, e);
 
     const avatar_img = image_stubber.get(0);
-    assert.equal(avatar_img.src.toString(), "/avatar/42/medium");
+    assert.equal(avatar_img.src.toString(), "/avatar/42/medium?version=5");
 
     // todo: load image
 });

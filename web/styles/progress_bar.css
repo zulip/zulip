@@ -1,0 +1,57 @@
+@keyframes progress-bar-stripes {
+    from {
+        background-position: 40px 0;
+    }
+
+    to {
+        background-position: 0 0;
+    }
+}
+
+.progress {
+    overflow: hidden;
+    height: 20px;
+    margin-bottom: 20px;
+    background: linear-gradient(to bottom, hsl(0deg 0% 96%), hsl(0deg 0% 98%));
+    background-repeat: repeat-x;
+    box-shadow: inset 0 1px 2px hsl(0deg 0% 0% / 10%);
+    border-radius: 4px;
+}
+
+.progress .bar {
+    width: 0%;
+    height: 100%;
+    color: hsl(0deg 0% 100%);
+    float: left;
+    background: linear-gradient(
+        to bottom,
+        hsl(200deg 84% 48%),
+        hsl(200deg 96% 38%)
+    );
+    background-repeat: repeat-x;
+    box-shadow: inset 0 -1px 2px hsl(0deg 0% 0% / 15%);
+    box-sizing: border-box;
+    transition: width 0.6s ease;
+}
+
+.progress.active .bar {
+    animation: progress-bar-stripes 2s linear infinite;
+}
+
+.progress .bar-danger {
+    background: linear-gradient(
+        to bottom,
+        hsl(2deg 81% 65%),
+        hsl(3deg 57% 49%)
+    );
+    background-repeat: repeat-x;
+}
+
+.progress .bar-success {
+    background: linear-gradient(
+        to bottom,
+        hsl(120deg 45% 58%),
+        hsl(120deg 32% 50%)
+    );
+    background-repeat: repeat-x;
+}

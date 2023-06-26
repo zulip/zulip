@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -39,8 +39,6 @@ from zerver.lib.validator import (
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.views.user_settings import check_settings_values
-
-ORG_TYPE_IDS: List[int] = [t["id"] for t in Realm.ORG_TYPES.values()]
 
 
 @require_realm_admin
@@ -137,7 +135,7 @@ def update_realm(
         str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         default=None,
     ),
-    org_type: Optional[int] = REQ(json_validator=check_int_in(ORG_TYPE_IDS), default=None),
+    org_type: Optional[int] = REQ(json_validator=check_int_in(Realm.ORG_TYPE_IDS), default=None),
     enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
     want_advertise_in_communities_directory: Optional[bool] = REQ(
         json_validator=check_bool, default=None
@@ -179,10 +177,9 @@ def update_realm(
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequiredError
         realm.ensure_not_on_limited_plan()
-        message_retention_days = parse_message_retention_days(
+        message_retention_days = parse_message_retention_days(  # used by locals() below
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
-    message_retention_days  # used by locals() below
 
     if (
         invite_to_realm_policy is not None or invite_required is not None
@@ -284,7 +281,7 @@ def update_realm(
 
     # The following realm properties do not fit the pattern above
     # authentication_methods is not supported by the do_set_realm_property
-    # framework because of its bitfield.
+    # framework because it's tracked through the RealmAuthenticationMethod table.
     if authentication_methods is not None and (
         realm.authentication_methods_dict() != authentication_methods
     ):
@@ -397,6 +394,10 @@ def update_realm_user_settings_defaults(
     request: HttpRequest,
     user_profile: UserProfile,
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_mark_read_on_scroll_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
+        default=None,
+    ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -425,6 +426,21 @@ def update_realm_user_settings_defaults(
         json_validator=check_bool, default=None
     ),
     wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_followed_topic_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_push_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_audible_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_wildcard_mentions_notify: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     notification_sound: Optional[str] = REQ(default=None),
     enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),

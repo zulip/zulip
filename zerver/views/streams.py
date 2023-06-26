@@ -407,6 +407,7 @@ def update_stream_backend(
                 require_system_group=permissions_configuration.require_system_group,
                 allow_internet_group=permissions_configuration.allow_internet_group,
                 allow_owners_group=permissions_configuration.allow_owners_group,
+                allow_nobody_group=permissions_configuration.allow_nobody_group,
             )
             do_change_stream_group_based_setting(
                 stream, setting_name, user_group, acting_user=user_profile
@@ -588,6 +589,7 @@ def add_subscriptions_backend(
             user_profile,
             setting_name="can_remove_subscribers_group",
             require_system_group=True,
+            allow_nobody_group=False,
         )
     else:
         can_remove_subscribers_group = UserGroup.objects.get(
@@ -618,6 +620,21 @@ def add_subscriptions_backend(
 
         stream_dicts.append(stream_dict_copy)
 
+    is_subscribing_other_users = False
+    if len(principals) > 0 and not all(user_id == user_profile.id for user_id in principals):
+        is_subscribing_other_users = True
+
+    if is_subscribing_other_users:
+        if not user_profile.can_subscribe_other_users():
+            # Guest users case will not be handled here as it will
+            # be handled by the decorator above.
+            raise JsonableError(_("Insufficient permission"))
+        subscribers = {
+            principal_to_user_profile(user_profile, principal) for principal in principals
+        }
+    else:
+        subscribers = {user_profile}
+
     # Validation of the streams arguments, including enforcement of
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
@@ -634,20 +651,14 @@ def add_subscriptions_backend(
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
-    if len(principals) > 0:
-        if realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
-            raise JsonableError(
-                _("You can only invite other Zephyr mirroring users to private streams.")
-            )
-        if not user_profile.can_subscribe_other_users():
-            # Guest users case will not be handled here as it will
-            # be handled by the decorator above.
-            raise JsonableError(_("Insufficient permission"))
-        subscribers = {
-            principal_to_user_profile(user_profile, principal) for principal in principals
-        }
-    else:
-        subscribers = {user_profile}
+    if (
+        is_subscribing_other_users
+        and realm.is_zephyr_mirror_realm
+        and not all(stream.invite_only for stream in streams)
+    ):
+        raise JsonableError(
+            _("You can only invite other Zephyr mirroring users to private streams.")
+        )
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(
         realm, streams, subscribers, acting_user=user_profile, color_map=color_map
@@ -1028,7 +1039,7 @@ def update_subscription_properties_backend(
 ) -> HttpResponse:
     """
     This is the entry point to changing subscription properties. This
-    is a bulk endpoint: requestors always provide a subscription_data
+    is a bulk endpoint: requesters always provide a subscription_data
     list containing dictionaries for each stream of interest.
 
     Requests are of the form:

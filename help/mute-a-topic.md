@@ -1,12 +1,8 @@
-# Mute a topic
+# Mute or unmute a topic
 
-Messages from muted topics do not show up in either **All messages**
-or **Recent conversations**, nor do they generate notifications (including
-[alert word](/help/dm-mention-alert-notifications#alert-words)
-notifications), unless you are [mentioned](/help/mention-a-user-or-group).
-They also do not contribute to stream unread counts.
+{!mute-unmute-intro.md!}
 
-## Mute a topic
+## Configure topic notifications in unmuted streams
 
 {start_tabs}
 
@@ -14,32 +10,37 @@ They also do not contribute to stream unread counts.
 
 {!topic-actions.md!}
 
-1. Select **Mute topic**.
+1. Select **Mute topic** or **Unmute topic**.
 
 !!! tip ""
 
-    You can also click the **mute** (<i class="zulip-icon zulip-icon-mute"></i>) icon in the message recipient bar to mute the topic.
+    You can also click the **mute** (<i class="zulip-icon zulip-icon-mute"></i>) icon
+    in the message recipient bar or in **Recent conversations**.
 
 {tab|mobile}
 
 {!topic-long-press-menu.md!}
 
-1. Tap **Mute topic**.
+1. Tap **Mute topic** or **Unmute topic**.
 
 {!topic-long-press-menu-tip.md!}
 
 {end_tabs}
 
-## Browse and unmute previously muted topics
+## Configure topic notifications in muted streams
 
 {start_tabs}
 
 {tab|desktop-web}
 
-{settings_tab|muted-topics}
+{!topic-actions.md!}
 
-1. In the **Actions** column, click **Unmute** next to each topic you want
-   to unmute.
+1. Select **Unmute topic** or **Mute topic**.
+
+!!! tip ""
+
+    You can also click the **unmute** (<i class="zulip-icon zulip-icon-unmute"></i>) icon
+    in the message recipient bar or in **Recent conversations**.
 
 {tab|mobile}
 
@@ -47,7 +48,7 @@ They also do not contribute to stream unread counts.
    (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="mobile-icon"/>)
    tab at the bottom of the app.
 
-1. Select a stream containing topics you want to unmute.
+1. Select a grayed-out (muted) stream from the streams list.
 
 1. Tap the **Topics list**
    (<img src="/static/images/help/mobile-list-icon.svg" alt="list" class="mobile-icon"/>)
@@ -55,7 +56,38 @@ They also do not contribute to stream unread counts.
 
 {!topic-long-press-menu.md!}
 
-1. Tap **Unmute topic**.
+1. Tap **Unmute topic** or **Mute topic**.
+
+{!topic-long-press-menu-tip.md!}
+
+{end_tabs}
+
+## Manage configured topics
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|topics}
+
+1. Configure notifications for each topic by selecting the desired option from
+   the dropdown in the **Status** column.
+
+{tab|mobile}
+
+1. Tap the **Streams**
+   (<img src="/static/images/help/mobile-hash-icon.svg" alt="hash" class="mobile-icon"/>)
+   tab at the bottom of the app.
+
+1. Select a stream containing topics you want to configure.
+
+1. Tap the **Topics list**
+   (<img src="/static/images/help/mobile-list-icon.svg" alt="list" class="mobile-icon"/>)
+   icon in the upper right corner of the app.
+
+{!topic-long-press-menu.md!}
+
+1. Tap **Mute topic** or **Unmute topic**.
 
 !!! tip ""
 
@@ -65,6 +97,5 @@ They also do not contribute to stream unread counts.
 
 ## Related articles
 
-* [Mute a stream](/help/mute-a-stream)
-
+* [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute a user](/help/mute-a-user)

@@ -13,7 +13,7 @@
 <style>
     #app-loading {
     font-size: 16px;
-    background-color: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 94%);
     position: fixed;
     height: 100%;
     width: 100%;
@@ -47,12 +47,15 @@
     animation-fill-mode: forwards;
     visibility: hidden;
     }
-    :root.color-scheme-automatic #app-loading {
-    color: hsl(0, 0%, 20%);
-    }
     :root.dark-theme #app-loading {
-    background-color: hsl(212, 28%, 18%);
+    background-color: hsl(0, 0%, 11%);
     color: hsl(236, 33%, 90%);
+    }
+    @media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic #app-loading {
+    background-color: hsl(0, 0%, 11%);
+    color: hsl(236, 33%, 90%);
+    }
     }
 
     .app-loading-spinner-container {
@@ -78,6 +81,27 @@
     border: 4px solid hsl(0,0%,94%);
     border-top-color: hsl(0,0%,52%);
     animation: zspinner 1s linear infinite;
+    }
+
+    /* Bootstrap 'a' tag styles for styling reload link */
+    a#reload-lnk:focus {
+    outline: thin dotted #333;
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+    }
+    a#reload-lnk:hover,
+    a#reload-lnk:active {
+    outline: 0;
+    }
+    a#reload-lnk {
+    color: #0088cc;
+    text-decoration: none;
+    cursor: pointer;
+    }
+    a#reload-lnk:hover,
+    a#reload-lnk:focus {
+    color: #005580;
+    text-decoration: underline;
     }
 </style>
 {% endblock %}
@@ -106,59 +130,84 @@
     </div>
 </div>
 
-<div id="manage_streams_container"></div>
-<div id="manage_groups_container"></div>
+<div id="tooltip-templates-container"></div>
+<div id="streams_overlay_container"></div>
+<div id="groups_overlay_container"></div>
 <div id="drafts_table"></div>
+<div id="scheduled_messages_overlay_container"></div>
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
 </div>
-
-<div id="navbar_alerts_wrapper"></div>
-<div id="navbar-container"></div>
-
-<div class="app">
-    <div class="alert-box">
-        <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-            <div class="exit"></div>
-            <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
-            {{ _('Updates may be delayed.') }}
-            {{ _('Retrying soon…') }}
-            <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+<div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
+    <div class="overlay-content modal-bg">
+        <div class="overlay-tabs">
+            <span class="exit">&times;</span>
         </div>
-        <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-            <div class="exit"></div>
-            {# The below isn't tagged for translation
-            intentionally, because the feature is only used at
-            MIT. #}
-            <strong>Your Zephyr mirror is not working.</strong>
-            <span id="normal-zephyr-mirror-error-text">
-                We recommend that
-                you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
-                Webathena</a>.  If you'd prefer, you can instead
-                <a href="/zephyr-mirror" target="_blank" rel="noopener noreferrer">run the
-                Zephyr mirror script yourself</a> in a screen
-                session.
-            </span>
-            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
-                To fix this, you'll need to use the web interface.
-            </span>
-        </div>
-        <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
-        <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
-        <div class="alert alert_sidebar" id="request-progress-status-banner">
-            <div class="alert-zulip-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
-                    <circle cx="386.56" cy="386.56" r="386.56"></circle>
-                    <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"></path>
-                </svg>
-            </div>
-            <div class="loading-indicator"></div>
-            <div class="success-indicator">
-                <i class="fa fa-check"></i>
-            </div>
-            <div class="alert-content"></div>
-            <div class="exit"></div>
+        <div class="overlay-body">
         </div>
     </div>
+</div>
+
+<div id="user-profile-modal-holder"></div>
+
+<audio id="user-notification-sound-audio">
+    <source class="notification-sound-source-ogg" type="audio/ogg" />
+    <source class="notification-sound-source-mp3" type="audio/mpeg" />
+</audio>
+<audio id="realm-default-notification-sound-audio">
+    <source class="notification-sound-source-ogg" type="audio/ogg" />
+    <source class="notification-sound-source-mp3" type="audio/mpeg" />
+</audio>
+
+<div class="alert-box">
+    <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+        <div class="exit"></div>
+        <strong class="message">{{ _('Unable to connect to Zulip.') }}</strong>
+        {{ _('Updates may be delayed.') }}
+        {{ _('Retrying soon…') }}
+        <a class="restart_get_events_button">{{ _('Try now.') }}</a>
+    </div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+        <div class="exit"></div>
+        {# The below isn't tagged for translation
+        intentionally, because the feature is only used at
+        MIT. #}
+        <strong>Your Zephyr mirror is not working.</strong>
+        <span id="normal-zephyr-mirror-error-text">
+            We recommend that
+            you <a class="webathena_login">give Zulip the ability to mirror the messages for you via
+            Webathena</a>.  If you'd prefer, you can instead
+            <a href="/zephyr-mirror" target="_blank" rel="noopener noreferrer">run the
+            Zephyr mirror script yourself</a> in a screen
+            session.
+        </span>
+        <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">
+            To fix this, you'll need to use the web interface.
+        </span>
+    </div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
+    <div class="alert alert_sidebar" id="request-progress-status-banner">
+        <div class="alert-zulip-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
+                <circle cx="386.56" cy="386.56" r="386.56"></circle>
+                <path d="M566.66 527.25c0 33.03-24.23 60.05-53.84 60.05H260.29c-29.61 0-53.84-27.02-53.84-60.05 0-20.22 9.09-38.2 22.93-49.09l134.37-120c2.5-2.14 5.74 1.31 3.94 4.19l-49.29 98.69c-1.38 2.76.41 6.16 3.25 6.16h191.18c29.61 0 53.83 27.03 53.83 60.05zm0-281.39c0 20.22-9.09 38.2-22.93 49.09l-134.37 120c-2.5 2.14-5.74-1.31-3.94-4.19l49.29-98.69c1.38-2.76-.41-6.16-3.25-6.16H260.29c-29.61 0-53.84-27.02-53.84-60.05s24.23-60.05 53.84-60.05h252.54c29.61 0 53.83 27.02 53.83 60.05z"></path>
+            </svg>
+        </div>
+        <div class="loading-indicator"></div>
+        <div class="success-indicator">
+            <i class="fa fa-check"></i>
+        </div>
+        <div class="alert-content"></div>
+        <div class="exit"></div>
+    </div>
+</div>
+
+<div id="navbar-fixed-container">
+    <div id="navbar_alerts_wrapper"></div>
+    <div id="header-container"></div>
+</div>
+
+<div class="app">
     <div class="app-main">
         <div class="column-left" id="left-sidebar-container">
         </div>
@@ -179,14 +228,6 @@
                     </div>
                 </div>
                 <div id="message_feed_container">
-                    <div id="alert-bar-container" class="alert-bar-container" style='display: none;'>
-                        <div id="alert-bar" class="alert-bar">
-                            <div id="alert-bar-contents" class="alert-bar-contents">
-                                <div id="custom-alert-bar-content"></div>
-                                <i class="fa fa-remove close-alert-icon" aria-hidden="true"></i>
-                            </div>
-                        </div>
-                    </div>
                     <div class="message_area_padder message_list" id="main_div">
                         <div class="top-messages-logo">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.12 773.12">
@@ -203,7 +244,7 @@
                         </div>
                         <div id="typing_notifications">
                         </div>
-                        <div id="mark_as_read_turned_off_banner" class="alert home-error-bar">
+                        <div id="mark_read_on_scroll_state_banner">
                         </div>
                         <div id="bottom_whitespace">
                         </div>
@@ -217,27 +258,9 @@
         <div class="column-right" id="right-sidebar-container">
         </div><!--/right sidebar-->
     </div><!--/row-->
-    <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
-        <div class="overlay-content modal-bg">
-            <div class="overlay-tabs">
-                <span class="exit">&times;</span>
-            </div>
-            <div class="overlay-body">
-            </div>
-        </div>
-    </div>
     <div class="hidden">
         <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
         </form>
     </div>
-    <div id="user-profile-modal-holder"></div>
-    <audio id="user-notification-sound-audio">
-        <source class="notification-sound-source-ogg" type="audio/ogg" />
-        <source class="notification-sound-source-mp3" type="audio/mpeg" />
-    </audio>
-    <audio id="realm-default-notification-sound-audio">
-        <source class="notification-sound-source-ogg" type="audio/ogg" />
-        <source class="notification-sound-source-mp3" type="audio/mpeg" />
-    </audio>
 </div>
 {% endblock %}

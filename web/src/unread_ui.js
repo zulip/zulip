@@ -1,55 +1,63 @@
 import $ from "jquery";
 
-import render_mark_as_read_turned_off_banner from "../templates/mark_as_read_turned_off_banner.hbs";
+import render_mark_as_read_disabled_banner from "../templates/unread_banner/mark_as_read_disabled_banner.hbs";
+import render_mark_as_read_only_in_conversation_view from "../templates/unread_banner/mark_as_read_only_in_conversation_view.hbs";
+import render_mark_as_read_turned_off_banner from "../templates/unread_banner/mark_as_read_turned_off_banner.hbs";
 
-import * as activity from "./activity";
 import * as message_lists from "./message_lists";
-import * as notifications from "./notifications";
+import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
-import * as pm_list from "./pm_list";
-import * as stream_list from "./stream_list";
-import * as top_left_corner from "./top_left_corner";
-import * as topic_list from "./topic_list";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as unread from "./unread";
-import {notify_server_messages_read} from "./unread_ops";
+import {user_settings} from "./user_settings";
 
-let last_mention_count = 0;
-let user_closed_mark_as_read_turned_off_banner = false;
-export function hide_mark_as_read_turned_off_banner() {
-    // Use visibility instead of hide() to prevent messages on the screen from
-    // shifting vertically.
-    $("#mark_as_read_turned_off_banner").toggleClass("invisible", true);
+let user_closed_unread_banner = false;
+
+const update_unread_counts_hooks = [];
+
+export function register_update_unread_counts_hook(f) {
+    update_unread_counts_hooks.push(f);
 }
 
-export function reset_mark_as_read_turned_off_banner() {
-    hide_mark_as_read_turned_off_banner();
-    user_closed_mark_as_read_turned_off_banner = false;
+export function update_unread_banner() {
+    const filter = narrow_state.filter();
+    const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
+    if (
+        user_settings.web_mark_read_on_scroll_policy ===
+        web_mark_read_on_scroll_policy_values.never.code
+    ) {
+        $("#mark_read_on_scroll_state_banner").html(render_mark_as_read_disabled_banner());
+    } else if (
+        user_settings.web_mark_read_on_scroll_policy ===
+            web_mark_read_on_scroll_policy_values.conversation_only.code &&
+        !is_conversation_view
+    ) {
+        $("#mark_read_on_scroll_state_banner").html(
+            render_mark_as_read_only_in_conversation_view(),
+        );
+    } else {
+        $("#mark_read_on_scroll_state_banner").html(render_mark_as_read_turned_off_banner());
+        if (message_lists.current.can_mark_messages_read_without_setting()) {
+            hide_unread_banner();
+        }
+    }
+}
+
+export function hide_unread_banner() {
+    // Use visibility instead of hide() to prevent messages on the screen from
+    // shifting vertically.
+    $("#mark_read_on_scroll_state_banner").toggleClass("invisible", true);
+}
+
+export function reset_unread_banner() {
+    hide_unread_banner();
+    user_closed_unread_banner = false;
 }
 
 export function notify_messages_remain_unread() {
-    if (!user_closed_mark_as_read_turned_off_banner) {
-        $("#mark_as_read_turned_off_banner").toggleClass("invisible", false);
+    if (!user_closed_unread_banner) {
+        $("#mark_read_on_scroll_state_banner").toggleClass("invisible", false);
     }
-}
-
-function do_new_messages_animation($li) {
-    $li.addClass("new_messages");
-    function mid_animation() {
-        $li.removeClass("new_messages");
-        $li.addClass("new_messages_fadeout");
-    }
-    function end_animation() {
-        $li.removeClass("new_messages_fadeout");
-    }
-    setTimeout(mid_animation, 3000);
-    setTimeout(end_animation, 6000);
-}
-
-export function animate_mention_changes($li, new_mention_count) {
-    if (new_mention_count > last_mention_count) {
-        do_new_messages_animation($li);
-    }
-    last_mention_count = new_mention_count;
 }
 
 export function set_count_toggle_button($elem, count) {
@@ -66,20 +74,17 @@ export function set_count_toggle_button($elem, count) {
     return $elem.text("1k+");
 }
 
-export function update_unread_counts() {
+export function update_unread_counts(skip_animations = false) {
     // Pure computation:
     const res = unread.get_counts();
 
     // Side effects from here down:
     // This updates some DOM elements directly, so try to
     // avoid excessive calls to this.
-    activity.update_dom_with_unread_counts(res);
-    top_left_corner.update_dom_with_unread_counts(res);
-    stream_list.update_dom_with_unread_counts(res);
-    pm_list.update_dom_with_unread_counts(res);
-    topic_list.update();
-    const notifiable_unread_count = unread.calculate_notifiable_count(res);
-    notifications.update_unread_counts(notifiable_unread_count, res.private_message_count);
+    // See `ui_init.initialize_unread_ui` for the registered hooks.
+    for (const hook of update_unread_counts_hooks) {
+        hook(res, skip_animations);
+    }
 
     // Set the unread counts that we show in the buttons that
     // toggle open the sidebar menus when we have a thin window.
@@ -115,12 +120,10 @@ export function should_display_bankruptcy_banner() {
     return false;
 }
 
-export function initialize() {
-    update_unread_counts();
-
-    $("#mark_as_read_turned_off_banner").html(render_mark_as_read_turned_off_banner());
-    hide_mark_as_read_turned_off_banner();
-    $("#mark_view_read").on("click", () => {
+export function initialize({notify_server_messages_read}) {
+    const skip_animations = true;
+    update_unread_counts(skip_animations);
+    $("body").on("click", "#mark_view_read", () => {
         // Mark all messages in the current view as read.
         //
         // BUG: This logic only supports marking messages visible in
@@ -133,10 +136,17 @@ export function initialize() {
         // New messages received may be marked as read based on narrow type.
         message_lists.current.resume_reading();
 
-        hide_mark_as_read_turned_off_banner();
+        hide_unread_banner();
     });
-    $("#mark_as_read_close").on("click", () => {
-        hide_mark_as_read_turned_off_banner();
-        user_closed_mark_as_read_turned_off_banner = true;
+    $("body").on("click", "#mark_as_read_close", () => {
+        hide_unread_banner();
+        user_closed_unread_banner = true;
     });
+
+    // The combination of these functions in sequence ensures we have
+    // at least one copy of the unread banner in the DOM, invisible;
+    // this somewhat strange pattern allows our CSS to reserve space for
+    // the banner, to avoid scroll position jumps when it is shown/hidden.
+    update_unread_banner();
+    hide_unread_banner();
 }

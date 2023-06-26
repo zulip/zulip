@@ -11,6 +11,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
+import * as stream_list_sort from "./stream_list_sort";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as util from "./util";
@@ -123,8 +124,8 @@ export function render_stream(stream) {
     }
 
     return render_typeahead_item({
-        primary: stream.name,
         secondary: desc,
+        stream,
         is_unsubscribed: !stream.subscribed,
     });
 }
@@ -132,7 +133,7 @@ export function render_stream(stream) {
 export function render_emoji(item) {
     const args = {
         is_emoji: true,
-        primary: item.emoji_name.replace(/_/g, " "),
+        primary: item.emoji_name.replaceAll("_", " "),
     };
 
     if (item.emoji_url) {
@@ -339,20 +340,8 @@ function retain_unique_language_aliases(matches) {
 }
 
 export function sort_languages(matches, query) {
-    const results = typeahead.triage(query, matches, (x) => x);
+    const results = typeahead.triage(query, matches, (x) => x, compare_language);
 
-    // Languages that start with the query
-    results.matches = results.matches.sort(compare_language);
-
-    // Push exact matches to top.
-    const match_index = results.matches.indexOf(query);
-    if (match_index > -1) {
-        results.matches.splice(match_index, 1);
-        results.matches.unshift(query);
-    }
-
-    // Languages that have the query somewhere in their name
-    results.rest = results.rest.sort(compare_language);
     return retain_unique_language_aliases([...results.matches, ...results.rest]);
 }
 
@@ -398,6 +387,11 @@ export function sort_recipients({
         }
     }
 
+    // We don't push exact matches to the top, like we do with other
+    // typeaheads, because in open organizations, it's not uncommon to
+    // have a bunch of inactive users with display names that are just
+    // FirstName, which we don't want to artificially prioritize over the
+    // the lone active user whose name is FirstName LastName.
     return items.slice(0, max_num_items);
 }
 
@@ -414,10 +408,8 @@ function slash_command_comparator(slash_command_a, slash_command_b) {
 export function sort_slash_commands(matches, query) {
     // We will likely want to in the future make this sort the
     // just-`/` commands by something approximating usefulness.
-    const results = typeahead.triage(query, matches, (x) => x.name);
+    const results = typeahead.triage(query, matches, (x) => x.name, slash_command_comparator);
 
-    results.matches = results.matches.sort(slash_command_comparator);
-    results.rest = results.rest.sort(slash_command_comparator);
     return [...results.matches, ...results.rest];
 }
 
@@ -430,8 +422,8 @@ function activity_score(sub) {
         if (sub.pin_to_top) {
             stream_score += 2;
         }
-        // Note: A pinned stream may accumulate a 3rd point if it is active
-        if (stream_data.is_active(sub)) {
+        // Note: A pinned stream may accumulate a 3rd point if it has recent activity.
+        if (stream_list_sort.has_recent_activity(sub)) {
             stream_score += 1;
         }
     }
@@ -454,16 +446,13 @@ export function compare_by_activity(stream_a, stream_b) {
 }
 
 export function sort_streams(matches, query) {
-    const name_results = typeahead.triage(query, matches, (x) => x.name);
-
-    const desc_results = typeahead.triage(query, name_results.rest, (x) => x.description);
-
-    // Streams that start with the query.
-    name_results.matches = name_results.matches.sort(compare_by_activity);
-    // Streams with descriptions that start with the query.
-    desc_results.matches = desc_results.matches.sort(compare_by_activity);
-    // Streams with names and descriptions that don't start with the query.
-    desc_results.rest = desc_results.rest.sort(compare_by_activity);
+    const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
+    const desc_results = typeahead.triage(
+        query,
+        name_results.rest,
+        (x) => x.description,
+        compare_by_activity,
+    );
 
     return [...name_results.matches, ...desc_results.matches, ...desc_results.rest];
 }

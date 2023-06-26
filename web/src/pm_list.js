@@ -6,7 +6,6 @@ import * as pm_list_dom from "./pm_list_dom";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
 
@@ -31,7 +30,7 @@ export function set_count(count) {
     ui_util.update_unread_count_in_dom(get_private_messages_section_header(), count);
 }
 
-function close() {
+export function close() {
     private_messages_collapsed = true;
     $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
     $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
@@ -60,7 +59,7 @@ export function _build_private_messages_list() {
 }
 
 function set_dom_to(new_dom) {
-    const $container = ui.get_content_element($("#private_messages_list"));
+    const $container = scroll_util.get_content_element($("#private_messages_list"));
 
     function replace_content(html) {
         $container.html(html);
@@ -100,7 +99,13 @@ export function update_private_messages() {
 }
 
 export function expand() {
+    // Only one thing can be zoomed at a time.
+    if (topic_zoom.is_zoomed_in()) {
+        topic_zoom.zoom_out();
+    }
+
     private_messages_collapsed = false;
+
     $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
     $("#toggle_private_messages_section_icon").removeClass("fa-caret-right");
     update_private_messages();
@@ -134,16 +139,14 @@ function scroll_pm_into_view($target_li) {
 
 function scroll_all_private_into_view() {
     const $container = $("#left_sidebar_scroll_container");
-    const $scroll_element = ui.get_scroll_element($container);
+    const $scroll_element = scroll_util.get_scroll_element($container);
     $scroll_element.scrollTop(0);
 }
 
 export function handle_narrow_activated(filter) {
     const active_filter = filter;
-    const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), [
-        "is-private",
-    ]);
-    const narrow_to_private_messages_section = active_filter.operands("pm-with").length !== 0;
+    const is_all_private_message_view = _.isEqual(active_filter.sorted_term_types(), ["is-dm"]);
+    const narrow_to_private_messages_section = active_filter.operands("dm").length !== 0;
 
     if (is_all_private_message_view) {
         // In theory, this should get expanded when we scroll to the

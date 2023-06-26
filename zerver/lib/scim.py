@@ -97,24 +97,21 @@ class ZulipSCIMUser(SCIMUser):
                 "givenName": first_name,
                 "familyName": last_name,
             }
-        d = dict(
-            {
-                "schemas": [scim_constants.SchemaURI.USER],
-                "id": self.obj.id,
-                "userName": self.obj.delivery_email,
-                "name": name,
-                "displayName": self.display_name,
-                "active": self.obj.is_active,
-                # meta is a property implemented in the superclass
-                # TODO: The upstream implementation uses `user_profile.date_joined`
-                # as the value of the lastModified meta attribute, which is not
-                # a correct simplification. We should add proper tracking
-                # of this value.
-                "meta": self.meta,
-            }
-        )
 
-        return d
+        return {
+            "schemas": [scim_constants.SchemaURI.USER],
+            "id": self.obj.id,
+            "userName": self.obj.delivery_email,
+            "name": name,
+            "displayName": self.display_name,
+            "active": self.obj.is_active,
+            # meta is a property implemented in the superclass
+            # TODO: The upstream implementation uses `user_profile.date_joined`
+            # as the value of the lastModified meta attribute, which is not
+            # a correct simplification. We should add proper tracking
+            # of this value.
+            "meta": self.meta,
+        }
 
     def from_dict(self, d: Dict[str, Any]) -> None:
         """Consume a dictionary conforming to the SCIM User Schema. The
@@ -273,6 +270,7 @@ class ZulipSCIMUser(SCIMUser):
                 password,
                 realm,
                 full_name_new_value,
+                tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
                 acting_user=None,
             )
             return

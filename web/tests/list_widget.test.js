@@ -10,7 +10,7 @@ const blueslip = require("./lib/zblueslip");
 // The ListWidget library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
-const ui = mock_esm("../src/ui");
+const scroll_util = mock_esm("../src/scroll_util");
 
 // We only need very simple jQuery wrappers for when the
 
@@ -146,7 +146,7 @@ run_test("scrolling", () => {
     const items = [];
 
     let get_scroll_element_called = false;
-    ui.get_scroll_element = ($element) => {
+    scroll_util.get_scroll_element = ($element) => {
         get_scroll_element_called = true;
         return $element;
     };
@@ -183,7 +183,7 @@ run_test("not_scrolling", () => {
     const items = [];
 
     let get_scroll_element_called = false;
-    ui.get_scroll_element = ($element) => {
+    scroll_util.get_scroll_element = ($element) => {
         get_scroll_element_called = true;
         return $element;
     };
@@ -598,7 +598,7 @@ run_test("errors", () => {
     });
     blueslip.reset();
 
-    blueslip.expect("error", "List item is not a string: 999");
+    blueslip.expect("error", "List item is not a string");
     ListWidget.create($container, list, {
         modifier: () => 999,
         $simplebar_container: $scroll_container,
@@ -808,7 +808,7 @@ run_test("render item", () => {
     // Once we have initially rendered the widget, change the
     // behavior of the modifier function.
     rendering_item = true;
-    blueslip.expect("error", "List item is not a string: undefined");
+    blueslip.expect("error", "List item is not a string");
     widget_3.render_item(item);
     blueslip.reset();
 });

@@ -52,11 +52,12 @@
 
 /* Main geometry for this element is in zulip.css */
 #compose-content {
-    border-top: 1px solid hsl(0deg 0% 0% / 7%);
+    background-color: hsl(232deg 30% 92%);
     transition: background-color 200ms linear;
     padding: 4px 4px 8px;
-    border-left: 1px solid hsl(0deg 0% 93%);
-    border-right: 1px solid hsl(0deg 0% 93%);
+    border: 1px solid hsl(0deg 0% 0% / 10%);
+    border-radius: 9px 9px 0 0;
+    box-shadow: 0 0 0 hsl(236deg 11% 28%);
     height: 100%;
     display: flex;
     flex-flow: column;
@@ -66,6 +67,11 @@
 .message_comp {
     display: none;
     padding: 5px 10px 0 5px;
+
+    #compose_banners {
+        max-height: min(25vh, 240px);
+        overflow-y: auto;
+    }
 }
 
 .autocomplete_secondary {
@@ -89,6 +95,10 @@
     flex-flow: column;
 
     .stream-selection-header-colorblock {
+        box-shadow: none;
+        border: 1px solid hsl(0deg 0% 80%);
+        border-right: none;
+
         &.message_header_private_message {
             border-radius: 3px 0 0 3px;
             border-bottom: 0;
@@ -96,23 +106,38 @@
         }
     }
 
-    .right_part {
-        padding: 0;
-        display: flex;
-        align-items: center;
-        flex: 1;
+    #compose-recipient {
+        &.compose-recipient-direct-selected {
+            #compose_select_recipient_widget {
+                border-radius: 4px !important;
+            }
 
-        .fa-angle-right {
-            font-size: 0.9em;
-            -webkit-text-stroke: 0.05em;
-            position: relative;
-            margin: 0 5px;
+            .stream_header_colorblock {
+                display: none;
+            }
+        }
+
+        .topic-marker-container {
+            /* Ensure the marker ( < ) stays centered vertically
+              with the dropdown, even when adjacent stacking pills
+              in, e.g., a group DM. */
+            display: flex;
+            align-items: center;
+            height: var(--compose-recipient-box-min-height);
+
+            .fa-angle-right {
+                font-size: 0.9em;
+                -webkit-text-stroke: 0.05em;
+                align-self: center;
+                margin: 0 5px;
+            }
         }
 
         & a.narrow_to_compose_recipients {
             background: transparent;
             font-size: 18px;
-            padding: 1px;
+            padding: 0 1px;
+            align-self: center;
             line-height: 20px;
             opacity: 0.7;
             border: 0;
@@ -126,33 +151,8 @@
         }
     }
 
-    .pm_recipient {
-        margin-left: 5px;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
-
-    #compose-private-recipient .to_text {
-        vertical-align: middle;
-
-        font-weight: 600;
-    }
-
-    #compose-lock-icon,
-    #compose-globe-icon {
-        position: relative;
-        left: 6px;
-        top: 0.5px;
-        width: 0;
-    }
-
-    #compose-globe-icon {
-        left: 4.5px;
-
-        .zulip-icon-globe {
-            font-size: 12px;
-        }
+    #compose-direct-recipient {
+        flex-grow: 1;
     }
 
     .message_header {
@@ -227,30 +227,26 @@
     bottom: 0;
     left: 0;
     z-index: 4;
-    width: 100%;
-
-    background-color: hsl(0deg 0% 100%);
 }
 
 #compose-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    /* This should match the value for .app-main */
-    max-width: 1400px;
     margin: auto;
 }
 
 #compose_top {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     padding-bottom: 5px;
 }
 
 #compose_top_right {
     display: flex;
     align-items: center;
-    margin-bottom: auto;
+    height: var(--compose-recipient-box-min-height);
 
     & button {
         background: transparent;
@@ -276,7 +272,7 @@
     display: none;
 }
 
-.compose_banner {
+.main-view-banner {
     margin-bottom: 20px;
     border-radius: 5px;
     border: 1px solid;
@@ -296,7 +292,7 @@
         flex-grow: 1;
     }
 
-    .compose_banner_action_button {
+    .main-view-banner-action-button {
         border: none;
         border-radius: 4px;
         padding: 5px 10px;
@@ -314,7 +310,7 @@
         }
     }
 
-    .compose_banner_close_button {
+    .main-view-banner-close-button {
         font-size: 16px;
         text-decoration: none;
         padding: 9px 8px;
@@ -325,7 +321,7 @@
         border: 1px solid hsl(147deg 57% 25% / 40%);
         color: hsl(147deg 57% 25%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(147deg 57% 25% / 50%);
 
             &:hover {
@@ -336,14 +332,31 @@
                 color: hsl(147deg 57% 25% / 75%);
             }
         }
+
+        .main-view-banner-action-button {
+            background-color: hsl(147deg 57% 25% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(147deg 57% 25% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(147deg 57% 25% / 15%);
+            }
+        }
     }
 
-    &.warning {
+    /* warning and warning-style classes have the same CSS; this is since
+    the warning class has some associated javascript which we do not want
+    for some of the banners, for which we use the warning-style class. */
+    &.warning,
+    &.warning-style {
         background-color: hsl(50deg 75% 92%);
         border-color: hsl(38deg 44% 27% / 40%);
         color: hsl(38deg 44% 27%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(38deg 44% 27% / 50%);
 
             &:hover {
@@ -355,7 +368,7 @@
             }
         }
 
-        .compose_banner_action_button {
+        .main-view-banner-action-button {
             background-color: hsl(38deg 44% 27% / 10%);
             color: inherit;
 
@@ -374,7 +387,7 @@
         border-color: hsl(3deg 57% 33% / 40%);
         color: hsl(4deg 58% 33%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(4deg 58% 33% / 50%);
 
             &:hover {
@@ -386,7 +399,7 @@
             }
         }
 
-        .compose_banner_action_button {
+        .main-view-banner-action-button {
             background-color: hsl(3deg 57% 33% / 10%);
             color: inherit;
 
@@ -406,7 +419,7 @@
         position: relative;
         color: hsl(204deg 49% 29%);
 
-        .compose_banner_close_button {
+        .main-view-banner-close-button {
             color: hsl(204deg 49% 29% / 50%);
 
             &:hover {
@@ -415,6 +428,19 @@
 
             &:active {
                 color: hsl(204deg 49% 29% / 75%);
+            }
+        }
+
+        .main-view-banner-action-button {
+            background-color: hsl(204deg 49% 29% / 10%);
+            color: inherit;
+
+            &:hover {
+                background-color: hsl(204deg 49% 29% / 12%);
+            }
+
+            &:active {
+                background-color: hsl(204deg 49% 29% / 15%);
             }
         }
     }
@@ -439,7 +465,7 @@
     }
 
     .upload_msg,
-    .compose_banner_close_button {
+    .main-view-banner-close-button {
         z-index: 1;
         position: relative;
     }
@@ -500,6 +526,7 @@ textarea.new_message_textarea,
     border: 1px solid hsl(0deg 0% 0% / 20%);
     box-shadow: none;
     transition: border 0.2s ease;
+    color: var(--color-text-default);
 
     &:focus {
         outline: 0;
@@ -510,33 +537,27 @@ textarea.new_message_textarea,
 
 input.recipient_box {
     margin: 0;
-    height: 1.1em;
+    padding: 0 6px;
+    height: auto;
     border-radius: 3px;
 }
 
-#stream_message_recipient_stream.recipient_box {
-    width: 20%;
-    border-radius: 0 3px 3px 0;
-    border-left: 0;
+#compose_select_recipient_widget {
+    border-radius: 0 4px 4px 0;
+    width: auto;
+    outline: none;
 
-    @media (width > $sm_min) {
-        min-width: 120px;
-    }
-
-    &:focus {
-        border-left: none;
-    }
-
-    &.lock-padding {
-        padding-left: 20px;
+    &.dropdown-widget-button {
+        padding: 0 6px;
     }
 }
 
 #stream_message_recipient_topic.recipient_box {
+    width: 100%;
     /* This width roughly corresponds to how long of a topic can appear in
        the left sidebar with a single digit unread count without being
        cut off. */
-    width: 175px;
+    max-width: 175px;
 }
 
 #private_message_recipient.recipient_box {
@@ -544,12 +565,11 @@ input.recipient_box {
 }
 
 #compose-send-button {
-    height: 24px;
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding: 3px 12px;
     margin-bottom: 0;
     font-weight: 600;
     font-size: 0.9em;
+    border-radius: 4px 0 0 4px;
 
     .loader {
         display: none;
@@ -597,7 +617,7 @@ input.recipient_box {
     }
 }
 
-.enter_sends {
+.open_enter_sends_dialog {
     font-size: 12px;
     height: 14px;
     padding-left: 4px;
@@ -612,7 +632,6 @@ input.recipient_box {
     }
 
     & kbd {
-        height: 16px;
         padding: 0 4px;
     }
 
@@ -632,14 +651,21 @@ input.recipient_box {
     }
 }
 
-#compose-stream-recipient,
-#compose-private-recipient {
+#compose-recipient {
     display: flex;
-}
-
-#compose-private-recipient {
-    align-items: center;
     width: 100%;
+    /* Use this containing flex element to
+      establish the minimum height of all its
+      children; the default `align-items: stretch`
+      (which is set on any flexbox without specifying
+      it) ensures that the child flex items will
+      always stretch to fit the height set here;
+      larger heights, such as on group-DM pills,
+      will allow this to grow as needed.
+      Child flex items like chevrons take
+      `align-self: center` to center only
+      themselves, where necessary. */
+    min-height: var(--compose-recipient-box-min-height);
 }
 
 .tippy-content .compose_control_buttons_container {
@@ -694,7 +720,7 @@ input.recipient_box {
     }
 
     .divider {
-        color: hsl(0deg 0% 88%);
+        color: hsl(0deg 0% 75%);
         font-size: 20px;
         margin: 0 3px;
     }
@@ -716,11 +742,19 @@ input.recipient_box {
 
 .compose_right_float_container {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    flex-direction: row;
     white-space: nowrap;
-    gap: 4px;
     margin-top: 2px;
+    height: 24px;
+
+    &.disabled-compose-send-button-container {
+        cursor: not-allowed;
+
+        & button {
+            pointer-events: none;
+            background-color: hsl(0deg 0% 65%);
+        }
+    }
 }
 
 a.compose_control_button {
@@ -766,12 +800,73 @@ a.compose_control_button.hide {
 
     border: 1px solid hsl(0deg 0% 67%);
     border-radius: 4px;
-    background-color: hsl(0deg 0% 0% / 2%);
+    background-color: hsl(0deg 0% 98%);
     cursor: not-allowed;
 }
 
 .markdown_preview_spinner {
     margin: auto;
+}
+
+#compose_recipient_selection_dropdown {
+    display: flex;
+    justify-content: flex-start;
+    height: var(--compose-recipient-box-min-height);
+
+    .stream_header_colorblock {
+        margin: 0;
+    }
+
+    .dropdown-toggle {
+        border-radius: 0 4px 4px 0 !important;
+        display: flex;
+        min-width: 0;
+    }
+
+    .dropdown-menu {
+        /* The Bootstrap default of 160px wraps too early.
+           TODO: Replace this with a max-width and natural scaling? */
+        width: 200px;
+        top: auto;
+        left: -10px;
+    }
+
+    .dropup .dropdown-menu {
+        bottom: 100%;
+        margin-bottom: 17px;
+    }
+
+    #compose_select_recipient_name {
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-default);
+
+        .stream-privacy-type-icon {
+            font-size: 13px;
+            width: 13px;
+            height: 13px;
+            position: relative;
+            top: 2px;
+        }
+    }
+
+    .dropdown-list-body .list_item a {
+        white-space: normal;
+    }
+
+    .fa-chevron-down {
+        float: right;
+        padding-left: 5px;
+        color: hsl(0deg 0% 58%);
+        font-weight: lighter;
+    }
+
+    /* This is the "Select a stream" default message */
+    .text-warning {
+        color: inherit;
+    }
 }
 
 .dropdown-menu {
@@ -805,6 +900,33 @@ a.compose_control_button.hide {
     margin-right: 4px;
 }
 
+/* `^` icon located next to `Send` / `Scheduled` button which shows
+   options to schedule the message. */
+#send_later {
+    display: flex;
+    align-items: center;
+    float: right;
+    color: hsl(0deg 0% 100%);
+    border-radius: 0 4px 4px 0;
+    padding: 0;
+    margin: 0;
+
+    .zulip-icon {
+        padding: 5px 9px;
+    }
+
+    .separator-line {
+        background-color: hsl(0deg 0% 100% / 65%);
+        height: 70%;
+        width: 1px;
+    }
+
+    &:hover,
+    &:focus {
+        box-shadow: none;
+    }
+}
+
 @media (width < $xl_min) {
     #compose-content {
         margin-right: 7px;
@@ -819,13 +941,6 @@ a.compose_control_button.hide {
 }
 
 @media (width < $mm_min) {
-    #stream_message_recipient_topic.recipient_box {
-        /* The max-width here is designed to allow this to share space with
-           the Stream input in small windows, without leaving empty space. */
-        max-width: calc(100% - 90px);
-        min-width: 110px;
-    }
-
     #compose-content {
         margin-right: 5px;
         margin-left: 5px;

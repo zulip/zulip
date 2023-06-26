@@ -81,7 +81,7 @@ def get_events_internal(
     request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     user_profile = get_user_profile_by_id(user_profile_id)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
     assert is_current_port(get_user_tornado_port(user_profile))
 
     process_client(request, user_profile, client_name="internal")
@@ -156,6 +156,9 @@ def get_events_backend(
     pronouns_field_type_supported: bool = REQ(
         default=True, json_validator=check_bool, intentionally_undocumented=True
     ),
+    linkifier_url_template: bool = REQ(
+        default=False, json_validator=check_bool, intentionally_undocumented=True
+    ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
         raise JsonableError(_("User not authorized for this query"))
@@ -188,6 +191,7 @@ def get_events_backend(
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
 
     result = in_tornado_thread(fetch_events)(

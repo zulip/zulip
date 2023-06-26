@@ -1,0 +1,30 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_url }}/registration_confirmation.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+<p>
+    {% if create_realm %}
+    {{ _('You have requested a new Zulip organization. Awesome!') }}
+    {% else %}
+    {{ _('You recently signed up for Zulip. Awesome!') }}
+    {% endif %}
+</p>
+<p>
+    {% if create_realm %}
+    {{ _('Click the button below to create the organization and register your account.') }}
+    {% else %}
+    {{ _('Click the button below to complete registration.') }}
+    {% endif %}
+    <a class="button" href="{{ activate_url }}">{{ _('Complete registration') }}</a>
+</p>
+<p>
+    {% if corporate_enabled %}
+        {{macros.contact_us_zulip_cloud(support_email)}}
+    {% else %}
+        {{macros.contact_us_self_hosted(support_email)}}
+    {% endif %}
+</p>
+{% endblock %}

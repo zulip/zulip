@@ -452,6 +452,9 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         ## default, Zulip asks the user whether they want to create an
         ## account or try to log in again using another method.
         # "auto_signup": False,
+        ## Determines whether Service Provider initiated SAML Single Logout should be enabled.
+        ## Note that IdP-initiated Single Logout must be configured before enabling this.
+        # "sp_initiated_logout_enabled": False,
     },
 }
 
@@ -665,8 +668,6 @@ JWT_AUTH_KEYS: Dict[str, Any] = {
 ## Controls whether or not error reports (tracebacks) are emailed to the
 ## server administrators.
 # ERROR_REPORTING = True
-## For frontend (JavaScript) tracebacks
-# BROWSER_ERROR_REPORTING = False
 
 ## Controls the DSN used to report errors to Sentry.io
 # SENTRY_DSN = "https://aaa@bbb.ingest.sentry.io/1234"
@@ -710,6 +711,15 @@ JWT_AUTH_KEYS: Dict[str, Any] = {
 
 ################
 ## Miscellaneous settings.
+
+## If you host multiple organizations on the same Zulip server, you
+## can customize the hostname that one of them uses by adding it here.
+## See https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html#other-hostnames
+## Note that you still need SSL certificates for this other custom hostname:
+## https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html#ssl-certificates
+# REALM_HOSTS = {
+#     "example": "hostname.example.com",
+# }
 
 ## How long outgoing webhook requests time out after
 # OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10

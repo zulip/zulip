@@ -505,7 +505,7 @@ exports.fixtures = {
         realm_linkifiers: [
             {
                 pattern: "#[123]",
-                url_format: "ticket %(id)s",
+                url_template: "ticket {id}",
                 id: 55,
             },
         ],
@@ -611,6 +611,40 @@ exports.fixtures = {
         zulip_feature_level: 55,
         server_generation: 2,
         immediate: true,
+    },
+
+    scheduled_messages__add: {
+        type: "scheduled_messages",
+        op: "add",
+        scheduled_messages: [
+            {
+                scheduled_message_id: 17,
+                type: "private",
+                to: [6],
+                content: "Hello there!",
+                rendered_content: "<p>Hello there!</p>",
+                scheduled_delivery_timestamp: 1681662420,
+            },
+        ],
+    },
+
+    scheduled_messages__remove: {
+        type: "scheduled_messages",
+        op: "remove",
+        scheduled_message_id: 17,
+    },
+
+    scheduled_messages__update: {
+        type: "scheduled_messages",
+        op: "update",
+        scheduled_message: {
+            scheduled_message_id: 17,
+            type: "private",
+            to: [6],
+            content: "Hello there!",
+            rendered_content: "<p>Hello there!</p>",
+            scheduled_delivery_timestamp: 1681662420,
+        },
     },
 
     stream__create: {
@@ -921,6 +955,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__notification_sound: {
+        type: "user_settings",
+        op: "update",
+        property: "notification_sound",
+        value: "ding",
+    },
+
     user_settings__presence_disabled: {
         type: "user_settings",
         op: "update",
@@ -961,6 +1002,13 @@ exports.fixtures = {
         op: "update",
         property: "user_list_style",
         value: 2,
+    },
+
+    user_settings__web_mark_read_on_scroll_policy: {
+        type: "user_settings",
+        op: "update",
+        property: "web_mark_read_on_scroll_policy",
+        value: 1,
     },
 
     user_status__set_status_emoji: {

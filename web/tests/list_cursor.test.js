@@ -53,7 +53,7 @@ run_test("misc errors", ({override}) => {
     blueslip.expect("error", "Caller is not checking keys for ListCursor.go_to");
     cursor.go_to(undefined);
 
-    blueslip.expect("error", "Cannot highlight key for ListCursor: nada");
+    blueslip.expect("error", "Cannot highlight key for ListCursor");
     cursor.go_to("nada");
 
     cursor.prev();

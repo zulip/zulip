@@ -16,6 +16,7 @@ from scripts.lib.zulip_tools import (
     get_config,
     get_config_file,
     get_deploy_options,
+    get_deploy_root,
     get_deployment_lock,
     make_deploy_path,
     overwrite_symlink,
@@ -25,8 +26,9 @@ from scripts.lib.zulip_tools import (
 
 config_file = get_config_file()
 deploy_options = get_deploy_options(config_file)
-upstream_url = "https://github.com/zulip/zulip.git"
-remote_url = get_config(config_file, "deployment", "git_repo_url", upstream_url)
+remote_url = get_config(
+    config_file, "deployment", "git_repo_url", "https://github.com/zulip/zulip.git"
+)
 
 assert_running_as_root(strip_lib_from_paths=True)
 
@@ -132,20 +134,8 @@ try:
             preexec_fn=su_to_zulip,
         )
 
-    # Ensure upstream remote is configured; we need this to make `git describe` accurate.
-    remotes = subprocess.check_output(["git", "remote"], preexec_fn=su_to_zulip).split(b"\n")
-    if b"upstream" not in remotes:
-        subprocess.check_call(
-            ["git", "remote", "add", "upstream", upstream_url], preexec_fn=su_to_zulip
-        )
-    else:
-        subprocess.check_call(
-            ["git", "remote", "set-url", "upstream", upstream_url], preexec_fn=su_to_zulip
-        )
-
-    logging.info("Fetching the latest commits")
     subprocess.check_call(
-        ["git", "fetch", "--prune", "--quiet", "--tags", "--all"], preexec_fn=su_to_zulip
+        [os.path.join(get_deploy_root(), "scripts/lib/update-git-upstream")], preexec_fn=su_to_zulip
     )
 
     # Generate the deployment directory via git worktree from our local repository.

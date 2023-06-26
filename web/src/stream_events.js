@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
+import * as compose_recipient from "./compose_recipient";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
@@ -41,7 +42,7 @@ export function update_property(stream_id, property, value, other_values) {
 
     switch (property) {
         case "color":
-            stream_color.update_stream_color(sub, value, {update_historical: true});
+            stream_color.update_stream_color(sub, value);
             break;
         case "in_home_view":
             // Legacy in_home_view events are only sent as duplicates of
@@ -62,6 +63,7 @@ export function update_property(stream_id, property, value, other_values) {
             break;
         case "name":
             stream_settings_ui.update_stream_name(sub, value);
+            compose_recipient.possibly_update_stream_name_in_compose(sub.stream_id);
             break;
         case "description":
             stream_settings_ui.update_stream_description(
@@ -83,6 +85,7 @@ export function update_property(stream_id, property, value, other_values) {
                 history_public_to_subscribers: other_values.history_public_to_subscribers,
                 is_web_public: other_values.is_web_public,
             });
+            compose_recipient.on_compose_select_recipient_update();
             break;
         case "stream_post_policy":
             stream_settings_ui.update_stream_post_policy(sub, value);
@@ -117,7 +120,7 @@ export function mark_subscribed(sub, subscribers, color) {
     // If the backend sent us a color, use that
     if (color !== undefined && sub.color !== color) {
         sub.color = color;
-        stream_color.update_stream_color(sub, color, {update_historical: true});
+        stream_color.update_stream_color(sub, color);
     } else if (sub.color === undefined) {
         // If the backend didn't, and we have a color already, send
         // the backend that color.  It's not clear this code path is
@@ -173,7 +176,7 @@ export function mark_unsubscribed(sub) {
 
         // This update would likely be better implemented by having it
         // disappear whenever no unread messages remain.
-        unread_ui.hide_mark_as_read_turned_off_banner();
+        unread_ui.hide_unread_banner();
     }
 
     // Unread messages in the now-unsubscribe stream need to be

@@ -12,7 +12,7 @@ import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
 import * as rendered_markdown from "./rendered_markdown";
-import * as ui from "./ui";
+import * as scroll_util from "./scroll_util";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
@@ -22,39 +22,27 @@ export let toggler;
 
 const markdown_help_rows = [
     {
-        markdown: "*italic*",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>I</kbd>)",
-    },
-    {
         markdown: "**bold**",
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>B</kbd>)",
     },
     {
+        markdown: "*italic*",
+        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>I</kbd>)",
+    },
+    {
         markdown: "~~strikethrough~~",
+    },
+    {
+        markdown: ":heart:",
     },
     {
         markdown: "[Zulip website](https://zulip.org)",
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
     },
     {
-        markdown: `\
-* Milk
-* Tea
-  * Green tea
-  * Black tea
-  * Oolong tea
-* Coffee`,
-    },
-    {
-        markdown: `\
-1. Milk
-1. Tea
-1. Coffee`,
-    },
-    {
-        markdown: ":heart:",
-        usage_html:
-            '(and <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank" rel="noopener noreferrer">many others</a>, from the <a href="https://code.google.com/p/noto/" target="_blank" rel="noopener noreferrer">Noto Project</a>)',
+        markdown: "#**streamName**",
+        output_html: "<p><a>#streamName</a></p>",
+        effect_html: "(links to a stream)",
     },
     {
         markdown: "@**Joe Smith**",
@@ -73,9 +61,77 @@ const markdown_help_rows = [
         effect_html: "(notifies all recipients)",
     },
     {
-        markdown: "#**streamName**",
-        output_html: "<p><a>#streamName</a></p>",
-        effect_html: "(links to a stream)",
+        markdown: `\
+* Milk
+* Tea
+  * Green tea
+  * Black tea
+  * Oolong tea
+* Coffee`,
+    },
+    {
+        markdown: `\
+1. Milk
+1. Tea
+1. Coffee`,
+    },
+    {
+        markdown: "> Quoted",
+    },
+    {
+        markdown: `\
+\`\`\`quote
+Quoted block
+\`\`\``,
+    },
+    {
+        markdown: `\
+\`\`\`spoiler Always visible heading
+This text won't be visible until the user clicks.
+\`\`\``,
+    },
+    {
+        markdown: "Some inline `code`",
+    },
+    {
+        markdown: `\
+\`\`\`
+def zulip():
+    print "Zulip"
+\`\`\``,
+    },
+    {
+        markdown: `\
+\`\`\`python
+def zulip():
+    print "Zulip"
+\`\`\``,
+        output_html: `\
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
+    },
+    {
+        note_html: $t_html(
+            {
+                defaultMessage:
+                    "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.",
+            },
+            {
+                "z-link": (content_html) =>
+                    `<a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">${content_html.join(
+                        "",
+                    )}</a>`,
+            },
+        ),
+    },
+    {
+        markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
+    },
+    {
+        markdown: `\
+\`\`\`math
+\\int_{0}^{1} f(x) dx
+\`\`\``,
     },
     {
         markdown: "/me is busy working",
@@ -114,62 +170,7 @@ Coffee`,
 `,
     },
     {
-        markdown: "Some inline `code`",
-    },
-    {
-        markdown: `\
-\`\`\`
-def zulip():
-    print "Zulip"
-\`\`\``,
-    },
-    {
-        markdown: `\
-\`\`\`python
-def zulip():
-    print "Zulip"
-\`\`\``,
-        output_html: `\
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
-    },
-    {
-        note_html: $t_html(
-            {
-                defaultMessage:
-                    "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.",
-            },
-            {
-                "z-link": (content_html) =>
-                    `<a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">${content_html.join(
-                        "",
-                    )}</a>`,
-            },
-        ),
-    },
-    {
-        markdown: "> Quoted",
-    },
-    {
-        markdown: `\
-\`\`\`quote
-Quoted block
-\`\`\``,
-    },
-    {
-        markdown: `\
-\`\`\`spoiler Always visible heading
-This text won't be visible until the user clicks.
-\`\`\``,
-    },
-    {
-        markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
-    },
-    {
-        markdown: `\
-\`\`\`math
-\\int_{0}^{1} f(x) dx
-\`\`\``,
+        markdown: "---",
     },
     {
         note_html: $t_html(
@@ -219,7 +220,9 @@ export function set_up_toggler() {
         callback(name, key) {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
-            ui.get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body")).trigger("focus");
+            scroll_util
+                .get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body"))
+                .trigger("focus");
         },
     };
 
@@ -234,7 +237,7 @@ export function set_up_toggler() {
     });
 
     for (const $modal of modals) {
-        ui.get_scroll_element($modal).prop("tabindex", 0);
+        scroll_util.get_scroll_element($modal).prop("tabindex", 0);
         keydown_util.handle({
             $elem: $modal,
             handlers: {
@@ -255,10 +258,6 @@ export function set_up_toggler() {
 }
 
 export function show(target) {
-    if (!toggler) {
-        set_up_toggler();
-    }
-
     const $overlay = $(".informational-overlays");
 
     if (!$overlay.hasClass("show")) {
@@ -269,6 +268,10 @@ export function show(target) {
                 browser_history.exit_overlay();
             },
         });
+    }
+
+    if (!toggler) {
+        set_up_toggler();
     }
 
     if (target) {

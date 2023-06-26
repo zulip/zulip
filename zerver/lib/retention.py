@@ -324,6 +324,7 @@ def delete_messages(msg_ids: List[int]) -> None:
 def delete_expired_attachments(realm: Realm) -> None:
     (num_deleted, ignored) = Attachment.objects.filter(
         messages__isnull=True,
+        scheduled_messages__isnull=True,
         realm_id=realm.id,
         id__in=ArchivedAttachment.objects.filter(realm_id=realm.id),
     ).delete()

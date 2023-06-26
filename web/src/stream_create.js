@@ -15,6 +15,7 @@ import * as settings_data from "./settings_data";
 import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui_report from "./ui_report";
 import {parse_html} from "./ui_util";
 
@@ -123,7 +124,7 @@ let stream_announce_previous_value =
 // Within the new stream modal...
 function update_announce_stream_state() {
     // If there is no notifications_stream, we simply hide the widget.
-    if (!stream_data.realm_has_notifications_stream()) {
+    if (stream_data.get_notifications_stream() === "") {
         $("#announce-new-stream").hide();
         return;
     }
@@ -133,7 +134,7 @@ function update_announce_stream_state() {
     const $announce_stream_checkbox = $("#announce-new-stream input");
     const $announce_stream_label = $("#announce-new-stream");
     let disable_it = false;
-    const privacy_type = $("#stream_creation_form input:radio[name=privacy]:checked").val();
+    const privacy_type = $("#stream_creation_form input[type=radio][name=privacy]:checked").val();
     const is_invite_only =
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
     $announce_stream_label.removeClass("control-label-disabled");
@@ -235,9 +236,18 @@ function create_stream() {
 
     data.message_retention_days = JSON.stringify(message_retention_selection);
 
-    const announce =
-        stream_data.realm_has_notifications_stream() &&
+    let announce =
+        stream_data.get_notifications_stream() !== "" &&
         $("#announce-new-stream input").prop("checked");
+
+    if (
+        stream_data.get_notifications_stream() === "" &&
+        stream_data.realm_has_notifications_stream() &&
+        !invite_only
+    ) {
+        announce = true;
+    }
+
     data.announce = JSON.stringify(announce);
 
     // TODO: We can eliminate the user_ids -> principals conversion
@@ -351,6 +361,15 @@ export function show_new_stream_modal() {
             });
         }
     }
+    const $add_subscribers_container = $(
+        "#stream_creation_form .subscriber_list_settings",
+    ).expectOne();
+
+    stream_ui_updates.enable_or_disable_add_subscribers_elements(
+        $add_subscribers_container,
+        settings_data.user_can_subscribe_other_users(),
+        true,
+    );
 
     // set default state for "announce stream" option.
     update_announce_stream_state();

@@ -3,12 +3,11 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as notifications from "./notifications";
-import * as overlays from "./overlays";
+import * as popovers from "./popovers";
 import * as rows from "./rows";
 import * as util from "./util";
 
-export let $message_pane;
+export let $scroll_container;
 
 let $jwindow;
 const dimensions = {};
@@ -17,13 +16,13 @@ let in_stoppable_autoscroll = false;
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value() {
-            return dimen_func.call($message_pane);
+            return dimen_func.call($scroll_container);
         },
     });
     return function viewport_dimension_wrapper(...args) {
         if (args.length !== 0) {
             dimensions[dimen_name].reset();
-            return dimen_func.apply($message_pane, args);
+            return dimen_func.apply($scroll_container, args);
         }
         return dimensions[dimen_name].get();
     };
@@ -55,11 +54,10 @@ export function message_viewport_info() {
 
     const res = {};
 
-    const $element_just_above_us = $("#navbar-container .header");
+    const $element_just_above_us = $("#navbar-fixed-container");
     const $element_just_below_us = $("#compose");
 
-    res.visible_top =
-        $element_just_above_us.offset().top + $element_just_above_us.safeOuterHeight();
+    res.visible_top = $element_just_above_us.safeOuterHeight();
 
     const $sticky_header = $(".sticky_header");
     if ($sticky_header.length) {
@@ -75,7 +73,7 @@ export function message_viewport_info() {
 
 export function at_bottom() {
     const bottom = scrollTop() + height();
-    const full_height = $message_pane.prop("scrollHeight");
+    const full_height = $scroll_container.prop("scrollHeight");
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -118,7 +116,7 @@ export function offset_from_bottom($last_row) {
     // A positive return value here means the last row is
     // below the bottom of the feed (i.e. obscured by the compose
     // box or even further below the bottom).
-    const message_bottom = $last_row.offset().top + $last_row.height();
+    const message_bottom = $last_row.get_offset_to_window().bottom;
     const info = message_viewport_info();
 
     return message_bottom - info.visible_bottom;
@@ -187,8 +185,8 @@ function add_to_visible(
 
 const top_of_feed = new util.CachedValue({
     compute_value() {
-        const $header = $("#navbar-container .header");
-        let visible_top = $header.offset().top + $header.safeOuterHeight();
+        const $header = $("#navbar-fixed-container");
+        let visible_top = $header.safeOuterHeight();
 
         const $sticky_header = $(".sticky_header");
         if ($sticky_header.length) {
@@ -283,13 +281,13 @@ export function visible_messages(require_fully_visible) {
 }
 
 export function scrollTop(target_scrollTop) {
-    const orig_scrollTop = $message_pane.scrollTop();
+    const orig_scrollTop = $scroll_container.scrollTop();
     if (target_scrollTop === undefined) {
         return orig_scrollTop;
     }
-    let $ret = $message_pane.scrollTop(target_scrollTop);
-    const new_scrollTop = $message_pane.scrollTop();
-    const space_to_scroll = $("#bottom_whitespace").offset().top - height();
+    let $ret = $scroll_container.scrollTop(target_scrollTop);
+    const new_scrollTop = $scroll_container.scrollTop();
+    const space_to_scroll = $("#bottom_whitespace").get_offset_to_window().top - height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
     if (
@@ -307,10 +305,10 @@ export function scrollTop(target_scrollTop) {
             "ScrollTop did nothing when scrolling to " + target_scrollTop + ", fixing...",
         );
         // First scroll to 1 in order to clear the stuck state
-        $message_pane.scrollTop(1);
+        $scroll_container.scrollTop(1);
         // And then scroll where we intended to scroll to
-        $ret = $message_pane.scrollTop(target_scrollTop);
-        if ($message_pane.scrollTop() === 0) {
+        $ret = $scroll_container.scrollTop(target_scrollTop);
+        if ($scroll_container.scrollTop() === 0) {
             blueslip.info(
                 "ScrollTop fix did not work when scrolling to " +
                     target_scrollTop +
@@ -324,7 +322,7 @@ export function scrollTop(target_scrollTop) {
 
 export function stop_auto_scrolling() {
     if (in_stoppable_autoscroll) {
-        $message_pane.stop();
+        $scroll_container.stop();
     }
 }
 
@@ -332,7 +330,7 @@ export function system_initiated_animate_scroll(scroll_amount) {
     message_scroll.suppress_selection_update_on_next_scroll();
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
-    $message_pane.animate({
+    $scroll_container.animate({
         scrollTop: viewport_offset + scroll_amount,
         always() {
             in_stoppable_autoscroll = false;
@@ -346,7 +344,7 @@ export function user_initiated_animate_scroll(scroll_amount) {
 
     const viewport_offset = scrollTop();
 
-    $message_pane.animate({
+    $scroll_container.animate({
         scrollTop: viewport_offset + scroll_amount,
     });
 }
@@ -361,7 +359,7 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
 
     const bottom_threshold = viewport_info.visible_bottom;
 
-    const message_top = $message.offset().top;
+    const message_top = $message.get_offset_to_window().top;
     const message_height = $message.safeOuterHeight(true);
     const message_bottom = message_top + message_height;
 
@@ -389,9 +387,22 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
     }
 }
 
+export function maybe_scroll_to_show_message_top() {
+    // Sets the top of the message to the top of the viewport.
+    // Only applies if the top of the message is out of view above the visible area.
+    const $selected_message = message_lists.current.selected_row();
+    const viewport_info = message_viewport_info();
+    const message_top = $selected_message.get_offset_to_window().top;
+    const message_height = $selected_message.safeOuterHeight(true);
+    if (message_top < viewport_info.visible_top) {
+        set_message_position(message_top, message_height, viewport_info, 0);
+        popovers.set_suppress_scroll_hide();
+    }
+}
+
 export function is_message_below_viewport($message_row) {
     const info = message_viewport_info();
-    const offset = $message_row.offset();
+    const offset = $message_row.get_offset_to_window();
     return offset.top >= info.visible_bottom;
 }
 
@@ -418,7 +429,7 @@ export function keep_pointer_in_view() {
             return true;
         }
 
-        const message_top = $next_row.offset().top;
+        const message_top = $next_row.get_offset_to_window().top;
 
         // If the message starts after the very top of the screen, we just
         // leave it alone.  This avoids bugs like #1608, where overzealousness
@@ -439,7 +450,7 @@ export function keep_pointer_in_view() {
     }
 
     function message_is_far_enough_up() {
-        return at_bottom() || $next_row.offset().top <= bottom_threshold;
+        return at_bottom() || $next_row.get_offset_to_window().top <= bottom_threshold;
     }
 
     function adjust(in_view, get_next_row) {
@@ -467,7 +478,7 @@ export function keep_pointer_in_view() {
 
 export function initialize() {
     $jwindow = $(window);
-    $message_pane = $(".app");
+    $scroll_container = $("html");
     // This handler must be placed before all resize handlers in our application
     $jwindow.on("resize", () => {
         dimensions.height.reset();
@@ -487,15 +498,4 @@ export function initialize() {
     $(document).on("message_selected.zulip wheel", () => {
         stop_auto_scrolling();
     });
-}
-
-export function is_visible_and_focused() {
-    if (
-        overlays.is_overlay_or_modal_open() ||
-        !notifications.is_window_focused() ||
-        !$("#message_feed_container").is(":visible")
-    ) {
-        return false;
-    }
-    return true;
 }

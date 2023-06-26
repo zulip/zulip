@@ -78,3 +78,16 @@ export function add_hydrated_sub(stream_id: number, sub: StreamSubscription): vo
     // in stream_data.js. Grep there to find callers.
     subs_by_stream_id.set(stream_id, sub);
 }
+
+export function maybe_get_stream_name(stream_id: number): string | undefined {
+    if (!stream_id) {
+        return undefined;
+    }
+    const stream = get(stream_id);
+
+    if (!stream) {
+        return undefined;
+    }
+
+    return stream.name;
+}

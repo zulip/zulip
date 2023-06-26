@@ -43,7 +43,7 @@ function construct_recipient_header($message_row) {
     const message_header_content = rows
         .get_message_recipient_header($message_row)
         .text()
-        .replace(/\s+/g, " ")
+        .replaceAll(/\s+/g, " ")
         .replace(/^\s/, "")
         .replace(/\s$/, "");
     return $("<p>").append($("<strong>").text(message_header_content));
@@ -322,10 +322,10 @@ export function paste_handler_converter(paste_html) {
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.
-    markdown_text = markdown_text.replace(/^(\W* {0,3})(\d+)\\\. /gm, "$1$2. ");
+    markdown_text = markdown_text.replaceAll(/^(\W* {0,3})(\d+)\\\. /gm, "$1$2. ");
 
     // Removes newlines before the start of a list and between list elements.
-    markdown_text = markdown_text.replace(/\n+([*+-])/g, "\n$1");
+    markdown_text = markdown_text.replaceAll(/\n+([*+-])/g, "\n$1");
     return markdown_text;
 }
 

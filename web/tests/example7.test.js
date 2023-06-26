@@ -2,8 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("./lib/namespace");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
+const $ = require("./lib/zjquery");
 
 /*
 
@@ -49,14 +50,16 @@ const {run_test} = require("./lib/test");
           value.)
 */
 
+set_global("document", {hasFocus: () => true});
+
 const channel = mock_esm("../src/channel");
 const message_lists = mock_esm("../src/message_lists");
 const message_viewport = mock_esm("../src/message_viewport");
 const notifications = mock_esm("../src/notifications");
 const unread_ui = mock_esm("../src/unread_ui");
 
-message_lists.current = {};
-message_lists.home = {};
+message_lists.current = {view: {}};
+message_lists.home = {view: {}};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 const message_store = zrequire("message_store");
@@ -98,7 +101,7 @@ run_test("unread_ops", ({override}) => {
     unread.process_loaded_messages(test_messages);
 
     // Make our message_viewport appear visible.
-    override(message_viewport, "is_visible_and_focused", () => true);
+    $("#message_feed_container").show();
 
     // Make our "test" message appear visible.
     override(message_viewport, "bottom_message_visible", () => true);
@@ -107,8 +110,8 @@ run_test("unread_ops", ({override}) => {
     override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
-    override(message_lists.current, "show_message_as_read", () => {});
-    override(message_lists.home, "show_message_as_read", () => {});
+    override(message_lists.current.view, "show_message_as_read", () => {});
+    override(message_lists.home.view, "show_message_as_read", () => {});
     override(notifications, "close_notification", () => {});
     override(unread_ui, "update_unread_counts", () => {});
     override(unread_ui, "notify_messages_remain_unread", () => {});

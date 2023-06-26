@@ -25,7 +25,7 @@ class Command(ZulipBaseCommand):
         user_profiles = self.get_users(options, realm)
         stream_names = {stream.strip() for stream in options["streams"].split(",")}
 
-        for stream_name in set(stream_names):
+        for stream_name in stream_names:
             for user_profile in user_profiles:
                 stream = ensure_stream(realm, stream_name, acting_user=None)
                 _ignore, already_subscribed = bulk_add_subscriptions(

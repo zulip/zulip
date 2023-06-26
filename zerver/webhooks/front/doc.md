@@ -14,8 +14,8 @@ constructed above.
 
 1. Go to the **Settings** page of your Zulip organization. Click on the
 **Linkifiers** tab, and add a new linkifier. Set the pattern to
-`cnv_(?P<id>[0-9a-z]+)`. Set the URL format string to
-`https://app.frontapp.com/open/cnv_%(id)s`. This step is necessary to map
+`cnv_(?P<id>[0-9a-z]+)`. Set the URL template to
+`https://app.frontapp.com/open/cnv_{id}`. This step is necessary to map
 Front conversations to topics in Zulip.
 
 {!congrats.md!}

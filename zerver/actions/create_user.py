@@ -48,7 +48,7 @@ from zerver.models import (
     bot_owner_user_ids,
     get_system_bot,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
@@ -182,9 +182,12 @@ def process_new_human_user(
         streams = []
         acting_user = None
 
-    # If the user's invitation didn't explicitly list some streams, we
-    # add the default streams
-    if len(streams) == 0:
+    user_was_invited = prereg_user is not None and (
+        prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
+    )
+    # If the Preregistration object didn't explicitly list some streams (it happens when user
+    # directly signs up without any invitation), we add the default streams
+    if len(streams) == 0 and not user_was_invited:
         streams = get_default_subs(user_profile)
 
     for default_stream_group in default_stream_groups:
@@ -210,7 +213,7 @@ def process_new_human_user(
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
     ):
-        # This is a cross-realm private message.
+        # This is a cross-realm direct message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
                 get_system_bot(settings.NOTIFICATION_BOT, prereg_user.referred_by.realm_id),
@@ -252,9 +255,9 @@ def process_new_human_user(
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
-    from zerver.lib.onboarding import send_initial_pms
+    from zerver.lib.onboarding import send_initial_direct_message
 
-    send_initial_pms(user_profile)
+    send_initial_direct_message(user_profile)
 
 
 def notify_created_user(user_profile: UserProfile) -> None:
@@ -308,20 +311,12 @@ def notify_created_user(user_profile: UserProfile) -> None:
         event: Dict[str, Any] = dict(
             type="realm_user", op="add", person=person_for_real_email_access_users
         )
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm, event, user_ids_with_real_email_access
-            )
-        )
+        send_event_on_commit(user_profile.realm, event, user_ids_with_real_email_access)
 
     if user_ids_without_real_email_access:
         assert person_for_without_real_email_access_users is not None
         event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm, event, user_ids_without_real_email_access
-            )
-        )
+        send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -358,9 +353,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
 
 def notify_created_bot(user_profile: UserProfile) -> None:
     event = created_bot_event(user_profile)
-    transaction.on_commit(
-        lambda: send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
-    )
+    send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
 def do_create_user(

@@ -808,7 +808,7 @@ def check_realm_export(
 realm_linkifier_type = DictType(
     required_keys=[
         ("pattern", str),
-        ("url_format", str),
+        ("url_template", str),
         ("id", int),
     ]
 )
@@ -821,28 +821,6 @@ realm_linkifiers_event = event_dict_type(
 )
 check_realm_linkifiers = make_checker(realm_linkifiers_event)
 
-
-# This is a legacy event type to ensure backwards compatibility
-# for old clients. Newer clients should handle only the
-# "realm_linkifiers" event above.
-realm_filter_type = TupleType(
-    [
-        # we should make this an object
-        # see realm_filters_for_realm_remote_cache
-        str,  # pattern
-        str,  # format string
-        int,  # id
-    ]
-)
-
-realm_filters_event = event_dict_type(
-    [
-        # force vertical
-        ("type", Equals("realm_filters")),
-        ("realm_filters", ListType(realm_filter_type)),
-    ]
-)
-check_realm_filters = make_checker(realm_filters_event)
 
 plan_type_extra_data_type = DictType(
     required_keys=[

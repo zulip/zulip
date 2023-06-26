@@ -22,7 +22,7 @@ function returns_time(secs) {
 }
 
 run_test("basics", ({override, override_rewire}) => {
-    typing_status.initialize_state();
+    typing_status.state = null;
 
     // invalid conversation basically does nothing
     let worker = {};
@@ -45,12 +45,12 @@ run_test("basics", ({override, override_rewire}) => {
     set_global("clearTimeout", clear_timeout);
 
     function notify_server_start(recipient) {
-        assert.equal(recipient, "alice");
+        assert.deepStrictEqual(recipient, [1, 2]);
         events.started = true;
     }
 
     function notify_server_stop(recipient) {
-        assert.equal(recipient, "alice");
+        assert.deepStrictEqual(recipient, [1, 2]);
         events.stopped = true;
     }
 
@@ -72,12 +72,12 @@ run_test("basics", ({override, override_rewire}) => {
         notify_server_stop,
     };
 
-    // Start talking to alice.
-    call_handler("alice");
+    // Start talking to users having ids - 1, 2.
+    call_handler([1, 2]);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: "alice",
+        current_recipient_ids: [1, 2],
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -89,11 +89,11 @@ run_test("basics", ({override, override_rewire}) => {
 
     // type again 3 seconds later
     worker.get_current_time = returns_time(8);
-    call_handler("alice");
+    call_handler([1, 2]);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(5 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: "alice",
+        current_recipient_ids: [1, 2],
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -106,11 +106,11 @@ run_test("basics", ({override, override_rewire}) => {
     // type after 15 secs, so that we can notify the server
     // again
     worker.get_current_time = returns_time(18);
-    call_handler("alice");
+    call_handler([1, 2]);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(18 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: "alice",
+        current_recipient_ids: [1, 2],
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -119,15 +119,11 @@ run_test("basics", ({override, override_rewire}) => {
         timer_cleared: true,
     });
 
-    // Now call alice's idle callback that we captured earlier.
+    // Now call recipients idle callback that we captured earlier.
     const callback = events.idle_callback;
     clear_events();
     callback();
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -137,11 +133,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Call stop with nothing going on.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -149,13 +141,13 @@ run_test("basics", ({override, override_rewire}) => {
         timer_cleared: false,
     });
 
-    // Start talking to alice again.
+    // Start talking to users again.
     worker.get_current_time = returns_time(50);
-    call_handler("alice");
+    call_handler([1, 2]);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(50 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: "alice",
+        current_recipient_ids: [1, 2],
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -165,13 +157,9 @@ run_test("basics", ({override, override_rewire}) => {
     });
     assert.ok(events.idle_callback);
 
-    // Explicitly stop alice.
+    // Explicitly stop users.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -179,13 +167,13 @@ run_test("basics", ({override, override_rewire}) => {
         timer_cleared: true,
     });
 
-    // Start talking to alice again.
+    // Start talking to users again.
     worker.get_current_time = returns_time(80);
-    call_handler("alice");
+    call_handler([1, 2]);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(80 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: "alice",
+        current_recipient_ids: [1, 2],
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -197,11 +185,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Switch to an invalid conversation.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -211,11 +195,7 @@ run_test("basics", ({override, override_rewire}) => {
 
     // Switch to another invalid conversation.
     call_handler(null);
-    assert.deepEqual(typing_status.state, {
-        next_send_start_time: undefined,
-        idle_timer: undefined,
-        current_recipient: null,
-    });
+    assert.deepEqual(typing_status.state, null);
     assert.deepEqual(events, {
         idle_callback: undefined,
         started: false,
@@ -223,13 +203,13 @@ run_test("basics", ({override, override_rewire}) => {
         timer_cleared: false,
     });
 
-    // Start talking to alice again.
+    // Start talking to users again.
     worker.get_current_time = returns_time(170);
-    call_handler("alice");
+    call_handler([1, 2]);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(170 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: "alice",
+        current_recipient_ids: [1, 2],
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -239,19 +219,19 @@ run_test("basics", ({override, override_rewire}) => {
     });
     assert.ok(events.idle_callback);
 
-    // Switch to bob now.
+    // Switch to new users now.
     worker.get_current_time = returns_time(171);
 
     worker.notify_server_start = (recipient) => {
-        assert.equal(recipient, "bob");
+        assert.deepStrictEqual(recipient, [3, 4]);
         events.started = true;
     };
 
-    call_handler("bob");
+    call_handler([3, 4]);
     assert.deepEqual(typing_status.state, {
         next_send_start_time: make_time(171 + 10),
         idle_timer: "idle_timer_stub",
-        current_recipient: "bob",
+        current_recipient_ids: [3, 4],
     });
     assert.deepEqual(events, {
         idle_callback: events.idle_callback,
@@ -262,10 +242,10 @@ run_test("basics", ({override, override_rewire}) => {
     assert.ok(events.idle_callback);
 
     // test that we correctly detect if worker.get_recipient
-    // and typing_status.state.current_recipient are the same
+    // and typing_status.state.current_recipient_ids are the same
 
     override(compose_pm_pill, "get_user_ids_string", () => "1,2,3");
-    typing_status.state.current_recipient = typing.get_recipient();
+    typing_status.state.current_recipient_ids = typing.get_recipient();
 
     const call_count = {
         maybe_ping_server: 0,
@@ -281,7 +261,7 @@ run_test("basics", ({override, override_rewire}) => {
         });
     }
 
-    // User ids of people in compose narrow doesn't change and is same as stat.current_recipient
+    // User ids of people in compose narrow doesn't change and is same as stat.current_recipient_ids
     // so counts of function should increase except stop_last_notification
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 1);

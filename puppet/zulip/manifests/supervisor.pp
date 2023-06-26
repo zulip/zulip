@@ -97,14 +97,24 @@ class zulip::supervisor {
     }
   }
 
-  file { $zulip::common::supervisor_conf_file:
-    ensure  => file,
+  $file_descriptor_limit = zulipconf('application_server', 'service_file_descriptor_limit', 40000)
+  concat { $zulip::common::supervisor_conf_file:
+    ensure  => 'present',
     require => Package[supervisor],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('zulip/supervisor/supervisord.conf.erb'),
     notify  => Exec['supervisor-restart'],
+  }
+  concat::fragment { '00-supervisor-top':
+    order   => '01',
+    target  => $zulip::common::supervisor_conf_file,
+    content => rstrip(template('zulip/supervisor/supervisord.conf.erb')),
+  }
+  concat::fragment { '99-supervisor-end':
+    order   => '99',
+    target  => $zulip::common::supervisor_conf_file,
+    content => "\n",
   }
 
   file { '/usr/local/bin/secret-env-wrapper':

@@ -10,8 +10,8 @@ import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as settings_ui from "./settings_ui";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -42,7 +42,7 @@ function sort_pattern(a, b) {
 }
 
 function sort_url(a, b) {
-    return compare_values(a.url_format, b.url_format);
+    return compare_values(a.url_template, b.url_template);
 }
 
 function open_linkifier_edit_form(linkifier_id) {
@@ -51,7 +51,7 @@ function open_linkifier_edit_form(linkifier_id) {
     const html_body = render_admin_linkifier_edit_form({
         linkifier_id,
         pattern: linkifier.pattern,
-        url_format_string: linkifier.url_format,
+        url_template: linkifier.url_template,
     });
 
     function submit_linkifier_form() {
@@ -61,10 +61,10 @@ function open_linkifier_edit_form(linkifier_id) {
         const $modal = $("#dialog_widget_modal");
         const url = "/json/realm/filters/" + encodeURIComponent(linkifier_id);
         const pattern = $modal.find("#edit-linkifier-pattern").val().trim();
-        const url_format_string = $modal.find("#edit-linkifier-url-format-string").val().trim();
-        const data = {pattern, url_format_string};
+        const url_template = $modal.find("#edit-linkifier-url-template").val().trim();
+        const data = {pattern, url_template};
         const $pattern_status = $modal.find("#edit-linkifier-pattern-status").expectOne();
-        const $format_status = $modal.find("#edit-linkifier-format-status").expectOne();
+        const $template_status = $modal.find("#edit-linkifier-template-status").expectOne();
         const $dialog_error_element = $modal.find("#dialog_error").expectOne();
         const opts = {
             success_continuation() {
@@ -78,7 +78,7 @@ function open_linkifier_edit_form(linkifier_id) {
                     handle_linkifier_api_error(
                         xhr,
                         $pattern_status,
-                        $format_status,
+                        $template_status,
                         $dialog_error_element,
                     );
                 } else {
@@ -109,7 +109,7 @@ function open_linkifier_edit_form(linkifier_id) {
     });
 }
 
-function handle_linkifier_api_error(xhr, pattern_status, format_status, linkifier_status) {
+function handle_linkifier_api_error(xhr, pattern_status, template_status, linkifier_status) {
     // The endpoint uses the Django ValidationError system for error
     // handling, which returns somewhat complicated error
     // dictionaries. This logic parses them.
@@ -118,9 +118,9 @@ function handle_linkifier_api_error(xhr, pattern_status, format_status, linkifie
         xhr.responseText = JSON.stringify({msg: errors.pattern});
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
     }
-    if (errors.url_format_string !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.url_format_string});
-        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, format_status);
+    if (errors.url_template !== undefined) {
+        xhr.responseText = JSON.stringify({msg: errors.url_template});
+        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, template_status);
     }
     if (errors.__all__ !== undefined) {
         xhr.responseText = JSON.stringify({msg: errors.__all__});
@@ -140,7 +140,7 @@ export function populate_linkifiers(linkifiers_data) {
             return render_admin_linkifier_list({
                 linkifier: {
                     pattern: linkifier.pattern,
-                    url_format_string: linkifier.url_format,
+                    url_template: linkifier.url_template,
                     id: linkifier.id,
                 },
                 can_modify: page_params.is_admin,
@@ -151,11 +151,11 @@ export function populate_linkifiers(linkifiers_data) {
             predicate(item, value) {
                 return (
                     item.pattern.toLowerCase().includes(value) ||
-                    item.url_format.toLowerCase().includes(value)
+                    item.url_template.toLowerCase().includes(value)
                 );
             },
             onupdate() {
-                ui.reset_scrollbar($linkifiers_table);
+                scroll_util.reset_scrollbar($linkifiers_table);
             },
         },
         $parent_container: $("#linkifier-settings").expectOne(),
@@ -211,12 +211,12 @@ export function build_page() {
             e.stopPropagation();
             const $linkifier_status = $("#admin-linkifier-status");
             const $pattern_status = $("#admin-linkifier-pattern-status");
-            const $format_status = $("#admin-linkifier-format-status");
+            const $template_status = $("#admin-linkifier-template-status");
             const $add_linkifier_button = $(".new-linkifier-form button");
             $add_linkifier_button.prop("disabled", true);
             $linkifier_status.hide();
             $pattern_status.hide();
-            $format_status.hide();
+            $template_status.hide();
             const linkifier = {};
 
             for (const obj of $(this).serializeArray()) {
@@ -228,7 +228,7 @@ export function build_page() {
                 data: $(this).serialize(),
                 success(data) {
                     $("#linkifier_pattern").val("");
-                    $("#linkifier_format_string").val("");
+                    $("#linkifier_template").val("");
                     $add_linkifier_button.prop("disabled", false);
                     linkifier.id = data.id;
                     ui_report.success(
@@ -241,7 +241,7 @@ export function build_page() {
                     handle_linkifier_api_error(
                         xhr,
                         $pattern_status,
-                        $format_status,
+                        $template_status,
                         $linkifier_status,
                     );
                 },

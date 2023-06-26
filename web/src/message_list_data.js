@@ -1,6 +1,5 @@
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
-import {Filter} from "./filter";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as unread from "./unread";
@@ -15,7 +14,7 @@ export class MessageListData {
     // See also MessageList and MessageListView, which are important
     // to actually display a message list.
 
-    constructor({excludes_muted_topics, filter = new Filter()}) {
+    constructor({excludes_muted_topics, filter}) {
         // The Filter object defines which messages match the narrow,
         // and defines most of the configuration for the MessageListData.
         this.filter = filter;
@@ -29,7 +28,7 @@ export class MessageListData {
         // _all_items is a sorted list of all message objects that
         // match this.filter, regardless of muting.
         //
-        // Most code will instead use _items, which contains contains
+        // Most code will instead use _items, which contains
         // only messages that should be displayed after excluding
         // muted topics and messages sent by muted users.
         this._all_items = [];
@@ -63,7 +62,13 @@ export class MessageListData {
         return this._items.length;
     }
 
+    // The message list is completely empty.
     empty() {
+        return this._all_items.length === 0;
+    }
+
+    // The message list appears empty, but might contain messages that hidden by muting.
+    visibly_empty() {
         return this._items.length === 0;
     }
 
@@ -71,8 +76,16 @@ export class MessageListData {
         return this._items[0];
     }
 
+    first_including_muted() {
+        return this._all_items[0];
+    }
+
     last() {
         return this._items.at(-1);
+    }
+
+    last_including_muted() {
+        return this._all_items.at(-1);
     }
 
     ids_greater_or_equal_than(my_id) {
@@ -208,11 +221,6 @@ export class MessageListData {
         return messages.filter((msg) => this.get(msg.id) === undefined && predicate(msg));
     }
 
-    filter_incoming(messages) {
-        const predicate = this._get_predicate();
-        return messages.filter((message) => predicate(message));
-    }
-
     messages_filtered_for_topic_mutes(messages) {
         if (!this.excludes_muted_topics) {
             return [...messages];
@@ -282,29 +290,22 @@ export class MessageListData {
         let bottom_messages = [];
         let interior_messages = [];
 
-        // If we're initially populating the list, save the messages in
-        // bottom_messages regardless
-        if (this.selected_id() === -1 && this.empty()) {
-            const narrow_messages = this.filter_incoming(messages);
-            bottom_messages = narrow_messages.filter((msg) => !this.get(msg.id));
-        } else {
-            // Filter out duplicates that are already in self, and all messages
-            // that fail our filter predicate
-            messages = this.valid_non_duplicated_messages(messages);
+        // Filter out duplicates that are already in self, and all messages
+        // that fail our filter predicate
+        messages = this.valid_non_duplicated_messages(messages);
 
-            for (const msg of messages) {
-                // Put messages in correct order on either side of the
-                // message list.  This code path assumes that messages
-                // is a (1) sorted, and (2) consecutive block of
-                // messages that belong in this message list; those
-                // facts should be ensured by the caller.
-                if (this.empty() || msg.id > this.last().id) {
-                    bottom_messages.push(msg);
-                } else if (msg.id < this.first().id) {
-                    top_messages.push(msg);
-                } else {
-                    interior_messages.push(msg);
-                }
+        for (const msg of messages) {
+            // Put messages in correct order on either side of the
+            // message list.  This code path assumes that messages
+            // is a (1) sorted, and (2) consecutive block of
+            // messages that belong in this message list; those
+            // facts should be ensured by the caller.
+            if (this.empty() || msg.id > this.last_including_muted().id) {
+                bottom_messages.push(msg);
+            } else if (msg.id < this.first_including_muted().id) {
+                top_messages.push(msg);
+            } else {
+                interior_messages.push(msg);
             }
         }
 

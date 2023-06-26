@@ -130,7 +130,7 @@ test("videos", ({override}) => {
         handler(ev);
         // video link ids consist of 15 random digits
         const video_link_regex =
-            /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
+            /\[translated: Join video call\.]\(https:\/\/meet.jit.si\/\d{15}\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
@@ -176,7 +176,7 @@ test("videos", ({override}) => {
         };
 
         handler(ev);
-        const video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
+        const video_link_regex = /\[translated: Join video call\.]\(example\.zoom\.com\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
@@ -219,7 +219,7 @@ test("videos", ({override}) => {
 
         handler(ev);
         const video_link_regex =
-            /\[translated: Click to join video call]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
+            /\[translated: Join video call\.]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();

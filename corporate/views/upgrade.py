@@ -65,6 +65,7 @@ def check_upgrade_parameters(
     license_management: Optional[str],
     licenses: Optional[int],
     seat_count: int,
+    exempt_from_license_number_check: bool,
 ) -> None:
     if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
         raise BillingError("unknown billing_modality", "")
@@ -72,7 +73,12 @@ def check_upgrade_parameters(
         raise BillingError("unknown schedule")
     if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
         raise BillingError("unknown license_management")
-    validate_licenses(billing_modality == "charge_automatically", licenses, seat_count)
+    validate_licenses(
+        billing_modality == "charge_automatically",
+        licenses,
+        seat_count,
+        exempt_from_license_number_check,
+    )
 
 
 def setup_upgrade_checkout_session_and_payment_intent(
@@ -171,8 +177,18 @@ def upgrade(
         if billing_modality == "send_invoice":
             schedule = "annual"
             license_management = "manual"
+
+        customer = get_customer_by_realm(user.realm)
+        exempt_from_license_number_check = (
+            customer is not None and customer.exempt_from_license_number_check
+        )
         check_upgrade_parameters(
-            billing_modality, schedule, license_management, licenses, seat_count
+            billing_modality,
+            schedule,
+            license_management,
+            licenses,
+            seat_count,
+            exempt_from_license_number_check,
         )
         assert licenses is not None and license_management is not None
         automanage_licenses = license_management == "automatic"
@@ -258,6 +274,10 @@ def initial_upgrade(
     if customer is not None and customer.default_discount is not None:
         percent_off = customer.default_discount
 
+    exempt_from_license_number_check = (
+        customer is not None and customer.exempt_from_license_number_check
+    )
+
     seat_count = get_latest_seat_count(user.realm)
     signed_seat_count, salt = sign_string(str(seat_count))
     context: Dict[str, Any] = {
@@ -268,6 +288,7 @@ def initial_upgrade(
         "salt": salt,
         "min_invoiced_licenses": max(seat_count, MIN_INVOICED_LICENSES),
         "default_invoice_days_until_due": DEFAULT_INVOICE_DAYS_UNTIL_DUE,
+        "exempt_from_license_number_check": exempt_from_license_number_check,
         "plan": "Zulip Cloud Standard",
         "free_trial_days": settings.FREE_TRIAL_DAYS,
         "onboarding": onboarding,

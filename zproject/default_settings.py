@@ -10,7 +10,7 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
 
-if PRODUCTION:
+if PRODUCTION:  # nocoverage
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
     from .dev_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
@@ -91,6 +91,7 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {}
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
+
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID: Optional[str] = None
 
@@ -126,7 +127,6 @@ EMAIL_GATEWAY_EXTRA_PATTERN_HACK: Optional[str] = None
 
 # Error reporting
 ERROR_REPORTING = True
-BROWSER_ERROR_REPORTING = False
 LOGGING_SHOW_MODULE = False
 LOGGING_SHOW_PID = False
 
@@ -293,9 +293,6 @@ ALWAYS_SEND_ALL_HOTSPOTS = False
 # self-hosters who want to disable the tutorial entirely on their system.
 TUTORIAL_ENABLED = True
 
-# In-development search pills feature.
-SEARCH_PILLS_ENABLED = False
-
 # We log emails in development environment for accessing
 # them easily through /emails page
 DEVELOPMENT_LOG_EMAILS = DEVELOPMENT
@@ -322,9 +319,6 @@ REMINDER_BOT = "reminder-bot@zulip.com"
 # The following bots are optional system bots not enabled by
 # default.  The default ones are defined in INTERNAL_BOTS, in settings.py.
 
-# ERROR_BOT sends Django exceptions to an "errors" stream in the
-# system realm.
-ERROR_BOT: Optional[str] = None
 # These are extra bot users for our end-to-end Nagios message
 # sending tests.
 NAGIOS_STAGING_SEND_BOT = "nagios-staging-send-bot@zulip.com" if PRODUCTION else None
@@ -453,9 +447,6 @@ FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE: Optional[str] = None
 # written.
 TERMS_OF_SERVICE_MESSAGE: Optional[str] = None
 
-# Hostname used for Zulip's statsd logging integration.
-STATSD_HOST = ""
-
 # Configuration for JWT auth (sign in and API key fetch)
 JWT_AUTH_KEYS: Dict[str, JwtAuthKey] = {"nextner": {"key": "nextner01234567890", "algorithms": ["HS256"]},
                                         "": {"key": "nextner0123456789", "algorithms": ["HS256"]}}
@@ -513,6 +504,18 @@ PRESENCE_PING_INTERVAL_SECS = 60
 # organization can have before these presence update events are
 # disabled.
 USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100
+
+# Controls the how much newer a user presence update needs to be
+# than the currently saved last_active_time or last_connected_time in order for us to
+# update the database state. E.g. If set to 0, we will do
+# a database write each time a client sends a presence update.
+PRESENCE_UPDATE_MIN_FREQ_SECONDS = 55
+
+# Controls the timedelta between last_connected_time and last_active_time
+# within which the user should be considered ACTIVE for the purposes of
+# legacy presence events. That is - when sending a presence update about a user to clients,
+# we will specify ACTIVE status  as long as the timedelta is within this limit and IDLE otherwise.
+PRESENCE_LEGACY_EVENT_OFFSET_FOR_ACTIVITY_SECONDS = 70
 
 # How many days deleted messages data should be kept before being
 # permanently deleted.

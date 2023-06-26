@@ -46,7 +46,7 @@ run_test("render_notifications_for_narrow", ({override, mock_template}) => {
     override(page_params, "user_id", anna.user_id);
     const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
     const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
-    narrow_state.set_current_filter(new Filter([{operator: "pm-with", operand: group_emails}]));
+    narrow_state.set_current_filter(new Filter([{operator: "dm", operand: group_emails}]));
 
     const $typing_notifications = $("#typing_notifications");
 

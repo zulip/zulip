@@ -47,7 +47,7 @@ export function current_user_has_reacted_to_emoji(message, local_id) {
 function get_message(message_id) {
     const message = message_store.get(message_id);
     if (!message) {
-        blueslip.error("reactions: Bad message id: " + message_id);
+        blueslip.error("reactions: Bad message id", {message_id});
         return undefined;
     }
 
@@ -130,16 +130,14 @@ export function process_reaction_click(message_id, local_id) {
     const message = get_message(message_id);
 
     if (!message) {
-        blueslip.error("message_id for reaction click is unknown: " + message_id);
+        blueslip.error("message_id for reaction click is unknown", {message_id});
         return;
     }
 
     const clean_reaction_object = message.clean_reactions.get(local_id);
 
     if (!clean_reaction_object) {
-        blueslip.error(
-            "Data integrity problem for reaction " + local_id + " (message " + message_id + ")",
-        );
+        blueslip.error("Data integrity problem for reaction", {local_id, message_id});
         return;
     }
 
@@ -462,9 +460,7 @@ export function set_clean_reactions(message) {
         const user_ids = user_map.get(local_id);
 
         if (user_ids.includes(user_id)) {
-            blueslip.error(
-                "server sent duplicate reactions for user " + user_id + " (key=" + local_id + ")",
-            );
+            blueslip.error("server sent duplicate reactions", {user_id, local_id});
             continue;
         }
 

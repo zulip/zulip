@@ -3,6 +3,7 @@ import * as internal_url from "../shared/src/internal_url";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 
 export function get_hash_category(hash) {
     // given "#streams/subscribed", returns "streams"
@@ -38,7 +39,13 @@ export function build_reload_url() {
 }
 
 export function encode_operand(operator, operand) {
-    if (operator === "group-pm-with" || operator === "pm-with" || operator === "sender") {
+    if (
+        operator === "group-pm-with" ||
+        operator === "dm-including" ||
+        operator === "dm" ||
+        operator === "sender" ||
+        operator === "pm-with"
+    ) {
         const slug = people.emails_to_slug(operand);
         if (slug) {
             return slug;
@@ -61,7 +68,13 @@ export function encode_stream_name(operand) {
 }
 
 export function decode_operand(operator, operand) {
-    if (operator === "group-pm-with" || operator === "pm-with" || operator === "sender") {
+    if (
+        operator === "group-pm-with" ||
+        operator === "dm-including" ||
+        operator === "dm" ||
+        operator === "sender" ||
+        operator === "pm-with"
+    ) {
         const emails = people.slug_to_emails(operand);
         if (emails) {
             return emails;
@@ -79,12 +92,12 @@ export function decode_operand(operator, operand) {
 
 export function by_stream_url(stream_id) {
     // Wrapper for web use of internal_url.by_stream_url
-    return internal_url.by_stream_url(stream_id, stream_data.maybe_get_stream_name);
+    return internal_url.by_stream_url(stream_id, sub_store.maybe_get_stream_name);
 }
 
 export function by_stream_topic_url(stream_id, topic) {
     // Wrapper for web use of internal_url.by_stream_topic_url
-    return internal_url.by_stream_topic_url(stream_id, topic, stream_data.maybe_get_stream_name);
+    return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 }
 
 // Encodes an operator list into the
@@ -120,7 +133,7 @@ export function by_sender_url(reply_to) {
 
 export function pm_with_url(reply_to) {
     const slug = people.emails_to_slug(reply_to);
-    return "#narrow/pm-with/" + slug;
+    return "#narrow/dm/" + slug;
 }
 
 export function huddle_with_url(user_ids_string) {
@@ -128,7 +141,7 @@ export function huddle_with_url(user_ids_string) {
     // that have already converted emails to a comma-delimited
     // list of user_ids.  We should be careful to keep this
     // consistent with hash_util.decode_operand.
-    return "#narrow/pm-with/" + user_ids_string + "-group";
+    return "#narrow/dm/" + user_ids_string + "-group";
 }
 
 export function by_conversation_and_time_url(message) {
@@ -208,6 +221,7 @@ export function is_overlay_hash(hash) {
         "message-formatting",
         "search-operators",
         "about-zulip",
+        "scheduled",
     ];
     const main_hash = get_hash_category(hash);
 
@@ -272,7 +286,7 @@ export function is_spectator_compatible(hash) {
     // This implementation should agree with the similar function in zerver/lib/narrow.py.
     const web_public_allowed_hashes = [
         "",
-        // full #narrow hash handled in narrow.is_spectator_compatible
+        // full #narrow hash handled in filter.is_spectator_compatible
         "narrow",
         // TODO/compatibility: #recent_topics was renamed to #recent
         // in 2022. We should support the old URL fragment at least

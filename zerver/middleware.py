@@ -3,15 +3,14 @@ import logging
 import tempfile
 import time
 import traceback
-from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
-from urllib.parse import urlencode
+from typing import Any, Callable, Dict, List, MutableMapping, Optional, Tuple
+from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.db import connection
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.response import HttpResponseBase
-from django.middleware.common import CommonMiddleware
 from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
 from django.utils import translation
@@ -43,7 +42,6 @@ from zerver.lib.response import (
 )
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
 ParamT = ParamSpec("ParamT")
@@ -113,11 +111,7 @@ def format_timedelta(timedelta: float) -> str:
 def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
         return False
-    is_exempt = path in [
-        "/activity",
-        "/json/report/error",
-        "/api/v1/deployments/report_error",
-    ] or path.startswith(("/realm_activity/", "/user_activity/"))
+    is_exempt = path == "/activity" or path.startswith(("/realm_activity/", "/user_activity/"))
     if is_exempt:
         return time_delta >= 5
     if "webathena_kerberos" in path:
@@ -125,63 +119,17 @@ def is_slow_query(time_delta: float, path: str) -> bool:
     return True
 
 
-statsd_blacklisted_requests = [
-    "do_confirm",
-    "signup_send_confirm",
-    "new_realm_send_confirm",
-    "eventslast_event_id",
-    "webreq.content",
-    "avatar",
-    "user_uploads",
-    "password.reset",
-    "static",
-    "json.bots",
-    "json.users",
-    "json.streams",
-    "accounts.unsubscribe",
-    "apple-touch-icon",
-    "emoji",
-    "json.bots",
-    "upload_file",
-    "realm_activity",
-    "user_activity",
-]
-
-
 def write_log_line(
     log_data: MutableMapping[str, Any],
     path: str,
     method: str,
     remote_ip: str,
-    requestor_for_logs: str,
+    requester_for_logs: str,
     client_name: str,
     client_version: Optional[str] = None,
     status_code: int = 200,
-    error_content: Optional[AnyStr] = None,
-    error_content_iter: Optional[Iterable[AnyStr]] = None,
+    error_content: Optional[bytes] = None,
 ) -> None:
-    assert error_content is None or error_content_iter is None
-    if error_content is not None:
-        error_content_iter = (error_content,)
-
-    if settings.STATSD_HOST != "":
-        # For statsd timer name
-        if path == "/":
-            statsd_path = "webreq"
-        else:
-            statsd_path = "webreq.{}".format(path[1:].replace("/", "."))
-            # Remove non-ascii chars from path (there should be none; if there are, it's
-            # because someone manually entered a nonexistent path), as UTF-8 chars make
-            # statsd sad when it sends the key name over the socket
-            statsd_path = statsd_path.encode("ascii", errors="ignore").decode("ascii")
-        # TODO: This could probably be optimized to use a regular expression rather than a loop.
-        suppress_statsd = any(
-            blacklisted in statsd_path for blacklisted in statsd_blacklisted_requests
-        )
-    else:
-        suppress_statsd = True
-        statsd_path = ""
-
     time_delta = -1
     # A time duration of -1 means the StartLogRequests middleware
     # didn't run for some reason
@@ -215,10 +163,6 @@ def write_log_line(
                 f" (mem: {format_timedelta(remote_cache_time_delta)}/{remote_cache_count_delta})"
             )
 
-        if not suppress_statsd:
-            statsd.timing(f"{statsd_path}.remote_cache.time", timedelta_ms(remote_cache_time_delta))
-            statsd.incr(f"{statsd_path}.remote_cache.querycount", remote_cache_count_delta)
-
     startup_output = ""
     if "startup_time_delta" in log_data and log_data["startup_time_delta"] > 0.005:
         startup_output = " (+start: {})".format(format_timedelta(log_data["startup_time_delta"]))
@@ -241,10 +185,6 @@ def write_log_line(
                 f" (md: {format_timedelta(markdown_time_delta)}/{markdown_count_delta})"
             )
 
-            if not suppress_statsd:
-                statsd.timing(f"{statsd_path}.markdown.time", timedelta_ms(markdown_time_delta))
-                statsd.incr(f"{statsd_path}.markdown.count", markdown_count_delta)
-
     # Get the amount of time spent doing database queries
     db_time_output = ""
     queries = connection.connection.queries if connection.connection is not None else []
@@ -252,20 +192,14 @@ def write_log_line(
         query_time = sum(float(query.get("time", 0)) for query in queries)
         db_time_output = f" (db: {format_timedelta(query_time)}/{len(queries)}q)"
 
-        if not suppress_statsd:
-            # Log ms, db ms, and num queries to statsd
-            statsd.timing(f"{statsd_path}.dbtime", timedelta_ms(query_time))
-            statsd.incr(f"{statsd_path}.dbq", len(queries))
-            statsd.timing(f"{statsd_path}.total", timedelta_ms(time_delta))
-
     if "extra" in log_data:
         extra_request_data = " {}".format(log_data["extra"])
     else:
         extra_request_data = ""
     if client_version is None:
-        logger_client = f"({requestor_for_logs} via {client_name})"
+        logger_client = f"({requester_for_logs} via {client_name})"
     else:
-        logger_client = f"({requestor_for_logs} via {client_name}/{client_version})"
+        logger_client = f"({requester_for_logs} via {client_name}/{client_version})"
     logger_timing = f"{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}"
     logger_line = f"{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}"
     if status_code in [200, 304] and method == "GET" and path.startswith("/static"):
@@ -286,21 +220,14 @@ def write_log_line(
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
-        assert error_content_iter is not None
-        error_content_list = list(error_content_iter)
-        if not error_content_list:
-            error_data = ""
-        elif isinstance(error_content_list[0], str):
-            error_data = "".join(error_content_list)
-        elif isinstance(error_content_list[0], bytes):
-            error_data = repr(b"".join(error_content_list))
+        error_data = repr(error_content)
         if len(error_data) > 200:
             error_data = "[content more than 200 characters]"
-        logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requestor_for_logs)
+        logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requester_for_logs)
 
 
 class RequestContext(MiddlewareMixin):
-    def __call__(self, request: HttpRequest) -> HttpResponse:
+    def __call__(self, request: HttpRequest) -> HttpResponseBase:
         set_request(request)
         try:
             return self.get_response(request)
@@ -410,20 +337,17 @@ class LogRequests(MiddlewareMixin):
 
         remote_ip = request.META["REMOTE_ADDR"]
 
-        # Get the requestor's identifier and client, if available.
+        # Get the requester's identifier and client, if available.
         request_notes = RequestNotes.get_notes(request)
-        requestor_for_logs = request_notes.requestor_for_logs
-        if requestor_for_logs is None:
+        requester_for_logs = request_notes.requester_for_logs
+        if requester_for_logs is None:
             if request_notes.remote_server is not None:
-                requestor_for_logs = request_notes.remote_server.format_requestor_for_logs()
+                requester_for_logs = request_notes.remote_server.format_requester_for_logs()
             elif request.user.is_authenticated:
-                requestor_for_logs = request.user.format_requestor_for_logs()
+                requester_for_logs = request.user.format_requester_for_logs()
             else:
-                requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
+                requester_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
 
-        content_iter = (
-            response.streaming_content if isinstance(response, StreamingHttpResponse) else None
-        )
         content = response.content if isinstance(response, HttpResponse) else None
 
         assert request_notes.client_name is not None and request_notes.log_data is not None
@@ -433,18 +357,17 @@ class LogRequests(MiddlewareMixin):
             request.path,
             request.method,
             remote_ip,
-            requestor_for_logs,
+            requester_for_logs,
             request_notes.client_name,
             client_version=request_notes.client_version,
             status_code=response.status_code,
             error_content=content,
-            error_content_iter=content_iter,
         )
         return response
 
 
 class JsonErrorHandler(MiddlewareMixin):
-    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponseBase]) -> None:
         super().__init__(get_response)
         ignore_logger("zerver.middleware.json_error_handler")
 
@@ -570,7 +493,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
 
 class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(
-        self, response: HttpResponse, rate_limit_results: List[RateLimitResult]
+        self, response: HttpResponseBase, rate_limit_results: List[RateLimitResult]
     ) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
         limit = min(result.entity.max_api_calls() for result in rate_limit_results)
@@ -583,7 +506,9 @@ class RateLimitMiddleware(MiddlewareMixin):
         reset_time = time.time() + max(result.secs_to_freedom for result in rate_limit_results)
         response["X-RateLimit-Reset"] = str(int(reset_time))
 
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
         if not settings.RATE_LIMITING:
             return response
 
@@ -596,7 +521,9 @@ class RateLimitMiddleware(MiddlewareMixin):
 
 
 class FlushDisplayRecipientCache(MiddlewareMixin):
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
         # We flush the per-request caches after every request, so they
         # are not shared at all between requests.
         flush_per_request_caches()
@@ -636,6 +563,14 @@ class HostDomainMiddleware(MiddlewareMixin):
 
             return render(request, "zerver/invalid_realm.html", status=404)
 
+        # Check that we're not using the non-canonical form of a REALM_HOSTS subdomain
+        if subdomain in settings.REALM_HOSTS:
+            host = request.get_host().lower()
+            formal_host = request_notes.realm.host
+            if host != formal_host and not host.startswith(formal_host + ":"):
+                return HttpResponseRedirect(
+                    urljoin(request_notes.realm.uri, request.get_full_path())
+                )
         return None
 
 
@@ -687,28 +622,6 @@ class FinalizeOpenGraphDescription(MiddlewareMixin):
         return response
 
 
-class ZulipCommonMiddleware(CommonMiddleware):
-    """
-    Patched version of CommonMiddleware to disable the APPEND_SLASH
-    redirect behavior inside Tornado.
-
-    While this has some correctness benefit in encouraging clients
-    to implement the API correctly, this also saves about 600us in
-    the runtime of every GET /events query, as the APPEND_SLASH
-    route resolution logic is surprisingly expensive.
-
-    TODO: We should probably extend this behavior to apply to all of
-    our API routes.  The APPEND_SLASH behavior is really only useful
-    for non-API endpoints things like /login.  But doing that
-    transition will require more careful testing.
-    """
-
-    def should_redirect_with_slash(self, request: HttpRequest) -> bool:
-        if settings.RUNNING_INSIDE_TORNADO:
-            return False
-        return super().should_redirect_with_slash(request)
-
-
 def validate_scim_bearer_token(request: HttpRequest) -> bool:
     """
     This function verifies the request is allowed to make SCIM requests on this subdomain,
@@ -737,7 +650,7 @@ def validate_scim_bearer_token(request: HttpRequest) -> bool:
 
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.realm is not None
-    request_notes.requestor_for_logs = (
+    request_notes.requester_for_logs = (
         f"scim-client:{scim_client_name}:realm:{request_notes.realm.id}"
     )
 

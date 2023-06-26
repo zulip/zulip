@@ -288,7 +288,7 @@ run_test("format_time_modern_different_timezones", () => {
 
     process.env.TZ = "America/Juneau";
     let expected = "translated: 5/16/2017 at 11:12:53 PM AKDT (UTC-08:00)";
-    assert.equal(timerender.get_full_datetime(yesterday), expected);
+    assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
     process.env.TZ = utc_tz;
 
@@ -299,7 +299,7 @@ run_test("format_time_modern_different_timezones", () => {
 
     process.env.TZ = "Asia/Brunei";
     expected = "translated: 5/17/2017 at 5:12:53 AM (UTC+08:00)";
-    assert.equal(timerender.get_full_datetime(yesterday), expected);
+    assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
     process.env.TZ = utc_tz;
 
@@ -310,7 +310,7 @@ run_test("format_time_modern_different_timezones", () => {
 
     process.env.TZ = "America/Juneau";
     expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
-    assert.equal(timerender.get_full_datetime(yesterday), expected);
+    assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
     process.env.TZ = utc_tz;
 });
@@ -369,8 +369,10 @@ run_test("get_timestamp_for_flatpickr", () => {
     // Freeze time for testing.
     MockDate.set(date_2017.getTime());
 
-    // Invalid timestamps should show current time.
-    assert.equal(func("random str").valueOf(), Date.now());
+    // Invalid timestamps should show current time on the hour.
+    const date_without_minutes = new Date();
+    date_without_minutes.setMinutes(0, 0);
+    assert.equal(func("random str").valueOf(), date_without_minutes.getTime());
 
     // Valid ISO timestamps should return the timestamp.
     assert.equal(func(date_2017.toISOString()).valueOf(), date_2017.getTime());
@@ -444,11 +446,20 @@ run_test("get_full_datetime", () => {
     const time = date_2017_PM;
 
     let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
+    assert.equal(timerender.get_full_datetime_clarification(time), expected);
+    expected = "translated: May 18, 2017 at 9:12:53 PM";
     assert.equal(timerender.get_full_datetime(time), expected);
+
+    expected = "translated: 5/18/2017 at 9:12 PM UTC";
+    assert.equal(timerender.get_full_datetime_clarification(time, "time"), expected);
+    expected = "translated: May 18, 2017 at 9:12 PM";
+    assert.equal(timerender.get_full_datetime(time, "time"), expected);
 
     // test 24 hour time setting.
     user_settings.twenty_four_hour_time = true;
     expected = "translated: 5/18/2017 at 21:12:53 UTC";
+    assert.equal(timerender.get_full_datetime_clarification(time), expected);
+    expected = "translated: May 18, 2017 at 21:12:53";
     assert.equal(timerender.get_full_datetime(time), expected);
 
     user_settings.twenty_four_hour_time = false;
@@ -457,6 +468,8 @@ run_test("get_full_datetime", () => {
     const previous_env_tz = process.env.TZ;
     process.env.TZ = "Asia/Kolkata";
     expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+05:30)";
+    assert.equal(timerender.get_full_datetime_clarification(time), expected);
+    expected = "translated: May 19, 2017 at 2:42:53 AM";
     assert.equal(timerender.get_full_datetime(time), expected);
     process.env.TZ = previous_env_tz;
 });
@@ -468,6 +481,55 @@ run_test("last_seen_status_from_date", () => {
     function assert_same(duration, expected_status) {
         const past_date = add(base_date, duration);
         const actual_status = timerender.last_seen_status_from_date(past_date, base_date);
+        assert.equal(actual_status, expected_status);
+    }
+
+    assert_same({minutes: -30}, $t({defaultMessage: "Active 30 minutes ago"}));
+
+    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+
+    assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
+
+    assert_same({hours: -20}, $t({defaultMessage: "Active 20 hours ago"}));
+
+    assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+
+    assert_same({hours: -48}, $t({defaultMessage: "Active 2 days ago"}));
+
+    assert_same({days: -2}, $t({defaultMessage: "Active 2 days ago"}));
+
+    assert_same({days: -61}, $t({defaultMessage: "Active 61 days ago"}));
+
+    assert_same({days: -300}, $t({defaultMessage: "Active May 6, 2015"}));
+
+    assert_same({days: -366}, $t({defaultMessage: "Active Mar 1, 2015"}));
+
+    assert_same({years: -3}, $t({defaultMessage: "Active Mar 1, 2013"}));
+
+    // Set base_date to May 1 2016 12.30 AM (months are zero based)
+    base_date = new Date(2016, 4, 1, 0, 30);
+
+    assert_same({days: -91}, $t({defaultMessage: "Active Jan 31"}));
+
+    // Set base_date to May 1 2016 10.30 PM (months are zero based)
+    base_date = new Date(2016, 4, 2, 23, 30);
+
+    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+
+    assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
+
+    assert_same({hours: -12}, $t({defaultMessage: "Active 12 hours ago"}));
+
+    assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+});
+
+run_test("relative_time_string_from_date", () => {
+    // Set base_date to March 1 2016 12.30 AM (months are zero based)
+    let base_date = new Date(2016, 2, 1, 0, 30);
+
+    function assert_same(duration, expected_status) {
+        const past_date = add(base_date, duration);
+        const actual_status = timerender.relative_time_string_from_date(past_date, base_date);
         assert.equal(actual_status, expected_status);
     }
 
@@ -493,16 +555,16 @@ run_test("last_seen_status_from_date", () => {
 
     assert_same({days: -61}, $t({defaultMessage: "61 days ago"}));
 
-    assert_same({days: -300}, $t({defaultMessage: "May 6, 2015"}));
+    assert_same({days: -300}, "May 6, 2015");
 
-    assert_same({days: -366}, $t({defaultMessage: "Mar 1, 2015"}));
+    assert_same({days: -366}, "Mar 1, 2015");
 
-    assert_same({years: -3}, $t({defaultMessage: "Mar 1, 2013"}));
+    assert_same({years: -3}, "Mar 1, 2013");
 
     // Set base_date to May 1 2016 12.30 AM (months are zero based)
     base_date = new Date(2016, 4, 1, 0, 30);
 
-    assert_same({days: -91}, $t({defaultMessage: "Jan 31"}));
+    assert_same({days: -91}, "Jan 31");
 
     // Set base_date to May 1 2016 10.30 PM (months are zero based)
     base_date = new Date(2016, 4, 2, 23, 30);

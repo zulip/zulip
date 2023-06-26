@@ -27,6 +27,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_authentication_methods,
 )
+from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -66,6 +67,7 @@ from zerver.models import (
     RealmEmoji,
     RealmUserDefault,
     Recipient,
+    ScheduledMessage,
     Stream,
     Subscription,
     UserGroup,
@@ -81,6 +83,8 @@ from zerver.models import (
     get_huddle_hash,
     get_realm,
     get_stream,
+    get_system_bot,
+    get_user_by_delivery_email,
 )
 
 
@@ -554,7 +558,7 @@ class RealmImportExportTest(ExportFile):
             [self.example_user("cordelia"), self.example_user("ZOE"), self.example_user("othello")],
         )
 
-        # Create PMs
+        # Create direct messages
         pm_a_msg_id = self.send_personal_message(
             self.example_user("AARON"), self.example_user("othello")
         )
@@ -706,6 +710,9 @@ class RealmImportExportTest(ExportFile):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+
         with get_test_image_file("img.png") as img_file:
             realm_emoji = check_add_realm_emoji(
                 realm=hamlet.realm, name="hawaii", author=hamlet, image_file=img_file
@@ -725,6 +732,18 @@ class RealmImportExportTest(ExportFile):
         do_set_realm_authentication_methods(
             original_realm, authentication_methods, acting_user=None
         )
+
+        # Set up an edge-case RealmAuditLog with acting_user in a different realm. Such an acting_user can't be covered
+        # by the export, so we'll test that it is handled by getting set to None.
+        self.assertTrue(
+            RealmAuditLog.objects.filter(
+                modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+            ).count(),
+            1,
+        )
+        RealmAuditLog.objects.filter(
+            modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+        ).update(acting_user_id=cross_realm_bot.id)
 
         # data to test import of huddles
         huddle = [
@@ -786,7 +805,24 @@ class RealmImportExportTest(ExportFile):
 
         client = get_client("website")
 
-        do_update_user_presence(sample_user, client, timezone_now(), UserPresence.ACTIVE)
+        do_update_user_presence(
+            sample_user, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT
+        )
+
+        # Set up scheduled messages.
+        ScheduledMessage.objects.filter(realm=original_realm).delete()
+        check_schedule_message(
+            sender=hamlet,
+            client=get_client("website"),
+            recipient_type_name="stream",
+            message_to=[Stream.objects.get(name="Denmark", realm=original_realm).id],
+            topic_name="test-import",
+            message_content="test message",
+            deliver_at=timezone_now() + datetime.timedelta(days=365),
+            realm=original_realm,
+        )
+        original_scheduled_message = ScheduledMessage.objects.filter(realm=original_realm).last()
+        assert original_scheduled_message is not None
 
         # send Cordelia to the islands
         do_update_user_status(
@@ -938,6 +974,15 @@ class RealmImportExportTest(ExportFile):
                 Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
             )
 
+        self.assertEqual(ScheduledMessage.objects.filter(realm=imported_realm).count(), 1)
+        imported_scheduled_message = ScheduledMessage.objects.first()
+        assert imported_scheduled_message is not None
+        self.assertEqual(imported_scheduled_message.content, original_scheduled_message.content)
+        self.assertEqual(
+            imported_scheduled_message.scheduled_timestamp,
+            original_scheduled_message.scheduled_timestamp,
+        )
+
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
             # Check that all Subscriptions have the correct is_user_active set.
             self.assertEqual(
@@ -959,6 +1004,15 @@ class RealmImportExportTest(ExportFile):
             original_realm.authentication_methods_dict(),
             imported_realm.authentication_methods_dict(),
         )
+
+        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
+        realmauditlog = RealmAuditLog.objects.get(
+            modified_user=imported_hamlet, event_type=RealmAuditLog.USER_CREATED
+        )
+        self.assertEqual(realmauditlog.realm, imported_realm)
+        # As explained above when setting up the RealmAuditLog row, the .acting_user should have been
+        # set to None due to being unexportable.
+        self.assertEqual(realmauditlog.acting_user, None)
 
         self.assertEqual(
             Message.objects.filter(realm=original_realm).count(),
@@ -1242,7 +1296,11 @@ class RealmImportExportTest(ExportFile):
         def get_userpresence_timestamp(r: Realm) -> Set[object]:
             # It should be sufficient to compare UserPresence timestamps to verify
             # they got exported/imported correctly.
-            return set(UserPresence.objects.filter(realm=r).values_list("timestamp", flat=True))
+            return set(
+                UserPresence.objects.filter(realm=r).values_list(
+                    "last_active_time", "last_connected_time"
+                )
+            )
 
         @getter
         def get_realm_user_default_values(r: Realm) -> Dict[str, object]:
@@ -1730,14 +1788,13 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(rec["user_profile"], cordelia.id)
             self.assertEqual(make_datetime(rec["start"]), now)
 
-        do_update_user_presence(cordelia, client, now, UserPresence.ACTIVE)
-        do_update_user_presence(othello, client, now, UserPresence.IDLE)
+        do_update_user_presence(cordelia, client, now, UserPresence.LEGACY_STATUS_ACTIVE_INT)
+        do_update_user_presence(othello, client, now, UserPresence.LEGACY_STATUS_IDLE_INT)
 
         @checker
         def zerver_userpresence(records: List[Record]) -> None:
-            self.assertEqual(records[-1]["status"], UserPresence.ACTIVE)
-            self.assertEqual(records[-1]["client"], client.id)
-            self.assertEqual(make_datetime(records[-1]["timestamp"]), now)
+            self.assertEqual(make_datetime(records[-1]["last_connected_time"]), now)
+            self.assertEqual(make_datetime(records[-1]["last_active_time"]), now)
 
         do_update_user_status(
             user_profile=cordelia,

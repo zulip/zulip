@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import orjson
 import requests
 from django.conf import settings
+from django.db import transaction
 from requests.adapters import ConnectionError, HTTPAdapter
 from requests.models import PreparedRequest, Response
 from urllib3.util import Retry
@@ -14,7 +15,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.models import Client, Realm, UserProfile
 from zerver.tornado.sharding import (
     get_realm_tornado_ports,
-    get_tornado_uri,
+    get_tornado_url,
     get_user_id_tornado_port,
     get_user_tornado_port,
     notify_tornado_queue_name,
@@ -83,11 +84,12 @@ def request_event_queue(
     stream_typing_notifications: bool = False,
     user_settings_object: bool = False,
     pronouns_field_type_supported: bool = True,
+    linkifier_url_template: bool = False,
 ) -> Optional[str]:
     if not settings.USING_TORNADO:
         return None
 
-    tornado_uri = get_tornado_uri(get_user_tornado_port(user_profile))
+    tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
     req = {
         "dont_block": "true",
         "apply_markdown": orjson.dumps(apply_markdown),
@@ -104,12 +106,13 @@ def request_event_queue(
         "stream_typing_notifications": orjson.dumps(stream_typing_notifications),
         "user_settings_object": orjson.dumps(user_settings_object),
         "pronouns_field_type_supported": orjson.dumps(pronouns_field_type_supported),
+        "linkifier_url_template": orjson.dumps(linkifier_url_template),
     }
 
     if event_types is not None:
         req["event_types"] = orjson.dumps(event_types)
 
-    resp = requests_client().post(tornado_uri + "/api/v1/events/internal", data=req)
+    resp = requests_client().post(tornado_url + "/api/v1/events/internal", data=req)
     return resp.json()["queue_id"]
 
 
@@ -119,7 +122,7 @@ def get_user_events(
     if not settings.USING_TORNADO:
         return []
 
-    tornado_uri = get_tornado_uri(get_user_tornado_port(user_profile))
+    tornado_url = get_tornado_url(get_user_tornado_port(user_profile))
     post_data: Dict[str, Any] = {
         "queue_id": queue_id,
         "last_event_id": last_event_id,
@@ -128,7 +131,7 @@ def get_user_events(
         "secret": settings.SHARED_SECRET,
         "client": "internal",
     }
-    resp = requests_client().post(tornado_uri + "/api/v1/events/internal", data=post_data)
+    resp = requests_client().post(tornado_url + "/api/v1/events/internal", data=post_data)
     return resp.json()["events"]
 
 
@@ -147,9 +150,9 @@ def send_notification_http(port: int, data: Mapping[str, Any]) -> None:
 
         process_notification(data)
     else:
-        tornado_uri = get_tornado_uri(port)
+        tornado_url = get_tornado_url(port)
         requests_client().post(
-            tornado_uri + "/notify_tornado",
+            tornado_url + "/notify_tornado",
             data=dict(data=orjson.dumps(data), secret=settings.SHARED_SECRET),
         )
 
@@ -184,3 +187,9 @@ def send_event(
             dict(event=event, users=port_users),
             lambda *args, **kwargs: send_notification_http(port, *args, **kwargs),
         )
+
+
+def send_event_on_commit(
+    realm: Realm, event: Mapping[str, Any], users: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+) -> None:
+    transaction.on_commit(lambda: send_event(realm, event, users))

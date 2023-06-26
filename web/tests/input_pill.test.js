@@ -161,11 +161,10 @@ run_test("copy from pill", ({mock_template}) => {
 
     let copied_text;
 
-    const $pill_stub = {
-        [0]: "<pill-stub RED>",
-    };
+    const $pill_stub = "<pill-stub RED>";
 
     const e = {
+        currentTarget: $pill_stub,
         originalEvent: {
             clipboardData: {
                 setData(format, text) {
@@ -176,8 +175,6 @@ run_test("copy from pill", ({mock_template}) => {
         },
         preventDefault: noop,
     };
-
-    $container.set_find_results(":focus", $pill_stub);
 
     copy_handler(e);
 

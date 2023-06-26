@@ -7,7 +7,7 @@ import "jquery-caret-plugin/dist/jquery.caret";
 import "../../third/jquery-idle/jquery.idle";
 import "spectrum-colorpicker";
 import "jquery-validation";
-import "flatpickr/dist/flatpickr";
+import "flatpickr";
 
 // Import app JS
 import "../setup";
@@ -38,6 +38,7 @@ import "../../styles/modal.css";
 import "../../styles/settings.css";
 import "../../styles/image_upload_widget.css";
 import "../../styles/subscriptions.css";
+import "../../styles/scheduled_messages.css";
 import "../../styles/drafts.css";
 import "../../styles/input_pill.css";
 import "../../styles/informational_overlays.css";

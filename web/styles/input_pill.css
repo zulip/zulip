@@ -12,6 +12,7 @@
     .pill {
         display: inline-flex;
         align-items: center;
+        max-width: 100%;
 
         height: 20px;
         margin: 1px 2px;
@@ -38,6 +39,9 @@
 
         .pill-value {
             margin: 0 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .exit {
@@ -105,11 +109,12 @@
     }
 }
 
-.pm_recipient .pill-container {
+#compose-direct-recipient.pill-container {
     padding: 0 2px;
     flex-grow: 1;
     align-content: center;
     border: 1px solid hsl(0deg 0% 0% / 20%);
+    background-color: hsl(0deg 0% 100%);
 
     .input {
         height: 20px;

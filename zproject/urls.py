@@ -30,7 +30,7 @@ from zerver.views.auth import (
     jwt_fetch_api_key,
     log_into_subdomain,
     login_page,
-    logout_then_login,
+    logout_view,
     password_reset,
     remote_user_jwt,
     remote_user_jwt_get,
@@ -134,10 +134,12 @@ from zerver.views.registration import (
 )
 from zerver.views.report import (
     report_csp_violations,
-    report_error,
-    report_narrow_times,
-    report_send_times,
-    report_unnarrow_times,
+)
+from zerver.views.scheduled_messages import (
+    create_scheduled_message_backend,
+    delete_scheduled_messages,
+    fetch_scheduled_messages,
+    update_scheduled_message_backend,
 )
 from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
@@ -196,7 +198,7 @@ from zerver.views.user_settings import (
     set_avatar_backend,
     set_avatar_api_key,
 )
-from zerver.views.user_topics import update_muted_topic
+from zerver.views.user_topics import update_muted_topic, update_user_topic
 from zerver.views.users import (
     add_bot_backend,
     avatar,
@@ -227,7 +229,7 @@ from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 
-if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
 
@@ -326,6 +328,15 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # New scheduled messages are created via send_message_backend.
+    rest_path(
+        "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend
+    ),
+    rest_path(
+        "scheduled_messages/<int:scheduled_message_id>",
+        DELETE=delete_scheduled_messages,
+        PATCH=update_scheduled_message_backend,
+    ),
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     rest_path(
@@ -481,32 +492,16 @@ v1_api_and_json_patterns = [
         DELETE=remove_subscriptions_backend,
     ),
     # topic-muting -> zerver.views.user_topics
+    # (deprecated and will be removed once clients are migrated to use '/user_topics')
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
+    # used to update the personal preferences for a topic -> zerver.views.user_topics
+    rest_path("user_topics", POST=update_user_topic),
     # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
     rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
-    # report -> zerver.views.report
-    #
-    # These endpoints are for internal error/performance reporting
-    # from the browser to the web app, and we don't expect to ever
-    # include in our API documentation.
-    rest_path(
-        "report/error",
-        # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
-        POST=(report_error, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
-    rest_path("report/send_times", POST=(report_send_times, {"intentionally_undocumented"})),
-    rest_path(
-        "report/narrow_times",
-        POST=(report_narrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
-    rest_path(
-        "report/unnarrow_times",
-        POST=(report_unnarrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
@@ -552,7 +547,7 @@ i18n_urls = [
     # return `/accounts/login/`.
     path("accounts/login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
     path("accounts/login/", LoginView.as_view(template_name="zerver/login.html"), name="login"),
-    path("accounts/logout/", logout_then_login),
+    path("accounts/logout/", logout_view),
     path("accounts/webathena_kerberos_login/", webathena_kerberos_login),
     path("accounts/password/reset/", password_reset, name="password_reset"),
     path(
@@ -658,7 +653,7 @@ urls += [
     ),
     rest_path(
         "user_uploads/download/<realm_id_str>/<path:filename>",
-        GET=(serve_file_download_backend, {"override_api_url_scheme"}),
+        GET=(serve_file_download_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",
@@ -730,6 +725,9 @@ v1_api_mobile_patterns = [
     # API key - as we consider access to the API key sensitive
     # and just having a logged-in session should be insufficient.
     rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
+    #  This view accepts a JWT containing an email and returns an API key
+    #  and the details for a single user.
+    path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
 # View for uploading messages from email mirror
@@ -760,11 +758,6 @@ urls += [
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
 
-#  This view accepts a JWT containing an email and returns an API key
-#  and the details for a single user.
-urls += [
-    path("api/v1/jwt/fetch_api_key", jwt_fetch_api_key),
-]
 
 # SCIM2
 
@@ -800,7 +793,7 @@ urls += [
 ]
 
 # Front-end Sentry requests tunnel through the server, if enabled
-if settings.SENTRY_FRONTEND_DSN:
+if settings.SENTRY_FRONTEND_DSN:  # nocoverage
     urls += [path("error_tracing", sentry_tunnel)]
 
 # User documentation site
@@ -833,7 +826,7 @@ urls += [
     path("policies/<slug:article>", policy_documentation_view),
 ]
 
-if not settings.CORPORATE_ENABLED:
+if not settings.CORPORATE_ENABLED:  # nocoverage
     # This conditional behavior cannot be tested directly, since
     # urls.py is not readily reloaded in Django tests. See the block
     # comment inside apps_view for details.
@@ -842,7 +835,7 @@ if not settings.CORPORATE_ENABLED:
     ]
 
 # Two-factor URLs
-if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     urls += [path("", include(tf_urls)), path("", include(tf_twilio_urls))]
 
 if settings.DEVELOPMENT:

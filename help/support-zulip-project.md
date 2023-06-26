@@ -49,16 +49,11 @@ Collective](https://opencollective.com/zulip).
   [Python API](https://github.com/zulip/python-zulip-api).
 
 * **Review** Zulip on product comparison websites, such as
-  [Capterra](https://reviews.capterra.com/new/197945) and
-  [G2](https://www.g2.com/products/zulip/take_survey). Organizations rely on
+  [G2](https://www.g2.com/products/zulip/reviews/start) and [Software
+  Advice](https://reviews.softwareadvice.com/new/316022). Organizations rely on
   review sites more and more when choosing software for their team, and sharing
   your experience with Zulip (good or bad) helps them evaluate whether Zulip
   might work for their needs.
-
-!!! tip ""
-    For a limited time, you can receive a $15 gift card by leaving a Capterra
-    review using [this
-    link](https://reviews.capterra.com/new/197945/b0a11684-ef99-43d0-8cb8-1b4afac9b03b?lang=en).
 
 * **Mention** Zulip on social media, or like and retweet [Zulip's
   tweets](https://twitter.com/zulip).
@@ -71,10 +66,11 @@ Collective](https://opencollective.com/zulip).
 
 ## Help improve Zulip
 
-* [**Report
-  issues**](https://zulip.readthedocs.io/en/stable/contributing/contributing.html#reporting-issues),
-  including both feature requests and bug reports. Many improvements to the
-  Zulip app start with a user's suggestion.
+* **Report issues**, including both [feature
+  requests](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
+  and [bug
+  reports](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html).
+  Many improvements to the Zulip app start with a user's suggestion.
 
 * [**Give
   feedback**](https://zulip.readthedocs.io/en/stable/contributing/contributing.html#user-feedback)

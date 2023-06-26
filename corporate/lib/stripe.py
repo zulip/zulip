@@ -95,14 +95,19 @@ def unsign_string(signed_string: str, salt: str) -> str:
     return signer.unsign(signed_string)
 
 
-def validate_licenses(charge_automatically: bool, licenses: Optional[int], seat_count: int) -> None:
+def validate_licenses(
+    charge_automatically: bool,
+    licenses: Optional[int],
+    seat_count: int,
+    exempt_from_license_number_check: bool,
+) -> None:
     min_licenses = seat_count
     max_licenses = None
     if not charge_automatically:
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
         max_licenses = MAX_INVOICED_LICENSES
 
-    if licenses is None or licenses < min_licenses:
+    if licenses is None or (not exempt_from_license_number_check and licenses < min_licenses):
         raise BillingError(
             "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
         )
@@ -649,6 +654,7 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
         server=remote_server,
         event_time=timezone_now(),
         extra_data=str({"old_value": old_value, "new_value": plan_type}),
+        extra_data_json={"old_value": old_value, "new_value": plan_type},
     )
 
 
@@ -733,6 +739,8 @@ def process_initial_upgrade(
             event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
             extra_data=orjson.dumps(plan_params, default=decimal_to_float).decode(),
+            # Note that DjangoJSONEncoder has builtin support for parsing Decimal
+            extra_data_json=plan_params,
         )
 
     if not free_trial:
@@ -935,7 +943,9 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     plan.save(update_fields=["next_invoice_date"])
 
 
-def invoice_plans_as_needed(event_time: datetime = timezone_now()) -> None:
+def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
+    if event_time is None:  # nocoverage
+        event_time = timezone_now()
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         invoice_plan(plan, event_time)
 
@@ -967,6 +977,7 @@ def attach_discount_to_realm(
         event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
         event_time=timezone_now(),
         extra_data=str({"old_discount": old_discount, "new_discount": discount}),
+        extra_data_json={"old_discount": old_discount, "new_discount": discount},
     )
 
 
@@ -982,6 +993,7 @@ def update_sponsorship_status(
         event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
         event_time=timezone_now(),
         extra_data=str({"sponsorship_pending": sponsorship_pending}),
+        extra_data_json={"sponsorship_pending": sponsorship_pending},
     )
 
 
@@ -1236,4 +1248,5 @@ def update_billing_method_of_current_plan(
             event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
             event_time=timezone_now(),
             extra_data=str({"charge_automatically": charge_automatically}),
+            extra_data_json={"charge_automatically": charge_automatically},
         )

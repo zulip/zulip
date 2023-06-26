@@ -51,12 +51,14 @@ from zerver.models import (
     Reaction,
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmDomain,
     RealmEmoji,
     RealmFilter,
     RealmPlayground,
     RealmUserDefault,
     Recipient,
+    ScheduledMessage,
     Service,
     Stream,
     Subscription,
@@ -77,6 +79,7 @@ from zerver.models import (
 )
 
 realm_tables = [
+    ("zerver_realmauthenticationmethod", RealmAuthenticationMethod, "realmauthenticationmethod"),
     ("zerver_defaultstream", DefaultStream, "defaultstream"),
     ("zerver_realmemoji", RealmEmoji, "realmemoji"),
     ("zerver_realmdomain", RealmDomain, "realmdomain"),
@@ -105,6 +108,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "subscription": {},
     "defaultstream": {},
     "reaction": {},
+    "realmauthenticationmethod": {},
     "realmemoji": {},
     "realmdomain": {},
     "realmfilter": {},
@@ -133,6 +137,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "analytics_streamcount": {},
     "analytics_usercount": {},
     "realmuserdefault": {},
+    "scheduledmessage": {},
 }
 
 id_map_to_list: Dict[str, Dict[int, List[int]]] = {
@@ -368,7 +373,10 @@ def fix_message_rendered_content(
             ).rendered_content
 
             message["rendered_content"] = rendered_content
-            message["rendered_content_version"] = markdown_version
+            if "scheduled_timestamp" not in message:
+                # This logic runs also for ScheduledMessage, which doesn't use
+                # the rendered_content_version field.
+                message["rendered_content_version"] = markdown_version
         except Exception:
             # This generally happens with two possible causes:
             # * rendering Markdown throwing an uncaught exception
@@ -596,19 +604,6 @@ def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> N
     for item in data[table]:
         item[field_name] = item[field_name + "_mask"]
         del item[field_name + "_mask"]
-
-
-def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_name: Field) -> None:
-    """Used to fixup the authentication_methods bitfield to be an integer."""
-    for item in data[table]:
-        # The ordering of bits here is important for the imported value
-        # to end up as expected.
-        charlist = ["1" if field[1] else "0" for field in item[field_name]]
-        charlist.reverse()
-
-        values_as_bitstring = "".join(charlist)
-        values_as_int = int(values_as_bitstring, 2)
-        item[field_name] = values_as_int
 
 
 def remove_denormalized_recipient_column_from_data(data: TableData) -> None:
@@ -907,13 +902,18 @@ def import_uploads(
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
 #
+# (Note that this list is not exhaustive and only talks about the main,
+# most important models. There's a bunch of minor models that are handled
+# separately and not mentioned here - but following the principle that we
+# have to import the dependencies first.)
+#
 # * Client [no deps]
 # * Realm [-notifications_stream]
 # * UserGroup
 # * Stream [only depends on realm]
 # * Realm's notifications_stream
-# * Now can do all realm_tables
 # * UserProfile, in order by ID to avoid bot loop issues
+# * Now can do all realm_tables
 # * Huddle
 # * Recipient
 # * Subscription
@@ -955,10 +955,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Fix realm subdomain information
     data["zerver_realm"][0]["string_id"] = subdomain
     data["zerver_realm"][0]["name"] = subdomain
-    fix_realm_authentication_bitfield(data, "zerver_realm", "authentication_methods")
     update_model_ids(Realm, data, "realm")
 
-    realm = Realm(**data["zerver_realm"][0])
+    # Create the realm, but mark it deactivated for now, while we
+    # import the supporting data structures, which may take a bit.
+    realm_properties = dict(**data["zerver_realm"][0])
+    realm_properties["deactivated"] = True
+    realm = Realm(**realm_properties)
 
     if realm.notifications_stream_id is not None:
         notifications_stream_id: Optional[int] = int(realm.notifications_stream_id)
@@ -1056,6 +1059,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         validate_email(user_profile.delivery_email)
         validate_email(user_profile.email)
         user_profile.set_unusable_password()
+        user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     UserProfile.objects.bulk_create(user_profiles)
 
     re_map_foreign_keys(data, "zerver_defaultstream", "stream", related_table="stream")
@@ -1250,7 +1254,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     fix_datetime_fields(data, "zerver_userpresence")
     re_map_foreign_keys(data, "zerver_userpresence", "user_profile", related_table="user_profile")
-    re_map_foreign_keys(data, "zerver_userpresence", "client", related_table="client")
     re_map_foreign_keys(data, "zerver_userpresence", "realm", related_table="realm")
     update_model_ids(UserPresence, data, "user_presence")
     bulk_import_model(data, UserPresence)
@@ -1320,6 +1323,27 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     sender_map = {user["id"]: user for user in data["zerver_userprofile"]}
 
+    if "zerver_scheduledmessage" in data:
+        fix_datetime_fields(data, "zerver_scheduledmessage")
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "sender", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "recipient", related_table="recipient")
+        re_map_foreign_keys(
+            data, "zerver_scheduledmessage", "sending_client", related_table="client"
+        )
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "stream", related_table="stream")
+        re_map_foreign_keys(data, "zerver_scheduledmessage", "realm", related_table="realm")
+
+        fix_upload_links(data, "zerver_scheduledmessage")
+
+        fix_message_rendered_content(
+            realm=realm,
+            sender_map=sender_map,
+            messages=data["zerver_scheduledmessage"],
+        )
+
+        update_model_ids(ScheduledMessage, data, "scheduledmessage")
+        bulk_import_model(data, ScheduledMessage)
+
     # Import zerver_message and zerver_usermessage
     import_message_data(realm=realm, sender_map=sender_map, import_dir=import_dir)
 
@@ -1365,9 +1389,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     logging.info("Importing attachment data from %s", fn)
     with open(fn, "rb") as f:
-        data = orjson.loads(f.read())
+        attachment_data = orjson.loads(f.read())
 
-    import_attachments(data)
+    import_attachments(attachment_data)
 
     # Import the analytics file.
     import_analytics_data(realm=realm, import_dir=import_dir)
@@ -1376,6 +1400,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
     else:
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
+
+    # Activate the realm
+    realm.deactivated = data["zerver_realm"][0]["deactivated"]
+    realm.save()
+
     return realm
 
 
@@ -1527,11 +1556,7 @@ def import_attachments(data: TableData) -> None:
     parent_model = Attachment
     parent_db_table_name = "zerver_attachment"
     parent_singular = "attachment"
-    child_singular = "message"
-    child_plural = "messages"
-    m2m_table_name = "zerver_attachment_messages"
     parent_id = "attachment_id"
-    child_id = "message_id"
 
     update_model_ids(parent_model, data, "attachment")
     # We don't bulk_import_model yet, because we need to first compute
@@ -1541,23 +1566,41 @@ def import_attachments(data: TableData) -> None:
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
 
-    m2m_rows: List[Record] = []
-    for parent_row in data[parent_db_table_name]:
-        for fk_id in parent_row[child_plural]:
-            m2m_row: Record = {}
-            m2m_row[parent_singular] = parent_row["id"]
-            m2m_row[child_singular] = ID_MAP["message"][fk_id]
-            m2m_rows.append(m2m_row)
+    def format_m2m_data(
+        child_singular: str, child_plural: str, m2m_table_name: str, child_id: str
+    ) -> Tuple[str, List[Record], str]:
+        m2m_rows: List[Record] = []
+        for parent_row in data[parent_db_table_name]:
+            for fk_id in parent_row[child_plural]:
+                m2m_row: Record = {}
+                m2m_row[parent_singular] = parent_row["id"]
+                # child_singular will generally match the model name (e.g. Message, ScheduledMessage)
+                # after lowercasing, and that's what we enter as ID_MAP keys, so this should be
+                # a reasonable assumption to make.
+                m2m_row[child_singular] = ID_MAP[child_singular][fk_id]
+                m2m_rows.append(m2m_row)
 
-    # Create our table data for insert.
-    m2m_data: TableData = {m2m_table_name: m2m_rows}
-    convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
-    convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
-    m2m_rows = m2m_data[m2m_table_name]
+        # Create our table data for insert.
+        m2m_data: TableData = {m2m_table_name: m2m_rows}
+        convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
+        convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
+        m2m_rows = m2m_data[m2m_table_name]
 
-    # Next, delete out our child data from the parent rows.
-    for parent_row in data[parent_db_table_name]:
-        del parent_row[child_plural]
+        # Next, delete out our child data from the parent rows.
+        for parent_row in data[parent_db_table_name]:
+            del parent_row[child_plural]
+
+        return m2m_table_name, m2m_rows, child_id
+
+    messages_m2m_tuple = format_m2m_data(
+        "message", "messages", "zerver_attachment_messages", "message_id"
+    )
+    scheduled_messages_m2m_tuple = format_m2m_data(
+        "scheduledmessage",
+        "scheduled_messages",
+        "zerver_attachment_scheduled_messages",
+        "scheduledmessage_id",
+    )
 
     # Update 'path_id' for the attachments
     for attachment in data[parent_db_table_name]:
@@ -1570,19 +1613,23 @@ def import_attachments(data: TableData) -> None:
     # TODO: Do this the kosher Django way.  We may find a
     # better way to do this in Django 1.9 particularly.
     with connection.cursor() as cursor:
-        sql_template = SQL(
+        for m2m_table_name, m2m_rows, child_id in [
+            messages_m2m_tuple,
+            scheduled_messages_m2m_tuple,
+        ]:
+            sql_template = SQL(
+                """
+                INSERT INTO {m2m_table_name} ({parent_id}, {child_id}) VALUES %s
             """
-            INSERT INTO {m2m_table_name} ({parent_id}, {child_id}) VALUES %s
-        """
-        ).format(
-            m2m_table_name=Identifier(m2m_table_name),
-            parent_id=Identifier(parent_id),
-            child_id=Identifier(child_id),
-        )
-        tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
-        execute_values(cursor.cursor, sql_template, tups)
+            ).format(
+                m2m_table_name=Identifier(m2m_table_name),
+                parent_id=Identifier(parent_id),
+                child_id=Identifier(child_id),
+            )
+            tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
+            execute_values(cursor.cursor, sql_template, tups)
 
-    logging.info("Successfully imported M2M table %s", m2m_table_name)
+            logging.info("Successfully imported M2M table %s", m2m_table_name)
 
 
 def import_analytics_data(realm: Realm, import_dir: Path) -> None:

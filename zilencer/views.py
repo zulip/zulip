@@ -1,8 +1,10 @@
 import datetime
 import logging
+from collections import Counter
 from typing import Any, Dict, List, Optional, Type, TypeVar
 from uuid import UUID
 
+import orjson
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
@@ -28,6 +30,7 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
+    check_dict,
     check_dict_only,
     check_float,
     check_int,
@@ -35,6 +38,7 @@ from zerver.lib.validator import (
     check_none_or,
     check_string,
     check_string_fixed_length,
+    check_union,
 )
 from zerver.views.push_notifications import validate_token
 from zilencer.auth import InvalidZulipServerKeyError
@@ -157,23 +161,26 @@ def register_remote_push_device(
     if user_id is None and user_uuid is None:
         raise JsonableError(_("Missing user_id or user_uuid"))
     if user_id is not None and user_uuid is not None:
-        # We don't want "hybrid" registrations with both.
-        # Our RemotePushDeviceToken should be either in the new uuid format
-        # or the legacy id one.
-        raise JsonableError(_("Specify only one of user_id or user_uuid"))
-
+        kwargs: Dict[str, object] = {"user_uuid": user_uuid, "user_id": None}
+        # Delete pre-existing user_id registration for this user+device to avoid
+        # duplication. Further down, uuid registration will be created.
+        RemotePushDeviceToken.objects.filter(
+            server=server, token=token, kind=token_kind, user_id=user_id
+        ).delete()
+    else:
+        # One of these is None, so these kwargs will lead to a proper registration
+        # of either user_id or user_uuid type
+        kwargs = {"user_id": user_id, "user_uuid": user_uuid}
     try:
         with transaction.atomic():
             RemotePushDeviceToken.objects.create(
-                # Exactly one of these two user identity fields will be None.
-                user_id=user_id,
-                user_uuid=user_uuid,
                 server=server,
                 kind=token_kind,
                 token=token,
                 ios_app_id=ios_app_id,
                 # last_updated is to be renamed to date_created.
                 last_updated=timezone.now(),
+                **kwargs,
             )
     except IntegrityError:
         pass
@@ -216,13 +223,73 @@ def unregister_all_remote_push_devices(
     return json_success(request)
 
 
+def delete_duplicate_registrations(
+    registrations: List[RemotePushDeviceToken], server_id: int, user_id: int, user_uuid: str
+) -> List[RemotePushDeviceToken]:
+    """
+    When migrating to support registration by UUID, we introduced a bug where duplicate
+    registrations for the same device+user could be created - one by user_id and one by
+    user_uuid. Given no good way of detecting these duplicates at database level, we need to
+    take advantage of the fact that when a remote server sends a push notification request
+    to us, it sends both user_id and user_uuid of the user.
+    See https://github.com/zulip/zulip/issues/24969 for reference.
+
+    This function, knowing the user_id and user_uuid of the user, can detect duplicates
+    and delete the legacy user_id registration if appropriate.
+
+    Return the list of registrations with the user_id-based duplicates removed.
+    """
+
+    # All registrations passed here should be of the same kind (apple vs android).
+    assert len({registration.kind for registration in registrations}) == 1
+    kind = registrations[0].kind
+
+    tokens_counter = Counter(device.token for device in registrations)
+
+    tokens_to_deduplicate = []
+    for key in tokens_counter:
+        if tokens_counter[key] <= 1:
+            continue
+        if tokens_counter[key] > 2:
+            raise AssertionError(
+                f"More than two registrations for token {key} for user id:{user_id} uuid:{user_uuid}, shouldn't be possible"
+            )
+        assert tokens_counter[key] == 2
+        tokens_to_deduplicate.append(key)
+
+    if not tokens_to_deduplicate:
+        return registrations
+
+    logger.info(
+        "Deduplicating push registrations for server id:%s user id:%s uuid:%s and tokens:%s",
+        server_id,
+        user_id,
+        user_uuid,
+        sorted(tokens_to_deduplicate),
+    )
+    RemotePushDeviceToken.objects.filter(
+        token__in=tokens_to_deduplicate, kind=kind, server_id=server_id, user_id=user_id
+    ).delete()
+
+    deduplicated_registrations_to_return = []
+    for registration in registrations:
+        if registration.token in tokens_to_deduplicate and registration.user_id is not None:
+            # user_id registrations are the ones we deleted
+            continue
+        deduplicated_registrations_to_return.append(registration)
+
+    return deduplicated_registrations_to_return
+
+
 @has_request_variables
 def remote_server_notify_push(
     request: HttpRequest,
     server: RemoteZulipServer,
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
-    user_identity = UserPushIdentityCompat(payload.get("user_id"), payload.get("user_uuid"))
+    user_id = payload.get("user_id")
+    user_uuid = payload.get("user_uuid")
+    user_identity = UserPushIdentityCompat(user_id, user_uuid)
 
     gcm_payload = payload["gcm_payload"]
     apns_payload = payload["apns_payload"]
@@ -235,6 +302,10 @@ def remote_server_notify_push(
             server=server,
         )
     )
+    if android_devices and user_id is not None and user_uuid is not None:
+        android_devices = delete_duplicate_registrations(
+            android_devices, server.id, user_id, user_uuid
+        )
 
     apple_devices = list(
         RemotePushDeviceToken.objects.filter(
@@ -243,6 +314,8 @@ def remote_server_notify_push(
             server=server,
         )
     )
+    if apple_devices and user_id is not None and user_uuid is not None:
+        apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
 
     logger.info(
         "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
@@ -365,7 +438,7 @@ def remote_server_post_analytics(
                     ("realm", check_int),
                     ("event_time", check_float),
                     ("backfilled", check_bool),
-                    ("extra_data", check_none_or(check_string)),
+                    ("extra_data", check_none_or(check_union([check_string, check_dict()]))),
                     ("event_type", check_int),
                 ]
             )
@@ -406,20 +479,43 @@ def remote_server_post_analytics(
     batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 
     if realmauditlog_rows is not None:
-        remote_realm_audit_logs = [
-            RemoteRealmAuditLog(
-                realm_id=row["realm"],
-                remote_id=row["id"],
-                server=server,
-                event_time=datetime.datetime.fromtimestamp(
-                    row["event_time"], tz=datetime.timezone.utc
-                ),
-                backfilled=row["backfilled"],
-                extra_data=row["extra_data"],
-                event_type=row["event_type"],
+        remote_realm_audit_logs = []
+        for row in realmauditlog_rows:
+            extra_data = {}
+            extra_data_str = None
+            # Remote servers that do support JSONField will pass extra_data
+            # as a dict. Otherwise, extra_data will be either a string or None.
+            if isinstance(row["extra_data"], str):
+                # A valid "extra_data" as a str, if present, should always be generated from
+                # orjson.dumps because the POSTed analytics data for RealmAuditLog is restricted
+                # to event types in SYNC_BILLING_EVENTS.
+                # For these event types, we don't create extra_data that requires special
+                # handling to fit into the JSONField.
+                try:
+                    extra_data = orjson.loads(row["extra_data"])
+                except orjson.JSONDecodeError:
+                    raise JsonableError(_("Malformed audit log data"))
+                extra_data_str = row["extra_data"]
+            elif row["extra_data"] is not None:
+                assert isinstance(row["extra_data"], dict)
+                extra_data = row["extra_data"]
+                # This is guaranteed to succeed because row["extra_data"] would be parsed
+                # from JSON with our json validator if it is a dict.
+                extra_data_str = orjson.dumps(row["extra_data"]).decode()
+            remote_realm_audit_logs.append(
+                RemoteRealmAuditLog(
+                    realm_id=row["realm"],
+                    remote_id=row["id"],
+                    server=server,
+                    event_time=datetime.datetime.fromtimestamp(
+                        row["event_time"], tz=datetime.timezone.utc
+                    ),
+                    backfilled=row["backfilled"],
+                    extra_data=extra_data_str,
+                    extra_data_json=extra_data,
+                    event_type=row["event_type"],
+                )
             )
-            for row in realmauditlog_rows
-        ]
         batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
 
     return json_success(request)

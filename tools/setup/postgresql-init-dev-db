@@ -108,7 +108,14 @@ EOF
 
 "${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" <<EOF
 CREATE EXTENSION pgroonga;
-GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
+
+-- Work around https://github.com/pgroonga/pgroonga/issues/335
+SELECT unnest(
+    CASE WHEN current_setting('server_version_num')::integer >= 150000
+        AND current_setting('pgroonga.enable_wal', TRUE) = 'on' IS NOT TRUE THEN
+        ARRAY['ALTER SYSTEM SET pgroonga.enable_wal = ''on''', 'SELECT pg_reload_conf()']
+    END
+) \gexec
 EOF
 
 psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF

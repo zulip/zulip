@@ -11,10 +11,6 @@
                   data-tooltip-template-id="search-people-tooltip-template">
                 </i>
             </div>
-            <template id="search-people-tooltip-template">
-                {{t 'Search people' }}
-                {{tooltip_hotkey_hints "W"}}
-            </template>
             <div class="input-append notdisplayed" id="user_search_section">
                 <input class="user-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{t 'Search people' }}" />
                 <button type="button" class="btn clear_search_button" id="clear_search_people_button">
@@ -32,16 +28,14 @@
             {{/if}}
             <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts" class="hidden-for-spectators">
                 <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tooltip-template-id="keyboard-icon-tooltip-template"></i>
-                <template id="keyboard-icon-tooltip-template">
-                    {{t 'Keyboard shortcuts' }}
-                    {{tooltip_hotkey_hints "?"}}
-                </template>
             </a>
+            {{#if realm_rendered_description}}
             <div class="only-visible-for-spectators">
                 <div class="realm-description">
                     <div class="rendered_markdown">{{rendered_markdown realm_rendered_description }}</div>
                 </div>
             </div>
+            {{/if}}
         </div>
     </div>
 </div>

@@ -1,13 +1,17 @@
+/* Main compose box module for sending messages. */
+
 import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
+
+import render_success_message_scheduled_banner from "../templates/compose_banner/success_message_scheduled_banner.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
 import {get_recipient_label} from "./compose_closed_ui";
-import * as compose_fade from "./compose_fade";
+import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
@@ -21,7 +25,7 @@ import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as reminder from "./reminder";
+import * as popover_menus from "./popover_menus";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -31,10 +35,12 @@ import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
+import {get_timestamp_for_flatpickr} from "./timerender";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import {user_settings} from "./user_settings";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 import * as zcommand from "./zcommand";
 
@@ -90,27 +96,6 @@ export function clear_preview_area() {
     $("#compose .preview_content").empty();
     $("#compose .markdown_preview").show();
     autosize.update($("#compose-textarea"));
-}
-
-function update_fade() {
-    if (!compose_state.composing()) {
-        return;
-    }
-
-    const msg_type = compose_state.get_message_type();
-
-    // It's possible that the new topic is not a resolved topic
-    // so we clear the older warning.
-    compose_validate.clear_topic_resolved_warning();
-
-    compose_validate.warn_if_topic_resolved();
-    compose_fade.set_focused_recipient(msg_type);
-    compose_fade.update_all();
-}
-
-export function update_on_recipient_change() {
-    update_fade();
-    compose_actions.update_narrow_to_recipient_visibility();
 }
 
 export function abort_xhr() {
@@ -169,17 +154,16 @@ export function create_message_object() {
     } else {
         const stream_name = compose_state.stream_name();
         message.stream = stream_name;
-        const sub = stream_data.get_sub(stream_name);
-        if (sub) {
-            message.stream_id = sub.stream_id;
-            message.to = sub.stream_id;
+        if (stream_name) {
+            message.stream_id = compose_recipient.selected_recipient_id;
+            message.to = compose_recipient.selected_recipient_id;
         } else {
             // We should be validating streams in calling code.  We'll
             // try to fall back to stream_name here just in case the
             // user started composing to the old stream name and
             // manually entered the stream name, and it got past
             // validation. We should try to kill this code off eventually.
-            blueslip.error("Trying to send message with bad stream name: " + stream_name);
+            blueslip.error("Trying to send message with bad stream name.");
             message.to = stream_name;
         }
         message.topic = topic;
@@ -203,7 +187,9 @@ export function clear_compose_box() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
+    compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
+    popover_menus.reset_selected_schedule_timestamp();
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {
@@ -245,13 +231,8 @@ export function send_message(request = create_message_object()) {
     }
 
     request.local_id = local_id;
-
-    sent_messages.start_tracking_message({
-        local_id,
-        locally_echoed,
-    });
-
     request.locally_echoed = locally_echoed;
+    request.resend = false;
 
     function success(data) {
         send_message_success(local_id, data.id, locally_echoed);
@@ -264,6 +245,7 @@ export function send_message(request = create_message_object()) {
             compose_banner.show_error_message(
                 response,
                 compose_banner.CLASSNAMES.generic_compose_error,
+                $("#compose_banners"),
                 $("#compose-textarea"),
             );
             // For messages that were not locally echoed, we're
@@ -290,6 +272,9 @@ export function send_message(request = create_message_object()) {
 
     if (locally_echoed) {
         clear_compose_box();
+        // Schedule a timer to display a spinner when the message is
+        // taking a longtime to send.
+        setTimeout(() => echo.display_slow_send_loading_spinner(message), 5000);
     }
 }
 
@@ -309,7 +294,7 @@ export function enter_with_preview_open(ctrl_pressed = false) {
 // Common entrypoint for asking the server to send the message
 // currently drafted in the compose box, including for scheduled
 // messages.
-export function finish() {
+export function finish(scheduling_message = false) {
     if (compose_ui.compose_spinner_visible) {
         // Avoid sending a message twice in parallel in races where
         // the user clicks the `Send` button very quickly twice or
@@ -335,14 +320,14 @@ export function finish() {
 
     compose_ui.show_compose_spinner();
 
-    if (!compose_validate.validate()) {
+    if (!compose_validate.validate(scheduling_message)) {
         // If the message failed validation, hide compose spinner.
         compose_ui.hide_compose_spinner();
         return false;
     }
 
-    if (reminder.is_deferred_delivery(message_content)) {
-        reminder.schedule_message();
+    if (scheduling_message) {
+        schedule_message_to_custom_date();
     } else {
         send_message();
     }
@@ -370,8 +355,8 @@ export function update_email(user_id, new_email) {
 }
 
 function insert_video_call_url(url, target_textarea) {
-    const link_text = $t({defaultMessage: "Click to join video call"});
-    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea);
+    const link_text = $t({defaultMessage: "Join video call."});
+    compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea, "block", 1);
 }
 
 export function render_and_show_preview($preview_spinner, $preview_content_box, content) {
@@ -433,17 +418,21 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
     }
 }
 
+function setup_compose_actions_hooks() {
+    compose_actions.register_compose_box_clear_hook(clear_invites);
+    compose_actions.register_compose_box_clear_hook(clear_private_stream_alert);
+    compose_actions.register_compose_box_clear_hook(clear_preview_area);
+
+    compose_actions.register_compose_cancel_hook(abort_xhr);
+    compose_actions.register_compose_cancel_hook(abort_video_callbacks);
+}
+
 export function initialize() {
+    // Register hooks for compose_actions.
+    setup_compose_actions_hooks();
+
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
-    $(
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("keyup", update_on_recipient_change);
-    $(
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("change", () => {
-        update_on_recipient_change();
-        compose_state.set_recipient_edited_manually(true);
-    });
+
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });
@@ -476,37 +465,59 @@ export function initialize() {
 
     resize.watch_manual_resize("#compose-textarea");
 
-    // Update position of scroll to bottom button based on
-    // height of the compose box.
-    const update_scroll_to_bottom_position = new ResizeObserver(() => {
-        $("#scroll-to-bottom-button-container").css("bottom", $("#compose").outerHeight());
-    });
-    update_scroll_to_bottom_position.observe(document.querySelector("#compose"));
+    // Updates compose max-height and scroll to bottom button position when
+    // there is a change in compose height like when a compose banner is displayed.
+    const update_compose_max_height = new ResizeObserver(resize.reset_compose_message_max_height);
+    update_compose_max_height.observe(document.querySelector("#compose"));
 
     upload.feature_check($("#compose .compose_upload_file"));
 
-    $("#compose_banners").on(
+    function get_input_info(event) {
+        const $edit_banners_container = $(event.target).closest(".edit_form_banners");
+        const is_edit_input = Boolean($edit_banners_container.length);
+        const $banner_container = $edit_banners_container.length
+            ? $edit_banners_container
+            : $("#compose_banners");
+        return {is_edit_input, $banner_container};
+    }
+
+    $("body").on(
         "click",
-        `.${CSS.escape(compose_banner.CLASSNAMES.wildcard_warning)} .compose_banner_action_button`,
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.wildcard_warning,
+        )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
-            compose_validate.clear_wildcard_warnings();
+            const {$banner_container, is_edit_input} = get_input_info(event);
+            const $row = $(event.target).closest(".message_row");
+            compose_validate.clear_wildcard_warnings($banner_container);
             compose_validate.set_user_acknowledged_wildcard_flag(true);
-            finish();
+            if (is_edit_input) {
+                message_edit.save_message_row_edit($row);
+            } else if (event.target.dataset.validationTrigger === "schedule") {
+                popover_menus.open_send_later_menu();
+
+                // We need to set this flag to true here because `open_send_later_menu` validates the message and sets
+                // the user acknowledged wildcard flag back to 'false' and we don't want that to happen because then it
+                // would again show the wildcard warning banner when we actually send the message from 'send-later' modal.
+                compose_validate.set_user_acknowledged_wildcard_flag(true);
+            } else {
+                finish();
+            }
         },
     );
 
     const user_not_subscribed_selector = `.${CSS.escape(
         compose_banner.CLASSNAMES.user_not_subscribed,
     )}`;
-    $("#compose_banners").on(
+    $("body").on(
         "click",
-        `${user_not_subscribed_selector} .compose_banner_action_button`,
+        `${user_not_subscribed_selector} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
 
             const stream_name = compose_state.stream_name();
-            if (stream_name === undefined) {
+            if (stream_name === "") {
                 return;
             }
             const sub = stream_data.get_sub(stream_name);
@@ -515,32 +526,54 @@ export function initialize() {
         },
     );
 
-    $("#compose_banners").on(
+    $("body").on(
         "click",
-        `.${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)} .compose_banner_action_button`,
+        `.${CSS.escape(compose_banner.CLASSNAMES.topic_resolved)} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
 
-            const $target = $(event.target).parents(".compose_banner");
+            const $target = $(event.target).parents(".main-view-banner");
             const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
             const topic_name = $target.attr("data-topic-name");
 
             message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-                message_edit.toggle_resolve_topic(message_id, topic_name);
+                message_edit.toggle_resolve_topic(message_id, topic_name, true);
                 compose_validate.clear_topic_resolved_warning(true);
             });
         },
     );
 
-    $("#compose_banners").on(
+    $("body").on(
         "click",
         `.${CSS.escape(
-            compose_banner.CLASSNAMES.recipient_not_subscribed,
-        )} .compose_banner_action_button`,
+            compose_banner.CLASSNAMES.unmute_topic_notification,
+        )} .main-view-banner-action-button`,
         (event) => {
             event.preventDefault();
 
-            const $invite_row = $(event.target).parents(".compose_banner");
+            const $target = $(event.target).parents(".main-view-banner");
+            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
+            const topic_name = $target.attr("data-topic-name");
+
+            user_topics.set_user_topic_visibility_policy(
+                stream_id,
+                topic_name,
+                user_topics.all_visibility_policies.UNMUTED,
+                false,
+                true,
+            );
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.recipient_not_subscribed,
+        )} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            const {$banner_container} = get_input_info(event);
+            const $invite_row = $(event.target).parents(".main-view-banner");
 
             const user_id = Number.parseInt($invite_row.data("user-id"), 10);
             const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
@@ -554,6 +587,7 @@ export function initialize() {
                 compose_banner.show_error_message(
                     error_msg,
                     compose_banner.CLASSNAMES.generic_compose_error,
+                    $banner_container,
                     $("#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
@@ -572,14 +606,10 @@ export function initialize() {
 
     for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${CSS.escape(classname)}`;
-        $("#compose_banners").on(
-            "click",
-            `${classname_selector} .compose_banner_close_button`,
-            (event) => {
-                event.preventDefault();
-                $(event.target).parents(classname_selector).remove();
-            },
-        );
+        $("body").on("click", `${classname_selector} .main-view-banner-close-button`, (event) => {
+            event.preventDefault();
+            $(event.target).parents(classname_selector).remove();
+        });
     }
 
     // Click event binding for "Attach files" button
@@ -702,7 +732,7 @@ export function initialize() {
             flatpickr.show_flatpickr(
                 $(compose_click_target)[0],
                 on_timestamp_selection,
-                new Date(),
+                get_timestamp_for_flatpickr(),
                 {
                     // place the time picker above the icon and center it horizontally
                     position: "above center",
@@ -760,11 +790,11 @@ export function initialize() {
     });
 
     $("#compose-textarea").on("focus", () => {
-        compose_actions.update_placeholder_text();
+        compose_recipient.update_placeholder_text();
     });
 
     $("#stream_message_recipient_topic").on("focus", () => {
-        compose_actions.update_placeholder_text();
+        compose_recipient.update_placeholder_text();
     });
 
     $("body").on("click", ".formatting_button", (e) => {
@@ -784,4 +814,58 @@ export function initialize() {
             compose_actions.start("stream", {});
         }
     }
+}
+
+function schedule_message_to_custom_date() {
+    const compose_message_object = create_message_object();
+
+    const deliver_at = popover_menus.get_formatted_selected_send_later_time();
+    const scheduled_delivery_timestamp = popover_menus.get_selected_send_later_timestamp();
+
+    const message_type = compose_message_object.type;
+    let req_type;
+
+    if (message_type === "private") {
+        req_type = "direct";
+    } else {
+        req_type = message_type;
+    }
+
+    const scheduled_message_data = {
+        type: req_type,
+        to: JSON.stringify(compose_message_object.to),
+        topic: compose_message_object.topic,
+        content: compose_message_object.content,
+        scheduled_delivery_timestamp,
+    };
+
+    const $banner_container = $("#compose_banners");
+    const success = function (data) {
+        drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
+        clear_compose_box();
+        const new_row = render_success_message_scheduled_banner({
+            scheduled_message_id: data.scheduled_message_id,
+            deliver_at,
+        });
+        compose_banner.clear_message_sent_banners();
+        compose_banner.append_compose_banner_to_banner_list(new_row, $banner_container);
+    };
+
+    const error = function (xhr) {
+        const response = channel.xhr_error_message("Error sending message", xhr);
+        compose_ui.hide_compose_spinner();
+        compose_banner.show_error_message(
+            response,
+            compose_banner.CLASSNAMES.generic_compose_error,
+            $banner_container,
+            $("#compose-textarea"),
+        );
+    };
+
+    channel.post({
+        url: "/json/scheduled_messages",
+        data: scheduled_message_data,
+        success,
+        error,
+    });
 }

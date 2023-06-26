@@ -5,14 +5,21 @@
 {% endblock %}
 
 {% block portico_content %}
-
-<h1>{% trans %}Unknown email unsubscribe request{% endtrans %}</h1>
-
-<p>
-    {% trans %}Hi there! It looks like you tried to unsubscribe from something,
-    but we don't recognize the URL.{% endtrans %}
-</p>
-
-<p>{% trans %}Please double-check that you have the full URL and try again, or <a href="mailto:{{ support_email }}">email us</a> and we'll get this squared away!{% endtrans %}</p>
-
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+            <div class="get-started">
+                <h1>{{ _("Unknown email unsubscribe request") }}</h1>
+            </div>
+            <div class="white-box">
+                <p>
+                    {{ _("Hi there! It looks like you tried to unsubscribe from something, but we don't recognize the URL.") }}
+                </p>
+                <p>
+                    {% trans %}Please double-check that you have the full URL and try again, or <a href="mailto:{{ support_email }}">email us</a> and we'll get this squared away!{% endtrans %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

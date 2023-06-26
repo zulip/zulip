@@ -852,7 +852,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             user_handler.get_user(zerver_attachments[0]["owner"])["email"], "harrypotter@email.com"
         )
-        # TODO: Assert this for False after fixing the file permissions in PMs
+        # TODO: Assert this for False after fixing the file permissions in direct messages
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
@@ -974,7 +974,7 @@ class RocketChatImporter(ZulipTestCase):
         exported_usermessage_userprofiles = self.get_set(
             messages["zerver_usermessage"], "user_profile"
         )
-        # Rocket.Cat is not subscribed to any recipient (stream/PMs) with messages.
+        # Rocket.Cat is not subscribed to any recipient (stream/direct messages) with messages.
         self.assert_length(exported_usermessage_userprofiles, 5)
         exported_usermessage_messages = self.get_set(messages["zerver_usermessage"], "message")
         self.assertEqual(exported_usermessage_messages, exported_messages_id)

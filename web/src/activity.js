@@ -119,9 +119,7 @@ export function build_user_sidebar() {
 
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
-    blueslip.measure_time("buddy_list.populate", () => {
-        buddy_list.populate({keys: user_ids});
-    });
+    buddy_list.populate({keys: user_ids});
 
     return user_ids; // for testing
 }
@@ -280,7 +278,7 @@ export function narrow_for_user_id(opts) {
     const person = people.get_by_user_id(opts.user_id);
     const email = person.email;
 
-    narrow.by("pm-with", email, {trigger: "sidebar"});
+    narrow.by("dm", email, {trigger: "sidebar"});
     user_filter.clear_and_hide_search();
 }
 

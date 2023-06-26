@@ -1,12 +1,9 @@
 import _ from "lodash";
 
 import * as channel from "./channel";
-import * as message_store from "./message_store";
 import * as starred_messages from "./starred_messages";
-import * as ui from "./ui";
-import * as unread_ops from "./unread_ops";
 
-function send_flag_update_for_messages(msg_ids, flag, op) {
+export function send_flag_update_for_messages(msg_ids, flag, op) {
     channel.post({
         url: "/json/messages/flags",
         data: {
@@ -74,46 +71,6 @@ export function save_collapsed(message) {
 
 export function save_uncollapsed(message) {
     send_flag_update_for_messages([message.id], "collapsed", "remove");
-}
-
-// This updates the state of the starred flag in local data
-// structures, and triggers a UI rerender.
-export function update_starred_flag(message_id, new_value) {
-    const message = message_store.get(message_id);
-    if (message === undefined) {
-        // If we don't have the message locally, do nothing; if later
-        // we fetch it, it'll come with the correct `starred` state.
-        return;
-    }
-    message.starred = new_value;
-    ui.update_starred_view(message_id, new_value);
-}
-
-export function toggle_starred_and_update_server(message) {
-    if (message.locally_echoed) {
-        // This is defensive code for when you hit the "*" key
-        // before we get a server ack.  It's rare that somebody
-        // can star this quickly, and we don't have a good way
-        // to tell the server which message was starred.
-        return;
-    }
-
-    message.starred = !message.starred;
-
-    // Unlike most calls to mark messages as read, we don't check
-    // msg_list.can_mark_messages_read, because starring a message is an
-    // explicit interaction and we'd like to preserve the user
-    // expectation invariant that all starred messages are read.
-    unread_ops.notify_server_message_read(message);
-    ui.update_starred_view(message.id, message.starred);
-
-    if (message.starred) {
-        send_flag_update_for_messages([message.id], "starred", "add");
-        starred_messages.add([message.id]);
-    } else {
-        send_flag_update_for_messages([message.id], "starred", "remove");
-        starred_messages.remove([message.id]);
-    }
 }
 
 export function unstar_all_messages() {

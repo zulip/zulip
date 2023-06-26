@@ -196,10 +196,11 @@ function hide_catalog_show_integration() {
         dataType: "html",
         success: hide_catalog,
         error(err) {
-            blueslip.error(
-                "Integration documentation for '" + state.integration + "' not found.",
-                err,
-            );
+            blueslip.error(`Integration documentation for '${state.integration}' not found.`, {
+                readyState: err.readyState,
+                status: err.status,
+                responseText: err.responseText,
+            });
         },
     });
 }

@@ -14,7 +14,9 @@ commit-discipline
 code-style
 reviewable-prs
 code-reviewing
+review-process
 zulipbot-usage
-bug-reports
+reporting-bugs
+suggesting-features
 licensing
 ```

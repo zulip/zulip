@@ -8,15 +8,13 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union, cast
 
 import orjson
-from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
-from openapi_core import Spec
+from openapi_core import Spec, openapi_request_validator, openapi_response_validator
+from openapi_core.protocols import Response
 from openapi_core.testing import MockRequest, MockResponse
-from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaValue
-from openapi_core.validation.request import openapi_request_validator
-from openapi_core.validation.response import openapi_response_validator
+from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -105,7 +103,7 @@ class OpenAPISpec:
 
             openapi = yaml.load(f, Loader=yaml.CSafeLoader)
 
-        spec = Spec.create(openapi)
+        spec = Spec.from_dict(openapi)
         self._spec = spec
         self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
@@ -349,10 +347,6 @@ def find_openapi_endpoint(path: str) -> Optional[str]:
     return None
 
 
-def get_event_type(event: Dict[str, Any]) -> str:
-    return event["type"] + ":" + event.get("op", "")
-
-
 def fix_events(content: Dict[str, Any]) -> None:
     """Remove undocumented events from events array. This is a makeshift
     function so that further documentation of `/events` can happen with
@@ -362,24 +356,6 @@ def fix_events(content: Dict[str, Any]) -> None:
     # 'user' is deprecated so remove its occurrences from the events array
     for event in content["events"]:
         event.pop("user", None)
-
-
-def prune_type_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
-    return ("enum" in schema and type not in schema["enum"]) or (
-        "allOf" in schema
-        and any(prune_type_schema_by_type(subschema, type) for subschema in schema["allOf"])
-    )
-
-
-def prune_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
-    return (
-        "properties" in schema
-        and "type" in schema["properties"]
-        and prune_type_schema_by_type(schema["properties"]["type"], type)
-    ) or (
-        "allOf" in schema
-        and any(prune_schema_by_type(subschema, type) for subschema in schema["allOf"])
-    )
 
 
 def validate_against_openapi_schema(
@@ -410,12 +386,12 @@ def validate_against_openapi_schema(
     if (endpoint, method) in EXCLUDE_UNDOCUMENTED_ENDPOINTS:
         return False
     # Return true for endpoints with only response documentation remaining
-    if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:
+    if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:  # nocoverage
         return True
     # Check if the response matches its code
     if status_code.startswith("2") and (
         content.get("result", "success").lower() not in ["success", "partially_completed"]
-    ):
+    ):  # nocoverage
         raise SchemaError("Response is not 200 but is validating against 200 schema")
     # Code is not declared but appears in various 400 responses. If
     # common, it can be added to 400 response schema
@@ -438,51 +414,14 @@ def validate_against_openapi_schema(
         orjson.dumps(content).decode(),
         status_code=int(status_code),
     )
-    result = openapi_response_validator.validate(openapi_spec.spec(), mock_request, mock_response)
+    result = openapi_response_validator.validate(
+        openapi_spec.spec(), mock_request, cast(Response, mock_response)
+    )
     try:
         result.raise_for_errors()
-    except InvalidSchemaValue as isv:
-        schema_errors = list(isv.schema_errors)
-        message = f"{len(schema_errors)} response validation error(s) at {method} /api/v1{path} ({status_code}):"
-        for error in schema_errors:
-            if display_brief_error and isinstance(error, JsonSchemaValidationError):
-                # display_brief_error is designed to avoid printing 1000 lines
-                # of output when the schema to validate is extremely large
-                # (E.g. the several dozen format variants for individual
-                # events returned by GET /events) and instead just display the
-                # specific variant we expect to match the response.
-                brief_error_validator_value = [
-                    validator_value
-                    for validator_value in error.validator_value
-                    if not prune_schema_by_type(validator_value, error.instance["type"])
-                ]
-                brief_error_display_schema = error.schema.copy()
-                if "oneOf" in brief_error_display_schema:
-                    brief_error_display_schema["oneOf"] = [
-                        i_schema
-                        for i_schema in error.schema["oneOf"]
-                        if not prune_schema_by_type(i_schema, error.instance["type"])
-                    ]
-
-                # Field list from https://python-jsonschema.readthedocs.io/en/stable/errors/
-                error = JsonSchemaValidationError(
-                    message=error.message,
-                    validator=error.validator,
-                    path=error.path,
-                    instance=error.instance,
-                    schema_path=error.schema_path,
-                    schema=brief_error_display_schema,
-                    validator_value=brief_error_validator_value,
-                    cause=error.cause,
-                )
-            # Some endpoints have long, descriptive OpenAPI schemas
-            # which, when printed to the console, do not assist with
-            # debugging, so we omit some of the error information.
-            if path in ["/register"] and isinstance(error, JsonSchemaValidationError):
-                error.schema = "OpenAPI schema omitted due to length of output."
-                if len(error.instance) > 100:
-                    error.instance = "Error instance omitted due to length of output."
-            message += f"\n\n{type(error).__name__}: {error}"
+    except OpenAPIValidationError as error:
+        message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
+        message += f"\n\n{type(error).__name__}: {error}"
         message += (
             "\n\nFor help debugging these errors see: "
             "https://zulip.readthedocs.io/en/latest/documentation/api.html#debugging-schema-validation-errors"
@@ -597,5 +536,5 @@ See https://zulip.readthedocs.io/en/latest/documentation/api.html for help.
 
 The errors logged by the OpenAPI validator are below:\n"""
     for error in errors:
-        msg += f"* {str(error)}\n"
+        msg += f"* {error}\n"
     raise SchemaError(msg)

@@ -28,6 +28,11 @@ class Migration(migrations.Migration):
                             ("mentioned", "Mention"),
                             ("wildcard_mentioned", "Wildcard mention"),
                             ("stream_email_notify", "Stream notifications enabled"),
+                            ("followed_topic_email_notify", "Followed topic notifications enabled"),
+                            (
+                                "followed_topic_wildcard_mentioned",
+                                "Followed topic wildcard mention",
+                            ),
                         ]
                     ),
                 ),

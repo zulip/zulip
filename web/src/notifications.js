@@ -1,38 +1,29 @@
 import $ from "jquery";
 
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
+import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
 import * as compose_banner from "./compose_banner";
 import * as favicon from "./favicon";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
+import * as message_parser from "./message_parser";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
-import * as settings_config from "./settings_config";
 import * as spoilers from "./spoilers";
 import * as stream_data from "./stream_data";
-import * as stream_ui_updates from "./stream_ui_updates";
-import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
-import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 import * as user_topics from "./user_topics";
 
 const notice_memory = new Map();
-
-// When you start Zulip, window_focused should be true, but it might not be the
-// case after a server-initiated reload.
-let window_focused = document.hasFocus && document.hasFocus();
 
 let NotificationAPI;
 
@@ -73,29 +64,21 @@ export function get_notifications() {
     return notice_memory;
 }
 
-export function initialize() {
-    $(window)
-        .on("focus", () => {
-            window_focused = true;
-
-            for (const notice_mem_entry of notice_memory.values()) {
-                notice_mem_entry.obj.close();
-            }
-            notice_memory.clear();
-
-            // Update many places on the DOM to reflect unread
-            // counts.
-            unread_ops.process_visible();
-        })
-        .on("blur", () => {
-            window_focused = false;
-        });
+export function initialize({on_click_scroll_to_selected}) {
+    $(window).on("focus", () => {
+        for (const notice_mem_entry of notice_memory.values()) {
+            notice_mem_entry.obj.close();
+        }
+        notice_memory.clear();
+    });
 
     update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
     update_notification_sound_source(
         $("#realm-default-notification-sound-audio"),
         realm_user_settings_defaults,
     );
+
+    register_click_handlers({on_click_scroll_to_selected});
 }
 
 export function update_notification_sound_source(container_elem, settings_object) {
@@ -140,7 +123,9 @@ export function redraw_title() {
     document.title = new_title;
 }
 
-export function update_unread_counts(new_unread_count, new_pm_count) {
+export function update_unread_counts(counts) {
+    const new_unread_count = unread.calculate_notifiable_count(counts);
+    const new_pm_count = counts.private_message_count;
     if (new_unread_count === unread_count && new_pm_count === pm_count) {
         return;
     }
@@ -161,8 +146,22 @@ export function update_unread_counts(new_unread_count, new_pm_count) {
     redraw_title();
 }
 
-export function is_window_focused() {
-    return window_focused;
+function notify_unmute(muted_narrow, stream_id, topic_name) {
+    const $unmute_notification = $(
+        render_unmute_topic_banner({
+            muted_narrow,
+            stream_id,
+            topic_name,
+            classname: compose_banner.CLASSNAMES.unmute_topic_notification,
+            banner_type: "",
+            button_text: $t({defaultMessage: "Unmute topic"}),
+        }),
+    );
+    compose_banner.clear_unmute_topic_notifications();
+    compose_banner.append_compose_banner_to_banner_list(
+        $unmute_notification,
+        $("#compose_banners"),
+    );
 }
 
 export function notify_above_composebox(
@@ -181,50 +180,10 @@ export function notify_above_composebox(
             link_text,
         }),
     );
-    compose_banner.clear_message_sent_banners();
-    $("#compose_banners").append($notification);
-}
-
-if (window.electron_bridge !== undefined) {
-    // The code below is for sending a message received from notification reply which
-    // is often referred to as inline reply feature. This is done so desktop app doesn't
-    // have to depend on channel.post for setting crsf_token and narrow.by_topic
-    // to narrow to the message being sent.
-    if (window.electron_bridge.set_send_notification_reply_message_supported !== undefined) {
-        window.electron_bridge.set_send_notification_reply_message_supported(true);
-    }
-    window.electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
-        const message = message_store.get(message_id);
-        const data = {
-            type: message.type,
-            content: reply,
-            to: message.type === "private" ? message.reply_to : message.stream,
-            topic: message.topic,
-        };
-
-        function success() {
-            if (message.type === "stream") {
-                narrow.by_topic(message_id, {trigger: "desktop_notification_reply"});
-            } else {
-                narrow.by_recipient(message_id, {trigger: "desktop_notification_reply"});
-            }
-        }
-
-        function error(error) {
-            window.electron_bridge.send_event("send_notification_reply_message_failed", {
-                data,
-                message_id,
-                error,
-            });
-        }
-
-        channel.post({
-            url: "/json/messages",
-            data,
-            success,
-            error,
-        });
-    });
+    // We pass in include_unmute_banner as false because we don't want to
+    // clear any unmute_banner associated with this same message.
+    compose_banner.clear_message_sent_banners(false);
+    compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
 }
 
 export function process_notification(notification) {
@@ -239,9 +198,18 @@ export function process_notification(notification) {
     let notification_source;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
-    ui.replace_emoji_with_text($content);
+    ui_util.replace_emoji_with_text($content);
     spoilers.hide_spoilers_in_notification($content);
-    content = $content.text();
+
+    if (
+        $content.text().trim() === "" &&
+        (message_parser.message_has_image(message) ||
+            message_parser.message_has_attachment(message))
+    ) {
+        content = $t({defaultMessage: "(attached file)"});
+    } else {
+        content = $content.text();
+    }
 
     const topic = message.topic;
 
@@ -298,7 +266,8 @@ export function process_notification(notification) {
             if (content.length + title.length + other_recipients.length > 230) {
                 // Then count how many people are in the conversation and summarize
                 // by saying the conversation is with "you and [number] other people"
-                other_recipients = other_recipients.replace(/[^,]/g, "").length + " other people";
+                other_recipients =
+                    other_recipients.replaceAll(/[^,]/g, "").length + " other people";
             }
 
             title += " (to you and " + other_recipients + ")";
@@ -373,9 +342,12 @@ export function message_is_notifiable(message) {
         return true;
     }
 
-    // Messages to muted streams that don't mention us specifically
-    // are not notifiable.
-    if (message.type === "stream" && stream_data.is_muted(message.stream_id)) {
+    // Messages to unmuted topics in muted streams may generate desktop notifications.
+    if (
+        message.type === "stream" &&
+        stream_data.is_muted(message.stream_id) &&
+        !user_topics.is_topic_unmuted(message.stream_id, message.topic)
+    ) {
         return false;
     }
 
@@ -549,20 +521,26 @@ function get_message_header(message) {
     );
 }
 
+export function get_muted_narrow(message) {
+    if (
+        message.type === "stream" &&
+        stream_data.is_muted(message.stream_id) &&
+        !user_topics.is_topic_unmuted(message.stream_id, message.topic)
+    ) {
+        return "stream";
+    }
+    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
+        return "topic";
+    }
+    return undefined;
+}
+
 export function get_local_notify_mix_reason(message) {
     const $row = message_lists.current.get_row(message.id);
     if ($row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
         return undefined;
-    }
-
-    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
-        return $t({defaultMessage: "Sent! Your message was sent to a topic you have muted."});
-    }
-
-    if (message.type === "stream" && stream_data.is_muted(message.stream_id)) {
-        return $t({defaultMessage: "Sent! Your message was sent to a stream you have muted."});
     }
 
     // offscreen because it is outside narrow
@@ -607,6 +585,15 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
                 "Slightly unexpected: A message not sent by us batches with those that were.",
             );
             continue;
+        }
+
+        const muted_narrow = get_muted_narrow(message);
+        if (muted_narrow) {
+            notify_unmute(muted_narrow, message.stream_id, message.topic);
+            // We don't `continue` after showing the unmute banner, allowing multiple
+            // banners (at max 2 including the unmute banner) to be shown at once,
+            // as it's common for the unmute case to occur simultaneously with
+            // another banner's case, like sending a message to another narrow.
         }
 
         let banner_text = get_local_notify_mix_reason(message);
@@ -700,7 +687,7 @@ export function reify_message_id(opts) {
     }
 }
 
-export function register_click_handlers() {
+function register_click_handlers({on_click_scroll_to_selected}) {
     $("#compose_banners").on(
         "click",
         ".narrow_to_recipient .above_compose_banner_action_link",
@@ -717,30 +704,10 @@ export function register_click_handlers() {
         (e) => {
             const message_id = $(e.currentTarget).data("message-id");
             message_lists.current.select_id(message_id);
-            navigate.scroll_to_selected();
-            compose_banner.clear_message_sent_banners();
+            on_click_scroll_to_selected();
+            compose_banner.clear_message_sent_banners(false);
             e.stopPropagation();
             e.preventDefault();
         },
     );
-}
-
-export function handle_global_notification_updates(notification_name, setting) {
-    // Update the global settings checked when determining if we should notify
-    // for a given message. These settings do not affect whether or not a
-    // particular stream should receive notifications.
-    if (settings_config.all_notification_settings.includes(notification_name)) {
-        user_settings[notification_name] = setting;
-    }
-
-    if (settings_config.stream_notification_settings.includes(notification_name)) {
-        stream_ui_updates.update_notification_setting_checkbox(
-            settings_config.specialize_stream_notification_setting[notification_name],
-        );
-    }
-
-    if (notification_name === "notification_sound") {
-        // Change the sound source with the new page `notification_sound`.
-        update_notification_sound_source($("#user-notification-sound-audio"), user_settings);
-    }
 }

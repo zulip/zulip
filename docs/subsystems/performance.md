@@ -283,15 +283,9 @@ scalability cost of fetching message history dramatically.
 Requests to fetch uploaded files (including user avatars) account for
 about 5% of total HTTP requests. Zulip spends consistently ~10-15ms
 processing one of these requests (mostly authorization logic), before
-handing off delivery of the file to `nginx` or S3 (depending on the
-configured [upload backend](../production/upload-backends.md)).
-
-We can significantly reduce the volume of these requests in large
-production Zulip servers by fixing [Zulip's upload authorization
-strategy preventing browser caching of
-uploads](https://github.com/zulip/zulip/issues/13088), since many of
-them result from a single client downloading the same file repeatedly
-as it navigates around the app.
+handing off delivery of the file to `nginx` (which may itself fetch
+from S3, depending on the configured [upload
+backend](../production/upload-backends.md)).
 
 ### Sending and editing messages
 

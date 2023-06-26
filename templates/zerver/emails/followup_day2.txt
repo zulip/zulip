@@ -1,23 +1,15 @@
-{{ _("Hey,") }}
+{{ _("Here are some tips for keeping your Zulip conversations organized with topics.") }}
 
-{{ _("I wanted to share one last thing with you: a few tips about topics, since mastering topics is a key part of being a Zulip power user.") }}
+{{ _("In Zulip, streams determine who gets a message. Topics tell you what the message is about.") }} {{ _("Using topics, you can read Zulip one conversation at a time. You'll see each message in context, no matter how many different discussions are going on.") }}
 
-{{ _("Topics are like email subject lines. The big difference, though, is that they're really short and lightweight. Two or three words will do it. Don't overthink 'em -- you can always edit the message later!") }}
+{{ _("To kick off a new conversation, just pick a stream and start a new topic. This way, the new conversation thread won't interrupt ongoing discussions. For a good topic name, think about finishing the sentence: “Hey, can we chat about…?”") }}
 
-* {{ _("Good topics: design mockup, Bug 345, acme burgers") }}
+{% trans %}Don't stress about picking the perfect name for your topic. If anything is out of place, it's easy to move messages ({{ move_messages_link }}), rename topics ({{ rename_topics_link }}), or even move a topic to a different stream ({{ move_topic_to_different_stream_link }}).{% endtrans %}
 
-* {% trans %}Not recommended: "What do people think of this new design mockup?", "I'm looking at Bug 345", "Is Acme Burgers open for lunch?"{% endtrans %}
 
-{{ _("Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away -- read the topics that are relevant to you, and ignore the ones that aren't!") }}
+{{ _("Go to Zulip") }}:
+<{{ realm_uri }}>
 
-{{ _("Take it for a spin now:") }}
-{{ realm_uri }}
-
-{{ _("Thanks,") }}
-{{ _("Zulip") }}
 ----
-{{ _("Manage email preferences:") }}
-{{ realm_uri }}/#settings/notifications
-
-{{ _("Unsubscribe from welcome emails:") }}
+{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}:
 {{ unsubscribe_link }}

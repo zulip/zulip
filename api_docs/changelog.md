@@ -18,7 +18,185 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 8.0
+
+**Feature level 189**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added new boolean user settings  `enable_followed_topic_email_notifications`,
+  `enable_followed_topic_push_notifications`,
+  `enable_followed_topic_wildcard_mentions_notify`,
+  `enable_followed_topic_desktop_notifications`
+  and `enable_followed_topic_audible_notifications` to control whether a user
+  receives email, push, wildcard mention, visual desktop and audible desktop
+  notifications, respectively, for messages sent to followed topics.
+
+**Feature level 188**
+
+* [`POST /users/me/muted_users/{muted_user_id}`](/api/mute-user),
+  [`DELETE /users/me/muted_users/{muted_user_id}`](/api/unmute-user):
+  Added support to mute/unmute bot users.
+
+Feature levels 186-187 are reserved for future use in 7.x maintenance
+releases.
+
 ## Changes in Zulip 7.0
+
+**Feature level 185**
+
+No changes; feature level used for Zulip 7.0 release.
+
+**Feature level 184**
+
+* [`PATCH /scheduled_messages/<int:scheduled_message_id>`](/api/update-scheduled-message):
+  Added new endpoint for editing an existing scheduled message.
+* [`POST /scheduled_messages`](/api/create-scheduled-message):
+  Removed optional `scheduled_message_id` parameter, which had
+  been a previous way for clients to support editing an existing
+  scheduled message.
+
+**Feature level 183**
+
+* [`POST /register`](/api/register-queue): Removed the
+  `realm_community_topic_editing_limit_seconds` property, which was no
+  longer in use. The time limit for editing topics is controlled by the
+  realm setting `move_messages_within_stream_limit_seconds`, see feature
+  level 162.
+* [`GET /events`](/api/get-events): Removed the `community_topic_editing_limit_seconds`
+  property from realm `update_dict` event documentation, because it was
+  never returned as a changed property in this event and was only ever
+  returned in the [`POST /register`](/api/register-queue) response.
+
+**Feature level 182**
+
+* `POST /export/realm`: This endpoint now returns the ID of the data
+  export object created by the request.
+
+**Feature level 181**
+
+* [`GET /scheduled_messages`](/api/get-scheduled-messages), [`GET
+  /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Added `failed` boolean field to scheduled message objects to
+  indicate if the server tried to send the scheduled message and was
+  unsuccessful. Clients that support unscheduling and editing
+  scheduled messages should use this field to indicate to the user
+  when a scheduled message failed to send at the appointed time.
+
+**Feature level 180**
+
+* `POST /invites`: Added support for invitations specifying the empty
+  list as the user's initial stream subscriptions. Previously, this
+  returned an error. This change was also backported to Zulip 6.2, and
+  is available at feature levels 157-158 as well.
+
+**Feature level 179**
+
+* [`POST /scheduled_messages`](/api/create-scheduled-message):
+  Added new endpoint to create and edit scheduled messages.
+* [`GET /events`](/api/get-events):
+  Added `scheduled_messages` events sent to clients when a user creates,
+  edits or deletes scheduled messages.
+* [`POST /register`](/api/register-queue):
+  Added an optional `scheduled_messages` field to that includes all
+  of the undelivered scheduled messages for the current user.
+
+**Feature level 178**
+
+* `POST users/me/presence`,
+  [`GET /users/<user_id_or_email>/presence`](/api/get-user-presence),
+  [`GET /realm/presence`](/api/get-presence),
+  [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events):
+  The server no longer stores which client submitted presence data,
+  and presence responses from the server will always contain the
+  `"aggregated"` and `"website"` keys.
+
+**Feature level 177**
+
+* [`GET /messages`](/api/get-messages),
+  [`GET /messages/matches_narrow`](/api/check-messages-match-narrow),
+  [`POST /message/flags/narrow`](/api/update-message-flags-for-narrow),
+  [`POST /register`](/api/register-queue):
+  Added support for three [search/narrow filters](/api/construct-narrow)
+  related to direct messages: `is:dm`, `dm` and `dm-including`.
+  The `dm` operator replaces and deprecates the `pm-with` operator.
+  The `is:dm` filter replaces and deprecates the `is:private` filter.
+  The `dm-including` operator replaces and deprecates the `group-pm-with`
+  operator. Because existing Zulip messages may have links with these
+  legacy filters, they are still supported for backwards-compatibility.
+
+**Feature level 176**
+
+* [`POST /realm/filters`](/api/add-linkifier),
+  [`PATCH realm/filters/<int:filter_id>`](/api/update-linkifier):
+  The `url_format_string` parameter is replaced by `url_template`.
+  [Linkifiers](/help/add-a-custom-linkifier) now only accept
+  [RFC 6570][rfc6570] compliant URL templates. The old URL format
+  strings are no longer supported.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  The `url_format_string` key in `realm_linkifiers` objects is replaced
+  by `url_template`. For backwards-compatibility, clients that do not
+  support the `linkifier_url_template`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  will receive an empty `realm_linkifiers` array in the `/register`
+  response and not receive `realm_linkifiers` events. Unconditionally,
+  the deprecated `realm_filters` event type returns an empty array in
+  the `/register` response and these events are no longer sent to
+  clients.
+
+**Feature level 175**
+
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new user setting `web_mark_read_on_scroll_policy`. Clients may use this to
+  determine the user's preference on whether to mark messages as read or not when
+  scrolling through their message feed.
+
+**Feature level 174**:
+
+* [`POST /typing`](/api/set-typing-status), [`POST /messages`](/api/send-message):
+  Added `"direct"` as the preferred way to indicate a direct message for the
+  `type` parameter, deprecating the original `"private"`. While `"private"`
+  is still supported for direct messages, clients are encouraged to use
+  the modern convention with servers that support it, because support for
+  `"private"` may eventually be removed.
+
+**Feature level 173**:
+
+* [`GET /scheduled_messages`](/api/get-scheduled-messages), [`DELETE
+  /scheduled_messages/<int:scheduled_message_id>`](/api/delete-scheduled-message):
+  Added new endpoints to fetch and delete scheduled messages.
+
+**Feature level 172**
+
+* [`PATCH /messages/{message_id}`](/api/update-message):
+  [Topic editing restrictions](/help/restrict-moving-messages) now apply
+  to stream messages without a topic.
+* [`PATCH /messages/{message_id}`](/api/update-message): When users, other
+  than organization administrators and moderators, use
+  `"propagate_mode": "change_all"` to move messages that have passed the
+  organization's time limit for updating a message's topic and/or stream,
+  this endpoint now returns an error response
+  (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`).
+
+**Feature level 171**:
+
+* [`POST /fetch_api_key`](/api/fetch-api-key),
+  [`POST /dev_fetch_api_key`](/api/dev-fetch-api-key): The return values
+  for these endpoints now include the unique ID of the user who owns the
+  API key.
+
+**Feature level 170**
+
+* [`POST /user_topics`](/api/update-user-topic): Added a new endpoint to
+  update a user's personal preferences for a topic, which deprecates the
+  [`PATCH /users/me/subscriptions/muted_topics`](/api/mute-topic) endpoint.
+  The deprecated endpoint is maintained for backwards-compatibility but may be
+  removed in a future release.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Unmuted added as a visibility policy option to the objects sent in response
+  to the `user_topic` event.
 
 **Feature level 169**
 
@@ -29,10 +207,10 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 168**
 
-* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
-  [`POST /register`](/api/register-queue),
-  [`PATCH /settings`](/api/update-settings): Replaced the `realm_name_in_notifications`
-  boolean field with an integer field `realm_name_in_email_notifications_policy`.
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Replaced the boolean user setting `realm_name_in_notifications`
+  with an integer `realm_name_in_email_notifications_policy`.
 
 **Feature level 167**
 
@@ -60,75 +238,94 @@ format used by the Zulip server that they are interacting with.
 **Feature level 164**
 
 * [`POST /register`](/api/register-queue): Added the
-  `server_presence_ping_interval_seconds` and `server_presence_offline_threshold_seconds`
-  attributes.
+  `server_presence_ping_interval_seconds` and
+  `server_presence_offline_threshold_seconds` fields for clients
+  to use when implementing the [presence](/api/get-presence) system.
 
 **Feature level 163**
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
   [`GET /users/{email}`](/api/get-user-by-email),
-  [`GET /users/me`](/api/get-own-user) and [`GET /events`](/api/get-events):
-  The `delivery_email` field is always present in user objects, including the case
-  when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE`,
-  with the value being `None` if the requestor does not have access to the user's
-  real email. For bot users, the `delivery_email` field is always set to the real email.
-* [`GET /events`](/api/get-events): Event for updating `delivery_email`  is now sent to
-  all users who have access to it and is also sent when `email_address_visibility` setting
-  changes.
-* [`POST /register`](/api/register-queue), [`PATCH
-  /settings`](/api/update-settings), [`PATCH
-  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults): Added
-  user setting `email_address_visibility`  which will replace the existing realm
+  [`GET /users/me`](/api/get-own-user), [`GET /events`](/api/get-events):
+  The `delivery_email` field is always present in user objects, including
+  the case when a user's `email_address_visibility` is set to everyone.
+  The value will be `null` if the requester does not have access to the
+  user's real email. For bot users, the `delivery_email` field is always
+  set to the bot user's real email.
+* [`GET /events`](/api/get-events): Event for updating a user's
+  `delivery_email` is now sent to all users who have access to it, and
+  is also sent when a user's `email_address_visibility` setting changes.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue)
+  [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email),
+  [`GET /users/me`](/api/get-own-user), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): Whether the `avatar_url`
+  field in message and user objects returned by these endpoints can be `null`
+  now depends on if the current user has access to the other user's real
+  email address based on the other user's `email_address_visibility` policy.
+* [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
+  [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added user setting `email_address_visibility`, to replace the
+  realm setting `email_address_visibility`.
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Removed realm
   setting `email_address_visibility`.
-* [`POST /register`](/api/register-queue), `PATCH /realm`: Removed realm-level
-  `email_address_visibility` setting.
 
 **Feature level 162**
 
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Added new `move_messages_within_stream_limit_seconds` setting.
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Added new `move_messages_between_streams_limit_seconds` setting.
-* [`PATCH /messages/{message_id}`](/api/update-message): Time limit to edit
-  topics, for users other than administrators and moderators, can now be
-  configured using `move_messages_within_stream_limit_seconds` setting.
-* [`PATCH /messages/{message_id}`](/api/update-message): Time limit to move
-  messages between streams, for users other than administrators and moderators,
-  can now be configured using `move_messages_between_streams_limit_seconds` setting.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+   [`GET /events`](/api/get-events): Added two new realm settings
+  `move_messages_within_stream_limit_seconds` and
+  `move_messages_between_streams_limit_seconds` for organizations to
+  configure time limits for editing topics and moving messages between streams.
+* [`PATCH /messages/{message_id}`](/api/update-message): For users other than
+  administrators and moderators, the time limit for editing topics is now
+  controlled via the realm setting `move_messages_within_stream_limit_seconds`
+  and the time limit for moving messages between streams is now controlled by
+  the realm setting `move_messages_between_streams_limit_seconds`.
 
 **Feature level 161**
 
-* [`PATCH /streams/{stream_id}`](/api/update-stream): Added
-  `can_remove_subscribers_group_id` parameter to support
-  changing `can_remove_subscribers_group` setting.
-* [`POST /users/me/subscriptions`](/api/subscribe): Added
-  `can_remove_subscribers_group_id` parameter to set
-  `can_remove_subscribers_group` setting while creating
-  streams.
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_remove_subscribers_group_id` parameter to support setting and
+  changing the user group whose members can remove other subscribers
+  from the specified stream.
+* [`DELETE /users/me/subscriptions`](/api/unsubscribe): Expanded the
+  situations where users can use this endpoint to unsubscribe other
+  users from a stream to include the case where the current user has
+  access to the stream and is a member of the user group specified by
+  the `can_remove_subscribers_group_id` for the stream.
 
 **Feature level 160**
 
-* `POST /api/v1/jwt/fetch_api_key`: New API endpoint to fetch API
+* `POST /api/v1/jwt/fetch_api_key`: Added new endpoint to fetch API
   keys using JSON Web Token (JWT) authentication.
-* `accounts/login/jwt/`: Adjusted format of requests to this
-  previously undocumented, optional endpoint for
-  JWT authentication log in support.
+* `accounts/login/jwt/`: Adjusted format of requests to undocumented,
+  optional endpoint for JWT authentication log in support.
 
 **Feature level 159**
 
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Nobody added as an option for the realm setting
-  `edit_topic_policy`.
-* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
-  `PATCH /realm`: Nobody added as an option for the realm setting
-  `move_messages_between_streams_policy`.
-* [`PATCH /messages/{message_id}`](/api/update-message): Permission to edit stream
-  and topic of messages do not depend on `allow_message_editing` setting now.
-* [`PATCH /messages/{message_id}`](/api/update-message): Message senders are not
-  allowed to edit topics indefinitely now.
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events):
+  Nobody added as an option for the realm settings `edit_topic_policy`
+  and `move_messages_between_streams_policy`.
+* [`PATCH /messages/{message_id}`](/api/update-message): Permission
+  to edit the stream and/or topic of messages no longer depends on the
+  realm setting `allow_message_editing`.
+* [`PATCH /messages/{message_id}`](/api/update-message): The user who
+  sent the message can no longer edit the message's topic indefinitely.
 
-Feature levels 157-158 are reserved for future use in 6.x maintenance
+Feature level 158 is reserved for future use in 6.x maintenance
 releases.
+
+## Changes in Zulip 6.2
+
+**Feature level 157**
+
+* `POST /invites`: Added support for invitations specifying the empty
+  list as the user's initial stream subscriptions. Previously, this
+  returned an error. This change was backported from the Zulip 7.0
+  branch, and thus is available at feature levels 157-158 and 180+.
 
 ## Changes in Zulip 6.0
 
@@ -424,7 +621,8 @@ No changes; feature level used for Zulip 5.0 release.
   /events`](/api/get-events): Improved the format of the
   `edit_history` object within message objects. Entries for stream
   edits now include a both a `prev_stream` and `stream` field to
-  indicate the previous and current stream IDs. Entries for topic
+  indicate the previous and current stream IDs. Prior to this feature
+  level, only the `prev_stream` field was present. Entries for topic
   edits now include both a `prev_topic` and `topic` field to indicate
   the previous and current topic, replacing the `prev_subject`
   field. These changes substantially simplify client complexity for
@@ -1286,11 +1484,12 @@ No changes; feature level used for Zulip 3.0 release.
   `POST /register` to make them accessible to all the clients;
   they were only internally available to Zulip's web app prior to this.
 
-**Feature level 3**:
+**Feature level 3**
 
-* `zulip_version` and `zulip_feature_level` are always returned
-  in `POST /register`; previously they were only returned if `event_types`
-  included `zulip_version`.
+* [`POST /register`](/api/register-queue): `zulip_version` and
+  `zulip_feature_level` are always returned in the endpoint response.
+  Previously, they were only present if `event_types` included
+  `zulip_version`.
 * Added new `presence_enabled` user notification setting; previously
   [presence](/help/status-and-availability) was always enabled.
 
@@ -1307,6 +1506,15 @@ No changes; feature level used for Zulip 3.0 release.
 
 **Feature level 1**:
 
+* [`PATCH /messages/{message_id}`](/api/update-message): Added the
+  `stream_id` parameter to support moving messages between streams.
+* [`GET /messages`](/api/get-messages), [`GET /events`](/api/get-events):
+  Added `prev_stream` as a potential property of the `edit_history` object
+  within message objects to indicate when a message was moved to another
+  stream.
+* [`GET messages/{message_id}/history`](/api/get-message-history):
+  `prev_stream` is present in `snapshot` objects within `message_history`
+  object when a message was moved to another stream.
 * [`GET /server_settings`](/api/get-server-settings): Added
   `zulip_feature_level`, which can be used by clients to detect which
   of the features described in this changelog are supported.
@@ -1353,6 +1561,8 @@ No changes; feature level used for Zulip 3.0 release.
 
 ## Changes in Zulip 2.1
 
+* [`POST /register`](/api/register-queue): Added
+  `realm_default_external_accounts` to endpoint response.
 * [`GET /messages`](/api/get-messages): Added support for
   [search/narrow options](/api/construct-narrow) that use stream/user
   IDs to specify a message's sender, its stream, and/or its recipient(s).
@@ -1420,3 +1630,4 @@ No changes; feature level used for Zulip 3.0 release.
 
 [server-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
+[rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html

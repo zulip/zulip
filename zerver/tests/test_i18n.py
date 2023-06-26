@@ -100,7 +100,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [
             ("en", "Sign up"),
             ("de", "Registrieren"),
-            ("sr", "Упишите се"),
+            ("sr", "Региструјте се"),
             ("zh-hans", "注册"),
         ]
 
@@ -112,7 +112,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [
             ("en", "Sign up"),
             ("de", "Registrieren"),
-            ("sr", "Упишите се"),
+            ("sr", "Региструјте се"),
             ("zh-hans", "注册"),
         ]
 
@@ -128,7 +128,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [
             ("en", "Sign up"),
             ("de", "Registrieren"),
-            ("sr", "Упишите се"),
+            ("sr", "Региструјте се"),
             ("zh-hans", "注册"),
         ]
 

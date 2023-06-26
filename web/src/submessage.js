@@ -32,7 +32,7 @@ export function process_submessages(in_opts) {
     try {
         return do_process_submessages(in_opts);
     } catch (error) {
-        blueslip.error("in process_submessages: " + error.message);
+        blueslip.error("Failed to do_process_submessages", undefined, error);
         return undefined;
     }
 }

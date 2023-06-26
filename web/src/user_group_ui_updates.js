@@ -37,15 +37,13 @@ export function update_add_members_elements(group) {
         $input_element.prop("disabled", false);
         $button_element.prop("disabled", false);
         $button_element.css("pointer-events", "");
-        $input_element.popover("destroy");
+        $add_members_container[0]._tippy?.destroy();
     } else {
         $input_element.prop("disabled", true);
         $button_element.prop("disabled", true);
 
         stream_ui_updates.initialize_disable_btn_hint_popover(
             $add_members_container,
-            $input_element,
-            $button_element,
             $t({defaultMessage: "Only group members can add users to a group."}),
         );
     }

@@ -9,7 +9,7 @@ const {JSDOM} = require("jsdom");
 const {set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {page_params} = require("./lib/zpage_params");
+const {page_params} = require("./lib/zpage_billing_params");
 
 const noop = () => {};
 const template = fs.readFileSync(
@@ -185,10 +185,6 @@ run_test("autopay_form_fields", () => {
     );
     assert.equal(
         document.querySelector("#autopay-form #automatic_license_count").value,
-        "{{ seat_count }}",
-    );
-    assert.equal(
-        document.querySelector("#autopay-form #manual_license_count").min,
         "{{ seat_count }}",
     );
 

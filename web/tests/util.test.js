@@ -86,16 +86,16 @@ run_test("same_recipient", () => {
     assert.ok(!util.same_recipient(undefined, undefined));
 });
 
-run_test("robust_uri_decode", ({override}) => {
-    assert.equal(util.robust_uri_decode("xxx%3Ayyy"), "xxx:yyy");
-    assert.equal(util.robust_uri_decode("xxx%3"), "xxx");
+run_test("robust_url_decode", ({override}) => {
+    assert.equal(util.robust_url_decode("xxx%3Ayyy"), "xxx:yyy");
+    assert.equal(util.robust_url_decode("xxx%3"), "xxx");
 
     override(global, "decodeURIComponent", () => {
         throw new Error("foo");
     });
     assert.throws(
         () => {
-            util.robust_uri_decode("%E0%A4%A");
+            util.robust_url_decode("%E0%A4%A");
         },
         {name: "Error", message: "foo"},
     );

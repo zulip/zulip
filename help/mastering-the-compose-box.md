@@ -1,5 +1,7 @@
 # Mastering the compose box
 
+## Composing to a different conversation
+
 When composing a message, Zulip lets you view a different conversation from the
 one you are composing to. For example, you can start a new topic without
 changing your narrow, send a direct message about the topic you're viewing, or
@@ -8,7 +10,38 @@ look up a related discussion.
 In this context, the parts of the message view that are outside of the
 conversation you are composing to are faded for clarity.
 
-## Go to conversation
+### Change where you are composing to
+
+No matter where you start composing your message, it's easy to change where it
+will be sent.
+
+{start_tabs}
+
+{tab|stream-compose}
+
+{!start-composing.md!}
+
+1. Select any stream from the dropdown in the top left of the compose box. You can
+   start typing to filter streams.
+
+1. Enter a topic name. Auto-complete will provide suggestions for previously
+   used topics.
+
+{tab|dm-compose}
+
+{!start-composing.md!}
+
+1. Select **Direct message** from the dropdown in the top left of the compose
+   box.
+
+1. Start typing the name of the person you want to message, and
+   select their name from the list of suggestions. You can continue
+   adding as many message recipients as you like.
+
+{end_tabs}
+
+
+### Go to conversation
 
 Zulip lets you narrow the message view to the conversation you're currently
 composing to.

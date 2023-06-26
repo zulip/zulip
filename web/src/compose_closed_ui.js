@@ -14,7 +14,7 @@ export function get_recipient_label(message) {
     // passed in.
 
     if (message === undefined) {
-        if (message_lists.current.empty()) {
+        if (message_lists.current.visibly_empty()) {
             // For empty narrows where there's a clear reply target,
             // i.e. stream+topic or a single PM conversation, we label
             // the button as replying to the thread.
@@ -53,36 +53,81 @@ export function get_recipient_label(message) {
     return "";
 }
 
-function update_stream_button(btn_text, title) {
+function update_reply_button_state(disable = false) {
+    $(".compose_reply_button").attr("disabled", disable);
+    if (disable) {
+        $("#compose_buttons > .reply_button_container").attr(
+            "data-tooltip-template-id",
+            "compose_reply_button_disabled_tooltip_template",
+        );
+        return;
+    }
+    if (narrow_state.is_message_feed_visible()) {
+        $("#compose_buttons > .reply_button_container").attr(
+            "data-tooltip-template-id",
+            "compose_reply_message_button_tooltip_template",
+        );
+    } else {
+        $("#compose_buttons > .reply_button_container").attr(
+            "data-tooltip-template-id",
+            "compose_reply_selected_topic_button_tooltip_template",
+        );
+    }
+}
+
+function update_stream_button(btn_text) {
     $("#left_bar_compose_stream_button_big").text(btn_text);
-    $("#left_bar_compose_stream_button_big").prop("title", title);
 }
 
-function update_conversation_button(btn_text, title) {
+function update_conversation_button(btn_text) {
     $("#left_bar_compose_private_button_big").text(btn_text);
-    $("#left_bar_compose_private_button_big").prop("title", title);
 }
 
-function update_buttons(text_stream) {
-    const title_stream = text_stream + " (c)";
+function update_buttons(text_stream, disable_reply) {
     const text_conversation = $t({defaultMessage: "New direct message"});
-    const title_conversation = text_conversation + " (x)";
-    update_stream_button(text_stream, title_stream);
-    update_conversation_button(text_conversation, title_conversation);
+    update_stream_button(text_stream);
+    update_conversation_button(text_conversation);
+    update_reply_button_state(disable_reply);
 }
 
 export function update_buttons_for_private() {
     const text_stream = $t({defaultMessage: "New stream message"});
-    update_buttons(text_stream);
+    if (
+        !narrow_state.pm_ids_string() ||
+        people.user_can_direct_message(narrow_state.pm_ids_string())
+    ) {
+        $("#left_bar_compose_stream_button_big").attr(
+            "data-tooltip-template-id",
+            "new_stream_message_button_tooltip_template",
+        );
+        update_buttons(text_stream);
+        return;
+    }
+    // disable the [Message X] button when in a private narrow
+    // if the user cannot dm the current recipient
+    const disable_reply = true;
+    $("#compose_buttons > .reply_button_container").attr(
+        "data-tooltip-template-id",
+        "disable_reply_compose_reply_button_tooltip_template",
+    );
+    update_buttons(text_stream, disable_reply);
 }
 
 export function update_buttons_for_stream() {
     const text_stream = $t({defaultMessage: "New topic"});
+    $("#left_bar_compose_stream_button_big").attr(
+        "data-tooltip-template-id",
+        "new_topic_message_button_tooltip_template",
+    );
     update_buttons(text_stream);
 }
 
 export function update_buttons_for_recent_topics() {
     const text_stream = $t({defaultMessage: "New stream message"});
+    $("#left_bar_compose_stream_button_big").attr(
+        "data-tooltip-template-id",
+        "new_stream_message_button_tooltip_template",
+    );
     update_buttons(text_stream);
 }
 

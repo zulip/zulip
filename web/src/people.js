@@ -60,7 +60,7 @@ export function get_users_from_ids(user_ids) {
 
 export function get_by_user_id(user_id, ignore_missing) {
     if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
-        blueslip.error("Unknown user_id in get_by_user_id: " + user_id);
+        blueslip.error("Unknown user_id in get_by_user_id", {user_id});
         return undefined;
     }
     return people_by_user_id_dict.get(user_id);
@@ -152,13 +152,12 @@ export function get_visible_email(user) {
 export function get_user_id(email) {
     const person = get_by_email(email);
     if (person === undefined) {
-        const error_msg = "Unknown email for get_user_id: " + email;
-        blueslip.error(error_msg);
+        blueslip.error("Unknown email for get_user_id", {email});
         return undefined;
     }
     const user_id = person.user_id;
     if (!user_id) {
-        blueslip.error("No user_id found for " + email);
+        blueslip.error("No user_id found for email", {email});
         return undefined;
     }
 
@@ -306,7 +305,7 @@ export function get_user_time(user_id) {
         const current_date = utcToZonedTime(new Date(), user_pref.timezone);
         // This could happen if the timezone is invalid.
         if (Number.isNaN(current_date.getTime())) {
-            blueslip.error(`Got invalid date for timezone: ${user_pref.timezone}`);
+            blueslip.error("Got invalid date for timezone", {timezone: user_pref.timezone});
             return undefined;
         }
         return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
@@ -350,7 +349,7 @@ export function get_full_names_for_poll_option(user_ids) {
 export function get_display_full_name(user_id) {
     const person = get_by_user_id(user_id);
     if (!person) {
-        blueslip.error("Unknown user id " + user_id);
+        blueslip.error("Unknown user id", {user_id});
         return "?";
     }
 
@@ -409,7 +408,7 @@ export function pm_reply_to(message) {
     const emails = user_ids.map((user_id) => {
         const person = people_by_user_id_dict.get(user_id);
         if (!person) {
-            blueslip.error("Unknown user id in message: " + user_id);
+            blueslip.error("Unknown user id in message", {user_id});
             return "?";
         }
         return person.email;
@@ -497,27 +496,6 @@ export function pm_with_user_ids(message) {
     return sorted_other_user_ids(user_ids);
 }
 
-export function group_pm_with_user_ids(message) {
-    if (message.type !== "private") {
-        return undefined;
-    }
-
-    if (message.display_recipient.length === 0) {
-        blueslip.error("Empty recipient list in message");
-        return undefined;
-    }
-
-    const user_ids = message.display_recipient.map((recip) => recip.id);
-    const is_user_present = user_ids.some((user_id) => is_my_user_id(user_id));
-    if (is_user_present) {
-        user_ids.sort();
-        if (user_ids.length > 2) {
-            return user_ids;
-        }
-    }
-    return undefined;
-}
-
 export function pm_perma_link(message) {
     const user_ids = all_user_ids_in_pm(message);
 
@@ -530,12 +508,12 @@ export function pm_perma_link(message) {
     if (user_ids.length >= 3) {
         suffix = "group";
     } else {
-        suffix = "pm";
+        suffix = "dm";
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const uri = "#narrow/pm-with/" + slug;
-    return uri;
+    const url = "#narrow/dm/" + slug;
+    return url;
 }
 
 export function pm_with_url(message) {
@@ -552,7 +530,7 @@ export function pm_with_url(message) {
     } else {
         const person = get_by_user_id(user_ids[0]);
         if (person && person.full_name) {
-            suffix = person.full_name.replace(/[ "%/<>`\p{C}]+/gu, "-");
+            suffix = person.full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
         } else {
             blueslip.error("Unknown people in message");
             suffix = "unk";
@@ -560,8 +538,8 @@ export function pm_with_url(message) {
     }
 
     const slug = user_ids.join(",") + "-" + suffix;
-    const uri = "#narrow/pm-with/" + slug;
-    return uri;
+    const url = "#narrow/dm/" + slug;
+    return url;
 }
 
 export function update_email_in_reply_to(reply_to, user_id, new_email) {
@@ -627,7 +605,7 @@ export function emails_to_slug(emails_string) {
 
     if (emails.length === 1) {
         const name = get_by_email(emails[0]).full_name;
-        slug += name.replace(/[ "%/<>`\p{C}]+/gu, "-");
+        slug += name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-");
     } else {
         slug += "group";
     }
@@ -702,6 +680,26 @@ export function user_is_bot(user_id) {
     return user.is_bot;
 }
 
+export function user_can_direct_message(recipient_ids_string) {
+    // Common function for checking if a user can send a direct
+    // message to the target user (or group of users) represented by a
+    // user ids string.
+
+    // Regardless of policy, we allow sending private messages to bots.
+    const recipient_ids = user_ids_string_to_ids_array(recipient_ids_string);
+    if (recipient_ids.length === 1 && user_is_bot(recipient_ids[0])) {
+        return true;
+    }
+
+    if (
+        page_params.realm_private_message_policy ===
+        settings_config.private_message_policy_values.disabled.code
+    ) {
+        return false;
+    }
+    return true;
+}
+
 function gravatar_url_for_email(email) {
     const hash = md5(email.toLowerCase());
     const avatar_url = "https://secure.gravatar.com/avatar/" + hash + "?d=identicon";
@@ -738,7 +736,14 @@ export function medium_avatar_url_for_person(person) {
         return medium_gravatar_url_for_email(person.email);
     }
 
-    return "/avatar/" + person.user_id + "/medium";
+    // We need to attach a version to the URL as a cache-breaker so that the browser
+    // will update the image in real time when user uploads a new avatar.
+    //
+    // TODO: Newly created users sometimes are first learned about via
+    // the report_late_add code path; these are missing the avatar_version
+    // metadata. Long term, we should clean up that possibility, but
+    // until it is, we fallback to using a version number of 0.
+    return `/avatar/${person.user_id}/medium?version=${person.avatar_version ?? 0}`;
 }
 
 export function sender_info_for_recent_topics_row(sender_ids) {
@@ -1120,7 +1125,7 @@ export const get_actual_name_from_user_id = (user_id) => {
     const person = people_by_user_id_dict.get(user_id);
 
     if (!person) {
-        blueslip.error("Unknown user_id: " + user_id);
+        blueslip.error("Unknown user_id", {user_id});
         return undefined;
     }
 
@@ -1222,7 +1227,7 @@ export function _add_user(person) {
         // with cross-realm bots, zephyr users, etc., deactivated
         // users, where we are probably fine for now not to
         // find them via user_id lookups.
-        blueslip.warn("No user_id provided for " + person.email);
+        blueslip.warn("No user_id provided", {email: person.email});
     }
 
     track_duplicate_full_name(person.full_name, person.user_id);
@@ -1238,7 +1243,7 @@ export function add_active_user(person) {
 
 export const is_person_active = (user_id) => {
     if (!people_by_user_id_dict.has(user_id)) {
-        blueslip.error("No user found.", user_id);
+        blueslip.error("No user found", {user_id});
     }
 
     if (cross_realm_dict.has(user_id)) {
@@ -1264,15 +1269,16 @@ export function deactivate(person) {
 }
 
 export function report_late_add(user_id, email) {
-    // This function is extracted to make unit testing easier,
-    // plus we may fine-tune our reporting here for different
-    // types of realms.
-    const msg = "Added user late: user_id=" + user_id + " email=" + email;
-
-    if (reload_state.is_in_progress()) {
-        blueslip.log(msg);
+    // If the events system is not running, then it is expected that
+    // we will fetch messages from the server that were sent by users
+    // who don't exist in our users data set. This can happen because
+    // we're in the middle of a reload (and thus stopped our event
+    // queue polling) or because we are a spectator and never had an
+    // event queue in the first place.
+    if (reload_state.is_in_progress() || page_params.is_spectator) {
+        blueslip.log("Added user late", {user_id, email});
     } else {
-        blueslip.error(msg);
+        blueslip.error("Added user late", {user_id, email});
     }
 }
 
@@ -1435,7 +1441,7 @@ export function is_my_user_id(user_id) {
     }
 
     if (typeof user_id !== "number") {
-        blueslip.error("user_id is a string in my_user_id: " + user_id);
+        blueslip.error("user_id is a string in my_user_id", {user_id});
         user_id = Number.parseInt(user_id, 10);
     }
 

@@ -8,7 +8,7 @@ async function test_add_linkifier(page: Page): Promise<void> {
     await page.waitForSelector(".admin-linkifier-form", {visible: true});
     await common.fill_form(page, "form.admin-linkifier-form", {
         pattern: "#(?P<id>[0-9]+)",
-        url_format_string: "https://trac.example.com/ticket/%(id)s",
+        url_template: "https://trac.example.com/ticket/{id}",
     });
     await page.click("form.admin-linkifier-form button.button");
 
@@ -26,11 +26,8 @@ async function test_add_linkifier(page: Page): Promise<void> {
         "#(?P<id>[0-9]+)",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(
-            page,
-            ".linkifier_row span.linkifier_url_format_string",
-        ),
-        "https://trac.example.com/ticket/%(id)s",
+        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_url_template"),
+        "https://trac.example.com/ticket/{id}",
     );
 }
 
@@ -46,7 +43,7 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
     await page.waitForSelector(".admin-linkifier-form", {visible: true});
     await common.fill_form(page, "form.admin-linkifier-form", {
         pattern: "(foo",
-        url_format_string: "https://trac.example.com/ticket/%(id)s",
+        url_template: "https://trac.example.com/ticket/{id}",
     });
     await page.click("form.admin-linkifier-form button.button");
 
@@ -62,7 +59,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "(?P<num>[0-9a-f]{40})",
-        url_format_string: "https://trac.example.com/commit/%(num)s",
+        url_template: "https://trac.example.com/commit/{num}",
     });
     await page.click(".dialog_submit_button");
 
@@ -74,11 +71,8 @@ async function test_edit_linkifier(page: Page): Promise<void> {
         () => document.querySelector(".linkifier_pattern")?.textContent === "(?P<num>[0-9a-f]{40})",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(
-            page,
-            ".linkifier_row span.linkifier_url_format_string",
-        ),
-        "https://trac.example.com/commit/%(num)s",
+        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_url_template"),
+        "https://trac.example.com/commit/{num}",
     );
 }
 
@@ -87,7 +81,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "#(?P<id>d????)",
-        url_format_string: "????",
+        url_template: "{id",
     });
     await page.click(".dialog_submit_button");
 
@@ -102,13 +96,13 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         "Failed: Bad regular expression: bad repetition operator: ????",
     );
 
-    const edit_linkifier_format_status_selector = "div#edit-linkifier-format-status";
-    await page.waitForSelector(edit_linkifier_format_status_selector, {visible: true});
-    const edit_linkifier_format_status = await common.get_text_from_selector(
+    const edit_linkifier_template_status_selector = "div#edit-linkifier-template-status";
+    await page.waitForSelector(edit_linkifier_template_status_selector, {visible: true});
+    const edit_linkifier_template_status = await common.get_text_from_selector(
         page,
-        edit_linkifier_format_status_selector,
+        edit_linkifier_template_status_selector,
     );
-    assert.strictEqual(edit_linkifier_format_status, "Failed: Enter a valid URL.");
+    assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
     await page.click(".dialog_cancel_button");
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
@@ -119,11 +113,8 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         "(?P<num>[0-9a-f]{40})",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(
-            page,
-            ".linkifier_row span.linkifier_url_format_string",
-        ),
-        "https://trac.example.com/commit/%(num)s",
+        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_url_template"),
+        "https://trac.example.com/commit/{num}",
     );
 }
 

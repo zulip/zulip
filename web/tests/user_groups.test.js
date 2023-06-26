@@ -121,10 +121,8 @@ run_test("user_groups", () => {
     user_groups.init();
     assert.equal(user_groups.get_realm_user_groups().length, 0);
 
-    blueslip.expect("error", "Could not find user group with ID -1");
+    blueslip.expect("error", "Could not find user group", 5);
     assert.equal(user_groups.is_direct_member_of(15, -1), false);
-
-    blueslip.expect("error", "Could not find user group with ID -9999", 4);
     user_groups.add_members(-9999);
     user_groups.remove_members(-9999);
     user_groups.add_subgroups(-9999);
@@ -180,7 +178,7 @@ run_test("get_recursive_subgroups", () => {
 
     user_groups.add_subgroups(foo.id, [9999]);
     const foo_group = user_groups.get_user_group_from_id(foo.id);
-    blueslip.expect("error", "Could not find subgroup with ID 9999", 2);
+    blueslip.expect("error", "Could not find subgroup", 2);
     assert.deepEqual(user_groups.get_recursive_subgroups(foo_group), undefined);
     assert.deepEqual(user_groups.get_recursive_subgroups(test), undefined);
 });
@@ -235,19 +233,27 @@ run_test("is_user_in_group", () => {
     assert.equal(user_groups.is_user_in_group(foo.id, 6), true);
     assert.equal(user_groups.is_user_in_group(foo.id, 3), false);
 
-    blueslip.expect("error", "Could not find user group with ID 1111");
+    blueslip.expect("error", "Could not find user group");
     assert.equal(user_groups.is_user_in_group(1111, 3), false);
 
     user_groups.add_subgroups(foo.id, [9999]);
-    blueslip.expect("error", "Could not find subgroup with ID 9999");
+    blueslip.expect("error", "Could not find subgroup");
     assert.equal(user_groups.is_user_in_group(admins.id, 6), false);
 });
 
 run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
+    const nobody = {
+        name: "@role:nobody",
+        description: "foo",
+        id: 1,
+        members: new Set([]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([]),
+    };
     const owners = {
         name: "@role:owners",
         description: "foo",
-        id: 1,
+        id: 2,
         members: new Set([1]),
         is_system_group: true,
         direct_subgroup_ids: new Set([]),
@@ -255,7 +261,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const admins = {
         name: "@role:administrators",
         description: "foo",
-        id: 2,
+        id: 3,
         members: new Set([2]),
         is_system_group: true,
         direct_subgroup_ids: new Set([1]),
@@ -263,7 +269,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const moderators = {
         name: "@role:moderators",
         description: "foo",
-        id: 3,
+        id: 4,
         members: new Set([3]),
         is_system_group: true,
         direct_subgroup_ids: new Set([2]),
@@ -271,7 +277,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const members = {
         name: "@role:members",
         description: "foo",
-        id: 4,
+        id: 5,
         members: new Set([4]),
         is_system_group: true,
         direct_subgroup_ids: new Set([6]),
@@ -279,7 +285,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const everyone = {
         name: "@role:everyone",
         description: "foo",
-        id: 5,
+        id: 6,
         members: new Set([]),
         is_system_group: true,
         direct_subgroup_ids: new Set([4]),
@@ -287,14 +293,14 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const full_members = {
         name: "@role:fullmembers",
         description: "foo",
-        id: 6,
+        id: 7,
         members: new Set([5]),
         is_system_group: true,
         direct_subgroup_ids: new Set([3]),
     };
     const internet = {
         name: "@role:internet",
-        id: 7,
+        id: 8,
         members: new Set([]),
         is_system_group: true,
         direct_subgroup_ids: new Set([5]),
@@ -302,31 +308,23 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const students = {
         description: "Students group",
         name: "Students",
-        id: 8,
+        id: 9,
         members: new Set([1, 2]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
     };
 
-    assert.throws(
-        () => user_groups.get_realm_user_groups_for_dropdown_list_widget(true, false, false),
-        {
-            name: "Error",
-            message: "Unknown group name: @role:internet",
-        },
-    );
-
-    let expected_groups_list = [
-        {name: "translated: Admins, moderators, members and guests", value: "5"},
-        {name: "translated: Admins, moderators and members", value: "4"},
-        {name: "translated: Admins, moderators and full members", value: "6"},
-        {name: "translated: Admins and moderators", value: "3"},
-        {name: "translated: Admins", value: "2"},
-        {name: "translated: Owners", value: "1"},
+    const expected_groups_list = [
+        {name: "translated: Admins, moderators, members and guests", value: "6"},
+        {name: "translated: Admins, moderators and members", value: "5"},
+        {name: "translated: Admins, moderators and full members", value: "7"},
+        {name: "translated: Admins and moderators", value: "4"},
+        {name: "translated: Admins", value: "3"},
     ];
 
     user_groups.initialize({
         realm_user_groups: [
+            nobody,
             owners,
             admins,
             moderators,
@@ -339,59 +337,15 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     });
 
     assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true, false),
+        user_groups.get_realm_user_groups_for_dropdown_list_widget("can_remove_subscribers_group"),
         expected_groups_list,
     );
 
-    expected_groups_list = [
-        {name: "translated: Everyone on the internet", value: "7"},
-        {name: "translated: Admins, moderators, members and guests", value: "5"},
-        {name: "translated: Admins, moderators and members", value: "4"},
-        {name: "translated: Admins, moderators and full members", value: "6"},
-        {name: "translated: Admins and moderators", value: "3"},
-        {name: "translated: Admins", value: "2"},
-    ];
-    assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, false, true),
-        expected_groups_list,
-    );
-
-    expected_groups_list = [
-        {name: "translated: Admins, moderators, members and guests", value: "5"},
-        {name: "translated: Admins, moderators and members", value: "4"},
-        {name: "translated: Admins, moderators and full members", value: "6"},
-        {name: "translated: Admins and moderators", value: "3"},
-        {name: "translated: Admins", value: "2"},
-    ];
-    assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true, true),
-        expected_groups_list,
-    );
-
-    expected_groups_list = [
-        {name: "translated: Everyone on the internet", value: "7"},
-        {name: "translated: Admins, moderators, members and guests", value: "5"},
-        {name: "translated: Admins, moderators and members", value: "4"},
-        {name: "translated: Admins, moderators and full members", value: "6"},
-        {name: "translated: Admins and moderators", value: "3"},
-        {name: "translated: Admins", value: "2"},
-        {name: "translated: Owners", value: "1"},
-    ];
-    assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(true, false, false),
-        expected_groups_list,
-    );
-
-    expected_groups_list = [
-        {name: "translated: Admins, moderators, members and guests", value: "5"},
-        {name: "translated: Admins, moderators and members", value: "4"},
-        {name: "translated: Admins, moderators and full members", value: "6"},
-        {name: "translated: Admins and moderators", value: "3"},
-        {name: "translated: Admins", value: "2"},
-        {name: "Students", value: "8"},
-    ];
-    assert.deepEqual(
-        user_groups.get_realm_user_groups_for_dropdown_list_widget(false, true, true),
-        expected_groups_list,
+    assert.throws(
+        () => user_groups.get_realm_user_groups_for_dropdown_list_widget("invalid_setting"),
+        {
+            name: "Error",
+            message: "Invalid setting: invalid_setting",
+        },
     );
 });

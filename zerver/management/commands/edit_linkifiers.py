@@ -19,7 +19,7 @@ NOTE: Regexes must be simple enough that they can be easily translated to JavaSc
       * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 
 Example: ./manage.py edit_linkifiers --realm=zulip --op=add '#(?P<id>[0-9]{2,8})' \
-    'https://support.example.com/ticket/%(id)s'
+    'https://support.example.com/ticket/{id}'
 Example: ./manage.py edit_linkifiers --realm=zulip --op=remove '#(?P<id>[0-9]{2,8})'
 Example: ./manage.py edit_linkifiers --realm=zulip --op=show
 """
@@ -32,10 +32,10 @@ Example: ./manage.py edit_linkifiers --realm=zulip --op=show
             "pattern", metavar="<pattern>", nargs="?", help="regular expression to match"
         )
         parser.add_argument(
-            "url_format_string",
-            metavar="<URL pattern>",
+            "url_template",
+            metavar="<URL template>",
             nargs="?",
-            help="format string to substitute",
+            help="URL template to expand",
         )
         self.add_realm_args(parser, required=True)
 
@@ -52,11 +52,11 @@ Example: ./manage.py edit_linkifiers --realm=zulip --op=show
             raise CommandError
 
         if options["op"] == "add":
-            url_format_string = options["url_format_string"]
-            if not url_format_string:
+            url_template = options["url_template"]
+            if not url_template:
                 self.print_help("./manage.py", "edit_linkifiers")
                 raise CommandError
-            do_add_linkifier(realm, pattern, url_format_string, acting_user=None)
+            do_add_linkifier(realm, pattern, url_template, acting_user=None)
             sys.exit(0)
         elif options["op"] == "remove":
             do_remove_linkifier(realm, pattern=pattern, acting_user=None)

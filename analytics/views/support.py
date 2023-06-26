@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -26,6 +27,7 @@ from zerver.actions.realm_settings import (
     do_scrub_realm,
     do_send_realm_reactivation_email,
 )
+from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin
 from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
@@ -42,6 +44,7 @@ from zerver.models import (
     UserProfile,
     get_org_type_display_name,
     get_realm,
+    get_user_profile_by_id,
 )
 from zerver.views.invite import get_invitee_emails_set
 
@@ -54,6 +57,7 @@ if settings.BILLING_ENABLED:
         get_discount_for_realm,
         get_latest_seat_count,
         make_end_of_cycle_updates_if_needed,
+        switch_realm_from_standard_to_plus_plan,
         update_billing_method_of_current_plan,
         update_sponsorship_status,
         void_all_open_invoices,
@@ -121,10 +125,11 @@ def get_confirmations(
     return confirmation_dicts
 
 
-VALID_DOWNGRADE_METHODS = [
+VALID_MODIFY_PLAN_METHODS = [
     "downgrade_at_billing_cycle_end",
     "downgrade_now_without_additional_licenses",
     "downgrade_now_void_open_invoices",
+    "upgrade_to_plus",
 ]
 
 VALID_STATUS_VALUES = [
@@ -160,10 +165,11 @@ def support(
     ),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
     approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
-    downgrade_method: Optional[str] = REQ(
-        default=None, str_validator=check_string_in(VALID_DOWNGRADE_METHODS)
+    modify_plan: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_MODIFY_PLAN_METHODS)
     ),
     scrub_realm: bool = REQ(default=False, json_validator=check_bool),
+    delete_user_by_id: Optional[int] = REQ(default=None, converter=to_non_negative_int),
     query: Optional[str] = REQ("q", default=None),
     org_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
 ) -> HttpResponse:
@@ -251,31 +257,43 @@ def support(
         elif approve_sponsorship:
             do_approve_sponsorship(realm, acting_user=acting_user)
             context["success_message"] = f"Sponsorship approved for {realm.string_id}"
-        elif downgrade_method is not None:
-            if downgrade_method == "downgrade_at_billing_cycle_end":
+        elif modify_plan is not None:
+            if modify_plan == "downgrade_at_billing_cycle_end":
                 downgrade_at_the_end_of_billing_cycle(realm)
                 context[
                     "success_message"
                 ] = f"{realm.string_id} marked for downgrade at the end of billing cycle"
-            elif downgrade_method == "downgrade_now_without_additional_licenses":
+            elif modify_plan == "downgrade_now_without_additional_licenses":
                 downgrade_now_without_creating_additional_invoices(realm)
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded without creating additional invoices"
-            elif downgrade_method == "downgrade_now_void_open_invoices":
+            elif modify_plan == "downgrade_now_void_open_invoices":
                 downgrade_now_without_creating_additional_invoices(realm)
                 voided_invoices_count = void_all_open_invoices(realm)
                 context[
                     "success_message"
                 ] = f"{realm.string_id} downgraded and voided {voided_invoices_count} open invoices"
+            elif modify_plan == "upgrade_to_plus":
+                switch_realm_from_standard_to_plus_plan(realm)
+                context["success_message"] = f"{realm.string_id} upgraded to Plus"
         elif scrub_realm:
             do_scrub_realm(realm, acting_user=acting_user)
             context["success_message"] = f"{realm.string_id} scrubbed."
+        elif delete_user_by_id:
+            user_profile_for_deletion = get_user_profile_by_id(delete_user_by_id)
+            user_email = user_profile_for_deletion.delivery_email
+            assert user_profile_for_deletion.realm == realm
+            do_delete_user_preserving_messages(user_profile_for_deletion)
+            context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
 
     if query:
         key_words = get_invitee_emails_set(query)
 
-        users = set(UserProfile.objects.filter(delivery_email__in=key_words))
+        case_insensitive_users_q = Q()
+        for key_word in key_words:
+            case_insensitive_users_q |= Q(delivery_email__iexact=key_word)
+        users = set(UserProfile.objects.filter(case_insensitive_users_q))
         realms = set(Realm.objects.filter(string_id__in=key_words))
 
         for key_word in key_words:

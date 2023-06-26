@@ -137,16 +137,17 @@
 
 <form method="POST" class="downgrade-plan-form">
     <br />
-    <b>Downgrade plan</b><br />
+    <b>Modify plan</b><br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-    <select name="downgrade_method" class="downgrade-plan-method-select" required>
+    <select name="modify_plan" class="modify-plan-method-select" required>
         <option disabled value="" selected>-- select --</option>
         <option value="downgrade_at_billing_cycle_end">Downgrade at the end of current billing cycle</option>
         <option value="downgrade_now_without_additional_licenses">Downgrade now without creating additional invoices</option>
         <option value="downgrade_now_void_open_invoices">Downgrade now and void open invoices</option>
+        <option value="upgrade_to_plus">Upgrade to the Plus plan</option>
     </select>
-    <button type="submit" class="btn btn-default support-submit-button">Downgrade</button>
+    <button type="submit" class="btn btn-default support-submit-button">Modify</button>
 </form>
 
 {% endif %}

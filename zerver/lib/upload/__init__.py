@@ -3,7 +3,7 @@ import logging
 import urllib
 from datetime import datetime
 from mimetypes import guess_type
-from typing import IO, Any, Callable, Iterator, List, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, List, Optional, Tuple, Union
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -15,7 +15,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import Attachment, Message, Realm, RealmEmoji, UserProfile
+from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
 
 
 class RealmUploadQuotaError(JsonableError):
@@ -86,11 +86,19 @@ def upload_message_attachment(
 def claim_attachment(
     user_profile: UserProfile,
     path_id: str,
-    message: Message,
+    message: Union[Message, ScheduledMessage],
     is_message_realm_public: bool,
     is_message_web_public: bool = False,
 ) -> Attachment:
     attachment = Attachment.objects.get(path_id=path_id)
+    if isinstance(message, ScheduledMessage):
+        attachment.scheduled_messages.add(message)
+        # Setting the is_web_public and is_realm_public flags would be incorrect
+        # in the scheduled message case - since the attachment becomes such only
+        # when the message is actually posted.
+        return attachment
+
+    assert isinstance(message, Message)
     attachment.messages.add(message)
     attachment.is_web_public = attachment.is_web_public or is_message_web_public
     attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
@@ -105,6 +113,10 @@ def upload_message_attachment_from_request(
     return upload_message_attachment(
         uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
     )
+
+
+def save_attachment_contents(path_id: str, filehandle: BinaryIO) -> None:
+    return upload_backend.save_attachment_contents(path_id, filehandle)
 
 
 def delete_message_attachment(path_id: str) -> bool:

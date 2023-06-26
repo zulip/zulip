@@ -43,10 +43,11 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
     return {
         "realm_uri": user.realm.uri,
         "realm_name": user.realm.name,
-        "root_domain_uri": settings.ROOT_DOMAIN_URI,
-        "external_uri_scheme": settings.EXTERNAL_URI_SCHEME,
+        "root_domain_url": settings.ROOT_DOMAIN_URI,
+        "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
         "external_host": settings.EXTERNAL_HOST,
         "user_name": user.full_name,
+        "corporate_enabled": settings.CORPORATE_ENABLED,
     }
 
 
@@ -163,11 +164,11 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "login_url": settings.HOME_NOT_LOGGED_IN,
         "only_sso": settings.ONLY_SSO,
         "external_host": settings.EXTERNAL_HOST,
-        "external_uri_scheme": settings.EXTERNAL_URI_SCHEME,
+        "external_url_scheme": settings.EXTERNAL_URI_SCHEME,
         "realm_uri": realm_uri,
         "realm_name": realm_name,
         "realm_icon": realm_icon,
-        "root_domain_uri": settings.ROOT_DOMAIN_URI,
+        "root_domain_url": settings.ROOT_DOMAIN_URI,
         "apps_page_url": get_apps_page_url(),
         "apps_page_web": apps_page_web,
         "open_realm_creation": settings.OPEN_REALM_CREATION,

@@ -46,6 +46,7 @@ from zerver.lib.mention import (
     FullNameInfo,
     MentionBackend,
     MentionData,
+    PossibleMentions,
     get_possible_mentions_info,
     possible_mentions,
     possible_user_group_mentions,
@@ -427,6 +428,7 @@ class MarkdownTest(ZulipTestCase):
             self.assertTrue(is_unique, message)
             found_names.add(test_name)
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_markdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_markdown_tests()
         valid_keys = {
@@ -571,7 +573,7 @@ class MarkdownTest(ZulipTestCase):
             '<p><a href="https://vimeo.com/246979354">https://vimeo.com/246979354</a></p>',
         )
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_thumbnail_url(self) -> None:
         realm = get_realm("zephyr")
         msg = "[foobar](/user_uploads/{realm_id}/50/w2G6ok9kr8AMCQCTNAUOFMln/IMG_0677.JPG)"
@@ -611,7 +613,7 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(msg)
         self.assertIn(thumbnail_img, converted)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_preview(self) -> None:
         with_preview = '<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=thumbnail"></a></div>'
         without_preview = '<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>'
@@ -631,7 +633,7 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, without_preview)
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_external_image_preview_use_camo(self) -> None:
         content = "https://example.com/thing.jpeg"
 
@@ -639,7 +641,7 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_static_image_preview_skip_camo(self) -> None:
         content = f"{ settings.STATIC_URL }/thing.jpeg"
 
@@ -647,13 +649,13 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(content)
         self.assertIn(converted, thumbnail_img)
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_realm_image_preview_skip_camo(self) -> None:
         content = f"https://zulip.{ settings.EXTERNAL_HOST }/thing.jpeg"
         converted = markdown_convert_wrapper(content)
         self.assertNotIn(converted, get_camo_url(content))
 
-    @override_settings(THUMBNAIL_IMAGES=False, EXTERNAL_URI_SCHEME="https://")
+    @override_settings(EXTERNAL_URI_SCHEME="https://")
     def test_cross_realm_image_preview_use_camo(self) -> None:
         content = f"https://otherrealm.{ settings.EXTERNAL_HOST }/thing.jpeg"
 
@@ -693,7 +695,7 @@ class MarkdownTest(ZulipTestCase):
         soup = BeautifulSoup(converted, "html.parser")
         self.assert_length(soup(class_="message_inline_image"), 0)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_quoted_blocks(self) -> None:
         content = "http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"
         expected = '<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img data-src-fullsize="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=full" src="/thumbnail?url=http%3A%2F%2Fcdn.wallpapersafari.com%2F13%2F6%2F16eVjx.jpeg&amp;size=thumbnail"></a></div>'
@@ -716,7 +718,7 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_inline_image_preview_order(self) -> None:
         realm = get_realm("zulip")
         content = "http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg"
@@ -744,7 +746,7 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
-    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    @override_settings(THUMBNAIL_IMAGES=True, INLINE_IMAGE_PREVIEW=True)
     def test_corrected_image_source(self) -> None:
         # testing only Wikipedia because linx.li URLs can be expected to expire
         content = "https://en.wikipedia.org/wiki/File:Wright_of_Derby,_The_Orrery.jpg"
@@ -858,6 +860,7 @@ class MarkdownTest(ZulipTestCase):
             f"""<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="1 photo"><img src="{get_camo_url("https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0")}"></a></div>""",
         )
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_inline_dropbox_negative(self) -> None:
         # Make sure we're not overzealous in our conversion:
         msg = "Look at the new dropbox logo: https://www.dropbox.com/static/images/home_logo.png"
@@ -879,6 +882,7 @@ class MarkdownTest(ZulipTestCase):
             '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>',
         )
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_inline_github_preview(self) -> None:
         # Test photo album previews
         msg = "Test: https://github.com/zulip/zulip/blob/main/static/images/logo/zulip-icon-128x128.png"
@@ -950,258 +954,10 @@ class MarkdownTest(ZulipTestCase):
             "410766290349879296",
         )
 
-    def test_inline_interesting_links(self) -> None:
-        def make_link(url: str) -> str:
-            return f'<a href="{url}">{url}</a>'
-
-        normal_tweet_html = (
-            '<a href="https://twitter.com/Twitter"'
-            ">@Twitter</a> "
-            "meets @seepicturely at #tcdisrupt cc."
-            '<a href="https://twitter.com/boscomonkey"'
-            ">@boscomonkey</a> "
-            '<a href="https://twitter.com/episod"'
-            ">@episod</a> "
-            '<a href="http://t.co/6J2EgYM"'
-            ">http://instagr.am/p/MuW67/</a>"
-        )
-
-        mention_in_link_tweet_html = """<a href="http://t.co/@foo">http://foo.com</a>"""
-
-        media_tweet_html = (
-            '<a href="http://t.co/xo7pAhK6n3">'
-            "http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>"
-        )
-
-        emoji_in_tweet_html = """Zulip is <span aria-label=\"100\" class="emoji emoji-1f4af" role=\"img\" title="100">:100:</span>% open-source!"""
-
-        def make_inline_twitter_preview(url: str, tweet_html: str, image_html: str = "") -> str:
-            ## As of right now, all previews are mocked to be the exact same tweet
-            return (
-                '<div class="inline-preview-twitter">'
-                '<div class="twitter-tweet">'
-                f'<a href="{url}">'
-                '<img class="twitter-avatar"'
-                ' src="https://external-content.zulipcdn.net/external_content/1f7cd2436976d410eab8189ebceda87ae0b34ead/687474703a2f2f7062732e7477696d672e63'
-                "6f6d2f70726f66696c655f696d616765732f313338303931323137332f53637265656e5f73686f745f323031312d30362d30335f61745f372e33352e33"
-                '365f504d5f6e6f726d616c2e706e67">'
-                "</a>"
-                f"<p>{tweet_html}</p>"
-                "<span>- Eoin McMillan (@imeoin)</span>"
-                f"{image_html}"
-                "</div>"
-                "</div>"
-            )
-
-        msg = "http://www.twitter.com"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, "<p>{}</p>".format(make_link("http://www.twitter.com")))
-
-        msg = "http://www.twitter.com/wdaher/"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(converted, "<p>{}</p>".format(make_link("http://www.twitter.com/wdaher/")))
-
-        msg = "http://www.twitter.com/wdaher/status/3"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted, "<p>{}</p>".format(make_link("http://www.twitter.com/wdaher/status/3"))
-        )
-
-        # id too long
-        msg = "http://www.twitter.com/wdaher/status/2879779692873154569"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>".format(
-                make_link("http://www.twitter.com/wdaher/status/2879779692873154569")
-            ),
-        )
-
-        # id too large (i.e. tweet doesn't exist)
-        msg = "http://www.twitter.com/wdaher/status/999999999999999999"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>".format(
-                make_link("http://www.twitter.com/wdaher/status/999999999999999999")
-            ),
-        )
-
-        msg = "http://www.twitter.com/wdaher/status/287977969287315456"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>\n{}".format(
-                make_link("http://www.twitter.com/wdaher/status/287977969287315456"),
-                make_inline_twitter_preview(
-                    "http://www.twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-            ),
-        )
-
-        msg = "https://www.twitter.com/wdaher/status/287977969287315456"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>\n{}".format(
-                make_link("https://www.twitter.com/wdaher/status/287977969287315456"),
-                make_inline_twitter_preview(
-                    "https://www.twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-            ),
-        )
-
-        msg = "http://twitter.com/wdaher/status/287977969287315456"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>\n{}".format(
-                make_link("http://twitter.com/wdaher/status/287977969287315456"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-            ),
-        )
-
-        # Repeated links will only be converted once
-        msg = (
-            "http://twitter.com/wdaher/status/287977969287315456 "
-            "http://twitter.com/wdaher/status/287977969287315457 "
-            "http://twitter.com/wdaher/status/287977969287315457 "
-            "http://twitter.com/wdaher/status/287977969287315457"
-        )
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{} {} {} {}</p>\n{}{}".format(
-                make_link("http://twitter.com/wdaher/status/287977969287315456"),
-                make_link("http://twitter.com/wdaher/status/287977969287315457"),
-                make_link("http://twitter.com/wdaher/status/287977969287315457"),
-                make_link("http://twitter.com/wdaher/status/287977969287315457"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315457", normal_tweet_html
-                ),
-            ),
-        )
-
-        # A max of 3 will be converted
-        msg = (
-            "http://twitter.com/wdaher/status/287977969287315456 "
-            "http://twitter.com/wdaher/status/287977969287315457 "
-            "https://twitter.com/wdaher/status/287977969287315456 "
-            "http://twitter.com/wdaher/status/287977969287315460"
-        )
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{} {} {} {}</p>\n{}{}{}".format(
-                make_link("http://twitter.com/wdaher/status/287977969287315456"),
-                make_link("http://twitter.com/wdaher/status/287977969287315457"),
-                make_link("https://twitter.com/wdaher/status/287977969287315456"),
-                make_link("http://twitter.com/wdaher/status/287977969287315460"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315457", normal_tweet_html
-                ),
-                make_inline_twitter_preview(
-                    "https://twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-            ),
-        )
-
-        # Test smart in-place inlining behavior:
-        msg = (
-            "Paragraph 1: http://twitter.com/wdaher/status/287977969287315456\n\n"
-            "Paragraph 2\n\n"
-            "Paragraph 3: http://twitter.com/wdaher/status/287977969287315457"
-        )
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>Paragraph 1: {}</p>\n{}<p>Paragraph 2</p>\n<p>Paragraph 3: {}</p>\n{}".format(
-                make_link("http://twitter.com/wdaher/status/287977969287315456"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-                make_link("http://twitter.com/wdaher/status/287977969287315457"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315457", normal_tweet_html
-                ),
-            ),
-        )
-
-        # Tweet has a mention in a URL, only the URL is linked
-        msg = "http://twitter.com/wdaher/status/287977969287315458"
-
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>\n{}".format(
-                make_link("http://twitter.com/wdaher/status/287977969287315458"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315458",
-                    mention_in_link_tweet_html,
-                ),
-            ),
-        )
-
-        # Tweet with an image
-        msg = "http://twitter.com/wdaher/status/287977969287315459"
-
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>\n{}".format(
-                make_link("http://twitter.com/wdaher/status/287977969287315459"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315459",
-                    media_tweet_html,
-                    (
-                        '<div class="twitter-image">'
-                        '<a href="http://t.co/xo7pAhK6n3">'
-                        f"""<img src="{get_camo_url("https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small")}">"""
-                        "</a>"
-                        "</div>"
-                    ),
-                ),
-            ),
-        )
-
-        msg = "http://twitter.com/wdaher/status/287977969287315460"
-        converted = markdown_convert_wrapper(msg)
-        self.assertEqual(
-            converted,
-            "<p>{}</p>\n{}".format(
-                make_link("http://twitter.com/wdaher/status/287977969287315460"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315460", emoji_in_tweet_html
-                ),
-            ),
-        )
-
-        # Test Twitter previews in spoiler tags.
-        msg = "```spoiler secret tweet\nTweet: http://twitter.com/wdaher/status/287977969287315456\n```"
-        converted = markdown_convert_wrapper(msg)
-
-        rendered_spoiler = '<div class="spoiler-block"><div class="spoiler-header">\n<p>secret tweet</p>\n</div><div class="spoiler-content" aria-hidden="true">\n<p>Tweet: {}</p>\n{}</div></div>'
-        self.assertEqual(
-            converted,
-            rendered_spoiler.format(
-                make_link("http://twitter.com/wdaher/status/287977969287315456"),
-                make_inline_twitter_preview(
-                    "http://twitter.com/wdaher/status/287977969287315456", normal_tweet_html
-                ),
-            ),
-        )
-
     def test_fetch_tweet_data_settings_validation(self) -> None:
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
-            self.assertIs(None, fetch_tweet_data("287977969287315459"))
+            with self.assertRaises(NotImplementedError):
+                fetch_tweet_data("287977969287315459")
 
     def test_content_has_emoji(self) -> None:
         self.assertFalse(content_has_emoji_syntax("boring"))
@@ -1349,10 +1105,10 @@ class MarkdownTest(ZulipTestCase):
                 RealmFilter(
                     realm=realm,
                     pattern=r"#(?P<id>[0-9]{2,8})",
-                    url_format_string=r"https://trac.example.com/ticket/%(id)s",
+                    url_template=r"https://trac.example.com/ticket/{id}",
                 )
             ],
-            ["<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>"],
+            ["<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>"],
         )
 
         msg = Message(sender=self.example_user("othello"))
@@ -1411,7 +1167,7 @@ class MarkdownTest(ZulipTestCase):
         RealmFilter(
             realm=realm,
             pattern=r"#(?P<id>[a-zA-Z]+-[0-9]+)",
-            url_format_string=r"https://trac.example.com/ticket/%(id)s",
+            url_template=r"https://trac.example.com/ticket/{id}",
         ).save()
         msg = Message(sender=self.example_user("hamlet"))
 
@@ -1459,7 +1215,7 @@ class MarkdownTest(ZulipTestCase):
         RealmFilter(
             realm=realm,
             pattern=r"hello#(?P<id>[0-9]+)",
-            url_format_string=r"https://trac.example.com/hello/%(id)s",
+            url_template=r"https://trac.example.com/hello/{id}",
         ).save()
         converted_topic = topic_links(realm.id, "hello#123 #234")
         self.assertEqual(
@@ -1480,22 +1236,23 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
-        # Test URI escaping
+        # Test URL escaping
         RealmFilter(
             realm=realm,
             pattern=r"url-(?P<id>[0-9]+)",
-            url_format_string="https://example.com/A%20Test/%%%ba/%(id)s",
+            url_template="https://example.com/A%20Test/%%%ba/{id}",
         ).save()
         msg = Message(sender=self.example_user("hamlet"))
         content = "url-123 is well-escaped"
         converted = markdown_convert(content, message_realm=realm, message=msg)
         self.assertEqual(
             converted.rendered_content,
-            '<p><a href="https://example.com/A%20Test/%%ba/123">url-123</a> is well-escaped</p>',
+            '<p><a href="https://example.com/A%20Test/%25%25%ba/123">url-123</a> is well-escaped</p>',
         )
         converted_topic = topic_links(realm.id, content)
         self.assertEqual(
-            converted_topic, [{"url": "https://example.com/A%20Test/%%ba/123", "text": "url-123"}]
+            converted_topic,
+            [{"url": "https://example.com/A%20Test/%25%25%ba/123", "text": "url-123"}],
         )
 
     def test_multiple_matching_realm_patterns(self) -> None:
@@ -1505,23 +1262,23 @@ class MarkdownTest(ZulipTestCase):
                 RealmFilter(
                     realm=realm,
                     pattern="(?P<id>ABC-[0-9]+)",
-                    url_format_string="https://trac.example.com/ticket/%(id)s",
+                    url_template="https://trac.example.com/ticket/{id}",
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="(?P<id>[A-Z][A-Z0-9]*-[0-9]+)",
-                    url_format_string="https://other-trac.example.com/ticket/%(id)s",
+                    url_template="https://other-trac.example.com/ticket/{id}",
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="(?P<id>[A-Z][A-Z0-9]+)",
-                    url_format_string="https://yet-another-trac.example.com/ticket/%(id)s",
+                    url_template="https://yet-another-trac.example.com/ticket/{id}",
                 ),
             ],
             [
-                "<RealmFilter: zulip: (?P<id>ABC-[0-9]+) https://trac.example.com/ticket/%(id)s>",
-                "<RealmFilter: zulip: (?P<id>[A-Z][A-Z0-9]*-[0-9]+) https://other-trac.example.com/ticket/%(id)s>",
-                "<RealmFilter: zulip: (?P<id>[A-Z][A-Z0-9]+) https://yet-another-trac.example.com/ticket/%(id)s>",
+                "<RealmFilter: zulip: (?P<id>ABC-[0-9]+) https://trac.example.com/ticket/{id}>",
+                "<RealmFilter: zulip: (?P<id>[A-Z][A-Z0-9]*-[0-9]+) https://other-trac.example.com/ticket/{id}>",
+                "<RealmFilter: zulip: (?P<id>[A-Z][A-Z0-9]+) https://yet-another-trac.example.com/ticket/{id}>",
             ],
         )
 
@@ -1572,17 +1329,17 @@ class MarkdownTest(ZulipTestCase):
                 RealmFilter(
                     realm=realm,
                     pattern="ABC-42",
-                    url_format_string="https://google.com",
+                    url_template="https://google.com",
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern=r"com.+(?P<id>ABC\-[0-9]+)",
-                    url_format_string="https://trac.example.com/ticket/%(id)s",
+                    url_template="https://trac.example.com/ticket/{id}",
                 ),
             ],
             [
                 "<RealmFilter: zulip: ABC-42 https://google.com>",
-                r"<RealmFilter: zulip: com.+(?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
+                r"<RealmFilter: zulip: com.+(?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/{id}>",
             ],
         )
 
@@ -1621,29 +1378,29 @@ class MarkdownTest(ZulipTestCase):
                 RealmFilter(
                     realm=realm,
                     pattern="http",
-                    url_format_string="http://example.com/",
+                    url_template="http://example.com/",
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="b#(?P<id>[a-z]+)",
-                    url_format_string="http://example.com/b/%(id)s",
+                    url_template="http://example.com/b/{id}",
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+)",
-                    url_format_string="http://example.com/a/%(aid)s/b/%(bid)s",
+                    url_template="http://example.com/a/{aid}/b/{bid}",
                 ),
                 RealmFilter(
                     realm=realm,
                     pattern="a#(?P<id>[a-z]+)",
-                    url_format_string="http://example.com/a/%(id)s",
+                    url_template="http://example.com/a/{id}",
                 ),
             ],
             [
                 "<RealmFilter: zulip: http http://example.com/>",
-                "<RealmFilter: zulip: b#(?P<id>[a-z]+) http://example.com/b/%(id)s>",
-                "<RealmFilter: zulip: a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+) http://example.com/a/%(aid)s/b/%(bid)s>",
-                "<RealmFilter: zulip: a#(?P<id>[a-z]+) http://example.com/a/%(id)s>",
+                "<RealmFilter: zulip: b#(?P<id>[a-z]+) http://example.com/b/{id}>",
+                "<RealmFilter: zulip: a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+) http://example.com/a/{aid}/b/{bid}>",
+                "<RealmFilter: zulip: a#(?P<id>[a-z]+) http://example.com/a/{id}>",
             ],
         )
         # There should be 5 link matches in the topic, if ordered from the most priortized to the least:
@@ -1692,7 +1449,7 @@ class MarkdownTest(ZulipTestCase):
             flush_linkifiers(sender=RealmFilter, instance=cast(RealmFilter, instance))
 
         def save_new_linkifier() -> None:
-            linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_format_string="whatever")
+            linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
             linkifier.save()
 
         # start fresh for our realm
@@ -1722,7 +1479,7 @@ class MarkdownTest(ZulipTestCase):
                 id=cur_precedence,
                 realm=realm,
                 pattern=f"abc{cur_precedence}",
-                url_format_string="http://foo.com",
+                url_template="http://foo.com",
             )
             linkifier.save()
         linkifiers = linkifiers_for_realm(realm.id)
@@ -1734,7 +1491,7 @@ class MarkdownTest(ZulipTestCase):
         RealmFilter(
             realm=realm,
             pattern=r"#(?P<id>[0-9]{2,8})",
-            url_format_string=r"https://trac.example.com/ticket/%(id)s",
+            url_template=r"https://trac.example.com/ticket/{id}",
         ).save()
         boring_msg = Message(sender=self.example_user("othello"))
         boring_msg.set_topic_name("no match here")
@@ -2274,7 +2031,10 @@ class MarkdownTest(ZulipTestCase):
 
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
-            self.assertEqual(possible_mentions(content), (names, has_wildcards))
+            self.assertEqual(
+                possible_mentions(content),
+                PossibleMentions(mention_texts=names, message_has_wildcards=has_wildcards),
+            )
 
         aaron = self.example_user("aaron")
 
@@ -2425,14 +2185,14 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         # Create a linkifier.
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url_template = r"https://trac.example.com/ticket/{id}"
         linkifier = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
+            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_template=url_template
         )
         linkifier.save()
         self.assertEqual(
             repr(linkifier),
-            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>",
         )
         # Create a user that potentially interferes with the pattern.
         test_user = create_user(
@@ -2515,14 +2275,14 @@ class MarkdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         user_profile = self.example_user("hamlet")
         # Create a linkifier.
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url_template = r"https://trac.example.com/ticket/{id}"
         linkifier = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
+            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_template=url_template
         )
         linkifier.save()
         self.assertEqual(
             repr(linkifier),
-            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>",
         )
         # Create a user-group that potentially interferes with the pattern.
         user_id = user_profile.id
@@ -2773,14 +2533,14 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         # Create a linkifier.
         sender_user_profile = self.example_user("othello")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url_template = r"https://trac.example.com/ticket/{id}"
         linkifier = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
+            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_template=url_template
         )
         linkifier.save()
         self.assertEqual(
             repr(linkifier),
-            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>",
         )
         # Create a topic link that potentially interferes with the pattern.
         denmark = get_stream("Denmark", realm)
@@ -2842,14 +2602,14 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         # Create a linkifier.
         sender_user_profile = self.example_user("othello")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url_template = r"https://trac.example.com/ticket/{id}"
         linkifier = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
+            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_template=url_template
         )
         linkifier.save()
         self.assertEqual(
             repr(linkifier),
-            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>",
         )
         # Create a stream that potentially interferes with the pattern.
         stream = self.make_stream(stream_name="Stream #1234", realm=realm)
@@ -2875,6 +2635,7 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
+    @override_settings(THUMBNAIL_IMAGES=True)
     def test_image_preview_title(self) -> None:
         msg = "[My favorite image](https://example.com/testimage.png)"
         converted = markdown_convert_wrapper(msg)

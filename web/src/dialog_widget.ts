@@ -1,10 +1,12 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
 
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
+import type {AjaxRequestHandler} from "./types";
 import * as ui_report from "./ui_report";
 
 /*
@@ -41,7 +43,7 @@ import * as ui_report from "./ui_report";
  *          to DOM, it can do so by passing a post_render hook.
  */
 
-type WidgetConfig = {
+export type DialogWidgetConfig = {
     html_heading: string;
     html_body: string;
     on_click: (e: unknown) => void;
@@ -59,26 +61,13 @@ type WidgetConfig = {
     on_hidden?: () => void;
     post_render?: () => void;
     loading_spinner?: boolean;
+    update_submit_disabled_state_on_change?: boolean;
 };
-
-// TODO: This type should probably be exported from channel.ts once
-// that's converted to TypeScript.
-type AjaxRequest = ({
-    url,
-    data = {},
-    success,
-    error,
-}: {
-    url: string;
-    data?: Record<string, never>;
-    success(response_data?: string): void;
-    error(xhr?: JQuery.jqXHR): void;
-}) => void;
 
 type RequestOpts = {
     failure_msg_html?: string;
-    success_continuation?: (response_data?: string) => void;
-    error_continuation?: (xhr?: JQuery.jqXHR) => void;
+    success_continuation?: Parameters<AjaxRequestHandler>[0]["success"];
+    error_continuation?: Parameters<AjaxRequestHandler>[0]["error"];
 };
 
 export function hide_dialog_spinner(): void {
@@ -90,13 +79,17 @@ export function hide_dialog_spinner(): void {
 }
 
 export function show_dialog_spinner(): void {
-    $(".dialog_submit_button span").hide();
     // Disable both the buttons.
     $("#dialog_widget_modal .modal__btn").prop("disabled", true);
 
     const $spinner = $("#dialog_widget_modal .modal__spinner");
     const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
     const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
+
+    // Hide the submit button after computing its height, since submit
+    // buttons with long text might affect the size of the button.
+    $(".dialog_submit_button span").hide();
+
     loading.make_indicator($spinner, {
         width: dialog_submit_button_span_width,
         height: dialog_submit_button_span_height,
@@ -108,7 +101,7 @@ export function close_modal(on_hidden_callback?: () => void): void {
     overlays.close_modal("dialog_widget_modal", {on_hidden: on_hidden_callback});
 }
 
-export function launch(conf: WidgetConfig): void {
+export function launch(conf: DialogWidgetConfig): void {
     // Mandatory fields:
     // * html_heading
     // * html_body
@@ -133,8 +126,10 @@ export function launch(conf: WidgetConfig): void {
     // * post_render: Callback to run after the modal body is added to DOM.
     // * loading_spinner: Whether to show a loading spinner inside the
     //   submit button when clicked.
+    // * update_submit_disabled_state_on_change: If true, updates state of submit button
+    //   on valid input change in modal.
 
-    const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
+    const html_submit_button = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
     const html = render_dialog_widget({
         heading_text: conf.html_heading,
         link: conf.help_link,
@@ -151,6 +146,40 @@ export function launch(conf: WidgetConfig): void {
     }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
+
+    function get_current_values($inputs: JQuery): Record<string, unknown> {
+        const current_values: Record<string, unknown> = {};
+        $inputs.each(function () {
+            const property_name = $(this).attr("name")!;
+            if (property_name) {
+                if ($(this).is("input[type='file']") && $(this).prop("files")?.length) {
+                    // If the input is a file input and a file has been selected, set value to file object
+                    current_values[property_name] = $(this).prop("files")[0];
+                } else {
+                    current_values[property_name] = $(this).val();
+                }
+            }
+        });
+        return current_values;
+    }
+
+    if (conf.update_submit_disabled_state_on_change) {
+        const $inputs = $dialog.find(".modal__content").find("input,select,textarea,button");
+
+        const original_values = get_current_values($inputs);
+
+        $submit_button.prop("disabled", true);
+
+        $inputs.on("input", () => {
+            const current_values = get_current_values($inputs);
+
+            if (!_.isEqual(original_values, current_values)) {
+                $submit_button.prop("disabled", false);
+            } else {
+                $submit_button.prop("disabled", true);
+            }
+        });
+    }
 
     // This is used to link the submit button with the form, if present, in the modal.
     // This makes it so that submitting this form by pressing Enter on an input element
@@ -190,9 +219,9 @@ export function launch(conf: WidgetConfig): void {
 }
 
 export function submit_api_request(
-    request_method: AjaxRequest,
+    request_method: AjaxRequestHandler,
     url: string,
-    data = {},
+    data: Parameters<AjaxRequestHandler>[0]["data"] = {},
     {
         failure_msg_html = $t_html({defaultMessage: "Failed"}),
         success_continuation,
@@ -203,17 +232,17 @@ export function submit_api_request(
     request_method({
         url,
         data,
-        success(response_data?: string) {
+        success(response_data, textStatus, jqXHR) {
             close_modal();
             if (success_continuation !== undefined) {
-                success_continuation(response_data);
+                success_continuation(response_data, textStatus, jqXHR);
             }
         },
-        error(xhr?: JQuery.jqXHR) {
+        error(xhr, error_type, xhn) {
             ui_report.error(failure_msg_html, xhr, $("#dialog_error"));
             hide_dialog_spinner();
             if (error_continuation !== undefined) {
-                error_continuation(xhr);
+                error_continuation(xhr, error_type, xhn);
             }
         },
     });

@@ -5,12 +5,14 @@
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
+import datetime
 import time
 from io import StringIO
 from typing import Any, Callable, Dict, List, Optional, Set
 from unittest import mock
 
 import orjson
+from dateutil.parser import parse as dateparser
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
@@ -74,6 +76,11 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
+)
+from zerver.actions.scheduled_messages import (
+    check_schedule_message,
+    delete_scheduled_message,
+    edit_scheduled_message,
 )
 from zerver.actions.streams import (
     bulk_add_subscriptions,
@@ -146,7 +153,6 @@ from zerver.lib.event_schema import (
     check_realm_domains_remove,
     check_realm_emoji_update,
     check_realm_export,
-    check_realm_filters,
     check_realm_linkifiers,
     check_realm_playgrounds,
     check_realm_update,
@@ -198,6 +204,7 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stdout_suppressed,
 )
+from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.models import (
@@ -263,6 +270,7 @@ class BaseAction(ZulipTestCase):
         stream_typing_notifications: bool = True,
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
+        linkifier_url_template: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -291,6 +299,7 @@ class BaseAction(ZulipTestCase):
                 stream_typing_notifications=stream_typing_notifications,
                 user_settings_object=user_settings_object,
                 pronouns_field_type_supported=pronouns_field_type_supported,
+                linkifier_url_template=linkifier_url_template,
             )
         )
 
@@ -305,11 +314,12 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
 
         # We want even those `send_event` calls which have been hooked to
         # `transaction.on_commit` to execute in tests.
-        # See the comment in `ZulipTestCase.tornado_redirected_to_list`.
+        # See the comment in `ZulipTestCase.capture_send_event_calls`.
         with self.captureOnCommitCallbacks(execute=True):
             action()
 
@@ -335,6 +345,7 @@ class BaseAction(ZulipTestCase):
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            linkifier_url_template=linkifier_url_template,
         )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
@@ -361,6 +372,7 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -457,7 +469,7 @@ class NormalActionsTest(BaseAction):
             ),
         )
 
-        # Verify private message editing - content only edit
+        # Verify direct message editing - content only edit
         pm = Message.objects.order_by("-id")[0]
         content = "new content"
         rendering_result = render_markdown(pm, content)
@@ -610,8 +622,8 @@ class NormalActionsTest(BaseAction):
         )
 
         # Verify move topic to different stream.
-
-        # Send 2 messages in "test" topic.
+        self.subscribe(self.user_profile, "Verona")
+        self.subscribe(self.user_profile, "Denmark")
         self.send_stream_message(self.user_profile, "Verona")
         message_id = self.send_stream_message(self.user_profile, "Verona")
         message = Message.objects.get(id=message_id)
@@ -645,6 +657,48 @@ class NormalActionsTest(BaseAction):
             is_stream_message=True,
             has_content=False,
             has_topic=False,
+            has_new_stream_id=True,
+            is_embedded_update_only=False,
+        )
+
+        # Move both stream and topic, with update_message_flags
+        # excluded from event types.
+        self.send_stream_message(self.user_profile, "Verona")
+        message_id = self.send_stream_message(self.user_profile, "Verona")
+        message = Message.objects.get(id=message_id)
+        stream = get_stream("Denmark", self.user_profile.realm)
+        propagate_mode = "change_all"
+        prior_mention_user_ids = set()
+
+        events = self.verify_action(
+            lambda: do_update_message(
+                self.user_profile,
+                message,
+                stream,
+                "final_topic",
+                propagate_mode,
+                True,
+                True,
+                None,
+                None,
+                set(),
+                None,
+            ),
+            state_change_expected=True,
+            # Skip "update_message_flags" to exercise the code path
+            # where raw_unread_msgs does not exist in the state.
+            event_types=["message", "update_message"],
+            # There are 3 events generated for this action
+            # * update_message: For updating existing messages
+            # * 2 new message events: Breadcrumb messages in the new and old topics.
+            num_events=3,
+        )
+        check_update_message(
+            "events[0]",
+            events[0],
+            is_stream_message=True,
+            has_content=False,
+            has_topic=True,
             has_new_stream_id=True,
             is_embedded_update_only=False,
         )
@@ -1067,7 +1121,10 @@ class NormalActionsTest(BaseAction):
     def test_presence_events(self) -> None:
         events = self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE
+                self.user_profile,
+                get_client("website"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             ),
             slim_presence=False,
         )
@@ -1085,7 +1142,7 @@ class NormalActionsTest(BaseAction):
                 self.example_user("cordelia"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             ),
             slim_presence=True,
         )
@@ -1099,6 +1156,15 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_presence_events_multiple_clients(self) -> None:
+        now = timezone_now()
+        initial_presence = now - datetime.timedelta(days=365)
+        UserPresence.objects.create(
+            user_profile=self.user_profile,
+            realm=self.user_profile.realm,
+            last_active_time=initial_presence,
+            last_connected_time=initial_presence,
+        )
+
         self.api_post(
             self.user_profile,
             "/api/v1/users/me/presence",
@@ -1107,12 +1173,28 @@ class NormalActionsTest(BaseAction):
         )
         self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE
+                self.user_profile,
+                get_client("website"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
+        )
+        self.verify_action(
+            lambda: do_update_user_presence(
+                self.user_profile,
+                get_client("ZulipAndroid/1.0"),
+                timezone_now(),
+                UserPresence.LEGACY_STATUS_IDLE_INT,
+            ),
+            state_change_expected=False,
+            num_events=0,
         )
         events = self.verify_action(
             lambda: do_update_user_presence(
-                self.user_profile, get_client("ZulipAndroid/1.0"), timezone_now(), UserPresence.IDLE
+                self.user_profile,
+                get_client("ZulipAndroid/1.0"),
+                timezone_now() + datetime.timedelta(seconds=301),
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
             )
         )
 
@@ -1120,8 +1202,10 @@ class NormalActionsTest(BaseAction):
             "events[0]",
             events[0],
             has_email=True,
-            presence_key="ZulipAndroid/1.0",
-            status="idle",
+            # We no longer store information about the client and we simply
+            # set the field to 'website' for backwards compatibility.
+            presence_key="website",
+            status="active",
         )
 
     def test_register_events(self) -> None:
@@ -1180,6 +1264,14 @@ class NormalActionsTest(BaseAction):
 
     def test_away_events(self) -> None:
         client = get_client("website")
+
+        # Updating user status to away activates the codepath of disabling
+        # the presence_enabled user setting. Correctly simulating the presence
+        # event status for a typical user requires settings the user's date_joined
+        # further into the past. See test_change_presence_enabled for more details,
+        # since it tests that codepath directly.
+        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.save()
 
         # Set all
         away_val = True
@@ -1854,6 +1946,17 @@ class NormalActionsTest(BaseAction):
                 self.user_profile, notification_setting, False, acting_user=self.user_profile
             )
 
+            num_events = 2
+            is_modern_notification_setting = (
+                notification_setting in self.user_profile.modern_notification_settings
+            )
+            if is_modern_notification_setting:
+                # The legacy event format is not sent for modern_notification_settings
+                # as it exists only for backwards-compatibility with
+                # clients that don't support the new user_settings event type.
+                # We only send the legacy event for settings added before Feature level 89.
+                num_events = 1
+
             for setting_value in [True, False]:
                 events = self.verify_action(
                     lambda: do_change_user_setting(
@@ -1862,10 +1965,11 @@ class NormalActionsTest(BaseAction):
                         setting_value,
                         acting_user=self.user_profile,
                     ),
-                    num_events=2,
+                    num_events=num_events,
                 )
                 check_user_settings_update("events[0]", events[0])
-                check_update_global_notifications("events[1]", events[1], setting_value)
+                if not is_modern_notification_setting:
+                    check_update_global_notifications("events[1]", events[1], setting_value)
 
                 # Also test with notification_settings_null=True
                 events = self.verify_action(
@@ -1877,13 +1981,23 @@ class NormalActionsTest(BaseAction):
                     ),
                     notification_settings_null=True,
                     state_change_expected=False,
-                    num_events=2,
+                    num_events=num_events,
                 )
                 check_user_settings_update("events[0]", events[0])
-                check_update_global_notifications("events[1]", events[1], setting_value)
+                if not is_modern_notification_setting:
+                    check_update_global_notifications("events[1]", events[1], setting_value)
 
     def test_change_presence_enabled(self) -> None:
         presence_enabled_setting = "presence_enabled"
+
+        # Disabling presence will lead to the creation of a UserPresence object for the user
+        # with a last_connected_time slightly preceding the moment of flipping the setting
+        # and last_active_time set to None. The presence API defaults to user_profile.date_joined
+        # for backwards compatibility when dealing with a None value. Thus for this test to properly
+        # check that the presence event emitted will have "idle" status, we need to simulate
+        # the (more realistic) scenario where date_joined is further in the past and not super recent.
+        self.user_profile.date_joined = timezone_now() - datetime.timedelta(days=15)
+        self.user_profile.save()
 
         for val in [True, False]:
             events = self.verify_action(
@@ -2010,14 +2124,13 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_filter_events(self) -> None:
         regex = "#(?P<id>[123])"
-        url = "https://realm.com/my_realm_filter/%(id)s"
+        url = "https://realm.com/my_realm_filter/{id}"
 
         events = self.verify_action(
             lambda: do_add_linkifier(self.user_profile.realm, regex, url, acting_user=None),
-            num_events=2,
+            num_events=1,
         )
         check_realm_linkifiers("events[0]", events[0])
-        check_realm_filters("events[1]", events[1])
 
         regex = "#(?P<id>[0-9]+)"
         linkifier_id = events[0]["realm_linkifiers"][0]["id"]
@@ -2025,17 +2138,44 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_linkifier(
                 self.user_profile.realm, linkifier_id, regex, url, acting_user=None
             ),
-            num_events=2,
+            num_events=1,
         )
         check_realm_linkifiers("events[0]", events[0])
-        check_realm_filters("events[1]", events[1])
 
         events = self.verify_action(
             lambda: do_remove_linkifier(self.user_profile.realm, regex, acting_user=None),
-            num_events=2,
+            num_events=1,
         )
         check_realm_linkifiers("events[0]", events[0])
-        check_realm_filters("events[1]", events[1])
+
+        # Redo the checks, but assume that the client does not support URL template.
+        # apply_event should drop the event, and no state change should occur.
+        regex = "#(?P<id>[123])"
+
+        events = self.verify_action(
+            lambda: do_add_linkifier(self.user_profile.realm, regex, url, acting_user=None),
+            num_events=1,
+            linkifier_url_template=False,
+            state_change_expected=False,
+        )
+
+        regex = "#(?P<id>[0-9]+)"
+        linkifier_id = events[0]["realm_linkifiers"][0]["id"]
+        events = self.verify_action(
+            lambda: do_update_linkifier(
+                self.user_profile.realm, linkifier_id, regex, url, acting_user=None
+            ),
+            num_events=1,
+            linkifier_url_template=False,
+            state_change_expected=False,
+        )
+
+        events = self.verify_action(
+            lambda: do_remove_linkifier(self.user_profile.realm, regex, acting_user=None),
+            num_events=1,
+            linkifier_url_template=False,
+            state_change_expected=False,
+        )
 
     def test_realm_domain_events(self) -> None:
         events = self.verify_action(
@@ -2428,21 +2568,29 @@ class NormalActionsTest(BaseAction):
         result = fetch_initial_state_data(user_profile)
         self.assertEqual(result["max_message_id"], -1)
 
+    def test_do_delete_message_with_no_messages(self) -> None:
+        events = self.verify_action(
+            lambda: do_delete_messages(self.user_profile.realm, []),
+            num_events=0,
+            state_change_expected=False,
+        )
+        self.assertEqual(events, [])
+
     def test_add_attachment(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        uri = None
+        url = None
 
         def do_upload() -> None:
-            nonlocal uri
+            nonlocal url
             result = self.client_post("/json/user_uploads", {"file": fp})
 
             response_dict = self.assert_json_success(result)
             self.assertIn("uri", response_dict)
-            uri = response_dict["uri"]
+            url = response_dict["uri"]
             base = "/user_uploads/"
-            self.assertEqual(base, uri[: len(base)])
+            self.assertEqual(base, url[: len(base)])
 
         events = self.verify_action(lambda: do_upload(), num_events=1, state_change_expected=False)
 
@@ -2455,8 +2603,8 @@ class NormalActionsTest(BaseAction):
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
-        assert uri is not None
-        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
+        assert url is not None
+        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + url + ")"
         events = self.verify_action(
             lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
             num_events=2,
@@ -2715,6 +2863,7 @@ class RealmPropertyActionTest(BaseAction):
             default_view=["recent_topics", "all_messages"],
             emojiset=[emojiset["key"] for emojiset in RealmUserDefault.emojiset_choices()],
             demote_inactive_streams=UserProfile.DEMOTE_STREAMS_CHOICES,
+            web_mark_read_on_scroll_policy=UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES,
             user_list_style=UserProfile.USER_LIST_STYLE_CHOICES,
             desktop_icon_count_display=[1, 2, 3],
             notification_sound=["zulip", "ding"],
@@ -2791,6 +2940,7 @@ class UserDisplayActionTest(BaseAction):
             default_language=["es", "de", "en"],
             default_view=["all_messages", "recent_topics"],
             demote_inactive_streams=[2, 3, 1],
+            web_mark_read_on_scroll_policy=[2, 3, 1],
             user_list_style=[1, 2, 3],
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
@@ -3143,4 +3293,98 @@ class DraftActionTest(BaseAction):
         }
         draft_id = do_create_drafts([dummy_draft], self.user_profile)[0].id
         action = lambda: do_delete_draft(draft_id, self.user_profile)
+        self.verify_action(action)
+
+
+class ScheduledMessagesEventsTest(BaseAction):
+    def test_stream_scheduled_message_create_event(self) -> None:
+        # Create stream scheduled message
+        action = lambda: check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message",
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_create_event_with_existing_scheduled_messages(self) -> None:
+        # Create stream scheduled message
+        check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message 1",
+            convert_to_UTC(dateparser("2023-04-19 17:24:56")),
+            self.user_profile.realm,
+        )
+
+        # Check that the new scheduled message gets appended correctly.
+        action = lambda: check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message 2",
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_private_scheduled_message_create_event(self) -> None:
+        # Create direct scheduled message
+        action = lambda: check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "private",
+            [self.example_user("hamlet").id],
+            None,
+            "Direct message",
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_scheduled_message_edit_event(self) -> None:
+        scheduled_message_id = check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message",
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        action = lambda: edit_scheduled_message(
+            self.user_profile,
+            get_client("website"),
+            scheduled_message_id,
+            None,
+            None,
+            "Edited test topic",
+            "Edited stream message",
+            convert_to_UTC(dateparser("2023-04-20 18:24:56")),
+            self.user_profile.realm,
+        )
+        self.verify_action(action)
+
+    def test_scheduled_message_delete_event(self) -> None:
+        scheduled_message_id = check_schedule_message(
+            self.user_profile,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            "Stream message",
+            convert_to_UTC(dateparser("2023-04-19 18:24:56")),
+            self.user_profile.realm,
+        )
+        action = lambda: delete_scheduled_message(self.user_profile, scheduled_message_id)
         self.verify_action(action)

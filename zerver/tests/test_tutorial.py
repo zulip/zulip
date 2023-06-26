@@ -180,6 +180,7 @@ class TutorialTests(ZulipTestCase):
         self.send_huddle_message(user1, [bot, user2], content)
         user1_messages = message_stream_count(user1)
         self.assertEqual(most_recent_message(user1).content, content)
-        # Welcome bot should still respond to initial PM after group PM.
+        # Welcome bot should still respond to initial direct message
+        # after group direct message.
         self.send_personal_message(user1, bot, content)
         self.assertEqual(message_stream_count(user1), user1_messages + 2)

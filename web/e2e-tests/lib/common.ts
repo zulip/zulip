@@ -1,6 +1,7 @@
 import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
+import timersPromises from "timers/promises";
 
 import ErrorStackParser from "error-stack-parser";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
@@ -13,7 +14,11 @@ import {test_credentials} from "../../../var/puppeteer/test_credentials";
 const root_dir = path.resolve(__dirname, "../../..");
 const puppeteer_dir = path.join(root_dir, "var/puppeteer");
 
-type Message = Record<string, string | boolean> & {recipient?: string; content: string};
+type Message = Record<string, string | boolean> & {
+    recipient?: string;
+    content: string;
+    stream?: string;
+};
 
 let browser: Browser | null = null;
 let screenshot_id = 0;
@@ -186,7 +191,7 @@ export async function check_form_contents(
     }
 }
 
-export async function get_element_text(element: ElementHandle<Element>): Promise<string> {
+export async function get_element_text(element: ElementHandle): Promise<string> {
     const text = await (await element.getProperty("innerText"))!.jsonValue();
     assert.ok(typeof text === "string");
     return text;
@@ -204,7 +209,10 @@ export async function check_compose_state(
 ): Promise<void> {
     const form_params: Record<string, string> = {content: params.content};
     if (params.stream) {
-        form_params.stream_message_recipient_stream = params.stream;
+        assert.equal(
+            await get_text_from_selector(page, "#compose_select_recipient_name"),
+            params.stream,
+        );
     }
     if (params.topic) {
         form_params.stream_message_recipient_topic = params.topic;
@@ -282,14 +290,14 @@ export function set_realm_url(new_realm_url: string): void {
 }
 
 export async function ensure_enter_does_not_send(page: Page): Promise<void> {
-    let enter_sends = false;
-    await page.$eval(".enter_sends_false", (el) => {
-        if ((el as HTMLElement).style.display !== "none") {
-            enter_sends = true;
-        }
-    });
+    // NOTE: Caller should ensure that the compose box is already open.
+    const enter_sends = await page.$eval(
+        ".enter_sends_true",
+        (el) => (el as HTMLElement).style.display !== "none",
+    );
 
     if (enter_sends) {
+        await page.click(".open_enter_sends_dialog");
         const enter_sends_false_selector = ".enter_sends_choice input[value='false']";
         await page.waitForSelector(enter_sends_false_selector);
         await page.click(enter_sends_false_selector);
@@ -317,7 +325,7 @@ export async function assert_compose_box_content(
 export async function wait_for_fully_processed_message(page: Page, content: string): Promise<void> {
     // Wait in parallel for the message list scroll animation, which
     // interferes with Puppeteer accurately clicking on messages.
-    const scroll_delay = page.waitForTimeout(400);
+    const scroll_delay = timersPromises.setTimeout(400);
 
     await page.waitForFunction(
         (content: string) => {
@@ -376,6 +384,25 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
     await scroll_delay;
 }
 
+export async function select_stream_in_compose_via_dropdown(
+    page: Page,
+    stream_name: string,
+): Promise<void> {
+    console.log(`Clicking on 'compose_select_recipient_widget' to select ${stream_name}`);
+    const menu_visible = (await page.$(".dropdown-list-container")) !== null;
+    if (!menu_visible) {
+        await page.waitForSelector("#compose_select_recipient_widget", {visible: true});
+        await page.click("#compose_select_recipient_widget");
+        await page.waitForSelector(".dropdown-list-container .list-item", {
+            visible: true,
+        });
+    }
+    const stream_to_select = `.dropdown-list-container .list-item[data-name="${stream_name}"]`;
+    await page.waitForSelector(stream_to_select, {visible: true});
+    await page.click(stream_to_select);
+    assert((await page.$(".dropdown-list-container")) === null);
+}
+
 // Wait for any previous send to finish, then send a message.
 export async function send_message(
     page: Page,
@@ -404,7 +431,7 @@ export async function send_message(
     }
 
     if (params.stream) {
-        params.stream_message_recipient_stream = params.stream;
+        await select_stream_in_compose_via_dropdown(page, params.stream);
         delete params.stream;
     }
 

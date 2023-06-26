@@ -3,6 +3,8 @@ import $ from "jquery";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
+import * as scroll_util from "./scroll_util";
+
 export let scroll_to_message_banner_message_id: number | null = null;
 export function set_scroll_to_message_banner_message_id(val: number | null): void {
     scroll_to_message_banner_message_id = val;
@@ -15,15 +17,23 @@ export const ERROR = "error";
 const MESSAGE_SENT_CLASSNAMES = {
     sent_scroll_to_view: "sent_scroll_to_view",
     narrow_to_recipient: "narrow_to_recipient",
+    message_scheduled_success_compose_banner: "message_scheduled_success_compose_banner",
 };
+// Technically, unmute_topic_notification is a message sent banner, but
+// it has distinct behavior / look - it has an associated action button,
+// does not disappear on scroll - so we don't include it here, as it needs
+// to be handled separately.
 
 export const CLASSNAMES = {
     ...MESSAGE_SENT_CLASSNAMES,
+    // unmute topic notifications are styled like warnings but have distinct behaviour
+    unmute_topic_notification: "unmute_topic_notification warning-style",
     // warnings
     topic_resolved: "topic_resolved",
     recipient_not_subscribed: "recipient_not_subscribed",
     wildcard_warning: "wildcard_warning",
     private_stream_warning: "private_stream_warning",
+    unscheduled_message: "unscheduled_message",
     // errors
     wildcards_not_allowed: "wildcards_not_allowed",
     subscription_error: "subscription_error",
@@ -42,18 +52,50 @@ export const CLASSNAMES = {
     user_not_subscribed: "user_not_subscribed",
 };
 
-export function clear_message_sent_banners(): void {
+export function get_compose_banner_container($textarea: JQuery): JQuery {
+    return $textarea.attr("id") === "compose-textarea"
+        ? $("#compose_banners")
+        : $textarea.closest(".message_edit_form").find(".edit_form_banners");
+}
+
+// This function provides a convenient way to add new elements
+// to a banner container. The function accepts a container element
+// as a parameter, to which a banner should be appended.
+export function append_compose_banner_to_banner_list(
+    banner: HTMLElement | JQuery.htmlString,
+    $list_container: JQuery,
+): void {
+    scroll_util.get_content_element($list_container).append(banner);
+}
+
+export function update_or_append_banner(
+    banner: HTMLElement | JQuery.htmlString,
+    banner_classname: string,
+    $list_container: JQuery,
+): void {
+    const $banner = $list_container.find(`.${CSS.escape(banner_classname)}`);
+    if ($banner.length === 0) {
+        append_compose_banner_to_banner_list(banner, $list_container);
+    } else {
+        $banner.replaceWith(banner);
+    }
+}
+
+export function clear_message_sent_banners(include_unmute_banner = true): void {
     for (const classname of Object.values(MESSAGE_SENT_CLASSNAMES)) {
         $(`#compose_banners .${CSS.escape(classname)}`).remove();
+    }
+    if (include_unmute_banner) {
+        clear_unmute_topic_notifications();
     }
     scroll_to_message_banner_message_id = null;
 }
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
 function hide_compose_spinner(): void {
-    $("#compose-send-button .loader").hide();
-    $("#compose-send-button span").show();
-    $("#compose-send-button").removeClass("disable-btn");
+    $(".compose-submit-button .loader").hide();
+    $(".compose-submit-button span").show();
+    $(".compose-submit-button").removeClass("disable-btn");
 }
 
 export function clear_errors(): void {
@@ -64,8 +106,27 @@ export function clear_warnings(): void {
     $(`#compose_banners .${CSS.escape(WARNING)}`).remove();
 }
 
-export function show_error_message(message: string, classname: string, $bad_input?: JQuery): void {
-    $(`#compose_banners .${CSS.escape(classname)}`).remove();
+export function clear_uploads(): void {
+    $("#compose_banners .upload_banner").remove();
+}
+
+export function clear_unmute_topic_notifications(): void {
+    $(`#compose_banners .${CLASSNAMES.unmute_topic_notification.replaceAll(" ", ".")}`).remove();
+}
+
+export function clear_all(): void {
+    scroll_util.get_content_element($(`#compose_banners`)).empty();
+}
+
+export function show_error_message(
+    message: string,
+    classname: string,
+    $container: JQuery,
+    $bad_input?: JQuery,
+): void {
+    // To prevent the same banner from appearing twice,
+    // we remove the banner with a matched classname.
+    $container.find(`.${CSS.escape(classname)}`).remove();
 
     const new_row = render_compose_banner({
         banner_type: ERROR,
@@ -75,8 +136,7 @@ export function show_error_message(message: string, classname: string, $bad_inpu
         button_text: null,
         classname,
     });
-    const $compose_banner_area = $("#compose_banners");
-    $compose_banner_area.append(new_row);
+    append_compose_banner_to_banner_list(new_row, $container);
 
     hide_compose_spinner();
 
@@ -94,8 +154,9 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
         stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
     });
-    const $compose_banner_area = $("#compose_banners");
-    $compose_banner_area.append(new_row);
+    append_compose_banner_to_banner_list(new_row, $("#compose_banners"));
     hide_compose_spinner();
-    $("#stream_message_recipient_stream").trigger("focus").trigger("select");
+
+    // Open stream select dropdown.
+    $("#compose_select_recipient_widget").trigger("click");
 }

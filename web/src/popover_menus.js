@@ -10,37 +10,51 @@ import render_actions_popover_content from "../templates/actions_popover_content
 import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
 import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
 import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
+import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
+import render_send_later_modal from "../templates/send_later_modal.hbs";
+import render_send_later_popover from "../templates/send_later_popover.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
+import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
+import * as confirm_dialog from "./confirm_dialog";
 import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
+import * as flatpickr from "./flatpickr";
 import * as giphy from "./giphy";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
+import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
+import * as overlays from "./overlays";
 import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
+import * as scheduled_messages from "./scheduled_messages";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_popover from "./stream_popover";
+import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
+let selected_send_later_timestamp;
 
 const popover_instances = {
     compose_control_buttons: null,
@@ -51,6 +65,8 @@ const popover_instances = {
     stream_settings: null,
     compose_mobile_button: null,
     compose_enter_sends: null,
+    topics_menu: null,
+    send_later: null,
 };
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
@@ -60,6 +76,41 @@ export function sidebar_menu_instance_handle_keyboard(instance, key) {
 
 export function get_visible_instance() {
     return Object.values(popover_instances).find(Boolean);
+}
+export function get_topic_menu_popover() {
+    return popover_instances.topics_menu;
+}
+
+export function get_selected_send_later_timestamp() {
+    if (!selected_send_later_timestamp) {
+        return undefined;
+    }
+    return selected_send_later_timestamp;
+}
+
+export function get_formatted_selected_send_later_time() {
+    const current_time = Date.now() / 1000; // seconds, like selected_send_later_timestamp
+    if (
+        scheduled_messages.is_send_later_timestamp_missing_or_expired(
+            selected_send_later_timestamp,
+            current_time,
+        )
+    ) {
+        return undefined;
+    }
+    return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
+}
+
+export function set_selected_schedule_timestamp(timestamp) {
+    selected_send_later_timestamp = timestamp;
+}
+
+export function reset_selected_schedule_timestamp() {
+    selected_send_later_timestamp = undefined;
+}
+
+export function get_scheduled_messages_popover() {
+    return popover_instances.send_later;
 }
 
 export function get_compose_control_buttons_popover() {
@@ -79,16 +130,14 @@ function get_popover_items_for_instance(instance) {
     const class_name = $current_elem.attr("class");
 
     if (!$current_elem) {
-        blueslip.error(
-            `Trying to get menu items when popover with class "${class_name}" is closed.`,
-        );
+        blueslip.error("Trying to get menu items when popover is closed.", {class_name});
         return undefined;
     }
 
     return $current_elem.find("li:not(.divider):visible a");
 }
 
-const default_popover_props = {
+export const default_popover_props = {
     delay: 0,
     appendTo: () => document.body,
     trigger: "click",
@@ -139,7 +188,7 @@ function on_show_prep(instance) {
     popovers.hide_all_except_sidebars();
 }
 
-function tippy_no_propagation(target, popover_props) {
+export function register_popover_menu(target, popover_props) {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
     // parent elements. Tippy's built-in `delegate` method does not
@@ -178,21 +227,115 @@ export function toggle_message_actions_menu(message) {
         return true;
     }
 
+    message_viewport.maybe_scroll_to_show_message_top();
     const $popover_reference = $(".selected_message .actions_hover .zulip-icon-ellipsis-v-solid");
     message_actions_popover_keyboard_toggle = true;
     $popover_reference.trigger("click");
     return true;
 }
 
+function set_compose_box_schedule(element) {
+    const selected_send_at_time = element.dataset.sendStamp / 1000;
+    return selected_send_at_time;
+}
+
+export function open_send_later_menu() {
+    if (!compose_validate.validate(true)) {
+        return;
+    }
+
+    // Only show send later options that are possible today.
+    const date = new Date();
+    const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
+    $("body").append(render_send_later_modal(filtered_send_opts));
+    let interval;
+
+    overlays.open_modal("send_later_modal", {
+        autoremove: true,
+        on_show() {
+            interval = setInterval(
+                scheduled_messages.update_send_later_options,
+                scheduled_messages.SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
+            );
+
+            const $send_later_modal = $("#send_later_modal");
+
+            // Upon the first keydown event, we focus on the first element in the list,
+            // enabling keyboard navigation that is handled by `hotkey.js` and `list_util.ts`.
+            $send_later_modal.one("keydown", () => {
+                const $options = $send_later_modal.find("a");
+                $options[0].focus();
+
+                $send_later_modal.on("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.target.click();
+                    }
+                });
+            });
+
+            $send_later_modal.on("click", ".send_later_custom", (e) => {
+                const $send_later_modal_content = $send_later_modal.find(".modal__content");
+                const current_time = new Date();
+                flatpickr.show_flatpickr(
+                    $(".send_later_custom")[0],
+                    do_schedule_message,
+                    new Date(current_time.getTime() + 60 * 60 * 1000),
+                    {
+                        minDate: new Date(
+                            current_time.getTime() +
+                                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
+                        ),
+                        onClose() {
+                            // Return to normal state.
+                            $send_later_modal_content.css("pointer-events", "all");
+                        },
+                    },
+                );
+                // Disable interaction with rest of the options in the modal.
+                $send_later_modal_content.css("pointer-events", "none");
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            $send_later_modal.one(
+                "click",
+                ".send_later_today, .send_later_tomorrow, .send_later_monday",
+                (e) => {
+                    const send_at_time = set_compose_box_schedule(e.currentTarget);
+                    do_schedule_message(send_at_time);
+                    e.preventDefault();
+                    e.stopPropagation();
+                },
+            );
+        },
+        on_shown() {
+            // When shown, we should give the modal focus to correctly handle keyboard events.
+            const $send_later_modal_overlay = $("#send_later_modal .modal__overlay");
+            $send_later_modal_overlay.trigger("focus");
+        },
+        on_hide() {
+            clearInterval(interval);
+        },
+    });
+}
+
+export function do_schedule_message(send_at_time) {
+    overlays.close_modal_if_open("send_later_modal");
+
+    if (!Number.isInteger(send_at_time)) {
+        // Convert to timestamp if this is not a timestamp.
+        send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
+    }
+    selected_send_later_timestamp = send_at_time;
+    compose.finish(true);
+}
+
 export function initialize() {
-    tippy_no_propagation("#streams_inline_icon", {
+    register_popover_menu("#streams_inline_icon", {
         onShow(instance) {
-            popover_instances.stream_settings = instance;
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams();
-            on_show_prep(instance);
 
             if (!can_create_streams) {
                 // If the user can't create streams, we directly
@@ -202,12 +345,45 @@ export function initialize() {
                 return false;
             }
 
+            // Assuming that the instance can be shown, track and
+            // prep the instance for showing
+            popover_instances.stream_settings = instance;
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
+            on_show_prep(instance);
+
+            //  When showing the popover menu, we want the
+            // "Add streams" and the "Filter streams" tooltip
+            //  to appear below the "Add streams" icon.
+            const add_streams_tooltip = $("#add_streams_tooltip").get(0);
+            add_streams_tooltip._tippy?.setProps({
+                placement: "bottom",
+            });
+            const filter_streams_tooltip = $("#filter_streams_tooltip").get(0);
+            // If `filter_streams_tooltip` is not triggered yet, this will set its initial placement.
+            filter_streams_tooltip.dataset.tippyPlacement = "bottom";
+            filter_streams_tooltip._tippy?.setProps({
+                placement: "bottom",
+            });
+
+            // The linter complains about unbalanced returns
             return true;
         },
         onHidden(instance) {
             instance.destroy();
             popover_instances.stream_settings = undefined;
+            //  After the popover menu is closed, we want the
+            //  "Add streams" and the "Filter streams" tooltip
+            //  to appear at it's original position that is
+            //  above the "Add streams" icon.
+            const add_streams_tooltip = $("#add_streams_tooltip").get(0);
+            add_streams_tooltip._tippy?.setProps({
+                placement: "top",
+            });
+            const filter_streams_tooltip = $("#filter_streams_tooltip").get(0);
+            filter_streams_tooltip.dataset.tippyPlacement = "top";
+            filter_streams_tooltip._tippy?.setProps({
+                placement: "top",
+            });
         },
     });
 
@@ -216,7 +392,12 @@ export function initialize() {
     // that could possibly obstruct user from using this popover.
     delegate("body", {
         ...default_popover_props,
-        target: ".compose_mobile_button",
+        // Attach the click event to `.mobile_button_container`, since
+        // the button (`.compose_mobile_button`) already has a hover
+        // action attached, for showing the keyboard shortcut,
+        // and Tippy cannot handle events that trigger two different
+        // actions
+        target: ".mobile_button_container",
         placement: "top",
         onShow(instance) {
             popover_instances.compose_mobile_button = instance;
@@ -253,7 +434,7 @@ export function initialize() {
     // Click event handlers for it are handled in `compose_ui` and
     // we don't want to close this popover on click inside it but
     // only if user clicked outside it.
-    tippy_no_propagation(".compose_control_menu_wrapper", {
+    register_popover_menu(".compose_control_menu_wrapper", {
         placement: "top",
         onShow(instance) {
             instance.setContent(
@@ -272,7 +453,129 @@ export function initialize() {
         },
     });
 
-    tippy_no_propagation(".enter_sends", {
+    register_popover_menu("#stream_filters .topic-sidebar-menu-icon", {
+        ...left_sidebar_tippy_options,
+        onShow(instance) {
+            popover_instances.topics_menu = instance;
+            on_show_prep(instance);
+            const elt = $(instance.reference).closest(".topic-sidebar-menu-icon").expectOne()[0];
+            const $stream_li = $(elt).closest(".narrow-filter").expectOne();
+            const topic_name = $(elt).closest("li").expectOne().attr("data-topic-name");
+            const url = $(elt).closest("li").find(".topic-name").expectOne().prop("href");
+            const stream_id = stream_popover.elem_to_stream_id($stream_li);
+
+            instance.context = popover_menus_data.get_topic_popover_content_context({
+                stream_id,
+                topic_name,
+                url,
+            });
+            instance.setContent(parse_html(render_topic_sidebar_actions(instance.context)));
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            const {stream_id, topic_name} = instance.context;
+
+            if (!stream_id) {
+                instance.hide();
+                return;
+            }
+
+            $popper.one("click", ".sidebar-popover-unmute-topic", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.UNMUTED,
+                );
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-remove-unmute", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.INHERIT,
+                );
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-mute-topic", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.MUTED,
+                );
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-remove-mute", () => {
+                user_topics.set_user_topic_visibility_policy(
+                    stream_id,
+                    topic_name,
+                    user_topics.all_visibility_policies.INHERIT,
+                );
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-unstar-all-in-topic", () => {
+                starred_messages_ui.confirm_unstar_all_messages_in_topic(
+                    Number.parseInt(stream_id, 10),
+                    topic_name,
+                );
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-mark-topic-read", () => {
+                unread_ops.mark_topic_as_read(stream_id, topic_name);
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
+                const html_body = render_delete_topic_modal({topic_name});
+
+                confirm_dialog.launch({
+                    html_heading: $t_html({defaultMessage: "Delete topic"}),
+                    help_link: "/help/delete-a-topic",
+                    html_body,
+                    on_click() {
+                        message_edit.delete_topic(stream_id, topic_name);
+                    },
+                });
+
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-toggle-resolved", () => {
+                message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+                    message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                });
+
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-move-topic-messages", () => {
+                stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, false);
+                instance.hide();
+            });
+
+            $popper.one("click", ".sidebar-popover-rename-topic-messages", () => {
+                stream_popover.build_move_topic_to_stream_popover(stream_id, topic_name, true);
+                instance.hide();
+            });
+
+            new ClipboardJS($popper.find(".sidebar-popover-copy-link-to-topic")[0]).on(
+                "success",
+                () => {
+                    instance.hide();
+                },
+            );
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.topics_menu = undefined;
+        },
+    });
+
+    register_popover_menu(".open_enter_sends_dialog", {
         placement: "top",
         onShow(instance) {
             on_show_prep(instance);
@@ -315,10 +618,10 @@ export function initialize() {
         },
     });
 
-    tippy_no_propagation(".actions_hover .zulip-icon-ellipsis-v-solid", {
-        // The is our minimum supported width for mobile. We shouldn't
-        // make the popover wider than this.
-        maxWidth: "320px",
+    register_popover_menu(".actions_hover .zulip-icon-ellipsis-v-solid", {
+        // 320px is our minimum supported width for mobile. We will allow the value to flex
+        // to a max of 350px but we shouldn't make the popover wider than this.
+        maxWidth: "min(max(320px, 100vw), 350px)",
         placement: "bottom",
         popperOptions: {
             modifiers: [
@@ -378,6 +681,7 @@ export function initialize() {
                 stream_popover.build_move_topic_to_stream_popover(
                     message.stream_id,
                     message.topic,
+                    false,
                     message,
                 );
                 e.preventDefault();
@@ -493,7 +797,7 @@ export function initialize() {
     });
 
     // Starred messages popover
-    tippy_no_propagation(".starred-messages-sidebar-menu-icon", {
+    register_popover_menu(".starred-messages-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -535,7 +839,7 @@ export function initialize() {
     });
 
     // Drafts popover
-    tippy_no_propagation(".drafts-sidebar-menu-icon", {
+    register_popover_menu(".drafts-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -559,7 +863,7 @@ export function initialize() {
     });
 
     // All messages popover
-    tippy_no_propagation(".all-messages-sidebar-menu-icon", {
+    register_popover_menu(".all-messages-sidebar-menu-icon", {
         ...left_sidebar_tippy_options,
         onMount(instance) {
             const $popper = $(instance.popper);
@@ -578,6 +882,40 @@ export function initialize() {
         onHidden(instance) {
             instance.destroy();
             popover_instances.all_messages = undefined;
+        },
+    });
+
+    delegate("body", {
+        ...default_popover_props,
+        target: "#send_later i",
+        onUntrigger() {
+            // This is only called when the popover is closed by clicking on `target`.
+            $("#compose-textarea").trigger("focus");
+        },
+        onShow(instance) {
+            popovers.hide_all_except_sidebars(instance);
+            const formatted_send_later_time = get_formatted_selected_send_later_time();
+            instance.setContent(
+                parse_html(
+                    render_send_later_popover({
+                        formatted_send_later_time,
+                    }),
+                ),
+            );
+            popover_instances.send_later = instance;
+            $(instance.popper).one("click", instance.hide);
+        },
+        onMount(instance) {
+            const $popper = $(instance.popper);
+            $popper.one("click", ".send_later_selected_send_later_time", () => {
+                const send_at_timestamp = get_selected_send_later_timestamp();
+                do_schedule_message(send_at_timestamp);
+            });
+            $popper.one("click", ".open_send_later_modal", open_send_later_menu);
+        },
+        onHidden(instance) {
+            instance.destroy();
+            popover_instances.send_later = undefined;
         },
     });
 }

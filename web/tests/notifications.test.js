@@ -2,22 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
-
-// Dependencies
-
-set_global("document", {
-    hasFocus() {
-        return true;
-    },
-});
-const _navigator = {
-    userAgent: "Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36",
-};
-set_global("navigator", _navigator);
 
 const user_topics = zrequire("user_topics");
 const stream_data = zrequire("stream_data");
@@ -47,7 +35,11 @@ const muted = {
 stream_data.add_sub(general);
 stream_data.add_sub(muted);
 
-user_topics.add_muted_topic(general.stream_id, "muted topic");
+user_topics.update_user_topics(
+    general.stream_id,
+    "muted topic",
+    user_topics.all_visibility_policies.MUTED,
+);
 
 function test(label, f) {
     run_test(label, (helpers) => {

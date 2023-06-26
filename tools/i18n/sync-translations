@@ -14,5 +14,5 @@ find ./locale \
     -regex '^\./locale/.*/\(mobile\|translations\).json$' \
     -exec ./tools/i18n/unescape-contents {} \;
 
-./manage.py compilemessages
+./manage.py compilemessages --ignore='*'
 ./tools/i18n/process-mobile-i18n

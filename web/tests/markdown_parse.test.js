@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const url_template_lib = require("url-template");
+
 const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
@@ -114,7 +116,10 @@ function get_realm_emoji_url(emoji_name) {
 
 const regex = /#foo(\d+)(?!\w)/g;
 const linkifier_map = new Map();
-linkifier_map.set(regex, "http://foo.com/\\1");
+linkifier_map.set(regex, {
+    url_template: url_template_lib.parse("http://foo.com/{id}"),
+    group_number_to_name: {1: "id"},
+});
 
 function get_linkifier_map() {
     return linkifier_map;
@@ -226,7 +231,7 @@ function assert_topic_links(topic, expected_links) {
 }
 
 run_test("topic links", () => {
-    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_format: "http://foo.com/%(id)s"}]);
+    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}"}]);
     assert_topic_links("progress on #foo101 and #foo102", [
         {
             text: "#foo101",
@@ -243,7 +248,7 @@ run_test("topic links repeated", () => {
     // Links generated from repeated patterns should preserve the order.
     const topic =
         "#foo101 https://google.com #foo102 #foo103 https://google.com #foo101 #foo102 #foo103";
-    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_format: "http://foo.com/%(id)s"}]);
+    linkifiers.initialize([{pattern: "#foo(?P<id>\\d+)", url_template: "http://foo.com/{id}"}]);
     assert_topic_links(topic, [
         {
             text: "#foo101",
@@ -282,10 +287,10 @@ run_test("topic links repeated", () => {
 
 run_test("topic links overlapping", () => {
     linkifiers.initialize([
-        {pattern: "[a-z]+(?P<id>1\\d+) #[a-z]+", url_format: "http://a.com/%(id)s"},
-        {pattern: "[a-z]+(?P<id>1\\d+)", url_format: "http://b.com/%(id)s"},
-        {pattern: ".+#(?P<id>[a-z]+)", url_format: "http://wildcard.com/%(id)s"},
-        {pattern: "#(?P<id>[a-z]+)", url_format: "http://c.com/%(id)s"},
+        {pattern: "[a-z]+(?P<id>1\\d+) #[a-z]+", url_template: "http://a.com/{id}"},
+        {pattern: "[a-z]+(?P<id>1\\d+)", url_template: "http://b.com/{id}"},
+        {pattern: ".+#(?P<id>[a-z]+)", url_template: "http://wildcard.com/{id}"},
+        {pattern: "#(?P<id>[a-z]+)", url_template: "http://c.com/{id}"},
     ]);
     // b.com's pattern should be matched while it overlaps with c.com's.
     assert_topic_links("#foo100", [
@@ -342,13 +347,13 @@ run_test("topic links overlapping", () => {
 run_test("topic links ordering by priority", () => {
     // The same test case is also implemented in zerver/tests/test_markdown.py
     linkifiers.initialize([
-        {pattern: "http", url_format: "http://example.com/"},
-        {pattern: "b#(?P<id>[a-z]+)", url_format: "http://example.com/b/%(id)s"},
+        {pattern: "http", url_template: "http://example.com/"},
+        {pattern: "b#(?P<id>[a-z]+)", url_template: "http://example.com/b/{id}"},
         {
             pattern: "a#(?P<aid>[a-z]+) b#(?P<bid>[a-z]+)",
-            url_format: "http://example.com/a/%(aid)s/b/%(bid)",
+            url_template: "http://example.com/a/{aid}/b/%(bid)",
         },
-        {pattern: "a#(?P<id>[a-z]+)", url_format: "http://example.com/a/%(id)s"},
+        {pattern: "a#(?P<id>[a-z]+)", url_template: "http://example.com/a/{id}"},
     ]);
 
     // There should be 5 link matches in the topic, if ordered from the most priortized to the least:

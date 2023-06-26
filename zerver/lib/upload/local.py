@@ -4,7 +4,7 @@ import random
 import secrets
 import shutil
 from datetime import datetime
-from typing import IO, Any, Callable, Iterator, Literal, Optional, Tuple
+from typing import IO, Any, BinaryIO, Callable, Iterator, Literal, Optional, Tuple
 
 from django.conf import settings
 
@@ -97,6 +97,9 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file("files", path, file_data)
         create_attachment(uploaded_file_name, path, user_profile, target_realm, uploaded_file_size)
         return "/user_uploads/" + path
+
+    def save_attachment_contents(self, path_id: str, filehandle: BinaryIO) -> None:
+        filehandle.write(read_local_file("files", path_id))
 
     def delete_message_attachment(self, path_id: str) -> bool:
         return delete_local_file("files", path_id)

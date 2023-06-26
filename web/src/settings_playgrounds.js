@@ -10,7 +10,7 @@ import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as realm_playground from "./realm_playground";
-import * as ui from "./ui";
+import * as scroll_util from "./scroll_util";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -19,23 +19,6 @@ const meta = {
 
 export function reset() {
     meta.loaded = false;
-}
-
-function compare_by_index(a, b, i) {
-    if (a[i] > b[i]) {
-        return 1;
-    } else if (a[i] === b[i]) {
-        return 0;
-    }
-    return -1;
-}
-
-function sort_pygments_language(a, b) {
-    return compare_by_index(a, b, 0);
-}
-
-function sort_playground_name(a, b) {
-    return compare_by_index(a, b, 1);
 }
 
 export function maybe_disable_widgets() {
@@ -72,15 +55,11 @@ export function populate_playgrounds(playgrounds_data) {
                 );
             },
             onupdate() {
-                ui.reset_scrollbar($playgrounds_table);
+                scroll_util.reset_scrollbar($playgrounds_table);
             },
         },
         $parent_container: $("#playground-settings").expectOne(),
-        init_sort: [sort_pygments_language],
-        sort_fields: {
-            pygments_language: sort_pygments_language,
-            playground_name: sort_playground_name,
-        },
+        init_sort: ["alphabetic", "pygments_language"],
         $simplebar_container: $("#playground-settings .progressive-table-wrapper"),
     });
 }

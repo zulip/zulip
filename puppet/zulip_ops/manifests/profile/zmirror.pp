@@ -7,13 +7,9 @@ class zulip_ops::profile::zmirror {
     'zephyr-clients',
     'krb5-config',
     'krb5-user',
-    # Packages needed to build pyzephyr
-    'libzephyr-dev',
-    'comerr-dev',
+    # Packages needed to for ctypes access to Zephyr
     'python3-dev',
-    'python2.7-dev',
-    'cython3',
-    'cython',
+    'python3-typing-extensions',
   ]
   package { $zmirror_packages:
     ensure  => installed,
@@ -76,6 +72,5 @@ class zulip_ops::profile::zmirror {
   }
 
   # TODO: Do the rest of our setup, which includes at least:
-  # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
   # Putting tabbott/extra's keytab on the system at /home/zulip/tabbott.extra.keytab
 }

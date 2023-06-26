@@ -264,7 +264,7 @@ class UnreadTopicCounter {
         const res = {};
         res.stream_unread_messages = 0;
         res.stream_count = new Map(); // hash by stream_id -> count
-        for (const [stream_id, per_stream_bucketer] of this.bucketer) {
+        for (const [stream_id] of this.bucketer) {
             // We track unread counts for streams that may be currently
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
@@ -274,17 +274,8 @@ class UnreadTopicCounter {
                 continue;
             }
 
-            let stream_count = 0;
-            for (const [topic, msgs] of per_stream_bucketer) {
-                const topic_count = msgs.size;
-                if (!user_topics.is_topic_muted(stream_id, topic)) {
-                    stream_count += topic_count;
-                }
-            }
-            res.stream_count.set(stream_id, stream_count);
-            if (!stream_data.is_muted(stream_id)) {
-                res.stream_unread_messages += stream_count;
-            }
+            res.stream_count.set(stream_id, this.get_stream_count(stream_id));
+            res.stream_unread_messages += res.stream_count.get(stream_id).unmuted_count;
         }
 
         return res;
@@ -332,8 +323,6 @@ class UnreadTopicCounter {
     }
 
     get_stream_count(stream_id) {
-        let stream_count = 0;
-
         const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
         if (!per_stream_bucketer) {
@@ -341,12 +330,26 @@ class UnreadTopicCounter {
         }
 
         const sub = sub_store.get(stream_id);
+        let unmuted_count = 0;
+        let muted_count = 0;
         for (const [topic, msgs] of per_stream_bucketer) {
-            if (sub && !user_topics.is_topic_muted(stream_id, topic)) {
-                stream_count += msgs.size;
+            const topic_count = msgs.size;
+
+            if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                unmuted_count += topic_count;
+            } else if (user_topics.is_topic_muted(stream_id, topic)) {
+                muted_count += topic_count;
+            } else if (sub.is_muted) {
+                muted_count += topic_count;
+            } else {
+                unmuted_count += topic_count;
             }
         }
-
+        const stream_count = {
+            unmuted_count,
+            muted_count,
+            stream_is_muted: sub.is_muted,
+        };
         return stream_count;
     }
 
@@ -400,18 +403,52 @@ class UnreadTopicCounter {
     }
 
     get_streams_with_unread_mentions() {
-        const streams_with_mentions = new Set();
-        // Collect the set of streams containing at least one mention.
+        // Collect the set of streams containing at least one unread
+        // mention, without considering muting.
+
         // We can do this efficiently, since unread_mentions_counter
         // contains all unread message IDs, and we use stream_ids as
         // bucket keys in our outer bucketer.
+        const streams_with_mentions = new Set();
 
         for (const message_id of unread_mentions_counter) {
             const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            if (stream_id === undefined) {
+                // This is a private message containing a mention.
+                continue;
+            }
             streams_with_mentions.add(stream_id);
         }
 
         return streams_with_mentions;
+    }
+
+    get_streams_with_unmuted_mentions() {
+        // Collect the set of streams containing at least one mention
+        // that is not in a muted topic or non-unmuted topic in a
+        // muted stream.
+        const streams_with_unmuted_mentions = new Set();
+        for (const message_id of unread_mentions_counter) {
+            const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            if (stream_id === undefined) {
+                // This is a private message containing a mention.
+                continue;
+            }
+
+            const stream_bucketer = this.bucketer.get_bucket(stream_id);
+            const topic = stream_bucketer.reverse_lookup.get(message_id);
+            const stream_is_muted = sub_store.get(stream_id)?.is_muted;
+            if (stream_is_muted) {
+                if (user_topics.is_topic_unmuted(stream_id, topic)) {
+                    streams_with_unmuted_mentions.add(stream_id);
+                }
+            } else {
+                if (!user_topics.is_topic_muted(stream_id, topic)) {
+                    streams_with_unmuted_mentions.add(stream_id);
+                }
+            }
+        }
+        return streams_with_unmuted_mentions;
     }
 
     topic_has_any_unread(stream_id, topic) {
@@ -479,7 +516,7 @@ function remove_message_from_unread_mention_topics(message_id) {
 
     const per_stream_bucketer = unread_topic_counter.bucketer.get_bucket(stream_id);
     if (!per_stream_bucketer) {
-        blueslip.error(`Could not find per_stream_bucketer for ${message_id}.`);
+        blueslip.error("Could not find per_stream_bucketer", {message_id});
         return;
     }
 
@@ -706,9 +743,11 @@ export function get_counts() {
     // This sets stream_count, topic_count, and home_unread_messages
     const topic_res = unread_topic_counter.get_counts();
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
+    const streams_with_unmuted_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
     res.streams_with_mentions = [...streams_with_mentions];
+    res.streams_with_unmuted_mentions = [...streams_with_unmuted_mentions];
 
     const pm_res = unread_pm_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
@@ -759,6 +798,13 @@ export function stream_has_any_unread_mentions(stream_id) {
     // This function is somewhat inefficient and thus should not be
     // called in loops, since runs in O(total unread mentions) time.
     const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
+    return streams_with_mentions.has(stream_id);
+}
+
+export function stream_has_any_unmuted_mentions(stream_id) {
+    // This function is somewhat inefficient and thus should not be
+    // called in loops, since runs in O(total unread mentions) time.
+    const streams_with_mentions = unread_topic_counter.get_streams_with_unmuted_mentions();
     return streams_with_mentions.has(stream_id);
 }
 

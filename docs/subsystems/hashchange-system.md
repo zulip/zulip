@@ -69,7 +69,7 @@ Internally you have these functions:
   a hash or using the back button) or triggered internally.
 - `hashchange.do_hashchange_normal` handles most cases, like loading the main
   page (but maybe with a specific URL if you are narrowed to a
-  stream or topic or PMs, etc.).
+  stream or topic or direct messages, etc.).
 - `hashchange.do_hashchange_overlay` handles overlay cases. Overlays have
   some minor complexity related to remembering the page from
   which the overlay was launched, as well as optimizing in-page

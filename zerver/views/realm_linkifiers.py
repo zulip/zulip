@@ -26,13 +26,13 @@ def create_linkifier(
     request: HttpRequest,
     user_profile: UserProfile,
     pattern: str = REQ(),
-    url_format_string: str = REQ(),
+    url_template: str = REQ(),
 ) -> HttpResponse:
     try:
         linkifier_id = do_add_linkifier(
             realm=user_profile.realm,
             pattern=pattern,
-            url_format_string=url_format_string,
+            url_template=url_template,
             acting_user=user_profile,
         )
         return json_success(request, data={"id": linkifier_id})
@@ -58,14 +58,14 @@ def update_linkifier(
     user_profile: UserProfile,
     filter_id: int,
     pattern: str = REQ(),
-    url_format_string: str = REQ(),
+    url_template: str = REQ(),
 ) -> HttpResponse:
     try:
         do_update_linkifier(
             realm=user_profile.realm,
             id=filter_id,
             pattern=pattern,
-            url_format_string=url_format_string,
+            url_template=url_template,
             acting_user=user_profile,
         )
         return json_success(request)

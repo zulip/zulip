@@ -84,19 +84,25 @@ export function set_compose_defaults() {
     const opts = {};
     const single = collect_single(operators());
 
-    // Set the stream, topic, and/or PM recipient if they are
-    // uniquely specified in the narrow view.
+    // Set the stream, topic, and/or direct message recipient
+    // if they are uniquely specified in the narrow view.
 
     if (single.has("stream")) {
-        opts.stream = stream_data.get_name(single.get("stream"));
+        // The raw stream name from collect_single may be an arbitrary
+        // unvalidated string from the URL fragment and thus not be valid.
+        // So we look up the resolved stream and return that if appropriate.
+        const sub = stream_sub();
+        if (sub !== undefined) {
+            opts.stream = sub.name;
+        }
     }
 
     if (single.has("topic")) {
         opts.topic = single.get("topic");
     }
 
-    if (single.has("pm-with")) {
-        const private_message_recipient = single.get("pm-with");
+    if (single.has("dm")) {
+        const private_message_recipient = single.get("dm");
         if (people.is_valid_bulk_emails_for_compose(private_message_recipient.split(","))) {
             opts.private_message_recipient = private_message_recipient;
         }
@@ -146,8 +152,8 @@ export function topic() {
 }
 
 export function pm_ids_string() {
-    // If you are narrowed to a PM conversation
-    // with users 4, 5, and 99, this will return "4,5,99"
+    // If you are narrowed to a group direct message with
+    // users 4, 5, and 99, this will return "4,5,99"
     const emails_string = pm_emails_string();
 
     if (!emails_string) {
@@ -164,7 +170,7 @@ export function pm_emails_string() {
         return undefined;
     }
 
-    const operands = current_filter.operands("pm-with");
+    const operands = current_filter.operands("dm");
     if (operands.length !== 1) {
         return undefined;
     }
@@ -247,7 +253,7 @@ export function _possible_unread_message_ids() {
         return unread.get_msg_ids_for_stream(sub.stream_id);
     }
 
-    if (current_filter.can_bucket_by("pm-with")) {
+    if (current_filter.can_bucket_by("dm")) {
         current_filter_pm_string = pm_ids_string();
         if (current_filter_pm_string === undefined) {
             return [];
@@ -255,7 +261,7 @@ export function _possible_unread_message_ids() {
         return unread.get_msg_ids_for_user_ids_string(current_filter_pm_string);
     }
 
-    if (current_filter.can_bucket_by("is-private")) {
+    if (current_filter.can_bucket_by("is-dm")) {
         return unread.get_msg_ids_for_private();
     }
 
@@ -279,12 +285,13 @@ export function _possible_unread_message_ids() {
     return undefined;
 }
 
-// Are we narrowed to PMs: all PMs or PMs with particular people.
+// Are we narrowed to direct messages: all direct messages
+// or direct messages with particular people.
 export function narrowed_to_pms() {
     if (current_filter === undefined) {
         return false;
     }
-    return current_filter.has_operator("pm-with") || current_filter.has_operand("is", "private");
+    return current_filter.has_operator("dm") || current_filter.has_operand("is", "dm");
 }
 
 export function narrowed_by_pm_reply() {
@@ -292,7 +299,7 @@ export function narrowed_by_pm_reply() {
         return false;
     }
     const operators = current_filter.operators();
-    return operators.length === 1 && current_filter.has_operator("pm-with");
+    return operators.length === 1 && current_filter.has_operator("dm");
 }
 
 export function narrowed_by_topic_reply() {

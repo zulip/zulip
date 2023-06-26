@@ -51,7 +51,7 @@ a proxy to access the internet.)
   [GitHub account](#step-0-set-up-git--github).
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 22.04
-- **Debian**: 11
+- **Debian**: 11 or 12
 - **Fedora**: tested for 36
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
@@ -79,7 +79,7 @@ Jump to:
 - [Ubuntu](#ubuntu)
 - [Debian](#debian)
 - [Fedora](#fedora)
-- [Windows](#windows-10)
+- [Windows](#windows-10-or-11)
 
 #### macOS
 
@@ -157,18 +157,22 @@ official `docker-ce` package (named `docker.io` in the
 docker distribution, you can follow
 [their documentation to install Docker on Fedora](https://docs.docker.com/engine/install/fedora/).
 
-#### Windows 10
+#### Windows 10 or 11
 
 Zulip's development environment is most easily set up on Windows using
 the Windows Subsystem for Linux ([WSL
 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about))
-installation method described here.
+installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. Enable virtualization through your BIOS settings. This sequence
    depends on your specific hardware and brand, but here are [some
    basic instructions.][windows-bios-virtualization]
 
 1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
+
+1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
+   To configure it, please follow [this instruction](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
+   Then, you will need to restart WSL 2 before continuing.
 
 1. Launch the Ubuntu shell as an administrator and run the following command:
 
@@ -225,8 +229,6 @@ installation method described here.
    start it. (If Windows Firewall creates popups to block services, simply click `Allow Access`.)
 
    ```bash
-   # Start database, cache, and other services
-   ./tools/wsl/start_services
    # Install/update the Zulip development environment
    ./tools/provision
    # Enter the Zulip Python environment
@@ -234,11 +236,6 @@ installation method described here.
    # Start the development server
    ./tools/run-dev
    ```
-
-   :::{note}
-   If you shut down WSL, after starting it again, you will have to manually start
-   the services using `./tools/wsl/start_services`.
-   :::
 
 1. If you are facing problems or you see error messages after running `./tools/run-dev`,
    you can try running `./tools/provision` again.

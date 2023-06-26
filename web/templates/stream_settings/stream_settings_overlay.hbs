@@ -12,7 +12,7 @@
                 <div class="search-container">
                     <div id="add_new_subscription">
                         {{#if can_create_streams}}
-                        <button class="create_stream_button create_stream_plus_button tippy-zulip-tooltip" data-tippy-content="{{t 'Create new stream' }} (n)" data-tippy-placement="bottom">
+                        <button class="create_stream_button create_stream_plus_button tippy-zulip-delayed-tooltip" data-tooltip-template-id="create-new-stream-tooltip-template" data-tippy-placement="bottom">
                             <span>+</span>
                         </button>
                         {{/if}}
@@ -25,6 +25,24 @@
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_name">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
+                </div>
+                <div class="no-streams-to-show">
+                    <div class="subscribed_streams_tab_empty_text">
+                        <span>
+                            {{t 'You are not subscribed to any streams.'}}
+                            {{#if can_view_all_streams}}
+                            <a href="#streams/all">{{t 'View all streams'}}</a>
+                            {{/if}}
+                        </span>
+                    </div>
+                    <div class="all_streams_tab_empty_text">
+                        <span>
+                            {{t 'There are no streams you can view in this organization.'}}
+                            {{#if can_create_streams}}
+                                <a href="#streams/new">{{t 'Create a stream'}}</a>
+                            {{/if}}
+                        </span>
+                    </div>
                 </div>
                 <div class="streams-list" data-simplebar>
                 </div>

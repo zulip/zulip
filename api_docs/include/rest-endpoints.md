@@ -17,6 +17,13 @@
 * [Mark messages as read in bulk](/api/mark-all-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
 
+#### Scheduled messages
+
+* [Get scheduled messages](/api/get-scheduled-messages)
+* [Create a scheduled message](/api/create-scheduled-message)
+* [Edit a scheduled message](/api/update-scheduled-message)
+* [Delete a scheduled message](/api/delete-scheduled-message)
+
 #### Drafts
 
 * [Get drafts](/api/get-drafts)
@@ -40,6 +47,7 @@
 * [Archive a stream](/api/archive-stream)
 * [Get topics in a stream](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
+* [Update personal preferences for a topic](/api/update-user-topic)
 * [Delete a topic](/api/delete-topic)
 * [Add a default stream](/api/add-default-stream)
 * [Remove a default stream](/api/remove-default-stream)

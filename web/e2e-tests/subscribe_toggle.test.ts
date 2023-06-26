@@ -34,19 +34,13 @@ async function test_subscription_button(page: Page): Promise<void> {
 
     // Note that we intentionally re-find the button after each click, since
     // the live-update code may replace the whole row.
-    let button;
-
     // We assume Venice is already subscribed, so the first line here
     // should happen immediately.
-    button = await subscribed();
-
-    // Toggle subscriptions several times.
-    for (let i = 0; i < 10; i += 1) {
-        await button!.click();
-        button = await unsubscribed();
-        await button!.click();
-        button = await subscribed();
-    }
+    await (await subscribed())!.click();
+    await (await unsubscribed())!.click();
+    await (await subscribed())!.click();
+    await (await unsubscribed())!.click();
+    await subscribed();
 }
 
 async function subscriptions_tests(page: Page): Promise<void> {

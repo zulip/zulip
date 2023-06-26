@@ -18,14 +18,13 @@ import {media_breakpoints_num} from "./css_variables";
 import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
+import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
-import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
@@ -37,12 +36,14 @@ import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as spectators from "./spectators";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
 import {parse_html} from "./ui_util";
 import * as user_profile from "./user_profile";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 export function initialize() {
@@ -177,12 +178,12 @@ export function initialize() {
         const $row = $(this).closest(".message_row");
         const id = rows.id($row);
 
+        message_lists.current.select_id(id);
+
         if (message_edit.is_editing(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
             return;
         }
-
-        message_lists.current.select_id(id);
 
         if (page_params.is_spectator) {
             return;
@@ -225,7 +226,7 @@ export function initialize() {
 
         const message_id = rows.id($(this).closest(".message_row"));
         const message = message_store.get(message_id);
-        message_flags.toggle_starred_and_update_server(message);
+        starred_messages_ui.toggle_starred_and_update_server(message);
     });
 
     $("#main_div").on("click", ".message_reaction", function (e) {
@@ -286,6 +287,7 @@ export function initialize() {
         stream_popover.build_move_topic_to_stream_popover(
             message.stream_id,
             message.topic,
+            false,
             message,
         );
         e.stopPropagation();
@@ -383,15 +385,40 @@ export function initialize() {
         message_edit.toggle_resolve_topic(message_id, topic_name);
     });
 
-    // TOPIC MUTING
-    $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
+    // Mute topic in a unmuted stream
+    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic($(e.target), true);
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.MUTED,
+        );
     });
 
-    $("body").on("click", ".message_header .on_hover_topic_unmute", (e) => {
+    // Unmute topic in a unmuted stream
+    $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic($(e.target), false);
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.INHERIT,
+        );
+    });
+
+    // Unmute topic in a muted stream
+    $("body").on("click", ".message_header .stream_muted.on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.UNMUTED,
+        );
+    });
+
+    // Mute topic in a muted stream
+    $("body").on("click", ".message_header .stream_muted.on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        muted_topics_ui.mute_or_unmute_topic(
+            $(e.target),
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     // RECIPIENT BARS
@@ -469,6 +496,7 @@ export function initialize() {
             $(".tooltip").remove();
         });
 
+    // Doesn't show tooltip on touch devices.
     function do_render_buddy_list_tooltip(
         $elem,
         title_data,
@@ -490,6 +518,11 @@ export function initialize() {
             // so that they don't stick and overlap with
             // each other.
             delay: 0,
+            // Don't show tooltip on touch devices (99% mobile) since touch pressing on users in the left or right
+            // sidebar leads to narrow being changed and the sidebar is hidden. So, there is no user displayed
+            // to show tooltip for. It is safe to show the tooltip on long press but it not worth
+            // the inconvenience of having a tooltip hanging around on a small mobile screen if anything going wrong.
+            touch: false,
             content: () => parse_html(render_buddy_list_tooltip_content(title_data)),
             arrow: true,
             placement,
@@ -524,7 +557,7 @@ export function initialize() {
         });
     }
 
-    // BUDDY LIST TOOLTIPS
+    // BUDDY LIST TOOLTIPS (not displayed on touch devices)
     $("#user_presences").on("mouseenter", ".selectable_sidebar_block", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
@@ -532,8 +565,8 @@ export function initialize() {
         const title_data = buddy_data.get_title_data(user_id_string, false);
 
         // `target_node` is the `ul` element since it stays in DOM even after updates.
-        function get_target_node(tippy_instance) {
-            return $(tippy_instance.reference).parents("ul").get(0);
+        function get_target_node() {
+            return document.querySelector("#user_presences");
         }
 
         function check_reference_removed(mutation, instance) {
@@ -551,7 +584,7 @@ export function initialize() {
         );
     });
 
-    // PM LIST TOOLTIPS
+    // PM LIST TOOLTIPS (not displayed on touch devices)
     $("body").on("mouseenter", ".pm_user_status", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
@@ -584,7 +617,7 @@ export function initialize() {
         );
     });
 
-    // Recent conversations PMs
+    // Recent conversations PMs (Not displayed on small widths)
     $("body").on("mouseenter", ".recent_topic_stream .pm_status_icon", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
@@ -612,7 +645,6 @@ export function initialize() {
     user_profile.register_click_handlers();
     emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();
-    notifications.register_click_handlers();
 
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
@@ -653,6 +685,19 @@ export function initialize() {
             return;
         }
 
+        if ($target.is("#send_later i")) {
+            // Since the click for this is handled by tippyjs, we cannot add stopPropagation
+            // there without adding a special click event handler to show the popover,
+            // so it is better just do it here.
+            e.stopPropagation();
+            return;
+        }
+
+        // The dropdown menu needs to process clicks to open and close.
+        if ($target.parents("#compose_recipient_selection_dropdown").length > 0) {
+            return;
+        }
+
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
         if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {
@@ -664,14 +709,6 @@ export function initialize() {
             return;
         }
 
-        // Don't let clicks in the compose area count as
-        // "unfocusing" our compose -- in other words, e.g.
-        // clicking "Press Enter to send" should not
-        // trigger the composebox-closing code in MAIN CLICK HANDLER.
-        // But do allow our formatting link.
-        if (!$target.is("a")) {
-            e.stopPropagation();
-        }
         // Still hide the popovers, however
         popovers.hide_all();
     }
@@ -718,7 +755,7 @@ export function initialize() {
         },
     );
 
-    /* The PRIVATE MESSAGES label's click behavior is complicated;
+    /* The DIRECT MESSAGES label's click behavior is complicated;
      * only when zoomed in does it have a navigation effect, so we need
      * this click handler rather than just a link. */
     $("body").on(
@@ -728,7 +765,7 @@ export function initialize() {
             e.preventDefault();
             e.stopPropagation();
 
-            window.location.hash = "narrow/is/private";
+            window.location.hash = "narrow/is/dm";
         },
     );
 
@@ -803,16 +840,29 @@ export function initialize() {
         settings_display.launch_default_language_setting_modal();
     });
 
+    // We cannot update recipient bar color using dark_theme.enable/disable due to
+    // it being called before message lists are initialized and the order cannot be changed.
+    // Also, since these buttons are only visible for spectators which doesn't have events,
+    // if theme is changed in a different tab, the theme of this tab remains the same.
     $("body").on("click", "#gear-menu .dark-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
         dark_theme.enable();
+        message_lists.update_recipient_bar_background_color();
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
         dark_theme.disable();
+        message_lists.update_recipient_bar_background_color();
+    });
+
+    $("body").on("click", "#header-container .brand", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        hashchange.set_hash_to_default_view();
     });
 
     // MAIN CLICK HANDLER
@@ -840,7 +890,7 @@ export function initialize() {
             popovers.hide_all(not_hide_tippy_instances);
         }
 
-        if (compose_state.composing()) {
+        if (compose_state.composing() && !$(e.target).parents("#compose").length) {
             if (
                 $(e.target).closest("a").length > 0 ||
                 $(e.target).closest(".copy_codeblock").length > 0

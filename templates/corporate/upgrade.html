@@ -15,7 +15,7 @@
 
     {% include 'zerver/billing_nav.html' %}
 
-    <div class="portico-landing billing-upgrade-page new-style">
+    <div class="billing-upgrade-page new-style">
         <div class="hero small-hero"></div>
 
         <div class="page-content">
@@ -151,8 +151,8 @@
                                         {% endif %}
                                     </p>
 
-                                    <h4>Number of licenses (minimum {{ seat_count }})</h4>
-                                    <input type="number" name="licenses" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br />
+                                    <h4>Number of licenses {% if not exempt_from_license_number_check %}(minimum {{ seat_count }}){% endif %}</h4>
+                                    <input type="number" name="licenses" {% if not exempt_from_license_number_check %}min="{{ seat_count }}"{% endif %} autocomplete="off" id="manual_license_count" required/><br />
                                 </div>
                                 <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
                                 <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>

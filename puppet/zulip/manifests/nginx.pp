@@ -55,6 +55,17 @@ class zulip::nginx {
     content => template('zulip/nginx.conf.template.erb'),
   }
 
+  $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
+  file { '/etc/nginx/zulip-include/trusted-proto':
+    ensure  => file,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    notify  => Service['nginx'],
+    content => template('zulip/nginx/trusted-proto.template.erb'),
+  }
+
   file { '/etc/nginx/uwsgi_params':
     ensure  => file,
     require => Package[$zulip::common::nginx],
@@ -76,13 +87,14 @@ class zulip::nginx {
     group  => 'adm',
     mode   => '0750',
   }
+  $access_log_retention_days = zulipconf('application_server','access_log_retention_days', 14)
   file { '/etc/logrotate.d/nginx':
     ensure  => file,
     require => Package[$zulip::common::nginx],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip/logrotate/nginx',
+    content => template('zulip/logrotate/nginx.template.erb'),
   }
   package { 'certbot':
     ensure => installed,

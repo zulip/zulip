@@ -85,12 +85,12 @@ function make_zblueslip() {
     for (const name of names) {
         if (!opts[name]) {
             // should just log the message.
-            lib[name] = function (message, more_info, stack) {
-                lib.test_logs[name].push({message, more_info, stack});
+            lib[name] = function (message, more_info, cause) {
+                lib.test_logs[name].push({message, more_info, cause});
             };
             continue;
         }
-        lib[name] = function (message, more_info, stack) {
+        lib[name] = function (message, more_info, cause) {
             /* istanbul ignore if */
             if (typeof message !== "string") {
                 // We may catch exceptions in blueslip, and if
@@ -101,25 +101,20 @@ function make_zblueslip() {
                     throw new Error("message should be string: " + message);
                 }
             }
-            lib.test_logs[name].push({message, more_info, stack});
+            lib.test_logs[name].push({message, more_info, cause});
             const matched_error_message = lib.test_data[name].find((x) => x.message === message);
             const exact_match_fail = !matched_error_message;
             if (exact_match_fail) {
                 const error = new Error(`Invalid ${name} message: "${message}".`);
                 error.blueslip = true;
+                /* istanbul ignore if */
+                if (cause !== undefined) {
+                    error.cause = cause;
+                }
                 throw error;
             }
         };
     }
-
-    lib.exception_msg = function (ex) {
-        return ex.message;
-    };
-
-    lib.measure_time = (label, f) => f();
-
-    /* istanbul ignore next */
-    lib.preview_node = (node) => "node:" + node;
 
     return lib;
 }

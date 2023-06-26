@@ -85,6 +85,18 @@ You may also wish to increase the cache sizes if the S3 storage (or
 S3-compatible equivalent) is not closely located to your Zulip server,
 as cache misses will be more expensive.
 
+## nginx DNS nameserver configuration
+
+The S3 cache described above is maintained by nginx. nginx's configuration
+requires an explicitly-set DNS nameserver to resolve the hostname of the S3
+servers; Zulip defaults this value to the first nameserver found in
+`/etc/resolv.conf`, but this resolver can be [adjusted in
+`/etc/zulip/zulip.conf`][s3-resolver] if needed. If you adjust this value, you
+will need to run `/home/zulip/deployments/current/scripts/zulip-puppet-apply` to
+update the nginx configuration for the new value.
+
+[s3-resolver]: deployment.md#nameserver
+
 ## S3 bucket policy
 
 The best way to do the S3 integration with Amazon is to create a new IAM user

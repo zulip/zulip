@@ -55,7 +55,7 @@ tr.admin td:first-child {
     & select {
         height: 30px;
         width: 220px;
-        padding: 4px 6px;
+        padding: 0 6px;
         font-size: 14px;
         color: hsl(0deg 0% 33%);
         border-radius: 4px;
@@ -92,6 +92,23 @@ tr.admin td:first-child {
 .support-discount-form {
     position: relative;
     top: -50px;
+
+    & input {
+        padding: 4px 6px;
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        color: hsl(0deg 0% 33%);
+        margin-bottom: 10px;
+        transition: border linear 0.2s, box-shadow linear 0.2s;
+        box-shadow: inset 0 1px 1px hsla(0deg 0 0 / 7.5%);
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.494deg 80% 62% / 60%);
+        }
+    }
 }
 
 .support-plan-type-form {
@@ -124,7 +141,7 @@ tr.admin td:first-child {
     top: -75px;
 }
 
-.downgrade-plan-method-select {
+.modify-plan-method-select {
     width: auto;
 }
 
@@ -143,4 +160,14 @@ tr.admin td:first-child {
     top: -3px;
     border-color: hsl(0deg 0% 83%);
     border-radius: 2px;
+}
+
+.search-query.input-xxlarge {
+    width: 530px;
+}
+
+@media (width <= 767px) {
+    .search-query.input-xxlarge {
+        width: 100%;
+    }
 }

@@ -84,4 +84,4 @@ machine, take a look at our tips for
 [using-dev-env]: using.md
 [testing]: ../testing/testing.md
 [ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
-[install-via-wsl]: setup-recommended.md#windows-10
+[install-via-wsl]: setup-recommended.md#windows-10-or-11

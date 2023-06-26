@@ -82,7 +82,8 @@ class WebhooksCommonTestCase(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
             my_webhook_no_notify(request)
 
-        # First verify that without the setting, it doesn't send a PM to bot owner.
+        # First verify that without the setting, it doesn't send a direct
+        # message to bot owner.
         msg = self.get_last_message()
         self.assertEqual(msg.id, last_message_id)
         self.assertNotEqual(msg.content, expected_msg.strip())

@@ -14,9 +14,8 @@
 
 {!start-composing.md!}
 
-1. Wrap the link text in square brackets followed by the URL
-   wrapped in parentheses to create a named link:  
-   `[link text](URL)`
+1. To create a named link, use `[ ]` around the link text, and `( )` around the
+   URL: `[Link text](URL)`.
 
 !!! keyboard_tip ""
 

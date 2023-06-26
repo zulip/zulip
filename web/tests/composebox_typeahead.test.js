@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {mock_stream_header_colorblock} = require("./lib/compose");
+const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -9,18 +11,13 @@ const {user_settings} = require("./lib/zpage_params");
 
 const noop = () => {};
 
-const compose = mock_esm("../src/compose", {
-    finish: noop,
-});
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
+    warn_if_topic_resolved: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
-});
-const stream_topic_history = mock_esm("../src/stream_topic_history", {
-    stream_has_topics: () => false,
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
@@ -35,6 +32,7 @@ set_global("setTimeout", (f, time) => {
 set_global("document", "document-stub");
 
 const typeahead = zrequire("../shared/src/typeahead");
+const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const typeahead_helper = zrequire("typeahead_helper");
@@ -42,8 +40,11 @@ const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
+const stream_list_sort = zrequire("stream_list_sort");
+const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_ui = zrequire("compose_ui");
+const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -209,10 +210,24 @@ const netherland_stream = {
     stream_id: 3,
     subscribed: false,
 };
+const mobile_stream = {
+    name: "Mobile",
+    description: "Mobile development",
+    stream_id: 4,
+    subscribed: false,
+};
+const mobile_team_stream = {
+    name: "Mobile team",
+    description: "Mobile development team",
+    stream_id: 5,
+    subscribed: true,
+};
 
 stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
+stream_data.add_sub(mobile_stream);
+stream_data.add_sub(mobile_team_stream);
 
 const name_to_codepoint = {};
 for (const [key, val] of emojis_by_name.entries()) {
@@ -233,6 +248,12 @@ emoji.initialize({
 });
 emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
+
+const ali = {
+    email: "ali@zulip.com",
+    user_id: 98,
+    full_name: "Ali",
+};
 
 const alice = {
     email: "alice@zulip.com",
@@ -335,6 +356,7 @@ function test(label, f) {
         people.init();
         user_groups.init();
 
+        people.add_active_user(ali);
         people.add_active_user(alice);
         people.add_active_user(hamlet);
         people.add_active_user(othello);
@@ -359,8 +381,8 @@ function test(label, f) {
     });
 }
 
-test("topics_seen_for", ({override}) => {
-    override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+test("topics_seen_for", ({override, override_rewire}) => {
+    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
     });
@@ -664,7 +686,11 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-test("initialize", ({override, mock_template}) => {
+test("initialize", ({override, override_rewire, mock_template}) => {
+    mock_stream_header_colorblock();
+    mock_banners();
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+
     let pill_items = [];
     let cleared = false;
     let appended_names = [];
@@ -679,7 +705,9 @@ test("initialize", ({override, mock_template}) => {
             appended_names.push(item.display_value);
         },
     }));
-    compose_pm_pill.initialize();
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
 
     let expected_value;
 
@@ -694,40 +722,6 @@ test("initialize", ({override, mock_template}) => {
         return html;
     });
     override(stream_topic_history_util, "get_server_history", () => {});
-
-    let stream_typeahead_called = false;
-    $("#stream_message_recipient_stream").typeahead = (options) => {
-        // options.source()
-        //
-        let actual_value = options.source();
-        assert.deepEqual(actual_value.sort(), ["Denmark", "Sweden"]);
-
-        // options.highlighter()
-        options.query = "De";
-        actual_value = options.highlighter("Denmark");
-        expected_value = "<strong>Denmark</strong>";
-        assert.equal(actual_value, expected_value);
-
-        options.query = "the n";
-        actual_value = options.highlighter("The Netherlands");
-        expected_value = "<strong>The Netherlands</strong>";
-        assert.equal(actual_value, expected_value);
-
-        // options.matcher()
-        options.query = "de";
-        assert.equal(options.matcher("Denmark"), true);
-        assert.equal(options.matcher("Sweden"), false);
-
-        options.query = "De";
-        assert.equal(options.matcher("Denmark"), true);
-        assert.equal(options.matcher("Sweden"), false);
-
-        options.query = "the ";
-        assert.equal(options.matcher("The Netherlands"), true);
-        assert.equal(options.matcher("Sweden"), false);
-
-        stream_typeahead_called = true;
-    };
 
     let topic_typeahead_called = false;
     $("#stream_message_recipient_topic").typeahead = (options) => {
@@ -804,6 +798,7 @@ test("initialize", ({override, mock_template}) => {
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source("");
         let expected_value = [
+            ali,
             alice,
             cordelia,
             hal,
@@ -818,6 +813,8 @@ test("initialize", ({override, mock_template}) => {
             backend,
             call_center,
         ];
+        actual_value.sort((a, b) => a.user_id - b.user_id);
+        expected_value.sort((a, b) => a.user_id - b.user_id);
         assert.deepEqual(actual_value, expected_value);
 
         function matcher(query, person) {
@@ -884,10 +881,17 @@ test("initialize", ({override, mock_template}) => {
         expected_value = [othello];
         assert.deepEqual(actual_value, expected_value);
 
+        query = "Ali";
+        actual_value = sorter(query, [alice, ali]);
+        expected_value = [ali, alice];
+        assert.deepEqual(actual_value, expected_value);
+
         // A literal match at the beginning of an element puts it at the top.
         query = "co"; // Matches everything ("x@zulip.COm")
         actual_value = sorter(query, [othello, deactivated_user, cordelia]);
         expected_value = [cordelia, deactivated_user, othello];
+        actual_value.sort((a, b) => a.user_id - b.user_id);
+        expected_value.sort((a, b) => a.user_id - b.user_id);
         assert.deepEqual(actual_value, expected_value);
 
         query = "non-existing-user";
@@ -1078,7 +1082,8 @@ test("initialize", ({override, mock_template}) => {
             "demote_inactive_streams",
             settings_config.demote_inactive_streams_values.never.code,
         );
-        stream_data.set_filter_out_inactives();
+
+        stream_list_sort.set_filter_out_inactives();
         fake_this = {completing: "stream", token: "s"};
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
@@ -1089,7 +1094,8 @@ test("initialize", ({override, mock_template}) => {
             "demote_inactive_streams",
             settings_config.demote_inactive_streams_values.always.code,
         );
-        stream_data.set_filter_out_inactives();
+
+        stream_list_sort.set_filter_out_inactives();
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
@@ -1106,31 +1112,32 @@ test("initialize", ({override, mock_template}) => {
     };
 
     user_settings.enter_sends = false;
+    let compose_finish_called = false;
+    override_rewire(compose, "finish", () => {
+        compose_finish_called = true;
+    });
 
-    ct.initialize();
+    ct.initialize({
+        on_enter_send: compose.finish,
+    });
 
     $("#private_message_recipient").val("othello@zulip.com, ");
     $("#private_message_recipient").trigger("blur");
     assert.equal($("#private_message_recipient").val(), "othello@zulip.com");
 
-    // handle_keydown()
+    // the UI of selecting a stream is tested in puppeteer tests.
+    compose_state.set_stream_name("Sweden");
+
     let event = {
         type: "keydown",
-        key: "Enter",
+        key: "Tab",
+        shiftKey: false,
         target: {
-            id: "stream_message_recipient_stream",
+            id: "stream_message_recipient_topic",
         },
         preventDefault: noop,
         stopPropagation: noop,
     };
-
-    $("form#send_message_form").trigger(event);
-
-    $("form#send_message_form").trigger(event);
-
-    event.key = "Tab";
-    event.shiftKey = false;
-    event.target.id = "stream_message_recipient_topic";
     $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
     $("form#send_message_form").trigger(event);
@@ -1154,10 +1161,6 @@ test("initialize", ({override, mock_template}) => {
     event.target.id = "compose-textarea";
     user_settings.enter_sends = false;
     event.metaKey = true;
-    let compose_finish_called = false;
-    override(compose, "finish", () => {
-        compose_finish_called = true;
-    });
 
     $("form#send_message_form").trigger(event);
     assert.ok(compose_finish_called);
@@ -1182,12 +1185,14 @@ test("initialize", ({override, mock_template}) => {
     event.key = "a";
     $("form#send_message_form").trigger(event);
 
+    // the UI of selecting a stream is tested in puppeteer tests.
+    compose_state.set_stream_name("Sweden");
     // handle_keyup()
     event = {
         type: "keydown",
         key: "Enter",
         target: {
-            id: "stream_message_recipient_stream",
+            id: "stream_message_recipient_topic",
         },
         preventDefault: noop,
     };
@@ -1202,17 +1207,18 @@ test("initialize", ({override, mock_template}) => {
     event.key = "a";
     $("form#send_message_form").trigger(event);
 
-    $("#stream_message_recipient_stream").off("focus");
     $("#stream_message_recipient_topic").off("focus");
     $("#private_message_recipient").off("focus");
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
     $("#private_message_recipient").off("blur");
-    ct.initialize();
+    $("#send_later").css = noop;
+    ct.initialize({
+        on_enter_send: compose.finish,
+    });
 
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
-    assert.ok(stream_typeahead_called);
     assert.ok(topic_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
     assert.ok(compose_textarea_typeahead_called);
@@ -1256,11 +1262,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
         assert.deepEqual(values, reference);
     }
 
-    function assert_stream_list(input, rest = "") {
-        const values = get_values(input, rest);
-        assert.deepEqual(sorted_names_from(values), ["Denmark", "Sweden", "The Netherlands"]);
-    }
-
     const people_only = {is_silent: true};
     const all_mentions = {is_silent: false};
     const lang_list = Object.keys(pygments_data.langs);
@@ -1275,7 +1276,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // Make sure that the last token is the one we read.
     assert_typeahead_equals("~~~ @zulip", all_mentions);
     assert_typeahead_equals("@zulip :ta", emoji_list);
-    assert_stream_list(":tada: #foo");
     assert_typeahead_equals("#foo\n~~~py", lang_list);
     assert_typeahead_equals(":tada: <time:", ["translated: Mention a time-zone-aware time"]);
 
@@ -1349,10 +1349,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test #", false);
     assert_typeahead_equals("test # a", false);
     assert_typeahead_equals("test no#o", false);
-    assert_stream_list("#s");
-    assert_stream_list(" #s");
-    assert_stream_list("test #D");
-    assert_stream_list("test #**v");
 
     assert_typeahead_equals("/", composebox_typeahead.slash_commands);
     assert_typeahead_equals("/m", composebox_typeahead.slash_commands);
@@ -1429,7 +1425,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
     for (const symbol of terminal_symbols.split()) {
-        assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
@@ -1539,7 +1534,7 @@ test("filter_and_sort_mentions (normal)", () => {
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
     const mention_all = ct.broadcast_mentions()[0];
-    assert.deepEqual(suggestions, [mention_all, alice, hal, call_center]);
+    assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
 });
 
 test("filter_and_sort_mentions (silent)", () => {
@@ -1547,11 +1542,17 @@ test("filter_and_sort_mentions (silent)", () => {
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    assert.deepEqual(suggestions, [alice, hal, call_center]);
+    assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
 });
 
 test("typeahead_results", () => {
-    const stream_list = [denmark_stream, sweden_stream, netherland_stream];
+    const stream_list = [
+        denmark_stream,
+        sweden_stream,
+        netherland_stream,
+        mobile_team_stream,
+        mobile_stream,
+    ];
 
     function compose_typeahead_results(completing, items, token) {
         return ct.filter_and_sort_candidates(completing, items, token);
@@ -1574,7 +1575,7 @@ test("typeahead_results", () => {
     function assert_slash_matches(input, expected) {
         const returned = compose_typeahead_results(
             "slash",
-            composebox_typeahead.slash_commands,
+            composebox_typeahead.all_slash_commands,
             input,
         );
         assert.deepEqual(returned, expected);
@@ -1673,6 +1674,8 @@ test("typeahead_results", () => {
     // Do not match stream descriptions
     assert_stream_matches("cold", []);
     assert_stream_matches("city", []);
+    // Always prioritise exact matches, irrespective of activity
+    assert_stream_matches("Mobile", [mobile_stream, mobile_team_stream]);
 });
 
 test("message people", ({override, override_rewire}) => {
@@ -1754,14 +1757,29 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
         (stream_id, user_id) =>
             stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
     );
+    mock_stream_header_colorblock();
+    mock_banners();
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_name("");
     results = ct.get_pm_people("li");
-    assert.deepEqual(results, [alice, cordelia]);
+    assert.deepEqual(results, [ali, alice, cordelia]);
 
-    // When viewing denmark stream, subscriber twin2 is placed higher
+    // When viewing denmark stream, subscriber cordelia is placed higher
     compose_state.set_stream_name("Denmark");
     results = ct.get_pm_people("li");
-    assert.deepEqual(results, [cordelia, alice]);
+    assert.deepEqual(results, [cordelia, ali, alice]);
+
+    // Simulating just alice being subscribed to denmark.
+    override_rewire(
+        stream_data,
+        "is_user_subscribed",
+        (stream_id, user_id) => stream_id === denmark_stream.stream_id && user_id === alice.user_id,
+    );
+
+    // When viewing denmark stream to which alice is subscribed, ali is not
+    // 1st despite having an exact name match with the query.
+    results = ct.get_pm_people("ali");
+    assert.deepEqual(results, [alice, ali]);
 });

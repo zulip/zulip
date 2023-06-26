@@ -30,7 +30,7 @@
                     </li>
                     {{#unless is_guest}}
                     <li tabindex="0" data-section="your-bots">
-                        <i class="icon fa fa-github" aria-hidden="true"></i>
+                        <i class="icon zulip-icon zulip-icon-smart-toy" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
                     </li>
                     {{/unless}}
@@ -44,9 +44,9 @@
                         <div class="text">{{t "Uploaded files" }}</div>
                     </li>
                     {{/if}}
-                    <li tabindex="0" data-section="muted-topics">
-                        <i class="icon zulip-icon zulip-icon-mute" aria-hidden="true"></i>
-                        <div class="text">{{t "Muted topics" }}</div>
+                    <li tabindex="0" data-section="topics">
+                        <i class="icon zulip-icon zulip-icon-topic" aria-hidden="true"></i>
+                        <div class="text">{{t "Topics" }}</div>
                     </li>
                     <li tabindex="0" data-section="muted-users">
                         <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
@@ -125,7 +125,7 @@
                     {{/unless}}
                     {{#unless is_guest}}
                     <li tabindex="0" data-section="bot-list-admin">
-                        <i class="icon fa fa-github" aria-hidden="true"></i>
+                        <i class="icon zulip-icon zulip-icon-smart-toy" aria-hidden="true"></i>
                         <div class="text">{{t "Bots" }}</div>
                         {{#unless is_admin}}
                         <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>

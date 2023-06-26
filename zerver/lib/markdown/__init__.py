@@ -41,6 +41,7 @@ import markdown.treeprocessors
 import markdown.util
 import re2
 import requests
+import uri_template
 from django.conf import settings
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
@@ -64,7 +65,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
-from zerver.lib.timeout import TimeoutExpiredError, timeout
+from zerver.lib.timeout import timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
@@ -417,70 +418,15 @@ def has_blockquote_ancestor(element_pair: Optional[ElementPair]) -> bool:
         return has_blockquote_ancestor(element_pair.parent)
 
 
-@cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
+@cache_with_key(lambda tweet_id: tweet_id, cache_name="database")
 def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
-    if settings.TEST_SUITE:
-        from . import testing_mocks
-
-        res = testing_mocks.twitter(tweet_id)
-    else:
-        creds = {
-            "consumer_key": settings.TWITTER_CONSUMER_KEY,
-            "consumer_secret": settings.TWITTER_CONSUMER_SECRET,
-            "access_token_key": settings.TWITTER_ACCESS_TOKEN_KEY,
-            "access_token_secret": settings.TWITTER_ACCESS_TOKEN_SECRET,
-        }
-        if not all(creds.values()):
-            return None
-
-        # We lazily import twitter here because its import process is
-        # surprisingly slow, and doing so has a significant impact on
-        # the startup performance of `manage.py` commands.
-        import twitter
-
-        api = twitter.Api(tweet_mode="extended", **creds)
-
-        try:
-            # Sometimes Twitter hangs on responses.  Timing out here
-            # will cause the Tweet to go through as-is with no inline
-            # preview, rather than having the message be rejected
-            # entirely. This timeout needs to be less than our overall
-            # formatting timeout.
-            tweet = timeout(3, lambda: api.GetStatus(tweet_id))
-            res = tweet.AsDict()
-        except TimeoutExpiredError:
-            # We'd like to try again later and not cache the bad result,
-            # so we need to re-raise the exception (just as though
-            # we were being rate-limited)
-            raise
-        except twitter.TwitterError as e:
-            t = e.args[0]
-            if len(t) == 1 and ("code" in t[0]):
-                # https://developer.twitter.com/en/docs/basics/response-codes
-                code = t[0]["code"]
-                if code in [34, 144, 421, 422]:
-                    # All these "correspond with HTTP 404," and mean
-                    # that the message doesn't exist; return None so
-                    # that we will cache the error.
-                    return None
-                elif code in [63, 179]:
-                    # 63 is that the account is suspended, 179 is that
-                    # it is now locked; cache the None.
-                    return None
-                elif code in [88, 130, 131]:
-                    # Code 88 means that we were rate-limited, 130
-                    # means Twitter is having capacity issues, and 131
-                    # is other 400-equivalent; in these cases, raise
-                    # the error so we don't cache None and will try
-                    # again later.
-                    raise
-            # It's not clear what to do in cases of other errors,
-            # but for now it seems reasonable to log at error
-            # level (so that we get notified), but then cache the
-            # failure to proceed with our usual work
-            markdown_logger.exception("Unknown error fetching tweet data", stack_info=True)
-            return None
-    return res
+    # Twitter removed support for the v1 API that this integration
+    # used. Given that, there's no point wasting time trying to make
+    # network requests to Twitter. But we leave this function, because
+    # existing cached renderings for Tweets is useful. We throw an
+    # exception rather than returning `None` to avoid caching that the
+    # link doesn't exist.
+    raise NotImplementedError("Twitter desupported their v1 API")
 
 
 class OpenGraphSession(OutgoingSession):
@@ -1048,6 +994,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 img.set("src", media_url)
 
             return tweet
+        except NotImplementedError:
+            return None
         except Exception:
             # We put this in its own try-except because it requires external
             # connectivity. If Twitter flakes out, we don't want to not-render
@@ -1788,7 +1736,7 @@ class LinkifierPattern(CompiledInlineProcessor):
     def __init__(
         self,
         source_pattern: str,
-        format_string: str,
+        url_template: str,
         zmd: "ZulipMarkdown",
     ) -> None:
         # Do not write errors to stderr (this still raises exceptions)
@@ -1796,7 +1744,8 @@ class LinkifierPattern(CompiledInlineProcessor):
         options.log_errors = False
 
         compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-        self.format_string = percent_escape_format_string(format_string)
+
+        self.prepared_url_template = uri_template.URITemplate(url_template)
 
         super().__init__(compiled_re2, zmd)
 
@@ -1806,7 +1755,7 @@ class LinkifierPattern(CompiledInlineProcessor):
         db_data: Optional[DbData] = self.zmd.zulip_db_data
         url = url_to_a(
             db_data,
-            self.format_string % m.groupdict(),
+            self.prepared_url_template.expand(**m.groupdict()),
             markdown.util.AtomicString(m.group(OUTER_CAPTURE_GROUP)),
         )
         if isinstance(url, str):
@@ -2260,7 +2209,7 @@ class ZulipMarkdown(markdown.Markdown):
         for linkifier in self.linkifiers:
             pattern = linkifier["pattern"]
             registry.register(
-                LinkifierPattern(pattern, linkifier["url_format"], self),
+                LinkifierPattern(pattern, linkifier["url_template"], self),
                 f"linkifiers/{pattern}",
                 45,
             )
@@ -2368,7 +2317,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     options.log_errors = False
     for linkifier in linkifiers:
         raw_pattern = linkifier["pattern"]
-        url_format_string = percent_escape_format_string(linkifier["url_format"])
+        prepared_url_template = uri_template.URITemplate(linkifier["url_template"])
         try:
             pattern = re2.compile(prepare_linkifier_pattern(raw_pattern), options=options)
         except re2.error:
@@ -2396,7 +2345,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             # don't have to implement any logic of their own to get back the text.
             matches += [
                 TopicLinkMatch(
-                    url=url_format_string % match_details,
+                    url=prepared_url_template.expand(**match_details),
                     text=match_text,
                     index=m.start(),
                     precedence=precedence,

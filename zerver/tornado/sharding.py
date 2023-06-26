@@ -41,7 +41,7 @@ def get_user_tornado_port(user: UserProfile) -> int:
     return get_user_id_tornado_port(get_realm_tornado_ports(user.realm), user.id)
 
 
-def get_tornado_uri(port: int) -> str:
+def get_tornado_url(port: int) -> str:
     return f"http://127.0.0.1:{port}"
 
 

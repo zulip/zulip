@@ -14,7 +14,7 @@ so that you never lose your work. Drafts are saved for 30 days.
 
 {tab|desktop-web}
 
-Simply close the compose box. You can hit <kbd>Esc</kbd>, click
+1. Simply close the compose box. You can hit <kbd>Esc</kbd>, click
 the <i class="fa fa-remove"></i> in the top right corner of the
 compose box, or click on an empty part of the app.
 
@@ -26,7 +26,7 @@ compose box, or click on an empty part of the app.
 
 {tab|desktop-web}
 
-Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
+1. Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
 From there, you can delete or restore any of your drafts.
 
 {end_tabs}

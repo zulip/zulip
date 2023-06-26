@@ -41,6 +41,12 @@
             <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
             <b>Is active</b>: {{ user.is_active }}<br />
             <b>Role</b>: {{ user.get_role_name() }}<br />
+            <form method="POST" class="delete-user-form">
+                {{ csrf_input }}
+                <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+                <input type="hidden" name="delete_user_by_id" value="{{ user.id }}" />
+                <button data-email="{{ user.delivery_email }}" data-string-id="{{ realm.string_id }}" class="btn btn-danger small delete-user-button">Delete user (danger)</button>
+            </form>
             <hr />
             <div>
                 {% include "analytics/realm_details.html" %}

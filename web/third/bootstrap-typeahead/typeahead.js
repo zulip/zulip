@@ -98,6 +98,13 @@
  *   We add a new event handler, resizeHandler, for window.on('resize', ...)
  *   that calls this.show to re-render the typeahead in the correct position.
  *
+ * 10. Allow typeahead to be located next to its input field in the DOM
+ *
+ *   We add a new `parentElement` option which the typeahead can
+ *   append to, where before it could only be appended to `body`.
+ *   Since it's in the right part of the DOM, we don't need to do
+ *   the manual positioning in the show() function.
+ *
  * ============================================================ */
 
 import {insert} from "text-field-edit";
@@ -126,7 +133,7 @@ import {get_string_diff} from "../../src/util";
     this.sorter = this.options.sorter || this.sorter
     this.highlighter = this.options.highlighter || this.highlighter
     this.updater = this.options.updater || this.updater
-    this.$container = $(this.options.container).appendTo('body')
+    this.$container = $(this.options.container).appendTo(this.options.parentElement || 'body')
     this.$menu = $(this.options.menu).appendTo(this.$container)
     this.$header = $(this.options.header_html).appendTo(this.$container)
     this.source = this.options.source
@@ -207,36 +214,40 @@ import {get_string_diff} from "../../src/util";
         this.$header.hide();
       }
 
+    // If a parent element was specified, we shouldn't manually
+    // position the element, since it's already in the right place.
+    if (!this.options.parentElement) {
       var pos;
 
-      if (this.fixed) {
-        // Relative to screen instead of to page
-        pos = this.$element[0].getBoundingClientRect();
-      } else {
-        pos = this.$element.offset();
+        if (this.fixed) {
+          // Relative to screen instead of to page
+          pos = this.$element[0].getBoundingClientRect();
+        } else {
+          pos = this.$element.offset();
+        }
+
+        pos = $.extend({}, pos, {
+          height: this.$element[0].offsetHeight
+        })
+
+        // Zulip patch: Workaround for iOS safari problems
+        pos.top = this.$element.get_offset_to_window().top;
+
+        var top_pos = pos.top + pos.height
+        if (this.dropup) {
+          top_pos = pos.top - this.$container.outerHeight()
+        }
+
+        // Zulip patch: Avoid typeahead going off top of screen.
+        if (top_pos < 0) {
+            top_pos = 0;
+        }
+
+        this.$container.css({
+          top: top_pos
+         , left: pos.left
+        })
       }
-
-      pos = $.extend({}, pos, {
-        height: this.$element[0].offsetHeight
-      })
-
-      // Zulip patch: Workaround for iOS safari problems
-      pos.top = this.$element.offset().top;
-
-      var top_pos = pos.top + pos.height
-      if (this.dropup) {
-        top_pos = pos.top - this.$container.outerHeight()
-      }
-
-      // Zulip patch: Avoid typeahead going off top of screen.
-      if (top_pos < 0) {
-          top_pos = 0;
-      }
-
-      this.$container.css({
-        top: top_pos
-       , left: pos.left
-      })
 
       this.$container.show()
       this.shown = true
@@ -476,8 +487,13 @@ import {get_string_diff} from "../../src/util";
 
         default:
           var hideOnEmpty = false
-          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) { // backspace
-            hideOnEmpty = true
+          // backspace
+          if (e.keyCode === 8 && this.options.helpOnEmptyStrings) {
+            // Support for inputs to set the hideOnEmpty option explicitly to false
+            // to display typeahead after hitting backspace to clear the input.
+            if (typeof(this.options.hideOnEmpty) === undefined || this.options.hideOnEmpty) {
+              hideOnEmpty = true;
+            }
           }
           this.lookup(hideOnEmpty)
       }
@@ -495,6 +511,11 @@ import {get_string_diff} from "../../src/util";
       setTimeout(function () {
         if (!that.$container.is(':hover')) {
           that.hide();
+        } else if (that.shown) {
+          // refocus the input if the user clicked on the typeahead
+          // so that clicking elsewhere registers as a blur and hides
+          // the typeahead.
+          that.$element.focus();
         }
       }, 150)
     }

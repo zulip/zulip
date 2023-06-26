@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
-mock_esm("../src/message_scroll", {
+mock_esm("../src/message_feed_loading", {
     hide_loading_older() {},
 
     show_loading_older() {},

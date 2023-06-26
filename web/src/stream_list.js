@@ -8,12 +8,10 @@ import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as blueslip from "./blueslip";
-import * as color_class from "./color_class";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
-import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
@@ -21,12 +19,11 @@ import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_popover from "./stream_popover";
-import * as stream_sort from "./stream_sort";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 
@@ -34,22 +31,84 @@ export let stream_cursor;
 
 let has_scrolled = false;
 
-export function update_count_in_dom($stream_li, count, stream_has_any_unread_mention_messages) {
+export function update_count_in_dom(
+    $stream_li,
+    stream_counts,
+    stream_has_any_unread_mention_messages,
+    stream_has_any_unmuted_unread_mention,
+    stream_has_only_muted_unread_mention,
+) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
     const $subscription_block = $stream_li.find(".subscription_block");
 
-    ui_util.update_unread_count_in_dom($subscription_block, count);
     ui_util.update_unread_mention_info_in_dom(
         $subscription_block,
         stream_has_any_unread_mention_messages,
     );
 
-    if (count === 0) {
+    if (stream_has_any_unmuted_unread_mention) {
+        $subscription_block.addClass("has-unmuted-mentions");
+        $subscription_block.removeClass("has-only-muted-mentions");
+    } else {
+        $subscription_block.removeClass("has-unmuted-mentions");
+        if (!stream_counts.stream_is_muted && stream_has_only_muted_unread_mention) {
+            $subscription_block.addClass("has-only-muted-mentions");
+        } else {
+            $subscription_block.removeClass("has-only-muted-mentions");
+        }
+    }
+
+    // Here we set the count and compute the values of two classes:
+    // .stream-with-count is used for the layout CSS to know whether
+    // to leave space for the unread count, and has-unmuted-unreads is
+    // used in muted streams to set the fading correctly to indicate
+    // those are unread
+    if (stream_counts.unmuted_count > 0 && !stream_counts.stream_is_muted) {
+        // Normal stream, has unmuted unreads; display normally.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
+    } else if (stream_counts.unmuted_count > 0 && stream_counts.stream_is_muted) {
+        // Muted stream, has unmuted unreads.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.unmuted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.addClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
+    } else if (stream_counts.muted_count > 0 && stream_counts.stream_is_muted) {
+        // Muted stream, only muted unreads.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.muted_count);
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
+    } else if (
+        stream_counts.muted_count > 0 &&
+        !stream_counts.stream_is_muted &&
+        stream_has_only_muted_unread_mention
+    ) {
+        // Normal stream, only muted unreads, including a mention:
+        // Display the mention, faded, and a faded unread count too,
+        // so that we don't weirdly show the mention indication
+        // without an unread count.
+        ui_util.update_unread_count_in_dom($subscription_block, stream_counts.muted_count);
+        $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.addClass("stream-with-count");
+        $subscription_block.addClass("has-only-muted-unreads");
+    } else if (stream_counts.muted_count > 0 && !stream_counts.stream_is_muted) {
+        // Normal stream, only muted unreads: display nothing. The
+        // current thinking is displaying those counts with muted
+        // styling would be more distracting than helpful.
+        ui_util.update_unread_count_in_dom($subscription_block, 0);
+        $subscription_block.removeClass("has-unmuted-unreads");
         $subscription_block.removeClass("stream-with-count");
     } else {
-        $subscription_block.addClass("stream-with-count");
+        // No unreads: display nothing.
+        ui_util.update_unread_count_in_dom($subscription_block, 0);
+        $subscription_block.removeClass("has-unmuted-unreads");
+        $subscription_block.removeClass("has-only-muted-unreads");
+        $subscription_block.removeClass("stream-with-count");
     }
 }
 
@@ -123,9 +182,9 @@ export function build_stream_list(force_rerender) {
         return;
     }
 
-    // The main logic to build the list is in stream_sort.js, and
+    // The main logic to build the list is in stream_list_sort.js, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
-    const stream_groups = stream_sort.sort_groups(streams, get_search_term());
+    const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -218,12 +277,12 @@ export function get_stream_li(stream_id) {
 
     const $li = row.get_li();
     if (!$li) {
-        blueslip.error("Cannot find li for id " + stream_id);
+        blueslip.error("Cannot find li", {stream_id});
         return undefined;
     }
 
     if ($li.length > 1) {
-        blueslip.error("stream_li has too many elements for " + stream_id);
+        blueslip.error("stream_li has too many elements", {stream_id});
         return undefined;
     }
 
@@ -302,7 +361,7 @@ export function zoom_out_topics() {
 export function set_in_home_view(stream_id, in_home) {
     const $li = get_stream_li(stream_id);
     if (!$li) {
-        blueslip.error("passed in bad stream id " + stream_id);
+        blueslip.error("passed in bad stream id", {stream_id});
         return;
     }
 
@@ -318,14 +377,13 @@ function build_stream_sidebar_li(sub) {
     const args = {
         name,
         id: sub.stream_id,
-        uri: hash_util.by_stream_url(sub.stream_id),
+        url: hash_util.by_stream_url(sub.stream_id),
         is_muted: stream_data.is_muted(sub.stream_id) === true,
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,
         color: sub.color,
         pin_to_top: sub.pin_to_top,
     };
-    args.dark_background = color_class.get_css_class(args.color);
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
 }
@@ -338,7 +396,7 @@ class StreamSidebarRow {
     }
 
     update_whether_active() {
-        if (stream_data.is_active(this.sub) || this.sub.pin_to_top === true) {
+        if (stream_list_sort.has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
             this.$list_item.removeClass("inactive_stream");
         } else {
             this.$list_item.addClass("inactive_stream");
@@ -358,7 +416,20 @@ class StreamSidebarRow {
         const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
             this.sub.stream_id,
         );
-        update_count_in_dom(this.$list_item, count, stream_has_any_unread_mention_messages);
+        const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
+            this.sub.stream_id,
+        );
+        const stream_has_only_muted_unread_mentions =
+            !this.sub.is_muted &&
+            stream_has_any_unread_mention_messages &&
+            !stream_has_any_unmuted_unread_mention;
+        update_count_in_dom(
+            this.$list_item,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+            stream_has_only_muted_unread_mentions,
+        );
     }
 }
 
@@ -369,7 +440,7 @@ function build_stream_sidebar_row(sub) {
 export function create_sidebar_row(sub) {
     if (stream_sidebar.has_row_for(sub.stream_id)) {
         // already exists
-        blueslip.warn("Dup try to build sidebar row for stream " + sub.stream_id);
+        blueslip.warn("Dup try to build sidebar row for stream", {stream_id: sub.stream_id});
         return;
     }
     build_stream_sidebar_row(sub);
@@ -385,19 +456,23 @@ export function redraw_stream_privacy(sub) {
     }
 
     const $div = $li.find(".stream-privacy");
-    const dark_background = color_class.get_css_class(sub.color);
 
     const args = {
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,
-        dark_background,
     };
 
     const html = render_stream_privacy(args);
     $div.html(html);
 }
 
-function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages) {
+function set_stream_unread_count(
+    stream_id,
+    count,
+    stream_has_any_unread_mention_messages,
+    stream_has_any_unmuted_unread_mention,
+    stream_has_only_muted_unread_mentions,
+) {
     const $stream_li = get_stream_li(stream_id);
     if (!$stream_li) {
         // This can happen for legitimate reasons, but we warn
@@ -405,7 +480,13 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
         blueslip.warn("stream id no longer in sidebar: " + stream_id);
         return;
     }
-    update_count_in_dom($stream_li, count, stream_has_any_unread_mention_messages);
+    update_count_in_dom(
+        $stream_li,
+        count,
+        stream_has_any_unread_mention_messages,
+        stream_has_any_unmuted_unread_mention,
+        stream_has_only_muted_unread_mentions,
+    );
 }
 
 export function update_streams_sidebar(force_rerender) {
@@ -439,7 +520,19 @@ export function update_dom_with_unread_counts(counts) {
     for (const [stream_id, count] of counts.stream_count) {
         const stream_has_any_unread_mention_messages =
             counts.streams_with_mentions.includes(stream_id);
-        set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages);
+        const stream_has_any_unmuted_unread_mention =
+            counts.streams_with_unmuted_mentions.includes(stream_id);
+        const stream_has_only_muted_unread_mentions =
+            !sub_store.get(stream_id).is_muted &&
+            stream_has_any_unread_mention_messages &&
+            !stream_has_any_unmuted_unread_mention;
+        set_stream_unread_count(
+            stream_id,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+            stream_has_only_muted_unread_mentions,
+        );
     }
 }
 
@@ -461,7 +554,7 @@ export function refresh_pinned_or_unpinned_stream(sub) {
     if (sub.pin_to_top) {
         const $stream_li = get_stream_li(sub.stream_id);
         if (!$stream_li) {
-            blueslip.error("passed in bad stream id " + sub.stream_id);
+            blueslip.error("passed in bad stream id", {stream_id: sub.stream_id});
             return;
         }
         scroll_stream_into_view($stream_li);
@@ -527,7 +620,7 @@ export function update_stream_sidebar_for_narrow(filter) {
         // corresponding to that stream in our sidebar.  This error
         // stopped appearing from March 2018 until at least
         // April 2020, so if it appears again, something regressed.
-        blueslip.error("No stream_li for subscribed stream " + stream_id);
+        blueslip.error("No stream_li for subscribed stream", {stream_id});
         topic_zoom.clear_topics();
         return undefined;
     }
@@ -562,25 +655,6 @@ function focus_stream_filter(e) {
     e.stopPropagation();
 }
 
-function keydown_enter_key() {
-    const stream_id = stream_cursor.get_key();
-
-    if (stream_id === undefined) {
-        // This can happen for empty searches, no need to warn.
-        return;
-    }
-
-    const sub = sub_store.get(stream_id);
-
-    if (sub === undefined) {
-        blueslip.error("Unknown stream_id for search/enter: " + stream_id);
-        return;
-    }
-
-    clear_and_hide_search();
-    narrow.by("stream", sub.name, {trigger: "sidebar enter key"});
-}
-
 function actually_update_streams_for_search() {
     update_streams_sidebar();
     resize.resize_page_components();
@@ -589,25 +663,43 @@ function actually_update_streams_for_search() {
 
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
-export function initialize() {
+// Exported for tests only.
+export function initialize_stream_cursor() {
+    stream_cursor = new ListCursor({
+        list: {
+            scroll_container_sel: "#left_sidebar_scroll_container",
+            find_li(opts) {
+                const stream_id = opts.key;
+                const li = get_stream_li(stream_id);
+                return li;
+            },
+            first_key: stream_list_sort.first_stream_id,
+            prev_key: stream_list_sort.prev_stream_id,
+            next_key: stream_list_sort.next_stream_id,
+        },
+        highlight_class: "highlighted_stream",
+    });
+}
+
+export function initialize({on_stream_click}) {
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     build_stream_list();
     update_subscribe_to_more_streams_link();
-    set_event_handlers();
+    initialize_stream_cursor();
+    set_event_handlers({on_stream_click});
 }
 
-export function set_event_handlers() {
+export function set_event_handlers({on_stream_click}) {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        const sub = sub_store.get(stream_id);
         popovers.hide_all();
-        narrow.by("stream", sub.name, {trigger: "sidebar"});
+        on_stream_click(stream_id, "sidebar");
 
         clear_and_hide_search();
 
@@ -646,27 +738,24 @@ export function set_event_handlers() {
     }
 
     // check for user scrolls on streams list for first time
-    ui.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
+    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
         has_scrolled = true;
         toggle_pm_header_icon();
     });
 
-    stream_cursor = new ListCursor({
-        list: {
-            scroll_container_sel: "#left_sidebar_scroll_container",
-            find_li(opts) {
-                const stream_id = opts.key;
-                const li = get_stream_li(stream_id);
-                return li;
-            },
-            first_key: stream_sort.first_stream_id,
-            prev_key: stream_sort.prev_stream_id,
-            next_key: stream_sort.next_stream_id,
-        },
-        highlight_class: "highlighted_stream",
-    });
-
     const $search_input = $(".stream-list-filter").expectOne();
+
+    function keydown_enter_key() {
+        const stream_id = stream_cursor.get_key();
+
+        if (stream_id === undefined) {
+            // This can happen for empty searches, no need to warn.
+            return;
+        }
+
+        clear_and_hide_search();
+        on_stream_click(stream_id, "sidebar enter key");
+    }
 
     keydown_util.handle({
         $elem: $search_input,

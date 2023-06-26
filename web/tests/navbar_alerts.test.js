@@ -4,18 +4,11 @@ const {strict: assert} = require("assert");
 
 const {addDays} = require("date-fns");
 
-const {set_global, zrequire} = require("./lib/namespace");
+const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const {page_params} = require("./lib/zpage_params");
 
 page_params.is_spectator = false;
-
-// Dependencies
-set_global("document", {
-    hasFocus() {
-        return true;
-    },
-});
 
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
@@ -91,7 +84,7 @@ test("profile_incomplete_alert", () => {
 
 test("server_upgrade_alert hide_duration_expired", ({override}) => {
     const ls = localstorage();
-    const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
+    const start_time = 1620327447050; // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 
     override(Date, "now", () => start_time);
     assert.equal(ls.get("lastUpgradeNagDismissalTime"), undefined);
@@ -99,7 +92,7 @@ test("server_upgrade_alert hide_duration_expired", ({override}) => {
     navbar_alerts.dismiss_upgrade_nag(ls);
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
 
-    override(Date, "now", () => addDays(start_time, 8)); // Friday 14/5/2021 07:02:27 AM (UTC+0)
+    override(Date, "now", () => addDays(start_time, 8).getTime()); // Friday 14/5/2021 07:02:27 AM (UTC+0)
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), true);
     navbar_alerts.dismiss_upgrade_nag(ls);
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);

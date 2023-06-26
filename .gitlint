@@ -7,7 +7,7 @@ extra-path=tools/lib/gitlint_rules.py
 regex=^(.+:\ )?[A-Z].+\.$
 
 [title-max-length]
-line-length=76
+line-length=72
 
 [body-max-line-length]
 line-length=76

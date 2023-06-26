@@ -1,7 +1,8 @@
 /* This module provides relevant data to render popovers that require multiple args.
    This helps keep the popovers code small and keep it focused on rendering side of things. */
 
-import * as feature_flags from "./feature_flags";
+import * as resolved_topic from "../shared/src/resolved_topic";
+
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
@@ -9,7 +10,11 @@ import * as message_lists from "./message_lists";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import * as settings_data from "./settings_data";
+import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
+import * as user_topics from "./user_topics";
 
 export function get_actions_popover_content_context(message_id) {
     const message = message_lists.current.get(message_id);
@@ -81,7 +86,7 @@ export function get_actions_popover_content_context(message_id) {
 
     const should_display_quote_and_reply = message.content !== "<p>(deleted)</p>" && not_spectator;
 
-    const conversation_time_uri = hash_util.by_conversation_and_time_url(message);
+    const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
     const should_display_delete_option = message_edit.get_deletability(message) && not_spectator;
     const should_display_read_receipts_option =
@@ -89,14 +94,14 @@ export function get_actions_popover_content_context(message_id) {
 
     function is_add_reaction_icon_visible() {
         const $message_row = message_lists.current.get_row(message_id);
-        return $message_row.find(".message_controls.reaction_button").is(":visible");
+        return $message_row.find(".message_controls .reaction_button").is(":visible");
     }
 
     // Since we only display msg actions and star icons on windows smaller than
     // `media_breakpoints.sm_min`, we need to include the reaction button in the
     // popover if it is not displayed.
     const should_display_add_reaction_option =
-        !message.is_me_message && !is_add_reaction_icon_visible();
+        !message.is_me_message && !is_add_reaction_icon_visible() && not_spectator;
 
     return {
         message_id: message.id,
@@ -110,11 +115,34 @@ export function get_actions_popover_content_context(message_id) {
         should_display_add_reaction_option,
         should_display_edit_history_option,
         should_display_hide_option,
-        conversation_time_uri,
+        conversation_time_url,
         narrowed: narrow_state.active(),
         should_display_delete_option,
         should_display_read_receipts_option,
-        should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
         should_display_quote_and_reply,
+    };
+}
+
+export function get_topic_popover_content_context({stream_id, topic_name, url}) {
+    const sub = sub_store.get(stream_id);
+    const topic_muted = user_topics.is_topic_muted(sub.stream_id, topic_name);
+    const topic_unmuted = user_topics.is_topic_unmuted(sub.stream_id, topic_name);
+    const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
+    const can_move_topic = settings_data.user_can_move_messages_between_streams();
+    const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    return {
+        stream_name: sub.name,
+        stream_id: sub.stream_id,
+        stream_muted: sub.is_muted,
+        topic_name,
+        topic_muted,
+        topic_unmuted,
+        can_move_topic,
+        can_rename_topic,
+        is_realm_admin: page_params.is_admin,
+        topic_is_resolved: resolved_topic.is_resolved(topic_name),
+        color: sub.color,
+        has_starred_messages,
+        url,
     };
 }

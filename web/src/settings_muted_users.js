@@ -6,7 +6,7 @@ import * as ListWidget from "./list_widget";
 import * as muted_users from "./muted_users";
 import * as muted_users_ui from "./muted_users_ui";
 import * as people from "./people";
-import * as ui from "./ui";
+import * as scroll_util from "./scroll_util";
 
 export let loaded = false;
 
@@ -30,7 +30,9 @@ export function populate_list() {
                 return item.user_name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar($muted_users_table.closest(".progressive-table-wrapper"));
+                scroll_util.reset_scrollbar(
+                    $muted_users_table.closest(".progressive-table-wrapper"),
+                );
             },
         },
         $parent_container: $("#muted-user-settings"),

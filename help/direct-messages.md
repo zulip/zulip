@@ -35,11 +35,11 @@ and do not appear in your list of streams.
 
 {tab|mobile}
 
-1. Tap the **Private messages**
-   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="private messages" class="mobile-icon"/> )
+1. Tap the **Direct messages**
+   ( <img src="/static/images/help/mobile-dm-tab-icon.svg" alt="direct messages" class="mobile-icon"/> )
    tab at the bottom of the app.
 
-1. Tap the **New PM** button at the top of the app.
+1. Tap the **New DM** button at the top of the app.
 
 1. Start typing the name of the person you want to message, and
    select their name from the list of suggestions.
@@ -51,7 +51,7 @@ and do not appear in your list of streams.
 !!! tip ""
 
     You can also tap on a user's profile picture or name, and tap the
-    **Send private message** button at the bottom of the app.
+    **Send direct message** button at the bottom of the app.
 
 {end_tabs}
 

@@ -15,6 +15,7 @@ const reload_state = mock_esm("../src/reload_state");
 const sent_messages = mock_esm("../src/sent_messages", {
     start_tracking_message: noop,
     report_server_ack: noop,
+    start_send: noop,
 });
 
 const people = zrequire("people");
@@ -177,7 +178,7 @@ run_test("reply_message_errors", () => {
         type: "bogus",
     };
 
-    blueslip.expect("error", "unknown message type: bogus");
+    blueslip.expect("error", "unknown message type");
 
     transmit.reply_message({
         message: bogus_message,

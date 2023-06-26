@@ -16,7 +16,7 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
         raise JsonableError(_("Cannot mute self"))
 
     muted_user = access_user_by_id(
-        user_profile, muted_user_id, allow_bots=False, allow_deactivated=True, for_admin=False
+        user_profile, muted_user_id, allow_bots=True, allow_deactivated=True, for_admin=False
     )
     date_muted = timezone_now()
 
@@ -32,7 +32,7 @@ def unmute_user(
     request: HttpRequest, user_profile: UserProfile, muted_user_id: int
 ) -> HttpResponse:
     muted_user = access_user_by_id(
-        user_profile, muted_user_id, allow_bots=False, allow_deactivated=True, for_admin=False
+        user_profile, muted_user_id, allow_bots=True, allow_deactivated=True, for_admin=False
     )
     mute_object = get_mute_object(user_profile, muted_user)
 

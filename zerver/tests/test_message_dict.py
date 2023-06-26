@@ -249,16 +249,16 @@ class MessageDictTest(ZulipTestCase):
         # and not linkified when sent to a stream in 'lear'.
         zulip_realm = get_realm("zulip")
         lear_realm = get_realm("lear")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url_template = r"https://trac.example.com/ticket/{id}"
         links = {"url": "https://trac.example.com/ticket/123", "text": "#123"}
         topic_name = "test #123"
 
         linkifier = RealmFilter(
-            realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
+            realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_template=url_template
         )
         self.assertEqual(
             repr(linkifier),
-            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>",
         )
 
         def get_message(sender: UserProfile, realm: Realm) -> Message:

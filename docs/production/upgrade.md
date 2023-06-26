@@ -217,14 +217,39 @@ Zulip's upgrades have a hook system which allows for arbitrary
 user-configured actions to run before and after an upgrade.
 
 Files in the `/etc/zulip/pre-deploy.d` and `/etc/zulip/post-deploy.d`
-directories are inspected for files ending with `.hook`, just before
-and after the critical period when the server is restarted. Each file
-is called, sorted in alphabetical order, from the working directory of
-the new version, with arguments of the old and new Zulip versions. If
-they exit with non-0 exit code, the upgrade will abort.
+directories are inspected for files ending with `.hook`, just before and after
+the critical period when the server is restarted. Each file is called, sorted in
+alphabetical order, from the working directory of the new version, with
+environment variables as described below. If any of them exit with non-0 exit
+code, the upgrade will abort.
+
+The hook is run with the following environment variables set:
+
+- `ZULIP_OLD_VERSION`: The version being upgraded from, which may either be a
+  release name (e.g. `7.0` or `7.0-beta3`) or the output from `git describe`
+  (e.g. `7.0-beta3-2-gdc158b18f2`).
+- `ZULIP_NEW_VERSION`: The version being upgraded to, in the same format as
+  `ZULIP_OLD_VERSION`.
+
+If the upgrade is upgrading between [versions in `git`][upgrade-from-git], then
+the following environment variables will also be present:
+
+- `ZULIP_OLD_COMMIT`: The full commit hash of the version being upgraded from
+- `ZULIP_NEW_COMMIT`: The full commit hash of the version being upgraded to
+- `ZULIP_OLD_MERGE_BASE_COMMIT`: The full commit hash of the merge-base of the
+  version being upgraded from, and the public branch in
+  [`zulip/zulip`][zulip/zulip]. This will be the closest commit in standard
+  Zulip Server to the version being upgraded from.
+- `ZULIP_NEW_MERGE_BASE_COMMIT`: The full commit hash of the merge-base of the
+  version being upgraded to, and the public branch in
+  [`zulip/zulip`][zulip/zulip]. This will be the closest commit in standard
+  Zulip Server to the version being upgraded to.
 
 See the [deploy documentation](deployment.md#deployment-hooks) for
 hooks included with Zulip.
+
+[upgrade-from-git]: #upgrading-from-a-git-repository
+[zulip/zulip]: https://github.com/zulip/zulip/
 
 ## Preserving local changes to service configuration files
 
@@ -484,6 +509,52 @@ instructions for other supported platforms.
    18.04](#upgrading-from-ubuntu-1604-xenial-to-1804-bionic), so
    that you are running a supported operating system.
 
+### Upgrading from Debian 11 to 12
+
+1. Upgrade your server to the latest `7.x` release.
+
+2. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/stop-server
+   /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+   ```
+
+3. Follow [Debian's instructions to upgrade the OS][bookworm-upgrade].
+
+   [bookworm-upgrade]: https://www.debian.org/releases/bookworm/amd64/release-notes/ch-upgrading.html
+
+   When prompted for you how to upgrade configuration
+   files for services that Zulip manages like Redis, PostgreSQL,
+   nginx, and memcached, the best choice is `N` to keep the
+   currently installed version. But it's not important; the next
+   step will re-install Zulip's configuration in any case.
+
+4. As root, run the following steps to regenerate configurations
+   for services used by Zulip:
+
+   ```bash
+   apt remove upstart -y
+   /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
+   ```
+
+5. Reinstall the current version of Zulip, which among other things
+   will recompile Zulip's Python module dependencies for your new
+   version of Python:
+
+   ```bash
+   rm -rf /srv/zulip-venv-cache/*
+   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+       /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
+   ```
+
+   This will finish by restarting your Zulip server; you should now
+   be able to navigate to its URL and confirm everything is working
+   correctly.
+
+6. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
+
 ### Upgrading from Debian 10 to 11
 
 1. Upgrade your server to the latest `5.x` release. You can only
@@ -618,10 +689,20 @@ instructions for other supported platforms.
 ## Upgrading PostgreSQL
 
 Starting with Zulip 3.0, we use the latest available version of
-PostgreSQL at installation time (currently version 14). Upgrades to
+PostgreSQL at installation time (currently version 15). Upgrades to
 the version of PostgreSQL are no longer linked to upgrades of the
-distribution; that is, you may opt to upgrade to PostgreSQL 14 while
+distribution; that is, you may opt to upgrade to PostgreSQL 15 while
 running Ubuntu 20.04.
+
+Not all versions of Zulip Server support all versions of PostgreSQL, however:
+
+| Zulip Server version | Supported versions of PostgreSQL |
+| -------------------- | -------------------------------- |
+| 3.x                  | 9.3, 9.5, 9.6, 10, 11, 12        |
+| 4.x                  | 9.3, 9.5, 9.6, 10, 11, 12, 13    |
+| 5.x                  | 10, 11, 12, 13, 14               |
+| 6.x                  | 11, 12, 13, 14                   |
+| 7.x                  | 12, 13, 14, 15                   |
 
 To upgrade the version of PostgreSQL on the Zulip server:
 

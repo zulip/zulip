@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-version="2.3.6"
-sha256=fc68a66a216e304bb0e2ef627f767fff528f4fbf2bbda27e8cd8db1b7ba090b0
+version="3.0.3"
+sha256=0c54af17afcf7c18e1a3aafadd5d5f7706a9fbcaebd56f4a38664847608e5c97
 
 tmpdir="$(mktemp -d)"
 trap 'rm -r "$tmpdir"' EXIT
 cd "$tmpdir"
 tarball="pgroonga-$version.tar.gz"
-curl -fLO --retry 3 "https://packages.groonga.org/source/pgroonga/$tarball"
+curl -fLO --retry 3 "https://github.com/pgroonga/pgroonga/releases/download/$version/$tarball"
 sha256sum -c <<<"$sha256 $tarball"
 tar -xzf "$tarball"
 cd "pgroonga-$version"

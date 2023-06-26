@@ -15,9 +15,9 @@ import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_ui_updates from "./user_group_ui_updates";
@@ -46,7 +46,7 @@ function get_user_group_for_target(target) {
 
     const group = user_groups.get_user_group_from_id(user_group_id);
     if (!group) {
-        blueslip.error("get_user_group_for_target() failed id lookup: " + user_group_id);
+        blueslip.error("get_user_group_for_target() failed id lookup", {user_group_id});
         return undefined;
     }
     return group;
@@ -135,7 +135,7 @@ export function show_settings_for(node) {
         can_edit: can_edit(group.id),
     });
 
-    ui.get_content_element($("#user_group_settings")).html(html);
+    scroll_util.get_content_element($("#user_group_settings")).html(html);
     user_group_ui_updates.update_toggler_for_group_setting(group);
 
     $("#user_group_settings .tab-container").prepend(toggler.get());
@@ -187,13 +187,13 @@ export function open_group_edit_panel_for_row(group_row) {
 }
 
 export function initialize() {
-    $("#manage_groups_container").on("click", ".group-row", function (e) {
+    $("#groups_overlay_container").on("click", ".group-row", function (e) {
         if ($(e.target).closest(".check, .user_group_settings_wrapper").length === 0) {
             open_group_edit_panel_for_row(this);
         }
     });
 
-    $("#manage_groups_container").on("click", "#open_group_info_modal", (e) => {
+    $("#groups_overlay_container").on("click", "#open_group_info_modal", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const user_group_id = get_user_group_id(e.target);
@@ -201,6 +201,7 @@ export function initialize() {
         const template_data = {
             group_name: user_group.name,
             group_description: user_group.description,
+            max_user_group_name_length: user_group_settings_ui.max_user_group_name_length,
         };
         const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
         dialog_widget.launch({
@@ -219,7 +220,7 @@ export function initialize() {
         });
     });
 
-    $("#manage_groups_container").on("click", ".group_settings_header .btn-danger", () => {
+    $("#groups_overlay_container").on("click", ".group_settings_header .btn-danger", () => {
         const active_group_data = user_group_settings_ui.get_active_data();
         const group_id = active_group_data.id;
         const user_group = user_groups.get_user_group_from_id(group_id);

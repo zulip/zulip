@@ -3,7 +3,7 @@
     {{#if should_display_quote_and_reply}}
     <li>
         <a class="respond_button" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply or forward" }}
+            <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply" }}
             <span class="hotkey-hint">(>)</span>
         </a>
     </li>
@@ -45,7 +45,7 @@
     <li>
         <a class="reaction_button" data-message-id="{{message_id}}" tabindex="0">
             <i class="fa fa-smile-o" aria-hidden="true"></i>
-            {{t "Add emoji reaction" }}
+            {{t "Add emoji reaction" }} <span class="hotkey-hint">(:)</span>
         </a>
     </li>
     <hr />
@@ -59,14 +59,6 @@
                 <span class="hotkey-hint">(U)</span>
             </a>
         </li>
-    {{/if}}
-
-    {{#if should_display_reminder_option}}
-    <li>
-        <a class='reminder_button' data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-bell" aria-hidden="true"></i> {{t "Remind me about this" }}
-        </a>
-    </li>
     {{/if}}
 
     {{#if should_display_hide_option}}
@@ -127,7 +119,7 @@
     {{/if}}
 
     <li>
-        <a class="copy_link" data-message-id="{{message_id}}" data-clipboard-text="{{ conversation_time_uri }}" tabindex="0">
+        <a class="copy_link" data-message-id="{{message_id}}" data-clipboard-text="{{ conversation_time_url }}" tabindex="0">
             <i class="fa fa-link" aria-hidden="true"></i> {{t "Copy link to message" }}
         </a>
     </li>

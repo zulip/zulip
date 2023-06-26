@@ -1,0 +1,49 @@
+{{#each scheduled_messages_data}}
+    <div class="scheduled-message-row overlay-message-row" data-scheduled-message-id="{{scheduled_message_id}}">
+        <div class="overlay-message-info-box" tabindex="0">
+            {{#if is_stream}}
+            <div class="message_header message_header_stream">
+                <div class="message-header-contents" style="background: {{recipient_bar_color}};">
+                    <div class="message_label_clickable stream_label">
+                        <span class="stream-privacy-modified-color-{{stream_id}} stream-privacy filter-icon"  style="color: {{stream_privacy_icon_color}}">
+                            {{> stream_privacy}}
+                        </span>
+                        {{stream_name}}
+                    </div>
+                    <span class="stream_topic_separator"><i class="zulip-icon zulip-icon-chevron-right"></i></span>
+                    <span class="stream_topic">
+                        <div class="message_label_clickable narrows_by_topic">
+                            {{topic}}
+                        </div>
+                    </span>
+                    <span class="recipient_bar_controls"></span>
+                    {{> scheduled_message_stream_pm_common}}
+                </div>
+            </div>
+            {{else}}
+            <div class="message_header message_header_private_message">
+                <div class="message-header-contents">
+                    <div class="message_label_clickable stream_label">
+                        <span class="private_message_header_icon"><i class="zulip-icon zulip-icon-user"></i></span>
+                        <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
+                    </div>
+                    {{> scheduled_message_stream_pm_common}}
+                </div>
+            </div>
+            {{/if}}
+            <div class="message_row{{^is_stream}} private-message{{/is_stream}}" role="listitem">
+                <div class="messagebox">
+                    <div class="messagebox-content">
+                        <div class="message_top_line">
+                            <div class="overlay_message_controls">
+                                <i class="fa fa-pencil fa-lg restore-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="restore-scheduled-message-tooltip-template"></i>
+                                <i class="fa fa-trash-o fa-lg delete-overlay-message tippy-zulip-tooltip" aria-hidden="true" data-tooltip-template-id="delete-scheduled-message-tooltip-template"></i>
+                            </div>
+                        </div>
+                        <div class="message_content rendered_markdown restore-overlay-message tippy-zulip-delayed-tooltip" data-tooltip-template-id="restore-scheduled-message-tooltip-template">{{rendered_markdown rendered_content}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/each}}

@@ -14,8 +14,10 @@ import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as popovers from "./popovers";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
@@ -33,7 +35,7 @@ import {user_settings} from "./user_settings";
 function get_full_url(hash) {
     const location = window.location;
 
-    if (hash === "" || hash.charAt(0) !== "#") {
+    if (hash.charAt(0) !== "#" && hash !== "") {
         hash = "#" + hash;
     }
 
@@ -57,10 +59,26 @@ function set_hash(hash) {
     }
     if (history.pushState) {
         const url = get_full_url(hash);
-        history.pushState(null, null, url);
-        browser_history.update_web_public_hash(hash);
+        try {
+            history.pushState(null, null, url);
+            browser_history.update_web_public_hash(hash);
+        } catch (error) {
+            if (error instanceof TypeError) {
+                // The window has been destroyed and the history object has been marked dead, so cannot
+                // be updated.  Silently do nothing, since there's nothing we can do.
+            } else {
+                throw error;
+            }
+        }
     } else {
-        blueslip.warn("browser does not support pushState");
+        // pushState has 97% global support according to caniuse. So, we will ideally never reach here.
+        // TODO: Delete this case if we don't see any error reports in a while.
+        if (hash === "" || hash === "#") {
+            // Setting empty hash here would scroll to the top.
+            hash = user_settings.default_view;
+        }
+
+        blueslip.error("browser does not support pushState");
         window.location.hash = hash;
     }
 }
@@ -101,7 +119,20 @@ function show_all_message_view() {
 }
 
 export function set_hash_to_default_view() {
-    window.location.hash = "";
+    let default_view_hash = `#${user_settings.default_view}`;
+    if (default_view_hash === "#recent_topics") {
+        default_view_hash = "#recent";
+    }
+
+    if (window.location.hash !== default_view_hash) {
+        // We want to set URL with no hash here. It is not possible
+        // to do so with `window.location.hash` since it will set an empty
+        // hash. So, we use `pushState` which simply updates the current URL
+        // but doesn't trigger `hashchange`. So, we trigger hashchange directly
+        // here to let it handle the whole rendering process for us.
+        set_hash("");
+        hashchanged(false);
+    }
 }
 
 function show_default_view() {
@@ -203,6 +234,7 @@ function do_hashchange_normal(from_reload) {
         case "#organization":
         case "#settings":
         case "#about-zulip":
+        case "#scheduled":
             blueslip.error("overlay logic skipped for: " + hash);
             break;
         default:
@@ -227,7 +259,7 @@ function do_hashchange_overlay(old_hash) {
         return;
     }
 
-    const coming_from_overlay = hash_util.is_overlay_hash(old_hash || "#");
+    const coming_from_overlay = hash_util.is_overlay_hash(old_hash);
 
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
@@ -332,11 +364,15 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "settings") {
+        settings.build_page();
+        admin.build_page();
         settings.launch(section);
         return;
     }
 
     if (base === "organization") {
+        settings.build_page();
+        admin.build_page();
         admin.launch(section);
         return;
     }
@@ -358,6 +394,10 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "about-zulip") {
         about_zulip.launch();
+    }
+
+    if (base === "scheduled") {
+        scheduled_messages_overlay_ui.launch();
     }
 }
 
@@ -392,6 +432,7 @@ function hashchanged(from_reload, e) {
 
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
+    popovers.hide_all();
     browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);
     browser_history.state.changing_hash = false;
@@ -399,6 +440,10 @@ function hashchanged(from_reload, e) {
 }
 
 export function initialize() {
+    // We don't want browser to restore the scroll
+    // position of the new hash in the current hash.
+    window.history.scrollRestoration = "manual";
+
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
     });

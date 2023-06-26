@@ -28,6 +28,9 @@ module.exports = {
             "/^(border(-top|-right|-bottom|-left)?|outline)(-width)?$/": [
                 /\b(thin|medium|thick)\b/,
             ],
+            // no quotation marks around grid-area; use
+            // `grid-area: my_area`, not `grid-area: "my_area"`
+            "grid-area": [/".*"/],
         },
         "function-disallowed-list": [
             // We use hsl instead of rgb
@@ -37,7 +40,7 @@ module.exports = {
         // Zulip CSS should have no dependencies on external resources
         "function-url-no-scheme-relative": true,
         "function-url-scheme-allowed-list": [
-            "data", // Allow data URIs
+            "data", // Allow data URLs
         ],
     },
 };

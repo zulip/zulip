@@ -83,9 +83,9 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Narrow to next unread direct message**: <kbd>P</kbd>
 
-* **Narrow to stream**: <kbd>S</kbd>
+* **Narrow to topic or DM conversation**: <kbd>S</kbd>
 
-* **Narrow to topic or DM conversation**: <kbd>Shift</kbd> + <kbd>S</kbd>
+* **Narrow to stream from topic view**: <kbd>S</kbd>
 
 * **Narrow to all direct messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
@@ -100,20 +100,20 @@ in the Zulip app to add more to your repertoire as needed.
 
 ## Composing messages
 
-* **Reply to message**: <kbd>R</kbd> or <kbd>Enter</kbd> — Reply to the
-  selected message (outlined in blue). Same behavior as clicking on the
-  message.
-
-* **Reply to message, mentioning author**: <kbd>@</kbd>
-
-* **Reply only to author**: <kbd>Shift</kbd> + <kbd>R</kbd>
-
-* **Quote and reply to message**: <kbd>></kbd>
-
 * **New stream message**: <kbd>C</kbd> — For starting a new topic in a
   stream.
 
 * **New direct message**: <kbd>X</kbd>
+
+* **Reply to message**: <kbd>R</kbd> or <kbd>Enter</kbd> — Reply to the
+  selected message (outlined in blue). Same behavior as clicking on the
+  message.
+
+* **Quote and reply to message**: <kbd>></kbd>
+
+* **Reply directly to sender**: <kbd>Shift</kbd> + <kbd>R</kbd>
+
+* **Reply @-mentioning sender**: <kbd>@</kbd>
 
 ### In the compose box
 
@@ -164,7 +164,7 @@ in the Zulip app to add more to your repertoire as needed.
 
 * **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd> — Muted topics
   don't show up in any views (including **All messages**), and don't contribute
-  to unread counts. Read more about [muting topics](/help/mute-a-topic).
+  to unread counts. Read more about [muting or unmuting topics](/help/mute-a-topic).
 
 ## Recent conversations
 

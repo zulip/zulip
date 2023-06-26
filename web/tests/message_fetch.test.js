@@ -40,12 +40,14 @@ const message_util = mock_esm("../src/message_util");
 const stream_list = mock_esm("../src/stream_list", {
     maybe_scroll_narrow_into_view() {},
 });
-mock_esm("../src/message_scroll", {
+mock_esm("../src/message_feed_top_notices", {
+    update_top_of_narrow_notices() {},
+});
+mock_esm("../src/message_feed_loading", {
     show_loading_older: noop,
     hide_loading_older: noop,
     show_loading_newer: noop,
     hide_loading_newer: noop,
-    update_top_of_narrow_notices() {},
 });
 set_global("document", "document-stub");
 
@@ -293,7 +295,7 @@ run_test("initialize", () => {
 });
 
 function simulate_narrow() {
-    const filter = new Filter([{operator: "pm-with", operand: alice.email}]);
+    const filter = new Filter([{operator: "dm", operand: alice.email}]);
 
     const msg_list = new message_list.MessageList({
         table_name: "zfilt",
@@ -364,7 +366,7 @@ run_test("loading_newer", () => {
                 anchor: "444",
                 num_before: 0,
                 num_after: 100,
-                narrow: `[{"negated":false,"operator":"pm-with","operand":[${alice.user_id}]}]`,
+                narrow: `[{"negated":false,"operator":"dm","operand":[${alice.user_id}]}]`,
                 client_gravatar: true,
             },
             resp: {

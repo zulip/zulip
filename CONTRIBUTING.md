@@ -55,8 +55,10 @@ needs doing:
 **Non-code contributions**: Some of the most valuable ways to contribute
 don't require touching the codebase at all. For example, you can:
 
-- [Report issues](#reporting-issues), including both feature requests and
-  bug reports.
+- Report issues, including both [feature
+  requests](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html)
+  and [bug
+  reports](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html).
 - [Give feedback](#user-feedback) if you are evaluating or using Zulip.
 - [Participate
   thoughtfully](https://zulip.readthedocs.io/en/latest/contributing/design-discussions.html)
@@ -208,101 +210,16 @@ stream](https://chat.zulip.org/#narrow/stream/101-design) in the [Zulip
 development community](https://zulip.com/development-community/)
 
 For more advice, see [What makes a great Zulip
-contributor?](#what-makes-a-great-zulip-contributor)
-below.
+contributor?](#what-makes-a-great-zulip-contributor) below. It's OK if your
+first issue takes you a while; that's normal! You'll be able to work a lot
+faster as you build experience.
 
 ### Submitting a pull request
 
-When you believe your code is ready, follow the [guide on how to review
-code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
-to review your own work. You can often find things you missed by taking a step
-back to look over your work before asking others to do so. Catching mistakes
-yourself will help your PRs be merged faster, and folks will appreciate the
-quality and professionalism of your work.
-
-Then, submit your changes. Carefully reading our [Git guide][git-guide], and in
-particular the section on [making a pull request][git-guide-make-pr], will help
-avoid many common mistakes. If any part of your contribution is from someone
-else (code snippets, images, sounds, or any other copyrightable work, modified
-or unmodified), be sure to review the instructions on how to [properly
-attribute][licensing] the work.
-
-[licensing]: https://zulip.readthedocs.io/en/latest/contributing/licensing.html#contributing-someone-else-s-work
-
-Once you are satisfied with the quality of your PR, follow the
-[guidelines on asking for a code
-review](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#asking-for-a-code-review)
-to request a review. If you are not sure what's best, simply post a
-comment on the main GitHub thread for your PR clearly indicating that
-it is ready for review, and the project maintainers will take a look
-and follow up with next steps.
-
-It's OK if your first issue takes you a while; that's normal! You'll be
-able to work a lot faster as you build experience.
-
-If it helps your workflow, you can submit your pull request marked as
-a [draft][github-help-draft-pr] while you're still working on it, and
-then mark it ready when you think it's time for someone else to review
-your work.
-
-[git-guide]: https://zulip.readthedocs.io/en/latest/git/
-[git-guide-make-pr]: https://zulip.readthedocs.io/en/latest/git/pull-requests.html
-[github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
-
-### Stages of a pull request
-
-Your pull request will likely go through several stages of review.
-
-1. If your PR makes user-facing changes, the UI and user experience may be
-   reviewed early on, without reference to the code. You will get feedback on
-   any user-facing bugs in the implementation. To minimize the number of review
-   round-trips, make sure to [thoroughly
-   test](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#manual-testing)
-   your own PR prior to asking for review.
-2. There may be choices made in the implementation that the reviewer
-   will ask you to revisit. This process will go more smoothly if you
-   specifically call attention to the decisions you made while
-   drafting the PR and any points about which you are uncertain. The
-   PR description and comments on your own PR are good ways to do this.
-3. Oftentimes, seeing an initial implementation will make it clear that the
-   product design for a feature needs to be revised, or that additional changes
-   are needed. The reviewer may therefore ask you to amend or change the
-   implementation. Some changes may be blockers for getting the PR merged, while
-   others may be improvements that can happen afterwards. Feel free to ask if
-   it's unclear which type of feedback you're getting. (Follow-ups can be a
-   great next issue to work on!)
-4. In addition to any UI/user experience review, all PRs will go through one or
-   more rounds of code review. Your code may initially be [reviewed by other
-   contributors](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html).
-   This helps us make good use of project maintainers' time, and helps you make
-   progress on the PR by getting more frequent feedback. A project maintainer
-   may leave a comment asking someone with expertise in the area you're working
-   on to review your work.
-5. Final code review and integration for server and web app PRs is generally done
-   by `@timabbott`.
-
-#### How to help move the review process forward
-
-The key to keeping your review moving through the review process is to:
-
-- Address _all_ the feedback to the best of your ability.
-- Make it clear when the requested changes have been made
-  and you believe it's time for another look.
-- Make it as easy as possible to review the changes you made.
-
-In order to do this, when you believe you have addressed the previous round of
-feedback on your PR as best you can, post a comment asking reviewers to take
-another look. Your comment should make it easy to understand what has been done
-and what remains by:
-
-- Summarizing the changes made since the last review you received.
-- Highlighting remaining questions or decisions, with links to any relevant
-  chat.zulip.org threads.
-- Providing updated screenshots and information on manual testing if
-  appropriate.
-
-The easier it is to review your work, the more likely you are to receive quick
-feedback.
+See the [pull request review
+process](https://zulip.readthedocs.io/en/latest/contributing/review-process.html)
+guide for detailed instructions on how to submit a pull request, and information
+on the stages of review your PR will go through.
 
 ### Beyond the first issue
 
@@ -349,7 +266,7 @@ labels.
      on [Git commit
      discipline](https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html).
   2. If all the feedback has been addressed, did you [leave a
-     comment](#how-to-help-move-the-review-process-forward)
+     comment](https://zulip.readthedocs.io/en/latest/contributing/review-process.html#how-to-help-move-the-review-process-forward)
      explaining that you have done so and **requesting another review**? If not,
      it may not be clear to project maintainers or reviewers that your PR is
      ready for another look.
@@ -398,29 +315,6 @@ experience, these are the best predictors of success:
   server](https://zulip.com/development-community/).
 
 [great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
-
-## Reporting issues
-
-If you find an easily reproducible bug and/or are experienced in reporting
-bugs, feel free to just open an issue on the relevant project on GitHub.
-
-If you have a feature request or are not yet sure what the underlying bug
-is, the best place to post issues is
-[#issues](https://chat.zulip.org/#narrow/stream/9-issues) (or
-[#mobile](https://chat.zulip.org/#narrow/stream/48-mobile) or
-[#desktop](https://chat.zulip.org/#narrow/stream/16-desktop)) on the
-[Zulip community server](https://zulip.com/development-community/).
-This allows us to interactively figure out what is going on, let you know if
-a similar issue has already been opened, and collect any other information
-we need. Choose a 2-4 word topic that describes the issue, explain the issue
-and how to reproduce it if known, your browser/OS if relevant, and a
-[screenshot or screenGIF](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
-if appropriate.
-
-**Reporting security issues**. Please do not report security issues
-publicly, including on public streams on chat.zulip.org. You can
-email [security@zulip.com](mailto:security@zulip.com). We create a CVE for every
-security issue in our released software.
 
 ## User feedback
 

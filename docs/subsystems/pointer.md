@@ -29,7 +29,7 @@ First a bit of terminology:
 ### Recipient bar: message you clicked
 
 If you enter a narrow by clicking on a message group's _recipient bar_
-(stream/topic or private message recipient list at the top of a group
+(stream/topic or direct message recipient list at the top of a group
 of messages), Zulip will select the message you clicked on. This
 provides a nice user experience where you get to see the stuff near
 what you clicked on, and in fact the message you clicked on stays at

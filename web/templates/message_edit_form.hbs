@@ -1,7 +1,7 @@
 {{! Client-side Handlebars template for rendering the message edit form. }}
 
 <form id="edit_form_{{message_id}}" class="new-style">
-    <div class="banners"></div>
+    <div class="edit_form_banners"></div>
     <div class="edit-controls">
         {{> copy_message_button message_id=this.message_id}}
         <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
@@ -14,7 +14,8 @@
         <div class="message_edit_spinner"></div>
         <div class="controls edit-controls">
             {{#if is_editable}}
-                <div class="btn-wrapper inline-block">
+                <div class="btn-wrapper inline-block message_edit_save_container"
+                  data-tippy-content="{{t 'You can no longer save changes to this message.' }}">
                     <button type="button" class="button small rounded sea-green message_edit_save">
                         <img class="loader" alt="" src="" />
                         <span>{{t "Save" }}</span>
@@ -23,11 +24,9 @@
                 <div class="btn-wrapper inline-block">
                     <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
                 </div>
-                {{#if is_editable}}
                 <div class="message-edit-feature-group">
                     {{> compose_control_buttons }}
                 </div>
-                {{/if}}
             {{else}}
                 <button type="button" class="button small rounded message_edit_close">{{t "Close" }}</button>
             {{/if}}
@@ -43,5 +42,4 @@
             {{/if}}
         </div>
     </div>
-    <div class="alert alert-error edit_error hide"></div>
 </form>

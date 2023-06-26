@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
+    pgroonga_apt_sign_key=$(readlink -f "$LIST_PATH/pgroonga-packages.groonga.org.asc")
+
     remove_pgroonga_apt_tmp_dir() {
         rm -rf "$pgroonga_apt_tmp_dir"
     }
@@ -10,7 +13,6 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
     {
         cd "$pgroonga_apt_tmp_dir" || exit 1
         tmp_gpg_home=.gnupg
-        pgroonga_apt_sign_key="$LIST_PATH/pgroonga-packages.groonga.org.asc"
         gpg --homedir="$tmp_gpg_home" --import "$pgroonga_apt_sign_key"
         # Find fingerprint of the first key.
         pgroonga_apt_sign_key_fingerprint=$(
@@ -24,6 +26,10 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
             read -r distribution
             read -r release
         } <<<"$os_info"
+        if [ "$distribution" = debian ] && [ "$release" = bookworm ]; then
+            # PGroonga binaries are not yet provided for Debian 12.
+            exit
+        fi
         groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
         groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
         curl -fLO --retry 3 "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"

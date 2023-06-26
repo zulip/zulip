@@ -113,6 +113,7 @@ export function triage<T>(
     query: string,
     objs: T[],
     get_item: (x: T) => string,
+    sorting_comparator?: () => number,
 ): {matches: T[]; rest: T[]} {
     /*
         We split objs into four groups:
@@ -145,6 +146,17 @@ export function triage<T>(
         } else {
             noMatch.push(obj);
         }
+    }
+
+    if (sorting_comparator) {
+        const non_exact_sorted_matches = [
+            ...beginswithCaseSensitive,
+            ...beginswithCaseInsensitive,
+        ].sort(sorting_comparator);
+        return {
+            matches: [...exactMatch, ...non_exact_sorted_matches],
+            rest: noMatch.sort(sorting_comparator),
+        };
     }
     return {
         matches: [...exactMatch, ...beginswithCaseSensitive, ...beginswithCaseInsensitive],

@@ -59,9 +59,11 @@ class MutedUsersTests(ZulipTestCase):
 
         url = f"/api/v1/users/me/muted_users/{muted_id}"
         result = self.api_post(hamlet, url)
-        # Currently we do not allow muting bots. This is the error message
-        # from `access_user_by_id`.
-        self.assert_json_error(result, "No such user")
+        self.assert_json_success(result)
+
+        url = f"/api/v1/users/me/muted_users/{muted_id}"
+        result = self.api_delete(hamlet, url)
+        self.assert_json_success(result)
 
     def test_add_muted_user_mute_twice(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -230,8 +232,8 @@ class MutedUsersTests(ZulipTestCase):
         # Have Cordelia send messages to Hamlet and Othello.
         stream_message = self.send_stream_message(cordelia, "general", "Spam in stream")
         huddle_message = self.send_huddle_message(cordelia, [hamlet, othello], "Spam in huddle")
-        pm_to_hamlet = self.send_personal_message(cordelia, hamlet, "Spam in PM")
-        pm_to_othello = self.send_personal_message(cordelia, othello, "Spam in PM")
+        pm_to_hamlet = self.send_personal_message(cordelia, hamlet, "Spam in direct message")
+        pm_to_othello = self.send_personal_message(cordelia, othello, "Spam in direct message")
 
         # These should be marked as read for Hamlet, since he has muted Cordelia.
         self.assert_usermessage_read_flag(hamlet, stream_message, True)
@@ -257,8 +259,8 @@ class MutedUsersTests(ZulipTestCase):
         # Have Cordelia send messages to Hamlet and Othello.
         stream_message = self.send_stream_message(cordelia, "general", "Spam in stream")
         huddle_message = self.send_huddle_message(cordelia, [hamlet, othello], "Spam in huddle")
-        pm_to_hamlet = self.send_personal_message(cordelia, hamlet, "Spam in PM")
-        pm_to_othello = self.send_personal_message(cordelia, othello, "Spam in PM")
+        pm_to_hamlet = self.send_personal_message(cordelia, hamlet, "Spam in direct message")
+        pm_to_othello = self.send_personal_message(cordelia, othello, "Spam in direct message")
 
         # These messages are unreads for both Hamlet and Othello right now.
         self.assert_usermessage_read_flag(hamlet, stream_message, False)

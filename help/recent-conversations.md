@@ -12,4 +12,5 @@
 * [Reading topics](/help/reading-topics)
 * [Reading strategies](/help/reading-strategies)
 * [All messages](/help/all-messages)
+* [Inbox](/help/inbox)
 * [Configure default view](/help/configure-default-view)

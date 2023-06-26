@@ -15,7 +15,7 @@ preparing a new release.
   - [Upload strings to
     Transifex](../translating/internationalization.md#translation-process)
     using `push-translations`. Post a Transifex
-    [Announcement](https://www.transifex.com/zulip/zulip/announcements/)
+    [announcement](https://app.transifex.com/zulip/communication/?q=project%3Azulip)
     notifying translators that we're approaching a release.
   - Merge draft updates to the [changelog](../overview/changelog.md)
     with changes since the last release. While doing so, take notes on
@@ -32,8 +32,8 @@ preparing a new release.
 ### Final release preparation
 
 - Update the Paper blog post draft with any new commits.
-- _Major releases only:_ Download updated translation strings from
-  Transifex and commit them.
+- Download updated translation strings from Transifex and commit
+  them. Use the `--branch 6.x` parameter for maintenance releases.
 - Use `build-release-tarball` to generate a pre-release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
   release, on Ubuntu 20.04 or 22.04.
@@ -46,11 +46,11 @@ preparing a new release.
   - Add the needed YAML frontmatter.
   - Move any images into `public` and update their references.
   - Proofread, especially for formatting.
-  - Tag the post with "Release announcements" _first_, then any other
-    tags (e.g. "Security").
   - If the draft post should remain secret until release, avoid using
     a guessable Git branch name for the pull request (the deployment
     preview URL is based on the branch name).
+- _Major releases only (e.g. 4.0):_ Schedule team members to provide
+  extra responsive #production help support following the release.
 
 ### Executing the release
 
@@ -80,11 +80,13 @@ preparing a new release.
   - Also tag it with `latest`: `docker build . -t zulip/docker-zulip:latest`
   - Push those tags: `docker push zulip/docker-zulip:4.11-0; docker push zulip/docker-zulip:latest`
   - Push the commits to `main`.
-- Publish the blog post; check the box to "send by email."
+- Merge the blog post PR.
 - Announce the release, pointing to the blog post, via:
   - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
+  - Email to [zulip-blog-announce](https://groups.google.com/a/zulip.com/g/zulip-blog-announce)
   - Message in [#announce](https://chat.zulip.org/#narrow/stream/1-announce)
   - Tweet from [@zulip](https://twitter.com/zulip).
+  - Toot from [fosstodon.org/@zulip](https://fosstodon.org/@zulip)
 
 ### Post-release
 
@@ -114,3 +116,11 @@ preparing a new release.
     release with a `+git` suffix, e.g. `3.2+git`.
   - On main, update `LATEST_RELEASE_VERSION` with the released
     version, as well as the changelog changes from the release branch.
+- _Prereleases only (e.g. 7.0-beta3):_
+  - Atop the prerelease commit (e.g. `7.0-beta3`), make a commit
+    updating `ZULIP_VERSION` to the prerelease version with a `+git`
+    suffix, e.g. `7.0-beta3+git`. Push this to `main`. (If `main` has
+    already diverged from the prerelease, a merge commit will be
+    needed here.)
+  - Delete the prerelease branch (e.g. `7.0-beta3-branch`); it's now
+    an ancestor of `main` and thus unnecessary.

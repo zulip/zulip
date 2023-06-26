@@ -1,11 +1,12 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.upload import claim_attachment, delete_message_attachment
 from zerver.models import (
     Attachment,
     Message,
+    ScheduledMessage,
     Stream,
     UserProfile,
     get_old_unclaimed_attachments,
@@ -26,7 +27,9 @@ def notify_attachment_update(
     send_event(user_profile.realm, event, [user_profile.id])
 
 
-def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> bool:
+def do_claim_attachments(
+    message: Union[Message, ScheduledMessage], potential_path_ids: List[str]
+) -> bool:
     claimed = False
     for path_id in potential_path_ids:
         user_profile = message.sender
@@ -59,7 +62,10 @@ def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> boo
         attachment = claim_attachment(
             user_profile, path_id, message, is_message_realm_public, is_message_web_public
         )
-        notify_attachment_update(user_profile, "update", attachment.to_dict())
+        if not isinstance(message, ScheduledMessage):
+            # attachment update events don't say anything about scheduled messages,
+            # so sending an event is pointless.
+            notify_attachment_update(user_profile, "update", attachment.to_dict())
     return claimed
 
 
@@ -77,7 +83,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
 
 
 def check_attachment_reference_change(
-    message: Message, rendering_result: MessageRenderingResult
+    message: Union[Message, ScheduledMessage], rendering_result: MessageRenderingResult
 ) -> bool:
     # For a unsaved message edit (message.* has been updated, but not
     # saved to the database), adjusts Attachment data to correspond to

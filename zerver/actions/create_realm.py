@@ -22,6 +22,7 @@ from zerver.models import (
     PreregistrationRealm,
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmUserDefault,
     Stream,
     UserProfile,
@@ -29,6 +30,7 @@ from zerver.models import (
     get_realm,
     get_system_bot,
 )
+from zproject.backends import all_implemented_backend_names
 
 if settings.CORPORATE_ENABLED:
     from corporate.lib.support import get_support_url
@@ -139,7 +141,6 @@ def do_create_realm(
     name: str,
     *,
     emails_restricted_to_domains: Optional[bool] = None,
-    email_address_visibility: Optional[int] = None,
     description: Optional[str] = None,
     invite_required: Optional[bool] = None,
     plan_type: Optional[int] = None,
@@ -161,8 +162,6 @@ def do_create_realm(
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
-    if email_address_visibility is not None:
-        kwargs["email_address_visibility"] = email_address_visibility
     if description is not None:
         kwargs["description"] = description
     if invite_required is not None:
@@ -231,6 +230,14 @@ def do_create_realm(
         )
 
         create_system_user_groups_for_realm(realm)
+
+        # We create realms with all authentications methods enabled by default.
+        RealmAuthenticationMethod.objects.bulk_create(
+            [
+                RealmAuthenticationMethod(name=backend_name, realm=realm)
+                for backend_name in all_implemented_backend_names()
+            ]
+        )
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(

@@ -25,6 +25,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish
@@ -63,13 +64,17 @@ from zerver.models import (
     active_non_guest_user_ids,
     get_system_bot,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 @transaction.atomic(savepoint=False)
 def do_deactivate_stream(
     stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
+    # If the stream is already deactivated, this is a no-op
+    if stream.deactivated is True:
+        raise JsonableError(_("Stream is already deactivated"))
+
     # We want to mark all messages in the to-be-deactivated stream as
     # read for all users; otherwise they will pollute queries like
     # "Get the user's first unread message".  Since this can be an
@@ -122,7 +127,7 @@ def do_deactivate_stream(
     stream_dict = stream.to_dict()
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
     event = dict(type="stream", op="delete", streams=[stream_dict])
-    transaction.on_commit(lambda: send_event(stream.realm, event, affected_user_ids))
+    send_event_on_commit(stream.realm, event, affected_user_ids)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -410,11 +415,7 @@ def send_peer_subscriber_events(
                 stream_ids=[stream_id],
                 user_ids=sorted(altered_user_ids),
             )
-            transaction.on_commit(
-                lambda event=event, peer_user_ids=peer_user_ids: send_event(
-                    realm, event, peer_user_ids
-                )
-            )
+            send_event_on_commit(realm, event, peer_user_ids)
 
     public_stream_ids = [
         stream_id
@@ -452,11 +453,7 @@ def send_peer_subscriber_events(
                         stream_ids=[stream_id],
                         user_ids=sorted(altered_user_ids),
                     )
-                    transaction.on_commit(
-                        lambda event=event, peer_user_ids=peer_user_ids: send_event(
-                            realm, event, peer_user_ids
-                        )
-                    )
+                    send_event_on_commit(realm, event, peer_user_ids)
 
         for user_id, stream_ids in user_streams.items():
             peer_user_ids = public_peer_ids - {user_id}
@@ -466,11 +463,7 @@ def send_peer_subscriber_events(
                 stream_ids=sorted(stream_ids),
                 user_ids=[user_id],
             )
-            transaction.on_commit(
-                lambda event=event, peer_user_ids=peer_user_ids: send_event(
-                    realm, event, peer_user_ids
-                )
-            )
+            send_event_on_commit(realm, event, peer_user_ids)
 
 
 SubT = Tuple[List[SubInfo], List[SubInfo]]
@@ -1366,6 +1359,4 @@ def do_change_stream_group_based_setting(
         stream_id=stream.id,
         name=stream.name,
     )
-    transaction.on_commit(
-        lambda: send_event(stream.realm, event, can_access_stream_user_ids(stream))
-    )
+    send_event_on_commit(stream.realm, event, can_access_stream_user_ids(stream))

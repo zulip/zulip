@@ -180,6 +180,11 @@ def bulk_set_user_topic_visibility_policy_in_database(
 def topic_has_visibility_policy(
     user_profile: UserProfile, stream_id: int, topic_name: str, visibility_policy: int
 ) -> bool:
+    if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
+        has_user_topic_row = UserTopic.objects.filter(
+            user_profile=user_profile, stream_id=stream_id, topic_name__iexact=topic_name
+        ).exists()
+        return not has_user_topic_row
     has_visibility_policy = UserTopic.objects.filter(
         user_profile=user_profile,
         stream_id=stream_id,

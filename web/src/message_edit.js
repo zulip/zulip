@@ -3,14 +3,18 @@ import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
+import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
+import render_resolve_topic_time_limit_error_modal from "../templates/resolve_topic_time_limit_error_modal.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
@@ -29,6 +33,7 @@ import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -52,10 +57,6 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
 
     if (message.type !== "stream") {
         return false;
-    }
-
-    if (message.topic === compose.empty_topic_placeholder()) {
-        return true;
     }
 
     if (!settings_data.user_can_move_messages_to_another_topic()) {
@@ -420,6 +421,7 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
         .map((stream) => ({
             name: stream.name,
             value: stream.stream_id.toString(),
+            stream,
         }))
         .sort((a, b) => {
             if (a.name.toLowerCase() < b.name.toLowerCase()) {
@@ -520,6 +522,7 @@ function edit_message($row, raw_content) {
         // I believe this needs to be defined outside the countdown_timer, since
         // row just refers to something like the currently selected message, and
         // can change out from under us
+        const $message_edit_save_container = $row.find(".message_edit_save_container");
         const $message_edit_save = $row.find("button.message_edit_save");
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
@@ -528,12 +531,13 @@ function edit_message($row, raw_content) {
             seconds_left -= 1;
             if (seconds_left <= 0) {
                 clearInterval(countdown_timer);
-                $message_edit_content.prop("readonly", "readonly");
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
-                $message_edit_save.addClass("disabled");
+                $message_edit_save.prop("disabled", true);
+                $message_edit_save_container.addClass("tippy-zulip-tooltip");
+                $message_edit_countdown_timer.addClass("expired");
                 $message_edit_countdown_timer.text($t({defaultMessage: "Time's up!"}));
             } else {
                 $message_edit_countdown_timer.text(timer_text(seconds_left));
@@ -562,8 +566,8 @@ function edit_message($row, raw_content) {
 
 function start_edit_maintaining_scroll($row, content) {
     edit_message($row, content);
-    const row_bottom = $row.height() + $row.offset().top;
-    const composebox_top = $("#compose").offset().top;
+    const row_bottom = $row.get_offset_to_window().bottom;
+    const composebox_top = $("#compose").get_offset_to_window().top;
     if (row_bottom > composebox_top) {
         message_viewport.scrollTop(message_viewport.scrollTop() + row_bottom - composebox_top);
     }
@@ -584,7 +588,11 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
 export function start($row, edit_box_open_callback) {
     const message = message_lists.current.get(rows.id($row));
     if (message === undefined) {
-        blueslip.error("Couldn't find message ID for edit " + rows.id($row));
+        blueslip.error("Couldn't find message ID for edit", {row_id: rows.id($row)});
+        return;
+    }
+
+    if ($row.find(".message_edit_form form").length !== 0) {
         return;
     }
 
@@ -605,9 +613,94 @@ export function start($row, edit_box_open_callback) {
     });
 }
 
-export function toggle_resolve_topic(message_id, old_topic_name) {
+function get_resolve_topic_time_limit_error_string(time_limit, time_limit_unit, topic_is_resolved) {
+    if (topic_is_resolved) {
+        if (time_limit_unit === "minute") {
+            return $t(
+                {
+                    defaultMessage:
+                        "You do not have permission to unresolve topics with messages older than {N, plural, one {# minute} other {# minutes}} in this organization.",
+                },
+                {N: time_limit},
+            );
+        } else if (time_limit_unit === "hour") {
+            return $t(
+                {
+                    defaultMessage:
+                        "You do not have permission to unresolve topics with messages older than {N, plural, one {# hour} other {# hours}} in this organization.",
+                },
+                {N: time_limit},
+            );
+        }
+        return $t(
+            {
+                defaultMessage:
+                    "You do not have permission to unresolve topics with messages older than {N, plural, one {# day} other {# days}} in this organization.",
+            },
+            {N: time_limit},
+        );
+    }
+
+    if (time_limit_unit === "minute") {
+        return $t(
+            {
+                defaultMessage:
+                    "You do not have permission to resolve topics with messages older than {N, plural, one {# minute} other {# minutes}} in this organization.",
+            },
+            {N: time_limit},
+        );
+    } else if (time_limit_unit === "hour") {
+        return $t(
+            {
+                defaultMessage:
+                    "You do not have permission to resolve topics with messages older than {N, plural, one {# hour} other {# hours}} in this organization.",
+            },
+            {N: time_limit},
+        );
+    }
+    return $t(
+        {
+            defaultMessage:
+                "You do not have permission to resolve topics with messages older than {N, plural, one {# day} other {# days}} in this organization.",
+        },
+        {N: time_limit},
+    );
+}
+
+function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved) {
+    const time_limit_for_resolving_topic = timerender.get_time_limit_setting_in_appropriate_unit(
+        page_params.realm_move_messages_within_stream_limit_seconds,
+    );
+    const resolve_topic_time_limit_error_string = get_resolve_topic_time_limit_error_string(
+        time_limit_for_resolving_topic.value,
+        time_limit_for_resolving_topic.unit,
+        topic_is_resolved,
+    );
+
+    const html_body = render_resolve_topic_time_limit_error_modal({
+        topic_is_resolved,
+        resolve_topic_time_limit_error_string,
+    });
+    let modal_heading;
+    if (topic_is_resolved) {
+        modal_heading = $t_html({defaultMessage: "Could not unresolve topic"});
+    } else {
+        modal_heading = $t_html({defaultMessage: "Could not resolve topic"});
+    }
+    dialog_widget.launch({
+        html_heading: modal_heading,
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Close"}),
+        on_click() {},
+        single_footer_button: true,
+        focus_submit_on_open: true,
+    });
+}
+
+export function toggle_resolve_topic(message_id, old_topic_name, report_errors_in_global_banner) {
     let new_topic_name;
-    if (resolved_topic.is_resolved(old_topic_name)) {
+    const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
+    if (topic_is_resolved) {
         new_topic_name = resolved_topic.unresolve_name(old_topic_name);
     } else {
         new_topic_name = resolved_topic.resolve_name(old_topic_name);
@@ -623,6 +716,17 @@ export function toggle_resolve_topic(message_id, old_topic_name) {
     channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
+        error(xhr) {
+            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
+                return;
+            }
+
+            if (report_errors_in_global_banner) {
+                const error_msg = JSON.parse(xhr.responseText).msg;
+                ui_report.generic_embed_error(error_msg, 3500);
+            }
+        },
     });
 }
 
@@ -736,7 +840,7 @@ export function save_inline_topic_edit($row) {
     const request = {
         message_id: message.id,
         topic: new_topic,
-        propagate_mode: "change_later",
+        propagate_mode: "change_all",
         send_notification_to_old_thread: false,
         send_notification_to_new_thread: false,
     };
@@ -750,6 +854,34 @@ export function save_inline_topic_edit($row) {
         },
         error(xhr) {
             const $spinner = $row.find(".topic_edit_spinner");
+            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
+                const send_notification_to_old_thread = false;
+                const send_notification_to_new_thread = false;
+                // We are not changing stream in this UI.
+                const new_stream_id = undefined;
+                function handle_confirm() {
+                    move_topic_containing_message_to_stream(
+                        allowed_message_id,
+                        new_stream_id,
+                        new_topic,
+                        send_notification_to_new_thread,
+                        send_notification_to_old_thread,
+                        "change_later",
+                    );
+                }
+                const on_hide_callback = () => {
+                    loading.destroy_indicator($spinner);
+                    end_inline_topic_edit($row);
+                };
+
+                handle_message_move_failure_due_to_time_limit(
+                    xhr,
+                    handle_confirm,
+                    on_hide_callback,
+                );
+                return;
+            }
             loading.destroy_indicator($spinner);
             if (msg_list === message_lists.current) {
                 message_id = rows.id_for_recipient_row($row);
@@ -764,6 +896,13 @@ export function save_inline_topic_edit($row) {
 }
 
 export function save_message_row_edit($row) {
+    const $banner_container = compose_banner.get_compose_banner_container(
+        $row.find(".message_edit_form textarea"),
+    );
+    const stream_id = Number.parseInt(
+        rows.get_message_recipient_header($row).attr("data-stream-id"),
+        10,
+    );
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
     const message = message_lists.current.get(message_id);
@@ -773,14 +912,28 @@ export function save_message_row_edit($row) {
     let new_content;
     const old_content = message.raw_content;
 
-    show_message_edit_spinner($row);
-
     const $edit_content_input = $row.find(".message_edit_content");
     const can_edit_content = $edit_content_input.attr("readonly") !== "readonly";
     if (can_edit_content) {
         new_content = $edit_content_input.val();
         changed = old_content !== new_content;
     }
+
+    const already_has_wildcard_mention = message.wildcard_mentioned;
+    if (!already_has_wildcard_mention) {
+        const wildcard_mention = util.find_wildcard_mentions(new_content);
+        const is_stream_message_mentions_valid = compose_validate.validate_stream_message_mentions({
+            stream_id,
+            $banner_container,
+            wildcard_mention,
+        });
+
+        if (!is_stream_message_mentions_valid) {
+            return;
+        }
+    }
+
+    show_message_edit_spinner($row);
 
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
@@ -877,11 +1030,15 @@ export function save_message_row_edit($row) {
                 }
 
                 hide_message_edit_spinner($row);
-                const message = channel.xhr_error_message(
-                    $t({defaultMessage: "Error saving edit"}),
-                    xhr,
+                const message = channel.xhr_error_message(null, xhr);
+                const $container = compose_banner.get_compose_banner_container(
+                    $row.find("textarea"),
                 );
-                $row.find(".edit_error").text(message).show();
+                compose_banner.show_error_message(
+                    message,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $container,
+                );
             }
         },
     });
@@ -914,7 +1071,7 @@ export function edit_last_sent_message() {
     if (!$msg_row) {
         // This should never happen, since we got the message above
         // from message_lists.current.
-        blueslip.error("Could not find row for id " + msg.id);
+        blueslip.error("Could not find row for id", {msg_id: msg.id});
         return;
     }
 
@@ -1002,6 +1159,39 @@ export function handle_narrow_deactivated() {
     }
 }
 
+function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm, on_hide_callback) {
+    const total_messages_allowed_to_move = xhr.responseJSON.total_messages_allowed_to_move;
+    const messages_allowed_to_move_text = $t(
+        {
+            defaultMessage:
+                "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?",
+        },
+        {total_messages_allowed_to_move},
+    );
+    const messages_not_allowed_to_move_text = $t(
+        {
+            defaultMessage:
+                "{messages_not_allowed_to_move, plural, one {# message} other {# messages}} will remain in the current topic.",
+        },
+        {
+            messages_not_allowed_to_move:
+                xhr.responseJSON.total_messages_in_topic - total_messages_allowed_to_move,
+        },
+    );
+
+    const html_body = render_confirm_moving_messages_modal({
+        messages_allowed_to_move_text,
+        messages_not_allowed_to_move_text,
+    });
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Move some messages?"}),
+        html_body,
+        on_click: handle_confirm,
+        loading_spinner: true,
+        on_hide: on_hide_callback,
+    });
+}
+
 export function move_topic_containing_message_to_stream(
     message_id,
     new_stream_id,
@@ -1045,6 +1235,24 @@ export function move_topic_containing_message_to_stream(
         },
         error(xhr) {
             reset_modal_ui();
+            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
+                function handle_confirm() {
+                    move_topic_containing_message_to_stream(
+                        allowed_message_id,
+                        new_stream_id,
+                        new_topic_name,
+                        send_notification_to_new_thread,
+                        send_notification_to_old_thread,
+                        "change_later",
+                    );
+                }
+
+                const partial_move_confirmation_modal_callback = () =>
+                    handle_message_move_failure_due_to_time_limit(xhr, handle_confirm);
+                dialog_widget.close_modal(partial_move_confirmation_modal_callback);
+                return;
+            }
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
         },
     });

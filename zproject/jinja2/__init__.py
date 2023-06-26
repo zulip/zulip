@@ -10,6 +10,7 @@ from jinja2 import Environment
 from two_factor.plugins.phonenumber.templatetags.phonenumber import device_action
 
 from zerver.context_processors import DEFAULT_PAGE_PARAMS
+from zerver.lib.send_email import FromAddress
 from zerver.lib.templates import display_list, render_markdown_path, webpack_entry
 
 
@@ -28,6 +29,7 @@ def environment(**options: Any) -> Environment:
         url=reverse,
         render_markdown_path=render_markdown_path,
         webpack_entry=webpack_entry,
+        support_email=FromAddress.SUPPORT,
     )
 
     env.install_gettext_translations(translation, True)  # type: ignore[attr-defined] # Added by jinja2.ext.i18n

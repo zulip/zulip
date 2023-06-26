@@ -6,6 +6,7 @@
         "./styles/portico/activity.css"
     ],
     "billing": [
+        "./src/billing/page_params",
         "./src/bundles/portico",
         "./src/portico/landing-page",
         "./styles/portico/landing_page.css",
@@ -16,6 +17,7 @@
         "./styles/portico/billing.css"
     ],
     "upgrade": [
+        "./src/billing/page_params",
         "./src/bundles/portico",
         "./src/portico/tippyjs",
         "./src/portico/landing-page",
@@ -27,9 +29,10 @@
         "./styles/portico/billing.css"
     ],
     "billing-event-status": [
+        "./src/billing/page_params",
         "./src/bundles/portico",
         "./styles/portico/landing_page.css",
-        "./src/billing/event_status.js",
+        "./src/billing/event_status",
         "./src/billing/helpers",
         "./styles/portico/billing.css"
     ],

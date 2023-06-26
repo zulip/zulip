@@ -1,0 +1,20 @@
+#scheduled_messages_overlay_container {
+    .scheduled-messages-loading {
+        margin-top: 10px;
+        display: grid;
+
+        > * {
+            grid-row-start: 1;
+            grid-column-start: 1;
+            margin: auto;
+        }
+    }
+
+    .no-overlay-messages {
+        display: none;
+
+        &:only-child {
+            display: block;
+        }
+    }
+}

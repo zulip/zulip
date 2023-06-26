@@ -43,3 +43,15 @@ None
         """.strip()
 
         self.check_webhook("scanning_completed_no_vulnerability", expected_topic, expected_message)
+
+    def test_scanning_completed_no_tag(self) -> None:
+        expected_topic = "test/alpine/helm"
+
+        expected_message = """
+Image scan completed for `test/alpine/helm@sha256:b50334049354ed01330403212605dce2f4676a4e787ed113506861d9cf3c5424`. Vulnerabilities by severity:
+
+* High: **4**
+* Unknown: **1**
+        """.strip()
+
+        self.check_webhook("scanning_completed_no_tag", expected_topic, expected_message)

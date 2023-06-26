@@ -1,5 +1,5 @@
+import ast
 import datetime
-import re
 import secrets
 import time
 from contextlib import suppress
@@ -11,6 +11,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Iterable,
     List,
     Optional,
     Pattern,
@@ -26,6 +27,7 @@ from uuid import uuid4
 import django.contrib.auth
 import orjson
 import re2
+import uri_template
 from bitfield import BitField
 from bitfield.types import Bit, BitHandler
 from django.conf import settings
@@ -39,6 +41,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
@@ -101,7 +104,7 @@ from zerver.lib.types import (
     UserFieldElement,
     Validator,
 )
-from zerver.lib.utils import make_safe_digest
+from zerver.lib.utils import generate_api_key, make_safe_digest
 from zerver.lib.validator import (
     check_date,
     check_int,
@@ -220,6 +223,28 @@ def get_display_recipient(recipient: "Recipient") -> DisplayRecipientT:
     )
 
 
+def get_recipient_ids(
+    recipient: Optional["Recipient"], user_profile_id: int
+) -> Tuple[List[int], str]:
+    if recipient is None:
+        recipient_type_str = ""
+        to = []
+    elif recipient.type == Recipient.STREAM:
+        recipient_type_str = "stream"
+        to = [recipient.type_id]
+    else:
+        recipient_type_str = "private"
+        if recipient.type == Recipient.PERSONAL:
+            to = [recipient.type_id]
+        else:
+            to = []
+            for r in get_display_recipient(recipient):
+                assert not isinstance(r, str)  # It will only be a string for streams
+                if r["id"] != user_profile_id:
+                    to.append(r["id"])
+    return to, recipient_type_str
+
+
 def get_realm_emoji_cache_key(realm: "Realm") -> str:
     return f"realm_emoji:{realm.id}"
 
@@ -249,6 +274,21 @@ def clear_supported_auth_backends_cache() -> None:
     supported_backends = None
 
 
+class RealmAuthenticationMethod(models.Model):
+    """
+    Tracks which authentication backends are enabled for a realm.
+    An enabled backend is represented in this table a row with appropriate
+    .realm value and .name matching the name of the target backend in the
+    AUTH_BACKEND_NAME_MAP dict.
+    """
+
+    realm = models.ForeignKey("Realm", on_delete=CASCADE, db_index=True)
+    name = models.CharField(max_length=80)
+
+    class Meta:
+        unique_together = ("realm", "name")
+
+
 class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -257,19 +297,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     INVITES_STANDARD_REALM_DAILY_MAX = 3000
     MESSAGE_VISIBILITY_LIMITED = 10000
-    AUTHENTICATION_FLAGS = [
-        "Google",
-        "Email",
-        "GitHub",
-        "LDAP",
-        "Dev",
-        "RemoteUser",
-        "AzureAD",
-        "SAML",
-        "GitLab",
-        "Apple",
-        "OpenID Connect",
-    ]
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
 
@@ -296,10 +323,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     _max_invites = models.IntegerField(null=True, db_column="max_invites")
     disallow_disposable_email_addresses = models.BooleanField(default=True)
-    authentication_methods: BitHandler = BitField(
-        flags=AUTHENTICATION_FLAGS,
-        default=2**31 - 1,
-    )
 
     # Allow users to access web-public streams without login. This
     # setting also controls API access of web-public streams.
@@ -378,8 +401,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     ]
 
     MOVE_MESSAGES_BETWEEN_STREAMS_POLICY_TYPES = INVITE_TO_REALM_POLICY_TYPES
-
-    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
 
     DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS = 7 * SECONDS_PER_DAY
 
@@ -515,80 +536,95 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "id": 0,
             "hidden": True,
             "display_order": 0,
+            "onboarding_zulip_guide_url": None,
         },
         "business": {
             "name": "Business",
             "id": 10,
             "hidden": False,
             "display_order": 1,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/business/",
         },
         "opensource": {
             "name": "Open-source project",
             "id": 20,
             "hidden": False,
             "display_order": 2,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/open-source/",
         },
         "education_nonprofit": {
             "name": "Education (non-profit)",
             "id": 30,
             "hidden": False,
             "display_order": 3,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/education/",
         },
         "education": {
             "name": "Education (for-profit)",
             "id": 35,
             "hidden": False,
             "display_order": 4,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/education/",
         },
         "research": {
             "name": "Research",
             "id": 40,
             "hidden": False,
             "display_order": 5,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/research/",
         },
         "event": {
             "name": "Event or conference",
             "id": 50,
             "hidden": False,
             "display_order": 6,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/events/",
         },
         "nonprofit": {
             "name": "Non-profit (registered)",
             "id": 60,
             "hidden": False,
             "display_order": 7,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/communities/",
         },
         "government": {
             "name": "Government",
             "id": 70,
             "hidden": False,
             "display_order": 8,
+            "onboarding_zulip_guide_url": None,
         },
         "political_group": {
             "name": "Political group",
             "id": 80,
             "hidden": False,
             "display_order": 9,
+            "onboarding_zulip_guide_url": None,
         },
         "community": {
             "name": "Community",
             "id": 90,
             "hidden": False,
             "display_order": 10,
+            "onboarding_zulip_guide_url": "https://zulip.com/for/communities/",
         },
         "personal": {
             "name": "Personal",
             "id": 100,
             "hidden": False,
             "display_order": 100,
+            "onboarding_zulip_guide_url": None,
         },
         "other": {
             "name": "Other",
             "id": 1000,
             "hidden": False,
             "display_order": 1000,
+            "onboarding_zulip_guide_url": None,
         },
     }
+
+    ORG_TYPE_IDS: List[int] = [t["id"] for t in ORG_TYPES.values()]
 
     org_type = models.PositiveSmallIntegerField(
         default=ORG_TYPES["unspecified"]["id"],
@@ -678,14 +714,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
             "id": 5,
         },
     }
-
-    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
-        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
-        of the lazily evaluated `name` field without modifying the original."""
-        return {
-            rating_type: {"name": str(rating["name"]), "id": rating["id"]}
-            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
-        }
 
     # maximum rating of the GIFs that will be retrieved from GIPHY
     giphy_rating = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
@@ -780,6 +808,17 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     )
     night_logo_version = models.PositiveSmallIntegerField(default=1)
 
+    def __str__(self) -> str:
+        return f"{self.string_id} {self.id}"
+
+    def get_giphy_rating_options(self) -> Dict[str, Dict[str, object]]:
+        """Wrapper function for GIPHY_RATING_OPTIONS that ensures evaluation
+        of the lazily evaluated `name` field without modifying the original."""
+        return {
+            rating_type: {"name": str(rating["name"]), "id": rating["id"]}
+            for rating_type, rating in self.GIPHY_RATING_OPTIONS.items()
+        }
+
     def authentication_methods_dict(self) -> Dict[str, bool]:
         """Returns the mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
@@ -787,21 +826,22 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         on the server, this will not return an entry for "Email")."""
         # This mapping needs to be imported from here due to the cyclic
         # dependency.
-        from zproject.backends import AUTH_BACKEND_NAME_MAP
+        from zproject.backends import AUTH_BACKEND_NAME_MAP, all_implemented_backend_names
 
         ret: Dict[str, bool] = {}
         supported_backends = [type(backend) for backend in supported_auth_backends()]
-        # `authentication_methods` is a bitfield.types.BitHandler, not
-        # a true dict; since it is still python2- and python3-compat,
-        # `iteritems` is its method to iterate over its contents.
-        for k, v in self.authentication_methods.iteritems():
-            backend = AUTH_BACKEND_NAME_MAP[k]
-            if backend in supported_backends:
-                ret[k] = v
-        return ret
 
-    def __str__(self) -> str:
-        return f"{self.string_id} {self.id}"
+        for backend_name in all_implemented_backend_names():
+            backend_class = AUTH_BACKEND_NAME_MAP[backend_name]
+            if backend_class in supported_backends:
+                ret[backend_name] = False
+        for realm_authentication_method in RealmAuthenticationMethod.objects.filter(
+            realm_id=self.id
+        ):
+            backend_class = AUTH_BACKEND_NAME_MAP[realm_authentication_method.name]
+            if backend_class in supported_backends:
+                ret[realm_authentication_method.name] = True
+        return ret
 
     # `realm` instead of `self` here to make sure the parameters of the cache key
     # function matches the original method.
@@ -1112,9 +1152,6 @@ class RealmEmoji(models.Model):
     PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
     STILL_PATH_ID_TEMPLATE = "{realm_id}/emoji/images/still/{emoji_filename_without_extension}.png"
 
-    def __str__(self) -> str:
-        return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -1123,6 +1160,9 @@ class RealmEmoji(models.Model):
                 name="unique_realm_emoji_when_false_deactivated",
             ),
         ]
+
+    def __str__(self) -> str:
+        return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
 def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
@@ -1228,37 +1268,10 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
     return regex
 
 
-def filter_format_validator(value: str) -> None:
-    """Verifies URL-ness, and then %(foo)s.
-
-    URLValidator is assumed to catch anything which is malformed as a
-    URL; the regex then verifies the format-string pieces.
-    """
-
-    URLValidator()(value)
-
-    regex = re.compile(
-        r"""
-            ^
-            (
-              [^%]                        # Any non-percent,
-            |                             #   OR...
-              % (                         # A %, which can mean:
-                  \( [a-zA-Z0-9_-]+ \) s  #   Interpolation group
-                |                         #     OR
-                  %                       #   %%, which is an escaped %
-                |                         #     OR
-                  [0-9a-fA-F][0-9a-fA-F]  #   URL percent-encoded bytes, which we
-                                          #   special-case in markdown translation
-                )
-            )+                            # Those happen one or more times
-            $
-        """,
-        re.VERBOSE,
-    )
-
-    if not regex.match(value):
-        raise ValidationError(_("Invalid format string in URL."))
+def url_template_validator(value: str) -> None:
+    """Validate as a URL template"""
+    if not uri_template.validate(value):
+        raise ValidationError(_("Invalid URL template."))
 
 
 class RealmFilter(models.Model):
@@ -1268,13 +1281,16 @@ class RealmFilter(models.Model):
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern = models.TextField()
-    url_format_string = models.TextField(validators=[filter_format_validator])
+    url_template = models.TextField(validators=[url_template_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
 
+    def __str__(self) -> str:
+        return f"{self.realm.string_id}: {self.pattern} {self.url_template}"
+
     def clean(self) -> None:
-        """Validate whether the set of parameters in the URL Format string
+        """Validate whether the set of parameters in the URL template
         match the set of parameters in the regular expression.
 
         Django's `full_clean` calls `clean_fields` followed by `clean` method
@@ -1285,38 +1301,35 @@ class RealmFilter(models.Model):
         pattern = filter_pattern_validator(self.pattern)
         group_set = set(pattern.groupindex.keys())
 
-        # Extract variables used in the URL format string.  Note that
-        # this regex will incorrectly reject patterns that attempt to
-        # escape % using %%.
-        found_group_set: Set[str] = set()
-        group_match_regex = r"(?<!%)%\((?P<group_name>[^()]+)\)s"
-        for m in re.finditer(group_match_regex, self.url_format_string):
-            group_name = m.group("group_name")
-            found_group_set.add(group_name)
+        # Do not continue the check if the url template is invalid to begin with.
+        # The ValidationError for invalid template will only be raised by the validator
+        # set on the url_template field instead of here to avoid duplicates.
+        if not uri_template.validate(self.url_template):
+            return
+
+        # Extract variables used in the URL template.
+        template_variables_set = set(uri_template.URITemplate(self.url_template).variable_names)
 
         # Report patterns missing in linkifier pattern.
-        missing_in_pattern_set = found_group_set - group_set
+        missing_in_pattern_set = template_variables_set - group_set
         if len(missing_in_pattern_set) > 0:
             name = min(missing_in_pattern_set)
             raise ValidationError(
-                _("Group %(name)r in URL format string is not present in linkifier pattern."),
+                _("Group %(name)r in URL template is not present in linkifier pattern."),
                 params={"name": name},
             )
 
-        missing_in_url_set = group_set - found_group_set
-        # Report patterns missing in URL format string.
+        missing_in_url_set = group_set - template_variables_set
+        # Report patterns missing in URL template.
         if len(missing_in_url_set) > 0:
             # We just report the first missing pattern here. Users can
             # incrementally resolve errors if there are multiple
             # missing patterns.
             name = min(missing_in_url_set)
             raise ValidationError(
-                _("Group %(name)r in linkifier pattern is not present in URL format string."),
+                _("Group %(name)r in linkifier pattern is not present in URL template."),
                 params={"name": name},
             )
-
-    def __str__(self) -> str:
-        return f"{self.realm.string_id}: {self.pattern} {self.url_format_string}"
 
 
 def get_linkifiers_cache_key(realm_id: int) -> str:
@@ -1337,18 +1350,6 @@ def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
     return per_request_linkifiers_cache[realm_id]
 
 
-def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
-    """
-    Processes data from `linkifiers_for_realm` to return to older clients,
-    which use the `realm_filters` events.
-    """
-    linkifiers = linkifiers_for_realm(realm_id)
-    realm_filters: List[Tuple[str, str, int]] = []
-    for linkifier in linkifiers:
-        realm_filters.append((linkifier["pattern"], linkifier["url_format"], linkifier["id"]))
-    return realm_filters
-
-
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     linkifiers = []
@@ -1356,7 +1357,7 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
         linkifiers.append(
             LinkifierDict(
                 pattern=linkifier.pattern,
-                url_format=linkifier.url_format_string,
+                url_template=linkifier.url_template,
                 id=linkifier.id,
             )
         )
@@ -1442,11 +1443,11 @@ class Recipient(models.Model):
     which is the ID of the UserProfile/Stream/Huddle object containing
     all the metadata for the audience. There are 3 recipient types:
 
-    1. 1:1 private message: The type_id is the ID of the UserProfile
+    1. 1:1 direct message: The type_id is the ID of the UserProfile
        who will receive any message to this Recipient. The sender
        of such a message is represented separately.
     2. Stream message: The type_id is the ID of the associated Stream.
-    3. Group private message: In Zulip, group private messages are
+    3. Group direct message: In Zulip, group direct messages are
        represented by Huddle objects, which encode the set of users
        in the conversation. The type_id is the ID of the associated Huddle
        object; the set of users is usually retrieved via the Subscription
@@ -1460,11 +1461,11 @@ class Recipient(models.Model):
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, stream, huddle}
 
-    # The type for 1:1 private messages.
+    # The type for 1:1 direct messages.
     PERSONAL = 1
     # The type for stream messages.
     STREAM = 2
-    # The type group private messages.
+    # The type group direct messages.
     HUDDLE = 3
 
     class Meta:
@@ -1473,13 +1474,13 @@ class Recipient(models.Model):
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {PERSONAL: "personal", STREAM: "stream", HUDDLE: "huddle"}
 
-    def type_name(self) -> str:
-        # Raises KeyError if invalid
-        return self._type_names[self.type]
-
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self)
         return f"{display_recipient} ({self.type_id}, {self.type})"
+
+    def type_name(self) -> str:
+        # Raises KeyError if invalid
+        return self._type_names[self.type]
 
 
 class UserBaseSettings(models.Model):
@@ -1537,6 +1538,21 @@ class UserBaseSettings(models.Model):
     ]
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
+    # UI setting controlling whether or not the Zulip web app will
+    # mark messages as read as it scrolls through the feed.
+
+    MARK_READ_ON_SCROLL_ALWAYS = 1
+    MARK_READ_ON_SCROLL_CONVERSATION_ONLY = 2
+    MARK_READ_ON_SCROLL_NEVER = 3
+
+    WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES = [
+        MARK_READ_ON_SCROLL_ALWAYS,
+        MARK_READ_ON_SCROLL_CONVERSATION_ONLY,
+        MARK_READ_ON_SCROLL_NEVER,
+    ]
+
+    web_mark_read_on_scroll_policy = models.SmallIntegerField(default=MARK_READ_ON_SCROLL_ALWAYS)
+
     # Emoji sets
     GOOGLE_EMOJISET = "google"
     GOOGLE_BLOB_EMOJISET = "google-blob"
@@ -1573,7 +1589,14 @@ class UserBaseSettings(models.Model):
     notification_sound = models.CharField(max_length=20, default="zulip")
     wildcard_mentions_notify = models.BooleanField(default=True)
 
-    # PM + @-mention notifications.
+    # Followed Topics notifications.
+    enable_followed_topic_desktop_notifications = models.BooleanField(default=True)
+    enable_followed_topic_email_notifications = models.BooleanField(default=True)
+    enable_followed_topic_push_notifications = models.BooleanField(default=True)
+    enable_followed_topic_audible_notifications = models.BooleanField(default=True)
+    enable_followed_topic_wildcard_mentions_notify = models.BooleanField(default=True)
+
+    # Direct message + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True)
     pm_content_in_desktop_notifications = models.BooleanField(default=True)
     enable_sounds = models.BooleanField(default=True)
@@ -1694,11 +1717,17 @@ class UserBaseSettings(models.Model):
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
+        web_mark_read_on_scroll_policy=int,
         user_list_style=int,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(
         # Add new notification settings here.
+        enable_followed_topic_desktop_notifications=bool,
+        enable_followed_topic_email_notifications=bool,
+        enable_followed_topic_push_notifications=bool,
+        enable_followed_topic_audible_notifications=bool,
+        enable_followed_topic_wildcard_mentions_notify=bool,
     )
 
     notification_setting_types = {
@@ -1798,8 +1827,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)
 
     date_joined = models.DateTimeField(default=timezone_now)
+
+    # Terms of Service version number that this user has accepted. We
+    # use the special value TOS_VERSION_BEFORE_FIRST_LOGIN for users
+    # whose account was created without direct user interaction (via
+    # the API or a data import), and null for users whose account is
+    # fully created on servers that do not have a configured ToS.
+    TOS_VERSION_BEFORE_FIRST_LOGIN = "-1"
     tos_version = models.CharField(null=True, max_length=10)
-    api_key = models.CharField(max_length=API_KEY_LENGTH)
+    api_key = models.CharField(max_length=API_KEY_LENGTH, default=generate_api_key, unique=True)
 
     # A UUID generated on user creation. Introduced primarily to
     # provide a unique key for a user for the mobile push
@@ -2174,7 +2210,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         else:
             return -1
 
-    def format_requestor_for_logs(self) -> str:
+    def format_requester_for_logs(self) -> str:
         return "{}@{}".format(self.id, self.realm.string_id or "root")
 
     def set_password(self, password: Optional[str]) -> None:
@@ -2606,8 +2642,14 @@ class Stream(models.Model):
             require_system_group=True,
             allow_internet_group=False,
             allow_owners_group=False,
+            allow_nobody_group=False,
         ),
     }
+
+    class Meta:
+        indexes = [
+            models.Index(Upper("name"), name="upper_stream_name_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -2665,11 +2707,6 @@ class Stream(models.Model):
             stream_post_policy=self.stream_post_policy,
             is_announcement_only=self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS,
         )
-
-    class Meta:
-        indexes = [
-            models.Index(Upper("name"), name="upper_stream_name_idx"),
-        ]
 
 
 post_save.connect(flush_stream, sender=Stream)
@@ -2985,6 +3022,16 @@ class ArchivedMessage(AbstractMessage):
 
 
 class Message(AbstractMessage):
+    # Recipient types used when a Message object is provided to
+    # Zulip clients via the API.
+    #
+    # A detail worth noting:
+    # * "direct" was introduced in 2023 with the goal of
+    #   deprecating the original "private" and becoming the
+    #   preferred way to indicate a personal or huddle
+    #   Recipient type via the API.
+    API_RECIPIENT_TYPES = ["direct", "private", "stream"]
+
     search_tsvector = SearchVectorField(null=True)
 
     def topic_name(self) -> str:
@@ -3141,25 +3188,10 @@ class Draft(models.Model):
         return f"{self.user_profile.email} / {self.id} / {self.last_edit_time}"
 
     def to_dict(self) -> Dict[str, Any]:
-        if self.recipient is None:
-            _type = ""
-            to = []
-        elif self.recipient.type == Recipient.STREAM:
-            _type = "stream"
-            to = [self.recipient.type_id]
-        else:
-            _type = "private"
-            if self.recipient.type == Recipient.PERSONAL:
-                to = [self.recipient.type_id]
-            else:
-                to = []
-                for r in get_display_recipient(self.recipient):
-                    assert not isinstance(r, str)  # It will only be a string for streams
-                    if r["id"] != self.user_profile_id:
-                        to.append(r["id"])
+        to, recipient_type_str = get_recipient_ids(self.recipient, self.user_profile_id)
         return {
             "id": self.id,
-            "type": _type,
+            "type": recipient_type_str,
             "to": to,
             "topic": self.topic,
             "content": self.content,
@@ -3298,9 +3330,9 @@ class AbstractUserMessage(models.Model):
         # their history via e.g. starring the message.  This is
         # important accounting for the "Subscribed to stream" dividers.
         "historical",
-        # Whether the message is a private message; this flag is a
+        # Whether the message is a direct message; this flag is a
         # denormalization of message.recipient.type to support an
-        # efficient index on UserMessage for a user's private messages.
+        # efficient index on UserMessage for a user's direct messages.
         "is_private",
         # Whether we've sent a push notification to the user's mobile
         # devices for this message that has not been revoked.
@@ -3443,11 +3475,11 @@ class UserMessage(AbstractUserMessage):
         the row locks acquired by a bulk update operation to modify
         message flags using bitand/bitor.
 
-        This consistent ordering is important to prevent to prevent
-        deadlocks when 2 or more bulk updates to the same rows in the
-        UserMessage table race against each other (For example, if a
-        client submits simultaneous duplicate API requests to mark a
-        certain set of messages as read).
+        This consistent ordering is important to prevent deadlocks when
+        2 or more bulk updates to the same rows in the UserMessage table
+        race against each other (For example, if a client submits
+        simultaneous duplicate API requests to mark a certain set of
+        messages as read).
         """
         return UserMessage.objects.select_for_update().order_by("message_id")
 
@@ -3542,8 +3574,12 @@ class ArchivedAttachment(AbstractAttachment):
 class Attachment(AbstractAttachment):
     messages = models.ManyToManyField(Message)
 
+    # This is only present for Attachment and not ArchiveAttachment.
+    # because ScheduledMessage is not subject to archiving.
+    scheduled_messages = models.ManyToManyField("ScheduledMessage")
+
     def is_claimed(self) -> bool:
-        return self.messages.count() > 0
+        return self.messages.count() > 0 or self.scheduled_messages.count() > 0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -3649,7 +3685,7 @@ def validate_attachment_request(
 
     messages = attachment.messages.all()
     if UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
-        # If it was sent in a private message or private stream
+        # If it was sent in a direct message or private stream
         # message, then anyone who received that message can access it.
         return True
 
@@ -3679,7 +3715,7 @@ def get_old_unclaimed_attachments(
     """
     The logic in this function is fairly tricky. The essence is that
     a file should be cleaned up if and only if it not referenced by any
-    Message or ArchivedMessage. The way to find that out is through the
+    Message, ScheduledMessage or ArchivedMessage. The way to find that out is through the
     Attachment and ArchivedAttachment tables.
     The queries are complicated by the fact that an uploaded file
     may have either only an Attachment row, only an ArchivedAttachment row,
@@ -3687,14 +3723,24 @@ def get_old_unclaimed_attachments(
     linking to it have been archived.
     """
     delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
+
+    # The Attachment vs ArchivedAttachment queries are asymmetric because only
+    # Attachment has the scheduled_messages relation.
     old_attachments = Attachment.objects.annotate(
         has_other_messages=Exists(
             ArchivedAttachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
         )
-    ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
+    ).filter(
+        messages=None,
+        scheduled_messages=None,
+        create_time__lt=delta_weeks_ago,
+        has_other_messages=False,
+    )
     old_archived_attachments = ArchivedAttachment.objects.annotate(
         has_other_messages=Exists(
-            Attachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
+            Attachment.objects.filter(id=OuterRef("id"))
+            .exclude(messages=None)
+            .exclude(scheduled_messages=None)
         )
     ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
 
@@ -3705,7 +3751,7 @@ class Subscription(models.Model):
     """Keeps track of which users are part of the
     audience for a given Recipient object.
 
-    For private and group private message Recipient objects, only the
+    For 1:1 and group direct message Recipient objects, only the
     user_profile and recipient fields have any meaning, defining the
     immutable set of users who are in the audience for that Recipient.
 
@@ -3992,7 +4038,7 @@ def is_cross_realm_bot_email(email: str) -> bool:
 class Huddle(models.Model):
     """
     Represents a group of individuals who may have a
-    group private message conversation together.
+    group direct message conversation together.
 
     The membership of the Huddle is stored in the Subscription table just like with
     Streams - for each user in the Huddle, there is a Subscription object
@@ -4101,82 +4147,44 @@ class UserPresence(models.Model):
       https://zulip.readthedocs.io/en/latest/subsystems/presence.html
     """
 
-    class Meta:
-        unique_together = ("user_profile", "client")
-        index_together = [
-            ("realm", "timestamp"),
-        ]
+    user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE, unique=True)
 
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    # Realm is just here as denormalization to optimize database
+    # queries to fetch all presence data for a given realm.
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    client = models.ForeignKey(Client, on_delete=CASCADE)
 
-    # The time we heard this update from the client.
-    timestamp = models.DateTimeField("presence changed")
+    # The last time the user had a client connected to Zulip,
+    # including idle clients where the user hasn't interacted with the
+    # system recently (and thus might be AFK).
+    last_connected_time = models.DateTimeField(default=timezone_now, db_index=True, null=True)
+    # The last time a client connected to Zulip reported that the user
+    # was actually present (E.g. via focusing a browser window or
+    # interacting with a computer running the desktop app)
+    last_active_time = models.DateTimeField(default=timezone_now, db_index=True, null=True)
 
-    # The user was actively using this Zulip client as of `timestamp` (i.e.,
-    # they had interacted with the client recently).  When the timestamp is
-    # itself recent, this is the green "active" status in the web app.
-    ACTIVE = 1
+    # The following constants are used in the presence API for
+    # communicating whether a user is active (last_active_time recent)
+    # or idle (last_connected_time recent) or offline (neither
+    # recent).  They're no longer part of the data model.
+    LEGACY_STATUS_ACTIVE = "active"
+    LEGACY_STATUS_IDLE = "idle"
+    LEGACY_STATUS_ACTIVE_INT = 1
+    LEGACY_STATUS_IDLE_INT = 2
 
-    # There had been no user activity (keyboard/mouse/etc.) on this client
-    # recently.  So the client was online at the specified time, but it
-    # could be the user's desktop which they were away from.  Displayed as
-    # orange/idle if the timestamp is current.
-    IDLE = 2
-
-    # Information from the client about the user's recent interaction with
-    # that client, as of `timestamp`.  Possible values above.
-    #
-    # There is no "inactive" status, because that is encoded by the
-    # timestamp being old.
-    status = models.PositiveSmallIntegerField(default=ACTIVE)
-
-    @staticmethod
-    def status_to_string(status: int) -> str:
-        if status == UserPresence.ACTIVE:
-            return "active"
-        elif status == UserPresence.IDLE:
-            return "idle"
-        else:  # nocoverage # TODO: Add a presence test to cover this.
-            raise ValueError(f"Unknown status: {status}")
-
-    @staticmethod
-    def to_presence_dict(
-        client_name: str,
-        status: int,
-        dt: datetime.datetime,
-        push_enabled: bool = False,
-        has_push_devices: bool = False,
-    ) -> Dict[str, Any]:
-        presence_val = UserPresence.status_to_string(status)
-
-        timestamp = datetime_to_timestamp(dt)
-        return dict(
-            client=client_name,
-            status=presence_val,
-            timestamp=timestamp,
-            pushable=(push_enabled and has_push_devices),
-        )
-
-    def to_dict(self) -> Dict[str, Any]:
-        return UserPresence.to_presence_dict(
-            self.client.name,
-            self.status,
-            self.timestamp,
-        )
+    class Meta:
+        index_together = [
+            ("realm", "last_active_time"),
+            ("realm", "last_connected_time"),
+        ]
 
     @staticmethod
     def status_from_string(status: str) -> Optional[int]:
         if status == "active":
-            # See https://github.com/python/mypy/issues/2611
-            status_val: Optional[int] = UserPresence.ACTIVE
+            return UserPresence.LEGACY_STATUS_ACTIVE_INT
         elif status == "idle":
-            status_val = UserPresence.IDLE
-        else:
-            status_val = None
+            return UserPresence.LEGACY_STATUS_IDLE_INT
 
-        return status_val
+        return None
 
 
 class UserStatus(AbstractEmoji):
@@ -4274,12 +4282,15 @@ class MissedMessageEmailAddress(models.Model):
 
 
 class NotificationTriggers:
-    # "private_message" is for 1:1 PMs as well as huddles
+    # "private_message" is for 1:1 direct messages as well as huddles
     PRIVATE_MESSAGE = "private_message"
     MENTION = "mentioned"
     WILDCARD_MENTION = "wildcard_mentioned"
     STREAM_PUSH = "stream_push_notify"
     STREAM_EMAIL = "stream_email_notify"
+    FOLLOWED_TOPIC_PUSH = "followed_topic_push_notify"
+    FOLLOWED_TOPIC_EMAIL = "followed_topic_email_notify"
+    FOLLOWED_TOPIC_WILDCARD_MENTION = "followed_topic_wildcard_mentioned"
 
 
 class ScheduledMessageNotificationEmail(models.Model):
@@ -4297,6 +4308,8 @@ class ScheduledMessageNotificationEmail(models.Model):
         (NotificationTriggers.MENTION, "Mention"),
         (NotificationTriggers.WILDCARD_MENTION, "Wildcard mention"),
         (NotificationTriggers.STREAM_EMAIL, "Stream notifications enabled"),
+        (NotificationTriggers.FOLLOWED_TOPIC_EMAIL, "Followed topic notifications enabled"),
+        (NotificationTriggers.FOLLOWED_TOPIC_WILDCARD_MENTION, "Followed topic wildcard mention"),
     ]
 
     trigger = models.TextField(choices=EMAIL_NOTIFICATION_TRIGGER_CHOICES)
@@ -4307,16 +4320,45 @@ class ScheduledMessageNotificationEmail(models.Model):
     scheduled_timestamp = models.DateTimeField(db_index=True)
 
 
+class APIScheduledStreamMessageDict(TypedDict):
+    scheduled_message_id: int
+    to: int
+    type: str
+    content: str
+    rendered_content: str
+    topic: str
+    scheduled_delivery_timestamp: int
+    failed: bool
+
+
+class APIScheduledDirectMessageDict(TypedDict):
+    scheduled_message_id: int
+    to: List[int]
+    type: str
+    content: str
+    rendered_content: str
+    scheduled_delivery_timestamp: int
+    failed: bool
+
+
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
     subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
     content = models.TextField()
+    rendered_content = models.TextField()
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     scheduled_timestamp = models.DateTimeField(db_index=True)
     delivered = models.BooleanField(default=False)
+    delivered_message = models.ForeignKey(Message, null=True, on_delete=CASCADE)
+    has_attachment = models.BooleanField(default=False, db_index=True)
+
+    # Metadata for messages that failed to send when their scheduled
+    # moment arrived.
+    failed = models.BooleanField(default=False)
+    failure_message = models.TextField(null=True)
 
     SEND_LATER = 1
     REMIND = 2
@@ -4331,20 +4373,81 @@ class ScheduledMessage(models.Model):
         default=SEND_LATER,
     )
 
+    class Meta:
+        indexes = [
+            # We expect a large number of delivered scheduled messages
+            # to accumulate over time. This first index is for the
+            # deliver_scheduled_messages worker.
+            models.Index(
+                name="zerver_unsent_scheduled_messages_by_time",
+                fields=["scheduled_timestamp"],
+                condition=Q(
+                    delivered=False,
+                    failed=False,
+                ),
+            ),
+            # This index is for displaying scheduled messages to the
+            # user themself via the API; we don't filter failed
+            # messages since we will want to display those so that
+            # failures don't just disappear into a black hole.
+            models.Index(
+                name="zerver_unsent_scheduled_messages_by_user",
+                fields=["sender", "delivery_type", "scheduled_timestamp"],
+                condition=Q(
+                    delivered=False,
+                ),
+            ),
+        ]
+
+    def __str__(self) -> str:
+        display_recipient = get_display_recipient(self.recipient)
+        return f"{display_recipient} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
+
     def topic_name(self) -> str:
         return self.subject
 
     def set_topic_name(self, topic_name: str) -> None:
         self.subject = topic_name
 
-    def __str__(self) -> str:
-        display_recipient = get_display_recipient(self.recipient)
-        return f"{display_recipient} {self.subject} {self.sender!r} {self.scheduled_timestamp}"
+    def is_stream_message(self) -> bool:
+        return self.recipient.type == Recipient.STREAM
+
+    def to_dict(self) -> Union[APIScheduledStreamMessageDict, APIScheduledDirectMessageDict]:
+        recipient, recipient_type_str = get_recipient_ids(self.recipient, self.sender.id)
+
+        if recipient_type_str == "private":
+            # The topic for direct messages should always be an empty string.
+            assert self.topic_name() == ""
+
+            return APIScheduledDirectMessageDict(
+                scheduled_message_id=self.id,
+                to=recipient,
+                type=recipient_type_str,
+                content=self.content,
+                rendered_content=self.rendered_content,
+                scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+                failed=self.failed,
+            )
+
+        # The recipient for stream messages should always just be the unique stream ID.
+        assert len(recipient) == 1
+
+        return APIScheduledStreamMessageDict(
+            scheduled_message_id=self.id,
+            to=recipient[0],
+            type=recipient_type_str,
+            content=self.content,
+            rendered_content=self.rendered_content,
+            topic=self.topic_name(),
+            scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
+            failed=self.failed,
+        )
 
 
 EMAIL_TYPES = {
     "followup_day1": ScheduledEmail.WELCOME,
     "followup_day2": ScheduledEmail.WELCOME,
+    "onboarding_zulip_guide": ScheduledEmail.WELCOME,
     "digest": ScheduledEmail.DIGEST,
     "invitation_reminder": ScheduledEmail.INVITATION_REMINDER,
 }
@@ -4367,6 +4470,7 @@ class AbstractRealmAuditLog(models.Model):
     ROLE_COUNT_BOTS = "12"
 
     extra_data = models.TextField(null=True)
+    extra_data_json = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     # Event types
     USER_CREATED = 101
@@ -4471,6 +4575,29 @@ class AbstractRealmAuditLog(models.Model):
     class Meta:
         abstract = True
 
+    def save(
+        self,
+        force_insert: bool = False,
+        force_update: bool = False,
+        using: Optional[str] = None,
+        update_fields: Optional[Iterable[str]] = None,
+    ) -> None:
+        # Unless extra_data is set and extra_data_json is unset (defaults to {})
+        # we do not attempt to auto convert extra_data to extra_data_json
+        if self.extra_data is not None and not self.extra_data_json:
+            try:
+                if self.extra_data.startswith("{'"):
+                    self.extra_data_json = ast.literal_eval(self.extra_data)
+                else:
+                    self.extra_data_json = orjson.loads(self.extra_data)
+            except (
+                Exception
+            ):  # nocoverage # This is not intended to happen at all for correctly written code
+                raise Exception(
+                    "extra_data_json must be explicitly set if extra_data is not str()'d from a dict or JSON-encoded."
+                )
+        super().save(force_insert, force_update, using, update_fields)
+
 
 class RealmAuditLog(AbstractRealmAuditLog):
     """
@@ -4519,6 +4646,21 @@ class RealmAuditLog(AbstractRealmAuditLog):
         if self.modified_stream is not None:
             return f"{self.modified_stream!r} {self.event_type} {self.event_time} {self.id}"
         return f"{self.realm!r} {self.event_type} {self.event_time} {self.id}"
+
+    class Meta:
+        indexes = [
+            models.Index(
+                name="zerver_realmauditlog_user_subscriptions_idx",
+                fields=["modified_user", "modified_stream"],
+                condition=Q(
+                    event_type__in=[
+                        AbstractRealmAuditLog.SUBSCRIPTION_CREATED,
+                        AbstractRealmAuditLog.SUBSCRIPTION_ACTIVATED,
+                        AbstractRealmAuditLog.SUBSCRIPTION_DEACTIVATED,
+                    ]
+                ),
+            )
+        ]
 
 
 class UserHotspot(models.Model):
@@ -4647,6 +4789,9 @@ class CustomProfileField(models.Model):
     class Meta:
         unique_together = ("realm", "name")
 
+    def __str__(self) -> str:
+        return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
+
     def as_dict(self) -> ProfileDataElementBase:
         data_as_dict: ProfileDataElementBase = {
             "id": self.id,
@@ -4665,9 +4810,6 @@ class CustomProfileField(models.Model):
         if self.field_type in [CustomProfileField.SHORT_TEXT, CustomProfileField.LONG_TEXT]:
             return True
         return False
-
-    def __str__(self) -> str:
-        return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
 
 
 def custom_profile_fields_for_realm(realm_id: int) -> QuerySet[CustomProfileField]:

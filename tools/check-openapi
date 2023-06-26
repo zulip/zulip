@@ -106,7 +106,7 @@ async function checkFile(file) {
                                     diff += prefix;
                                     diff += part.value
                                         .replace(/\n$/, "")
-                                        .replace(/\n/g, "\n" + prefix);
+                                        .replaceAll("\n", "\n" + prefix);
                                     diff += "\n";
                                 }
                                 diff += "\u001B[0m";

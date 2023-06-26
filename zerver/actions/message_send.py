@@ -78,7 +78,6 @@ from zerver.models import (
     Message,
     Realm,
     Recipient,
-    ScheduledMessage,
     Stream,
     UserMessage,
     UserPresence,
@@ -167,6 +166,9 @@ class RecipientInfoResult:
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
+    followed_topic_email_user_ids: Set[int]
+    followed_topic_push_user_ids: Set[int]
+    followed_topic_wildcard_mention_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
@@ -197,6 +199,9 @@ def get_recipient_info(
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
     wildcard_mention_user_ids: Set[int] = set()
+    followed_topic_push_user_ids: Set[int] = set()
+    followed_topic_email_user_ids: Set[int] = set()
+    followed_topic_wildcard_mention_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
 
     if recipient.type == Recipient.PERSONAL:
@@ -215,6 +220,7 @@ def get_recipient_info(
             get_subscriptions_for_send_message(
                 realm_id=realm_id,
                 stream_id=stream_topic.stream_id,
+                topic_name=stream_topic.topic_name,
                 possible_wildcard_mention=possible_wildcard_mention,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
@@ -224,12 +230,24 @@ def get_recipient_info(
                 ),
                 user_profile_push_notifications=F("user_profile__enable_stream_push_notifications"),
                 user_profile_wildcard_mentions_notify=F("user_profile__wildcard_mentions_notify"),
+                followed_topic_email_notifications=F(
+                    "user_profile__enable_followed_topic_email_notifications"
+                ),
+                followed_topic_push_notifications=F(
+                    "user_profile__enable_followed_topic_push_notifications"
+                ),
+                followed_topic_wildcard_mentions_notify=F(
+                    "user_profile__enable_followed_topic_wildcard_mentions_notify"
+                ),
             )
             .values(
                 "user_profile_id",
                 "push_notifications",
                 "email_notifications",
                 "wildcard_mentions_notify",
+                "followed_topic_push_notifications",
+                "followed_topic_email_notifications",
+                "followed_topic_wildcard_mentions_notify",
                 "user_profile_email_notifications",
                 "user_profile_push_notifications",
                 "user_profile_wildcard_mentions_notify",
@@ -258,13 +276,31 @@ def get_recipient_info(
         stream_push_user_ids = notification_recipients("push_notifications")
         stream_email_user_ids = notification_recipients("email_notifications")
 
+        def followed_topic_notification_recipients(setting: str) -> Set[int]:
+            return {
+                row["user_profile_id"]
+                for row in subscription_rows
+                if user_id_to_visibility_policy.get(
+                    row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
+                )
+                == UserTopic.VisibilityPolicy.FOLLOWED
+                and row["followed_topic_" + setting]
+            }
+
+        followed_topic_email_user_ids = followed_topic_notification_recipients(
+            "email_notifications"
+        )
+        followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
+
         if possible_wildcard_mention:
-            # We calculate `wildcard_mention_user_ids` only if there's a possible
-            # wildcard mention in the message. This is important so as to avoid
-            # unnecessarily sending huge user ID lists with thousands of elements
-            # to the event queue (which can happen because this setting is `True`
-            # by default for new users.)
+            # We calculate `wildcard_mention_user_ids` and `followed_topic_wildcard_mention_user_ids`
+            # only if there's a possible wildcard mention in the message. This is important so as
+            # to avoid unnecessarily sending huge user ID lists with thousands of elements to the
+            # event queue (which can happen because these settings are `True` by default for new users.)
             wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
+            followed_topic_wildcard_mention_user_ids = followed_topic_notification_recipients(
+                "wildcard_mentions_notify"
+            )
 
     elif recipient.type == Recipient.HUDDLE:
         message_to_user_ids = get_huddle_user_ids(recipient)
@@ -382,6 +418,9 @@ def get_recipient_info(
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
+        followed_topic_push_user_ids=followed_topic_push_user_ids,
+        followed_topic_email_user_ids=followed_topic_email_user_ids,
+        followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
         muted_sender_user_ids=muted_sender_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
@@ -436,7 +475,7 @@ def get_service_bot_events(
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
             trigger = "mention"
-        # PM triggers for personal and huddle messages
+        # Direct message triggers for personal and huddle messages
         elif (not is_stream) and (user_profile_id in active_user_ids):
             trigger = "private_message"
         else:
@@ -456,32 +495,6 @@ def get_service_bot_events(
         )
 
     return event_dict
-
-
-def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) -> List[int]:
-    scheduled_messages: List[ScheduledMessage] = []
-
-    for send_request in send_message_requests:
-        scheduled_message = ScheduledMessage()
-        scheduled_message.sender = send_request.message.sender
-        scheduled_message.recipient = send_request.message.recipient
-        topic_name = send_request.message.topic_name()
-        scheduled_message.set_topic_name(topic_name=topic_name)
-        scheduled_message.content = send_request.message.content
-        scheduled_message.sending_client = send_request.message.sending_client
-        scheduled_message.stream = send_request.stream
-        scheduled_message.realm = send_request.realm
-        assert send_request.deliver_at is not None
-        scheduled_message.scheduled_timestamp = send_request.deliver_at
-        if send_request.delivery_type == "send_later":
-            scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
-        elif send_request.delivery_type == "remind":
-            scheduled_message.delivery_type = ScheduledMessage.REMIND
-
-        scheduled_messages.append(scheduled_message)
-
-    ScheduledMessage.objects.bulk_create(scheduled_messages)
-    return [scheduled_message.id for scheduled_message in scheduled_messages]
 
 
 def build_message_send_dict(
@@ -562,8 +575,10 @@ def build_message_send_dict(
     # code block).
     if rendering_result.mentions_wildcard:
         wildcard_mention_user_ids = info.wildcard_mention_user_ids
+        followed_topic_wildcard_mention_user_ids = info.followed_topic_wildcard_mention_user_ids
     else:
         wildcard_mention_user_ids = set()
+        followed_topic_wildcard_mention_user_ids = set()
 
     """
     Once we have the actual list of mentioned ids from message
@@ -591,6 +606,8 @@ def build_message_send_dict(
         pm_mention_push_disabled_user_ids=info.pm_mention_push_disabled_user_ids,
         stream_push_user_ids=info.stream_push_user_ids,
         stream_email_user_ids=info.stream_email_user_ids,
+        followed_topic_push_user_ids=info.followed_topic_push_user_ids,
+        followed_topic_email_user_ids=info.followed_topic_email_user_ids,
         muted_sender_user_ids=info.muted_sender_user_ids,
         um_eligible_user_ids=info.um_eligible_user_ids,
         long_term_idle_user_ids=info.long_term_idle_user_ids,
@@ -598,6 +615,7 @@ def build_message_send_dict(
         service_bot_tuples=info.service_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
+        followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
         limit_unread_user_ids=limit_unread_user_ids,
@@ -615,8 +633,11 @@ def create_user_messages(
     stream_push_user_ids: AbstractSet[int],
     stream_email_user_ids: AbstractSet[int],
     mentioned_user_ids: AbstractSet[int],
+    followed_topic_push_user_ids: AbstractSet[int],
+    followed_topic_email_user_ids: AbstractSet[int],
     mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
+    scheduled_message_to_self: bool,
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
@@ -653,7 +674,14 @@ def create_user_messages(
     for user_profile_id in um_eligible_user_ids:
         flags = base_flags
         if (
-            (user_profile_id == sender_id and message.sent_by_human())
+            (
+                # Messages you sent from a non-API client are
+                # automatically marked as read for yourself; scheduled
+                # messages to yourself only are not.
+                user_profile_id == sender_id
+                and message.sent_by_human()
+                and not scheduled_message_to_self
+            )
             or user_profile_id in mark_as_read_user_ids
             or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
         ):
@@ -667,6 +695,8 @@ def create_user_messages(
             user_profile_id in long_term_idle_user_ids
             and user_profile_id not in stream_push_user_ids
             and user_profile_id not in stream_email_user_ids
+            and user_profile_id not in followed_topic_push_user_ids
+            and user_profile_id not in followed_topic_email_user_ids
             and is_stream_message
             and int(flags) == 0
         ):
@@ -688,27 +718,15 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     # currently idle and should potentially get email notifications
     # (and push notifications with with
     # user_profile.enable_online_push_notifications=False).
-    #
-    # We exclude any presence data from ZulipMobile for the purpose of
-    # triggering these notifications; the mobile app can more
-    # effectively do its own client-side filtering of notification
-    # sounds/etc. for the case that the user is actively doing a PM
-    # conversation in the app.
 
     if not user_ids:
         return []
 
     recent = timezone_now() - datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
-    rows = (
-        UserPresence.objects.filter(
-            user_profile_id__in=user_ids,
-            status=UserPresence.ACTIVE,
-            timestamp__gte=recent,
-        )
-        .exclude(client__name="ZulipMobile")
-        .distinct("user_profile_id")
-        .values("user_profile_id")
-    )
+    rows = UserPresence.objects.filter(
+        user_profile_id__in=user_ids,
+        last_active_time__gte=recent,
+    ).values("user_profile_id")
     active_user_ids = {row["user_profile_id"] for row in rows}
     idle_user_ids = user_ids - active_user_ids
     return sorted(idle_user_ids)
@@ -744,7 +762,9 @@ def get_active_presence_idle_user_ids(
 
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
+    *,
     email_gateway: bool = False,
+    scheduled_message_to_self: bool = False,
     mark_as_read: Sequence[int] = [],
 ) -> List[int]:
     """See
@@ -790,8 +810,11 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 mentioned_user_ids=mentioned_user_ids,
+                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
+                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
                 mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
+                scheduled_message_to_self=scheduled_message_to_self,
             )
 
             for um in user_messages:
@@ -889,6 +912,9 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
+                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
+                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+                followed_topic_wildcard_mention_user_ids=send_request.followed_topic_wildcard_mention_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
             )
@@ -914,6 +940,11 @@ def do_send_messages(
             stream_push_user_ids=list(send_request.stream_push_user_ids),
             stream_email_user_ids=list(send_request.stream_email_user_ids),
             wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
+            followed_topic_push_user_ids=list(send_request.followed_topic_push_user_ids),
+            followed_topic_email_user_ids=list(send_request.followed_topic_email_user_ids),
+            followed_topic_wildcard_mention_user_ids=list(
+                send_request.followed_topic_wildcard_mention_user_ids
+            ),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
             disable_external_notifications=send_request.disable_external_notifications,
@@ -1122,7 +1153,7 @@ def check_send_private_message(
 def check_send_message(
     sender: UserProfile,
     client: Client,
-    message_type_name: str,
+    recipient_type_name: str,
     message_to: Union[Sequence[int], Sequence[str]],
     topic_name: Optional[str],
     message_content: str,
@@ -1136,7 +1167,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
 ) -> int:
-    addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
         message = check_message(
             sender,
@@ -1157,46 +1188,12 @@ def check_send_message(
     return do_send_messages([message])[0]
 
 
-def check_schedule_message(
-    sender: UserProfile,
-    client: Client,
-    message_type_name: str,
-    message_to: Union[Sequence[str], Sequence[int]],
-    topic_name: Optional[str],
-    message_content: str,
-    delivery_type: str,
-    deliver_at: datetime.datetime,
-    realm: Optional[Realm] = None,
-    forwarder_user_profile: Optional[UserProfile] = None,
-) -> int:
-    addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
-
-    send_request = check_message(
-        sender,
-        client,
-        addressee,
-        message_content,
-        realm=realm,
-        forwarder_user_profile=forwarder_user_profile,
-    )
-    send_request.deliver_at = deliver_at
-    send_request.delivery_type = delivery_type
-
-    recipient = send_request.message.recipient
-    if delivery_type == "remind" and (
-        recipient.type != Recipient.STREAM and recipient.type_id != sender.id
-    ):
-        raise JsonableError(_("Reminders can only be set for streams."))
-
-    return do_schedule_messages([send_request])[0]
-
-
 def send_rate_limited_pm_notification_to_bot_owner(
     sender: UserProfile, realm: Realm, content: str
 ) -> None:
     """
-    Sends a PM error notification to a bot's owner if one hasn't already
-    been sent in the last 5 minutes.
+    Sends a direct message error notification to a bot's owner if one
+    hasn't already been sent in the last 5 minutes.
     """
     if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
@@ -1212,7 +1209,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
         return
 
     # We warn the user once every 5 minutes to avoid a flood of
-    # PMs on a misconfigured integration, re-using the
+    # direct messages on a misconfigured integration, re-using the
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
     waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
@@ -1319,8 +1316,8 @@ def check_private_message_policy(
 ) -> None:
     if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
         if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
-            # We allow PMs only between users and bots, to avoid
-            # breaking the tutorial as well as automated
+            # We allow direct messages only between users and bots,
+            # to avoid breaking the tutorial as well as automated
             # notifications from system bots to users.
             return
 

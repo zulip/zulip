@@ -26,7 +26,7 @@ class EmailLogTest(ZulipTestCase):
             output_log = (
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
             )
-            self.assertEqual(m.output, [output_log for i in range(15)])
+            self.assertEqual(m.output, [output_log for i in range(17)])
 
     def test_forward_address_details(self) -> None:
         try:

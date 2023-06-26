@@ -70,7 +70,7 @@ feedback.
   possible for others to benefit from the discussion.
 - Don’t ask the same question in multiple places. Moderators read
   every public stream, and make sure every question gets a reply.
-- Use @-mentions sparingly. Unlike IRC or Slack, Zulip‘s topics make
+- Use @-mentions sparingly. Unlike IRC or Slack, Zulip’s topics make
   it easy to see what you’re replying to, so you don’t need to mention
   your conversation partner to make sure they will see or understand
   your reply. Core contributors will often @-mention someone who asked
@@ -143,8 +143,8 @@ topic to a different stream](/help/move-content-to-another-stream).
   comment on work posted here, even if you’re new to the Zulip
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
-  feedback is super helpful. Note that GitHub is our primarily system
-  for managing code review.
+  feedback is super helpful. Note that GitHub is our primary system
+  for managing code reviews.
 - [#backend](https://chat.zulip.org/#narrow/stream/3-backend),
   [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend),
   [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation),

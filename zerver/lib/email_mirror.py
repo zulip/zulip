@@ -36,7 +36,6 @@ from zerver.models import (
     UserProfile,
     get_client,
     get_display_recipient,
-    get_realm,
     get_stream_by_id_in_realm,
     get_system_bot,
     get_user,
@@ -71,21 +70,7 @@ def redact_email_address(error_message: str) -> str:
     return re.sub(rf"\b(\S*?)(@{re.escape(domain)})", redact, error_message)
 
 
-def report_to_zulip(error_message: str) -> None:
-    if settings.ERROR_BOT is None:
-        return
-    error_bot_realm = get_realm(settings.STAFF_SUBDOMAIN)
-    error_bot = get_system_bot(settings.ERROR_BOT, error_bot_realm.id)
-    error_stream = Stream.objects.get(name="errors", realm=error_bot_realm)
-    send_zulip(
-        error_bot,
-        error_stream,
-        "email mirror error",
-        f"""~~~\n{error_message}\n~~~""",
-    )
-
-
-def log_and_report(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
+def log_error(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
     recipient = to or "No recipient found"
     error_message = "Sender: {}\nTo: {}\n{}".format(
         email_message.get("From"), recipient, error_message
@@ -93,7 +78,6 @@ def log_and_report(email_message: EmailMessage, error_message: str, to: Optional
 
     error_message = redact_email_address(error_message)
     logger.error(error_message)
-    report_to_zulip(error_message)
 
 
 # Temporary missed message addresses
@@ -214,7 +198,7 @@ def send_mm_reply_to_stream(
         check_send_message(
             sender=user_profile,
             client=get_client("Internal"),
-            message_type_name="stream",
+            recipient_type_name="stream",
             message_to=[stream.id],
             topic_name=topic,
             message_content=body,
@@ -237,9 +221,10 @@ def get_message_part_by_type(message: EmailMessage, content_type: str) -> Option
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
             assert isinstance(content, bytes)
-            if charsets[idx]:
+            charset = charsets[idx]
+            if charset is not None:
                 try:
-                    return content.decode(charsets[idx], errors="ignore")
+                    return content.decode(charset, errors="ignore")
                 except LookupError:
                     # The RFCs do not define how to handle unknown
                     # charsets, but treating as US-ASCII seems
@@ -500,7 +485,7 @@ def process_message(message: EmailMessage, rcpt_to: Optional[str] = None) -> Non
         # TODO: notify sender of error, retry if appropriate.
         logger.info(e.args[0])
     except ZulipEmailForwardError as e:
-        log_and_report(message, e.args[0], to)
+        log_error(message, e.args[0], to)
 
 
 def validate_to_address(rcpt_to: str) -> None:

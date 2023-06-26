@@ -57,7 +57,7 @@ DisplayRecipientT = Union[str, List[UserDisplayRecipient]]
 
 class LinkifierDict(TypedDict):
     pattern: str
-    url_format: str
+    url_template: str
     id: int
 
 
@@ -279,3 +279,4 @@ class GroupPermissionSetting:
     require_system_group: bool
     allow_internet_group: bool
     allow_owners_group: bool
+    allow_nobody_group: bool

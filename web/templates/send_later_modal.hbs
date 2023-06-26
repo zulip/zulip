@@ -1,0 +1,15 @@
+<div class="micromodal" id="send_later_modal" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1">
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="send_later_modal_label">
+            <header class="modal__header">
+                <h1 class="modal__title" id="send_later_modal_label">
+                    {{t "Schedule message" }}
+                </h1>
+                <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
+            </header>
+            <main class="modal__content">
+                {{> send_later_modal_options }}
+            </main>
+        </div>
+    </div>
+</div>

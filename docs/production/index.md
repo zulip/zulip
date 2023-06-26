@@ -24,4 +24,5 @@ deployment
 email-gateway
 video-calls
 giphy-gif-integration
+scim
 ```

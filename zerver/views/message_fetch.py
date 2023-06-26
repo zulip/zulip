@@ -23,7 +23,6 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa
-from zerver.lib.utils import statsd
 from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
 from zerver.models import UserMessage, UserProfile
 
@@ -114,7 +113,7 @@ def get_messages_backend(
         # authentication code (where we should return an auth error).
         #
         # GetOldMessagesTest.test_unauthenticated_* tests ensure
-        # that we are not leaking any secure data (private messages and
+        # that we are not leaking any secure data (direct messages and
         # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError
@@ -221,8 +220,6 @@ def get_messages_backend(
         client_gravatar=client_gravatar,
         allow_edit_history=realm.allow_edit_history,
     )
-
-    statsd.incr("loaded_old_messages", len(message_list))
 
     ret = dict(
         messages=message_list,

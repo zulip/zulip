@@ -36,7 +36,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.service_name: str = service_name
         self.session: requests.Session = OutgoingSession(
             role="webhook",
-            timeout=10,
+            timeout=settings.OUTGOING_WEBHOOK_TIMEOUT_SECONDS,
             headers={"User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION},
         )
 
@@ -191,7 +191,7 @@ def send_response_message(
     that might let someone send arbitrary messages to any stream through this.
     """
 
-    message_type = message_info["type"]
+    recipient_type_name = message_info["type"]
     display_recipient = message_info["display_recipient"]
     try:
         topic_name: Optional[str] = get_topic_from_message_info(message_info)
@@ -207,9 +207,9 @@ def send_response_message(
 
     widget_content = response_data.get("widget_content")
 
-    if message_type == "stream":
+    if recipient_type_name == "stream":
         message_to = [display_recipient]
-    elif message_type == "private":
+    elif recipient_type_name == "private":
         message_to = [recipient["email"] for recipient in display_recipient]
     else:
         raise JsonableError(_("Invalid message type"))
@@ -217,7 +217,7 @@ def send_response_message(
     check_send_message(
         sender=bot_user,
         client=client,
-        message_type_name=message_type,
+        recipient_type_name=recipient_type_name,
         message_to=message_to,
         topic_name=topic_name,
         message_content=content,

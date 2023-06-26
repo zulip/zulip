@@ -37,13 +37,13 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="operator">is:private</td>
+                        <td class="operator">is:dm</td>
                         <td class="definition">
                             {{t 'Narrow to direct messages.'}}
                         </td>
                     </tr>
                     <tr>
-                        <td class="operator">pm-with:<span class="operator_value">user</span></td>
+                        <td class="operator">dm:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
                                 Narrow to direct messages with <z-value></z-value>.
@@ -52,10 +52,10 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="operator">group-pm-with:<span class="operator_value">user</span></td>
+                        <td class="operator">dm-including:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to group direct messages with <z-value></z-value>.
+                                Narrow to direct messages that include <z-value></z-value>.
                                 {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>

@@ -427,7 +427,7 @@ $category-text: hsl(219deg 23% 33%);
         }
     }
 
-    @media (max-width: 550px) {
+    @media (width <= 550px) {
         .button {
             display: flex;
             flex-wrap: wrap;

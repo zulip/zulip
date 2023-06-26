@@ -5,6 +5,7 @@ import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
 import type {
+    FollowedTopicNotificationSettings,
     PmNotificationSettings,
     StreamNotificationSettings,
     UserSettings,
@@ -32,6 +33,21 @@ export const demote_inactive_streams_values = {
     always: {
         code: 2,
         description: $t({defaultMessage: "Always"}),
+    },
+    never: {
+        code: 3,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
+export const web_mark_read_on_scroll_policy_values = {
+    always: {
+        code: 1,
+        description: $t({defaultMessage: "Always"}),
+    },
+    conversation_only: {
+        code: 2,
+        description: $t({defaultMessage: "Only in conversation views"}),
     },
     never: {
         code: 3,
@@ -92,7 +108,7 @@ export const twenty_four_hour_time_values = {
     },
 };
 
-export interface DisplaySettings {
+export type DisplaySettings = {
     settings: {
         user_display_settings: string[];
     };
@@ -100,7 +116,7 @@ export interface DisplaySettings {
         high_contrast_mode: boolean;
         dense_mode: boolean;
     };
-}
+};
 
 /* istanbul ignore next */
 export const get_all_display_settings = (): DisplaySettings => ({
@@ -634,6 +650,14 @@ export const pm_mention_notification_settings: (keyof PmNotificationSettings)[] 
     "enable_offline_email_notifications",
 ];
 
+export const followed_topic_notification_settings: (keyof FollowedTopicNotificationSettings)[] = [
+    "enable_followed_topic_desktop_notifications",
+    "enable_followed_topic_audible_notifications",
+    "enable_followed_topic_push_notifications",
+    "enable_followed_topic_email_notifications",
+    "enable_followed_topic_wildcard_mentions_notify",
+];
+
 const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 
 const mobile_notification_settings = ["enable_online_push_notifications"];
@@ -701,6 +725,7 @@ const other_notification_settings = [
 ];
 
 export const all_notification_settings = [
+    ...followed_topic_notification_settings,
     ...other_notification_settings,
     ...pm_mention_notification_settings,
     ...stream_notification_settings,
@@ -745,7 +770,7 @@ export function get_notifications_table_row_data(
     });
 }
 
-export interface AllNotifications {
+export type AllNotifications = {
     general_settings: {label: string; notification_settings: NotificationSettingCheckbox[]}[];
     settings: {
         desktop_notification_settings: string[];
@@ -757,7 +782,7 @@ export interface AllNotifications {
         push_notifications: boolean;
         enable_online_push_notifications: boolean;
     };
-}
+};
 
 export const all_notifications = (settings_object: Settings): AllNotifications => ({
     general_settings: [
@@ -772,6 +797,13 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
             label: $t({defaultMessage: "DMs, mentions, and alerts"}),
             notification_settings: get_notifications_table_row_data(
                 pm_mention_notification_settings,
+                settings_object,
+            ),
+        },
+        {
+            label: $t({defaultMessage: "Followed topics"}),
+            notification_settings: get_notifications_table_row_data(
+                followed_topic_notification_settings,
                 settings_object,
             ),
         },
@@ -847,4 +879,23 @@ export const system_user_groups_list = [
         name: "@role:owners",
         display_name: $t({defaultMessage: "Owners"}),
     },
+    {
+        name: "@role:nobody",
+        display_name: $t({defaultMessage: "Nobody"}),
+    },
 ];
+
+export const user_topic_visibility_policy_values = {
+    muted: {
+        code: 1,
+        description: $t({defaultMessage: "Muted"}),
+    },
+    unmuted: {
+        code: 2,
+        description: $t({defaultMessage: "Unmuted"}),
+    },
+    inherit: {
+        code: 0,
+        description: $t({defaultMessage: "Default for stream"}),
+    },
+};

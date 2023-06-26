@@ -6,11 +6,12 @@ import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
+import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_recipient from "./compose_recipient";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
@@ -20,7 +21,6 @@ import * as hotspots from "./hotspots";
 import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
-import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as muted_topics_ui from "./muted_topics_ui";
@@ -39,6 +39,8 @@ import * as realm_logo from "./realm_logo";
 import * as realm_playground from "./realm_playground";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as reload from "./reload";
+import * as scheduled_messages from "./scheduled_messages";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
@@ -58,15 +60,20 @@ import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups_legacy";
 import * as settings_users from "./settings_users";
 import * as starred_messages from "./starred_messages";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
+import * as stream_list_sort from "./stream_list_sort";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
+import * as top_left_corner from "./top_left_corner";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
@@ -143,10 +150,6 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "user_topic":
-            muted_topics_ui.handle_topic_updates(event);
-            break;
-
         case "muted_users":
             muted_users_ui.handle_user_updates(event.muted_users);
             break;
@@ -217,7 +220,7 @@ export function dispatch_normal_event(event) {
                 move_messages_between_streams_policy: noop,
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
-                notifications_stream_id: noop,
+                notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: noop,
                 send_welcome_emails: noop,
@@ -352,6 +355,7 @@ export function dispatch_normal_event(event) {
                     break;
             }
             break;
+
         case "realm_emoji":
             // The authoritative data source is here.
             emoji.update_emojis(event.realm_emoji);
@@ -360,6 +364,10 @@ export function dispatch_normal_event(event) {
             settings_emoji.populate_emoji();
             emoji_picker.rebuild_catalog();
             composebox_typeahead.update_emoji_data();
+            break;
+
+        case "realm_export":
+            settings_exports.populate_exports_table(event.exports);
             break;
 
         case "realm_linkifiers":
@@ -462,6 +470,32 @@ export function dispatch_normal_event(event) {
             }
             break;
 
+        case "scheduled_messages":
+            switch (event.op) {
+                case "add": {
+                    scheduled_messages.add_scheduled_messages(event.scheduled_messages);
+                    scheduled_messages_overlay_ui.rerender();
+                    top_left_corner.update_scheduled_messages_row();
+                    break;
+                }
+                case "remove": {
+                    scheduled_messages.remove_scheduled_message(event.scheduled_message_id);
+                    scheduled_messages_overlay_ui.remove_scheduled_message_id(
+                        event.scheduled_message_id,
+                    );
+                    top_left_corner.update_scheduled_messages_row();
+                    break;
+                }
+                case "update": {
+                    scheduled_messages.update_scheduled_message(event.scheduled_message);
+                    scheduled_messages_overlay_ui.rerender();
+                    top_left_corner.update_scheduled_messages_row();
+                    break;
+                }
+                // No default
+            }
+            break;
+
         case "stream":
             switch (event.op) {
                 case "update":
@@ -490,16 +524,19 @@ export function dispatch_normal_event(event) {
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
-                        stream_settings_ui.remove_stream(stream.stream_id);
-                        stream_data.delete_sub(stream.stream_id);
-                        if (was_subscribed) {
-                            stream_list.remove_sidebar_row(stream.stream_id);
-                        }
-                        settings_streams.update_default_streams_table();
-                        stream_data.remove_default_stream(stream.stream_id);
                         if (is_narrowed_to_stream) {
                             message_lists.current.update_trailing_bookend();
                         }
+                        stream_data.delete_sub(stream.stream_id);
+                        stream_settings_ui.remove_stream(stream.stream_id);
+                        if (was_subscribed) {
+                            stream_list.remove_sidebar_row(stream.stream_id);
+                            if (stream.stream_id === compose_recipient.selected_recipient_id) {
+                                compose_recipient.set_selected_recipient_id("");
+                            }
+                        }
+                        settings_streams.update_default_streams_table();
+                        stream_data.remove_default_stream(stream.stream_id);
                         if (page_params.realm_notifications_stream_id === stream.stream_id) {
                             page_params.realm_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("notifications_stream_id");
@@ -541,9 +578,9 @@ export function dispatch_normal_event(event) {
                             stream_data.update_stream_email_address(sub, rec.email_address);
                             stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
                         } else {
-                            blueslip.error(
-                                "Subscribing to unknown stream with ID " + rec.stream_id,
-                            );
+                            blueslip.error("Subscribing to unknown stream", {
+                                stream_id: rec.stream_id,
+                            });
                         }
                     }
                     break;
@@ -609,13 +646,27 @@ export function dispatch_normal_event(event) {
             break;
 
         case "user_settings": {
-            if (settings_config.all_notification_settings.includes(event.property)) {
-                notifications.handle_global_notification_updates(event.property, event.value);
+            const notification_name = event.property;
+            if (settings_config.all_notification_settings.includes(notification_name)) {
+                // Update the global settings checked when determining if we should notify
+                // for a given message. These settings do not affect whether or not a
+                // particular stream should receive notifications.
+                user_settings[notification_name] = event.value;
+
+                if (settings_config.stream_notification_settings.includes(notification_name)) {
+                    stream_ui_updates.update_notification_setting_checkbox(
+                        settings_config.specialize_stream_notification_setting[notification_name],
+                    );
+                }
+
+                if (notification_name === "notification_sound") {
+                    // Change the sound source with the new page `notification_sound`.
+                    notifications.update_notification_sound_source(
+                        $("#user-notification-sound-audio"),
+                        user_settings,
+                    );
+                }
                 settings_notifications.update_page(settings_notifications.user_settings_panel);
-                // TODO: This should also do a refresh of the stream_edit UI
-                // if it's currently displayed, possibly reusing some code
-                // from stream_events.js
-                // (E.g. update_stream_push_notifications).
                 break;
             }
 
@@ -625,6 +676,7 @@ export function dispatch_normal_event(event) {
                 "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
+                "web_mark_read_on_scroll_policy",
                 "emojiset",
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
@@ -640,6 +692,7 @@ export function dispatch_normal_event(event) {
                 "send_read_receipts",
             ];
 
+            const original_default_view = user_settings.default_view;
             if (user_display_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
@@ -652,6 +705,20 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
             }
+            if (
+                event.property === "default_view" && // If current hash is empty (default view), and the
+                // user changes the default view while in settings,
+                // then going back to an empty hash on closing the
+                // overlay will not match the view currently displayed
+                // under settings, so we set the hash to the previous
+                // value of the default view.
+                !browser_history.state.hash_before_overlay &&
+                overlays.settings_open()
+            ) {
+                browser_history.state.hash_before_overlay =
+                    "#" +
+                    (original_default_view === "recent_topics" ? "recent" : original_default_view);
+            }
             if (event.property === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
@@ -663,7 +730,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();
-                stream_data.set_filter_out_inactives();
+                stream_list_sort.set_filter_out_inactives();
             }
             if (event.property === "user_list_style") {
                 settings_display.report_user_list_style_change(
@@ -675,8 +742,10 @@ export function dispatch_normal_event(event) {
                 $("body").toggleClass("less_dense_mode");
                 $("body").toggleClass("more_dense_mode");
             }
+            if (event.property === "web_mark_read_on_scroll_policy") {
+                unread_ui.update_unread_banner();
+            }
             if (event.property === "color_scheme") {
-                $("body").fadeOut(300);
                 setTimeout(() => {
                     if (event.value === settings_config.color_scheme_values.night.code) {
                         dark_theme.enable();
@@ -688,11 +757,11 @@ export function dispatch_normal_event(event) {
                         dark_theme.default_preference_checker();
                         realm_logo.render();
                     }
-                    $("body").fadeIn(300);
+                    message_lists.update_recipient_bar_background_color();
                 }, 300);
             }
             if (event.property === "starred_message_counts") {
-                starred_messages.rerender_ui();
+                starred_messages_ui.rerender_ui();
             }
             if (event.property === "fluid_layout_width") {
                 scroll_bar.set_layout_width();
@@ -747,13 +816,15 @@ export function dispatch_normal_event(event) {
             switch (event.flag) {
                 case "starred":
                     for (const message_id of event.messages) {
-                        message_flags.update_starred_flag(message_id, new_value);
+                        starred_messages_ui.update_starred_flag(message_id, new_value);
                     }
 
                     if (event.op === "add") {
                         starred_messages.add(event.messages);
+                        starred_messages_ui.rerender_ui();
                     } else {
                         starred_messages.remove(event.messages);
+                        starred_messages_ui.rerender_ui();
                     }
                     break;
                 case "read":
@@ -817,7 +888,7 @@ export function dispatch_normal_event(event) {
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
-                    compose_actions.update_placeholder_text();
+                    compose_recipient.update_placeholder_text();
                 }
             }
 
@@ -831,8 +902,9 @@ export function dispatch_normal_event(event) {
                 );
             }
             break;
-        case "realm_export":
-            settings_exports.populate_exports_table(event.exports);
+
+        case "user_topic":
+            muted_topics_ui.handle_topic_updates(event);
             break;
     }
 }

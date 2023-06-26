@@ -20,6 +20,7 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
@@ -39,7 +40,6 @@ import * as stream_muting from "./stream_muting";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
@@ -217,6 +217,7 @@ export function update_stream_privacy(slim_sub, values) {
 
     // Update UI elements
     update_left_panel_row(sub);
+    message_lists.current.update_trailing_bookend();
     stream_ui_updates.update_setting_element(sub, "stream_privacy");
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
     stream_ui_updates.update_stream_privacy_icon_in_settings(sub);
@@ -278,16 +279,18 @@ export function add_sub_to_table(sub) {
     const $new_row = $(html);
 
     if (stream_create.get_name() === sub.name) {
-        ui.get_content_element($(".streams-list")).prepend($new_row);
-        ui.reset_scrollbar($(".streams-list"));
+        scroll_util.get_content_element($(".streams-list")).prepend($new_row);
+        scroll_util.reset_scrollbar($(".streams-list"));
     } else {
-        ui.get_content_element($(".streams-list")).append($new_row);
+        scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
 
     const settings_html = render_stream_settings({
         sub: stream_settings_data.get_sub_for_settings(sub),
     });
-    ui.get_content_element($("#manage_streams_container .settings")).append($(settings_html));
+    scroll_util
+        .get_content_element($("#streams_overlay_container .settings"))
+        .append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -299,6 +302,7 @@ export function add_sub_to_table(sub) {
         row_for_stream_id(sub.stream_id).trigger("click");
         stream_create.reset_created_stream();
     }
+    update_empty_left_panel_message();
 }
 
 export function remove_stream(stream_id) {
@@ -306,6 +310,7 @@ export function remove_stream(stream_id) {
     // stream, but we let jQuery silently handle that.
     const $row = row_for_stream_id(stream_id);
     $row.remove();
+    update_empty_left_panel_message();
     if (hash_util.is_editing_stream(stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
@@ -335,6 +340,9 @@ export function update_settings_for_subscribed(slim_sub) {
     // Display the swatch and subscription stream_settings
     stream_ui_updates.update_regular_sub_settings(sub);
     stream_ui_updates.update_permissions_banner(sub);
+
+    // Update whether there's any streams shown or not.
+    update_empty_left_panel_message();
 }
 
 export function show_active_stream_in_left_panel() {
@@ -367,6 +375,8 @@ export function update_settings_for_unsubscribed(slim_sub) {
     // Remove private streams from subscribed streams list.
     stream_ui_updates.update_stream_row_in_settings_tab(sub);
     stream_ui_updates.update_permissions_banner(sub);
+
+    update_empty_left_panel_message();
 }
 
 function triage_stream(left_panel_params, sub) {
@@ -430,17 +440,39 @@ export function render_left_panel_superset() {
     // For annoying legacy reasons we render all the subs we are
     // allowed to know about and put them in the DOM, then we do
     // a second pass where we filter/sort them.
-    const html = blueslip.measure_time("render left panel", () => {
-        const sub_rows = stream_settings_data.get_updated_unsorted_subs();
-
-        const template_data = {
-            subscriptions: sub_rows,
-        };
-
-        return render_browse_streams_list(template_data);
+    const html = render_browse_streams_list({
+        subscriptions: stream_settings_data.get_updated_unsorted_subs(),
     });
 
-    ui.get_content_element($("#manage_streams_container .streams-list")).html(html);
+    scroll_util.get_content_element($("#streams_overlay_container .streams-list")).html(html);
+}
+
+export function update_empty_left_panel_message() {
+    // Check if we have any streams in panel to decide whether to
+    // display a notice.
+    let has_streams;
+    if (is_subscribed_stream_tab_active()) {
+        // We don't remove stream row from UI on unsubscribe, To handle
+        // this case here we are also checking DOM if there are streams
+        // displayed in panel or not.
+        has_streams =
+            stream_data.subscribed_subs().length ||
+            $("#streams_overlay_container .stream-row:not(.notdisplayed)").length;
+    } else {
+        has_streams = stream_data.get_unsorted_subs().length;
+    }
+    if (has_streams) {
+        $(".no-streams-to-show").hide();
+        return;
+    }
+    if (is_subscribed_stream_tab_active()) {
+        $(".all_streams_tab_empty_text").hide();
+        $(".subscribed_streams_tab_empty_text").show();
+    } else {
+        $(".subscribed_streams_tab_empty_text").hide();
+        $(".all_streams_tab_empty_text").show();
+    }
+    $(".no-streams-to-show").show();
 }
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
@@ -457,7 +489,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 
     const stream_ids = [];
 
-    for (const row of $("#manage_streams_container .stream-row")) {
+    for (const row of $("#streams_overlay_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
     }
@@ -472,7 +504,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         hidden_ids.add(stream_id);
     }
 
-    for (const row of $("#manage_streams_container .stream-row")) {
+    for (const row of $("#streams_overlay_container .stream-row")) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
@@ -485,16 +517,17 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         widgets.set(stream_id, $(row).detach());
     }
 
-    ui.reset_scrollbar($("#subscription_overlay .streams-list"));
+    scroll_util.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
 
     for (const stream_id of all_stream_ids) {
-        ui.get_content_element($("#manage_streams_container .streams-list")).append(
-            widgets.get(stream_id),
-        );
+        scroll_util
+            .get_content_element($("#streams_overlay_container .streams-list"))
+            .append(widgets.get(stream_id));
     }
     maybe_reset_right_panel();
+    update_empty_left_panel_message();
 
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
@@ -600,7 +633,7 @@ export function setup_page(callback) {
             },
         });
 
-        $("#manage_streams_container .search-container").prepend(sort_toggler.get());
+        $("#streams_overlay_container .search-container").prepend(sort_toggler.get());
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
@@ -618,7 +651,7 @@ export function setup_page(callback) {
 
         if (should_list_all_streams()) {
             const toggler_elem = toggler.get();
-            $("#manage_streams_container .search-container").prepend(toggler_elem);
+            $("#streams_overlay_container .search-container").prepend(toggler_elem);
         }
         if (page_params.is_guest) {
             toggler.disable_tab("all-streams");
@@ -629,11 +662,13 @@ export function setup_page(callback) {
     }
 
     function populate_and_fill() {
-        $("#manage_streams_container").empty();
+        $("#streams_overlay_container").empty();
 
         const opts = {
             widget_name: "new_stream_can_remove_subscribers_group_id",
-            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true, true),
+            data: user_groups.get_realm_user_groups_for_dropdown_list_widget(
+                "can_remove_subscribers_group",
+            ),
             default_text: $t({defaultMessage: "No user groups"}),
             include_current_item: false,
             value: user_groups.get_user_group_from_name("@role:administrators").id,
@@ -643,13 +678,17 @@ export function setup_page(callback) {
         // TODO: Ideally we'd indicate in some way what stream types
         // the user can create, by showing other options as disabled.
         const stream_privacy_policy = stream_data.stream_privacy_policy_values.public.code;
+        const notifications_stream = stream_data.get_notifications_stream();
+        const notifications_stream_sub = stream_data.get_sub_by_name(notifications_stream);
+
         const template_data = {
+            notifications_stream_sub,
             ask_to_announce_stream: true,
             can_create_streams:
                 settings_data.user_can_create_private_streams() ||
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams(),
-            hide_all_streams: !should_list_all_streams(),
+            can_view_all_streams: !page_params.is_guest && should_list_all_streams(),
             max_stream_name_length: page_params.max_stream_name_length,
             max_stream_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
@@ -668,7 +707,7 @@ export function setup_page(callback) {
         };
 
         const rendered = render_stream_settings_overlay(template_data);
-        $("#manage_streams_container").append(rendered);
+        $("#streams_overlay_container").append(rendered);
 
         render_left_panel_superset();
         initialize_components();
@@ -1015,7 +1054,7 @@ export function unsubscribe_from_private_stream(sub) {
         let $stream_row;
         if (overlays.streams_open()) {
             $stream_row = $(
-                "#manage_streams_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
+                "#streams_overlay_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
             );
         }
 
@@ -1155,12 +1194,12 @@ export function update_stream_privacy_choices(policy) {
 }
 
 export function initialize() {
-    $("#manage_streams_container").on("click", ".create_stream_button", (e) => {
+    $("#streams_overlay_container").on("click", ".create_stream_button", (e) => {
         e.preventDefault();
         open_create_stream();
     });
 
-    $("#manage_streams_container").on("click", "#stream_creation_form [data-dismiss]", (e) => {
+    $("#streams_overlay_container").on("click", "#stream_creation_form [data-dismiss]", (e) => {
         e.preventDefault();
         // we want to make sure that the click is not just a simulated
         // click; this fixes an issue where hitting "Enter" would
@@ -1170,17 +1209,17 @@ export function initialize() {
         }
     });
 
-    $("#manage_streams_container").on("click", ".email-address", function () {
+    $("#streams_overlay_container").on("click", ".email-address", function () {
         selectText(this);
     });
 
-    $("#manage_streams_container").on(
+    $("#streams_overlay_container").on(
         "click",
         ".stream-row, .create_stream_button",
         show_right_section,
     );
 
-    $("#manage_streams_container").on("click", ".fa-chevron-left", () => {
+    $("#streams_overlay_container").on("click", ".fa-chevron-left", () => {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });

@@ -36,16 +36,15 @@ There are several parameters you can set while creating a stream. All but
 * **Stream description**: Helps users decide whether to subscribe when they
   are browsing streams.
 
-* **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).
+* **Announce new stream in the [stream configured by your organization](/help/configure-notification-bot#new-stream-announcements)**:
+  Posts a message in the "new streams" topic advertising the new stream.
 
-* **Announce stream**: Posts a message to `#general` advertising the new
-  stream. Organization administrators can change the stream used for [stream
-  creation announcements](/help/configure-notification-bot#new-stream-announcements).
+* **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).
 
 * **Who can post to the stream?**: See [Stream permissions](/help/stream-permissions).
 
 * **Who can unsubscribe others from this stream?**: See
-  [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream#configure-who-can-remove-users).
+  [Restrict stream membership management](/help/configure-who-can-invite-to-streams#configure-who-can-remove-users).
 
 * **Message retention period**: See
   [Message retention policy](/help/message-retention-policy#configure-message-retention-policy-for-individual-streams).

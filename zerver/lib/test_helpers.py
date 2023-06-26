@@ -4,6 +4,7 @@ import re
 import sys
 import time
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -16,12 +17,12 @@ from typing import (
     Mapping,
     Optional,
     Tuple,
-    TypedDict,
     TypeVar,
     Union,
     cast,
 )
 from unittest import mock
+from unittest.mock import patch
 
 import boto3.session
 import fakeldap
@@ -45,6 +46,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import (
@@ -131,21 +133,22 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         yield cache_queries
 
 
-class CapturedQueryDict(TypedDict):
-    sql: bytes
+@dataclass
+class CapturedQuery:
+    sql: str
     time: str
 
 
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Iterator[List[CapturedQueryDict]]:
+) -> Iterator[List[CapturedQuery]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[CapturedQueryDict] = []
+    queries: List[CapturedQuery] = []
 
     def wrapper_execute(
         self: TimeTrackingCursor,
@@ -161,10 +164,10 @@ def queries_captured(
             duration = stop - start
             if include_savepoints or not isinstance(sql, str) or "SAVEPOINT" not in sql:
                 queries.append(
-                    {
-                        "sql": self.mogrify(sql, params).decode(),
-                        "time": f"{duration:.3f}",
-                    }
+                    CapturedQuery(
+                        sql=self.mogrify(sql, params).decode(),
+                        time=f"{duration:.3f}",
+                    )
                 )
 
     def cursor_execute(
@@ -262,7 +265,7 @@ def find_key_by_email(address: str) -> Optional[str]:
     key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
         if address in message.to:
-            match = key_regex.search(message.body)
+            match = key_regex.search(str(message.body))
             assert match is not None
             [key] = match.groups()
             return key
@@ -741,4 +744,21 @@ def timeout_mock(mock_path: str) -> Iterator[None]:
         return func()
 
     with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
+        yield
+
+
+@contextmanager
+def ratelimit_rule(
+    range_seconds: int,
+    num_requests: int,
+    domain: str = "api_by_user",
+) -> Iterator[None]:
+    """Temporarily add a rate-limiting rule to the ratelimiter"""
+    RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
+
+    domain_rules = rules.get(domain, []).copy()
+    domain_rules.append((range_seconds, num_requests))
+    domain_rules.sort(key=lambda x: x[0])
+
+    with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield

@@ -10,11 +10,11 @@ import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
-import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
+import * as overlays from "./overlays";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as ui_report from "./ui_report";
@@ -30,6 +30,14 @@ let loading_indicator_displayed = false;
 // the progress indicator experience of 1000, 3000, etc. feels weird.
 const INITIAL_BATCH_SIZE = 1000;
 const FOLLOWUP_BATCH_SIZE = 1000;
+
+// When you start Zulip, window_focused should be true, but it might not be the
+// case after a server-initiated reload.
+let window_focused = document.hasFocus && document.hasFocus();
+
+export function is_window_focused() {
+    return window_focused;
+}
 
 export function confirm_mark_all_as_read() {
     const html_body = render_confirm_mark_all_as_read();
@@ -141,7 +149,10 @@ export function mark_all_as_read(args = {}) {
             } else {
                 // TODO: Ideally this would be a ui_report.error();
                 // the user needs to know that our operation failed.
-                blueslip.error("Failed to mark messages as read: " + xhr.responseText);
+                blueslip.error("Failed to mark messages as read", {
+                    status: xhr.status,
+                    body: xhr.responseText,
+                });
             }
             dialog_widget.hide_dialog_spinner();
         },
@@ -150,7 +161,7 @@ export function mark_all_as_read(args = {}) {
 
 function process_newly_read_message(message, options) {
     for (const msg_list of message_lists.all_rendered_message_lists()) {
-        msg_list.show_message_as_read(message, options);
+        msg_list.view.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
     recent_topics_ui.update_topic_unread_count(message);
@@ -247,7 +258,10 @@ export function mark_as_unread_from_here(
                 // TODO: Ideally, this case would communicate the
                 // failure to the user, with some manual retry
                 // offered, since the most likely cause is a 502.
-                blueslip.error("Unexpected error marking messages as unread: " + xhr.responseText);
+                blueslip.error("Unexpected error marking messages as unread", {
+                    status: xhr.status,
+                    body: xhr.responseText,
+                });
             }
         },
     });
@@ -295,7 +309,7 @@ export function process_read_messages_event(message_ids) {
 }
 
 export function process_unread_messages_event({message_ids, message_details}) {
-    // This is the reverse of  process_unread_messages_event.
+    // This is the reverse of process_read_messages_event.
     message_ids = unread.get_read_message_ids(message_ids);
     if (message_ids.length === 0) {
         return;
@@ -307,12 +321,33 @@ export function process_unread_messages_event({message_ids, message_details}) {
 
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
+        const message_info = message_details[message_id];
+        let mentioned_me_directly;
 
         if (message) {
             message.unread = true;
+            mentioned_me_directly = message.mentioned_me_directly;
+        } else {
+            // BUG: If we don't have a copy of the message locally, we
+            // have no way to correctly compute whether the mentions
+            // are personal mentions or wildcard mentions, because
+            // message_info doesn't contain that information... so we
+            // guess that it's a personal mention.
+            //
+            // This is a correctness bug, but is likely very rare: We
+            // will have a copy of all unread messages locally once
+            // the app has finished the message_fetch backfill
+            // sequence (and also will certainly have this message if
+            // this is the client where the "Mark as unread" action
+            // was taken). Further, the distinction is only important
+            // for mentions in muted streams, where we count direct
+            // mentions as important enough to promote, and wildcard
+            // mentions as not.
+            //
+            // A possible fix would be to just fetch the fully message
+            // from the API here, but the right fix likely requires API changes.
+            mentioned_me_directly = message_info.mentioned;
         }
-
-        const message_info = message_details[message_id];
 
         let user_ids_string;
 
@@ -323,6 +358,7 @@ export function process_unread_messages_event({message_ids, message_details}) {
         unread.process_unread_message({
             id: message_id,
             mentioned: message_info.mentioned,
+            mentioned_me_directly,
             stream_id: message_info.stream_id,
             topic: message_info.topic,
             type: message_info.type,
@@ -331,22 +367,11 @@ export function process_unread_messages_event({message_ids, message_details}) {
         });
     }
 
-    /*
-        A batch of messages marked as unread can be 1000+ messages, so
-        we do want to do a bulk operation for these UI updates.
+    // Update UI for the messages marked as unread.
+    for (const list of message_lists.all_rendered_message_lists()) {
+        list.view.show_messages_as_unread(message_ids);
+    }
 
-        We use a big-hammer approach now to updating the message view.
-        This is relatively harmless, since the only time we are called is
-        when the user herself marks her message as unread.  But we
-        do eventually want to be more surgical here, especially once we
-        have a final scheme for how best to structure the HTML within
-        the message to indicate read-vs.-unread.  Currently we use a
-        green border, but that may change.
-
-        The main downside of doing a full rerender is that it can be
-        user-visible in the form of users' avatars flickering.
-    */
-    message_live_update.rerender_messages_view_by_message_ids(message_ids);
     recent_topics_ui.complete_rerender();
 
     if (
@@ -407,7 +432,7 @@ export function process_scrolled_to_bottom() {
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
 export function process_visible() {
-    if (message_viewport.is_visible_and_focused() && message_viewport.bottom_message_visible()) {
+    if (viewport_is_visible_and_focused() && message_viewport.bottom_message_visible()) {
         process_scrolled_to_bottom();
     }
 }
@@ -438,4 +463,29 @@ export function mark_pm_as_read(user_ids_string) {
     // user. Eg: "123,124" or "123"
     const unread_msg_ids = unread.get_msg_ids_for_user_ids_string(user_ids_string);
     message_flags.mark_as_read(unread_msg_ids);
+}
+
+export function viewport_is_visible_and_focused() {
+    if (
+        overlays.is_overlay_or_modal_open() ||
+        !is_window_focused() ||
+        !$("#message_feed_container").is(":visible")
+    ) {
+        return false;
+    }
+    return true;
+}
+
+export function initialize() {
+    $(window)
+        .on("focus", () => {
+            window_focused = true;
+
+            // Update many places on the DOM to reflect unread
+            // counts.
+            process_visible();
+        })
+        .on("blur", () => {
+            window_focused = false;
+        });
 }

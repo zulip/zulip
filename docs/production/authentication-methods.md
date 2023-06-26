@@ -65,7 +65,7 @@ In either configuration, you will need to do the following:
 
    - their **email address**. Zulip needs this in order to send, for
      example, a notification when they're offline and another user
-     sends a PM.
+     sends a direct message.
    - their **Zulip username**. This means the name the user types into the
      Zulip login form. You might choose for this to be the user's
      email address (`sam@example.com`), or look like a traditional
@@ -330,7 +330,7 @@ settings in `/etc/zulip/settings.py`.
 
 An example configation for Active Directory group restriction can be:
 
-```
+```python
 import django_auth_ldap
 AUTH_LDAP_GROUP_TYPE = django_auth_ldap.config.ActiveDirectoryGroupType()
 
@@ -584,6 +584,12 @@ to the root and `engineering` subdomains:
 </saml2:Attribute>
 ```
 
+### SCIM
+
+Many SAML IdPs also offer SCIM provisioning to manage automatically
+deactivating accounts; consider configuring the [Zulip SCIM
+integration](../production/scim.md).
+
 ### Using Keycloak as a SAML IdP
 
 1. Make sure you reviewed [this article][saml-help-center], which
@@ -607,7 +613,7 @@ to the root and `engineering` subdomains:
 
    Save the certificate in a new `{idp_name}.crt` file constructed as follows:
 
-   ```
+   ```text
    -----BEGIN CERTIFICATE-----
    {Paste the content here}
    -----END CERTIFICATE-----
@@ -647,13 +653,15 @@ to the root and `engineering` subdomains:
          importing, only the certificate will be displayed (not the private
          key).
 
-### IdP-initiated SAML Logout
+### SAML Single Logout
 
-Zulip 5.0 introduces beta support for IdP-initiated SAML Logout. The
-implementation has primarily been tested with Keycloak and these
-instructions are for that provider; please [contact
-us](https://zulip.com/help/contact-support) for help using this with
-another IdP.
+Zulip supports both IdP-initiated and SP-initiated SAML Single
+Logout. The implementation has primarily been tested with Keycloak and
+these instructions are for that provider; please [contact
+us](https://zulip.com/help/contact-support) if you need help using
+this with another IdP.
+
+#### IdP-initated Single Logout
 
 1. In the KeyCloak configuration for Zulip, enable `Force Name ID Format`
    and set `Name ID Format` to `email`. Zulip needs to receive
@@ -668,7 +676,7 @@ another IdP.
    `/etc/zulip/settings.py` as `slo_url`. For example it may look like
    this:
 
-   ```
+   ```text
    "your_keycloak_idp_name": {
        "entity_id": "https://keycloak.example.com/auth/realms/yourrealm",
        "url": "https://keycloak.example.com/auth/realms/yourrealm/protocol/saml",
@@ -692,11 +700,27 @@ another IdP.
    /home/zulip/deployments/current/manage.py logout_all_users
    ```
 
+#### SP-initiated Single Logout
+
+After configuring IdP-initiated Logout, you only need to set
+`"sp_initiated_logout_enabled": True` in the appropriate IdP
+configuration dict in `SOCIAL_AUTH_SAML_ENABLED_IDPS` in
+`/etc/zulip/settings.py` to also enable SP-initiated Logout. When this
+is active, a user who logged in to Zulip via SAML, upon clicking
+"Logout" in the Zulip web app will be redirected to the IdP's Single
+Logout endpoint with a `LogoutRequest`. If a successful
+`LogoutResponse` is received back, their current Zulip session will be
+terminated.
+
+Note that this doesn't work when logging out of the mobile application
+since the app doesn't use sessions and relies on just having the user's
+API key.
+
 #### Caveats
 
-- This beta doesn't support using `SessionIndex` to limit which
-  sessions are affected; it always terminates all logged-in sessions
-  for the user identified in the `NameID`.
+- This implementation doesn't support using `SessionIndex` to limit which
+  sessions are affected; in IdP-initiated Logout it always terminates
+  all logged-in sessions for the user identified in the `NameID`.
 - SAML Logout in a configuration where your IdP handles authentication
   for multiple organizations is not yet supported.
 

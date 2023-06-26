@@ -1,7 +1,7 @@
 <div id="draft_overlay" class="overlay new-style" data-overlay="drafts">
     <div class="flex overlay-content">
-        <div class="drafts-container modal-bg">
-            <div class="drafts-header">
+        <div class="drafts-container overlay-messages-container modal-bg">
+            <div class="overlay-messages-header">
                 <h1>{{t 'Drafts' }}</h1>
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
@@ -12,8 +12,8 @@
                     {{#tr}}Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.{{/tr}}
                 </div>
             </div>
-            <div class="drafts-list">
-                <div class="no-drafts">
+            <div class="drafts-list overlay-messages-list">
+                <div class="no-drafts no-overlay-messages">
                     {{t 'No drafts.'}}
                 </div>
 

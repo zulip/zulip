@@ -1,0 +1,63 @@
+<% unless @listen_addresses.nil? -%>
+# Bind to specific address
+listen_addresses = <%= @listen_addresses %>
+<% end -%>
+
+# This has an improved set of stopwords.
+default_text_search_config = 'zulip.english_us_search'
+
+# Provide more comprehensive on-disk logs
+logging_collector = on
+log_directory = '/var/log/postgresql'
+log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+log_rotation_age = 7d
+log_rotation_size = 100MB
+log_min_duration_statement = 500
+log_line_prefix = '%m [%c]: [%l-1] '
+log_checkpoints = on
+log_lock_waits = on
+log_temp_files = 0
+log_autovacuum_min_duration = 100
+
+# Adjust autovacuum for having many mostly-append-only tables
+autovacuum_freeze_max_age = 2000000000
+vacuum_freeze_min_age     = 1000000000
+vacuum_freeze_table_age   = 1800000000
+
+# Performance settings
+max_connections = 1000
+maintenance_work_mem = <%= scope["zulip::profile::postgresql::maintenance_work_mem"] %>MB
+effective_cache_size = <%= scope["zulip::profile::postgresql::effective_cache_size"] %>MB
+work_mem = <%= scope["zulip::profile::postgresql::work_mem"] %>MB
+shared_buffers = <%= scope["zulip::profile::postgresql::shared_buffers"] %>MB
+wal_buffers = 4MB
+checkpoint_completion_target = 0.7
+<% unless @random_page_cost.nil? -%>
+random_page_cost = <%= @random_page_cost %>
+<% end -%>
+<% unless @effective_io_concurrency.nil? -%>
+effective_io_concurrency = <%= @effective_io_concurrency %>
+<% end -%>
+
+<% if @s3_backups_bucket != '' -%>
+# Streaming backups and replication
+archive_mode = on
+archive_command = '/usr/bin/timeout 10m /usr/local/bin/env-wal-g wal-push %p'
+restore_command = '/usr/local/bin/env-wal-g wal-fetch "%f" "%p"'
+<% unless @replication_primary.nil? || @replication_user.nil? -%>
+primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user -%>
+<% if @replication_password != '' %> password=<%= @replication_password %><% end -%>
+<% unless @ssl_mode.nil? %> sslmode=<%= @ssl_mode %><% end -%>
+'
+<% end -%>
+<% end -%>
+
+<% unless @ssl_cert_file.nil? -%>
+ssl_cert_file = '<%= @ssl_cert_file %>'		# (change requires restart)
+<% end -%>
+<% unless @ssl_key_file.nil? -%>
+ssl_key_file = '<%= @ssl_key_file %>'		# (change requires restart)
+<% end -%>
+<% unless @ssl_ca_file.nil? -%>
+ssl_ca_file = '<%= @ssl_ca_file %>'		# (change requires restart)
+<% end -%>

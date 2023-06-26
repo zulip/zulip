@@ -159,16 +159,26 @@ def get_issue_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
-    assignee = issue["assignee"]
-    return get_issue_event_message(
+    has_assignee = "assignee" in payload
+    base_message = get_issue_event_message(
         user_name=get_sender_name(payload),
         action=action,
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
-        message=issue["body"].tame(check_none_or(check_string)),
-        assignee=assignee["login"].tame(check_string) if assignee else None,
+        message=None
+        if action in ("assigned", "unassigned")
+        else issue["body"].tame(check_none_or(check_string)),
         title=issue["title"].tame(check_string) if include_title else None,
     )
+
+    if has_assignee:
+        stringified_assignee = payload["assignee"]["login"].tame(check_string)
+        if action == "assigned":
+            return f"{base_message[:-1]} to {stringified_assignee}."
+        elif action == "unassigned":
+            return base_message.replace("unassigned", f"unassigned {stringified_assignee} from")
+
+    return base_message
 
 
 def get_issue_comment_body(helper: Helper) -> str:
@@ -273,6 +283,7 @@ def get_push_commits_body(helper: Helper) -> str:
         get_branch_name_from_ref(payload["ref"].tame(check_string)),
         commits_data,
         deleted=payload["deleted"].tame(check_bool),
+        force_push=payload["forced"].tame(check_bool),
     )
 
 
@@ -353,7 +364,7 @@ def get_team_body(helper: Helper) -> str:
     payload = helper.payload
     changes = payload["changes"]
     if "description" in changes:
-        actor = payload["sender"]["login"].tame(check_string)
+        actor = get_sender_name(payload)
         new_description = payload["team"]["description"].tame(check_string)
         return f"**{actor}** changed the team description to:\n```quote\n{new_description}\n```"
     if "name" in changes:
@@ -490,6 +501,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         url=payload["review"]["html_url"].tame(check_string),
         type="PR review",
         title=title if include_title else None,
+        message=payload["review"]["body"].tame(check_string),
     )
 
 
@@ -585,9 +597,10 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
 
 def get_star_body(helper: Helper) -> str:
     payload = helper.payload
-    template = "{user} {action} the repository [{repo}]({url})."
+    template = "[{user}]({user_url}) {action} the repository [{repo}]({url})."
     return template.format(
-        user=payload["sender"]["login"].tame(check_string),
+        user=get_sender_name(payload),
+        user_url=get_sender_url(payload),
         action="starred" if payload["action"].tame(check_string) == "created" else "unstarred",
         repo=get_repository_full_name(payload),
         url=payload["repository"]["html_url"].tame(check_string),
@@ -615,6 +628,10 @@ def get_sender_name(payload: WildValue) -> str:
     return payload["sender"]["login"].tame(check_string)
 
 
+def get_sender_url(payload: WildValue) -> str:
+    return payload["sender"]["html_url"].tame(check_string)
+
+
 def get_branch_name_from_ref(ref_string: str) -> str:
     return re.sub(r"^refs/heads/", "", ref_string)
 
@@ -624,7 +641,11 @@ def get_tag_name_from_ref(ref_string: str) -> str:
 
 
 def is_commit_push_event(payload: WildValue) -> bool:
-    return bool(re.match(r"^refs/heads/", payload["ref"].tame(check_string)))
+    return payload["ref"].tame(check_string).startswith("refs/heads/")
+
+
+def is_merge_queue_push_event(payload: WildValue) -> bool:
+    return payload["ref"].tame(check_string).startswith("refs/heads/gh-readonly-queue/")
 
 
 def get_subject_based_on_type(payload: WildValue, event: str) -> str:
@@ -721,6 +742,7 @@ IGNORED_EVENTS = [
     "milestone",
     "organization",
     "project_card",
+    "push__merge_queue",
     "repository_vulnerability_alert",
 ]
 
@@ -815,6 +837,8 @@ def get_zulip_event_name(
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
     elif header_event == "push":
+        if is_merge_queue_push_event(payload):
+            return None
         if is_commit_push_event(payload):
             if branches is not None:
                 branch = get_branch_name_from_ref(payload["ref"].tame(check_string))

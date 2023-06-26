@@ -61,11 +61,11 @@ function set_results_notice(msg, level) {
 }
 
 function get_api_key_from_selected_bot() {
-    return $("#bot_name").children("option:selected").val();
+    return $("#bot_name").val();
 }
 
 function get_selected_integration_name() {
-    return $("#integration_name").children("option:selected").val();
+    return $("#integration_name").val();
 }
 
 function get_fixture_format(fixture_name) {
@@ -338,7 +338,7 @@ $(() => {
 
     $("#integration_name").on("change", function () {
         clear_elements(["custom_http_headers", "fixture_body", "fixture_name", "results_notice"]);
-        const integration_name = $(this).children("option:selected").val();
+        const integration_name = $(this.selectedOptions).val();
         get_fixtures(integration_name);
         update_url();
         return;
@@ -346,7 +346,7 @@ $(() => {
 
     $("#fixture_name").on("change", function () {
         clear_elements(["fixture_body", "results_notice"]);
-        const fixture_name = $(this).children("option:selected").val();
+        const fixture_name = $(this.selectedOptions).val();
         load_fixture_body(fixture_name);
         return;
     });

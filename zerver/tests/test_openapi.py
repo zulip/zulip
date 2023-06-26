@@ -275,6 +275,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/rest-error-handling",
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
+        "/jwt/fetch_api_key",
     }
 
     # Endpoints where the documentation is currently failing our
@@ -365,7 +366,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
 The types for the request parameters in zerver/openapi/zulip.yaml
 do not match the types declared in the implementation of {function.__name__}.\n"""
         msg += "=" * 65 + "\n"
-        msg += "{:<10s}{:^30s}{:>10s}\n".format(
+        msg += "{:<10}{:^30}{:>10}\n".format(
             "parameter", "OpenAPI type", "function declaration type"
         )
         msg += "=" * 65 + "\n"
@@ -381,7 +382,7 @@ do not match the types declared in the implementation of {function.__name__}.\n"
                 if element[0] == vname:
                     fdvtype = element[1]
                     break
-        msg += f"{vname:<10s}{str(opvtype):^30s}{str(fdvtype):>10s}\n"
+        msg += f"{vname:<10}{opvtype!s:^30}{fdvtype!s:>10}\n"
         raise AssertionError(msg)
 
     def check_argument_types(
@@ -921,6 +922,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "messages",
             "drafts",
             "webhooks",
+            "scheduled_messages",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
         for path, path_item in paths.items():

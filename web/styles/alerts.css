@@ -29,7 +29,10 @@ $alert-error-red: hsl(0deg 80% 40%);
 
 /* alert box component changes */
 .alert-box {
-    position: absolute;
+    /* Ensure alert box remains in viewport,
+      regardless of scroll position in message
+      list. */
+    position: fixed;
     top: 0;
     left: 0;
     width: 900px;
@@ -56,6 +59,7 @@ $alert-error-red: hsl(0deg 80% 40%);
         .stacktrace-header {
             display: flex;
             justify-content: space-between;
+            align-items: center;
 
             .message {
                 flex: 1 1 auto;
@@ -72,14 +76,25 @@ $alert-error-red: hsl(0deg 80% 40%);
                 cursor: pointer;
                 font-size: 2.3rem;
                 content: "\d7";
+                line-height: 0.5;
             }
+        }
+
+        .stacktrace-more-info {
+            font-size: 0.85rem;
+            white-space: pre;
+            font-family: "Source Code Pro", monospace;
+            margin-left: 3.3rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background-color: hsl(0deg 7% 98%);
         }
 
         .stacktrace-content {
             font-family: "Source Code Pro", monospace;
             font-size: 0.85rem;
 
-            margin-top: 1rem;
+            margin-bottom: 0.5rem;
 
             .stackframe {
                 padding-left: calc(3.3rem - 14px);
@@ -179,7 +194,7 @@ $alert-error-red: hsl(0deg 80% 40%);
         .exit {
             float: right;
             margin: -10px -50px -10px 0;
-            padding: 10px;
+            padding: 13px 10px;
 
             font-size: 2.5em;
             font-weight: 300;

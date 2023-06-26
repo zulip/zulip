@@ -10,8 +10,8 @@ import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as timerender from "./timerender";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 let attachments;
@@ -103,7 +103,9 @@ function render_attachments_ui() {
                 return item.name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
+                scroll_util.reset_scrollbar(
+                    $uploaded_files_table.closest(".progressive-table-wrapper"),
+                );
             },
         },
         $parent_container: $("#attachments-settings").expectOne(),
@@ -115,7 +117,7 @@ function render_attachments_ui() {
         $simplebar_container: $("#attachments-settings .progressive-table-wrapper"),
     });
 
-    ui.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
+    scroll_util.reset_scrollbar($uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
 function format_attachment_data(new_attachments) {

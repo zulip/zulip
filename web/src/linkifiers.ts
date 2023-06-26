@@ -1,29 +1,39 @@
+import url_template_lib from "url-template";
+
 import * as blueslip from "./blueslip";
 
-const linkifier_map = new Map(); // regex -> url
+type LinkifierMap = Map<
+    RegExp,
+    {url_template: url_template_lib.Template; group_number_to_name: Record<number, string>}
+>;
+const linkifier_map: LinkifierMap = new Map();
 
 type Linkifier = {
     pattern: string;
-    url_format: string;
+    url_template: string;
     id: number;
 };
 
-export function get_linkifier_map(): Map<RegExp, string> {
+export function get_linkifier_map(): LinkifierMap {
     return linkifier_map;
 }
 
-function python_to_js_linkifier(pattern: string, url: string): [RegExp | null, string] {
+function python_to_js_linkifier(
+    pattern: string,
+    url: string,
+): [RegExp | null, url_template_lib.Template, Record<number, string>] {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
     const named_group_re = /\(?P<([^>]+?)>/g;
     let match = named_group_re.exec(pattern);
     let current_group = 1;
+    const group_number_to_name: Record<number, string> = {};
     while (match) {
         const name = match[1];
         // Replace named group with regular matching group
         pattern = pattern.replace("(?P<" + name + ">", "(");
-        // Replace named reference in URL to numbered reference
-        url = url.replace("%(" + name + ")s", `\\${current_group}`);
+        // Map numbered reference to named reference for template expansion
+        group_number_to_name[current_group] = name;
 
         // Reset the RegExp state
         named_group_re.lastIndex = 0;
@@ -66,27 +76,34 @@ function python_to_js_linkifier(pattern: string, url: string): [RegExp | null, s
         // We'll ignore this linkifier for now, but log this
         // failure for debugging later.
         if (error instanceof SyntaxError) {
-            blueslip.error("python_to_js_linkifier: " + error.message);
+            blueslip.error("python_to_js_linkifier failure!", {pattern}, error);
         } else {
             // Don't swallow any other (unexpected) exceptions.
             /* istanbul ignore next */
             throw error;
         }
     }
-    return [final_regex, url];
+    const url_template = url_template_lib.parse(url);
+    return [final_regex, url_template, group_number_to_name];
 }
 
 export function update_linkifier_rules(linkifiers: Linkifier[]): void {
     linkifier_map.clear();
 
     for (const linkifier of linkifiers) {
-        const [regex, final_url] = python_to_js_linkifier(linkifier.pattern, linkifier.url_format);
+        const [regex, url_template, group_number_to_name] = python_to_js_linkifier(
+            linkifier.pattern,
+            linkifier.url_template,
+        );
         if (!regex) {
             // Skip any linkifiers that could not be converted
             continue;
         }
 
-        linkifier_map.set(regex, final_url);
+        linkifier_map.set(regex, {
+            url_template,
+            group_number_to_name,
+        });
     }
 }
 

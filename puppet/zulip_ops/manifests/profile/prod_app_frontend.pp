@@ -1,6 +1,7 @@
 class zulip_ops::profile::prod_app_frontend {
   include zulip_ops::profile::base
   include zulip_ops::app_frontend
+  include zulip::hooks::zulip_notify
 
   file { '/etc/nginx/sites-available/zulip':
     ensure  => file,

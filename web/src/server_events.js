@@ -39,11 +39,7 @@ function get_events_success(events) {
         try {
             get_events_params.last_event_id = Math.max(get_events_params.last_event_id, event.id);
         } catch (error) {
-            blueslip.error(
-                "Failed to update last_event_id",
-                {event: clean_event(event)},
-                error.stack,
-            );
+            blueslip.error("Failed to update last_event_id", {event: clean_event(event)}, error);
         }
     }
 
@@ -68,7 +64,6 @@ function get_events_success(events) {
                 msg.flags = event.flags;
                 if (event.local_message_id) {
                     msg.local_id = event.local_message_id;
-                    sent_messages.report_event_received(event.local_message_id);
                 }
                 messages.push(msg);
                 break;
@@ -93,11 +88,7 @@ function get_events_success(events) {
         try {
             dispatch_event(event);
         } catch (error) {
-            blueslip.error(
-                "Failed to process an event\n" + blueslip.exception_msg(error),
-                {event: clean_event(event)},
-                error.stack,
-            );
+            blueslip.error("Failed to process an event", {event: clean_event(event)}, error);
         }
     }
 
@@ -123,15 +114,11 @@ function get_events_success(events) {
                 message_events.insert_new_messages(messages, sent_by_this_client);
             }
         } catch (error) {
-            blueslip.error(
-                "Failed to insert new messages\n" + blueslip.exception_msg(error),
-                undefined,
-                error.stack,
-            );
+            blueslip.error("Failed to insert new messages", undefined, error);
         }
     }
 
-    if (message_lists.home.selected_id() === -1 && !message_lists.home.empty()) {
+    if (message_lists.home.selected_id() === -1 && !message_lists.home.visibly_empty()) {
         message_lists.home.select_id(message_lists.home.first().id, {then_scroll: false});
     }
 
@@ -139,11 +126,7 @@ function get_events_success(events) {
         try {
             message_events.update_messages(update_message_events);
         } catch (error) {
-            blueslip.error(
-                "Failed to update messages\n" + blueslip.exception_msg(error),
-                undefined,
-                error.stack,
-            );
+            blueslip.error("Failed to update messages", undefined, error);
         }
     }
 
@@ -171,8 +154,8 @@ function get_events({dont_block = false} = {}) {
     }
 
     // TODO: In the future, we may implement Tornado support for live
-    // update for spectator, but until then, there's nothing
-    // to do here.
+    // update for spectators (#20315), but until then, there's nothing
+    // to do here. Update report_late_add if this changes.
     if (page_params.is_spectator) {
         return;
     }
@@ -215,11 +198,7 @@ function get_events({dont_block = false} = {}) {
 
                 get_events_success(data.events);
             } catch (error) {
-                blueslip.error(
-                    "Failed to handle get_events success\n" + blueslip.exception_msg(error),
-                    undefined,
-                    error.stack,
-                );
+                blueslip.error("Failed to handle get_events success", undefined, error);
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
@@ -259,11 +238,7 @@ function get_events({dont_block = false} = {}) {
                     hide_ui_connection_error();
                 }
             } catch (error) {
-                blueslip.error(
-                    "Failed to handle get_events error\n" + blueslip.exception_msg(error),
-                    undefined,
-                    error.stack,
-                );
+                blueslip.error("Failed to handle get_events error", undefined, error);
             }
             const retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
             get_events_timeout = setTimeout(get_events, retry_sec * 1000);
@@ -293,6 +268,7 @@ export function home_view_loaded() {
 }
 
 export function initialize() {
+    reload.add_reload_hook(cleanup_event_queue);
     watchdog.on_unsuspend(() => {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
@@ -302,7 +278,7 @@ export function initialize() {
     get_events();
 }
 
-export function cleanup_event_queue() {
+function cleanup_event_queue() {
     // Submit a request to the server to clean up our event queue
     if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
         return;

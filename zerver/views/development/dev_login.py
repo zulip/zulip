@@ -124,7 +124,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
         raise RealmDeactivatedError
     if return_data.get("inactive_user"):
         raise UserDeactivatedError
-    if return_data.get("invalid_subdomain"):
+    if return_data.get("invalid_subdomain"):  # nocoverage
         raise InvalidSubdomainError
     if user_profile is None:
         # Since we're not actually checking passwords, this condition
@@ -135,7 +135,10 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
 
     do_login(request, user_profile)
     api_key = get_api_key(user_profile)
-    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(
+        request,
+        data={"api_key": api_key, "email": user_profile.delivery_email, "user_id": user_profile.id},
+    )
 
 
 @csrf_exempt

@@ -3,10 +3,6 @@
 %dark-theme {
     color-scheme: dark;
 
-    & body {
-        color: hsl(236deg 33% 90%);
-    }
-
     .placeholder {
         color: hsl(0deg 0% 55%);
         opacity: 1;
@@ -25,8 +21,32 @@
         }
     }
 
-    & ul.filters a:hover {
-        color: inherit;
+    & ul.pm-list,
+    & ul.filters {
+        color: hsl(0deg 0% 100% / 80%);
+
+        & a:hover {
+            color: inherit;
+        }
+
+        .has-unmuted-mentions .unread_mention_info {
+            color: hsl(236deg 33% 90%);
+        }
+
+        & li.muted_topic,
+        li.out_of_home_view {
+            color: hsl(236deg 33% 90%/50%);
+        }
+
+        & li.unmuted_topic {
+            color: hsl(236deg 33% 90%);
+        }
+
+        & li.out_of_home_view {
+            &:hover {
+                color: hsl(236deg 33% 90%/ 75%);
+            }
+        }
     }
 
     /************************* MODAL DARK THEME *******************/
@@ -36,18 +56,8 @@
         border: 1px solid hsl(0deg 0% 0% / 60%);
     }
 
-    .modal__btn:disabled {
-        opacity: 1;
-        background-color: hsl(0deg 0% 83% / 50%);
-    }
-
     .modal__content.simplebar-scrollable-y + .modal__footer {
         border-top: 1px solid hsl(0deg 0% 100% / 20%);
-    }
-
-    .modal-bg,
-    .modal__container {
-        background-color: hsl(212deg 28% 18%);
     }
 
     .modal__close {
@@ -64,14 +74,13 @@
         box-shadow: inset 0 1px 0 hsl(0deg 0% 0% / 20%);
     }
 
-    .enter_sends,
+    .open_enter_sends_dialog,
     .enter_sends_choices {
         color: hsl(236deg 33% 90%);
 
         & kbd {
             background-color: hsl(211deg 29% 14%);
             border-color: hsl(211deg 29% 14%);
-            box-shadow: inset 0 -1px 0 hsl(210deg 5% 34% / 20%);
             text-shadow: none;
             color: hsl(236deg 33% 90%);
         }
@@ -79,6 +88,12 @@
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
         }
+    }
+
+    .modal__btn:disabled,
+    .disabled-compose-send-button-container button {
+        opacity: 1;
+        background-color: hsl(0deg 0% 83% / 50%);
     }
 
     & table.table-striped thead.table-sticky-headers th {
@@ -94,7 +109,8 @@
        our dark theme colors in Zulip's dark theme.
      */
     .tippy-box[data-theme~="light-border"] {
-        .tippy-content a {
+        .tippy-content a,
+        p {
             color: hsl(236deg 33% 90%);
 
             &.compose_control_button:hover {
@@ -155,21 +171,41 @@
         }
     }
 
+    .tippy-box[data-theme="dropdown-widget"] {
+        background-color: hsl(240deg 5% 16%);
+        border: 1px solid hsl(0deg 0% 0%);
+        box-shadow: 0 7px 13px hsl(0deg 0% 0% / 35%),
+            0 5px 8px hsl(0deg 0% 0% / 32%), 0 2px 4px hsl(0deg 0% 0% / 20%);
+    }
+
+    .dropdown-list-container .dropdown-list .list-item {
+        &:focus {
+            background-color: hsl(220deg 12% 95.1% / 5%);
+        }
+
+        & > a {
+            color: hsl(0deg 0% 75%);
+
+            &:hover {
+                background-color: hsl(220deg 12% 95.1% / 5%);
+            }
+        }
+    }
+
+    #navbar-middle .column-middle-inner,
+    #userlist-toggle-button,
+    .header,
+    #message_view_header {
+        background-color: hsl(0deg 0% 13%);
+    }
+
     & body,
     .app-main,
-    .header-main,
     .column-middle,
-    #compose,
-    .column-left .left-sidebar,
-    .column-right .right-sidebar,
-    #groups_overlay .right,
-    #subscription_overlay .right,
-    #settings_page .right,
     #streams_header,
     .private_messages_container,
-    .message_header,
     .header {
-        background-color: hsl(212deg 28% 18%);
+        background-color: var(--color-background);
     }
 
     #scroll-to-bottom-button-container {
@@ -180,7 +216,7 @@
         }
     }
 
-    .compose_banner {
+    .main-view-banner {
         .above_compose_banner_action_link {
             color: hsl(200deg 100% 50%);
         }
@@ -190,7 +226,7 @@
             border-color: hsl(149deg 48% 52% / 40%);
             color: hsl(147deg 51% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(147deg 51% 55% / 50%);
 
                 &:hover {
@@ -201,14 +237,28 @@
                     color: hsl(147deg 51% 55% / 75%);
                 }
             }
+
+            .main-view-banner-action-button {
+                background-color: hsl(147deg 51% 55% / 10%);
+                color: inherit;
+
+                &:hover {
+                    background-color: hsl(147deg 51% 55% / 15%);
+                }
+
+                &:active {
+                    background-color: hsl(147deg 51% 55% / 20%);
+                }
+            }
         }
 
-        &.warning {
+        &.warning,
+        &.warning-style {
             background-color: hsl(53deg 100% 11%);
             border-color: hsl(38deg 44% 60% / 40%);
             color: hsl(50deg 45% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(50deg 45% 61% / 50%);
 
                 &:hover {
@@ -220,7 +270,7 @@
                 }
             }
 
-            .compose_banner_action_button {
+            .main-view-banner-action-button {
                 background-color: hsl(50deg 45% 61% / 10%);
                 color: hsl(50deg 45% 61%);
 
@@ -239,7 +289,7 @@
             border-color: hsl(3deg 73% 74% / 40%);
             color: hsl(3deg 73% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(3deg 73% 74% / 50%);
 
                 &:hover {
@@ -251,7 +301,7 @@
                 }
             }
 
-            .compose_banner_action_button {
+            .main-view-banner-action-button {
                 background-color: hsl(3deg 73% 74% / 10%);
                 color: hsl(3deg 73% 74%);
 
@@ -271,7 +321,7 @@
             position: relative;
             color: hsl(205deg 58% 80%);
 
-            .compose_banner_close_button {
+            .main-view-banner-close-button {
                 color: hsl(205deg 58% 69% / 50%);
 
                 &:hover {
@@ -280,6 +330,20 @@
 
                 &:active {
                     color: hsl(205deg 58% 69% / 75%);
+                }
+            }
+
+            .main-view-banner-action-button {
+                background-color: hsl(205deg 58% 69% / 10%);
+                border-color: transparent;
+                color: hsl(205deg 58% 69%);
+
+                &:hover {
+                    background-color: hsl(205deg 58% 69% / 15%);
+                }
+
+                &:active {
+                    background-color: hsl(205deg 58% 69% / 20%);
                 }
             }
         }
@@ -314,12 +378,6 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .dark .message_label_clickable.stream_label,
-    .dark .stream_label,
-    .stream_label {
-        color: hsl(212deg 28% 18%);
-    }
-
     .new-style label.checkbox input[type="checkbox"] ~ span {
         border-color: hsl(0deg 0% 100% / 40%);
     }
@@ -343,20 +401,10 @@
         color: inherit;
     }
 
-    .dark_background a,
-    a.dark_background:hover,
-    .dark_background,
     .message_reactions .message_reaction_count,
     .message_reactions .reaction_button i,
     .message_reactions:hover .message_reaction + .reaction_button {
         color: inherit !important;
-    }
-
-    /* It's a little annoying that we need to specify the different
-       background colors for these, but this alert feature can't use a
-       transparent background without creating other problems */
-    .alert-msg {
-        background-color: hsl(212deg 28% 18%);
     }
 
     .private-message .alert-msg {
@@ -369,17 +417,6 @@
         #hide_more_private_messages {
             background-color: hsl(199deg 33% 46% / 20%);
         }
-    }
-
-    /* do not turn the .message_header .stream_label text dark on hover because they're
-       on a dark background, and don't change the dark labels dark either. */
-    .message_header:not(.dark_background)
-        a.stream_label:not(.dark_background):hover {
-        color: hsl(212deg 28% 18%);
-    }
-
-    .message_header {
-        box-shadow: 0 -1px 0 0 hsl(212deg 28% 18%);
     }
 
     /* these are converting grey things to "new grey" */
@@ -448,8 +485,19 @@
         color: inherit;
     }
 
+    .dropdown-list-search .dropdown-list-search-input:focus {
+        background-color: hsl(225deg 6% 7%);
+        border: 1px solid hsl(0deg 0% 100% / 50%);
+        box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
+    }
+
+    .dropdown-widget-button {
+        border-color: hsl(0deg 0% 0% / 60%);
+        background-color: hsl(0deg 0% 0% / 20%);
+    }
+
     & select option {
-        background-color: hsl(212deg 28% 18%);
+        background-color: var(--color-background);
         color: hsl(236deg 33% 90%);
     }
 
@@ -469,8 +517,12 @@
         background-color: hsl(0deg 86% 14%) !important;
     }
 
+    #compose-direct-recipient.pill-container {
+        background-color: hsl(0deg 0% 0% / 20%);
+    }
+
     #search_arrows .pill,
-    .pm_recipient .pill-container .pill {
+    #compose-direct-recipient.pill-container .pill {
         color: inherit;
         border: 1px solid hsl(0deg 0% 0% / 50%);
         background-color: hsl(0deg 0% 0% / 25%);
@@ -478,7 +530,7 @@
     }
 
     #search_arrows .pill:focus,
-    .pm_recipient .pill-container .pill:focus {
+    #compose-direct-recipient.pill-container .pill:focus {
         color: hsl(0deg 0% 100%);
         border: 1px solid hsl(176deg 78% 28% / 60%);
         background-color: hsl(176deg 49% 42% / 40%);
@@ -539,14 +591,17 @@
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
-    .message-header-contents,
-    .message_header_private_message .message-header-contents {
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: transparent;
-    }
-
     .compose_control_buttons_container .divider {
         color: hsl(236deg 33% 90% / 50%);
+    }
+
+    #compose-content {
+        background-color: hsl(228deg 11% 17%);
+        border-color: hsl(0deg 0% 0% / 60%);
+    }
+
+    .compose_table .stream-selection-header-colorblock {
+        border-color: hsl(240deg 11% 5%);
     }
 
     /* Not that .message_row (below) needs to be more contrast on dark theme */
@@ -555,33 +610,11 @@
     .message_row,
     .draft-row .draft-info-box,
     .preview_message_area {
-        border-color: hsl(0deg 0% 0% / 20%);
+        border-color: hsl(0deg 0% 0% / 40%);
     }
 
-    .recipient_row {
-        .message_row.unread {
-            .date_row {
-                background-color: hsl(212deg 28% 18%);
-            }
-        }
-
-        .private-message.unread {
-            .date_row {
-                background-color: hsl(208deg 17% 29%);
-            }
-        }
-
-        .message_row.unread ~ .message_row.unread {
-            .date_row {
-                background-color: transparent;
-            }
-        }
-
-        .private-message.unread ~ .private-message.unread {
-            .date_row {
-                background-color: hsl(208deg 17% 29%);
-            }
-        }
+    .preview_message_area {
+        background-color: inherit;
     }
 
     .spectator_narrow_login_button,
@@ -594,15 +627,6 @@
         &::after {
             color: hsl(0deg 0% 100% / 50%);
         }
-    }
-
-    #message_view_header .stream {
-        color: hsl(236deg 33% 90%);
-    }
-
-    #message_view_header .sub_count,
-    #message_view_header .narrow_description {
-        color: hsl(0deg 0% 90%);
     }
 
     & div.overlay,
@@ -625,6 +649,14 @@
     #settings_page,
     .informational-overlays .overlay-content {
         box-shadow: 0 0 30px hsl(212deg 32% 7%);
+    }
+
+    #draft_overlay,
+    #scheduled_messages_overlay_container {
+        .flex.overlay-content > div {
+            box-shadow: 0 0 30px hsl(213deg 31% 0%);
+            background-color: var(--color-background);
+        }
     }
 
     .tippy-box[data-theme~="light-border"],
@@ -733,7 +765,6 @@
     #streamlist-toggle,
     #userlist-toggle {
         color: inherit;
-        border-color: hsl(0deg 0% 0% / 60%);
     }
 
     #streamlist-toggle-button {
@@ -749,31 +780,9 @@
         }
     }
 
-    & li.active-filter,
-    li.active-sub-filter {
-        background-color: hsl(199deg 33% 46% / 20%);
-    }
-
-    :not(.active-sub-filter) {
-        &.top_left_row:hover,
-        &.bottom_left_row:hover,
-        &#stream_filters li.highlighted_stream {
-            background-color: hsl(136deg 25% 73% / 20%);
-        }
-    }
-
-    #stream_filters .narrow-filter.active-filter {
-        .topic-list .filter-topics,
-        > .bottom_left_row {
-            background-color: hsl(208deg 31% 24%);
-        }
-    }
-
     .zoom-in {
-        #topics_header,
-        .narrow-filter > .bottom_left_row,
-        #stream_filters .topic-list .filter-topics {
-            background-color: hsl(212deg 28% 18%);
+        #topics_header {
+            background-color: var(--color-background);
         }
     }
 
@@ -823,12 +832,8 @@
         }
     }
 
-    .recent_topics_container {
-        background-color: hsl(212deg 28% 18%) !important;
-    }
-
     #recent_topics_table tr {
-        background-color: hsl(212deg 28% 18%);
+        background-color: var(--color-background);
 
         &:hover {
             background-color: hsl(208deg 26% 11% / 60%);
@@ -836,12 +841,16 @@
     }
 
     #recent_topics_table .unread_topic {
-        background-color: hsl(212deg 30% 22% / 60%);
+        background-color: hsl(212deg 30% 22% / 40%);
+
+        &:hover {
+            background-color: hsl(212deg 30% 22% / 60%);
+        }
     }
 
     .btn-recent-selected,
     #recent_topics_table thead th {
-        background-color: hsl(0deg 0% 0%) !important;
+        background-color: hsl(228deg 11% 17%) !important;
 
         &[data-sort]:hover {
             background-color: hsl(211deg 29% 14%) !important;
@@ -872,6 +881,7 @@
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .user-groups-container .user-groups-header,
+    .overlay-messages-header,
     .grey-box,
     .white-box,
     .stream-email,
@@ -887,7 +897,7 @@
     }
 
     .table-striped tbody tr:nth-child(odd) td {
-        background-color: hsl(212deg 28% 18%);
+        background-color: var(--color-background-modal);
     }
 
     .user-groups-container .right .display-type,
@@ -911,12 +921,9 @@
         border-color: hsl(0deg 0% 0% / 20%);
     }
 
-    .draft-row .draft-info-box,
-    .message_header_private_message .message-header-contents {
-        box-shadow: none;
-    }
-
-    .draft-row .message_header_private_message .message_label_clickable {
+    .overlay-message-row
+        .message_header_private_message
+        .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
     }
@@ -926,31 +933,31 @@
         text-shadow: none;
     }
 
-    .group_mention .messagebox,
-    .direct_mention .messagebox {
-        background-color: hsl(8deg 78% 43% / 15%);
+    /* There is no lefthand border to cover in
+      dark mode, so don't apply negative margin
+      that would otherwise pull the unread marker
+      to the left. */
+    .unread_marker {
+        margin-left: 0;
+    }
+
+    .selected_message .messagebox-content {
+        border-color: hsl(217deg 64% 59% / 70%);
     }
 
     .rendered_markdown {
-        .user-mention,
-        .user-group-mention {
-            background: linear-gradient(
-                to bottom,
-                hsl(0deg 0% 0% / 20%) 0%,
-                hsl(0deg 0% 0% / 10%) 100%
-            );
-            box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
-        }
-
-        .user-mention-me :not(.silent) {
-            background-color: hsl(355deg 37% 31%);
-            box-shadow: 0 0 0 1px hsl(330deg 40% 20%);
+        .alert-word {
+            background-color: hsl(22deg 70% 35%);
         }
 
         .codehilite code,
         .codehilite pre {
-            color: hsl(212deg 100% 82%);
-            background-color: hsl(212deg 25% 15%);
+            color: hsl(212deg 98% 82%);
+            background-color: hsl(212deg 0% 11%);
+        }
+
+        .codehilite pre {
+            border: 1px solid hsl(0deg 0% 0% / 50%);
         }
 
         .codehilite .hll {
@@ -1184,6 +1191,12 @@
         border-color: hsl(165deg 68% 37%);
     }
 
+    .alert.alert-info {
+        color: hsl(205deg 58% 80%);
+        background-color: hsl(204deg 100% 12%);
+        border-color: hsl(205deg 58% 69% / 40%);
+    }
+
     .alert.alert-error,
     .alert.alert-danger {
         background-color: hsl(318deg 12% 21%);
@@ -1213,6 +1226,10 @@
 
             .subtle {
                 color: hsl(314deg 19% 63%);
+            }
+
+            .stacktrace-more-info {
+                background-color: hsl(312deg 7% 14%);
             }
 
             .code-context {
@@ -1311,9 +1328,14 @@
     /* Content: */
     .hotspot.overlay .hotspot-popover .hotspot-popover-content,
     .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
-        background-color: hsl(212deg 28% 18%);
+        background-color: var(--color-background);
     }
 
+    .top-messages-logo {
+        opacity: 0.7;
+    }
+
+    .scheduled-messages-loading-logo,
     .alert-zulip-logo,
     .top-messages-logo,
     .bottom-messages-logo {
@@ -1343,16 +1365,23 @@
 
     /* Search highlight used in both topics and rendered_markdown */
     .highlight {
-        background-color: hsl(51deg 100% 64% / 42%);
+        background-color: hsl(51deg 100% 23%);
+    }
+
+    .streams_subheader {
+        color: hsl(240deg 11% 85%);
+
+        & span::before,
+        span::after {
+            border-color: hsl(240deg 11% 85%);
+        }
     }
 
     .sub-unsub-message span::before,
     .sub-unsub-message span::after,
     .date_row span::before,
-    .date_row span::after,
-    .streams_subheader span::before,
-    .streams_subheader span::after {
-        opacity: 0.5;
+    .date_row span::after {
+        opacity: 0.15;
         border-bottom: 1px solid hsl(0deg 0% 100%);
     }
 
@@ -1363,7 +1392,7 @@
 
     #bots_lists_navbar .active a {
         color: hsl(0deg 0% 87%);
-        background-color: hsl(212deg 28% 18%);
+        background-color: var(--color-background);
         border-color: hsl(0deg 0% 87%);
         border-bottom-color: transparent;
     }

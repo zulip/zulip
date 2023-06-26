@@ -31,13 +31,17 @@ $(() => {
         return this.outerHeight(...args) || 0;
     };
 
+    $.fn.get_offset_to_window = function () {
+        return this[0].getBoundingClientRect();
+    };
+
     $.fn.safeOuterWidth = function (...args) {
         return this.outerWidth(...args) || 0;
     };
 
     $.fn.expectOne = function () {
         if (blueslip && this.length !== 1) {
-            blueslip.error("Expected one element in jQuery set, " + this.length + " found");
+            blueslip.error("Expected one element in jQuery set, found more", {length: this.length});
         }
         return this;
     };

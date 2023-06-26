@@ -1,3 +1,6 @@
+/* Compose box module responsible for manipulating the compose box
+   textarea correctly. */
+
 import autosize from "autosize";
 import $ from "jquery";
 import {insert, replace, set, wrapSelection} from "text-field-edit";
@@ -27,6 +30,37 @@ export function autosize_textarea($textarea) {
     // in the text area to autosize.
     if (!is_full_size()) {
         autosize.update($textarea);
+    }
+}
+
+function get_focus_area(msg_type, opts) {
+    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    if (msg_type === "stream" && opts.stream && !opts.topic) {
+        return "#stream_message_recipient_topic";
+    } else if (
+        (msg_type === "stream" && opts.stream) ||
+        (msg_type === "private" && opts.private_message_recipient)
+    ) {
+        if (opts.trigger === "new topic button") {
+            return "#stream_message_recipient_topic";
+        }
+        return "#compose-textarea";
+    }
+
+    if (msg_type === "stream") {
+        return "#compose_select_recipient_widget";
+    }
+    return "#private_message_recipient";
+}
+
+// Export for testing
+export const _get_focus_area = get_focus_area;
+
+export function set_focus(msg_type, opts) {
+    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+        const focus_area = get_focus_area(msg_type, opts);
+        const $elt = $(focus_area);
+        $elt.trigger("focus").trigger("select");
     }
 }
 
@@ -61,14 +95,11 @@ export function smart_insert_inline($textarea, syntax) {
         syntax += " ";
     }
 
-    // text-field-edit ensures `$textarea` is focused before inserting
-    // the new syntax.
     insert($textarea[0], syntax);
-
     autosize_textarea($textarea);
 }
 
-export function smart_insert_block($textarea, syntax) {
+export function smart_insert_block($textarea, syntax, padding_newlines = 2) {
     const pos = $textarea.caret();
     const before_str = $textarea.val().slice(0, pos);
     const after_str = $textarea.val().slice(pos);
@@ -77,20 +108,20 @@ export function smart_insert_block($textarea, syntax) {
         // Insert newline/s before the content block if there is
         // already some content in the compose box and the content
         // block is not being inserted at the beginning, such
-        // that there are at least 2 new lines between the content
-        // and start of the content block.
+        // that there are at least padding_newlines number of new
+        // lines between the content and start of the content block.
         let new_lines_before_count = 0;
         let current_pos = pos - 1;
         while (
             current_pos >= 0 &&
             before_str.charAt(current_pos) === "\n" &&
-            new_lines_before_count < 2
+            new_lines_before_count < padding_newlines
         ) {
-            // count up to 2 new lines before cursor
+            // count up to padding_newlines number of new lines before cursor
             current_pos -= 1;
             new_lines_before_count += 1;
         }
-        const new_lines_needed_before_count = 2 - new_lines_before_count;
+        const new_lines_needed_before_count = padding_newlines - new_lines_before_count;
         syntax = "\n".repeat(new_lines_needed_before_count) + syntax;
     }
 
@@ -99,22 +130,19 @@ export function smart_insert_block($textarea, syntax) {
     while (
         current_pos < after_str.length &&
         after_str.charAt(current_pos) === "\n" &&
-        new_lines_after_count < 2
+        new_lines_after_count < padding_newlines
     ) {
-        // count up to 2 new lines after cursor
+        // count up to padding_newlines number of new lines after cursor
         current_pos += 1;
         new_lines_after_count += 1;
     }
     // Insert newline/s after the content block, such that there
-    // are at least 2 new lines between the content block and
-    // the content after the cursor, if any.
-    const new_lines_needed_after_count = 2 - new_lines_after_count;
+    // are at least padding_newlines number of new lines between
+    // the content block and the content after the cursor, if any.
+    const new_lines_needed_after_count = padding_newlines - new_lines_after_count;
     syntax = syntax + "\n".repeat(new_lines_needed_after_count);
 
-    // text-field-edit ensures `$textarea` is focused before inserting
-    // the new syntax.
     insert($textarea[0], syntax);
-
     autosize_textarea($textarea);
 }
 
@@ -122,14 +150,26 @@ export function insert_syntax_and_focus(
     syntax,
     $textarea = $("#compose-textarea"),
     mode = "inline",
+    padding_newlines,
 ) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert_inline and smart_inline_block.
+    //
+    // We focus the textarea first. In theory, we could let the
+    // `insert` function of text-area-edit take care of this, since it
+    // will focus the target element before manipulating it.
+    //
+    // But it unfortunately will blur it afterwards if the original
+    // focus was something else, which is not behavior we want, so we
+    // just focus the textarea in question ourselves before calling
+    // it.
+    $textarea.trigger("focus");
+
     if (mode === "inline") {
         smart_insert_inline($textarea, syntax);
     } else if (mode === "block") {
-        smart_insert_block($textarea, syntax);
+        smart_insert_block($textarea, syntax, padding_newlines);
     }
 }
 
@@ -220,10 +260,7 @@ export function set_compose_box_top(set_top) {
         // using CSS. If that wasn't the case, we could have somehow
         // refactored the HTML so as to consider only the space below
         // below the `#navbar_alerts` as `height: 100%` of `#compose`.
-        const compose_top =
-            $("#navbar_alerts_wrapper").height() +
-            $(".header").height() +
-            Number.parseInt($(".header").css("paddingBottom"), 10);
+        const compose_top = $("#navbar-fixed-container").height();
         $("#compose").css("top", compose_top + "px");
     } else {
         $("#compose").css("top", "");
@@ -462,19 +499,21 @@ export function format_text($textarea, type) {
     }
 }
 
+/* TODO: This functions don't belong in this module, as they have
+ * nothing to do with the compose textarea. */
 export function hide_compose_spinner() {
     compose_spinner_visible = false;
-    $("#compose-send-button .loader").hide();
-    $("#compose-send-button span").show();
-    $("#compose-send-button").removeClass("disable-btn");
+    $(".compose-submit-button .loader").hide();
+    $(".compose-submit-button span").show();
+    $(".compose-submit-button").removeClass("disable-btn");
 }
 
 export function show_compose_spinner() {
     compose_spinner_visible = true;
     // Always use white spinner.
-    loading.show_button_spinner($("#compose-send-button .loader"), true);
-    $("#compose-send-button span").hide();
-    $("#compose-send-button").addClass("disable-btn");
+    loading.show_button_spinner($(".compose-submit-button .loader"), true);
+    $(".compose-submit-button span").hide();
+    $(".compose-submit-button").addClass("disable-btn");
 }
 
 export function get_compose_click_target(e) {

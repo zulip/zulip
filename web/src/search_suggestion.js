@@ -100,8 +100,9 @@ function get_stream_suggestions(last, operators) {
     const invalid = [
         {operator: "stream"},
         {operator: "streams"},
-        {operator: "is", operand: "private"},
-        {operator: "pm-with"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm"},
+        {operator: "dm-including"},
     ];
     if (!check_validity(last, operators, valid, invalid)) {
         return [];
@@ -135,7 +136,9 @@ function get_stream_suggestions(last, operators) {
 }
 
 function get_group_suggestions(last, operators) {
-    if (!check_validity(last, operators, ["pm-with"], [{operator: "stream"}])) {
+    // For users with "pm-with" in their muscle memory, still
+    // have group direct message suggestions with "dm:" operator.
+    if (!check_validity(last, operators, ["dm", "pm-with"], [{operator: "stream"}])) {
         return [];
     }
 
@@ -174,13 +177,13 @@ function get_group_suggestions(last, operators) {
     // Take top 15 persons, since they're ordered by pm_recipient_count.
     persons = persons.slice(0, 15);
 
-    const prefix = Filter.operator_to_prefix("pm-with", negated);
+    const prefix = Filter.operator_to_prefix("dm", negated);
 
     const person_highlighter = make_person_highlighter(last_part);
 
     const suggestions = persons.map((person) => {
         const term = {
-            operator: "pm-with",
+            operator: "dm",
             operand: all_but_last_part + "," + person.email,
             negated,
         };
@@ -193,7 +196,7 @@ function get_group_suggestions(last, operators) {
 
         let terms = [term];
         if (negated) {
-            terms = [{operator: "is", operand: "private"}, term];
+            terms = [{operator: "is", operand: "dm"}, term];
         }
 
         return {
@@ -221,9 +224,9 @@ function make_people_getter(last) {
 
         let query;
 
-        // This next block is designed to match the behavior of the
-        // `is:private` block in get_person_suggestions
-        if (last.operator === "is" && last.operand === "private") {
+        // This next block is designed to match the behavior
+        // of the "is:dm" block in get_person_suggestions.
+        if (last.operator === "is" && last.operand === "dm") {
             query = "";
         } else {
             query = last.operand;
@@ -235,11 +238,11 @@ function make_people_getter(last) {
     };
 }
 
-// Possible args for autocomplete_operator: pm-with, sender, from
+// Possible args for autocomplete_operator: dm, pm-with, sender, from, dm-including
 function get_person_suggestions(people_getter, last, operators, autocomplete_operator) {
-    if (last.operator === "is" && last.operand === "private") {
-        // Interpret 'is:private' as equivalent to 'pm-with:'
-        last = {operator: "pm-with", operand: "", negated: false};
+    if ((last.operator === "is" && last.operand === "dm") || last.operator === "pm-with") {
+        // Interpret "is:dm" or "pm-with:" operator as equivalent to "dm:".
+        last = {operator: "dm", operand: "", negated: false};
     }
 
     const query = last.operand;
@@ -251,11 +254,24 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const valid = ["search", autocomplete_operator];
     let invalid;
-    if (autocomplete_operator === "pm-with") {
-        invalid = [{operator: "pm-with"}, {operator: "stream"}];
-    } else {
-        // If not pm-with, then this must either be 'sender' or 'from'
-        invalid = [{operator: "sender"}, {operator: "from"}];
+
+    switch (autocomplete_operator) {
+        case "dm-including":
+            invalid = [{operator: "stream"}, {operator: "is", operand: "resolved"}];
+            break;
+        case "dm":
+        case "pm-with":
+            invalid = [
+                {operator: "dm"},
+                {operator: "pm-with"},
+                {operator: "stream"},
+                {operator: "is", operand: "resolved"},
+            ];
+            break;
+        case "sender":
+        case "from":
+            invalid = [{operator: "sender"}, {operator: "from"}];
+            break;
     }
 
     if (!check_validity(last, operators, valid, invalid)) {
@@ -276,10 +292,15 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
                 negated: last.negated,
             },
         ];
-        if (autocomplete_operator === "pm-with" && last.negated) {
-            // In the special case of '-pm-with', add 'is:private' before it
-            // because we assume the user still wants to narrow to PMs
-            terms.unshift({operator: "is", operand: "private"});
+
+        if (
+            last.negated &&
+            (autocomplete_operator === "dm" || autocomplete_operator === "pm-with")
+        ) {
+            // In the special case of "-dm" or "-pm-with", add "is:dm" before
+            // it because we assume the user still wants to narrow to direct
+            // messages.
+            terms.unshift({operator: "is", operand: "dm"});
         }
 
         return {
@@ -336,8 +357,9 @@ export function get_topic_suggestions_from_candidates({candidate_topics, guess})
 
 function get_topic_suggestions(last, operators) {
     const invalid = [
-        {operator: "pm-with"},
-        {operator: "is", operand: "private"},
+        {operator: "dm"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm-including"},
         {operator: "topic"},
     ];
     if (!check_validity(last, operators, ["stream", "topic", "search"], invalid)) {
@@ -491,10 +513,10 @@ function get_streams_filter_suggestions(last, operators) {
             search_string: "streams:public",
             description_html: "All public streams in organization",
             invalid: [
-                {operator: "is", operand: "private"},
+                {operator: "is", operand: "dm"},
                 {operator: "stream"},
-                {operator: "group-pm-with"},
-                {operator: "pm-with"},
+                {operator: "dm-including"},
+                {operator: "dm"},
                 {operator: "in"},
                 {operator: "streams"},
             ],
@@ -505,12 +527,13 @@ function get_streams_filter_suggestions(last, operators) {
 function get_is_filter_suggestions(last, operators) {
     const suggestions = [
         {
-            search_string: "is:private",
+            search_string: "is:dm",
             description_html: "direct messages",
             invalid: [
-                {operator: "is", operand: "private"},
+                {operator: "is", operand: "dm"},
+                {operator: "is", operand: "resolved"},
                 {operator: "stream"},
-                {operator: "pm-with"},
+                {operator: "dm"},
                 {operator: "in"},
             ],
         },
@@ -537,7 +560,12 @@ function get_is_filter_suggestions(last, operators) {
         {
             search_string: "is:resolved",
             description_html: "topics marked as resolved",
-            invalid: [{operator: "is", operand: "resolved"}],
+            invalid: [
+                {operator: "is", operand: "resolved"},
+                {operator: "is", operand: "dm"},
+                {operator: "dm"},
+                {operator: "dm-including"},
+            ],
         },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
@@ -607,6 +635,14 @@ function get_sent_by_me_suggestions(last, operators) {
 }
 
 function get_operator_suggestions(last) {
+    // Suggest "is:dm" to anyone with "is:private" in their muscle memory
+    if (last.operator === "is" && common.phrase_match(last.operand, "private")) {
+        const is_dm = format_as_suggestion([
+            {operator: last.operator, operand: "dm", negated: last.negated},
+        ]);
+        return [is_dm];
+    }
+
     if (!(last.operator === "search")) {
         return [];
     }
@@ -618,10 +654,15 @@ function get_operator_suggestions(last) {
         last_operand = last_operand.slice(1);
     }
 
-    let choices = ["stream", "topic", "pm-with", "sender", "near", "from", "group-pm-with"];
+    let choices = ["stream", "topic", "dm", "dm-including", "sender", "near", "from", "pm-with"];
     choices = choices.filter((choice) => common.phrase_match(last_operand, choice));
 
     return choices.map((choice) => {
+        // Map results for "dm:" operator for users
+        // who have "pm-with" in their muscle memory.
+        if (choice === "pm-with") {
+            choice = "dm";
+        }
         const op = [{operator: choice, operand: "", negated}];
         return format_as_suggestion(op);
     });
@@ -666,31 +707,17 @@ class Attacher {
 
 export function get_search_result(base_query, query) {
     let suggestion;
-    let all_operators;
 
     // search_operators correspond to the operators for the query in the input.
-    // For search_pills_enabled, this includes just editable query where search pills
-    // have not been created yet.
-    // And for this disabled case, this includes the entire query entered in the searchbox.
+    // This includes the entire query entered in the searchbox.
     // operators correspond to the operators for the entire query entered in the searchbox.
-    if (page_params.search_pills_enabled) {
-        all_operators = Filter.parse((base_query + " " + query).trim());
-    }
     const search_operators = Filter.parse(query);
     let last = {operator: "", operand: "", negated: false};
     if (search_operators.length > 0) {
-        last = search_operators.slice(-1)[0];
-    } else if (page_params.search_pills_enabled) {
-        // We push an empty term so that we can get suggestions
-        // on the empty string based on the base query which is
-        // calculated from the created search pills.
-        // Else search results are returned as if the user is still
-        // typing the non-editable last search pill.
-        all_operators.push(last);
-        search_operators.push(last);
+        last = search_operators.at(-1);
     }
 
-    const person_suggestion_ops = ["sender", "pm-with", "from", "group-pm"];
+    const person_suggestion_ops = ["sender", "dm", "dm-including", "from", "pm-with"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_operators is one out of person_suggestion_ops.
@@ -710,10 +737,6 @@ export function get_search_result(base_query, query) {
                 operand: person_op.operand + " " + last.operand,
                 negated: person_op.negated,
             };
-            if (page_params.search_pills_enabled) {
-                all_operators.splice(-2);
-                all_operators.push(last);
-            }
             search_operators.splice(-2);
             search_operators.push(last);
         }
@@ -747,9 +770,9 @@ export function get_search_result(base_query, query) {
         get_sent_by_me_suggestions,
         get_stream_suggestions,
         get_people("sender"),
-        get_people("pm-with"),
+        get_people("dm"),
+        get_people("dm-including"),
         get_people("from"),
-        get_people("group-pm-with"),
         get_group_suggestions,
         get_topic_suggestions,
         get_operator_suggestions,
@@ -767,10 +790,7 @@ export function get_search_result(base_query, query) {
         ];
     }
 
-    if (!page_params.search_pills_enabled) {
-        all_operators = search_operators;
-    }
-    const base_operators = all_operators.slice(0, -1);
+    const base_operators = search_operators.slice(0, -1);
     const max_items = max_num_of_search_results;
 
     for (const filterer of filterers) {
@@ -780,15 +800,7 @@ export function get_search_result(base_query, query) {
         }
     }
 
-    if (
-        !page_params.search_pills_enabled &&
-        // This is unique to the legacy search system.  With pills
-        // it is difficult to "suggest" a subset of operators,
-        // and there's a more natural mechanism under that paradigm,
-        // where the user just deletes one or more pills.  So you
-        // won't see this is in the new code.
-        attacher.result.length < max_items
-    ) {
+    if (attacher.result.length < max_items) {
         const subset_suggestions = get_operator_subset_suggestions(search_operators);
         attacher.push_many(subset_suggestions);
     }

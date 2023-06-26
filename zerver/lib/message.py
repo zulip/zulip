@@ -95,7 +95,7 @@ class RawUnreadStreamDict(TypedDict):
     topic: str
 
 
-class RawUnreadPrivateMessageDict(TypedDict):
+class RawUnreadDirectMessageDict(TypedDict):
     other_user_id: int
 
 
@@ -104,7 +104,7 @@ class RawUnreadHuddleDict(TypedDict):
 
 
 class RawUnreadMessagesResult(TypedDict):
-    pm_dict: Dict[int, RawUnreadPrivateMessageDict]
+    pm_dict: Dict[int, RawUnreadDirectMessageDict]
     stream_dict: Dict[int, RawUnreadStreamDict]
     huddle_dict: Dict[int, RawUnreadHuddleDict]
     mentions: Set[int]
@@ -119,7 +119,7 @@ class UnreadStreamInfo(TypedDict):
     unread_message_ids: List[int]
 
 
-class UnreadPrivateMessageInfo(TypedDict):
+class UnreadDirectMessageInfo(TypedDict):
     other_user_id: int
     # Deprecated and misleading synonym for other_user_id
     sender_id: int
@@ -132,7 +132,7 @@ class UnreadHuddleInfo(TypedDict):
 
 
 class UnreadMessagesResult(TypedDict):
-    pms: List[UnreadPrivateMessageInfo]
+    pms: List[UnreadDirectMessageInfo]
     streams: List[UnreadStreamInfo]
     huddles: List[UnreadHuddleInfo]
     mentions: List[int]
@@ -156,6 +156,10 @@ class SendMessageRequest:
     pm_mention_email_disabled_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
+    # IDs of users who have followed the topic the message is being sent to, and have the followed topic push notifications setting ON.
+    followed_topic_push_user_ids: Set[int]
+    # IDs of users who have followed the topic the message is being sent to, and have the followed topic email notifications setting ON.
+    followed_topic_email_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
@@ -163,6 +167,8 @@ class SendMessageRequest:
     service_bot_tuples: List[Tuple[int, int]]
     all_bot_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
+    # IDs of users who have followed the topic the message is being sent to, and have the followed topic wildcard mentions notify setting ON.
+    followed_topic_wildcard_mention_user_ids: Set[int]
     links_for_embed: Set[str]
     widget_content: Optional[Dict[str, Any]]
     submessages: List[Dict[str, Any]] = field(default_factory=list)
@@ -829,7 +835,7 @@ def has_message_access(
         return True
 
     if message.recipient.type != Recipient.STREAM:
-        # You can't access private messages you didn't receive
+        # You can't access direct messages you didn't receive
         return False
 
     if stream is None:
@@ -1065,7 +1071,7 @@ def get_raw_unread_data(
 def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
-    pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
+    pm_dict: Dict[int, RawUnreadDirectMessageDict] = {}
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, RawUnreadHuddleDict] = {}
@@ -1156,7 +1162,7 @@ def extract_unread_data_from_um_rows(
                 topic = row[MESSAGE__TOPIC]
                 if not is_row_muted(stream_id, recipient_id, topic):
                     mentions.add(message_id)
-            else:  # nocoverage # TODO: Test wildcard mentions in PMs.
+            else:  # nocoverage # TODO: Test wildcard mentions in direct messages.
                 mentions.add(message_id)
 
     # Record whether the user had more than MAX_UNREAD_MESSAGES total
@@ -1193,16 +1199,16 @@ def aggregate_streams(*, input_dict: Dict[int, RawUnreadStreamDict]) -> List[Unr
 
 
 def aggregate_pms(
-    *, input_dict: Dict[int, RawUnreadPrivateMessageDict]
-) -> List[UnreadPrivateMessageInfo]:
-    lookup_dict: Dict[int, UnreadPrivateMessageInfo] = {}
+    *, input_dict: Dict[int, RawUnreadDirectMessageDict]
+) -> List[UnreadDirectMessageInfo]:
+    lookup_dict: Dict[int, UnreadDirectMessageInfo] = {}
     for message_id, attribute_dict in input_dict.items():
         other_user_id = attribute_dict["other_user_id"]
         if other_user_id not in lookup_dict:
             # The `sender_id` field here is only supported for
             # legacy mobile clients. Its actual semantics are the same
             # as `other_user_id`.
-            obj = UnreadPrivateMessageInfo(
+            obj = UnreadDirectMessageInfo(
                 other_user_id=other_user_id,
                 sender_id=other_user_id,
                 unread_message_ids=[],
@@ -1275,17 +1281,17 @@ def apply_unread_message_event(
 ) -> None:
     message_id = message["id"]
     if message["type"] == "stream":
-        message_type = "stream"
+        recipient_type = "stream"
     elif message["type"] == "private":
         others = [recip for recip in message["display_recipient"] if recip["id"] != user_profile.id]
         if len(others) <= 1:
-            message_type = "private"
+            recipient_type = "private"
         else:
-            message_type = "huddle"
+            recipient_type = "huddle"
     else:
         raise AssertionError("Invalid message type {}".format(message["type"]))
 
-    if message_type == "stream":
+    if recipient_type == "stream":
         stream_id = message["stream_id"]
         topic = message[TOPIC_NAME]
         state["stream_dict"][message_id] = RawUnreadStreamDict(
@@ -1302,13 +1308,13 @@ def apply_unread_message_event(
         ):
             state["unmuted_stream_msgs"].add(message_id)
 
-    elif message_type == "private":
+    elif recipient_type == "private":
         if len(others) == 1:
             other_user_id = others[0]["id"]
         else:
             other_user_id = user_profile.id
 
-        state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+        state["pm_dict"][message_id] = RawUnreadDirectMessageDict(
             other_user_id=other_user_id,
         )
 
@@ -1405,11 +1411,11 @@ def add_message_to_unread_msgs(
         user_ids: List[int] = message_details["user_ids"]
         user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
         if user_ids == []:
-            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+            state["pm_dict"][message_id] = RawUnreadDirectMessageDict(
                 other_user_id=my_user_id,
             )
         elif len(user_ids) == 1:
-            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+            state["pm_dict"][message_id] = RawUnreadDirectMessageDict(
                 other_user_id=user_ids[0],
             )
         else:
@@ -1493,9 +1499,9 @@ def get_recent_conversations_recipient_id(
 def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dict[str, Any]]:
     """This function uses some carefully optimized SQL queries, designed
     to use the UserMessage index on private_messages.  It is
-    significantly complicated by the fact that for 1:1 private
+    significantly complicated by the fact that for 1:1 direct
     messages, we store the message against a recipient_id of whichever
-    user was the recipient, and thus for 1:1 private messages sent
+    user was the recipient, and thus for 1:1 direct messages sent
     directly to us, we need to look up the other user from the
     sender_id on those messages.  You'll see that pattern repeated
     both here and also in zerver/lib/events.py.
@@ -1575,8 +1581,8 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
 
     # The resulting rows will be (recipient_id, max_message_id)
     # objects for all parties we've had recent (group?) private
-    # message conversations with, including PMs with yourself (those
-    # will generate an empty list of user_ids).
+    # message conversations with, including direct messages with
+    # yourself (those will generate an empty list of user_ids).
     for recipient_id, max_message_id in rows:
         recipient_map[recipient_id] = dict(
             max_message_id=max_message_id,

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version=18.15.0
+version=18.16.0
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="node-v$version-linux-x64.tar.xz"
-        sha256=c8c5fa53ce0c0f248e45983e86368e0b1daf84b77e88b310f769c3cfc12682ef
+        sha256=44d93d9b4627fe5ae343012d855491d62c7381b236c347f7666a7ad070f26548
         ;;
 
     aarch64)
         tarball="node-v$version-linux-arm64.tar.xz"
-        sha256=98ea6ed0a1ae55334ab2c03c34d5e52c6dc3dee8f236c0afc08ab1c964506633
+        sha256=c81dfa0bada232cb4583c44d171ea207934f7356f85f9184b32d0dde69e2e0ea
         ;;
 esac
 
@@ -22,6 +22,7 @@ check_version() {
 }
 
 if ! check_version 2>/dev/null; then
+    set -x
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"

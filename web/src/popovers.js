@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {add, formatISO, parseISO, set} from "date-fns";
+import {parseISO} from "date-fns";
 import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
 
@@ -32,7 +32,6 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
-import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_bots from "./settings_bots";
@@ -164,7 +163,7 @@ function load_medium_avatar(user, $elt) {
 }
 
 function calculate_info_popover_placement(size, $elt) {
-    const ypos = $elt.offset().top;
+    const ypos = $elt.get_offset_to_window().top;
 
     if (!(ypos + size / 2 < message_viewport.height() && ypos > size / 2)) {
         if (ypos + size < message_viewport.height()) {
@@ -194,7 +193,7 @@ function show_user_info_popover_manage_menu(element, user) {
     const is_me = people.is_my_user_id(user.user_id);
     const is_muted = muted_users.is_user_muted(user.user_id);
     const is_system_bot = user.is_system_bot;
-    const muting_allowed = !is_me && !user.is_bot;
+    const muting_allowed = !is_me;
 
     const args = {
         can_mute: muting_allowed && !is_muted,
@@ -211,6 +210,7 @@ function show_user_info_popover_manage_menu(element, user) {
         placement: "bottom",
         html: true,
         trigger: "manual",
+        fixed: true,
     });
 
     $popover_elt.popover("show");
@@ -275,7 +275,7 @@ function render_user_info_popover(
         pm_with_url: hash_util.pm_with_url(user.email),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         private_message_class: private_msg_class,
-        sent_by_uri: hash_util.by_sender_url(user.email),
+        sent_by_url: hash_util.by_sender_url(user.email),
         show_manage_menu,
         user_email: user.delivery_email,
         user_full_name: user.full_name,
@@ -304,10 +304,7 @@ function render_user_info_popover(
     const $popover_content = $(render_user_info_popover_content(args));
     popover_element.popover({
         content: $popover_content.get(0),
-        // TODO: Determine whether `fixed` should be applied
-        // unconditionally.  Right now, we only do it for the user
-        // sidebar version of the popover.
-        fixed: template_class === "user_popover",
+        fixed: true,
         placement: popover_placement,
         template: render_no_arrow_popover({class: template_class}),
         title: render_user_info_popover_title({
@@ -317,7 +314,7 @@ function render_user_info_popover(
         }),
         html: true,
         trigger: "manual",
-        top_offset: $("#userlist-title").offset().top + 15,
+        top_offset: $("#userlist-title").get_offset_to_window().top + 15,
         fix_positions: true,
     });
     popover_element.popover("show");
@@ -366,7 +363,10 @@ function show_user_info_popover_for_message(element, user, message) {
         if (user === undefined) {
             // This is never supposed to happen, not even for deactivated
             // users, so we'll need to debug this error if it occurs.
-            blueslip.error("Bad sender in message" + message.sender_id);
+            blueslip.error("Bad sender in message", {
+                zid: message.id,
+                sender_id: message.sender_id,
+            });
             return;
         }
 
@@ -498,6 +498,7 @@ function show_user_group_info_popover(element, group, message) {
             content: render_user_group_info_popover_content(args),
             html: true,
             trigger: "manual",
+            fixed: true,
         });
         $elt.popover("show");
         $current_message_info_popover_elem = $elt;
@@ -668,7 +669,12 @@ export function user_info_popover_manage_menu_handle_keyboard(key) {
 
 export function show_sender_info() {
     const $message = $(".selected_message");
-    const $sender = $message.find(".sender_info_hover");
+    let $sender = $message.find(".inline_profile_picture");
+    if ($sender.length === 0) {
+        // Messages without an avatar have an invisible message_sender
+        // element that's roughly in the right place.
+        $sender = $message.find(".message_sender");
+    }
 
     const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
@@ -702,7 +708,7 @@ export function toggle_playground_link_popover(element, playground_info) {
     }
     const $elt = $(element);
     if ($elt.data("popover") === undefined) {
-        const ypos = $elt.offset().top;
+        const ypos = $elt.get_offset_to_window().top;
         $elt.popover({
             // It's unlikely we'll have more than 3-4 playground links
             // for one language, so it should be OK to hardcode 120 here.
@@ -711,6 +717,7 @@ export function toggle_playground_link_popover(element, playground_info) {
             content: render_playground_links_popover_content({playground_info}),
             html: true,
             trigger: "manual",
+            fixed: true,
         });
         $elt.popover("show");
         $current_playground_links_popover_elem = $elt;
@@ -814,7 +821,7 @@ export function register_click_handlers() {
         if (overlays.is_active()) {
             overlays.close_active();
         }
-        narrow.by("pm-with", email, {trigger: "user sidebar popover"});
+        narrow.by("dm", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
         e.preventDefault();
     });
@@ -987,59 +994,9 @@ export function register_click_handlers() {
         current_user_sidebar_popover = $target.data("popover");
     });
 
-    $("body").on("click", ".remind.custom", (e) => {
-        $(e.currentTarget)[0]._flatpickr.toggle();
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    function reminder_click_handler(datestr, e) {
-        const message_id = $(".remind.custom").data("message-id");
-        reminder.do_set_reminder_for_message(message_id, datestr);
-        hide_all();
-        e.stopPropagation();
-        e.preventDefault();
-    }
-
-    $("body").on("click", ".remind.in_20m", (e) => {
-        const datestr = formatISO(add(new Date(), {minutes: 20}));
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.in_1h", (e) => {
-        const datestr = formatISO(add(new Date(), {hours: 1}));
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.in_3h", (e) => {
-        const datestr = formatISO(add(new Date(), {hours: 3}));
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.tomo", (e) => {
-        const datestr = formatISO(
-            set(add(new Date(), {days: 1}), {hours: 9, minutes: 0, seconds: 0}),
-        );
-        reminder_click_handler(datestr, e);
-    });
-
-    $("body").on("click", ".remind.nxtw", (e) => {
-        const datestr = formatISO(
-            set(add(new Date(), {weeks: 1}), {hours: 9, minutes: 0, seconds: 0}),
-        );
-        reminder_click_handler(datestr, e);
-    });
-
     $("body").on("click", ".flatpickr-calendar", (e) => {
         e.stopPropagation();
         e.preventDefault();
-    });
-
-    $("body").on("click", ".flatpickr-confirm", (e) => {
-        if ($(".remind.custom")[0]) {
-            const datestr = $(".remind.custom")[0].value;
-            reminder_click_handler(datestr, e);
-        }
     });
 
     $("body").on("click", ".respond_personal_button, .compose_private_message", (e) => {
@@ -1068,7 +1025,7 @@ export function register_click_handlers() {
     {
         let last_scroll = 0;
 
-        $(".app").on("scroll", () => {
+        $(document).on("scroll", () => {
             if (suppress_scroll_hide) {
                 suppress_scroll_hide = false;
                 return;
@@ -1115,7 +1072,6 @@ export function any_active() {
         popover_menus.any_active() ||
         user_sidebar_popped() ||
         stream_popover.stream_popped() ||
-        stream_popover.topic_popped() ||
         message_info_popped() ||
         user_info_popped() ||
         emoji_picker.reactions_popped() ||
@@ -1135,7 +1091,6 @@ export function hide_all_except_sidebars(opts) {
     emoji_picker.hide_emoji_popover();
     giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
-    stream_popover.hide_topic_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();
 

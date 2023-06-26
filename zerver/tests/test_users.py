@@ -1,6 +1,6 @@
 import datetime
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Mapping, Optional, TypeVar, Union
+from typing import Any, Dict, Iterable, List, Optional, TypeVar, Union
 from unittest import mock
 
 import orjson
@@ -213,8 +213,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(othello_dict["is_owner"])
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -224,7 +223,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -236,7 +235,7 @@ class PermissionTest(ZulipTestCase):
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -244,7 +243,7 @@ class PermissionTest(ZulipTestCase):
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], iago.id)
         self.assertEqual(person["role"], UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list([], expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
         self.assert_json_error(
             result, "The owner permission cannot be removed from the only organization owner."
@@ -252,7 +251,7 @@ class PermissionTest(ZulipTestCase):
 
         do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login("iago")
-        with self.tornado_redirected_to_list([], expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
         self.assert_json_error(result, "Must be an organization owner")
 
@@ -275,8 +274,7 @@ class PermissionTest(ZulipTestCase):
         # Giveth
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -287,7 +285,7 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.tornado_redirected_to_list(events, expected_num_events=4):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -513,11 +511,10 @@ class PermissionTest(ZulipTestCase):
         )
 
         req = dict(role=orjson.dumps(new_role).decode())
-        events: List[Mapping[str, Any]] = []
         num_events = 3
         if UserProfile.ROLE_MEMBER in [old_role, new_role]:
             num_events = 4
-        with self.tornado_redirected_to_list(events, expected_num_events=num_events):
+        with self.capture_send_event_calls(expected_num_events=num_events) as events:
             result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_success(result)
 
@@ -789,11 +786,9 @@ class QueryCountTest(ZulipTestCase):
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
-        events: List[Mapping[str, Any]] = []
-
-        with self.assert_database_query_count(88):
+        with self.assert_database_query_count(91):
             with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events, expected_num_events=11):
+                with self.capture_send_event_calls(expected_num_events=11) as events:
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -883,7 +878,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         self.assertEqual(admin.can_create_users, False)
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "User not authorized for this query")
+        self.assert_json_error(result, "User not authorized to create users")
 
         do_change_can_create_users(admin, True)
         # can_create_users is insufficient without being a realm administrator:
@@ -962,6 +957,7 @@ class AdminCreateUserTest(ZulipTestCase):
         result = orjson.loads(result.content)
         self.assertEqual(new_user.full_name, "Romeo Montague")
         self.assertEqual(new_user.id, result["user_id"])
+        self.assertEqual(new_user.tos_version, UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
 
         # Make sure the recipient field is set correctly.
         self.assertEqual(
@@ -1192,8 +1188,7 @@ class UserProfileTest(ZulipTestCase):
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0):
             copy_default_settings(cordelia, iago)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
@@ -1249,8 +1244,7 @@ class UserProfileTest(ZulipTestCase):
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0):
             copy_default_settings(realm_user_default, cordelia)
 
         self.assertEqual(cordelia.default_view, "recent_topics")
@@ -1704,16 +1698,21 @@ class ActivateTest(ZulipTestCase):
         assert email is not None
         email.users.remove(*to_user_ids)
 
+        email_id = email.id
+        scheduled_at = email.scheduled_timestamp
         with self.assertLogs("zulip.send_email", level="INFO") as info_log:
             deliver_scheduled_emails(email)
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
-        self.assertEqual(ScheduledEmail.objects.count(), 1)
+        self.assertEqual(ScheduledEmail.objects.count(), 0)
         self.assertEqual(
             info_log.output,
             [
-                f"ERROR:zulip.send_email:ScheduledEmail id {email.id} has empty users and address attributes."
+                f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
+                "had empty users and address attributes: "
+                "{'template_prefix': 'zerver/emails/followup_day1', 'from_name': None, "
+                "'from_address': None, 'language': None, 'context': {}}"
             ],
         )
 
@@ -1769,6 +1768,9 @@ class RecipientInfoTest(ZulipTestCase):
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
+            followed_topic_push_user_ids=set(),
+            followed_topic_email_user_ids=set(),
+            followed_topic_wildcard_mention_user_ids=set(),
             muted_sender_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
@@ -1984,6 +1986,58 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
         self.assertEqual(info.all_bot_user_ids, {normal_bot.id, service_bot.id})
+
+        # Now Hamlet follows the topic with the 'followed_topic_email_notifications',
+        # 'followed_topic_push_notifications' and 'followed_topic_wildcard_mention_notify'
+        # global settings enabled by default.
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info.followed_topic_email_user_ids, {hamlet.id})
+        self.assertEqual(info.followed_topic_push_user_ids, {hamlet.id})
+        self.assertEqual(info.followed_topic_wildcard_mention_user_ids, {hamlet.id})
+
+        # Omit Hamlet from followed_topic_email_user_ids
+        do_change_user_setting(
+            hamlet,
+            "enable_followed_topic_email_notifications",
+            False,
+            acting_user=None,
+        )
+        # Omit Hamlet from followed_topic_push_user_ids
+        do_change_user_setting(
+            hamlet,
+            "enable_followed_topic_push_notifications",
+            False,
+            acting_user=None,
+        )
+        # Omit Hamlet from followed_topic_wildcard_mention_user_ids
+        do_change_user_setting(
+            hamlet,
+            "enable_followed_topic_wildcard_mentions_notify",
+            False,
+            acting_user=None,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info.followed_topic_email_user_ids, set())
+        self.assertEqual(info.followed_topic_push_user_ids, set())
+        self.assertEqual(info.followed_topic_wildcard_mention_user_ids, set())
 
     def test_get_recipient_info_invalid_recipient_type(self) -> None:
         hamlet = self.example_user("hamlet")

@@ -321,7 +321,7 @@ test("title_data", () => {
 
     expected_data = {
         first_line: "Old User",
-        second_line: "translated: Last active: translated: More than 2 weeks ago",
+        second_line: "translated: Active more than 2 weeks ago",
         third_line: "",
         show_you: false,
     };
@@ -459,24 +459,24 @@ test("user_last_seen_time_status", ({override}) => {
     page_params.realm_is_zephyr_mirror_realm = true;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Last active: translated: Unknown",
+        "translated: Activity unknown",
     );
     page_params.realm_is_zephyr_mirror_realm = false;
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Last active: translated: More than 2 weeks ago",
+        "translated: Active more than 2 weeks ago",
     );
 
     presence.presence_info.set(old_user.user_id, {last_active: 1526137743});
 
     override(timerender, "last_seen_status_from_date", (date) => {
         assert.deepEqual(date, new Date(1526137743000));
-        return "May 12";
+        return "translated: Active May 12";
     });
 
     assert.equal(
         buddy_data.user_last_seen_time_status(old_user.user_id),
-        "translated: Last active: May 12",
+        "translated: Active May 12",
     );
 
     set_presence(selma.user_id, "idle");
@@ -510,7 +510,7 @@ test("get_items_for_users", () => {
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
         {
             faded: false,
-            href: "#narrow/pm-with/1001-Human-Myself",
+            href: "#narrow/dm/1001-Human-Myself",
             is_current_user: true,
             name: "Human Myself",
             num_unread: 0,
@@ -522,7 +522,7 @@ test("get_items_for_users", () => {
         },
         {
             faded: false,
-            href: "#narrow/pm-with/1002-Alice-Smith",
+            href: "#narrow/dm/1002-Alice-Smith",
             is_current_user: false,
             name: "Alice Smith",
             num_unread: 0,
@@ -534,7 +534,7 @@ test("get_items_for_users", () => {
         },
         {
             faded: false,
-            href: "#narrow/pm-with/1003-Fred-Flintstone",
+            href: "#narrow/dm/1003-Fred-Flintstone",
             is_current_user: false,
             name: "Fred Flintstone",
             num_unread: 0,
@@ -549,7 +549,7 @@ test("get_items_for_users", () => {
 
 test("error handling", () => {
     presence.presence_info.set(42, {status: "active"});
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
+    blueslip.expect("error", "Unknown user_id in get_by_user_id");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
     buddy_data.get_filtered_and_sorted_user_ids();
 });

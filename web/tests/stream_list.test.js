@@ -21,22 +21,24 @@ mock_esm("../src/narrow_state", {
     active: () => false,
 });
 const topic_list = mock_esm("../src/topic_list");
-mock_esm("../src/keydown_util", {
-    handle: noop,
-});
 const scroll_util = mock_esm("../src/scroll_util", {
     scroll_element_into_container() {},
+    get_scroll_element: ($element) => $element,
 });
-mock_esm("../src/ui", {get_scroll_element: ($element) => $element});
 mock_esm("../src/unread", {
-    num_unread_for_stream: () => num_unread_for_stream,
+    num_unread_for_stream: () => ({
+        unmuted_count: num_unread_for_stream,
+        stream_is_muted: false,
+        muted_count: 0,
+    }),
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
+    stream_has_any_unmuted_mentions: () => noop,
 });
 
 const {Filter} = zrequire("../src/filter");
-const stream_sort = zrequire("stream_sort");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
+const stream_list_sort = zrequire("stream_list_sort");
 
 const devel = {
     name: "devel",
@@ -70,7 +72,7 @@ function create_devel_sidebar_row({mock_template}) {
     $subscription_block.set_find_results(".unread_mention_info", $devel_unread_mention_info);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
-        assert.equal(data.uri, "#narrow/stream/100-devel");
+        assert.equal(data.url, "#narrow/stream/100-devel");
         return "<devel-sidebar-row-stub>";
     });
 
@@ -93,7 +95,7 @@ function create_social_sidebar_row({mock_template}) {
     $subscription_block.set_find_results(".unread_mention_info", $social_unread_mention_info);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
-        assert.equal(data.uri, "#narrow/stream/200-social");
+        assert.equal(data.url, "#narrow/stream/200-social");
         return "<social-sidebar-row-stub>";
     });
 
@@ -182,7 +184,6 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
 
     mock_template("stream_privacy.hbs", false, (data) => {
         assert.equal(data.invite_only, true);
-        assert.equal(data.dark_background, "dark_background");
         return "<div>privacy-html";
     });
     stream_list.redraw_stream_privacy(social);
@@ -195,11 +196,11 @@ test_ui("create_sidebar_row", ({override_rewire, mock_template}) => {
     assert.ok(!$social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    override_rewire(stream_data, "is_active", () => true);
+    override_rewire(stream_list_sort, "has_recent_activity", () => true);
     row.update_whether_active();
     assert.ok(!$social_li.hasClass("inactive_stream"));
 
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
     row.update_whether_active();
     assert.ok($social_li.hasClass("inactive_stream"));
 
@@ -224,16 +225,16 @@ test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
     const $social_sidebar = $("<social-sidebar-row-stub>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
 
     stream_list.build_stream_list();
     assert.ok($social_sidebar.hasClass("inactive_stream"));
 
-    override_rewire(stream_data, "is_active", () => true);
+    override_rewire(stream_list_sort, "has_recent_activity", () => true);
     row.update_whether_active();
     assert.ok(!$social_sidebar.hasClass("inactive_stream"));
 
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
     row.update_whether_active();
     assert.ok($social_sidebar.hasClass("inactive_stream"));
 
@@ -241,7 +242,7 @@ test_ui("pinned_streams_never_inactive", ({override_rewire, mock_template}) => {
     const $devel_sidebar = $("<devel-sidebar-row-stub>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    override_rewire(stream_data, "is_active", () => false);
+    override_rewire(stream_list_sort, "has_recent_activity", () => false);
 
     stream_list.build_stream_list();
     assert.ok(!$devel_sidebar.hasClass("inactive_stream"));
@@ -374,7 +375,7 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
     $("#stream-filters-container")[0] = {
         dataset: {},
     };
-    stream_list.set_event_handlers();
+    stream_list.initialize_stream_cursor();
 
     mock_template("filter_topics", false, () => "filter-topics-stub");
     let filter_topics_appended = false;
@@ -426,8 +427,6 @@ test_ui("narrowing", ({mock_template}) => {
 
     assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
-    stream_list.set_event_handlers();
-
     let filter;
 
     filter = new Filter([{operator: "stream", operand: "devel"}]);
@@ -463,14 +462,14 @@ test_ui("narrowing", ({mock_template}) => {
 });
 
 test_ui("focusout_user_filter", () => {
-    stream_list.set_event_handlers();
+    stream_list.set_event_handlers({narrow_on_stream_click() {}});
     const e = {};
     const click_handler = $(".stream-list-filter").get_on_handler("focusout");
     click_handler(e);
 });
 
 test_ui("focus_user_filter", () => {
-    stream_list.set_event_handlers();
+    stream_list.set_event_handlers({narrow_on_stream_click() {}});
 
     initialize_stream_data();
     stream_list.build_stream_list();
@@ -494,7 +493,7 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
 
     initialize_stream_data();
 
-    override_rewire(stream_data, "is_active", (sub) => sub.name !== "cars");
+    override_rewire(stream_list_sort, "has_recent_activity", (sub) => sub.name !== "cars");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -523,7 +522,7 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     assert.ok(active_subheader_flag);
     assert.ok(inactive_subheader_flag);
 
-    const streams = stream_sort.get_streams();
+    const streams = stream_list_sort.get_streams();
 
     assert.deepEqual(streams, [
         // three groups: pinned, normal, dormant
@@ -582,7 +581,7 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire, mock_template})
     };
     add_row(DenmarkSub);
 
-    override_rewire(stream_data, "is_active", (sub) => sub.name !== "Denmark");
+    override_rewire(stream_list_sort, "has_recent_activity", (sub) => sub.name !== "Denmark");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -662,13 +661,12 @@ test_ui("rename_stream", ({mock_template}) => {
         assert.deepEqual(payload, {
             name: "Development",
             id: 1000,
-            uri: "#narrow/stream/1000-Development",
+            url: "#narrow/stream/1000-Development",
             is_muted: false,
             invite_only: undefined,
             is_web_public: undefined,
             color: payload.color,
             pin_to_top: true,
-            dark_background: payload.dark_background,
         });
         return {to_$: () => $li_stub};
     });

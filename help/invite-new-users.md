@@ -31,6 +31,8 @@ permission to invite users.
 
 {relative|gear|invite}
 
+1. Click **Send an email**.
+
 1. Enter a list of email addresses.
 
 1. Select when the invitation will expire.

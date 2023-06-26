@@ -30,8 +30,8 @@ messages) from desktop notifications.
 
 ## Wildcard mentions
 
-By default, wildcard mentions (`@**all**`, `@**everyone**`) trigger
-email/push notifications as though they were personal @-mentions.  You
+By default, wildcard mentions (`@**all**`, `@**everyone**`, or `@**stream**`)
+trigger email/push notifications as though they were personal @-mentions.  You
 can toggle whether you receive notifications for wildcard mentions.
 
 !!! tip ""

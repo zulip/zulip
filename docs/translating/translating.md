@@ -26,7 +26,7 @@ Zulip:
    progress, reporting problematic strings, etc.
 
 1. Sign up for [Transifex](https://www.transifex.com) and ask to join the [Zulip
-   project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
+   project on Transifex](https://explore.transifex.com/zulip/zulip/), requesting access
    to any languages that you'd like to contribute to (or add new ones).
 
    :::{note}

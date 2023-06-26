@@ -187,8 +187,10 @@ export function render_now(time: Date, today = new Date()): TimeRender {
     };
 }
 
+// Relative time rendering for use in most screens like Recent conversations.
+//
 // Current date is passed as an argument for unit testing
-export function last_seen_status_from_date(
+export function relative_time_string_from_date(
     last_active_date: Date,
     current_date = new Date(),
 ): string {
@@ -222,8 +224,50 @@ export function last_seen_status_from_date(
         last_active_date.getFullYear() === current_date.getFullYear()
     ) {
         // Online more than 90 days ago, in the same year
+        return get_localized_date_or_time_for_format(last_active_date, "dayofyear");
+    }
+    return get_localized_date_or_time_for_format(last_active_date, "dayofyear_year");
+}
+
+// Relative time logic variant use in the buddy list, where every
+// string has "Active" init. This is hard to deduplicate with
+// relative_time_string_from_date because of complexities involved in i18n and
+// word order.
+//
+// Current date is passed as an argument for unit testing
+export function last_seen_status_from_date(
+    last_active_date: Date,
+    current_date = new Date(),
+): string {
+    const minutes = differenceInMinutes(current_date, last_active_date);
+    if (minutes < 60) {
+        return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
+    }
+
+    const days_old = differenceInCalendarDays(current_date, last_active_date);
+    const hours = Math.floor(minutes / 60);
+
+    if (hours < 24) {
+        if (hours === 1) {
+            return $t({defaultMessage: "Active an hour ago"});
+        }
+        return $t({defaultMessage: "Active {hours} hours ago"}, {hours});
+    }
+
+    if (days_old === 1) {
+        return $t({defaultMessage: "Active yesterday"});
+    }
+
+    if (days_old < 90) {
+        return $t({defaultMessage: "Active {days_old} days ago"}, {days_old});
+    } else if (
+        days_old > 90 &&
+        days_old < 365 &&
+        last_active_date.getFullYear() === current_date.getFullYear()
+    ) {
+        // Online more than 90 days ago, in the same year
         return $t(
-            {defaultMessage: "{last_active_date}"},
+            {defaultMessage: "Active {last_active_date}"},
             {
                 last_active_date: get_localized_date_or_time_for_format(
                     last_active_date,
@@ -233,7 +277,7 @@ export function last_seen_status_from_date(
         );
     }
     return $t(
-        {defaultMessage: "{last_active_date}"},
+        {defaultMessage: "Active {last_active_date}"},
         {
             last_active_date: get_localized_date_or_time_for_format(
                 last_active_date,
@@ -355,9 +399,10 @@ export function get_timestamp_for_flatpickr(timestring: string): Date {
         // we use it to initialize the flatpickr instance.
         timestamp = parseISO(timestring);
     } finally {
-        // Otherwise, default to showing the current time.
+        // Otherwise, default to showing the current time to the hour.
         if (!timestamp || !isValid(timestamp)) {
             timestamp = new Date();
+            timestamp.setMinutes(0, 0);
         }
     }
     return timestamp;
@@ -399,14 +444,49 @@ export function absolute_time(timestamp: number, today = new Date()): string {
     );
 }
 
-export function get_full_datetime(time: Date): string {
+// Pass time_format="time" to not include seconds in the time format.
+export function get_full_datetime(time: Date, time_format: TimeFormat = "time_sec"): string {
+    const date_string = get_localized_date_or_time_for_format(time, "dayofyear_year");
+    const time_string = get_localized_date_or_time_for_format(time, time_format);
+    return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
+}
+
+// Preferred variant for displaying a full datetime to users in
+// contexts like tooltips, where the time was already displayed to the
+// user in a less precise format.
+export function get_full_datetime_clarification(
+    time: Date,
+    time_format: TimeFormat = "time_sec",
+): string {
     const locale = get_user_locale();
     const date_string = time.toLocaleDateString(locale);
-    let time_string = get_localized_date_or_time_for_format(time, "time_sec");
+    let time_string = get_localized_date_or_time_for_format(time, time_format);
 
     const tz_offset_str = get_tz_with_UTC_offset(time);
 
     time_string = time_string + " " + tz_offset_str;
 
     return $t({defaultMessage: "{date} at {time}"}, {date: date_string, time: time_string});
+}
+
+type TimeLimitSetting = {
+    value: number;
+    unit: string;
+};
+
+export function get_time_limit_setting_in_appropriate_unit(
+    time_limit_in_seconds: number,
+): TimeLimitSetting {
+    const time_limit_in_minutes = Math.floor(time_limit_in_seconds / 60);
+    if (time_limit_in_minutes < 60) {
+        return {value: time_limit_in_minutes, unit: "minute"};
+    }
+
+    const time_limit_in_hours = Math.floor(time_limit_in_minutes / 60);
+    if (time_limit_in_hours < 24) {
+        return {value: time_limit_in_hours, unit: "hour"};
+    }
+
+    const time_limit_in_days = Math.floor(time_limit_in_hours / 24);
+    return {value: time_limit_in_days, unit: "day"};
 }

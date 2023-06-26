@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, 
 from urllib.parse import urlencode
 
 import jwt
+import orjson
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -86,6 +87,7 @@ from zproject.backends import (
     ExternalAuthResult,
     GenericOpenIdConnectBackend,
     SAMLAuthBackend,
+    SAMLSPInitiatedLogout,
     ZulipLDAPAuthBackend,
     ZulipLDAPConfigurationError,
     ZulipRemoteUserBackend,
@@ -102,6 +104,8 @@ if TYPE_CHECKING:
 
 ParamT = ParamSpec("ParamT")
 ExtraContext = Optional[Dict[str, Any]]
+
+EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS = 3600
 
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
@@ -155,9 +159,9 @@ def maybe_send_to_registration(
     mobile_flow_otp: Optional[str] = None,
     desktop_flow_otp: Optional[str] = None,
     is_signup: bool = False,
-    password_required: bool = True,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
+    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -186,12 +190,25 @@ def maybe_send_to_registration(
     assert not (mobile_flow_otp and desktop_flow_otp)
     if mobile_flow_otp:
         set_expirable_session_var(
-            request.session, "registration_mobile_flow_otp", mobile_flow_otp, expiry_seconds=3600
+            request.session,
+            "registration_mobile_flow_otp",
+            mobile_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
     elif desktop_flow_otp:
         set_expirable_session_var(
-            request.session, "registration_desktop_flow_otp", desktop_flow_otp, expiry_seconds=3600
+            request.session,
+            "registration_desktop_flow_otp",
+            desktop_flow_otp,
+            expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
+        if params_to_store_in_authenticated_session:
+            set_expirable_session_var(
+                request.session,
+                "registration_desktop_flow_params_to_store_in_authenticated_session",
+                orjson.dumps(params_to_store_in_authenticated_session).decode(),
+                expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+            )
 
     try:
         # TODO: This should use get_realm_from_request, but a bunch of tests
@@ -242,13 +259,13 @@ def maybe_send_to_registration(
         except PreregistrationUser.DoesNotExist:
             existing_prereg_user = None
 
-        # password_required and full_name data passed here as argument should take precedence
+        # full_name data passed here as argument should take precedence
         # over the defaults with which the existing PreregistrationUser that we've just fetched
         # was created.
         prereg_user = create_preregistration_user(
             email,
             realm,
-            password_required=password_required,
+            password_required=False,
             full_name=full_name,
             full_name_validated=full_name_validated,
             multiuse_invite=multiuse_obj,
@@ -301,11 +318,23 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     # the request to registration.
     kwargs: Dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
-    kwargs.pop("subdomain", None)
-    kwargs.pop("redirect_to", None)
-    kwargs.pop("is_realm_creation", None)
 
-    kwargs["password_required"] = False
+    # These are the kwargs taken by maybe_send_to_registration. Remove anything
+    # else from the dict.
+    kwargs_to_pass = [
+        "email",
+        "full_name",
+        "mobile_flow_otp",
+        "desktop_flow_otp",
+        "is_signup",
+        "multiuse_object_key",
+        "full_name_validated",
+        "params_to_store_in_authenticated_session",
+    ]
+    for key in dict(kwargs):
+        if key not in kwargs_to_pass:
+            kwargs.pop(key, None)
+
     return maybe_send_to_registration(request, **kwargs)
 
 
@@ -328,6 +357,20 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     * A zulip:// URL to send control back to the mobile or desktop apps if they
       are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
     """
+
+    params_to_store_in_authenticated_session = result.data_dict.get(
+        "params_to_store_in_authenticated_session", {}
+    )
+    mobile_flow_otp = result.data_dict.get("mobile_flow_otp")
+    desktop_flow_otp = result.data_dict.get("desktop_flow_otp")
+    if not mobile_flow_otp and not desktop_flow_otp:
+        # We don't want to store anything in the browser session if we're doing
+        # mobile or desktop flows, since that's just an intermediary step and the
+        # browser session is not to be used any further. Storing extra data in
+        # it just risks bugs or leaking the data.
+        for key, value in params_to_store_in_authenticated_session.items():
+            request.session[key] = value
+
     user_profile = result.user_profile
     if user_profile is None or user_profile.is_mirror_dummy:
         return register_remote_user(request, result)
@@ -335,17 +378,15 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     # account, and we need to do the right thing depending whether
     # or not they're using the mobile OTP flow or want a browser session.
     is_realm_creation = result.data_dict.get("is_realm_creation")
-    mobile_flow_otp = result.data_dict.get("mobile_flow_otp")
-    desktop_flow_otp = result.data_dict.get("desktop_flow_otp")
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
-        return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+        return finish_desktop_flow(
+            request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
+        )
 
     do_login(request, user_profile)
-    redirect_to = request.headers.get("redirect_to", "")
-    if not redirect_to:
-        redirect_to = request.POST.get("redirect_to", "")
+    redirect_to = request.POST.get("redirect_to", "")
     if not redirect_to:
         redirect_to = result.data_dict.get("redirect_to", "")
 
@@ -354,11 +395,17 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
 
         if is_free_trial_offer_enabled():
             redirect_to = "{}?onboarding=true".format(reverse("initial_upgrade"))
+
     redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
     return HttpResponseRedirect(redirect_to)
 
 
-def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
+def finish_desktop_flow(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    otp: str,
+    params_to_store_in_authenticated_session: Optional[Dict[str, str]] = None,
+) -> HttpResponse:
     """
     The desktop otp flow returns to the app (through the clipboard)
     a token that allows obtaining (through log_into_subdomain) a logged in session
@@ -367,7 +414,14 @@ def finish_desktop_flow(request: HttpRequest, user_profile: UserProfile, otp: st
     of being created, as nothing more powerful is needed for the desktop flow
     and this ensures the key can only be used for completing this authentication attempt.
     """
-    result = ExternalAuthResult(user_profile=user_profile)
+    data_dict = None
+    if params_to_store_in_authenticated_session:
+        data_dict = ExternalAuthDataDict(
+            params_to_store_in_authenticated_session=params_to_store_in_authenticated_session
+        )
+
+    result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
+
     token = result.store_data()
     key = bytes.fromhex(otp)
     iv = secrets.token_bytes(12)
@@ -400,7 +454,7 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
 
     return response
 
@@ -486,8 +540,7 @@ def remote_user_sso(
 
 @has_request_variables
 def get_email_and_realm_from_jwt_authentication_request(
-    request: HttpRequest,
-    json_web_token: str = REQ("token", default=""),
+    request: HttpRequest, json_web_token: str
 ) -> Tuple[str, Realm]:
     realm = get_realm_from_request(request)
     if realm is None:
@@ -549,7 +602,8 @@ def get_email_and_realm_from_jwt_authentication(
 @csrf_exempt
 @require_post
 @log_view_func
-def remote_user_jwt(request: HttpRequest) -> HttpResponse:
+@has_request_variables
+def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpResponse:
     email, realm = get_email_and_realm_from_jwt_authentication_request(request)
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
@@ -591,9 +645,9 @@ def oauth_redirect_to_root(
     mobile_flow_otp: Optional[str] = REQ(default=None),
     desktop_flow_otp: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
-    main_site_uri = settings.ROOT_DOMAIN_URI + url
+    main_site_url = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == "social":
-        main_site_uri = (
+        main_site_url = (
             settings.EXTERNAL_URI_SCHEME
             + settings.SOCIAL_AUTH_SUBDOMAIN
             + "."
@@ -620,7 +674,7 @@ def oauth_redirect_to_root(
 
     params = {**params, **extra_url_params}
 
-    return redirect(append_url_query_string(main_site_uri, urllib.parse.urlencode(params)))
+    return redirect(append_url_query_string(main_site_url, urllib.parse.urlencode(params)))
 
 
 def handle_desktop_flow(
@@ -846,9 +900,11 @@ def login_page(
     is_preview = "preview" in request.GET
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         if request.user.is_authenticated and is_2fa_verified(request.user):
-            return HttpResponseRedirect(request.user.realm.uri)
+            redirect_to = get_safe_redirect_to(next, request.user.realm.uri)
+            return HttpResponseRedirect(redirect_to)
     elif request.user.is_authenticated and not is_preview:
-        return HttpResponseRedirect(request.user.realm.uri)
+        redirect_to = get_safe_redirect_to(next, request.user.realm.uri)
+        return HttpResponseRedirect(redirect_to)
     if is_subdomain_root_or_alias(request) and settings.ROOT_DOMAIN_LANDING_PAGE:
         redirect_url = reverse("realm_redirect")
         if request.GET:
@@ -964,7 +1020,7 @@ def process_api_key_fetch_authenticate_result(
     # Mark this request as having a logged-in user for our server logs.
     assert isinstance(user_profile, UserProfile)
     process_client(request, user_profile)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
 
     api_key = get_api_key(user_profile)
     return api_key
@@ -991,8 +1047,10 @@ def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> Json
 def jwt_fetch_api_key(
     request: HttpRequest,
     include_profile: bool = REQ(default=False, json_validator=check_bool),
+    token: str = REQ(default=""),
 ) -> HttpResponse:
-    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
+
     return_data: Dict[str, bool] = {}
 
     user_profile = authenticate(
@@ -1063,8 +1121,6 @@ def api_fetch_token(
     return_data: Dict[str, bool] = {}
 
     realm = get_realm_from_request(request)
-    # return json_success(request, data={"realm": realm, "username": username, 'password': password})
-
     if realm is None:
         raise InvalidSubdomainError
 
@@ -1082,7 +1138,10 @@ def api_fetch_token(
 
     api_key = process_api_key_fetch_authenticate_result(request, user_profile)
 
-    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(
+        request,
+        data={"api_key": api_key, "email": user_profile.delivery_email, "user_id": user_profile.id},
+    )
 
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
@@ -1167,8 +1226,40 @@ def json_fetch_api_key(
     return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
 
 
-
 logout_then_login = require_post(django_logout_then_login)
+
+
+def should_do_saml_sp_initiated_logout(request: HttpRequest) -> bool:
+    realm = RequestNotes.get_notes(request).realm
+    assert realm is not None
+
+    if not request.user.is_authenticated:
+        return False
+
+    if not saml_auth_enabled(realm):
+        return False
+
+    idp_name = SAMLSPInitiatedLogout.get_logged_in_user_idp(request)
+    if idp_name is None:
+        # This session wasn't authenticated via SAML, so proceed with normal logout process.
+        return False
+
+    return settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get(
+        "sp_initiated_logout_enabled", False
+    )
+
+
+@require_post
+def logout_view(request: HttpRequest, /, **kwargs: Any) -> HttpResponse:
+    if not should_do_saml_sp_initiated_logout(request):
+        return logout_then_login(request, **kwargs)
+
+    # This will first redirect to the IdP with a LogoutRequest and if successful on the IdP side,
+    # the user will be redirected to our SAMLResponse-handling endpoint with a success LogoutResponse,
+    # where we will finally terminate their session.
+    result = SAMLSPInitiatedLogout.slo_request_to_idp(request, return_to=None)
+
+    return result
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:

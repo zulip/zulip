@@ -9,7 +9,6 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.hotspots import copy_hotspots
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
-from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Realm,
     RealmUserDefault,
@@ -137,7 +136,6 @@ def create_user_profile(
         # If emails are visible to everyone, we can set this here and save a DB query
         user_profile.email = get_display_email_address(user_profile)
     user_profile.set_password(password)
-    user_profile.api_key = generate_api_key()
     return user_profile
 
 

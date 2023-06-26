@@ -7,12 +7,6 @@ const {run_test} = require("./lib/test");
 
 mock_jquery((selector) => {
     switch (selector) {
-        case "#stream_message_recipient_stream":
-            return {
-                val() {
-                    return "social";
-                },
-            };
         case "#stream_message_recipient_topic":
             return {
                 val() {
@@ -29,7 +23,12 @@ const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const compose_fade = zrequire("compose_fade");
+const compose_recipient = zrequire("compose_recipient");
 const compose_fade_helper = zrequire("compose_fade_helper");
+const compose_state = zrequire("compose_state");
+
+compose_recipient.selected_stream_name = "social";
+compose_recipient.is_direct_message_selected = false;
 
 const me = {
     email: "me@example.com",
@@ -55,7 +54,8 @@ people.initialize_current_user(me.user_id);
 people.add_active_user(alice);
 people.add_active_user(bob);
 
-run_test("set_focused_recipient", () => {
+run_test("set_focused_recipient", ({override_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     const sub = {
         stream_id: 101,
         name: "social",
@@ -71,6 +71,7 @@ run_test("set_focused_recipient", () => {
     assert.equal(compose_fade_helper.would_receive_message(bob.user_id), true);
 
     stream_data.add_sub(sub);
+    compose_state.set_stream_name("social");
     peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
     compose_fade.set_focused_recipient("stream");
 

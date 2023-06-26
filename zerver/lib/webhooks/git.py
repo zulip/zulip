@@ -13,8 +13,8 @@ COMMIT_ROW_TEMPLATE = "* {commit_msg} ([{commit_short_sha}]({commit_url}))\n"
 COMMITS_MORE_THAN_LIMIT_TEMPLATE = "[and {commits_number} more commit(s)]"
 COMMIT_OR_COMMITS = "commit{}"
 
-PUSH_PUSHED_TEXT_WITH_URL = "[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
-PUSH_PUSHED_TEXT_WITHOUT_URL = "pushed {number_of_commits} {commit_or_commits}"
+PUSH_PUSHED_TEXT_WITH_URL = "[{push_type}]({compare_url}) {number_of_commits} {commit_or_commits}"
+PUSH_PUSHED_TEXT_WITHOUT_URL = "{push_type} {number_of_commits} {commit_or_commits}"
 
 PUSH_COMMITS_BASE = "{user_name} {pushed_text} to branch {branch_name}."
 PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = (
@@ -35,10 +35,10 @@ PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = (
     "{user_name} [deleted]({compare_url}) the branch {branch_name}."
 )
 PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = (
-    "{user_name} [pushed]({compare_url}) the branch {branch_name}."
+    "{user_name} [{push_type}]({compare_url}) the branch {branch_name}."
 )
 PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_WITHOUT_URL_TEMPLATE = (
-    "{user_name} pushed the branch {branch_name}."
+    "{user_name} {push_type} the branch {branch_name}."
 )
 PUSH_COMMITS_MESSAGE_EXTENSION = "Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
@@ -89,6 +89,7 @@ def get_push_commits_event_message(
     commits_data: List[Dict[str, Any]],
     is_truncated: bool = False,
     deleted: bool = False,
+    force_push: Optional[bool] = False,
 ) -> str:
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
@@ -97,14 +98,17 @@ def get_push_commits_event_message(
             branch_name=branch_name,
         )
 
+    push_type = "force pushed" if force_push else "pushed"
     if not commits_data and not deleted:
         if compare_url:
             return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE.format(
+                push_type=push_type,
                 user_name=user_name,
                 compare_url=compare_url,
                 branch_name=branch_name,
             )
         return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_WITHOUT_URL_TEMPLATE.format(
+            push_type=push_type,
             user_name=user_name,
             branch_name=branch_name,
         )
@@ -114,6 +118,7 @@ def get_push_commits_event_message(
     )
 
     pushed_text_message = pushed_message_template.format(
+        push_type=push_type,
         compare_url=compare_url,
         number_of_commits=len(commits_data),
         commit_or_commits=COMMIT_OR_COMMITS.format("s" if len(commits_data) > 1 else ""),

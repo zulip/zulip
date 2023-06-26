@@ -10,12 +10,24 @@ web app your organization is using.
 Zulip Cloud organizations are always updated to the latest version of Zulip.
 
 [upgrade-zulip]:
-    https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html
-[changelog]: https://zulip.readthedocs.io/en/stable/overview/changelog.html
+    https://zulip.readthedocs.io/en/latest/production/upgrade-or-modify.html
+[changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
 
 ### View Zulip server and web app version
 
 {start_tabs}
+
+{tab|v6}
+
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
+   right corner of the web or desktop app.
+
+1. View the version number or Zulip Cloud plan in the top section of the menu.
+
+1. *(optional)* Click on the version number or Zulip Cloud plan for additional
+   details.
+
+{tab|v4}
 
 {relative|gear|about-zulip}
 

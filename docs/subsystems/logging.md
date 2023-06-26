@@ -66,7 +66,7 @@ hook][sentry-deploy-hook].
 
 [sentry-project]: https://docs.sentry.io/product/projects/
 [sentry-dsn]: https://docs.sentry.io/product/sentry-basics/dsn-explainer/
-[sentry-relase-hook]: ../production/deployment.md#sentry-deploy-hook
+[sentry-deploy-hook]: ../production/deployment.md#sentry-deploy-hook
 
 ### Backend logging
 
@@ -179,47 +179,71 @@ See `./scripts/log-search --help` for complete documentation.
 
 ## Blueslip frontend error reporting
 
-We have a custom library, called `blueslip` (named after the form used
-at MIT to report problems with the facilities), that takes care of
-reporting JavaScript errors. In production, this means emailing the
-server administrators (though the setting controlling this,
-`BROWSER_ERROR_REPORTING`, is disabled by default, since most problems
-are unlikely to be addressable by a system administrator, and it's
-very hard to make JavaScript errors not at least somewhat spammy due
-to the variety of browser versions and sets of extensions that someone
-might use). In development, this means displaying a highly visible
-overlay over the message view area, to make exceptions in testing a
-new feature hard to miss.
+We have a custom library, called `blueslip` (named after the form used at MIT to
+report problems with the facilities), that logs and reports JavaScript errors in
+the browser. In production, this uses Sentry (if configured) to report and
+aggregate errors. In development, this means displaying a highly visible overlay
+over the message view area, to make exceptions in testing a new feature hard to
+miss.
 
 - Blueslip is implemented in `web/src/blueslip.ts`.
-- In order to capture essentially any error occurring in the browser,
-  Blueslip listens for the `error` event on `window`, and has methods
-  for being manually triggered by Zulip JavaScript code for warnings
-  and assertion failures.
-- Blueslip keeps a log of all the notices it has received during a
-  browser session, and includes them in reports to the server, so that
-  one can see cases where exceptions chained together. You can print
-  this log from the browser console using
+- In order to capture essentially any error occurring in the browser, in
+  development mode Blueslip listens for the `error` event on `window`.
+- It also has methods for being manually triggered by Zulip JavaScript code for
+  warnings and assertion failures. Explicit `blueslip.error` calls are sent to
+  Sentry, if configured.
+- Blueslip keeps a log of all the notices it has received during a browser
+  session, so that one can see cases where exceptions chained together. You can
+  print this log from the browser console using
   `blueslip = require("./src/blueslip"); blueslip.get_log()`.
 
 Blueslip supports several error levels:
 
-- `throw new Error(…)`: For fatal errors that cannot be easily
-  recovered from. We try to avoid using it, since it kills the
-  current JS thread, rather than returning execution to the caller.
-- `blueslip.error`: For logging of events that are definitely caused
-  by a bug and thus sufficiently important to be reported, but where
-  we can handle the error without creating major user-facing problems
-  (e.g. an exception when handling a presence update).
-- `blueslip.warn`: For logging of events that are a problem but not
-  important enough to send an email about in production. They are,
-  however, highlighted in the JS console in development.
-- `blueslip.log` (and `blueslip.info`): Logged to the JS console in
-  development and also in the blueslip log in production. Useful for
-  data that might help discern what state the browser was in during an
-  error (e.g. whether the user was in a narrow).
+- `throw new Error(…)`: For fatal errors that cannot be easily recovered
+  from. We try to avoid using it, since it kills the current JS thread, rather
+  than returning execution to the caller.
+- `blueslip.error`: For logging of events that are definitely caused by a bug
+  and thus sufficiently important to be reported, but where we can handle the
+  error without creating major user-facing problems (e.g. an exception when
+  handling a presence update).
+- `blueslip.warn`: For logging of events that are a problem but not important
+  enough to log an error to Sentry in production. They are, however, highlighted
+  in the JS console in development, and appear as breadcrumb logs in Sentry in
+  production.
+- `blueslip.log` (and `blueslip.info`): Logged to the JS console in development
+  and also in the Sentry breadcrumb log in production. Useful for data that
+  might help discern what state the browser was in during an error (e.g. whether
+  the user was in a narrow).
 - `blueslip.debug`: Similar to `blueslip.log`, but are not printed to
   the JS console in development.
+
+### Sentry JavaScript error logging
+
+Zulip's optional JavaScript [Sentry][sentry] integration will aggregate errors
+to show which users and realms are affected, any logging which happened prior to
+the exception, and any DOM interactions which happened prior to the error.
+
+You can enable it by:
+
+1.  Create a [project][sentry-project] in your Sentry organization
+    with a platform of "JavaScript."
+2.  Copy your [Sentry DSN][sentry-dsn] into `/etc/zulip/settings.py`
+    as `SENTRY_FRONTEND_DSN`:
+    ```python3
+    ## Controls the DSN used to report JavaScript errors to Sentry.io
+    SENTRY_FRONTEND_DSN = "https://bbb@bbb.ingest.sentry.io/1234"
+    ```
+3.  If you wish to [sample][sentry-sample] some fraction of the errors, you
+    should adjust `SENTRY_FRONTEND_SAMPLE_RATE` down from `1.0`.
+4.  As the `zulip` user, restart Zulip by running:
+    ```shell
+    /home/zulip/deployments/current/scripts/restart-server
+    ```
+
+You may also want to enable Zulip's [Sentry deploy
+hook][sentry-deploy-hook].
+
+[sentry-sample]: https://docs.sentry.io/platforms/javascript/configuration/sampling/
 
 ## Frontend performance reporting
 

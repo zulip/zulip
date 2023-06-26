@@ -26,6 +26,7 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.users import do_change_user_role
@@ -543,7 +544,6 @@ class Command(BaseCommand):
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             zulip_realm_bots = [
-                ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
             ]
             for i in range(options["extra_bots"]):
@@ -775,6 +775,28 @@ class Command(BaseCommand):
                     {"id": pronouns.id, "value": "he/him"},
                 ],
             )
+            # We need to create at least one scheduled message for Iago for the api-test
+            # cURL example to delete an existing scheduled message.
+            check_schedule_message(
+                sender=iago,
+                client=get_client("populate_db"),
+                recipient_type_name="stream",
+                message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
+                topic_name="test-api",
+                message_content="It's time to celebrate the anniversary of provisioning this development environment :tada:!",
+                deliver_at=timezone_now() + timedelta(days=365),
+                realm=zulip_realm,
+            )
+            check_schedule_message(
+                sender=iago,
+                client=get_client("populate_db"),
+                recipient_type_name="private",
+                message_to=[iago.id],
+                topic_name=None,
+                message_content="Note to self: It's been a while since you've provisioned this development environment.",
+                deliver_at=timezone_now() + timedelta(days=365),
+                realm=zulip_realm,
+            )
         else:
             zulip_realm = get_realm("zulip")
             recipient_streams = [
@@ -794,17 +816,11 @@ class Command(BaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
-                status: int = UserPresence.ACTIVE
                 date = timezone_now()
-                client = get_client("website")
-                if user.full_name[0] <= "H":
-                    client = get_client("ZulipAndroid")
                 UserPresence.objects.get_or_create(
                     user_profile=user,
                     realm_id=user.realm_id,
-                    client=client,
-                    timestamp=date,
-                    status=status,
+                    defaults={"last_active_time": date, "last_connected_time": date},
                 )
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]

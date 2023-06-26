@@ -10,15 +10,16 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 
 import * as channel from "./channel";
 import * as common from "./common";
+import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
-import * as ui from "./ui";
+import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
-import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 let custom_expiration_time_input = 10;
@@ -44,13 +45,19 @@ function get_common_invitation_data() {
         expires_in = Number.parseFloat($("#expires_in").val());
     }
 
-    const stream_ids = [];
-    $("#invite-stream-checkboxes input:checked").each(function () {
-        const stream_id = Number.parseInt($(this).val(), 10);
-        stream_ids.push(stream_id);
-    });
+    let stream_ids = [];
+    const default_stream_ids = stream_data.get_default_stream_ids();
+    if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
+        stream_ids = default_stream_ids;
+    } else {
+        $("#invite-stream-checkboxes input:checked").each(function () {
+            const stream_id = Number.parseInt($(this).val(), 10);
+            stream_ids.push(stream_id);
+        });
+    }
+
     const data = {
-        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
+        csrfmiddlewaretoken: csrf_token,
         invite_as,
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: expires_in,
@@ -146,7 +153,7 @@ function submit_invitation_form() {
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
             $("#invitee_emails").trigger("focus");
-            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
@@ -172,7 +179,7 @@ function generate_multiuse_invite() {
             );
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
-            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
+            scroll_util.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
@@ -188,19 +195,13 @@ function valid_to(expires_in) {
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
     }
+
+    // The below is a duplicate of timerender.get_full_datetime, with a different base string.
     const valid_to = add(new Date(), {minutes: time_valid});
-    const options = {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: !user_settings.twenty_four_hour_time,
-    };
-    return $t(
-        {defaultMessage: "Expires on {date}"},
-        {date: valid_to.toLocaleTimeString([], options)},
-    );
+    const date = timerender.get_localized_date_or_time_for_format(valid_to, "dayofyear_year");
+    const time = timerender.get_localized_date_or_time_for_format(valid_to, "time");
+
+    return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
 function get_expiration_time_in_minutes() {
@@ -236,6 +237,17 @@ function set_custom_time_inputs_visibility() {
     }
 }
 
+function set_streams_to_join_list_visibility() {
+    const default_streams_selected = $("#invite_select_default_streams").prop("checked");
+    if (default_streams_selected) {
+        $("#streams_to_add .invite-stream-controls").hide();
+        $("#invite-stream-checkboxes").hide();
+    } else {
+        $("#streams_to_add .invite-stream-controls").show();
+        $("#invite-stream-checkboxes").show();
+    }
+}
+
 function open_invite_user_modal(e) {
     e.stopPropagation();
     e.preventDefault();
@@ -252,22 +264,30 @@ function open_invite_user_modal(e) {
         time_choices: time_unit_choices,
         streams: get_invite_streams(),
         notifications_stream: stream_data.get_notifications_stream(),
+        show_select_default_streams_option: stream_data.get_default_stream_ids().length !== 0,
     });
 
     function invite_user_modal_post_render() {
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+        $("#email_invite_radio").prop("checked", true);
+
+        if (!page_params.is_admin) {
+            $("#generate_multiuse_invite_radio").prop("disabled", true);
+            $("#generate_multiuse_invite_radio_container").addClass("control-label-disabled");
+            $("#generate_multiuse_invite_radio_container").addClass("disabled_setting_tooltip");
+        }
 
         autosize($("#invitee_emails").trigger("focus"));
 
         set_custom_time_inputs_visibility();
         set_expires_on_text();
+        set_streams_to_join_list_visibility();
 
         function toggle_invite_submit_button() {
             $("#invite-user-modal .dialog_submit_button").prop(
                 "disabled",
-                ($("#invitee_emails").val().trim() === "" &&
-                    !$("#generate_multiuse_invite_radio").is(":checked")) ||
-                    $("#streams_to_add input:checked").length === 0,
+                $("#invitee_emails").val().trim() === "" &&
+                    !$("#generate_multiuse_invite_radio").is(":checked"),
             );
         }
 
@@ -275,24 +295,19 @@ function open_invite_user_modal(e) {
             toggle_invite_submit_button();
         });
 
-        $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
-            $("#invitee_emails").prop("disabled", false);
+        $("#invite-user-modal").on("change", "#email_invite_radio", () => {
+            $("#invitee_emails_container").show();
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
             $("#invite-user-modal .dialog_submit_button").data(
                 "loading-text",
                 $t({defaultMessage: "Inviting..."}),
             );
-            $("#multiuse_radio_section").hide();
-            $("#invite-method-choice").show();
             toggle_invite_submit_button();
             reset_error_messages();
         });
 
-        $("#generate_multiuse_invite_button").on("click", () => {
-            $("#generate_multiuse_invite_radio").prop("checked", true);
-            $("#multiuse_radio_section").show();
-            $("#invite-method-choice").hide();
-            $("#invitee_emails").prop("disabled", true);
+        $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
+            $("#invitee_emails_container").hide();
             $("#invite-user-modal .dialog_submit_button").text(
                 $t({defaultMessage: "Generate invite link"}),
             );
@@ -325,16 +340,16 @@ function open_invite_user_modal(e) {
         });
 
         $("#invite_check_all_button").on("click", () => {
-            $("#streams_to_add :checkbox").prop("checked", true);
+            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
             toggle_invite_submit_button();
         });
 
         $("#invite_uncheck_all_button").on("click", () => {
-            $("#streams_to_add :checkbox").prop("checked", false);
-            $("#invite-user-modal .dialog_submit_button").prop(
-                "disabled",
-                !$("#generate_multiuse_invite_radio").is(":checked"),
-            );
+            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
+        });
+
+        $("#invite_select_default_streams").on("change", () => {
+            set_streams_to_join_list_visibility();
         });
     }
 

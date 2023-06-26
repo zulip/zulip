@@ -7,7 +7,7 @@ makes the commit history a much more useful resource for developers
 trying to understand why the code works the way it does, which also
 helps a lot in preventing bugs.
 
-Commits must be coherent:
+## Each commit must be coherent
 
 - It should pass tests (so test updates needed by a change should be
   in the same commit as the original change, not a separate "fix the
@@ -22,7 +22,7 @@ Commits must be coherent:
 - TODO comments should be in the commit that introduces the issue or
   the functionality with further work required.
 
-Commits should generally be minimal:
+## Commits should generally be minimal
 
 - Significant refactorings should be done in a separate commit from
   functional changes.
@@ -34,7 +34,7 @@ Commits should generally be minimal:
   of somewhat dissimilar things that you did, you probably should have
   just done multiple commits.
 
-When not to be overly minimal:
+### When not to be overly minimal
 
 - For completely new features, you don't necessarily need to split out
   new commits for each little subfeature of the new feature. E.g., if
@@ -46,7 +46,7 @@ When not to be overly minimal:
 - Don't bother to split backend commits from frontend commits, even
   though the backend can often be coherent on its own.
 
-Other considerations:
+## Write a clean commit history
 
 - Overly fine commits are easy to squash later, but not vice versa.
   So err toward small commits, and the code reviewer can advise on
@@ -94,7 +94,7 @@ Commit messages have two parts:
 
 In Zulip, commit summaries have a two-part structure:
 
-1. A one or two word description of the part of the code base changed
+1. A one or two word description of the part of the codebase changed
    by the commit.
 2. A short sentence summarizing your changes.
 
@@ -148,7 +148,7 @@ scan commit messages to find what they need.
 Additional tips:
 
 - Use lowercase (e.g., "settings", not "Settings").
-- If it's hard to find a 1-2 word description of the part of the code base
+- If it's hard to find a 1-2 word description of the part of the codebase
   affected by your commit, consider again whether you have structured your
   commits well.
 - Never use a generic term like "bug", "fix", or "refactor".
@@ -167,9 +167,9 @@ a few rules to keep in mind:
   update tests/docs," would be better written as just, "Change X," since (as
   discussed above) _every_ commit is expected to update tests and documentation
   as needed.
-- Make it readable to someone who is familiar with Zulip's code base, but hasn't
+- Make it readable to someone who is familiar with Zulip's codebase, but hasn't
   been involved with the effort you're working on.
-- Use no more than 76 characters for the entire commit summary (parts 1 and 2).
+- Use no more than 72 characters for the entire commit summary (parts 1 and 2).
 
 ### Examples of good commit summaries
 
@@ -278,6 +278,23 @@ might worry about it breaking.
 - Avoid unnecessary personal narrative about the process through which
   you developed this commit or pull request, like "First I tried X" or
   "I changed Y".
+
+#### Mentioning other contributors
+
+You can
+[credit](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors)
+co-authors on a commit by adding a `Co-authored-by:` line after a blank line at
+the end of your commit message:
+
+    Co-authored-by: Greg Price <greg@zulip.com>
+
+You can also add other notes, such as `Reported-by:`, `Debugged-by:`, or
+`Suggested-by:`, but we don't typically do so.
+
+**Never @-mention a contributor in a commit message**, as GitHub will turn this into
+a notification for the person every time a version of the commit is rebased and
+pushed somewhere. If you want to send someone a notification about a change,
+@-mention them in the PR thread.
 
 #### Formatting guidelines
 

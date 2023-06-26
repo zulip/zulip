@@ -28,6 +28,7 @@ from zerver.data_import.slack import (
     SlackBotEmail,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
+    check_token_access,
     convert_slack_workspace_messages,
     do_convert_data,
     fetch_shared_channel_users,
@@ -69,7 +70,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
     if not valid_endpoint:
         return (404, {}, b"")
 
-    if request.headers.get("Authorization") != "Bearer xoxp-valid-token":
+    if request.headers.get("Authorization") != "Bearer xoxb-valid-token":
         return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
 
     if request.url == "https://slack.com/api/users.list":
@@ -114,7 +115,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
 class SlackImporter(ZulipTestCase):
     @responses.activate
     def test_get_slack_api_data(self) -> None:
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # Users list
         slack_user_list_url = "https://slack.com/api/users.list"
@@ -151,7 +152,7 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_team_info_url, "team", token=token)
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: team_not_found",))
 
-        token = "xoxp-invalid-token"
+        token = "xoxb-invalid-token"
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: invalid_auth",))
@@ -160,7 +161,7 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_user_list_url, "members")
         self.assertEqual(invalid.exception.args, ("Slack token missing in kwargs",))
 
-        token = "xoxp-status404"
+        token = "xoxb-status404"
         wrong_url = "https://slack.com/api/wrong"
         responses.add_callback(responses.GET, wrong_url, callback=request_callback)
         with self.assertRaises(Exception) as invalid:
@@ -180,6 +181,62 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_realm_dict["string_id"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["name"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["date_created"], time)
+
+    @responses.activate
+    def test_check_token_access(self) -> None:
+        def token_request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+            auth = request.headers.get("Authorization")
+            if auth == "Bearer xoxb-broken-request":
+                return (400, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
+
+            if auth == "Bearer xoxb-invalid-token":
+                return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
+
+            if auth == "Bearer xoxb-limited-scopes":
+                return (
+                    200,
+                    {"x-oauth-scopes": "emoji:read,bogus:scope"},
+                    orjson.dumps({"ok": True}),
+                )
+            if auth == "Bearer xoxb-valid-token":
+                return (
+                    200,
+                    {"x-oauth-scopes": "emoji:read,users:read,users:read.email,team:read"},
+                    orjson.dumps({"ok": True}),
+                )
+            else:  # nocoverage
+                raise Exception("Unknown token mock")
+
+        responses.add_callback(
+            responses.GET, "https://slack.com/api/team.info", callback=token_request_callback
+        )
+
+        def exception_for(token: str) -> str:
+            with self.assertRaises(Exception) as invalid:
+                check_token_access(token)
+            return invalid.exception.args[0]
+
+        self.assertEqual(
+            exception_for("xoxq-unknown"),
+            "Unknown token type -- must start with xoxb- or xoxp-",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-invalid-token"),
+            "Invalid Slack token: xoxb-invalid-token, invalid_auth",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-broken-request"),
+            "Failed to fetch data (HTTP status 400) for Slack token: xoxb-broken-request",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-limited-scopes"),
+            "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
+        )
+
+        check_token_access("xoxb-valid-token")
 
     def test_get_owner(self) -> None:
         user_data = [
@@ -245,7 +302,7 @@ class SlackImporter(ZulipTestCase):
         slack_team_info_url = "https://slack.com/api/team.info"
         responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
         slack_data_dir = self.fixture_file_name("", type="slack_fixtures")
-        fetch_shared_channel_users(users, slack_data_dir, "xoxp-valid-token")
+        fetch_shared_channel_users(users, slack_data_dir, "xoxb-valid-token")
 
         # Normal users
         self.assert_length(users, 5)
@@ -734,7 +791,7 @@ class SlackImporter(ZulipTestCase):
             passed_realm["zerver_realm"][0]["description"], "Organization imported from Slack!"
         )
         self.assertEqual(passed_realm["zerver_userpresence"], [])
-        self.assert_length(passed_realm.keys(), 15)
+        self.assert_length(passed_realm.keys(), 16)
 
         self.assertEqual(realm["zerver_stream"], [])
         self.assertEqual(realm["zerver_userprofile"], [])
@@ -930,6 +987,7 @@ class SlackImporter(ZulipTestCase):
             dm_members,
             "domain",
             set(),
+            convert_slack_threads=False,
         )
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
@@ -992,6 +1050,119 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[7]["sender"], 43)
         self.assertEqual(zerver_message[8]["sender"], 5)
 
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_channel_message_to_zerver_message_with_threads(
+        self, mock_build_usermessage: mock.Mock
+    ) -> None:
+        user_data = [
+            {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
+            {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
+            {"id": "U061A1R2R", "name": "jon", "deleted": False, "real_name": "Jon"},
+        ]
+
+        slack_user_id_to_zulip_user_id = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
+
+        all_messages: List[Dict[str, Any]] = [
+            {
+                "text": "<@U066MTL5U> has joined the channel",
+                "subtype": "channel_join",
+                "user": "U066MTL5U",
+                "ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "<@U061A5N1G>: hey!",
+                "user": "U061A1R2R",
+                "ts": "1437868294.000006",
+                "has_image": True,
+                "channel_name": "random",
+            },
+            {
+                "text": "random",
+                "user": "U061A5N1G",
+                "ts": "1439868294.000006",
+                # Thread!
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "random",
+                "user": "U061A5N1G",
+                "ts": "1439868294.000007",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "random",
+                "user": "U061A5N1G",
+                "ts": "1439868294.000008",
+                # A different Thread!
+                "thread_ts": "1439868294.000008",
+                "channel_name": "random",
+            },
+            {
+                "text": "random",
+                "user": "U061A5N1G",
+                "ts": "1439868295.000008",
+                # Another different Thread!
+                "thread_ts": "1439868295.000008",
+                "channel_name": "random",
+            },
+        ]
+
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
+        dm_members: DMMembersT = {}
+
+        zerver_usermessage: List[Dict[str, Any]] = []
+        subscriber_map: Dict[int, Set[int]] = {}
+        added_channels: Dict[str, Tuple[str, int]] = {"random": ("c5", 1), "general": ("c6", 2)}
+
+        (
+            zerver_message,
+            zerver_usermessage,
+            attachment,
+            uploads,
+            reaction,
+        ) = channel_message_to_zerver_message(
+            1,
+            user_data,
+            slack_user_id_to_zulip_user_id,
+            slack_recipient_name_to_zulip_recipient_id,
+            all_messages,
+            [],
+            subscriber_map,
+            added_channels,
+            dm_members,
+            "domain",
+            set(),
+            convert_slack_threads=True,
+        )
+        # functioning already tested in helper function
+        self.assertEqual(zerver_usermessage, [])
+        # subtype: channel_join is filtered
+        self.assert_length(zerver_message, 5)
+
+        self.assertEqual(uploads, [])
+        self.assertEqual(attachment, [])
+
+        # Message conversion already tested in tests.test_slack_message_conversion
+        self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
+        self.assertEqual(zerver_message[0]["has_link"], False)
+        self.assertEqual(zerver_message[1]["content"], "random")
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], "2015-06-12 Slack thread 1")
+        # A new thread with a different date from 2015-06-12, starts the counter from 1.
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 1")
+        # A new thread with a different timestamp, but the same date as 2015-08-18, starts the
+        # counter from 2.
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], "2015-08-18 Slack thread 2")
+        self.assertEqual(
+            zerver_message[1]["recipient"], slack_recipient_name_to_zulip_recipient_id["random"]
+        )
+
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
     def test_convert_slack_workspace_messages(
@@ -1045,6 +1216,7 @@ class SlackImporter(ZulipTestCase):
                 [],
                 "domain",
                 output_dir=output_dir,
+                convert_slack_threads=False,
                 chunk_size=1,
             )
 
@@ -1071,8 +1243,10 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.check_token_access")
     def test_slack_import_to_existing_database(
         self,
+        mock_check_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -1088,7 +1262,7 @@ class SlackImporter(ZulipTestCase):
 
         test_realm_subdomain = "test-slack-import"
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-importer-data")
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
@@ -1147,6 +1321,10 @@ class SlackImporter(ZulipTestCase):
         )
 
         self.assertEqual(Message.objects.filter(realm=realm).count(), 82)
+
+        # All auth backends are enabled initially.
+        for name, enabled in realm.authentication_methods_dict().items():
+            self.assertTrue(enabled)
 
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
@@ -1266,8 +1444,10 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.check_token_access")
     def test_slack_import_unicode_filenames(
         self,
+        mock_check_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -1281,7 +1461,7 @@ class SlackImporter(ZulipTestCase):
         test_slack_zip_file = os.path.join(test_slack_dir, "test_unicode_slack_importer.zip")
         test_slack_unzipped_file = os.path.join(test_slack_dir, "test_unicode_slack_importer")
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-unicode-slack-importer-data")
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'

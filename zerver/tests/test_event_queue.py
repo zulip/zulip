@@ -221,8 +221,8 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
-    def test_PM(self) -> None:
-        # By default, email and push notifications should be sent for PMs
+    def test_direct_message(self) -> None:
+        # By default, email and push notifications should be sent for direct messages
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
@@ -239,7 +239,8 @@ class MissedMessageHookTest(ZulipTestCase):
             )
 
     def test_enable_offline_email_notifications_setting(self) -> None:
-        # When `enable_offline_email_notifications` is off, email notifications should not be sent for PMs
+        # When `enable_offline_email_notifications` is off, email notifications
+        # should not be sent for direct messages
         do_change_user_setting(
             self.user_profile, "enable_offline_email_notifications", False, acting_user=None
         )
@@ -400,7 +401,7 @@ class MissedMessageHookTest(ZulipTestCase):
             )
 
     def test_wildcard_mentions_notify_global_setting_is_a_wrapper(self) -> None:
-        # If email notifications for PMs and mentions themselves have been turned off,
+        # If email notifications for direct messages and mentions themselves have been turned off,
         # even turning on `wildcard_mentions_notify` should not send email notifications
         do_change_user_setting(
             self.user_profile, "enable_offline_email_notifications", False, acting_user=None
@@ -760,6 +761,159 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
+    def test_followed_topic_email_and_push_notify(self) -> None:
+        # By default, messages sent in followed topics should send notifications.
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_email_notify=True,
+                followed_topic_push_notify=True,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
+    def test_followed_topic_email_notify_global_setting(self) -> None:
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_email_notify=False,
+                followed_topic_push_notify=True,
+                already_notified={"email_notified": False, "push_notified": True},
+            )
+
+    def test_followed_topic_push_notify_global_setting(self) -> None:
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+        )
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="what's up everyone?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_email_notify=True,
+                followed_topic_push_notify=False,
+                already_notified={"email_notified": True, "push_notified": False},
+            )
+
+    def test_followed_topic_wildcard_mention_notify(self) -> None:
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+        )
+
+        # By default, wildcard mentions in followed topics should send notifications, just like regular mentions.
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="@**all** what's up?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                followed_topic_wildcard_mention_email_notify=True,
+                followed_topic_wildcard_mention_push_notify=True,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
+    def test_followed_topic_wildcard_mentions_notify_global_setting(self) -> None:
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            self.user_profile, "enable_followed_topic_push_notifications", False, acting_user=None
+        )
+
+        # Now, disabling `enable_followed_topic_wildcard_mentions_notify` should result in no notifications.
+        do_change_user_setting(
+            self.user_profile,
+            "enable_followed_topic_wildcard_mentions_notify",
+            False,
+            acting_user=None,
+        )
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "followed_topic_test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", content="@**all** what's up?", topic_name="followed_topic_test"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
     def test_muted_sender(self) -> None:
         do_mute_user(self.user_profile, self.iago)
         msg_id = self.send_personal_message(self.iago, self.user_profile)
@@ -811,7 +965,7 @@ class MissedMessageHookTest(ZulipTestCase):
         self.destroy_event_queue(hambot, self.client_descriptor.event_queue.id)
         self.client_descriptor = hamlet_client_descriptor
 
-    # Internal PMs
+    # Internal direct messages
     def test_disable_external_notifications(self) -> None:
         # The disable_external_notifications parameter, used for messages sent by welcome bot,
         # should result in no email/push notifications being sent regardless of the message type.

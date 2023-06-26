@@ -1,0 +1,10 @@
+{{#> compose_banner }}
+    <p>
+        {{#if (eq muted_narrow "stream")}}
+            {{#tr}}Your message was sent to a stream you have muted.{{/tr}}
+        {{else if (eq muted_narrow "topic")}}
+            {{#tr}}Your message was sent to a topic you have muted.{{/tr}}
+        {{/if}}
+        {{#tr}}You will not receive notifications about new messages.{{/tr}}
+    </p>
+{{/compose_banner}}

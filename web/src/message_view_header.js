@@ -4,8 +4,8 @@ import render_message_view_header from "../templates/message_view_header.hbs";
 
 import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
-import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as popovers from "./popovers";
 import * as recent_topics_util from "./recent_topics_util";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
@@ -33,13 +33,7 @@ function make_message_view_header(filter) {
         };
     }
     message_view_header.title = filter.get_title();
-    message_view_header.icon = filter.get_icon();
-    if (message_view_header.icon === "globe") {
-        // This is a bit hacky, but it works as a way to communicate
-        // to the HTML template that we need to use the different HTML
-        // required for the globe icon.
-        message_view_header.web_public_stream = true;
-    }
+    filter.add_icon_data(message_view_header);
     if (filter.has_operator("stream") && !filter._sub) {
         message_view_header.sub_count = "0";
         message_view_header.formatted_sub_count = "0";
@@ -95,12 +89,15 @@ function append_and_display_title_area(message_view_header_data) {
 
 function bind_title_area_handlers() {
     $(".search_closed").on("click", (e) => {
+        popovers.hide_all();
         search.initiate_search();
         e.preventDefault();
         e.stopPropagation();
     });
 
     $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
+        popovers.hide_all();
+
         if (document.getSelection().type === "Range") {
             // Allow copy/paste to work normally without interference.
             return;
@@ -134,11 +131,7 @@ function build_message_view_header(filter) {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
         bind_title_area_handlers();
-        if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
-            open_search_bar_and_close_narrow_description();
-        } else {
-            close_search_bar_and_open_narrow_description();
-        }
+        close_search_bar_and_open_narrow_description();
     }
 }
 
@@ -147,7 +140,7 @@ function build_message_view_header(filter) {
 export function reset_searchbox_text() {
     let search_string = narrow_state.search_string();
     if (search_string !== "") {
-        if (!page_params.search_pills_enabled && !narrow_state.filter().is_search()) {
+        if (!narrow_state.filter().is_search()) {
             // saves the user a keystroke for quick searches
             search_string = search_string + " ";
         }
@@ -172,6 +165,7 @@ export function initialize() {
 
     // register searchbar click handler
     $("#search_exit").on("click", (e) => {
+        popovers.hide_all();
         exit_search();
         e.preventDefault();
         e.stopPropagation();
@@ -201,7 +195,7 @@ export function open_search_bar_and_close_narrow_description() {
 
 export function close_search_bar_and_open_narrow_description() {
     const filter = narrow_state.filter();
-    if (!(filter && !filter.is_common_narrow())) {
+    if (!filter || filter.is_common_narrow()) {
         $(".navbar-search").removeClass("expanded");
         $("#message_view_header").removeClass("hidden");
     }

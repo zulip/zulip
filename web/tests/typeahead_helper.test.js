@@ -15,6 +15,7 @@ const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const stream_list_sort = zrequire("stream_list_sort");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -156,7 +157,8 @@ test("sort_streams", ({override}) => {
         "demote_inactive_streams",
         settings_config.demote_inactive_streams_values.always.code,
     );
-    stream_data.set_filter_out_inactives();
+
+    stream_list_sort.set_filter_out_inactives();
     override(
         stream_topic_history,
         "stream_has_topics",
@@ -722,7 +724,7 @@ test("render_stream", ({mock_template}) => {
     };
 
     mock_template("typeahead_list_item.hbs", false, (args) => {
-        assert.equal(args.primary, stream.name);
+        assert.equal(args.stream, stream);
         assert.equal(args.secondary, stream.description);
         rendered = true;
         return "typeahead-item-stub";
@@ -741,7 +743,7 @@ test("render_stream w/long description", ({mock_template}) => {
     };
 
     mock_template("typeahead_list_item.hbs", false, (args) => {
-        assert.equal(args.primary, stream.name);
+        assert.equal(args.stream, stream);
         const short_desc = stream.description.slice(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;

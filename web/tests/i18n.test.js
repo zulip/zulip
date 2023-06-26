@@ -13,7 +13,7 @@ const {page_params} = require("./lib/zpage_params");
 // that here for the tests.
 page_params.request_language = "en";
 page_params.translation_data = {
-    "Quote and reply or forward": "Citer et répondre ou transférer",
+    "Quote and reply": "Citer et répondre",
     "Notification triggers": "Déclencheurs de notification",
     "You subscribed to stream {stream}": "Vous n'êtes pas abonnés au canal {stream}",
     "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>":
@@ -35,8 +35,8 @@ run_test("$t", () => {
     // Normally the id would be provided by babel-plugin-formatjs, but
     // this test file is not processed by Babel.
     assert.equal(
-        $t({id: "Quote and reply or forward", defaultMessage: "Quote and reply or forward"}),
-        "Citer et répondre ou transférer",
+        $t({id: "Quote and reply", defaultMessage: "Quote and reply"}),
+        "Citer et répondre",
     );
     assert.equal(
         $t(
@@ -73,13 +73,13 @@ run_test("t_tag", ({mock_template}) => {
         should_display_quote_and_reply: true,
         editability_menu_item: true,
         should_display_hide_option: true,
-        conversation_time_uri:
+        conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/stream/101-devel/topic/testing/near/99",
     };
 
     mock_template("actions_popover_content.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.indexOf("Citer et répondre ou transférer") > 0);
+        assert.ok(html.indexOf("Citer et répondre") > 0);
     });
 
     require("../templates/actions_popover_content.hbs")(args);

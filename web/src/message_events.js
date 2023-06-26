@@ -24,6 +24,8 @@ import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as recent_topics_util from "./recent_topics_util";
+import * as starred_messages from "./starred_messages";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -167,7 +169,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
 }
 
 export function update_messages(events) {
-    const msgs_to_rerender = [];
+    const messages_to_rerender = [];
     let any_topic_edited = false;
     let changed_narrow = false;
     let changed_compose = false;
@@ -175,63 +177,70 @@ export function update_messages(events) {
     let any_stream_changed = false;
 
     for (const event of events) {
-        const msg = message_store.get(event.message_id);
-        if (msg === undefined) {
-            continue;
-        }
+        const anchor_message = message_store.get(event.message_id);
+        if (anchor_message !== undefined) {
+            // Logic for updating the specific edited message only
+            // needs to run if we had a local copy of the message.
 
-        delete msg.local_edit_timestamp;
+            delete anchor_message.local_edit_timestamp;
 
-        msgs_to_rerender.push(msg);
+            messages_to_rerender.push(anchor_message);
 
-        message_store.update_booleans(msg, event.flags);
+            message_store.update_booleans(anchor_message, event.flags);
 
-        condense.un_cache_message_content_height(msg.id);
+            condense.un_cache_message_content_height(anchor_message.id);
 
-        if (event.rendered_content !== undefined) {
-            msg.content = event.rendered_content;
-        }
-
-        if (event.is_me_message !== undefined) {
-            msg.is_me_message = event.is_me_message;
-        }
-
-        // mark the current message edit attempt as complete.
-        message_edit.end_message_edit(event.message_id);
-
-        // Save the content edit to the front end msg.edit_history
-        // before topic edits to ensure that combined topic / content
-        // edits have edit_history logged for both before any
-        // potential narrowing as part of the topic edit loop.
-        if (event.orig_content !== undefined) {
-            if (page_params.realm_allow_edit_history) {
-                // Note that we do this for topic edits separately, below.
-                // If an event changed both content and topic, we'll generate
-                // two client-side events, which is probably good for display.
-                const edit_history_entry = {
-                    user_id: event.user_id,
-                    prev_content: event.orig_content,
-                    prev_rendered_content: event.orig_rendered_content,
-                    prev_rendered_content_version: event.prev_rendered_content_version,
-                    timestamp: event.edit_timestamp,
-                };
-                // Add message's edit_history in message dict
-                // For messages that are edited, edit_history needs to
-                // be added to message in frontend.
-                if (msg.edit_history === undefined) {
-                    msg.edit_history = [];
-                }
-                msg.edit_history = [edit_history_entry, ...msg.edit_history];
+            if (event.rendered_content !== undefined) {
+                anchor_message.content = event.rendered_content;
             }
-            any_message_content_edited = true;
 
-            // Update raw_content, so that editing a few times in a row is fast.
-            msg.raw_content = event.content;
-        }
+            if (event.is_me_message !== undefined) {
+                anchor_message.is_me_message = event.is_me_message;
+            }
 
-        if (unread.update_message_for_mention(msg, any_message_content_edited)) {
-            const topic_key = recent_topics_util.get_topic_key(msg.stream_id, msg.topic);
-            recent_topics_ui.inplace_rerender(topic_key);
+            // mark the current message edit attempt as complete.
+            message_edit.end_message_edit(event.message_id);
+
+            // Save the content edit to the front end anchor_message.edit_history
+            // before topic edits to ensure that combined topic / content
+            // edits have edit_history logged for both before any
+            // potential narrowing as part of the topic edit loop.
+            if (event.orig_content !== undefined) {
+                if (page_params.realm_allow_edit_history) {
+                    // Note that we do this for topic edits separately, below.
+                    // If an event changed both content and topic, we'll generate
+                    // two client-side events, which is probably good for display.
+                    const edit_history_entry = {
+                        user_id: event.user_id,
+                        prev_content: event.orig_content,
+                        prev_rendered_content: event.orig_rendered_content,
+                        prev_rendered_content_version: event.prev_rendered_content_version,
+                        timestamp: event.edit_timestamp,
+                    };
+                    // Add message's edit_history in message dict
+                    // For messages that are edited, edit_history needs to
+                    // be added to message in frontend.
+                    if (anchor_message.edit_history === undefined) {
+                        anchor_message.edit_history = [];
+                    }
+                    anchor_message.edit_history = [
+                        edit_history_entry,
+                        ...anchor_message.edit_history,
+                    ];
+                }
+                any_message_content_edited = true;
+
+                // Update raw_content, so that editing a few times in a row is fast.
+                anchor_message.raw_content = event.content;
+            }
+
+            if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
+                const topic_key = recent_topics_util.get_topic_key(
+                    anchor_message.stream_id,
+                    anchor_message.topic,
+                );
+                recent_topics_ui.inplace_rerender(topic_key);
+            }
         }
 
         // new_topic will be undefined if the topic is unchanged.
@@ -298,7 +307,7 @@ export function update_messages(events) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
             }
 
-            for (const msg of event_messages) {
+            for (const moved_message of event_messages) {
                 if (page_params.realm_allow_edit_history) {
                     /* Simulate the format of server-generated edit
                      * history events. This logic ensures that all
@@ -316,12 +325,15 @@ export function update_messages(events) {
                         edit_history_entry.topic = new_topic;
                         edit_history_entry.prev_topic = orig_topic;
                     }
-                    if (msg.edit_history === undefined) {
-                        msg.edit_history = [];
+                    if (moved_message.edit_history === undefined) {
+                        moved_message.edit_history = [];
                     }
-                    msg.edit_history = [edit_history_entry, ...msg.edit_history];
+                    moved_message.edit_history = [
+                        edit_history_entry,
+                        ...moved_message.edit_history,
+                    ];
                 }
-                msg.last_edit_timestamp = event.edit_timestamp;
+                moved_message.last_edit_timestamp = event.edit_timestamp;
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
@@ -334,33 +346,33 @@ export function update_messages(events) {
                 // only messages in message_store, but that's been false
                 // since we added the server_history feature.
                 stream_topic_history.remove_messages({
-                    stream_id: msg.stream_id,
-                    topic_name: msg.topic,
+                    stream_id: moved_message.stream_id,
+                    topic_name: moved_message.topic,
                     num_messages: 1,
-                    max_removed_msg_id: msg.id,
+                    max_removed_msg_id: moved_message.id,
                 });
 
                 // Update the unread counts; again, this must be called
                 // before we modify the topic field on the message.
-                unread.update_unread_topics(msg, event);
+                unread.update_unread_topics(moved_message, event);
 
                 // Now edit the attributes of our message object.
                 if (topic_edited) {
-                    msg.topic = new_topic;
-                    msg.topic_links = event.topic_links;
+                    moved_message.topic = new_topic;
+                    moved_message.topic_links = event.topic_links;
                 }
                 if (stream_changed) {
                     const new_stream_name = sub_store.get(new_stream_id).name;
-                    msg.stream_id = new_stream_id;
-                    msg.stream = new_stream_name;
-                    msg.display_recipient = new_stream_name;
+                    moved_message.stream_id = new_stream_id;
+                    moved_message.stream = new_stream_name;
+                    moved_message.display_recipient = new_stream_name;
                 }
 
                 // Add the recent topics entry for the new stream/topics.
                 stream_topic_history.add_message({
-                    stream_id: msg.stream_id,
-                    topic_name: msg.topic,
-                    message_id: msg.id,
+                    stream_id: moved_message.stream_id,
+                    topic_name: moved_message.topic,
+                    message_id: moved_message.id,
                 });
             }
 
@@ -465,16 +477,18 @@ export function update_messages(events) {
             }
         }
 
-        // Mark the message as edited for the UI. The rendering_only
-        // flag is used to indicated update_message events that are
-        // triggered by server latency optimizations, not user
-        // interactions; these should not generate edit history updates.
-        if (!event.rendering_only) {
-            msg.last_edit_timestamp = event.edit_timestamp;
-        }
+        if (anchor_message !== undefined) {
+            // Mark the message as edited for the UI. The rendering_only
+            // flag is used to indicated update_message events that are
+            // triggered by server latency optimizations, not user
+            // interactions; these should not generate edit history updates.
+            if (!event.rendering_only) {
+                anchor_message.last_edit_timestamp = event.edit_timestamp;
+            }
 
-        notifications.received_messages([msg]);
-        alert_words.process_message(msg);
+            notifications.received_messages([anchor_message]);
+            alert_words.process_message(anchor_message);
+        }
 
         if (topic_edited || stream_changed) {
             // if topic is changed
@@ -482,7 +496,9 @@ export function update_messages(events) {
             let post_edit_topic = new_topic;
 
             if (!topic_edited) {
-                pre_edit_topic = msg.topic;
+                if (anchor_message !== undefined) {
+                    pre_edit_topic = anchor_message.topic;
+                }
                 post_edit_topic = pre_edit_topic;
             }
 
@@ -503,10 +519,11 @@ export function update_messages(events) {
 
         // Rerender "Message edit history" if it was open to the edited message.
         if (
+            anchor_message !== undefined &&
             $("#message-edit-history").parents(".micromodal").hasClass("modal--open") &&
-            msg.id === Number.parseInt($("#message-history").attr("data-message-id"), 10)
+            anchor_message.id === Number.parseInt($("#message-history").attr("data-message-id"), 10)
         ) {
-            message_edit_history.fetch_and_render_message_history(msg);
+            message_edit_history.fetch_and_render_message_history(anchor_message);
         }
     }
 
@@ -536,7 +553,7 @@ export function update_messages(events) {
         // passing two sets to rerender_messages; the set of all that
         // are changed, and the set with content changes.
         for (const list of message_lists.all_rendered_message_lists()) {
-            list.view.rerender_messages(msgs_to_rerender, any_message_content_edited);
+            list.view.rerender_messages(messages_to_rerender, any_message_content_edited);
         }
     }
 
@@ -558,4 +575,6 @@ export function remove_messages(message_ids) {
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
     recent_topics_ui.update_topics_of_deleted_message_ids(message_ids);
+    starred_messages.remove(message_ids);
+    starred_messages_ui.rerender_ui();
 }

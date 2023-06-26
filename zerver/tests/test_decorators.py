@@ -1541,7 +1541,7 @@ class TestInternalNotifyView(ZulipTestCase):
                 orjson.loads(self.internal_notify(False, request).content).get("msg"),
                 self.BORING_RESULT,
             )
-            self.assertEqual(RequestNotes.get_notes(request).requestor_for_logs, "internal")
+            self.assertEqual(RequestNotes.get_notes(request).requester_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(True, request)
@@ -1557,7 +1557,7 @@ class TestInternalNotifyView(ZulipTestCase):
                 orjson.loads(self.internal_notify(True, request).content).get("msg"),
                 self.BORING_RESULT,
             )
-            self.assertEqual(RequestNotes.get_notes(request).requestor_for_logs, "internal")
+            self.assertEqual(RequestNotes.get_notes(request).requester_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(False, request)
@@ -1619,7 +1619,6 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/users/me/hotspots",
             "/api/v1/users/me/presence",
             "/api/v1/users/me/tutorial_status",
-            "/api/v1/report/send_times",
         ]
         for endpoint in post_endpoints:
             result = self.api_post(default_bot, endpoint)

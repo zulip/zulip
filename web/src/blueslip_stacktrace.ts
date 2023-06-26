@@ -5,6 +5,17 @@ import StackTraceGPS from "stacktrace-gps";
 
 import render_blueslip_stacktrace from "../templates/blueslip_stacktrace.hbs";
 
+export class BlueslipError extends Error {
+    override name = "BlueslipError";
+    more_info?: object;
+    constructor(msg: string, more_info?: object | undefined, cause?: unknown | undefined) {
+        super(msg, {cause});
+        if (more_info !== undefined) {
+            this.more_info = more_info;
+        }
+    }
+}
+
 type FunctionName = {
     scope: string;
     name: string;
@@ -23,6 +34,23 @@ type CleanStackFrame = {
     line_number?: number;
     context?: NumberedLine[];
 };
+
+export function exception_msg(
+    ex: Error & {
+        // Unsupported properties available on some browsers
+        fileName?: string;
+        lineNumber?: number;
+    },
+): string {
+    let message = ex.message;
+    if (ex.fileName !== undefined) {
+        message += " at " + ex.fileName;
+        if (ex.lineNumber !== undefined) {
+            message += `:${ex.lineNumber}`;
+        }
+    }
+    return message;
+}
 
 export function clean_path(full_path?: string): string | undefined {
     // If the file is local, just show the filename.
@@ -53,7 +81,7 @@ export function clean_function_name(
     };
 }
 
-const sourceCache: {[source: string]: string | Promise<string>} = {};
+const sourceCache: Record<string, string | Promise<string>> = {};
 
 const stack_trace_gps = new StackTraceGPS({sourceCache});
 
@@ -62,7 +90,7 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     if (fileName === undefined || lineNumber === undefined) {
         return undefined;
     }
-    let sourceContent;
+    let sourceContent: string;
     try {
         sourceContent = await sourceCache[fileName];
     } catch {
@@ -81,30 +109,43 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
     }));
 }
 
-export async function display_stacktrace(error: string, stack: string): Promise<void> {
-    const ex = new Error("dummy");
-    ex.stack = stack;
+export async function display_stacktrace(ex: Error): Promise<void> {
+    const errors = [];
+    while (true) {
+        const stackframes: CleanStackFrame[] = await Promise.all(
+            ErrorStackParser.parse(ex).map(async (location: StackFrame) => {
+                try {
+                    location = await stack_trace_gps.getMappedLocation(location);
+                } catch {
+                    // Use unmapped location
+                }
+                return {
+                    full_path: location.getFileName(),
+                    show_path: clean_path(location.getFileName()),
+                    line_number: location.getLineNumber(),
+                    function_name: clean_function_name(location.getFunctionName()),
+                    context: await get_context(location),
+                };
+            }),
+        );
+        let more_info: string | undefined;
+        if (ex instanceof BlueslipError) {
+            more_info = JSON.stringify(ex.more_info, null, 4);
+        }
+        errors.push({
+            message: exception_msg(ex),
+            more_info,
+            stackframes,
+        });
 
-    const stackframes: CleanStackFrame[] = await Promise.all(
-        ErrorStackParser.parse(ex).map(async (location: StackFrame) => {
-            try {
-                location = await stack_trace_gps.getMappedLocation(location);
-            } catch {
-                // Use unmapped location
-            }
-            return {
-                full_path: location.getFileName(),
-                show_path: clean_path(location.getFileName()),
-                line_number: location.getLineNumber(),
-                function_name: clean_function_name(location.getFunctionName()),
-                context: await get_context(location),
-            };
-        }),
-    );
+        if (ex.cause !== undefined && ex.cause instanceof Error) {
+            ex = ex.cause;
+        } else {
+            break;
+        }
+    }
 
-    const $alert = $("<div>")
-        .addClass("stacktrace")
-        .html(render_blueslip_stacktrace({error, stackframes}));
+    const $alert = $("<div>").addClass("stacktrace").html(render_blueslip_stacktrace({errors}));
     $(".alert-box").append($alert);
     $alert.addClass("show");
 }

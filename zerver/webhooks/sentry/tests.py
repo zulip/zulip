@@ -82,6 +82,46 @@ Traceback:
 ```"""
         self.check_webhook("event_for_exception_python", expected_topic, expected_message)
 
+    def test_event_for_exception_rails(self) -> None:
+        expected_topic = "ZeroDivisionError: divided by 0"
+        expected_message = """\
+**New exception:** [ZeroDivisionError: divided by 0](https://sentry.io/organizations/nitk-46/issues/4213933362/events/49b528e13e45497ab9adc3173fd2ed34/)
+```quote
+**level:** error
+**timestamp:** 2023-05-29 10:12:33
+**filename:** app/controllers/articles_controller.rb
+```
+
+Traceback:
+```ruby
+     class ArticlesController < ApplicationController
+
+       def index
+
+         begin
+
+--->       132312 / 0
+
+         rescue ZeroDivisionError => exception
+
+           Sentry.capture_exception(exception)
+
+         end
+
+```"""
+        self.check_webhook("event_for_exception_rails", expected_topic, expected_message)
+
+    def test_event_for_exception_vue(self) -> None:
+        expected_topic = "TypeError: Cannot read properties of null (reading 'inser..."
+        expected_message = """\
+**New exception:** [TypeError: Cannot read properties of null (reading 'insertBefore')](https://sentry.io/organizations/nitk-46/issues/4214010673/events/292f78454e774e62999506f759ad791d/)
+```quote
+**level:** error
+**timestamp:** 2023-05-29 11:08:30
+**filename:** /node_modules/.vite/deps/chunk-G4DFXOZZ.js
+```"""
+        self.check_webhook("event_for_exception_vue", expected_topic, expected_message)
+
     def test_webhook_event_for_exception_python(self) -> None:
         expected_topic = "ValueError: new sentry error."
         expected_message = """\
@@ -210,3 +250,13 @@ New [issue](https://sentry.io/zulip/zulip/issues/156699934/) (level: ERROR):
 This is an example python exception
 ```"""
         self.check_webhook("deprecated_exception_message", expected_topic, expected_message)
+
+    def test_sample_event(self) -> None:
+        expected_topic = "This is an example Python exception"
+        expected_message = """\
+**New message event:** [This is an example Python exception](https://sentry.io/organizations/nitk-46/issues/4218258981/events/b6eff1a49b1f4132850b1238d968da70/)
+```quote
+**level:** error
+**timestamp:** 2023-05-31 11:06:16
+```"""
+        self.check_webhook("sample_event", expected_topic, expected_message)

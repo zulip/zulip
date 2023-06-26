@@ -42,8 +42,8 @@ function test(label, f) {
     });
 }
 
-test("generate_zuliprc_uri", () => {
-    const uri = settings_bots.generate_zuliprc_uri(1);
+test("generate_zuliprc_url", () => {
+    const url = settings_bots.generate_zuliprc_url(1);
     const expected =
         "data:application/octet-stream;charset=utf-8," +
         encodeURIComponent(
@@ -52,7 +52,7 @@ test("generate_zuliprc_uri", () => {
                 "site=https://chat.example.com\n",
         );
 
-    assert.equal(uri, expected);
+    assert.equal(url, expected);
 });
 
 test("generate_zuliprc_content", () => {

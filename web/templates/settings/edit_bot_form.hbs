@@ -1,7 +1,7 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
     <form class="new-style edit_bot_form name-setting">
         <div class="input-group name_change_container">
-            <label for="edit_bot_full_name">{{t "Full name" }}</label>
+            <label for="edit_bot_full_name">{{t "Name" }}</label>
             <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" class="modal_text_input" value="{{ full_name }}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
@@ -22,10 +22,14 @@
             </select>
         </div>
         <div class="input-group edit_bot_owner_container">
-            <label for="bot_owner_select">{{t "Owner" }}</label>
-            {{> dropdown_list_widget
-              widget_name="edit_bot_owner"
-              list_placeholder=(t 'Filter users')}}
+            <label for="bot_owner_dropdown_widget">{{t "Owner" }}</label>
+            <div id="bot_owner_dropdown_widget" class="dropdown-widget-button" role="button" tabindex="0">
+                <input type="hidden" name="bot_owner_id" class="bot_owner_id" value="{{current_bot_owner}}"/>
+                <span class="bot_owner_name">
+                    {{owner_full_name}}
+                </span>
+                <i class="fa fa-chevron-down"></i>
+            </div>
         </div>
         <div id="service_data">
         </div>

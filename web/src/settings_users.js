@@ -18,12 +18,12 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
+import * as scroll_util from "./scroll_util";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
-import * as ui from "./ui";
 import * as user_pill from "./user_pill";
 
 const section = {
@@ -165,7 +165,7 @@ function failed_listing_users() {
     loading.destroy_indicator($("#subs_page_loading_indicator"));
     const status = get_status_field();
     const user_id = people.my_current_user_id();
-    blueslip.error("Error while listing users for user_id " + user_id, status);
+    blueslip.error("Error while listing users for user_id", {user_id, status});
 }
 
 function populate_users() {
@@ -182,7 +182,7 @@ function populate_users() {
 
 function reset_scrollbar($sel) {
     return function () {
-        ui.reset_scrollbar($sel);
+        scroll_util.reset_scrollbar($sel);
     };
 }
 
@@ -476,7 +476,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
 
             const bots_owned_by_user = bot_data.get_all_bots_owned_by_user(user_id);
             const user = people.get_by_user_id(user_id);
-            const realm_uri = page_params.realm_uri;
+            const realm_url = page_params.realm_uri;
             const realm_name = page_params.realm_name;
             const opts = {
                 username: user.full_name,
@@ -484,7 +484,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                 bots_owned_by_user,
                 number_of_invites_by_user,
                 admin_email: people.my_current_email(),
-                realm_uri,
+                realm_url,
                 realm_name,
             };
             const html_body = render_settings_deactivation_user_modal(opts);

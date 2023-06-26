@@ -1,0 +1,26 @@
+<div id="send_later_options">
+    <ul class="nav nav-list">
+        {{#if possible_send_later_today}}
+            {{#each possible_send_later_today}}
+                <li>
+                    <a id="{{@key}}" class="send_later_today" data-send-stamp="{{this.stamp}}" tabindex="0">{{this.text}}</a>
+                </li>
+            {{/each}}
+        {{/if}}
+        {{#each send_later_tomorrow}}
+            <li>
+                <a id="{{@key}}" class="send_later_tomorrow" data-send-stamp="{{this.stamp}}" tabindex="0">{{this.text}}</a>
+            </li>
+        {{/each}}
+        {{#if possible_send_later_monday }}
+            {{#each possible_send_later_monday}}
+                <li>
+                    <a id="{{@key}}" class="send_later_monday" data-send-stamp="{{this.stamp}}" tabindex="0">{{this.text}}</a>
+                </li>
+            {{/each}}
+        {{/if}}
+        <li>
+            <a class="send_later_custom" tabindex="0">{{t 'Custom time'}}</a>
+        </li>
+    </ul>
+</div>

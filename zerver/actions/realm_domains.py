@@ -14,7 +14,7 @@ from zerver.models import (
     active_user_ids,
     get_realm_domains,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 @transaction.atomic(durable=True)
@@ -46,7 +46,7 @@ def do_add_realm_domain(
             domain=realm_domain.domain, allow_subdomains=realm_domain.allow_subdomains
         ),
     )
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
     return realm_domain
 
@@ -82,9 +82,7 @@ def do_change_realm_domain(
             domain=realm_domain.domain, allow_subdomains=realm_domain.allow_subdomains
         ),
     )
-    transaction.on_commit(
-        lambda: send_event(realm_domain.realm, event, active_user_ids(realm_domain.realm_id))
-    )
+    send_event_on_commit(realm_domain.realm, event, active_user_ids(realm_domain.realm_id))
 
 
 @transaction.atomic(durable=True)
@@ -119,4 +117,4 @@ def do_remove_realm_domain(
         # confusing than the alternative.
         do_set_realm_property(realm, "emails_restricted_to_domains", False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))

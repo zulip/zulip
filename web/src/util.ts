@@ -46,10 +46,7 @@ export function lower_bound<T>(
 
 export const lower_same = function lower_same(a?: string, b?: string): boolean {
     if (a === undefined || b === undefined) {
-        blueslip.error(
-            `Cannot compare strings; at least one value is undefined: \
-${a ?? "(undefined)"}, ${b ?? "(undefined)"}`,
-        );
+        blueslip.error("Cannot compare strings; at least one value is undefined", {a, b});
         return false;
     }
     return a.toLowerCase() === b.toLowerCase();
@@ -117,7 +114,7 @@ export function normalize_recipients(recipients: string): string {
 // one by one until the decode succeeds.  This makes sense if
 // we are decoding input that the user is in the middle of
 // typing.
-export function robust_uri_decode(str: string): string {
+export function robust_url_decode(str: string): string {
     let end = str.length;
     while (end > 0) {
         try {
@@ -261,9 +258,16 @@ export function convert_message_topic(message: Message): void {
     }
 }
 
+let inertDocument: Document | undefined;
+
 export function clean_user_content_links(html: string): string {
-    const content = new DOMParser().parseFromString(html, "text/html").body;
-    for (const elt of content.querySelectorAll("a")) {
+    if (inertDocument === undefined) {
+        inertDocument = new DOMParser().parseFromString("", "text/html");
+    }
+    const template = inertDocument.createElement("template");
+    template.innerHTML = html;
+
+    for (const elt of template.content.querySelectorAll("a")) {
         // Ensure that all external links have target="_blank"
         // rel="opener noreferrer".  This ensures that external links
         // never replace the Zulip web app while also protecting
@@ -303,9 +307,7 @@ export function clean_user_content_links(html: string): string {
             elt.removeAttribute("target");
         }
 
-        const is_inline_image =
-            elt.parentElement && elt.parentElement.classList.contains("message_inline_image");
-        if (is_inline_image) {
+        if (elt.parentElement?.classList.contains("message_inline_image")) {
             // For inline images we want to handle the tooltips explicitly, and disable
             // the browser's built in handling of the title attribute.
             const title = elt.getAttribute("title");
@@ -340,7 +342,7 @@ export function clean_user_content_links(html: string): string {
             );
         }
     }
-    return content.innerHTML;
+    return template.innerHTML;
 }
 
 export function filter_by_word_prefix_match<T>(

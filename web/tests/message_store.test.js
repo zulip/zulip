@@ -120,7 +120,7 @@ test("process_new_message", () => {
     let retrieved_message = message_store.get(2067);
     assert.equal(retrieved_message, message);
 
-    blueslip.expect("error", "message_store got non-number: 2067");
+    blueslip.expect("error", "message_store got non-number");
     retrieved_message = message_store.get("2067");
     assert.equal(retrieved_message, message);
 
@@ -186,18 +186,21 @@ test("message_booleans_parity", () => {
     assert_bool_match(["wildcard_mentioned"], {
         mentioned: true,
         mentioned_me_directly: false,
+        wildcard_mentioned: true,
         alerted: false,
     });
 
     assert_bool_match(["mentioned"], {
         mentioned: true,
         mentioned_me_directly: true,
+        wildcard_mentioned: false,
         alerted: false,
     });
 
     assert_bool_match(["has_alert_word"], {
         mentioned: false,
         mentioned_me_directly: false,
+        wildcard_mentioned: false,
         alerted: true,
     });
 });
@@ -209,8 +212,8 @@ test("errors", ({disallow_rewire}) => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id: 92714", 2);
-    blueslip.expect("error", "Unknown user id 92714", 2); // From person.js
+    blueslip.expect("error", "Unknown user_id in get_by_user_id", 2);
+    blueslip.expect("error", "Unknown user id", 2); // From person.js
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
@@ -247,24 +250,28 @@ test("update_booleans", () => {
     // First, test fields that we do actually want to update.
     message.mentioned = false;
     message.mentioned_me_directly = false;
+    message.wildcard_mentioned = false;
     message.alerted = false;
 
     let flags = ["mentioned", "has_alert_word", "read"];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, true);
+    assert.equal(message.wildcard_mentioned, false);
     assert.equal(message.alerted, true);
 
     flags = ["wildcard_mentioned", "unread"];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.wildcard_mentioned, true);
 
     flags = ["read"];
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, false);
     assert.equal(message.mentioned_me_directly, false);
     assert.equal(message.alerted, false);
+    assert.equal(message.wildcard_mentioned, false);
 
     // Make sure we don't muck with unread.
     message.unread = false;
@@ -327,6 +334,6 @@ test("update_property", () => {
 });
 
 test("errors", () => {
-    blueslip.expect("error", "message_store.get got bad value: undefined");
+    blueslip.expect("error", "message_store.get got bad value");
     message_store.get(undefined);
 });

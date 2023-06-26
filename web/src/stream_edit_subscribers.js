@@ -15,12 +15,12 @@ import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as scroll_util from "./scroll_util";
 import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as stream_settings_containers from "./stream_settings_containers";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
-import * as ui from "./ui";
 
 export let pill_widget;
 let current_stream_id;
@@ -39,7 +39,7 @@ function format_member_list_elem(person, user_can_remove_subscribers) {
 function get_sub(stream_id) {
     const sub = sub_store.get(stream_id);
     if (!sub) {
-        blueslip.error("get_sub() failed id lookup: " + stream_id);
+        blueslip.error("get_sub() failed id lookup", {stream_id});
         return undefined;
     }
     return sub;
@@ -62,7 +62,7 @@ function show_stream_subscription_request_result({
         already_subscribed_users,
         ignored_deactivated_users,
     });
-    ui.get_content_element($stream_subscription_req_result_elem).html(html);
+    scroll_util.get_content_element($stream_subscription_req_result_elem).html(html);
     if (add_class) {
         $stream_subscription_req_result_elem.addClass(add_class);
     }
@@ -358,13 +358,13 @@ export function rerender_subscribers_list(sub) {
 export function initialize() {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
-        $parent_container: $("#manage_streams_container"),
+        $parent_container: $("#streams_overlay_container"),
         pill_selector: ".edit_subscribers_for_stream .pill-container",
         button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
         action: subscribe_new_users,
     });
 
-    $("#manage_streams_container").on(
+    $("#streams_overlay_container").on(
         "submit",
         ".edit_subscribers_for_stream .subscriber_list_remove form",
         (e) => {

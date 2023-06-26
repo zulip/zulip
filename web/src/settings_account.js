@@ -26,6 +26,7 @@ import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as typeahead_helper from "./typeahead_helper";
 import * as ui_report from "./ui_report";
+import * as ui_util from "./ui_util";
 import * as user_pill from "./user_pill";
 import * as user_profile from "./user_profile";
 import {user_settings} from "./user_settings";
@@ -261,6 +262,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
             is_select_field,
             field_choices,
+            for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
         });
         $(element_id).append(html);
     }
@@ -271,6 +273,7 @@ export function initialize_custom_date_type_fields(element_id) {
         altInput: true,
         altFormat: "F j, Y",
         allowInput: true,
+        static: true,
     });
 
     $(element_id)
@@ -497,7 +500,7 @@ export function set_up() {
                 api_key: $("#api_key_value").text(),
             };
             const data = settings_bots.generate_zuliprc_content(bot_object);
-            $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
+            $(this).attr("href", settings_bots.encode_zuliprc_as_url(data));
         });
 
         $("#api_key_modal [data-micromodal-close]").on("click", () => {
@@ -731,8 +734,9 @@ export function set_up() {
                 form_id: "change_email_form",
                 on_click: do_change_email,
                 on_shown() {
-                    $("#change_email_form input").trigger("focus");
+                    ui_util.place_caret_at_end($("#change_email_form input")[0]);
                 },
+                update_submit_disabled_state_on_change: true,
             });
         }
     });

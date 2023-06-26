@@ -338,7 +338,7 @@ organizations from the command line.
 [formatjs]: https://formatjs.io/
 [icu messageformat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
-[transifex]: https://transifex.com
-[transifex-api-token]: https://www.transifex.com/user/settings/api/
+[transifex]: https://www.transifex.com
+[transifex-api-token]: https://app.transifex.com/user/settings/api/
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
 [html-templates]: ../subsystems/html-css.md#html-templates

@@ -94,7 +94,7 @@ a.no-underline:hover {
 }
 
 i.zulip-icon.zulip-icon-bot {
-    color: hsl(180deg 5% 74%);
+    color: var(--color-icon-bot);
     vertical-align: top;
     padding: 0 2px;
 }
@@ -127,10 +127,12 @@ input::-ms-reveal {
     }
 }
 
-select.bootstrap-focus-style {
+select.bootstrap-focus-style,
+button.dropdown-toggle {
     &:focus {
         outline: 1px dotted hsl(0deg 0% 20%);
         outline: 5px auto -webkit-focus-ring-color;
         outline-offset: -2px;
+        transition: none;
     }
 }

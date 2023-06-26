@@ -6,7 +6,7 @@
                 <span class="fa fa-envelope"></span>
                 <a href="{{pm_url}}">Direct messages</a>
                 {{else}}
-                <span class="stream-privacy-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
+                <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
                     {{> stream_privacy }}
                 </span>
                 <a href="{{topic_url}}">{{stream}}</a>
@@ -18,6 +18,8 @@
                 <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
                     {{#if is_group}}
                     <span class="fa fa-group"></span>
+                    {{else if is_bot}}
+                    <span class="zulip-icon zulip-icon-bot" aria-hidden="true"></span>
                     {{else}}
                     <span class="{{user_circle_class}} user_circle"></span>
                     {{/if}}
@@ -57,10 +59,12 @@
                 </div>
                 <div class="recent_topic_actions">
                     <div class="recent_topics_focusable hidden-for-spectators">
-                        {{#if topic_muted}}
-                        <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
+                        {{#if stream_muted}}
+                            <i class="zulip-icon zulip-icon-unmute stream_muted {{#if topic_unmuted}}on_hover_topic_mute {{else}}on_hover_topic_unmute {{/if}} recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" role="button" tabindex="0"
+                              {{#if topic_unmuted}} data-tippy-content="{{t 'Mute topic' }}" aria-label="{{t 'Mute topic' }}" {{else}} data-tippy-content="{{t 'Unmute topic' }}" aria-label="{{t 'Unmute topic' }}" {{/if}} data-tippy-trigger="mouseenter"></i>
                         {{else}}
-                        <i class="zulip-icon zulip-icon-mute on_hover_topic_mute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+                            <i class="zulip-icon zulip-icon-mute stream_unmuted {{#if topic_muted}}on_hover_topic_unmute {{else}}on_hover_topic_mute {{/if}} recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" role="button" tabindex="0"
+                              {{#if topic_muted}} data-tippy-content="{{t 'Unmute topic' }}" aria-label="{{t 'Unmute topic' }}" {{else}} data-tippy-content="{{t 'Mute topic' }}" aria-label="{{t 'Mute topic' }}" {{/if}} data-tippy-trigger="mouseenter"></i>
                         {{/if}}
                     </div>
                 </div>

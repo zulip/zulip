@@ -433,27 +433,15 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
 });
 
 run_test("set_compose_box_top", () => {
-    $(".header").set_height(40);
-
-    const padding_bottom = 10;
-    $(".header").css = (arg) => {
-        assert.equal(arg, "paddingBottom");
-        return padding_bottom;
-    };
-
     let compose_top = "";
     $("#compose").css = (arg, val) => {
         assert.equal(arg, "top");
         compose_top = val;
     };
 
-    $("#navbar_alerts_wrapper").set_height(0);
+    $("#navbar-fixed-container").set_height(50);
     compose_ui.set_compose_box_top(true);
     assert.equal(compose_top, "50px");
-
-    $("#navbar_alerts_wrapper").set_height(45);
-    compose_ui.set_compose_box_top(true);
-    assert.equal(compose_top, "95px");
 
     compose_ui.set_compose_box_top(false);
     assert.equal(compose_top, "");
@@ -748,4 +736,22 @@ run_test("right-to-left", () => {
     compose_ui.handle_keyup(event, $textarea);
 
     assert.equal($textarea.hasClass("rtl"), false);
+});
+
+const get_focus_area = compose_ui._get_focus_area;
+run_test("get_focus_area", () => {
+    assert.equal(get_focus_area("private", {}), "#private_message_recipient");
+    assert.equal(
+        get_focus_area("private", {
+            private_message_recipient: "bob@example.com",
+        }),
+        "#compose-textarea",
+    );
+    assert.equal(get_focus_area("stream", {}), "#compose_select_recipient_widget");
+    assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
+    assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
+    assert.equal(
+        get_focus_area("stream", {stream: "fun", topic: "more", trigger: "new topic button"}),
+        "#stream_message_recipient_topic",
+    );
 });

@@ -11,11 +11,11 @@ from zerver.lib.response import json_success
 from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_by_name,
-    access_stream_for_unmute_topic_by_id,
-    access_stream_for_unmute_topic_by_name,
+    access_stream_to_remove_visibility_policy_by_id,
+    access_stream_to_remove_visibility_policy_by_name,
     check_for_exactly_one_stream_arg,
 )
-from zerver.lib.validator import check_int, check_string_in
+from zerver.lib.validator import check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, UserTopic
 
 
@@ -50,10 +50,10 @@ def unmute_topic(
     error = _("Topic is not muted")
 
     if stream_name is not None:
-        stream = access_stream_for_unmute_topic_by_name(user_profile, stream_name, error)
+        stream = access_stream_to_remove_visibility_policy_by_name(user_profile, stream_name, error)
     else:
         assert stream_id is not None
-        stream = access_stream_for_unmute_topic_by_id(user_profile, stream_id, error)
+        stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)
 
     do_set_user_topic_visibility_policy(
         user_profile, stream, topic_name, visibility_policy=UserTopic.VisibilityPolicy.INHERIT
@@ -86,4 +86,24 @@ def update_muted_topic(
             stream_name=stream,
             topic_name=topic,
         )
+    return json_success(request)
+
+
+@has_request_variables
+def update_user_topic(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int = REQ(json_validator=check_int),
+    topic: str = REQ(),
+    visibility_policy: int = REQ(json_validator=check_int_in(UserTopic.VisibilityPolicy.values)),
+) -> HttpResponse:
+    if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
+        error = _("Invalid stream ID")
+        stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)
+    else:
+        (stream, sub) = access_stream_by_id(user_profile, stream_id)
+
+    do_set_user_topic_visibility_policy(
+        user_profile, stream, topic, visibility_policy=visibility_policy
+    )
     return json_success(request)

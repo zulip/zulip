@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 import tippy from "tippy.js";
 
+import render_inline_decorated_stream_name from "../templates/inline_decorated_stream_name.hbs";
 import render_dropdown_list from "../templates/settings/dropdown_list.hbs";
 
 import * as blueslip from "./blueslip";
@@ -29,6 +30,7 @@ export class DropdownListWidget {
         this.include_current_item = include_current_item;
         this.initial_value = value;
         this.on_update = on_update;
+        this.list_widget = null;
 
         this.container_id = `${widget_name}_widget`;
         this.value_id = `id_${widget_name}`;
@@ -63,8 +65,16 @@ export class DropdownListWidget {
             return;
         }
 
-        const text = this.render_text(item.name);
-        $elem.text(text);
+        if (item.stream !== undefined) {
+            const stream = item.stream;
+            const rendered_stream_name_with_privacy_symbol_html =
+                render_inline_decorated_stream_name({stream, show_colored_icon: true});
+            $elem.html(rendered_stream_name_with_privacy_symbol_html);
+        } else {
+            const text = this.render_text(item.name);
+            $elem.text(text);
+        }
+
         $elem.removeClass("text-warning");
         $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
     }
@@ -76,19 +86,9 @@ export class DropdownListWidget {
 
     register_event_handlers() {
         $(`#${CSS.escape(this.container_id)} .dropdown-list-body`).on(
-            "click keypress",
+            "click",
             ".list_item",
             (e) => {
-                const $setting_elem = $(e.currentTarget).closest(
-                    `.${CSS.escape(this.widget_name)}_setting`,
-                );
-                if (e.type === "keypress") {
-                    if (keydown_util.is_enter_event(e)) {
-                        $setting_elem.find(".dropdown-menu").dropdown("toggle");
-                    } else {
-                        return;
-                    }
-                }
                 const value = $(e.currentTarget).attr("data-value");
                 this.update(value);
             },
@@ -114,7 +114,7 @@ export class DropdownListWidget {
             `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
         );
 
-        ListWidget.create($dropdown_list_body, this.get_data(data), {
+        this.list_widget = ListWidget.create($dropdown_list_body, this.get_data(data), {
             name: `${CSS.escape(this.widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});
@@ -129,6 +129,11 @@ export class DropdownListWidget {
         });
     }
 
+    replace_data(data) {
+        this.data = data;
+        this.list_widget.replace_list_data(this.get_data(data));
+    }
+
     // Sets the focus to the ListWidget input once the dropdown button is clicked.
     dropdown_toggle_click_handler() {
         const $dropdown_toggle = $(`#${CSS.escape(this.container_id)} .dropdown-toggle`);
@@ -141,7 +146,7 @@ export class DropdownListWidget {
         });
     }
 
-    dropdown_focus_events() {
+    dropdown_keyboard_events() {
         const $search_input = $(
             `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
         );
@@ -201,6 +206,18 @@ export class DropdownListWidget {
                     break;
                 }
             }
+
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                e.preventDefault();
+                if (e.target === $search_input[0]) {
+                    // Select the first option from the menu on pressing
+                    // "Enter" when focus is on the search input.
+                    dropdown_elements().first().trigger("click");
+                } else if ($(e.target).parent().hasClass("list_item")) {
+                    $(e.target).trigger("click");
+                }
+            }
         });
     }
 
@@ -235,7 +252,7 @@ export class DropdownListWidget {
             }
         });
 
-        this.dropdown_focus_events();
+        this.dropdown_keyboard_events();
 
         this.render(this.initial_value);
         this.register_event_handlers();
@@ -395,7 +412,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
             `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
         );
 
-        ListWidget.create($dropdown_list_body, data, {
+        this.list_widget = ListWidget.create($dropdown_list_body, data, {
             name: `${CSS.escape(this.widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});
@@ -456,7 +473,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
         tippy_instance.destroy();
     }
 
-    dropdown_focus_events() {
+    dropdown_keyboard_events() {
         // Main keydown event handler which transfers the focus from one child element
         // to another.
 
@@ -525,6 +542,18 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
                     break;
                 }
             }
+
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                e.preventDefault();
+                if (e.target === $search_input[0]) {
+                    // Select the first option from the menu on pressing
+                    // "Enter" when focus is on the search input.
+                    dropdown_elements().first().trigger("click");
+                } else if ($(e.target).parent().hasClass("list_item")) {
+                    $(e.target).trigger("click");
+                }
+            }
         });
     }
 
@@ -534,11 +563,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
             `#${CSS.escape(this.container_id)} .dropdown-list-body`,
         ).expectOne();
 
-        $dropdown_list_body.on("click keypress", ".list_item", (e) => {
-            if (e.type === "keypress" && !keydown_util.is_enter_event(e)) {
-                return;
-            }
-
+        $dropdown_list_body.on("click", ".list_item", (e) => {
             const $element = e.target.closest("li");
             if ($element.hasClass("checked")) {
                 this.remove_check_mark($element);

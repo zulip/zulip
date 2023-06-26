@@ -112,6 +112,8 @@ async function renderGIPHYGrid(targetEl) {
                     compose_ui.insert_syntax_and_focus(
                         `[](${props.images.downsized_medium.url})`,
                         $textarea,
+                        "block",
+                        1,
                     );
                     hide_giphy_popover();
                 },
@@ -241,6 +243,7 @@ export function initialize() {
         $active_popover_element.popover({
             animation: true,
             placement: get_popover_placement(),
+            fixed: true,
             html: true,
             trigger: "manual",
             template: get_popover_content(),

@@ -26,8 +26,8 @@ There are two ways to configure Zulip's email gateway:
 The local delivery configuration is preferred for production because
 it supports nicer looking email addresses and has no cron delay. The
 polling option is convenient for testing/developing this feature
-because it doesn't require a public IP address or setting up MX
-records in DNS.
+because it doesn't require a public IP address, setting up MX
+records in DNS, or adjusting firewalls.
 
 :::{note}
 Incoming emails are rate-limited, with the following limits:
@@ -61,6 +61,10 @@ using an [HTTP reverse proxy][reverse-proxy]).
    $ dig +short emaildomain.example.com -t MX
    1 hostname.example.com
    ```
+
+1. If you have a network firewall enabled, configure it to allow incoming access
+   to port 25 on the Zulip server from the public internet. Other mail servers
+   will need to use it to deliver emails to Zulip.
 
 1. Log in to your Zulip server; the remaining steps all happen there.
 
@@ -122,7 +126,7 @@ Congratulations! The integration should be fully operational.
 1. Test your configuration by sending emails to the target email
    account and then running the Zulip tool to poll that inbox:
 
-   ```
+   ```bash
    su zulip -c '/home/zulip/deployments/current/manage.py email_mirror'
    ```
 

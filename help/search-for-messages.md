@@ -51,12 +51,12 @@ Zulip offers the following filters based on the location of the message.
 * `stream:design`: Search within the stream **#design**.
 * `stream:design topic:new+logo`: Search within the topic "new logo" in
   **#design**.
-* `is:private`: Search all your direct messages.
-* `pm-with:Bo Lin`: Search 1-on-1 direct messages between you and Bo.
-* `pm-with:Bo Lin, Elena García`: Search group direct messages
+* `is:dm`: Search all your direct messages.
+* `dm:Bo Lin`: Search 1-on-1 direct messages between you and Bo.
+* `dm:Bo Lin, Elena García`: Search group direct messages
   between you, Bo, and Elena.
-* `group-pm-with:Bo Lin`: Search all group direct message
-  conversations that include you and Bo, as well as any other users.
+* `dm-including:Bo Lin`: Search all direct message conversations
+  (1-on-1 and group) that include you and Bo, as well as any other users.
 * `streams:public`: Search the history of all [public
   streams](/help/change-the-privacy-of-a-stream) in the organization, including
   streams you are not subscribed to; see details

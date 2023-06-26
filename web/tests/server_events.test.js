@@ -48,6 +48,11 @@ mock_esm("../src/stream_events", {
     },
 });
 
+mock_esm("../src/sent_messages", {
+    report_event_received() {},
+    messages: new Map(),
+});
+
 const message_events = mock_esm("../src/message_events", {
     insert_new_messages() {
         throw new Error("insert error");
@@ -94,7 +99,7 @@ run_test("event_dispatch_error", () => {
         options.success(data);
     };
 
-    blueslip.expect("error", "Failed to process an event\nsubs update error");
+    blueslip.expect("error", "Failed to process an event");
 
     server_events.restart_get_events();
 
@@ -114,7 +119,7 @@ run_test("event_new_message_error", () => {
         options.success(data);
     };
 
-    blueslip.expect("error", "Failed to insert new messages\ninsert error");
+    blueslip.expect("error", "Failed to insert new messages");
 
     server_events.restart_get_events();
 
@@ -129,7 +134,7 @@ run_test("event_edit_message_error", () => {
     channel.get = (options) => {
         options.success(data);
     };
-    blueslip.expect("error", "Failed to update messages\nupdate error");
+    blueslip.expect("error", "Failed to update messages");
 
     server_events.restart_get_events();
 

@@ -1,13 +1,17 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import {MessageListData} from "./message_list_data";
+import * as message_list_tooltips from "./message_list_tooltips";
 import {MessageListView} from "./message_list_view";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
+import {web_mark_read_on_scroll_policy_values} from "./settings_config";
 import * as stream_data from "./stream_data";
+import {user_settings} from "./user_settings";
 
 export class MessageList {
     // A MessageList is the main interface for a message feed that is
@@ -112,16 +116,20 @@ export class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this.narrowed && !this.empty()) {
+        if (this.narrowed && !this.visibly_empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow_banner.hide_empty_narrow_message();
         }
 
-        if (this.narrowed && !this.empty() && this.selected_id() === -1) {
-            // And also select the newly arrived message.
-            this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
+        if (this.narrowed && !this.visibly_empty() && this.selected_id() === -1) {
+            // The message list was previously empty, but now isn't
+            // due to adding these messages, and we need to select a
+            // message. Regardless of whether the messages are new or
+            // old, we want to select a message as though we just
+            // entered this view.
+            this.select_id(this.first_unread_message_id(), {then_scroll: true, use_closest: true});
         }
 
         return render_info;
@@ -137,6 +145,10 @@ export class MessageList {
 
     empty() {
         return this.data.empty();
+    }
+
+    visibly_empty() {
+        return this.data.visibly_empty();
     }
 
     first() {
@@ -173,11 +185,36 @@ export class MessageList {
 
     can_mark_messages_read() {
         /* Automatically marking messages as read can be disabled for
-           two different reasons:
+           three different reasons:
            * The view is structurally a search view, encoded in the
              properties of the message_list_data object.
            * The user recently marked messages in the view as unread, and
              we don't want to lose that state.
+           * The user has "Automatically mark messages as read" option
+             turned on in their user settings.
+        */
+        const filter = this.data.filter;
+        const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
+        return (
+            this.data.can_mark_messages_read() &&
+            !this.reading_prevented &&
+            !(
+                user_settings.web_mark_read_on_scroll_policy ===
+                web_mark_read_on_scroll_policy_values.never.code
+            ) &&
+            !(
+                user_settings.web_mark_read_on_scroll_policy ===
+                    web_mark_read_on_scroll_policy_values.conversation_only.code &&
+                !is_conversation_view
+            )
+        );
+    }
+
+    can_mark_messages_read_without_setting() {
+        /*
+            Similar to can_mark_messages_read() above, this is a helper
+            function to check if messages can be automatically read without
+            the "Automatically mark messages as read" setting.
         */
         return this.data.can_mark_messages_read() && !this.reading_prevented;
     }
@@ -298,6 +335,8 @@ export class MessageList {
         let just_unsubscribed = false;
         const subscribed = stream_data.is_subscribed_by_name(stream_name);
         const sub = stream_data.get_sub(stream_name);
+        const invite_only = sub.invite_only;
+        const is_web_public = sub.is_web_public;
         const can_toggle_subscription =
             sub !== undefined && stream_data.can_toggle_subscription(sub);
         if (sub === undefined) {
@@ -305,6 +344,7 @@ export class MessageList {
         } else if (!subscribed && !this.last_message_historical) {
             just_unsubscribed = true;
         }
+
         this.view.render_trailing_bookend(
             stream_name,
             subscribed,
@@ -312,6 +352,8 @@ export class MessageList {
             just_unsubscribed,
             can_toggle_subscription,
             page_params.is_spectator,
+            invite_only,
+            is_web_public,
         );
     }
 
@@ -374,16 +416,6 @@ export class MessageList {
         $recipient_row.find(".always_visible_topic_edit").show();
     }
 
-    show_message_as_read(message, options) {
-        const $row = this.get_row(message.id);
-        if (options.from === "pointer" || options.from === "server") {
-            $row.find(".unread_marker").addClass("fast_fade");
-        } else {
-            $row.find(".unread_marker").addClass("slow_fade");
-        }
-        $row.removeClass("unread");
-    }
-
     reselect_selected_id() {
         const selected_id = this.data.selected_id();
 
@@ -398,6 +430,9 @@ export class MessageList {
     }
 
     rerender() {
+        // We need to destroy all the tippy instances from the DOM before re-rendering to
+        // prevent the appearance of tooltips whose reference has been removed.
+        message_list_tooltips.destroy_all_message_list_tooltips();
         // We need to clear the rendering state, rather than just
         // doing clear_table, since we want to potentially recollapse
         // things.
@@ -406,7 +441,14 @@ export class MessageList {
         this.view.update_render_window(this.selected_idx(), false);
 
         if (this.narrowed) {
-            if (this.empty()) {
+            if (
+                this.visibly_empty() &&
+                this.data.fetch_status.has_found_oldest() &&
+                this.data.fetch_status.has_found_newest()
+            ) {
+                // Show the empty narrow message only if we're certain
+                // that the view doesn't have messages that we're
+                // waiting for the server to send us.
                 narrow_banner.show_empty_narrow_message();
             } else {
                 narrow_banner.hide_empty_narrow_message();
@@ -416,6 +458,20 @@ export class MessageList {
     }
 
     update_muting_and_rerender() {
+        // For the home message list, we need to re-initialize
+        // _all_items for stream muting/topic unmuting from
+        // all_messages_data, since otherwise unmuting a previously
+        // muted stream won't work.
+        //
+        // TODO: The zhome conditional is a bit awkward, but a check
+        // for whether the filter excludes muted streams wouldn't be
+        // correct, because other narrows can't pull from
+        // all_messages.
+        if (this.table_name === "zhome") {
+            this.data.clear();
+            this.data.add_messages(all_messages_data.all_messages());
+        }
+
         this.data.update_items_for_muting();
         // We need to rerender whether or not the narrow hides muted
         // topics, because we need to update recipient bars for topics

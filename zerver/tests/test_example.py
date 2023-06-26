@@ -1,5 +1,4 @@
 import datetime
-from typing import Any, List, Mapping
 from unittest import mock
 
 import orjson
@@ -197,7 +196,7 @@ class TestFullStack(ZulipTestCase):
 
         # We often use assert_json_error for negative tests.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "User not authorized for this query", 400)
+        self.assert_json_error(result, "User not authorized to create users", 400)
 
         do_change_can_create_users(iago, True)
         incomplete_params = dict(
@@ -230,11 +229,8 @@ class TestFullStack(ZulipTestCase):
 
         params = dict(status_text="on vacation")
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(cordelia, "/api/v1/users/me/status", params)
 
         self.assert_json_success(result)
@@ -413,7 +409,7 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
             )
             # logger.output is a list of all the log messages captured. Verify it is as expected.
-            self.assertEqual(logger.output, [output_log] * 15)
+            self.assertEqual(logger.output, [output_log] * 17)
 
             # Now, lets actually go the URL the above call redirects to, i.e., /emails/
             result = self.client_get(result["Location"])

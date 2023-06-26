@@ -47,6 +47,9 @@ const message_edit = mock_esm("../src/message_edit");
 const message_lists = mock_esm("../src/message_lists");
 const muted_topics_ui = mock_esm("../src/muted_topics_ui");
 const narrow = mock_esm("../src/narrow");
+const narrow_state = mock_esm("../src/narrow_state", {
+    is_message_feed_visible: () => true,
+});
 const navigate = mock_esm("../src/navigate");
 const overlays = mock_esm("../src/overlays", {
     is_active: () => false,
@@ -54,8 +57,10 @@ const overlays = mock_esm("../src/overlays", {
     streams_open: () => false,
     lightbox_open: () => false,
     drafts_open: () => false,
+    scheduled_messages_open: () => false,
     info_overlay_open: () => false,
     is_modal_open: () => false,
+    active_modal: () => undefined,
     is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../src/popovers", {
@@ -78,17 +83,15 @@ mock_esm("../src/hotspots", {
 });
 
 mock_esm("../src/recent_topics_util", {
-    is_visible: () => false,
     is_in_focus: () => false,
 });
 
 const stream_popover = mock_esm("../src/stream_popover", {
     stream_popped: () => false,
-    topic_popped: () => false,
 });
 
 message_lists.current = {
-    empty() {
+    visibly_empty() {
         return false;
     },
     selected_id() {
@@ -338,11 +341,11 @@ run_test("modal open", ({override}) => {
 
 run_test("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
-    const message_view_only_keys = "@+>RjJkKsSuvi:GM";
+    const message_view_only_keys = "@+>RjJkKsuvi:GM";
 
     // Check that they do nothing without a selected message
     with_overrides(({override}) => {
-        override(message_lists.current, "empty", () => true);
+        override(message_lists.current, "visibly_empty", () => true);
         assert_unmapped(message_view_only_keys);
     });
 
@@ -366,13 +369,22 @@ run_test("misc", ({override}) => {
     assert_mapping("J", navigate, "page_down");
     assert_mapping("k", navigate, "up");
     assert_mapping("K", navigate, "page_up");
-    assert_mapping("s", narrow, "by_recipient");
-    assert_mapping("S", narrow, "by_topic");
     assert_mapping("u", popovers, "show_sender_info");
     assert_mapping("i", popover_menus, "toggle_message_actions_menu");
     assert_mapping(":", reactions, "open_reactions_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
+
+    override(narrow_state, "narrowed_by_topic_reply", () => true);
+    assert_mapping("s", narrow, "by_recipient");
+
+    override(narrow_state, "narrowed_by_topic_reply", () => false);
+    override(narrow_state, "narrowed_by_pm_reply", () => true);
+    assert_unmapped("s");
+
+    override(narrow_state, "narrowed_by_topic_reply", () => false);
+    override(narrow_state, "narrowed_by_pm_reply", () => false);
+    assert_mapping("s", narrow, "by_topic");
 
     override(message_edit, "can_move_message", () => true);
     assert_mapping("m", stream_popover, "build_move_topic_to_stream_popover");
@@ -406,7 +418,7 @@ run_test("emoji picker", ({override}) => {
 run_test("G/M keys", () => {
     // TODO: move
     assert_mapping("G", navigate, "to_end");
-    assert_mapping("M", muted_topics_ui, "toggle_topic_mute");
+    assert_mapping("M", muted_topics_ui, "toggle_topic_visibility_policy");
 });
 
 run_test("n/p keys", () => {
@@ -460,7 +472,7 @@ run_test("motion_keys", () => {
     }
 
     list_util.inside_list = () => false;
-    message_lists.current.empty = () => true;
+    message_lists.current.visibly_empty = () => true;
     overlays.settings_open = () => false;
     overlays.streams_open = () => false;
     overlays.lightbox_open = () => false;
@@ -478,7 +490,7 @@ run_test("motion_keys", () => {
     assert_mapping("down_arrow", list_util, "go_down");
     list_util.inside_list = () => false;
 
-    message_lists.current.empty = () => false;
+    message_lists.current.visibly_empty = () => false;
     assert_mapping("down_arrow", navigate, "down");
     assert_mapping("end", navigate, "to_end");
     assert_mapping("home", navigate, "to_home");
@@ -514,8 +526,8 @@ run_test("motion_keys", () => {
 
     delete overlays.is_active;
     overlays.drafts_open = () => true;
-    assert_mapping("up_arrow", drafts, "drafts_handle_events");
-    assert_mapping("down_arrow", drafts, "drafts_handle_events");
+    assert_mapping("up_arrow", drafts, "handle_keyboard_events");
+    assert_mapping("down_arrow", drafts, "handle_keyboard_events");
     delete overlays.is_active;
     delete overlays.drafts_open;
 });

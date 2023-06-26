@@ -2,4 +2,4 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 USER=zulip
 
-0 * * * * zulip /home/zulip/deployments/current/manage.py fetch_tor_exit_nodes
+17 * * * * zulip /home/zulip/deployments/current/manage.py fetch_tor_exit_nodes

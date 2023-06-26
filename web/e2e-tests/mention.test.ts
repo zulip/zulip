@@ -11,8 +11,8 @@ async function test_mention(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
 
+    await common.select_stream_in_compose_via_dropdown(page, "Verona");
     await common.fill_form(page, 'form[action^="/json/messages"]', {
-        stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "Test mention all",
     });
     await common.select_item_via_typeahead(page, "#compose-textarea", "@**all", "all");
@@ -30,7 +30,7 @@ async function test_mention(page: Page): Promise<void> {
     await page.click("#compose-send-button");
 
     await page.waitForSelector("#compose_banners .wildcard_warning", {visible: true});
-    await page.click("#compose_banners .wildcard_warning .compose_banner_action_button");
+    await page.click("#compose_banners .wildcard_warning .main-view-banner-action-button");
     await page.waitForSelector(".wildcard_warning", {hidden: true});
 
     await common.check_messages_sent(page, "zhome", [["Verona > Test mention all", ["@all"]]]);

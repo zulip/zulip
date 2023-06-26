@@ -10,11 +10,10 @@ from unittest.mock import patch
 
 import orjson
 from django.conf import settings
-from django.http.response import StreamingHttpResponse
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from PIL import Image
 from urllib3 import encode_multipart_formdata
+from urllib3.fields import RequestField
 
 import zerver.lib.upload
 from zerver.actions.create_realm import do_create_realm
@@ -23,13 +22,13 @@ from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.retention import clean_archived_data
@@ -37,18 +36,11 @@ from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
     get_test_image_file,
+    ratelimit_rule,
     read_test_image_file,
 )
-from zerver.lib.upload import (
-    delete_message_attachment,
-    upload_message_attachment,
-)
-from zerver.lib.upload.base import (
-    BadImageError,
-    ZulipUploadBackend,
-    resize_emoji,
-    sanitize_name,
-)
+from zerver.lib.upload import delete_message_attachment, upload_message_attachment
+from zerver.lib.upload.base import BadImageError, ZulipUploadBackend, resize_emoji, sanitize_name
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.lib.users import get_api_key
@@ -59,6 +51,7 @@ from zerver.models import (
     Realm,
     RealmDomain,
     UserProfile,
+    get_client,
     get_realm,
     get_system_bot,
     get_user_by_delivery_email,
@@ -79,19 +72,19 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.api_post(self.example_user("hamlet"), "/api/v1/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
         self.assertIn("uri", response_dict)
-        uri = response_dict["uri"]
+        url = response_dict["uri"]
         base = "/user_uploads/"
-        self.assertEqual(base, uri[: len(base)])
+        self.assertEqual(base, url[: len(base)])
 
         # Download file via API
         self.logout()
-        response = self.api_get(self.example_user("hamlet"), uri)
+        response = self.api_get(self.example_user("hamlet"), url)
         self.assertEqual(response.status_code, 200)
-        self.assert_streaming_content(response, b"zulip!")
+        self.assertEqual(response.getvalue(), b"zulip!")
 
         # Files uploaded through the API should be accessible via the web client
         self.login("hamlet")
-        self.assert_streaming_content(self.client_get(uri), b"zulip!")
+        self.assertEqual(self.client_get(url).getvalue(), b"zulip!")
 
     def test_mobile_api_endpoint(self) -> None:
         """
@@ -106,21 +99,21 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.api_post(self.example_user("hamlet"), "/api/v1/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
         self.assertIn("uri", response_dict)
-        uri = response_dict["uri"]
+        url = response_dict["uri"]
         base = "/user_uploads/"
-        self.assertEqual(base, uri[: len(base)])
+        self.assertEqual(base, url[: len(base)])
 
         self.logout()
 
         # Try to download file via API, passing URL and invalid API key
         user_profile = self.example_user("hamlet")
 
-        response = self.client_get(uri, {"api_key": "invalid"})
+        response = self.client_get(url, {"api_key": "invalid"})
         self.assertEqual(response.status_code, 401)
 
-        response = self.client_get(uri, {"api_key": get_api_key(user_profile)})
+        response = self.client_get(url, {"api_key": get_api_key(user_profile)})
         self.assertEqual(response.status_code, 200)
-        self.assert_streaming_content(response, b"zulip!")
+        self.assertEqual(response.getvalue(), b"zulip!")
 
     def test_file_too_big_failure(self) -> None:
         """
@@ -163,13 +156,17 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         Test coverage for files without content-type in the metadata;
         in which case we try to guess the content-type from the filename.
         """
-        data, content_type = encode_multipart_formdata({"file": ("somefile", b"zulip!", None)})
+        field = RequestField("file", b"zulip!", filename="somefile")
+        field.make_multipart()
+        data, content_type = encode_multipart_formdata([field])
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
         )
         self.assert_json_success(result)
 
-        data, content_type = encode_multipart_formdata({"file": ("somefile.txt", b"zulip!", None)})
+        field = RequestField("file", b"zulip!", filename="somefile.txt")
+        field.make_multipart()
+        data, content_type = encode_multipart_formdata([field])
         result = self.api_post(
             self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
         )
@@ -179,7 +176,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     # when Zulip is in DEVELOPMENT mode.
     def test_file_upload_authed(self) -> None:
         """
-        A call to /json/user_uploads should return a uri and actually create an
+        A call to /json/user_uploads should return a url and actually create an
         entry in the database. This entry will be marked unclaimed till a message
         refers it.
         """
@@ -190,18 +187,18 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
         self.assertIn("uri", response_dict)
-        uri = response_dict["uri"]
+        url = response_dict["uri"]
         base = "/user_uploads/"
-        self.assertEqual(base, uri[: len(base)])
+        self.assertEqual(base, url[: len(base)])
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenticated and redirected
-        self.assert_streaming_content(self.client_get(uri), b"zulip!")
+        self.assertEqual(self.client_get(url).getvalue(), b"zulip!")
 
         # Check the download endpoint
-        download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
-        result = self.client_get(download_uri)
-        self.assert_streaming_content(result, b"zulip!")
+        download_url = url.replace("/user_uploads/", "/user_uploads/download/")
+        result = self.client_get(download_url)
+        self.assertEqual(result.getvalue(), b"zulip!")
         self.assertIn("attachment;", result.headers["Content-Disposition"])
 
         # check if DB has attachment marked as unclaimed
@@ -210,63 +207,69 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
-        body = f"First message ...[zulip.txt]({hamlet.realm.host}{uri})"
+        body = f"First message ...[zulip.txt]({hamlet.realm.host}{url})"
         self.send_stream_message(hamlet, "Denmark", body, "test")
 
         # Now try the endpoint that's supposed to return a temporary URL for access
         # to the file.
-        result = self.client_get("/json" + uri)
+        result = self.client_get("/json" + url)
         data = self.assert_json_success(result)
         url_only_url = data["url"]
-        # Ensure this is different from the original uri:
-        self.assertNotEqual(url_only_url, uri)
+        # Ensure this is different from the original url:
+        self.assertNotEqual(url_only_url, url)
         self.assertIn("user_uploads/temporary/", url_only_url)
         self.assertTrue(url_only_url.endswith("zulip.txt"))
-        # The generated URL has a token authorizing the requestor to access the file
+        # The generated URL has a token authorizing the requester to access the file
         # without being logged in.
         self.logout()
-        self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
-        # The original uri shouldn't work when logged out:
-        result = self.client_get(uri)
+        self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
+        # The original url shouldn't work when logged out:
+        result = self.client_get(url)
         self.assertEqual(result.status_code, 403)
 
-    @override_settings(RATE_LIMITING=True)
     def test_serve_file_unauthed(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
         fp.name = "zulip_web_public.txt"
 
         result = self.client_post("/json/user_uploads", {"file": fp})
-        uri = self.assert_json_success(result)["uri"]
+        url = self.assert_json_success(result)["uri"]
 
-        add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
-        # Deny file access for non-web-public stream
-        self.subscribe(self.example_user("hamlet"), "Denmark")
-        host = self.example_user("hamlet").realm.host
-        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
+            # Deny file access for non-web-public stream
+            self.subscribe(self.example_user("hamlet"), "Denmark")
+            host = self.example_user("hamlet").realm.host
+            body = f"First message ...[zulip.txt](http://{host}" + url + ")"
+            self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
-        self.logout()
-        response = self.client_get(uri)
-        self.assertEqual(response.status_code, 403)
+            self.logout()
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 403)
 
-        # Allow file access for web-public stream
-        self.login("hamlet")
-        self.make_stream("web-public-stream", is_web_public=True)
-        self.subscribe(self.example_user("hamlet"), "web-public-stream")
-        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
-        self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
+            # Allow file access for web-public stream
+            self.login("hamlet")
+            self.make_stream("web-public-stream", is_web_public=True)
+            self.subscribe(self.example_user("hamlet"), "web-public-stream")
+            body = f"First message ...[zulip.txt](http://{host}" + url + ")"
+            self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
 
-        self.logout()
-        response = self.client_get(uri)
-        self.assertEqual(response.status_code, 200)
-        remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+            self.logout()
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 200)
 
         # Deny file access since rate limited
-        add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
-        response = self.client_get(uri)
-        self.assertEqual(response.status_code, 403)
-        remove_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+        with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(url)
+            self.assertEqual(response.status_code, 403)
+
+        # Check that the /download/ variant works as well
+        download_url = url.replace("/user_uploads/", "/user_uploads/download/")
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(download_url)
+            self.assertEqual(response.status_code, 200)
+        with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(download_url)
+            self.assertEqual(response.status_code, 403)
 
         # Deny random file access
         response = self.client_get(
@@ -310,7 +313,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             url_only_url = data["url"]
 
             self.logout()
-            self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
+            self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
 
         # After over 60 seconds, the token should become invalid:
         with mock.patch("django.core.signing.time.time", return_value=start_time + 61):
@@ -323,10 +326,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {"file": fp})
         response_dict = self.assert_json_success(result)
-        uri = response_dict["uri"]
+        url = response_dict["uri"]
 
         self.logout()
-        response = self.client_get(uri)
+        response = self.client_get(url)
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("<p>You are not authorized to view this file.</p>", response)
 
@@ -379,6 +382,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": d3})
         d3_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
 
+        d4 = StringIO("zulip!")
+        d4.name = "dummy_4.txt"
+        result = self.client_post("/json/user_uploads", {"file": d4})
+        d4_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
+
         two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
         # This Attachment will have a message linking to it:
         d1_attachment = Attachment.objects.get(path_id=d1_path_id)
@@ -395,7 +403,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d3_attachment.create_time = two_week_ago
         d3_attachment.save()
 
-        # Send message referring only dummy_1
+        # This Attachment will just have a ScheduledMessage referencing it. It should not be deleted
+        # until the ScheduledMessage is deleted.
+        d4_attachment = Attachment.objects.get(path_id=d4_path_id)
+        d4_attachment.create_time = two_week_ago
+        d4_attachment.save()
+
+        # Send message referencing only dummy_1
         self.subscribe(hamlet, "Denmark")
         body = (
             f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
@@ -404,7 +418,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         )
         self.send_stream_message(hamlet, "Denmark", body, "test")
 
-        # Send message referecing dummy_3 - it will be archived next.
+        # Send message referencing dummy_3 - it will be archived next.
         body = (
             f"Some more files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
             + d3_path_id
@@ -414,6 +428,28 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         assert settings.LOCAL_FILES_DIR
         d3_local_path = os.path.join(settings.LOCAL_FILES_DIR, d3_path_id)
         self.assertTrue(os.path.exists(d3_local_path))
+
+        body = (
+            f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
+            + d4_path_id
+            + ")"
+        )
+        scheduled_message_d4_id = check_schedule_message(
+            hamlet,
+            get_client("website"),
+            "stream",
+            [self.get_stream_id("Verona")],
+            "Test topic",
+            body,
+            timezone_now() + datetime.timedelta(days=365),
+            hamlet.realm,
+        )
+        self.assertEqual(
+            list(d4_attachment.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message_d4_id],
+        )
+        d4_local_path = os.path.join(settings.LOCAL_FILES_DIR, d4_path_id)
+        self.assertTrue(os.path.exists(d4_local_path))
 
         do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
         # dummy_2 should not exist in database or the uploads folder
@@ -437,6 +473,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertFalse(os.path.exists(d3_local_path))
         self.assertTrue(not Attachment.objects.filter(path_id=d3_path_id).exists())
         self.assertTrue(not ArchivedAttachment.objects.filter(path_id=d3_path_id).exists())
+
+        # dummy_4 only get deleted after the scheduled message is deleted.
+        self.assertTrue(os.path.exists(d4_local_path))
+        delete_scheduled_message(hamlet, scheduled_message_d4_id)
+        do_delete_old_unclaimed_attachments(2)
+        self.assertFalse(os.path.exists(d4_local_path))
+        self.assertTrue(not Attachment.objects.filter(path_id=d4_path_id).exists())
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -511,7 +554,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
-        # Then, have the owner PM it to another user, giving that other user access.
+        # Then, have it in a direct message to another user, giving that other user access.
         body = f"Second message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
         self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"), body)
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
@@ -684,8 +727,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {"file": fp})
-        uri = self.assert_json_success(result)["uri"]
-        fp_path_id = re.sub("/user_uploads/", "", uri)
+        url = self.assert_json_success(result)["uri"]
+        fp_path_id = re.sub("/user_uploads/", "", url)
         body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + fp_path_id + ")"
         with self.settings(CROSS_REALM_BOT_EMAILS={user_2.email, user_3.email}):
             internal_send_private_message(
@@ -695,20 +738,20 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             )
 
         self.login_user(user_1)
-        response = self.client_get(uri, subdomain=test_subdomain)
+        response = self.client_get(url, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 200)
-        self.assert_streaming_content(response, b"zulip!")
+        self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Confirm other cross-realm users can't read it.
         self.login_user(user_3)
-        response = self.client_get(uri, subdomain=test_subdomain)
+        response = self.client_get(url, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)
 
         # Verify that cross-realm access to files for spectators is denied.
         self.logout()
-        response = self.client_get(uri, subdomain=test_subdomain)
+        response = self.client_get(url, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 403)
 
     def test_file_download_authorization_invite_only(self) -> None:
@@ -729,8 +772,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {"file": fp})
-        uri = self.assert_json_success(result)["uri"]
-        fp_path_id = re.sub("/user_uploads/", "", uri)
+        url = self.assert_json_success(result)["uri"]
+        fp_path_id = re.sub("/user_uploads/", "", url)
         body = f"First message ...[zulip.txt](http://{realm.host}/user_uploads/" + fp_path_id + ")"
         self.send_stream_message(hamlet, stream_name, body, "test")
         self.logout()
@@ -738,21 +781,21 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Owner user should be able to view file
         self.login_user(hamlet)
         with self.assert_database_query_count(5):
-            response = self.client_get(uri)
+            response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
         with self.assert_database_query_count(6):
-            response = self.client_get(uri)
+            response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         def assert_cannot_access_file(user: UserProfile) -> None:
-            response = self.api_get(user, uri)
+            response = self.api_get(user, url)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
 
@@ -781,8 +824,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {"file": fp})
-        uri = self.assert_json_success(result)["uri"]
-        fp_path_id = re.sub("/user_uploads/", "", uri)
+        url = self.assert_json_success(result)["uri"]
+        fp_path_id = re.sub("/user_uploads/", "", url)
         body = (
             f"First message ...[zulip.txt](http://{user.realm.host}/user_uploads/"
             + fp_path_id
@@ -799,25 +842,25 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Owner user should be able to view file
         self.login_user(user)
         with self.assert_database_query_count(5):
-            response = self.client_get(uri)
+            response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
         with self.assert_database_query_count(6):
-            response = self.client_get(uri)
+            response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
 
         # Subscribed user who did not receive the message should also be able to view file
         self.login_user(late_subscribed_user)
         with self.assert_database_query_count(9):
-            response = self.client_get(uri)
+            response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
         self.logout()
         # It takes a few extra queries to verify access because of shared history.
 
@@ -825,7 +868,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.login_user(user)
             # It takes a few extra queries to verify lack of access with shared history.
             with self.assert_database_query_count(8):
-                response = self.client_get(uri)
+                response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
             self.logout()
@@ -850,8 +893,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {"file": fp})
-        uri = self.assert_json_success(result)["uri"]
-        fp_path_id = re.sub("/user_uploads/", "", uri)
+        url = self.assert_json_success(result)["uri"]
+        fp_path_id = re.sub("/user_uploads/", "", url)
         for i in range(20):
             body = (
                 f"First message ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
@@ -866,7 +909,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user = self.example_user("aaron")
         self.login_user(user)
         with self.assert_database_query_count(8):
-            response = self.client_get(uri)
+            response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
 
@@ -875,9 +918,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # If we were accidentally one query per message, this would be 20+
         with self.assert_database_query_count(9):
-            response = self.client_get(uri)
+            response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            self.assert_streaming_content(response, b"zulip!")
+            self.assertEqual(response.getvalue(), b"zulip!")
 
         with self.assert_database_query_count(6):
             self.assertTrue(validate_attachment_request(user, fp_path_id))
@@ -895,8 +938,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {"file": fp})
-        uri = self.assert_json_success(result)["uri"]
-        fp_path_id = re.sub("/user_uploads/", "", uri)
+        url = self.assert_json_success(result)["uri"]
+        fp_path_id = re.sub("/user_uploads/", "", url)
         body = f"First message ...[zulip.txt](http://{realm.host}/user_uploads/" + fp_path_id + ")"
         self.send_stream_message(self.example_user("hamlet"), "test-subscribe", body, "test")
         self.logout()
@@ -904,8 +947,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Now all users should be able to access the files
         for user in subscribed_users + unsubscribed_users:
             self.login_user(user)
-            response = self.client_get(uri)
-            self.assert_streaming_content(response, b"zulip!")
+            response = self.client_get(url)
+            self.assertEqual(response.getvalue(), b"zulip!")
             self.logout()
 
     def test_serve_local(self) -> None:
@@ -919,13 +962,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             fp = StringIO("zulip!")
             fp.name = name
             result = self.client_post("/json/user_uploads", {"file": fp})
-            uri = self.assert_json_success(result)["uri"]
-            fp_path_id = re.sub("/user_uploads/", "", uri)
+            url = self.assert_json_success(result)["uri"]
+            fp_path_id = re.sub("/user_uploads/", "", url)
             fp_path = os.path.split(fp_path_id)[0]
             if download:
-                uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+                url = url.replace("/user_uploads/", "/user_uploads/download/")
             with self.settings(DEVELOPMENT=False):
-                response = self.client_get(uri)
+                response = self.client_get(url)
             assert settings.LOCAL_UPLOADS_DIR is not None
             test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
             self.assertEqual(
@@ -1226,15 +1269,13 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             status_code=401,
         )
 
-        with self.settings(RATE_LIMITING=True):
-            # Allow unauthenticated/spectator requests by ID for a reasonable number of requests.
-            add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+        # Allow unauthenticated/spectator requests by ID for a reasonable number of requests.
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
             response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             self.assertEqual(302, response.status_code)
-            remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
 
-            # Deny file access since rate limited
-            add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+        # Deny file access since rate limited
+        with ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file"):
             response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             self.assertEqual(429, response.status_code)
 
@@ -1267,8 +1308,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
                 if rfname is not None:
                     response = self.client_get(url)
-                    assert isinstance(response, StreamingHttpResponse)
-                    data = b"".join(response.streaming_content)
+                    data = response.getvalue()
                     self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
                 # Verify that the medium-size avatar was created
@@ -1548,8 +1588,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
                 if rfname is not None:
                     response = self.client_get(url)
-                    assert isinstance(response, StreamingHttpResponse)
-                    data = b"".join(response.streaming_content)
+                    data = response.getvalue()
                     self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
     def test_invalid_icons(self) -> None:
@@ -1731,8 +1770,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
                 if rfname is not None:
                     response = self.client_get(logo_url)
-                    assert isinstance(response, StreamingHttpResponse)
-                    data = b"".join(response.streaming_content)
+                    data = response.getvalue()
                     # size should be 100 x 100 because thumbnail keeps aspect ratio
                     # while trying to fit in a 800 x 100 box without losing part of the image
                     self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))

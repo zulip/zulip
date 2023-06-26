@@ -211,6 +211,28 @@ class FrontHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_conversation_assigned_by_rule(self) -> None:
+        expected_topic = "cnv_keocka"
+        expected_message = "**'Important deliveries' rule** assigned **Bender Rodriguez**."
+
+        self.check_webhook(
+            "rule",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_conversation_assigned_by_gmail(self) -> None:
+        expected_topic = "cnv_keo696"
+        expected_message = "Archived by **(gmail)**."
+
+        self.check_webhook(
+            "gmail",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
     def test_unknown_webhook_request(self) -> None:
         payload = self.get_body("conversation_assigned")
         payload_json = orjson.loads(payload)

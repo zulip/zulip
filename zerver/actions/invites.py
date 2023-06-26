@@ -59,6 +59,7 @@ def do_send_confirmation_email(
         "referrer_email": referrer.delivery_email,
         "activate_url": activation_url,
         "referrer_realm_name": referrer.realm.name,
+        "corporate_enabled": settings.CORPORATE_ENABLED,
     }
     send_email(
         "zerver/emails/invitation",

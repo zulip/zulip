@@ -60,9 +60,6 @@ class Command(ZulipBaseCommand):
 
     * Use `./manage.py import` to import the realm
 
-    * Use `./manage.py reactivate_realm` to reactivate the realm, so
-      users can log in again.
-
     * Inform the users about the things broken above.
 
     We recommend testing by exporting without `--deactivate` first, to
@@ -92,7 +89,10 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--deactivate-realm",
             action="store_true",
-            help="Deactivate the realm immediately before exporting",
+            help=(
+                "Deactivate the realm immediately before exporting; the exported data "
+                "will show the realm as active"
+            ),
         )
         parser.add_argument(
             "--consent-message-id",
@@ -212,4 +212,5 @@ class Command(ZulipBaseCommand):
             public_only=public_only,
             percent_callback=percent_callback,
             consent_message_id=consent_message_id,
+            export_as_active=True if options["deactivate_realm"] else None,
         )

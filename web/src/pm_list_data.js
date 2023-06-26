@@ -7,10 +7,10 @@ import * as unread from "./unread";
 import * as user_status from "./user_status";
 
 // Maximum number of conversation threads to show in default view.
-const max_conversations_to_show = 5;
+const max_conversations_to_show = 8;
 
 // Maximum number of conversation threads to show in default view with unreads.
-const max_conversations_to_show_with_unreads = 8;
+const max_conversations_to_show_with_unreads = 15;
 
 export function get_active_user_ids_string() {
     const filter = narrow_state.filter();
@@ -19,7 +19,7 @@ export function get_active_user_ids_string() {
         return undefined;
     }
 
-    const emails = filter.operands("pm-with")[0];
+    const emails = filter.operands("dm")[0];
 
     if (!emails) {
         return undefined;
@@ -46,6 +46,7 @@ export function get_conversations() {
 
         let user_circle_class;
         let status_emoji_info;
+        let is_bot = false;
 
         if (!is_group) {
             const user_id = Number.parseInt(user_ids_string, 10);
@@ -53,10 +54,8 @@ export function get_conversations() {
             const recipient_user_obj = people.get_by_user_id(user_id);
 
             if (recipient_user_obj.is_bot) {
-                // Bots do not have status emoji, and are modeled as
-                // always present. We may want to use this space for a
-                // bot icon in the future.
-                user_circle_class = "user_circle_green";
+                // We display the bot icon rather than a user circle for bots.
+                is_bot = true;
             } else {
                 status_emoji_info = user_status.get_status_emoji(user_id);
             }
@@ -72,6 +71,7 @@ export function get_conversations() {
             status_emoji_info,
             user_circle_class,
             is_group,
+            is_bot,
         };
         display_objects.push(display_object);
     }

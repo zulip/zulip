@@ -20,6 +20,7 @@ from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
 current_handler_id = 0
 handlers: Dict[int, "AsyncDjangoHandler"] = {}
+fake_wsgi_container = WSGIContainer(lambda environ, start_response: [])
 
 
 def get_handler_by_id(handler_id: int) -> "AsyncDjangoHandler":
@@ -103,7 +104,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # and pass it to Django's WSGIRequest to generate a Django
         # HttpRequest object with the original Tornado request's HTTP
         # headers, parameters, etc.
-        environ = WSGIContainer.environ(self.request)
+        environ = fake_wsgi_container.environ(self.request)
         environ["PATH_INFO"] = urllib.parse.unquote(environ["PATH_INFO"])
 
         # Django WSGIRequest setup code that should match logic from
@@ -242,8 +243,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         request_notes.log_data = old_request_notes.log_data
         if request_notes.rate_limit is not None:
             request_notes.rate_limit = old_request_notes.rate_limit
-        if request_notes.requestor_for_logs is not None:
-            request_notes.requestor_for_logs = old_request_notes.requestor_for_logs
+        if request_notes.requester_for_logs is not None:
+            request_notes.requester_for_logs = old_request_notes.requester_for_logs
         request.user = old_request.user
         request_notes.client = old_request_notes.client
         request_notes.client_name = old_request_notes.client_name

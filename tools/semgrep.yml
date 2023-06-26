@@ -20,8 +20,9 @@ rules:
   - id: dont-import-models-in-migrations
     patterns:
       - pattern-not: from zerver.lib.redis_utils import get_redis_client
+      - pattern-not: from zerver.lib.utils import generate_api_key
       - pattern-not: from zerver.models import filter_pattern_validator
-      - pattern-not: from zerver.models import filter_format_validator
+      - pattern-not: from zerver.models import url_template_validator
       - pattern-not: from zerver.models import generate_email_token_for_stream
       - pattern-either:
           - pattern: from zerver import $X
@@ -68,16 +69,6 @@ rules:
       - pattern: django.db.migrations.RunSQL(..., [..., ... + ..., ...], ...)
     severity: ERROR
     message: "Do not write a SQL injection vulnerability please"
-
-  - id: translated-format
-    languages: [python]
-    pattern-either:
-      - pattern: django.utils.translation.gettext(... .format(...))
-      - pattern: django.utils.translation.gettext(f"...")
-      - pattern: django.utils.translation.gettext_lazy(... .format(...))
-      - pattern: django.utils.translation.gettext_lazy(f"...")
-    severity: ERROR
-    message: "Format strings after translation, not before"
 
   - id: translated-format-lazy
     languages: [python]
@@ -142,4 +133,23 @@ rules:
       exclude:
         - zerver/tests/
     message: "Do not fetch a Confirmation object directly, use get_object_from_key instead"
+    severity: ERROR
+
+  - id: dont-make-batched-migration-atomic
+    patterns:
+      - pattern: |
+          class Migration(migrations.Migration):
+              ...
+      - pattern-inside: |
+          ...
+          BATCH_SIZE = ...
+          ...
+      - pattern-not: |
+          class Migration(migrations.Migration):
+              atomic = False
+    paths:
+      include:
+        - "**/migrations"
+    message: 'A batched migration should not be atomic. Add "atomic = False" to the Migration class'
+    languages: [python]
     severity: ERROR

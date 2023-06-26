@@ -16,9 +16,9 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as scroll_util from "./scroll_util";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
 
@@ -49,9 +49,15 @@ export function update_custom_emoji_ui() {
     if (!settings_data.user_can_add_custom_emoji()) {
         $(".add-emoji-text").hide();
         $("#add-custom-emoji-button").hide();
+        $("#emoji-settings .emoji-settings-tip-container").show();
     } else {
         $(".add-emoji-text").show();
         $("#add-custom-emoji-button").show();
+        if (page_params.is_admin) {
+            $("#emoji-settings .emoji-settings-tip-container").show();
+        } else {
+            $("#emoji-settings .emoji-settings-tip-container").hide();
+        }
     }
 
     populate_emoji();
@@ -73,7 +79,7 @@ function sort_author_full_name(a, b) {
 function is_default_emoji(emoji_name) {
     // Spaces are replaced with `_` to match how the emoji name will
     // actually be stored in the backend.
-    return emoji_codes.names.includes(emoji_name.replace(/ /g, "_"));
+    return emoji_codes.names.includes(emoji_name.replaceAll(" ", "_"));
 }
 
 function is_custom_emoji(emoji_name) {
@@ -110,7 +116,7 @@ export function populate_emoji() {
                 return render_admin_emoji_list({
                     emoji: {
                         name: item.name,
-                        display_name: item.name.replace(/_/g, " "),
+                        display_name: item.name.replaceAll("_", " "),
                         source_url: item.source_url,
                         author: item.author || "",
                         can_delete_emoji: can_delete_emoji(item),
@@ -125,7 +131,7 @@ export function populate_emoji() {
                 return item.name.toLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar($emoji_table);
+                scroll_util.reset_scrollbar($emoji_table);
             },
         },
         $parent_container: $("#emoji-settings").expectOne(),

@@ -1,0 +1,12 @@
+[program:prometheus_wal_g_exporter]
+# We record the hash of the script so that we can update this file
+# with it, which will make `supervisorctl reread && supervisorctl
+# update` restart this job.
+command=/usr/local/bin/wal-g-exporter
+process_name=wal-g-exporter_<%= @exporter_hash %>
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/wal_g_exporter.log

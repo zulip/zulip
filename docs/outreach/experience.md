@@ -171,7 +171,7 @@ system at the start of the program:
    review request
    feature](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review)
    to send your request. This makes the PR's status clear to project maintainers.
-   You may also want to send a quick private message to let your buddies know
+   You may also want to send a quick direct message to let your buddies know
    their attention is needed.
 
 4. Please respond to code review requests promptly (within one workday), and
@@ -213,8 +213,9 @@ expertise in the subsystem you're working on.
 
 Always keep the following order of priorities in mind:
 
-1. Your top priority should be **fixing any regressions you introduced** with
-   recently merged work.
+1. Your top priorities should be **fixing any regressions you introduced** with
+   recently merged work, and **fixing any important bugs or regressions** that
+   you pick up or are assigned.
 
 2. **Review others' pull requests** promptly. As you'll experience yourself, getting quick
    feedback on your PR helps immensely. As such, if you are asked to review a

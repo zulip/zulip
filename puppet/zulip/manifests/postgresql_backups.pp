@@ -4,6 +4,12 @@ class zulip::postgresql_backups {
   include zulip::postgresql_common
   include zulip::wal_g
 
+  file { '/var/log/pg_backup_and_purge.log':
+    ensure => file,
+    owner  => 'postgres',
+    group  => 'postgres',
+    mode   => '0644',
+  }
   file { '/usr/local/bin/pg_backup_and_purge':
     ensure  => file,
     owner   => 'root',
@@ -38,7 +44,10 @@ class zulip::postgresql_backups {
     group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/cron.d/pg-backup-and-purge',
-    require => File['/usr/local/bin/pg_backup_and_purge'],
+    require => [
+      File['/var/log/pg_backup_and_purge.log'],
+      File['/usr/local/bin/pg_backup_and_purge'],
+    ],
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_postgresql_backups":

@@ -29,7 +29,6 @@ EXCLUDED_URLS = [
     # Returns 404 to HEAD requests unconditionally
     "https://www.git-tower.com/blog/command-line-cheat-sheet/",
     "https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode",
-    "https://www.transifex.com/zulip/zulip/announcements/",
     "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh",
     # Requires authentication
     "https://www.linkedin.com/company/zulip-project",
@@ -50,7 +49,7 @@ VNU_IGNORE = [
         r" \(Suppressing further errors from this subtree\.\)"
     ),
     # Opinionated informational messages.
-    r"Self-closing tag syntax in text/html documents is widely discouraged; it’s unnecessary and interacts badly with other HTML features \(e\.g\., unquoted attribute values\)\. If you’re using a tool that injects self-closing tag syntax into all void elements, without any option to prevent it from doing so, then consider switching to a different tool\.",
+    r"Trailing slash on void elements has no effect and interacts badly with unquoted attribute values\.",
 ]
 VNU_IGNORE_REGEX = re.compile(r"|".join(VNU_IGNORE))
 

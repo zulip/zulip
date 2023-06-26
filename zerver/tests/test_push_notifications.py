@@ -61,6 +61,7 @@ from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
     NotificationTriggers,
@@ -193,12 +194,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         self.assert_json_error(result, "Missing user_id or user_uuid")
         result = self.uuid_post(
-            self.server_uuid,
-            endpoint,
-            {"user_id": user_id, "user_uuid": "xxx", "token": token, "token_kind": token_kind},
-        )
-        self.assert_json_error(result, "Specify only one of user_id or user_uuid")
-        result = self.uuid_post(
             self.server_uuid, endpoint, {"user_id": user_id, "token": token, "token_kind": 17}
         )
         self.assert_json_error(result, "Invalid token type")
@@ -280,6 +275,40 @@ class PushBouncerNotificationTest(BouncerTestCase):
             401,
         )
 
+    def test_register_device_deduplication(self) -> None:
+        hamlet = self.example_user("hamlet")
+        token = "111222"
+        user_id = hamlet.id
+        user_uuid = str(hamlet.uuid)
+        token_kind = PushDeviceToken.GCM
+
+        endpoint = "/api/v1/remotes/push/register"
+
+        # First we create a legacy user_id registration.
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {"user_id": user_id, "token_kind": token_kind, "token": token},
+        )
+        self.assert_json_success(result)
+
+        registrations = list(RemotePushDeviceToken.objects.filter(token=token))
+        self.assert_length(registrations, 1)
+        self.assertEqual(registrations[0].user_id, user_id)
+        self.assertEqual(registrations[0].user_uuid, None)
+
+        # Register same user+device with uuid now. The old registration should be deleted
+        # to avoid duplication.
+        result = self.uuid_post(
+            self.server_uuid,
+            endpoint,
+            {"user_id": user_id, "user_uuid": user_uuid, "token_kind": token_kind, "token": token},
+        )
+        registrations = list(RemotePushDeviceToken.objects.filter(token=token))
+        self.assert_length(registrations, 1)
+        self.assertEqual(registrations[0].user_id, None)
+        self.assertEqual(str(registrations[0].user_uuid), user_uuid)
+
     def test_remote_push_user_endpoints(self) -> None:
         endpoints = [
             ("/api/v1/remotes/push/register", "register"),
@@ -308,6 +337,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
         token = "aaaa"
         android_tokens = []
+        uuid_android_tokens = []
         for i in ["aa", "bb"]:
             android_tokens.append(
                 RemotePushDeviceToken.objects.create(
@@ -317,6 +347,19 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     server=server,
                 )
             )
+
+            # Create a duplicate, newer uuid-based registration for the same user to verify
+            # the bouncer will handle that correctly, without triggering a duplicate notification,
+            # and will delete the old, legacy registration.
+            uuid_android_tokens.append(
+                RemotePushDeviceToken.objects.create(
+                    kind=RemotePushDeviceToken.GCM,
+                    token=hex_to_b64(token + i),
+                    user_uuid=str(hamlet.uuid),
+                    server=server,
+                )
+            )
+
         apple_token = RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.APNS,
             token=hex_to_b64(token),
@@ -326,6 +369,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         many_ids = ",".join(str(i) for i in range(1, 250))
         payload = {
             "user_id": hamlet.id,
+            "user_uuid": str(hamlet.uuid),
             "gcm_payload": {"event": "remove", "zulip_message_ids": many_ids},
             "apns_payload": {
                 "badge": 0,
@@ -355,12 +399,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
             logger.output,
             [
                 "INFO:zilencer.views:"
-                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}>: "
-                "2 via FCM devices, 1 via APNs devices"
+                f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{hamlet.uuid} and tokens:{sorted(t.token for t in android_tokens)}",
+                "INFO:zilencer.views:"
+                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
+                "2 via FCM devices, 1 via APNs devices",
             ],
         )
 
-        user_identity = UserPushIdentityCompat(user_id=hamlet.id)
+        user_identity = UserPushIdentityCompat(user_id=hamlet.id, user_uuid=str(hamlet.uuid))
         apple_push.assert_called_once_with(
             user_identity,
             [apple_token],
@@ -377,7 +423,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         )
         android_push.assert_called_once_with(
             user_identity,
-            list(reversed(android_tokens)),
+            list(reversed(uuid_android_tokens)),
             {"event": "remove", "zulip_message_ids": ",".join(str(i) for i in range(50, 250))},
             {},
             remote=server,
@@ -610,7 +656,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_CREATED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
         )
         # Event type not in SYNCED_BILLING_EVENTS -- should not be included
         RealmAuditLog.objects.create(
@@ -618,7 +668,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
         self.assertEqual(RealmCount.objects.count(), 1)
         self.assertEqual(InstallationCount.objects.count(), 1)
@@ -661,7 +711,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
         send_analytics_to_remote_server()
         check_counts(6, 4, 3, 2, 1)
@@ -671,7 +721,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
         )
         send_analytics_to_remote_server()
         check_counts(7, 5, 3, 2, 2)
@@ -774,7 +828,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
         )
         # Event type not in SYNCED_BILLING_EVENTS -- should not be included
         RealmAuditLog.objects.create(
@@ -782,7 +840,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
 
         # send_analytics_to_remote_server calls send_to_push_bouncer twice.
@@ -812,13 +870,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
     def test_realmauditlog_data_mapping(self) -> None:
         self.add_mock_response()
         user = self.example_user("hamlet")
+        user_count = realm_user_count_by_role(user.realm)
         log_entry = RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
             backfilled=True,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: user_count}).decode(),
         )
         send_analytics_to_remote_server()
         remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
@@ -827,8 +886,97 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(remote_log_entry.remote_id, log_entry.id)
         self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
         self.assertEqual(remote_log_entry.backfilled, True)
-        self.assertEqual(remote_log_entry.extra_data, "data")
+        assert remote_log_entry.extra_data is not None
+        self.assertEqual(
+            orjson.loads(remote_log_entry.extra_data), {RealmAuditLog.ROLE_COUNT: user_count}
+        )
         self.assertEqual(remote_log_entry.event_type, RealmAuditLog.USER_REACTIVATED)
+
+    # This verify that the bouncer is forward-compatible with remote servers using
+    # TextField to store extra_data.
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_realmauditlog_string_extra_data(self) -> None:
+        self.add_mock_response()
+
+        def verify_request_with_overridden_extra_data(
+            request_extra_data: object,
+            *,
+            expected_extra_data: object = None,
+            expected_extra_data_json: object = None,
+            skip_audit_log_check: bool = False,
+        ) -> None:
+            user = self.example_user("hamlet")
+            log_entry = RealmAuditLog.objects.create(
+                realm=user.realm,
+                modified_user=user,
+                event_type=RealmAuditLog.USER_REACTIVATED,
+                event_time=self.TIME_ZERO,
+                extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: 0}).decode(),
+            )
+
+            # We use this to patch send_to_push_bouncer so that extra_data in the
+            # legacy format gets sent to the bouncer.
+            def transform_realmauditlog_extra_data(
+                method: str,
+                endpoint: str,
+                post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
+                extra_headers: Mapping[str, str] = {},
+            ) -> Dict[str, Any]:
+                if endpoint == "server/analytics":
+                    assert isinstance(post_data, dict)
+                    assert isinstance(post_data["realmauditlog_rows"], str)
+                    original_data = orjson.loads(post_data["realmauditlog_rows"])
+                    # We replace the extra_data with another fake example to verify that
+                    # the bouncer actually gets requested with extra_data being string
+                    new_data = [{**row, "extra_data": request_extra_data} for row in original_data]
+                    post_data["realmauditlog_rows"] = orjson.dumps(new_data).decode()
+                return send_to_push_bouncer(method, endpoint, post_data, extra_headers)
+
+            with mock.patch(
+                "zerver.lib.remote_server.send_to_push_bouncer",
+                side_effect=transform_realmauditlog_extra_data,
+            ):
+                send_analytics_to_remote_server()
+
+            if skip_audit_log_check:
+                return
+
+            remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
+            assert remote_log_entry is not None
+            self.assertEqual(str(remote_log_entry.server.uuid), self.server_uuid)
+            self.assertEqual(remote_log_entry.remote_id, log_entry.id)
+            self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
+            self.assertEqual(remote_log_entry.extra_data, expected_extra_data)
+            self.assertEqual(remote_log_entry.extra_data_json, expected_extra_data_json)
+
+        # Pre-migration extra_data
+        verify_request_with_overridden_extra_data(
+            request_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+            expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+            expected_extra_data_json={"fake_data": 42},
+        )
+        verify_request_with_overridden_extra_data(
+            request_extra_data=None, expected_extra_data=None, expected_extra_data_json={}
+        )
+        # Post-migration extra_data
+        verify_request_with_overridden_extra_data(
+            request_extra_data={"fake_data": 42},
+            expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+            expected_extra_data_json={"fake_data": 42},
+        )
+        verify_request_with_overridden_extra_data(
+            request_extra_data={},
+            expected_extra_data=orjson.dumps({}).decode(),
+            expected_extra_data_json={},
+        )
+        # Invalid extra_data
+        with self.assertLogs(level="WARNING") as m:
+            verify_request_with_overridden_extra_data(
+                request_extra_data="{malformedjson:",
+                skip_audit_log_check=True,
+            )
+        self.assertIn("Malformed audit log data", m.output[0])
 
 
 class PushNotificationTest(BouncerTestCase):
@@ -983,14 +1131,14 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}>: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
             for _, _, token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
-                    f"APNs: Success sending for user <id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}> to device {token}",
+                    f"APNs: Success sending for user <id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> to device {token}",
                     pn_logger.output,
                 )
             for _, _, token in gcm_devices:
@@ -1044,7 +1192,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}>: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
@@ -1518,7 +1666,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"message_id": stream_mentioned_message_id, "trigger": "mentioned"},
             )
 
-        # Private message should soft reactivate the user
+        # Direct message should soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, self.user_profile, "Message")

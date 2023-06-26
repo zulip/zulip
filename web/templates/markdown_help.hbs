@@ -16,8 +16,8 @@
                             {{#if note_html}}
                             <td colspan="2">{{{note_html}}}</td>
                             {{else}}
-                            <td><div class="preserve_spaces">{{markdown}}</div> {{{usage_html}}}</td>
-                            <td class="rendered_markdown">{{{output_html}}} {{{effect_html}}}</td>
+                            <td><div class="preserve_spaces">{{markdown}}</div> {{#if usage_html}}{{{usage_html}}}{{/if}}</td>
+                            <td class="rendered_markdown">{{{output_html}}} {{#if effect_html}}{{{effect_html}}}{{/if}}</td>
                             {{/if}}
                         </tr>
                     {{/each}}

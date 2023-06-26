@@ -18,12 +18,12 @@ class RequestMockWithProxySupport(responses.RequestsMock):
         **kwargs: Any,
     ) -> requests.Response:
         if "proxies" in kwargs and request.url:
-            proxy_uri = requests.utils.select_proxy(request.url, kwargs["proxies"])
-            if proxy_uri is not None:
+            proxy_url = requests.utils.select_proxy(request.url, kwargs["proxies"])
+            if proxy_url is not None:
                 request = requests.Request(
                     method="GET",
-                    url=f"{proxy_uri}/",
-                    headers=adapter.proxy_headers(proxy_uri),
+                    url=f"{proxy_url}/",
+                    headers=adapter.proxy_headers(proxy_url),
                 ).prepare()
         return super()._on_request(adapter, request, **kwargs)
 

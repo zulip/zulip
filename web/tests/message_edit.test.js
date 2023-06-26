@@ -112,7 +112,7 @@ run_test("is_topic_editable", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "translated: (no topic)";
-    assert.equal(message_edit.is_topic_editable(message), true);
+    assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "test topic";
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);

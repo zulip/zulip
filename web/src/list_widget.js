@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import * as ui from "./ui";
+import * as scroll_util from "./scroll_util";
 
 const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
@@ -229,7 +229,7 @@ export function create($container, list, opts) {
             const s = opts.modifier(item);
 
             if (typeof s !== "string") {
-                blueslip.error("List item is not a string: " + s);
+                blueslip.error("List item is not a string", {item: s});
                 continue;
             }
 
@@ -268,7 +268,7 @@ export function create($container, list, opts) {
         }
         const html = opts.modifier(item);
         if (typeof html !== "string") {
-            blueslip.error("List item is not a string: " + html);
+            blueslip.error("List item is not a string", {item: html});
             return;
         }
 
@@ -306,7 +306,7 @@ export function create($container, list, opts) {
     };
 
     widget.set_up_event_handlers = function () {
-        meta.$scroll_container = ui.get_scroll_element(opts.$simplebar_container);
+        meta.$scroll_container = scroll_util.get_scroll_element(opts.$simplebar_container);
 
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.

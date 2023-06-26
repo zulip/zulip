@@ -125,6 +125,9 @@ REALMAUDITLOG_PUSHED_FIELDS = [
     "realm",
     "event_time",
     "backfilled",
+    # Note that we don't need to add extra_data_json here because
+    # the view remote_server_post_analytics populates extra_data_json
+    # from the provided extra_data.
     "extra_data",
     "event_type",
 ]
