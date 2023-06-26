@@ -66,9 +66,32 @@ def stream_handle_match(key: str) -> str:
     return stream_instructions_no_link
 
 
+draft_instructions = """
+1. Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
+"""
+
+scheduled_instructions = """
+1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left
+   sidebar. If you do not see this link, you have no scheduled messages.
+"""
+
+message_info = {
+    "drafts": ["Drafts", "/#drafts", draft_instructions],
+    "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
+}
+
+
+def message_handle_match(key: str) -> str:
+    if relative_help_links:
+        return f"1. Go to [{message_info[key][0]}]({message_info[key][1]})."
+    else:
+        return message_info[key][2]
+
+
 LINK_TYPE_HANDLERS = {
     "gear": gear_handle_match,
     "stream": stream_handle_match,
+    "message": message_handle_match,
 }
 
 
