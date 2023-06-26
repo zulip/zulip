@@ -190,7 +190,7 @@ function initialize_left_sidebar() {
 }
 
 export function update_invite_user_option() {
-    if (!settings_data.user_can_invite_others_to_realm()) {
+    if (!settings_data.user_can_invite_users_by_email()) {
         $("#right-sidebar .invite-user-link").hide();
     } else {
         $("#right-sidebar .invite-user-link").show();

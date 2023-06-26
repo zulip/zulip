@@ -492,7 +492,7 @@ def fetch_initial_state_data(
         )
         state["can_create_web_public_streams"] = settings_user.can_create_web_public_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
-        state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
+        state["can_invite_others_to_realm"] = settings_user.can_invite_users_by_email()
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
@@ -892,7 +892,7 @@ def apply_event(
                         or state["can_create_web_public_streams"]
                     )
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
-                    state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
+                    state["can_invite_others_to_realm"] = user_profile.can_invite_users_by_email()
 
                     if state["is_guest"]:
                         state["realm_default_streams"] = []

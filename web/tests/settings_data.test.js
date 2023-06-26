@@ -158,7 +158,7 @@ test_policy(
 test_policy(
     "user_can_invite_others_to_realm",
     "realm_invite_to_realm_policy",
-    settings_data.user_can_invite_others_to_realm,
+    settings_data.user_can_invite_users_by_email,
 );
 test_policy(
     "user_can_move_messages_between_streams",
@@ -268,8 +268,8 @@ run_test("user_can_invite_others_to_realm_nobody_case", () => {
     page_params.is_admin = true;
     page_params.is_guest = false;
     page_params.realm_invite_to_realm_policy =
-        settings_config.invite_to_realm_policy_values.nobody.code;
-    assert.equal(settings_data.user_can_invite_others_to_realm(), false);
+        settings_config.email_invite_to_realm_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_invite_users_by_email(), false);
 });
 
 run_test("user_can_create_web_public_streams", () => {
