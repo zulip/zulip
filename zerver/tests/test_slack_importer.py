@@ -192,10 +192,23 @@ class SlackImporter(ZulipTestCase):
             if auth == "Bearer xoxb-invalid-token":
                 return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
 
-            if auth == "Bearer xoxb-limited-scopes":
+            if auth == "Bearer xoxb-very-limited-scopes":
                 return (
                     200,
                     {"x-oauth-scopes": "emoji:read,bogus:scope"},
+                    orjson.dumps(
+                        {
+                            "ok": False,
+                            "error": "missing_scope",
+                            "needed": "team:read",
+                            "provided": "emoji:read,bogus:scope",
+                        }
+                    ),
+                )
+            if auth == "Bearer xoxb-limited-scopes":
+                return (
+                    200,
+                    {"x-oauth-scopes": "team:read,bogus:scope"},
                     orjson.dumps({"ok": True}),
                 )
             if auth == "Bearer xoxb-valid-token":
@@ -233,6 +246,10 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(
             exception_for("xoxb-limited-scopes"),
+            "Slack token is missing the following required scopes: ['emoji:read', 'users:read', 'users:read.email']",
+        )
+        self.assertEqual(
+            exception_for("xoxb-very-limited-scopes"),
             "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
         )
 
