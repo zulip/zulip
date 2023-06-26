@@ -478,6 +478,7 @@ test("copy_paste", ({override, override_rewire}) => {
 test("uppy_events", ({override_rewire, mock_template}) => {
     $("#compose_banners .upload_banner .moving_bar").css = () => {};
     $("#compose_banners .upload_banner").length = 0;
+    override_rewire(compose_ui, "smart_insert_inline", () => {});
 
     const callbacks = {};
     let state = {};
