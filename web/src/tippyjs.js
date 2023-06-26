@@ -430,6 +430,23 @@ export function initialize() {
     });
 
     delegate("body", {
+        target: [".user_row .actions button"],
+        trigger: "mouseenter",
+        onShow(instance) {
+            if ($(instance.reference).hasClass("deactivate")) {
+                instance.setContent($t({defaultMessage: "Deactivate"}));
+                return true;
+            } else if ($(instance.reference).hasClass("reactivate")) {
+                instance.setContent($t({defaultMessage: "Reactivate"}));
+                return true;
+            }
+            return false;
+        },
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
         target: "#user_info_popover .status-emoji",
         appendTo: () => document.body,
     });
