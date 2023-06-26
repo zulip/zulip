@@ -131,10 +131,10 @@ function user_has_permission(policy_value: number): boolean {
     return user_join_days >= page_params.realm_waiting_period_threshold;
 }
 
-export function user_can_invite_others_to_realm(): boolean {
+export function user_can_invite_users_by_email(): boolean {
     if (
         page_params.realm_invite_to_realm_policy ===
-        settings_config.invite_to_realm_policy_values.nobody.code
+        settings_config.email_invite_to_realm_policy_values.nobody.code
     ) {
         return false;
     }

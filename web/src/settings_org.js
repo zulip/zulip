@@ -121,7 +121,7 @@ export function get_organization_settings_options() {
         settings_config.common_message_policy_values,
     );
     options.invite_to_realm_policy_values = get_sorted_options_list(
-        settings_config.invite_to_realm_policy_values,
+        settings_config.email_invite_to_realm_policy_values,
     );
     options.edit_topic_policy_values = get_sorted_options_list(
         settings_config.edit_topic_policy_values,

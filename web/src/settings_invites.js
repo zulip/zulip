@@ -243,11 +243,11 @@ export function on_load_success(invites_data, initialize_event_handlers) {
 }
 
 export function update_invite_users_setting_tip() {
-    if (settings_data.user_can_invite_others_to_realm() && !page_params.is_admin) {
+    if (settings_data.user_can_invite_users_by_email() && !page_params.is_admin) {
         $(".invite-user-settings-tip").hide();
         return;
     }
-    const permission_type = settings_config.invite_to_realm_policy_values;
+    const permission_type = settings_config.email_invite_to_realm_policy_values;
     const current_permission = page_params.realm_invite_to_realm_policy;
     let tip_text;
     switch (current_permission) {
@@ -296,7 +296,7 @@ export function update_invite_users_setting_tip() {
 
 export function update_invite_user_panel() {
     update_invite_users_setting_tip();
-    if (!settings_data.user_can_invite_others_to_realm()) {
+    if (!settings_data.user_can_invite_users_by_email()) {
         $("#admin-invites-list .invite-user-link").hide();
     } else {
         $("#admin-invites-list .invite-user-link").show();

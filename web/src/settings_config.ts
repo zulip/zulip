@@ -180,7 +180,7 @@ export const common_policy_values = {
     },
 };
 
-export const invite_to_realm_policy_values = {
+export const email_invite_to_realm_policy_values = {
     nobody: {
         order: 1,
         code: 6,
@@ -314,7 +314,7 @@ export const edit_topic_policy_values = {
     },
 };
 
-export const move_messages_between_streams_policy_values = invite_to_realm_policy_values;
+export const move_messages_between_streams_policy_values = email_invite_to_realm_policy_values;
 
 export const time_limit_dropdown_values = [
     {

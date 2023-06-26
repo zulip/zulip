@@ -61,7 +61,7 @@ while permission to send out individual email invitations is configurable, creat
 {settings_tab|organization-permissions}
 
 1. Under **Joining the organization**, configure
-   **Who can invite users to this organization**.
+   **Who can send email invitations to new users**.
 
 {!save-changes.md!}
 
