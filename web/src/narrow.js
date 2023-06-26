@@ -958,11 +958,11 @@ export function to_compose_target() {
     };
 
     if (compose_state.get_message_type() === "stream") {
-        const stream_name = compose_state.stream_name();
-        const stream_id = stream_data.get_stream_id(stream_name);
+        const stream_id = compose_state.stream_id();
         if (!stream_id) {
             return;
         }
+        const stream_name = stream_data.get_sub_by_id(stream_id).name;
         // If we are composing to a new topic, we narrow to the stream but
         // grey-out the message view instead of narrowing to an empty view.
         const operators = [{operator: "stream", operand: stream_name}];
