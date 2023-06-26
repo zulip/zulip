@@ -163,7 +163,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
         case "stream_message_recipient_topic":
             return topic() === "";
         case "compose_select_recipient_widget_wrapper":
-            return stream_name() === "";
+            return stream_id() === "";
     }
 
     return false;
@@ -183,7 +183,7 @@ export function has_message_content() {
 
 export function has_full_recipient() {
     if (message_type === "stream") {
-        return stream_name() !== "" && topic() !== "";
+        return stream_id() !== "" && topic() !== "";
     }
     return private_message_recipient() !== "";
 }
