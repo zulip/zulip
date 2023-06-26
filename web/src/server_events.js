@@ -264,7 +264,6 @@ export function force_get_events() {
 export function home_view_loaded() {
     waiting_on_homeview_load = false;
     get_events_success([]);
-    $(document).trigger("home_view_loaded.zulip");
 }
 
 export function initialize() {
