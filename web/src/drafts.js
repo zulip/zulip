@@ -199,11 +199,9 @@ export function snapshot_message() {
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
     } else {
-        message.stream = compose_state.stream_name();
-        const sub = stream_data.get_sub(message.stream);
-        if (sub) {
-            message.stream_id = sub.stream_id;
-        }
+        message.stream_id = compose_state.stream_id();
+        const sub = stream_data.get_sub_by_id(message.stream_id);
+        message.stream = sub ? sub.name : "";
         message.topic = compose_state.topic();
     }
     return message;
