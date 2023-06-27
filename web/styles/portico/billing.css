@@ -342,7 +342,8 @@ input[name="licenses"] {
 
 #license-manual-section,
 #licensechange-input-section,
-#sponsorship-form {
+#sponsorship-form,
+#invoice-form {
     & input {
         padding: 4px 6px;
         border-radius: 4px;
