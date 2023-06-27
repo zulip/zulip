@@ -1866,25 +1866,23 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     attachment_file = os.path.join(output_dir, "attachment.json")
     analytics_file = os.path.join(output_dir, "analytics.json")
     message_files = glob.glob(os.path.join(output_dir, "messages-*.json"))
-    fns = sorted([analytics_file, attachment_file, *message_files, realm_file])
+    filenames = sorted([analytics_file, attachment_file, *message_files, realm_file])
 
     logging.info("Writing stats file: %s\n", stats_file)
     with open(stats_file, "w") as f:
-        for fn in fns:
-            f.write(os.path.basename(fn) + "\n")
-            with open(fn, "rb") as filename:
-                data = orjson.loads(filename.read())
+        for filename in filenames:
+            f.write(os.path.basename(filename) + "\n")
+            with open(filename, "rb") as json_file:
+                data = orjson.loads(json_file.read())
             for k in sorted(data):
                 f.write(f"{len(data[k]):5} {k}\n")
             f.write("\n")
 
-        avatar_file = os.path.join(output_dir, "avatars/records.json")
-        uploads_file = os.path.join(output_dir, "uploads/records.json")
-
-        for fn in [avatar_file, uploads_file]:
-            f.write(fn + "\n")
-            with open(fn, "rb") as filename:
-                data = orjson.loads(filename.read())
+        for category in ["avatars", "uploads", "emoji", "realm_icons"]:
+            filename = os.path.join(output_dir, category, "records.json")
+            f.write(f"{category}/records.json\n")
+            with open(filename, "rb") as json_file:
+                data = orjson.loads(json_file.read())
             f.write(f"{len(data):5} records\n")
             f.write("\n")
 
