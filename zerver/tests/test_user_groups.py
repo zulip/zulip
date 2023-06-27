@@ -17,6 +17,7 @@ from zerver.lib.user_groups import (
     get_recursive_group_members,
     get_recursive_membership_groups,
     get_recursive_subgroups,
+    get_subgroup_ids,
     get_user_group_member_ids,
     is_user_in_group,
     user_groups_in_realm_serialized,
@@ -35,6 +36,12 @@ class UserGroupTestCase(ZulipTestCase):
     def assert_user_membership(self, user_group: UserGroup, members: Iterable[UserProfile]) -> None:
         user_ids = get_user_group_member_ids(user_group, direct_member_only=True)
         self.assertSetEqual(set(user_ids), {member.id for member in members})
+
+    def assert_subgroup_membership(
+        self, user_group: UserGroup, members: Iterable[UserGroup]
+    ) -> None:
+        subgroup_ids = get_subgroup_ids(user_group, direct_subgroup_only=True)
+        self.assertSetEqual(set(subgroup_ids), {member.id for member in members})
 
     def create_user_group_for_test(
         self, group_name: str, realm: Realm = get_realm("zulip")
@@ -895,39 +902,47 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.login("iago")
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         params = {"delete": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [])
 
         self.login("shiva")
         params = {"add": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         params = {"delete": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [])
 
         self.login("hamlet")
         # Non-admin and non-moderators who are a member of the user group can add or remove subgroups.
         params = {"add": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         params = {"delete": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [])
 
         # Users need not be part of the subgroup to add or remove it from a user group.
         self.login("othello")
         params = {"add": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         params = {"delete": orjson.dumps([leadership_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_success(result)
+        self.assert_subgroup_membership(support_group, [])
 
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_error(
@@ -936,9 +951,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 group_id=leadership_group.id
             ),
         )
+        self.assert_subgroup_membership(support_group, [])
 
         params = {"add": orjson.dumps([leadership_group.id]).decode()}
         self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_error(
@@ -947,6 +964,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 group_id=leadership_group.id
             ),
         )
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         self.login("iago")
         params = {"add": orjson.dumps([support_group.id]).decode()}
@@ -957,9 +975,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 "User group {user_group_id} is already a subgroup of one of the passed subgroups."
             ).format(user_group_id=leadership_group.id),
         )
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         params = {"add": orjson.dumps([support_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{test_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+        self.assert_subgroup_membership(test_group, [support_group])
 
         params = {"add": orjson.dumps([test_group.id]).decode()}
         result = self.client_post(f"/json/user_groups/{leadership_group.id}/subgroups", info=params)
@@ -969,6 +990,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 "User group {user_group_id} is already a subgroup of one of the passed subgroups."
             ).format(user_group_id=leadership_group.id),
         )
+        self.assert_subgroup_membership(test_group, [support_group])
 
         lear_realm = get_realm("lear")
         lear_test_group = check_add_user_group(
@@ -976,15 +998,18 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         result = self.client_post(f"/json/user_groups/{lear_test_group.id}/subgroups", info=params)
         self.assert_json_error(result, "Invalid user group")
+        self.assert_subgroup_membership(lear_test_group, [])
 
         # Invalid subgroup id will raise an error.
         params = {"add": orjson.dumps([leadership_group.id, 1111]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
         self.assert_json_error(result, "Invalid user group ID: 1111")
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
         # Test when nothing is provided
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info={})
         self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "delete".')
+        self.assert_subgroup_membership(support_group, [leadership_group])
 
     def test_get_is_user_group_member_status(self) -> None:
         self.login("iago")
