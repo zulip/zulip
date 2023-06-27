@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Optional
+from typing import Iterable, Optional
 from unittest import mock
 
 import orjson
@@ -13,11 +13,11 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
-    get_direct_memberships_of_users,
     get_direct_user_groups,
     get_recursive_group_members,
     get_recursive_membership_groups,
     get_recursive_subgroups,
+    get_user_group_member_ids,
     is_user_in_group,
     user_groups_in_realm_serialized,
 )
@@ -32,6 +32,10 @@ from zerver.models import (
 
 
 class UserGroupTestCase(ZulipTestCase):
+    def assert_user_membership(self, user_group: UserGroup, members: Iterable[UserProfile]) -> None:
+        user_ids = get_user_group_member_ids(user_group, direct_member_only=True)
+        self.assertSetEqual(set(user_ids), {member.id for member in members})
+
     def create_user_group_for_test(
         self, group_name: str, realm: Realm = get_realm("zulip")
     ) -> UserGroup:
@@ -360,7 +364,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.client_post("/json/user_groups/create", info=params)
         user_group = UserGroup.objects.get(name="support")
         # Test add members
-        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
+        self.assert_user_membership(user_group, [hamlet])
 
         othello = self.example_user("othello")
         # A bot
@@ -373,9 +377,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         initial_last_message = self.get_last_message()
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
-        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 2)
-        members = get_direct_memberships_of_users(user_group, [hamlet, othello])
-        self.assert_length(members, 2)
+        self.assert_user_membership(user_group, [hamlet, othello])
 
         # A notification message is sent for adding to user group.
         self.assertNotEqual(self.get_last_message(), initial_last_message)
@@ -387,9 +389,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # Test adding a member already there.
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"User {othello.id} is already a member of this group")
-        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 2)
-        members = get_direct_memberships_of_users(user_group, [hamlet, othello])
-        self.assert_length(members, 2)
+        self.assert_user_membership(user_group, [hamlet, othello])
 
         # Test user adding itself, bot and deactivated user to user group.
         desdemona = self.example_user("desdemona")
@@ -399,17 +399,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
         initial_last_message = self.get_last_message()
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
-
-        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 5)
-        members = get_direct_memberships_of_users(
-            user_group, [hamlet, othello, desdemona, iago, webhook_bot]
-        )
-        self.assert_length(members, 5)
+        self.assert_user_membership(user_group, [hamlet, othello, desdemona, iago, webhook_bot])
 
         # No notification message is sent for adding to user group.
         self.assertEqual(self.get_last_message(), initial_last_message)
-
-        aaron = self.example_user("aaron")
 
         # For normal testing we again log in with hamlet
         self.logout()
@@ -419,12 +412,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         initial_last_message = self.get_last_message()
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
-
-        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 4)
-        members = get_direct_memberships_of_users(
-            user_group, [hamlet, othello, aaron, desdemona, webhook_bot, iago]
-        )
-        self.assert_length(members, 4)
+        self.assert_user_membership(user_group, [hamlet, desdemona, iago, webhook_bot])
 
         # A notification message is sent for removing from user group.
         self.assertNotEqual(self.get_last_message(), initial_last_message)
@@ -437,6 +425,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"delete": orjson.dumps([othello.id]).decode()}
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"There is no member '{othello.id}' in this user group")
+        self.assert_user_membership(user_group, [hamlet, desdemona, iago, webhook_bot])
 
         # Test user remove itself,bot and deactivated user from user group.
         desdemona = self.example_user("desdemona")
@@ -446,10 +435,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         initial_last_message = self.get_last_message()
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_success(result)
-
-        self.assertEqual(UserGroupMembership.objects.filter(user_group=user_group).count(), 1)
-        members = get_direct_memberships_of_users(user_group, [hamlet, othello, desdemona])
-        self.assert_length(members, 1)
+        self.assert_user_membership(user_group, [hamlet])
 
         # No notification message is sent for removing from user group.
         self.assertEqual(self.get_last_message(), initial_last_message)
@@ -458,6 +444,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info={})
         msg = 'Nothing to do. Specify at least one of "add" or "delete".'
         self.assert_json_error(result, msg)
+        self.assert_user_membership(user_group, [hamlet])
 
     def test_mentions(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -713,14 +700,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         ) -> None:
             self.login(acting_user)
             params = {"add": orjson.dumps([aaron.id]).decode()}
+            self.assert_user_membership(user_group, [othello])
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assertEqual(
-                    UserGroupMembership.objects.filter(user_group=user_group).count(), 2
-                )
-                members = get_direct_memberships_of_users(user_group, [aaron, othello])
-                self.assert_length(members, 2)
+                self.assert_user_membership(user_group, [aaron, othello])
             else:
                 self.assert_json_error(result, error_msg)
 
@@ -729,14 +713,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         ) -> None:
             self.login(acting_user)
             params = {"delete": orjson.dumps([aaron.id]).decode()}
+            self.assert_user_membership(user_group, [aaron, othello])
             result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
             if error_msg is None:
                 self.assert_json_success(result)
-                self.assertEqual(
-                    UserGroupMembership.objects.filter(user_group=user_group).count(), 1
-                )
-                members = get_direct_memberships_of_users(user_group, [aaron, othello])
-                self.assert_length(members, 1)
+                self.assert_user_membership(user_group, [othello])
             else:
                 self.assert_json_error(result, error_msg)
 
