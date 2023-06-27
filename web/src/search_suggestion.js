@@ -575,17 +575,17 @@ function get_has_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "has:link",
-            description_html: "messages with one or more link",
+            description_html: "messages that contain links",
             invalid: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
-            description_html: "messages with one or more image",
+            description_html: "messages that contain images",
             invalid: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
-            description_html: "messages with one or more attachment",
+            description_html: "messages that contain attachments",
             invalid: [{operator: "has", operand: "attachment"}],
         },
     ];
@@ -747,7 +747,7 @@ export function get_search_result(base_query, query) {
 
     // Display the default first
     // `has` and `is` operators work only on predefined categories. Default suggestion
-    // is not displayed in that case. e.g. `messages with one or more abc` as
+    // is not displayed in that case. e.g. `messages that contain abc` as
     // a suggestion for `has:abc`does not make sense.
     if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
         suggestion = get_default_suggestion(search_operators);
