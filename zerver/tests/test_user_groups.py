@@ -391,7 +391,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         members = get_direct_memberships_of_users(user_group, [hamlet, othello])
         self.assert_length(members, 2)
 
-        # Test user adding itself,bot and deactivated user to user group.
+        # Test user adding itself, bot and deactivated user to user group.
         desdemona = self.example_user("desdemona")
         self.login_user(desdemona)
 
@@ -533,8 +533,6 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 self.assert_length(UserGroup.objects.filter(realm=realm), 9)
             else:
                 self.assert_json_error(result, error_msg)
-
-        realm = hamlet.realm
 
         # Check only admins are allowed to create/delete user group. Admins are allowed even if
         # they are not a member of the group.
