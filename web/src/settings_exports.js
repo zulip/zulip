@@ -23,8 +23,10 @@ export function reset() {
 }
 
 function sort_user(a, b) {
-    const a_name = people.get_full_name(a.acting_user_id).toLowerCase();
-    const b_name = people.get_full_name(b.acting_user_id).toLowerCase();
+    const a_name =
+        a.acting_user_id === null ? "" : people.get_full_name(a.acting_user_id).toLowerCase();
+    const b_name =
+        b.acting_user_id === null ? "" : people.get_full_name(b.acting_user_id).toLowerCase();
     if (a_name > b_name) {
         return 1;
     } else if (a_name === b_name) {
@@ -43,15 +45,24 @@ export function populate_exports_table(exports) {
         name: "admin_exports_list",
         get_item: ListWidget.default_get_item,
         modifier(data) {
+            let acting_user = data.acting_user_id;
+            let started_timestamp = data.export_time;
             let failed_timestamp = data.failed_timestamp;
             let deleted_timestamp = data.deleted_timestamp;
 
+            if (acting_user !== null) {
+                acting_user = people.get_full_name(data.acting_user_id);
+            }
+            if (started_timestamp !== null) {
+                started_timestamp = timerender.relative_time_string_from_date(
+                    new Date(started_timestamp * 1000),
+                );
+            }
             if (failed_timestamp !== null) {
                 failed_timestamp = timerender.relative_time_string_from_date(
                     new Date(failed_timestamp * 1000),
                 );
             }
-
             if (deleted_timestamp !== null) {
                 deleted_timestamp = timerender.relative_time_string_from_date(
                     new Date(deleted_timestamp * 1000),
@@ -61,11 +72,8 @@ export function populate_exports_table(exports) {
             return render_admin_export_list({
                 realm_export: {
                     id: data.id,
-                    acting_user: people.get_full_name(data.acting_user_id),
-                    // Convert seconds -> milliseconds
-                    event_time: timerender.relative_time_string_from_date(
-                        new Date(data.export_time * 1000),
-                    ),
+                    acting_user,
+                    event_time: started_timestamp,
                     url: data.export_url,
                     time_failed: failed_timestamp,
                     pending: data.pending,
@@ -76,6 +84,9 @@ export function populate_exports_table(exports) {
         filter: {
             $element: $exports_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
+                if (item.acting_user_id === null) {
+                    return value === "";
+                }
                 return people.get_full_name(item.acting_user_id).toLowerCase().includes(value);
             },
             onupdate() {
@@ -83,7 +94,7 @@ export function populate_exports_table(exports) {
             },
         },
         $parent_container: $("#data-exports").expectOne(),
-        init_sort: sort_user,
+        init_sort: "event_time",
         sort_fields: {
             user: sort_user,
             ...ListWidget.generic_sort_functions("numeric", ["export_time"]),

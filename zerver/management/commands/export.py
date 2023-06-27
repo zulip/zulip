@@ -6,6 +6,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import CommandError
 
+from zerver.actions.realm_export import do_create_realm_export
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
@@ -126,14 +127,18 @@ class Command(ZulipBaseCommand):
         if options["deactivate_realm"] and realm.deactivated:
             raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
 
+        consent_message = None
+        acting_user = None
         if consent_message_id is not None:
             try:
-                message = Message.objects.get(id=consent_message_id)
+                consent_message = Message.objects.get(id=consent_message_id)
             except Message.DoesNotExist:
                 raise CommandError("Message with given ID does not exist. Aborting...")
 
-            if message.last_edit_time is not None:
+            if consent_message.last_edit_time is not None:
                 raise CommandError("Message was edited. Aborting...")
+
+            acting_user = consent_message.sender
 
             # Since the message might have been sent by
             # Notification Bot, we can't trivially check the realm of
@@ -141,7 +146,7 @@ class Command(ZulipBaseCommand):
             # check the realm of the people who reacted to the message
             # (who must all be in the message's realm).
             reactions = Reaction.objects.filter(
-                message=message,
+                message=consent_message,
                 # outbox = 1f4e4
                 emoji_code="1f4e4",
                 reaction_type="unicode_emoji",
@@ -152,7 +157,7 @@ class Command(ZulipBaseCommand):
                         "Users from a different realm reacted to message. Aborting..."
                     )
 
-            print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
+            print(f"\n\033[94mMessage content:\033[0m\n{consent_message.content}\n")
 
             user_count = (
                 UserProfile.objects.filter(
@@ -203,14 +208,19 @@ class Command(ZulipBaseCommand):
         def percent_callback(bytes_transferred: Any) -> None:
             print(end=".", flush=True)
 
+        export = do_create_realm_export(
+            realm=realm,
+            is_public=public_only,
+            consent_message_id=consent_message_id,
+            acting_user=acting_user,
+        )
+
         # Allows us to trigger exports separately from command line argument parsing
         export_realm_wrapper(
-            realm=realm,
+            export=export,
             output_dir=output_dir,
             threads=num_threads,
             upload=options["upload"],
-            public_only=public_only,
             percent_callback=percent_callback,
-            consent_message_id=consent_message_id,
             export_as_active=True if options["deactivate_realm"] else None,
         )

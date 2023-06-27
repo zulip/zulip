@@ -1,30 +1,44 @@
-import orjson
+from typing import Optional
+
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.export import get_realm_exports_serialized
+from zerver.lib.export import notify_realm_export
 from zerver.lib.upload import delete_export_tarball
-from zerver.models import Realm, RealmAuditLog
-from zerver.tornado.django_api import send_event_on_commit
+from zerver.models import Realm, RealmExport, UserProfile
 
 
-def notify_realm_export(realm: Realm) -> None:
-    event = dict(type="realm_export", exports=get_realm_exports_serialized(realm))
-    send_event_on_commit(realm, event, realm.get_human_admin_users().values_list("id", flat=True))
+def do_create_realm_export(
+    realm: Realm,
+    is_public: bool = True,
+    acting_user: Optional[UserProfile] = None,
+    consent_message_id: Optional[int] = None,
+) -> RealmExport:
+    if is_public:
+        assert consent_message_id is None
+        type = RealmExport.EXPORT_PUBLIC
+    elif consent_message_id is not None:
+        type = RealmExport.EXPORT_WITH_CONSENT
+    else:
+        type = RealmExport.EXPORT_WITHOUT_CONSENT
+
+    export = RealmExport.objects.create(
+        realm=realm,
+        type=type,
+        consent_message_id=consent_message_id,
+        acting_user=acting_user,
+    )
+
+    # We create the RealmAuditLog entry when we actually start doing
+    # the export, in zerver.lib.export.export_realm_wrapper
+
+    notify_realm_export(realm)
+    return export
 
 
-def do_delete_realm_export(export: RealmAuditLog) -> None:
-    # Give mypy a hint so it knows `orjson.loads`
-    # isn't being passed an `Optional[str]`.
-    export_extra_data = export.extra_data
-    assert export_extra_data is not None
-    export_data = orjson.loads(export_extra_data)
-    export_path = export_data.get("export_path")
-
-    if export_path:
+def do_delete_realm_export(export: RealmExport) -> None:
+    if export.export_path:
         # Allow removal even if the export failed.
-        delete_export_tarball(export_path)
-
-    export_data.update(deleted_timestamp=timezone_now().timestamp())
-    export.extra_data = orjson.dumps(export_data).decode()
-    export.save(update_fields=["extra_data"])
+        delete_export_tarball(export.export_path)
+    export.date_deleted = timezone_now()
+    export.save(update_fields=["date_deleted"])
     notify_realm_export(export.realm)

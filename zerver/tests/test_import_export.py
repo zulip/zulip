@@ -22,6 +22,7 @@ from zerver.actions.muted_users import do_mute_user
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.realm_export import do_create_realm_export
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import (
@@ -319,13 +320,16 @@ class RealmImportExportTest(ExportFile):
     ) -> None:
         output_dir = make_export_output_dir()
         with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
-            do_export_realm(
+            export = do_create_realm_export(
                 realm=realm,
+                is_public=public_only,
+                consent_message_id=consent_message_id,
+            )
+            do_export_realm(
+                export=export,
                 output_dir=output_dir,
                 threads=0,
                 exportable_user_ids=exportable_user_ids,
-                consent_message_id=consent_message_id,
-                public_only=public_only,
             )
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, "messages-000001.json.partial"),

@@ -1071,6 +1071,39 @@ def get_org_type_display_name(org_type: int) -> str:
     return ""
 
 
+class RealmExport(models.Model):
+    """Every data export is recorded in this table."""
+
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+    EXPORT_PUBLIC = 1
+    EXPORT_WITH_CONSENT = 2
+    EXPORT_WITHOUT_CONSENT = 3
+    EXPORT_TYPES = [
+        EXPORT_PUBLIC,
+        EXPORT_WITH_CONSENT,
+        EXPORT_WITHOUT_CONSENT,
+    ]
+    type = models.PositiveSmallIntegerField(default=EXPORT_PUBLIC)
+    acting_user = models.ForeignKey("UserProfile", null=True, on_delete=models.SET_NULL)
+    consent_message = models.ForeignKey("Message", null=True, on_delete=models.SET_NULL)
+
+    success = models.BooleanField(default=None, null=True)
+    export_path = models.TextField(default=None, null=True)
+
+    # Started is nullable because the export only starts when the
+    # worker gets to it.
+    date_started = models.DateTimeField(default=None, null=True)
+    date_finished = models.DateTimeField(default=None, null=True)
+    date_expires = models.DateTimeField(default=None, null=True)
+    date_deleted = models.DateTimeField(default=None, null=True)
+
+    version = models.CharField(max_length=100)
+
+    sha256sum_hex = models.CharField(default=None, null=True, max_length=64)
+    compressed_size_bytes = models.PositiveIntegerField(default=None, null=True)
+
+
 class RealmDomain(models.Model):
     """For an organization with emails_restricted_to_domains enabled, the list of
     allowed domains"""
