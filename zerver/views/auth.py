@@ -604,7 +604,8 @@ def get_email_and_realm_from_jwt_authentication(
 @log_view_func
 @has_request_variables
 def remote_user_jwt(request: HttpRequest, token: str = REQ(default="")) -> HttpResponse:
-    email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+    email, realm = get_email_and_realm_from_jwt_authentication_request(request, token)
+
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
     if user_profile is None:
         result = ExternalAuthResult(
@@ -1090,8 +1091,6 @@ def api_fetch_api_key(
 ) -> HttpResponse:
     return_data: Dict[str, bool] = {}
     email, realm = get_email_and_realm_from_jwt_authentication_request(request)
-    # realm = get_realm_from_request(request)
-    # return json_success(request, data={"realm": realm, "username": username, 'password': password})
 
     if realm is None:
         raise InvalidSubdomainError

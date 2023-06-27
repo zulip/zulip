@@ -550,14 +550,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#jwt
 JWT_AUTH_KEYS: Dict[str, Any] = {
     # Subdomain for which this JWT configuration will apply.
-    "nextner": {
-        "key": get_secret("jwt_auth_key"),
-        # "key": "nextner0123456789",
-        "algorithms": ["HS256"],
-    },
     "": {
         "key": get_secret("jwt_auth_key"),
-        # "key": "nextner0123456789",
         "algorithms": ["HS256"],
     },
     "zulip": {
@@ -567,7 +561,7 @@ JWT_AUTH_KEYS: Dict[str, Any] = {
         # using the default HS256 algorithm, per RFC 7518, the key needs
         # to have at least 256 bits of entropy.
         # "key": get_secret("jwt_auth_key"),
-        "key": "nextner0123456789",
+        "key": get_secret("jwt_auth_key"),
         # Algorithm with which the JWT token are signed.
         "algorithms": ["HS256"],
     }

@@ -462,6 +462,7 @@ def check_password_strength(password: str) -> bool:
 
     return True
 
+
 class EmailAuthBackend(ZulipAuthMixin):
     """
     Email+Password authentication backend (the default).
@@ -2907,11 +2908,7 @@ class ZulipRemoteJWTBackend(ExternalAuthMethod):
                      username: str, jwt_payload: Dict[str, Any], realm: Realm,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
 
-        # if not auth_enabled_helper(["RemoteJWT"], realm):
-        #     return None
-
         # We want to get the user by email, not delivery_email
-        print('ZulipRemoteJWTBackend', 222222222222222222222222222222222222222222222222, realm)
         user_profile = common_get_active_user(username, realm)
         if user_profile is not None:
             return user_profile

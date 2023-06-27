@@ -545,11 +545,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#jwt
 JWT_AUTH_KEYS: Dict[str, Any] = {
     # Subdomain for which this JWT configuration will apply.
-    "nextner": {
-        "key": get_secret("jwt_auth_key"),
-    },
     "": {
         "key": get_secret("jwt_auth_key"),
+        "algorithms": ["HS256"],
     },
     "zulip": {
         # Shared secret key used to validate jwt tokens, which should be stored
