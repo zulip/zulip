@@ -3,9 +3,11 @@
 This page contains the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip 8.x series
+## Zulip Server 8.x series
 
-### 8.0 -- unreleased
+### Zulip Server 8.0
+
+_Unreleased_
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
@@ -15,9 +17,11 @@ log][commit-log] for an up-to-date list of all changes.
 
 - None yet.
 
-## Zulip 7.x series
+## Zulip Server 7.x series
 
-### 7.2 -- 2023-07-05
+### Zulip Server 7.2
+
+_Released 2023-07-05_
 
 - Started logging a more accurate, detailed, and actionable error messages when
   [common reverse proxy mis-configurations][proxies] are detected.
@@ -49,7 +53,9 @@ log][commit-log] for an up-to-date list of all changes.
 
 [proxies]: ../production/deployment.md#configuring-zulip-to-trust-proxies
 
-### 7.1 -- 2023-06-13
+### Zulip Server 7.1
+
+_Released 2023-06-13_
 
 - Added checks to check that Zulip is being installed on a
   [supported CPU and OS architecture](../production/requirements.md).
@@ -73,7 +79,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Updated translations, including new translations for Luri (Bakhtiari),
   Brazilian Portuguese, and Tagalog.
 
-### 7.0 -- 2023-05-31
+### Zulip Server 7.0
+
+_Released 2023-05-31_
 
 #### Highlights
 
@@ -234,9 +242,11 @@ log][commit-log] for an up-to-date list of all changes.
 [reverse-proxy-docs]: ../production/deployment.md#putting-the-zulip-application-behind-a-reverse-proxy
 [loadbalancer-ips]: ../production/deployment.md#configuring-zulip-to-trust-proxies
 
-## Zulip 6.x series
+## Zulip Server 6.x series
 
-### 6.2 -- 2023-05-19
+### Zulip Server 6.2
+
+_Released 2023-05-19_
 
 - CVE-2023-28623: Fixed a vulnerability that would allow users to sign up for a
   Zulip Server account with an unauthorized email address, despite the server
@@ -285,7 +295,9 @@ log][commit-log] for an up-to-date list of all changes.
   Zulip’s default of `chrony` for time synchronization.
 - Upgraded dependencies for security and bug fixes.
 
-### 6.1 -- 2023-01-23
+### Zulip Server 6.1
+
+_Released 2023-01-23_
 
 - Fixed a bug that caused the web app to not load on Safari 13 and lower;
   affected users would only see a blank page.
@@ -340,7 +352,9 @@ log][commit-log] for an up-to-date list of all changes.
   server error, if an invalid “invite as” value was given.
 - Renamed internal exceptions to end with `Error`.
 
-### 6.0 -- 2022-11-17
+### Zulip Server 6.0
+
+_Released 2022-11-17_
 
 #### Highlights
 
@@ -539,9 +553,11 @@ log][commit-log] for an up-to-date list of all changes.
 
 [docker-zulip-upgrade-database]: https://github.com/zulip/docker-zulip/#upgrading-zulipzulip-postgresql-to-14
 
-## Zulip 5.x series
+## Zulip Server 5.x series
 
-### 5.7 -- 2022-11-16
+### Zulip Server 5.7
+
+_Released 2022-11-16_
 
 - CVE-2022-41914: Fixed the verification of the SCIM account
   management bearer tokens to use a constant-time comparator. Zulip
@@ -563,7 +579,9 @@ log][commit-log] for an up-to-date list of all changes.
   notifications service fails.
 - Upgraded Python requirements.
 
-### 5.6 -- 2022-08-24
+### Zulip Server 5.6
+
+_Released 2022-08-24_
 
 - CVE-2022-36048: Change the Markdown renderer to only rewrite known
   local links as relative links, rather than rewriting all local
@@ -574,7 +592,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Updated dependencies.
 - Updated translations.
 
-### 5.5 -- 2022-07-21
+### Zulip Server 5.5
+
+_Released 2022-07-21_
 
 - CVE-2022-31168: Fix authorization check for changing bot roles. Due
   to an incorrect authorization check in Zulip Server 5.4 and all prior
@@ -585,7 +605,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Updated translations, including major updates to the Mongolian and
   Serbian translations.
 
-### 5.4 -- 2022-07-11
+### Zulip Server 5.4
+
+_Released 2022-07-11_
 
 - CVE-2022-31134: Exclude private file uploads from [exports of public
   data](https://zulip.com/help/export-your-organization#export-of-public-data). We
@@ -606,7 +628,9 @@ log][commit-log] for an up-to-date list of all changes.
   arriving at exactly the same time as request causing server errors.
 - Added a tool to help automate more of the release process.
 
-### 5.3 -- 2022-06-21
+### Zulip Server 5.3
+
+_Released 2022-06-21_
 
 - CVE-2022-31017: Fixed message edit event exposure in
   protected-history streams.
@@ -648,7 +672,9 @@ log][commit-log] for an up-to-date list of all changes.
   existed, but was both expired and not in use.
 - Improved proxy and database backup documentation.
 
-### 5.2 -- 2022-05-03
+### Zulip Server 5.2
+
+_Released 2022-05-03_
 
 - Fixed a performance regression in the UI, introduced in 5.0, when
   opening the compose box.
@@ -683,7 +709,9 @@ log][commit-log] for an up-to-date list of all changes.
   guaranteed to be compatible with Zulip Server 3.0 and later; they
   may also work with earlier versions, with a degraded experience.
 
-### 5.1 -- 2022-04-01
+### Zulip Server 5.1
+
+_Released 2022-04-01_
 
 - Fixed upgrade bug where preexisting animated emoji would still
   always animate in statuses.
@@ -703,7 +731,9 @@ log][commit-log] for an up-to-date list of all changes.
   but would immediately be logged out.
 - Updated translations.
 
-### 5.0 -- 2022-03-29
+### Zulip Server 5.0
+
+_Released 2022-03-29_
 
 #### Highlights
 
@@ -916,9 +946,11 @@ log][commit-log] for an up-to-date list of all changes.
   using the django-stubs project to get Django stubs.
 - Renamed main branch from `master` to `main`.
 
-## Zulip 4.x series
+## Zulip Server 4.x series
 
-### 4.11 -- 2022-03-15
+### Zulip Server 4.11
+
+_Released 2022-03-15_
 
 - CVE-2022-24751: Zulip Server 4.0 and above were susceptible to a
   race condition during user deactivation, where a simultaneous access
@@ -931,7 +963,9 @@ log][commit-log] for an up-to-date list of all changes.
   - The server is upgraded, which clears the cache.
 - Updated translations.
 
-### 4.10 -- 2022-02-25
+### Zulip Server 4.10
+
+_Released 2022-02-25_
 
 - CVE-2022-21706: Reusable invitation links could be improperly used
   for other organizations.
@@ -948,7 +982,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Fix ARM64 support; however, the wal-g binary is not yet supported on
   ARM64 (zulip/zulip#21070).
 
-### 4.9 -- 2022-01-24
+### Zulip Server 4.9
+
+_Released 2022-01-24_
 
 - CVE-2021-43799: Remote execution of code involving RabbitMQ.
 - Closed access to RabbitMQ port 25672; initial installs tried to
@@ -986,7 +1022,9 @@ log][commit-log] for an up-to-date list of all changes.
   `upgrade-zulip-from-git` require 3 GB of RAM, or 2 GB and at least 1
   GB of swap.
 
-### 4.8 -- 2021-12-01
+### Zulip Server 4.8
+
+_Released 2021-12-01_
 
 - CVE-2021-43791: Zulip could fail to enforce expiration dates
   on confirmation keys, allowing users to potentially use expired
@@ -1034,13 +1072,17 @@ log][commit-log] for an up-to-date list of all changes.
   entries for a single user and single stream in the audit log.
 - Updated translations, including adding a Sinhala translation.
 
-### 4.7 -- 2021-10-04
+### Zulip Server 4.7
+
+_Released 2021-10-04_
 
 - CVE-2021-41115: Prevent organization administrators from affecting
   the server with a regular expression denial-of-service attack
   through linkifier patterns.
 
-### 4.6 -- 2021-09-23
+### Zulip Server 4.6
+
+_Released 2021-09-23_
 
 - Documented official support for Debian 11 Bullseye, now that it is
   officially released by Debian upstream.
@@ -1072,12 +1114,16 @@ log][commit-log] for an up-to-date list of all changes.
 - Backported many improvements to the ReadTheDocs documentation.
 - Updated translation data from Transifex.
 
-### 4.5 -- 2021-07-25
+### Zulip Server 4.5
+
+_Released 2021-07-25_
 
 - Added a tool to fix potential database corruption caused by host OS
   upgrades (was listed in 4.4 release notes, but accidentally omitted).
 
-### 4.4 -- 2021-07-22
+### Zulip Server 4.4
+
+_Released 2021-07-22_
 
 - Fixed a possible denial-of-service attack in Markdown fenced code
   block parsing.
@@ -1121,7 +1167,9 @@ log][commit-log] for an up-to-date list of all changes.
   are mistakenly space-separated instead of comma-separated.
 - Updated translations for many languages.
 
-### 4.3 -- 2021-06-02
+### Zulip Server 4.3
+
+_Released 2021-06-02_
 
 - Fixed exception when upgrading older servers with the
   `JITSI_SERVER_URL` setting set to `None` to disable Jitsi.
@@ -1136,17 +1184,23 @@ log][commit-log] for an up-to-date list of all changes.
 - Tagged user status strings for translation.
 - Updated translation data from Transifex.
 
-### 4.2 -- 2021-05-13
+### Zulip Server 4.2
+
+_Released 2021-05-13_
 
 - Fixed exception in purge-old-deployments when upgrading on
   a system that has never upgraded using Git.
 - Fixed installation from a directory readable only by root.
 
-### 4.1 -- 2021-05-13
+### Zulip Server 4.1
+
+_Released 2021-05-13_
 
 - Fixed exception upgrading to the 4.x series from older releases.
 
-### 4.0 -- 2021-05-13
+### Zulip Server 4.0
+
+_Released 2021-05-13_
 
 #### Highlights
 
@@ -1346,9 +1400,11 @@ log][commit-log] for an up-to-date list of all changes.
 
 [zulip-conf-settings]: ../production/deployment.md#system-and-deployment-configuration
 
-## Zulip 3.x series
+## Zulip Server 3.x series
 
-### 3.4 -- 2021-04-14
+### Zulip Server 3.4
+
+_Released 2021-04-14_
 
 - CVE-2021-30487: Prevent administrators from moving topics to
   disallowed streams.
@@ -1370,7 +1426,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Upgraded minor python dependencies.
 - Minor documentation fixes.
 
-### 3.3 -- 2020-12-01
+### Zulip Server 3.3
+
+_Released 2020-12-01_
 
 - Guest users should not be allowed to post to streams marked “Only
   organization full members can post.” This flaw has existed since
@@ -1388,7 +1446,9 @@ log][commit-log] for an up-to-date list of all changes.
   “Organization owner” roles.
 - Handle realm emojis that have been manually deleted more gracefully.
 
-### 3.2 -- 2020-09-15
+### Zulip Server 3.2
+
+_Released 2020-09-15_
 
 - Switched from `libmemcached` to `python-binary-memcached`, a
   pure-Python implementation; this should eliminate memcached
@@ -1410,7 +1470,9 @@ log][commit-log] for an up-to-date list of all changes.
 - Improved upgrade documentation.
 - Removed internal ID lists which could leak into the events API.
 
-### 3.1 -- 2020-07-30
+### Zulip Server 3.1
+
+_Released 2020-07-30_
 
 - Removed unused `short_name` field from the User model. This field
   had no purpose and could leak the local part of email addresses
@@ -1430,7 +1492,9 @@ log][commit-log] for an up-to-date list of all changes.
   included in this maintenance release to ensure backporting patches
   from `main` remains easy.
 
-### 3.0 -- 2020-07-16
+### Zulip Server 3.0
+
+_Released 2020-07-16_
 
 #### Highlights
 
@@ -1651,26 +1715,34 @@ log][commit-log] for an up-to-date list of all changes.
   system was always a hack, was only ever used for one endpoint, and
   did not provide a measurable latency benefit over HTTP/2.
 
-## Zulip 2.1.x series
+## Zulip Server 2.1.x series
 
-### 2.1.8 -- 2021-08-11
+### Zulip Server 2.1.8
+
+_Released 2021-08-11_
 
 - Fixed possible `0257_fix_has_link_attribute.py` database migration
   failure, which would cause errors during the upgrade process.
 
-### 2.1.7 -- 2020-06-25
+### Zulip Server 2.1.7
+
+_Released 2020-06-25_
 
 - CVE-2020-15070: Fix privilege escalation vulnerability with custom
   profile fields and direct write access to Zulip's PostgreSQL database.
 - Changed default memcached authentication username to zulip@localhost,
   fixing authentication problems when servers change their hostname.
 
-### 2.1.6 -- 2020-06-17
+### Zulip Server 2.1.6
+
+_Released 2020-06-17_
 
 - Fixed use of Python 3.6+ syntax in 2.1.5 release that prevented
   installation on Ubuntu 16.04.
 
-### 2.1.5 -- 2020-06-16
+### Zulip Server 2.1.5
+
+_Released 2020-06-16_
 
 - CVE-2020-12759: Fix reflected XSS vulnerability in Dropbox webhook.
 - CVE-2020-14194: Prevent reverse tabnapping via topic header links.
@@ -1701,7 +1773,9 @@ details.
 
 [audit-org-admin]: https://zulip.com/help/change-a-users-role
 
-### 2.1.4 -- 2020-04-16
+### Zulip Server 2.1.4
+
+_Released 2020-04-16_
 
 - Fixed a regression in 2.1.3 that impacted creating the very first
   organization via our data import tools.
@@ -1713,7 +1787,9 @@ details.
 - Updated translation data from Transifex.
 - Support for Ubuntu 16.04 Xenial and Debian 9 Stretch is now deprecated.
 
-### 2.1.3 -- 2020-04-01
+### Zulip Server 2.1.3
+
+_Released 2020-04-01_
 
 - CVE-2020-9444: Prevent reverse tabnapping attacks.
 - CVE-2020-9445: Remove unused and insecure modal_link feature.
@@ -1747,7 +1823,9 @@ details.
 - Changed the SAML default signature algorithm to SHA-256, overriding
   the SHA-1 default used by python3-saml.
 
-### 2.1.2 -- 2020-01-16
+### Zulip Server 2.1.2
+
+_Released 2020-01-16_
 
 - Corrected fix for CVE-2019-19775 (the original fix was affected by
   an unfixed security bug in Python's urllib, CVE-2015-2104).
@@ -1767,7 +1845,9 @@ details.
 - Fixed error handling bug preventing rerunning the installer.
 - Fixed a few minor issues with migrations for upgrading from 2.0.x.
 
-### 2.1.1 -- 2019-12-13
+### Zulip Server 2.1.1
+
+_Released 2019-12-13_
 
 - Fixed upgrading to 2.1.x with the LDAP integration enabled in a
   configuration where `AUTH_LDAP_REVERSE_EMAIL_SEARCH` is newly
@@ -1776,7 +1856,9 @@ details.
   used with our new support for a DBaaS managed database.
 - Improved documentation for `AUTH_LDAP_REVERSE_EMAIL_SEARCH`.
 
-### 2.1.0 -- 2019-12-12
+### Zulip Server 2.1.0
+
+_Released 2019-12-12_
 
 #### Highlights
 
@@ -2009,25 +2091,33 @@ details.
 - Enabled webpack code splitting and deduplication.
 - Started migrating our frontend codebase to TypeScript.
 
-## Zulip 2.0.x series
+## Zulip Server 2.0.x series
 
-### 2.0.8 -- 2019-12-12
+### Zulip Server 2.0.8
+
+_Released 2019-12-12_
 
 - CVE-2019-19775: Close open redirect in thumbnail view.
 
-### 2.0.7 -- 2019-11-21
+### Zulip Server 2.0.7
+
+_Released 2019-11-21_
 
 - CVE-2019-18933: Fix insecure account creation via social authentication.
 - Added backend enforcement of zxcvbn password strength checks.
 
-### 2.0.6 -- 2019-09-23
+### Zulip Server 2.0.6
+
+_Released 2019-09-23_
 
 - Updated signing keys for the PGroonga repository for Debian 9.
 - Fixed creation of linkifiers with URLs containing &.
 - Fixed a subtle bug that could cause the message list to suddenly
   scroll up in certain rare race conditions.
 
-### 2.0.5 -- 2019-09-11
+### Zulip Server 2.0.5
+
+_Released 2019-09-11_
 
 - CVE-2019-16215: Fix DoS vulnerability in Markdown LINK_RE.
 - CVE-2019-16216: Fix MIME type validation.
@@ -2035,7 +2125,9 @@ details.
 - Fixed support for hidden_by_limit messages in Slack import.
 - Fixed confusing output from the `knight` management command.
 
-### 2.0.4 -- 2019-06-29
+### Zulip Server 2.0.4
+
+_Released 2019-06-29_
 
 - Fixed several configuration-dependent bugs that caused
   restore-backup to crash.
@@ -2045,7 +2137,9 @@ details.
 - Fixed a bug enabling the PGRoonga search backend with older PostgreSQL.
 - Fixed getting personal API key when passwords are disabled.
 
-### 2.0.3 -- 2019-04-23
+### Zulip Server 2.0.3
+
+_Released 2019-04-23_
 
 - Added documentation for upgrading the underlying OS version.
 - Made uwsgi buffer size configurable (relevant for sites putting
@@ -2058,7 +2152,9 @@ details.
 - Fixed several bugs in new backup and restore tools.
 - Fixed minor bugs with YouTube previews.
 
-### 2.0.2 -- 2019-03-15
+### Zulip Server 2.0.2
+
+_Released 2019-03-15_
 
 - Fixed a regression in the Puppet configuration for S3 upload backend
   introduced in 2.0.1.
@@ -2069,7 +2165,9 @@ details.
 - Fixed a confusing "Subscribe" button appearing for guest users.
 - Updated translations, including a new Italian translation.
 
-### 2.0.1 -- 2019-03-04
+### Zulip Server 2.0.1
+
+_Released 2019-03-04_
 
 - Fixed handling of uploaded file routing on Ubuntu 14.04.
 - Fixed buggy behavior of branding logos in night theme.
@@ -2082,7 +2180,9 @@ details.
 - Added support for using multiple organizations with same LDAP
   backend configuration.
 
-### 2.0.0 -- 2019-03-01
+### Zulip Server 2.0.0
+
+_Released 2019-03-01_
 
 #### Highlights
 
@@ -2183,9 +2283,11 @@ details.
 - Countless behind-the-scenes improvements to Zulip's codebase,
   tooling, automated tests, error handling, and APIs.
 
-## Zulip 1.9.x series
+## Zulip Server 1.9.x series
 
-### 1.9.2 -- 2019-01-29
+### Zulip Server 1.9.2
+
+_Released 2019-01-29_
 
 This release migrates Zulip off a deprecated Google+ API (necessary
 for Google authentication to continue working past March 7), and
@@ -2200,7 +2302,9 @@ minimal changes for existing servers not using Google authentication.
 - Optimized performance of Slack import for organizations with
   thousands of users.
 
-### 1.9.1 -- 2018-11-30
+### Zulip Server 1.9.1
+
+_Released 2018-11-30_
 
 This release is primarily intended to improve the experience for new
 Zulip installations; it has minimal changes for existing servers.
@@ -2213,7 +2317,9 @@ Zulip installations; it has minimal changes for existing servers.
 - Fixed nginx configuration for mobile API authentication to access uploads.
 - Updated translation data, including significant new Italian strings.
 
-### 1.9.0 -- 2018-11-07
+### Zulip Server 1.9.0
+
+_Released 2018-11-07_
 
 #### Highlights
 
@@ -2338,9 +2444,11 @@ Zulip installations; it has minimal changes for existing servers.
 - Our steady work on codebase quality and our automated test suite
   continues. Backend test coverage is now an incredible 98%.
 
-## Zulip 1.8.x series
+## Zulip Server 1.8.x series
 
-### 1.8.1 -- 2018-05-07
+### Zulip Server 1.8.1
+
+_Released 2018-05-07_
 
 - Added an automated tool (`manage.py register_server`) to sign up for
   the [mobile push notifications service](../production/mobile-push-notifications.md).
@@ -2355,7 +2463,9 @@ Zulip installations; it has minimal changes for existing servers.
   between OUs.
 - Fixed a couple subtle bugs with muting.
 
-### 1.8.0 -- 2018-04-17
+### Zulip Server 1.8.0
+
+_Released 2018-04-17_
 
 #### Highlights
 
@@ -2551,9 +2661,11 @@ Zulip installations; it has minimal changes for existing servers.
 
 This major release has no special upgrade notes.
 
-## Zulip 1.7.x series
+## Zulip Server 1.7.x series
 
-### 1.7.2 -- 2018-04-12
+### Zulip Server 1.7.2
+
+_Released 2018-04-12_
 
 This is a security release, with a handful of cherry-picked changes
 since 1.7.1. All Zulip server admins are encouraged to upgrade
@@ -2569,7 +2681,9 @@ promptly.
 Thanks to Suhas Sunil Gaikwad for reporting CVE-2018-9987 and w2w for
 reporting CVE-2018-9986 and CVE-2018-9990.
 
-### 1.7.1 -- 2017-11-21
+### Zulip Server 1.7.1
+
+_Released 2017-11-21_
 
 This is a security release, with a handful of cherry-picked changes
 since 1.7.0. All Zulip server admins are encouraged to upgrade
@@ -2591,7 +2705,9 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   garbage-collection of old deployments sometimes wouldn't preserve
   the immediate last deployment.
 
-### 1.7.0 -- 2017-10-25
+### Zulip Server 1.7.0
+
+_Released 2017-10-25_
 
 #### Highlights
 
@@ -2774,9 +2890,11 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Removed several obsolete settings.
 - Partially completed migration to webpack as our static asset bundler.
 
-## Zulip 1.6.x and older
+## Zulip Server 1.6.x and older
 
-### 1.6.0 -- 2017-06-06
+### Zulip Server 1.6.0
+
+_Released 2017-06-06_
 
 #### Highlights
 
@@ -2900,17 +3018,23 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Disabled the web tutorial on mobile.
 - Backend test coverage is now 93%, with 100% in views code.
 
-### 1.5.2 -- 2017-06-01
+### Zulip Server 1.5.2
+
+_Released 2017-06-01_
 
 - CVE-2017-0896: Restricting inviting new users to admins was broken.
 - CVE-2015-8861: Insecure old version of Handlebars templating engine.
 
-### 1.5.1 -- 2017-02-07
+### Zulip Server 1.5.1
+
+_Released 2017-02-07_
 
 - Fix exception trying to copy node_modules during upgrade process.
 - Improved styling of /stats page to remove useless login/register links.
 
-### 1.5.0 -- 2017-02-06
+### Zulip Server 1.5.0
+
+_Released 2017-02-06_
 
 #### Highlights
 
@@ -3018,11 +3142,15 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   streams.
 - Documented preliminary design for interactive bot system.
 
-### 1.4.3 - 2017-01-29
+### Zulip Server 1.4.3
+
+_Released 2017-01-29_
 
 - CVE-2017-0881: Users could subscribe to invite-only streams.
 
-### 1.4.2 - 2016-09-27
+### Zulip Server 1.4.2
+
+_Released 2016-09-27_
 
 - Upgraded Django to version 1.8.15 (with the Zulip patches applied),
   fixing a CSRF vulnerability in Django (see
@@ -3031,13 +3159,17 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   that largely affects parts of Django that are not used by Zulip.
 - Fixed buggy logrotate configuration.
 
-### 1.4.1 - 2016-09-03
+### Zulip Server 1.4.1
+
+_Released 2016-09-03_
 
 - Fixed settings bug upgrading from pre-1.4.0 releases to 1.4.0.
 - Fixed local file uploads integration being broken for new 1.4.0
   installations.
 
-### 1.4.0 - 2016-08-25
+### Zulip Server 1.4.0
+
+_Released 2016-08-25_
 
 - Migrated Zulip's python dependencies to be installed via a virtualenv,
   instead of the via apt. This is a major change to how Zulip
@@ -3140,7 +3272,9 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Updated header for Zulip static assets to reflect Zulip being
   open source.
 
-### 1.3.13 - 2016-06-21
+### Zulip Server 1.3.13
+
+_Released 2016-06-21_
 
 - Added nearly complete internationalization of the Zulip UI.
 - Added warning when using @all/@everyone.
@@ -3178,7 +3312,9 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Simplified the API for writing new webhook integrations.
 - Removed most of the remaining JavaScript global variables.
 
-### 1.3.12 - 2016-05-10
+### Zulip Server 1.3.12
+
+_Released 2016-05-10_
 
 - CVE-2016-4426: Bot API keys were accessible to other users in the same realm.
 - CVE-2016-4427: Deactivated users could access messages if SSO was enabled.
@@ -3186,7 +3322,9 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Added expansive test suite for authentication backends and decorators.
 - Added an option to logout_all_users to delete only sessions for deactivated users.
 
-### 1.3.11 - 2016-05-02
+### Zulip Server 1.3.11
+
+_Released 2016-05-02_
 
 - Moved email digest support into the default Zulip production configuration.
 - Added options for configuring PostgreSQL, RabbitMQ, Redis, and memcached
@@ -3215,7 +3353,9 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed 500 errors when uploading a non-image file as an avatar.
 - Fixed Jira integration incorrectly not @-mentioning assignee.
 
-### 1.3.10 - 2016-01-21
+### Zulip Server 1.3.10
+
+_Released 2016-01-21_
 
 - Added new integration for Travis CI.
 - Added settings option to control maximum file upload size.
@@ -3238,11 +3378,15 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Fixed realm restrictions for servers with a unique, open realm.
 - Substantially cleaned up console logging from run-dev.
 
-### 1.3.9 - 2015-11-16
+### Zulip Server 1.3.9
+
+_Released 2015-11-16_
 
 - Fixed buggy #! lines in upgrade scripts.
 
-### 1.3.8 - 2015-11-15
+### Zulip Server 1.3.8
+
+_Released 2015-11-15_
 
 - Added options to the Python API for working with untrusted server certificates.
 - Added a lot of documentation on the development environment and testing.
@@ -3258,7 +3402,9 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   (https://github.com/zulip/zulip/issues/230).
 - Major preliminary progress towards supporting Python 3.
 
-### 1.3.7 - 2015-10-19
+### Zulip Server 1.3.7
+
+_Released 2015-10-19_
 
 - Turn off desktop and audible notifications for streams by default.
 - Added support for the LDAP authentication integration creating new users.
