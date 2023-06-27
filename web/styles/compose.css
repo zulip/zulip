@@ -668,12 +668,6 @@ input.recipient_box {
     min-height: var(--compose-recipient-box-min-height);
 }
 
-.tippy-content .compose_control_buttons_container {
-    .compose_gif_icon {
-        bottom: 5px;
-    }
-}
-
 .compose_control_buttons_container {
     margin-right: auto;
     display: flex;
