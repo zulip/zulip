@@ -5,7 +5,8 @@ import PlotlyPie from "plotly.js/lib/pie";
 import tippy from "tippy.js";
 
 import {$t, $t_html} from "../i18n";
-import {page_params} from "../page_params";
+
+import {page_params} from "./page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 
