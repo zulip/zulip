@@ -770,14 +770,6 @@ a.compose_control_button {
     }
 }
 
-/* This is used to override the
- * properties of `a.compose_control_button`
- * without using `!important`.
- */
-a.compose_control_button.hide {
-    display: none;
-}
-
 .drag {
     display: none;
     height: 18px;
