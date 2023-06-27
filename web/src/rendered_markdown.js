@@ -98,7 +98,7 @@ export const update_elements = ($content) => {
                     $(this).addClass("user-mention-me");
                 }
             } else {
-                // Always highlight wildcard mentions in private message.
+                // Always highlight wildcard mentions in direct messages.
                 $(this).addClass("user-mention-me");
             }
         }
