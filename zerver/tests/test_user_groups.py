@@ -297,6 +297,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_success(result)
+        user_group = UserGroup.objects.get(id=user_group.id)
+        self.assertEqual(user_group.name, "help")
+        self.assertEqual(user_group.description, "Troubleshooting team")
 
         # Test when new data is not supplied.
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info={})
@@ -306,6 +309,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"name": "help team"}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_success(result)
+        user_group = UserGroup.objects.get(id=user_group.id)
+        self.assertEqual(user_group.name, "help team")
+        self.assertEqual(user_group.description, "Troubleshooting team")
 
         # Test when invalid user group is supplied
         params = {"name": "help"}
@@ -345,10 +351,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # Test success
         self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 10)
         self.assertEqual(UserGroupMembership.objects.count(), 45)
+        self.assertTrue(UserGroup.objects.filter(id=user_group.id).exists())
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
         self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
         self.assertEqual(UserGroupMembership.objects.count(), 44)
+        self.assertFalse(UserGroup.objects.filter(id=user_group.id).exists())
         # Test when invalid user group is supplied
         result = self.client_delete("/json/user_groups/1111")
         self.assert_json_error(result, "Invalid user group")
@@ -622,9 +630,16 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 "name": new_name,
                 "description": new_description,
             }
+            # Ensure that this update request is not a no-op.
+            self.assertNotEqual(user_group.name, new_name)
+            self.assertNotEqual(user_group.description, new_description)
+
             result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
             if error_msg is None:
                 self.assert_json_success(result)
+                user_group.refresh_from_db()
+                self.assertEqual(user_group.name, new_name)
+                self.assertEqual(user_group.description, new_description)
             else:
                 self.assert_json_error(result, error_msg)
 
