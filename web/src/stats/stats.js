@@ -567,7 +567,6 @@ function populate_messages_sent_by_client(data) {
                 y: plot_data.labels,
                 type: "bar",
                 orientation: "h",
-                sort: false,
                 textinfo: "text",
                 hoverinfo: "none",
                 marker: {color: "#537c5e"},
