@@ -196,7 +196,7 @@
     #userlist-toggle-button,
     .header,
     #message_view_header {
-        background-color: hsl(0deg 0% 13%);
+        background-color: var(--color-background-navbar);
     }
 
     & body,
