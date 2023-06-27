@@ -69,10 +69,12 @@ fi
     || fail "Changelog does not pass spellcheck"
 
 # Check the date is correct for the release
-release_line=$(grep -x -E -m 1 -o "### $version -- ([0-9-]+)" docs/overview/changelog.md) \
+release_lines=$(grep -x -m 1 -A2 "### Zulip Server $version" docs/overview/changelog.md) \
     || fail "docs/overview/changelog.md does not contain a line for $version"
+release_date_line=$(echo "$release_lines" | grep -x -E -m 1 '_Released ([0-9-]+)_') \
+    || fail "docs/overview/changelog.md does not contain the release date for $version"
 expected_date="$(TZ=America/Los_Angeles date +%F)"
-[ "$release_line" == "### $version -- $expected_date" ] \
+[ "$release_date_line" == "_Released ${expected_date}_" ] \
     || fail "Date in docs/overview/changelog.md does not match '$expected_date'"
 
 extract_version() {
