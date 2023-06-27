@@ -196,15 +196,14 @@
     #userlist-toggle-button,
     .header,
     #message_view_header {
-        background-color: hsl(0deg 0% 13%);
+        background-color: var(--color-background-navbar);
     }
 
     & body,
     .app-main,
     .column-middle,
     #streams_header,
-    .private_messages_container,
-    .header {
+    .private_messages_container {
         background-color: var(--color-background);
     }
 
