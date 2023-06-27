@@ -298,6 +298,9 @@ devDependencies:
   '@types/node':
     specifier: ^18.8.3
     version: 18.16.20
+  '@types/plotly.js':
+    specifier: ^2.12.20
+    version: 2.12.20
   '@types/sortablejs':
     specifier: ^1.15.1
     version: 1.15.1
@@ -2985,6 +2988,10 @@ packages:
 
   /@types/picomatch@2.3.0:
     resolution: {integrity: sha512-O397rnSS9iQI4OirieAtsDqvCj4+3eY1J+EPdNTKuHuRWIfUoGyzX294o8C4KJYaLqgSrd2o60c5EqCU8Zv02g==}
+    dev: true
+
+  /@types/plotly.js@2.12.20:
+    resolution: {integrity: sha512-ZDNAde0VqBCrcgmQQyOmWM71k1+5oWaNkfliZ4ix5IdBkjbLye1S6JIdw+XFWGAIeimpjnkLsLzMOwQ105eIOg==}
     dev: true
 
   /@types/qs@6.9.7:
