@@ -20,6 +20,11 @@
                 <button type="submit" class="btn open_bots_subscribed_streams tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Subscribed streams' }}" data-user-id="{{user_id}}">
                     <i class="fa fa-hashtag purple" aria-hidden="true"></i>
                 </button>
+                {{#if is_incoming_webhook_bot}}
+                <button type="submit" class="btn open-generate-integration-url-modal tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Generate URL for an integration'}}" data-api-key="{{api_key}}">
+                    <i class="fa fa-link steel-blue" aria-hidden="true"></i>
+                </button>
+                {{/if}}
             </div>
             {{/if}}
         </div>

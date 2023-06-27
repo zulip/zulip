@@ -869,6 +869,10 @@ input[type="checkbox"] {
         .purple {
             color: hsl(278deg 62% 68%);
         }
+
+        .steel-blue {
+            color: hsl(207deg 44% 49%);
+        }
     }
 
     .bot-information-box {
@@ -2015,5 +2019,35 @@ $option_title_width: 180px;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#generate-integration-url-modal {
+    .inline {
+        display: inline;
+    }
+
+    .integration-url {
+        font-family: "Source Code Pro", monospace;
+        padding: 10px;
+        font-size: 0.85rem;
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        overflow-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .integration-url-stream-wrapper .dropdown_widget_value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .integration-url-stream-wrapper .dropdown-widget-button {
+        width: 75%;
+    }
+
+    #stream-not-specified-notice {
+        margin-top: -10px;
     }
 }

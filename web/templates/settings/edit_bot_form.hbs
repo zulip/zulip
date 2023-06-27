@@ -42,6 +42,13 @@
             <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
         </div>
     </form>
+    {{#if is_incoming_webhook_bot}}
+    <div class="input-group new-style">
+        <button class="button rounded generate_url_for_integration">
+            {{t 'Generate URL for an integration' }}
+        </button>
+    </div>
+    {{/if}}
     <div class="input-group new-style">
         <button class="button rounded btn-danger deactivate_bot_button">
             {{t 'Deactivate bot' }}
