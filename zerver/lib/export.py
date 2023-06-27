@@ -13,6 +13,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections import defaultdict
 from contextlib import suppress
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
@@ -1860,7 +1861,7 @@ def export_emoji_from_local(
     write_records_json_file(output_dir, records)
 
 
-def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
+def do_write_stats_file_for_realm_export(output_dir: Path) -> Dict[str, int]:
     stats_file = os.path.join(output_dir, "stats.txt")
     realm_file = os.path.join(output_dir, "realm.json")
     attachment_file = os.path.join(output_dir, "attachment.json")
@@ -1869,6 +1870,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     filenames = sorted([analytics_file, attachment_file, *message_files, realm_file])
 
     logging.info("Writing stats file: %s\n", stats_file)
+    stats: Dict[str, int] = defaultdict(int)
     with open(stats_file, "w") as f:
         for filename in filenames:
             f.write(os.path.basename(filename) + "\n")
@@ -1876,6 +1878,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
                 data = orjson.loads(json_file.read())
             for k in sorted(data):
                 f.write(f"{len(data[k]):5} {k}\n")
+                stats[k] += len(data[k])
             f.write("\n")
 
         for category in ["avatars", "uploads", "emoji", "realm_icons"]:
@@ -1883,8 +1886,11 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write(f"{category}/records.json\n")
             with open(filename, "rb") as json_file:
                 data = orjson.loads(json_file.read())
+            stats[category] += len(data)
             f.write(f"{len(data):5} records\n")
             f.write("\n")
+
+    return stats
 
 
 def get_exportable_scheduled_message_ids(
