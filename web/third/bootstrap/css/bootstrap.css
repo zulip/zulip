@@ -116,9 +116,6 @@ p {
   font-weight: 200;
   line-height: 30px;
 }
-small {
-  font-size: 85%;
-}
 .text-warning {
   color: #c09853;
 }
@@ -151,14 +148,6 @@ h4 {
   color: inherit;
   text-rendering: optimizelegibility;
 }
-h1 small,
-h2 small,
-h3 small,
-h4 small {
-  font-weight: normal;
-  line-height: 1;
-  color: #999999;
-}
 h1,
 h2,
 h3 {
@@ -175,18 +164,6 @@ h3 {
 }
 h4 {
   font-size: 17.5px;
-}
-h1 small {
-  font-size: 24.5px;
-}
-h2 small {
-  font-size: 17.5px;
-}
-h3 small {
-  font-size: 14px;
-}
-h4 small {
-  font-size: 14px;
 }
 ul,
 ol {
@@ -218,14 +195,6 @@ blockquote p {
   font-size: 17.5px;
   font-weight: 300;
   line-height: 1.25;
-}
-blockquote small {
-  display: block;
-  line-height: 20px;
-  color: #999999;
-}
-blockquote small:before {
-  content: '\2014 \00A0';
 }
 q:before,
 q:after,
