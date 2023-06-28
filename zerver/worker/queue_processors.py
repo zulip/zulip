@@ -1065,7 +1065,7 @@ class DeferredWorker(QueueProcessingWorker):
                 extra_data["failed_timestamp"] = timezone_now().timestamp()
                 export_event.extra_data = orjson.dumps(extra_data).decode()
                 export_event.save(update_fields=["extra_data"])
-                notify_realm_export(user_profile)
+                notify_realm_export(realm)
                 return
 
             extra_data["started_timestamp"] = timezone_now().timestamp()
@@ -1097,7 +1097,7 @@ class DeferredWorker(QueueProcessingWorker):
                     time.time() - start,
                     stack_info=True,
                 )
-                notify_realm_export(user_profile)
+                notify_realm_export(realm)
                 return
 
             assert public_url is not None
@@ -1121,7 +1121,7 @@ class DeferredWorker(QueueProcessingWorker):
 
             # For future frontend use, also notify administrator
             # clients that the export happened.
-            notify_realm_export(user_profile)
+            notify_realm_export(realm)
             logging.info(
                 "Completed data export for %s in %s",
                 user_profile.realm.string_id,

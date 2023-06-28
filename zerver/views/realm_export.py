@@ -73,7 +73,7 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     )
 
     # Allow for UI updates on a pending export
-    notify_realm_export(user)
+    notify_realm_export(user.realm)
 
     # Using the deferred_work queue processor to avoid
     # killing the process after 60s
@@ -90,7 +90,7 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
 
 @require_realm_admin
 def get_realm_exports(request: HttpRequest, user: UserProfile) -> HttpResponse:
-    realm_exports = get_realm_exports_serialized(user)
+    realm_exports = get_realm_exports_serialized(user.realm)
     return json_success(request, data={"exports": realm_exports})
 
 
@@ -112,5 +112,5 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
         if export_data.get("failed_timestamp") is not None:
             raise JsonableError(_("Export failed, nothing to delete"))
         raise JsonableError(_("Export still in progress"))
-    do_delete_realm_export(user, audit_log_entry)
+    do_delete_realm_export(audit_log_entry)
     return json_success(request)

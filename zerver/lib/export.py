@@ -2402,10 +2402,8 @@ def export_realm_wrapper(
     return public_url
 
 
-def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
-    all_exports = RealmAuditLog.objects.filter(
-        realm=user.realm, event_type=RealmAuditLog.REALM_EXPORTED
-    )
+def get_realm_exports_serialized(realm: Realm) -> List[Dict[str, Any]]:
+    all_exports = RealmAuditLog.objects.filter(realm=realm, event_type=RealmAuditLog.REALM_EXPORTED)
     exports_dict = {}
     for export in all_exports:
         export_url = None
@@ -2424,9 +2422,7 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
         pending = deleted_timestamp is None and failed_timestamp is None and export_path is None
 
         if export_path is not None and not deleted_timestamp:
-            export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(
-                user.realm, export_path
-            )
+            export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(realm, export_path)
 
         assert acting_user is not None
         exports_dict[export.id] = dict(
