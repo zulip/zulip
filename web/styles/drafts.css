@@ -39,22 +39,6 @@
             border-top: 0;
         }
 
-        .messagebox-content {
-            grid-template-rows: auto;
-            grid-template-columns: auto max-content;
-            padding: 10px;
-
-            .message_content {
-                grid-column: 1 / 2;
-                /* to space from restore draft button */
-                margin-right: 5px;
-            }
-
-            .message_top_line {
-                grid-column: 2 / 3;
-            }
-        }
-
         .messagebox {
             cursor: auto;
             box-shadow: none;
