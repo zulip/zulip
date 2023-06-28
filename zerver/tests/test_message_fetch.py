@@ -1,5 +1,4 @@
 import datetime
-import os
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
 
@@ -593,31 +592,243 @@ class NarrowBuilderTest(ZulipTestCase):
 
 class NarrowLibraryTest(ZulipTestCase):
     def test_build_narrow_filter(self) -> None:
-        fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/narrow.json")
-        with open(fixtures_path, "rb") as f:
-            scenarios = orjson.loads(f.read())
-        self.assert_length(scenarios, 11)
-        for scenario in scenarios:
-            narrow = scenario["narrow"]
-            accept_events = scenario["accept_events"]
-            reject_events = scenario["reject_events"]
-            narrow_filter = build_narrow_filter(narrow)
-            for e in accept_events:
-                message = e["message"]
-                flags = e["flags"]
-                if message is None:
-                    message = {}
-                if flags is None:
-                    flags = []
-                self.assertTrue(narrow_filter(message=message, flags=flags))
-            for e in reject_events:
-                message = e["message"]
-                flags = e["flags"]
-                if message is None:
-                    message = {}
-                if flags is None:
-                    flags = []
-                self.assertFalse(narrow_filter(message=message, flags=flags))
+        narrow_filter = build_narrow_filter([["stream", "devel"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={"display_recipient": "devel", "type": "stream"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_filter(
+                message={"display_recipient": "social", "type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["topic", "bark"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={"type": "stream", "subject": "BarK"},
+                flags=[],
+            )
+        )
+        self.assertTrue(
+            narrow_filter(
+                message={"type": "stream", "topic": "bark"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "stream", "subject": "play with tail"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "stream", "topic": "play with tail"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["stream", "devel"], ["topic", "python"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={"display_recipient": "devel", "type": "stream", "subject": "python"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_filter(
+                message={"display_recipient": "devel", "type": "stream", "subject": "java"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_filter(
+                message={"display_recipient": "social", "type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["sender", "hamlet@zulip.com"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={"sender_email": "hamlet@zulip.com"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={"sender_email": "cordelia@zulip.com"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["is", "dm"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["is", "private"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "stream"},
+                flags=[],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["is", "starred"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={},
+                flags=["starred"],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={},
+                flags=["alerted"],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["is", "alerted"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={},
+                flags=["mentioned"],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={},
+                flags=["starred"],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["is", "mentioned"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={},
+                flags=["mentioned"],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={},
+                flags=["starred"],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["is", "unread"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={},
+                flags=["read"],
+            )
+        )
+
+        ###
+
+        narrow_filter = build_narrow_filter([["is", "resolved"]])
+
+        self.assertTrue(
+            narrow_filter(
+                message={"type": "stream", "subject": "✔ python"},
+                flags=[],
+            )
+        )
+
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "private"},
+                flags=[],
+            )
+        )
+        self.assertFalse(
+            narrow_filter(
+                message={"type": "stream", "subject": "java"},
+                flags=[],
+            )
+        )
 
     def test_build_narrow_filter_invalid(self) -> None:
         with self.assertRaises(JsonableError):
