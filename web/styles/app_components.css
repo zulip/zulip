@@ -948,19 +948,21 @@ div.overlay {
         }
 
         .messagebox-content {
-            grid-template-rows: auto;
-            grid-template-columns: auto max-content;
+            grid-template: auto / auto max-content;
+            grid-template-areas:
+                "message controls"
+                "message .       ";
+            /* to space from restore draft button */
+            column-gap: 5px;
             padding: 10px;
 
             .message_content {
                 cursor: pointer;
-                grid-column: 1 / 2;
-                /* to space from restore draft button */
-                margin-right: 5px;
+                grid-area: message;
             }
 
             .message_top_line {
-                grid-column: 2 / 3;
+                grid-area: controls;
             }
         }
 
