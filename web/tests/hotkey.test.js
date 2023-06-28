@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {make_stub} = require("./lib/stub");
 const {run_test} = require("./lib/test");
+const $ = require("./lib/zjquery");
 
 // Important note on these tests:
 
@@ -37,6 +38,7 @@ const condense = mock_esm("../src/condense");
 const drafts = mock_esm("../src/drafts");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     reactions_popped: () => false,
+    toggle_emoji_popover() {},
 });
 const gear_menu = mock_esm("../src/gear_menu", {
     is_open: () => false,
@@ -96,6 +98,11 @@ message_lists.current = {
     },
     selected_id() {
         return 42;
+    },
+    selected_row() {
+        const $row = $.create("selected-row-stub");
+        $row.set_find_results(".actions_hover", []);
+        return $row;
     },
     selected_message() {
         return {
@@ -371,7 +378,7 @@ run_test("misc", ({override}) => {
     assert_mapping("K", navigate, "page_up");
     assert_mapping("u", popovers, "show_sender_info");
     assert_mapping("i", popover_menus, "toggle_message_actions_menu");
-    assert_mapping(":", reactions, "open_reactions_popover", true);
+    assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
 

@@ -39,23 +39,11 @@ const sample_message = {
 };
 
 const channel = mock_esm("../src/channel");
-const emoji_picker = mock_esm("../src/emoji_picker", {
-    hide_emoji_popover() {},
-});
-const message_lists = mock_esm("../src/message_lists");
 const message_store = mock_esm("../src/message_store");
 const spectators = mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-message_lists.current = {
-    selected_row() {
-        return $(".selected-row");
-    },
-    selected_id() {
-        return 42;
-    },
-};
 set_global("document", "document-stub");
 
 const emoji = zrequire("emoji");
@@ -115,36 +103,6 @@ function test(label, f) {
         f(helpers);
     });
 }
-
-test("open_reactions_popover (sent by me)", () => {
-    message_lists.current.selected_message = () => ({sent_by_me: true});
-    $(".selected-row").set_find_results(".actions_hover", ["action-stub"]);
-
-    let called = false;
-    emoji_picker.toggle_emoji_popover = (target, id) => {
-        called = true;
-        assert.equal(id, 42);
-        assert.equal(target, "action-stub");
-    };
-
-    assert.ok(reactions.open_reactions_popover());
-    assert.ok(called);
-});
-
-test("open_reactions_popover (not sent by me)", () => {
-    message_lists.current.selected_message = () => ({sent_by_me: false});
-    $(".selected-row").set_find_results(".reaction_button", ["reaction-stub"]);
-
-    let called = false;
-    emoji_picker.toggle_emoji_popover = (target, id) => {
-        called = true;
-        assert.equal(id, 42);
-        assert.equal(target, "reaction-stub");
-    };
-
-    assert.ok(reactions.open_reactions_popover());
-    assert.ok(called);
-});
 
 test("basics", () => {
     const message = {...sample_message};

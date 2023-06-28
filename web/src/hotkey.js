@@ -942,6 +942,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     const msg = message_lists.current.selected_message();
+
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
@@ -974,9 +975,15 @@ export function process_hotkey(e, hotkey) {
         case "show_sender_info":
             popovers.show_sender_info();
             return true;
-        case "toggle_reactions_popover": // ':': open reactions to message
-            reactions.open_reactions_popover();
+        // ':': open reactions to message
+        case "toggle_reactions_popover": {
+            const $row = message_lists.current.selected_row();
+            emoji_picker.toggle_emoji_popover(
+                msg.sent_by_me ? $row.find(".actions_hover")[0] : $row.find(".reaction_button")[0],
+                msg.id,
+            );
             return true;
+        }
         case "thumbs_up_emoji": {
             // '+': reacts with thumbs up emoji on selected message
             // Use canonical name.
