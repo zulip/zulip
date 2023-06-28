@@ -48,6 +48,7 @@ import * as popovers from "./popovers";
 import * as read_receipts from "./read_receipts";
 import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -338,6 +339,30 @@ export function do_schedule_message(send_at_time) {
     }
     selected_send_later_timestamp = send_at_time;
     compose.finish(true);
+}
+
+function set_current_theme() {
+    let current_theme_position;
+    switch (user_settings.color_scheme) {
+        case 1:
+            current_theme_position = $(".theme-option.automatic").position().left;
+            $(".theme-option.automatic").addClass("clicked");
+            break;
+        case 2:
+            current_theme_position = $(".theme-option.night").position().left;
+            $(".theme-option.night").addClass("clicked");
+            break;
+        case 3:
+            current_theme_position = $(".theme-option.day").position().left;
+            $(".theme-option.day").addClass("clicked");
+            break;
+    }
+
+    $(".current-theme").css("transition", "none");
+    $(".current-theme").css("transform", `translateX(${current_theme_position}px)`);
+    setTimeout(() => {
+        $(".current-theme").css("transition", "transform 0.5s ease");
+    }, 0);
 }
 
 export function initialize() {
@@ -948,6 +973,9 @@ export function initialize() {
             const $popper = $(instance.popper);
             $popper.addClass("personal-menu-tippy");
             popover_instances.personal_menu = instance;
+
+            set_current_theme();
+
             $popper.one("click", ".clear_status", (e) => {
                 e.preventDefault();
                 const me = page_params.user_id;
@@ -979,6 +1007,23 @@ export function initialize() {
                     placement: "top",
                     appendTo: document.body,
                     interactive: true,
+                });
+            });
+
+            $popper.on("click", ".theme-option", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                $(".theme-option").removeClass("clicked");
+                $(e.currentTarget).addClass("clicked");
+                const new_theme = $(e.currentTarget).attr("class").split(" ")[2];
+                $(".current-theme").css(
+                    "transform",
+                    `translateX(${$(e.currentTarget).position().left}px)`,
+                );
+
+                channel.patch({
+                    url: "/json/settings",
+                    data: {color_scheme: settings_config.color_scheme_values[new_theme].code},
                 });
             });
 

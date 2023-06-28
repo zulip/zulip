@@ -3289,3 +3289,69 @@ select.invite-as {
         border-color: hsl(227deg 78% 59%);
     }
 }
+
+.slider-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .slider {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background-color: hsl(0deg 0% 0% / 7%);
+        position: relative;
+
+        & i {
+            z-index: 2;
+        }
+
+        .selected-option {
+            position: absolute;
+            width: calc(100% / 3);
+            height: 100%;
+            box-sizing: border-box;
+            background-color: var(--bg-popover-light);
+            border: 1px solid hsl(0deg 0% 0% / 30%);
+            transition: transform 0.5s ease;
+            transform: translateX(0);
+            z-index: 1;
+        }
+
+        .slider-option {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            cursor: pointer;
+            border: 1px solid transparent;
+
+            &:hover:not(.clicked) {
+                background-color: hsl(0deg 0% 100% / 30%);
+                border: 1px solid hsl(0deg 0% 0% / 30%);
+            }
+        }
+    }
+}
+
+.theme-switcher-container {
+    height: 26px;
+    padding: 0 10px;
+
+    .theme-switcher {
+        border-radius: 5px;
+
+        .current-theme {
+            border-radius: 5px;
+            left: 0;
+        }
+
+        .theme-option {
+            border-radius: 5px;
+        }
+    }
+}

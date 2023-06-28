@@ -89,6 +89,24 @@
             </ul>
             <ul class="list">
                 <li class="link-item">
+                    <div class="theme-switcher-container slider-container">
+                        <div class="theme-switcher slider">
+                            <div class="current-theme selected-option"></div>
+                            <div class="slider-option theme-option automatic">
+                                <i class="zulip-icon zulip-icon-monitor"></i>
+                            </div>
+                            <div class="slider-option theme-option day">
+                                <i class="zulip-icon zulip-icon-sun"></i>
+                            </div>
+                            <div class="slider-option theme-option night">
+                                <i class="zulip-icon zulip-icon-moon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <ul class="list">
+                <li class="link-item">
                     <a href="{{ sent_by_url }}" class="narrow_to_messages_sent">
                         <i class="zulip-icon zulip-icon-message-square"></i>
                         {{#tr}}View messages sent{{/tr}}

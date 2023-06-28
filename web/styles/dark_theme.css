@@ -1594,6 +1594,24 @@
             border-color: hsl(225deg 100% 84%);
         }
     }
+
+    .slider-container {
+        .slider {
+            background-color: hsl(0deg 0% 0% / 30%);
+        }
+
+        .selected-option {
+            background-color: hsl(0deg 0% 17% / 50%);
+            border: 1px solid hsl(0deg 0% 100% / 12%);
+        }
+
+        .slider-option {
+            &:hover:not(.clicked) {
+                background-color: hsl(0deg 0% 17% / 17%);
+                border: 1px solid hsl(0deg 0% 100% / 12%);
+            }
+        }
+    }
 }
 
 @supports (-moz-appearance: none) {
