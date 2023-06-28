@@ -22,7 +22,6 @@ import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
@@ -388,7 +387,7 @@ export function initialize() {
     // Mute topic in a unmuted stream
     $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.MUTED,
         );
@@ -397,7 +396,7 @@ export function initialize() {
     // Unmute topic in a unmuted stream
     $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );
@@ -406,7 +405,7 @@ export function initialize() {
     // Unmute topic in a muted stream
     $("body").on("click", ".message_header .stream_muted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.UNMUTED,
         );
@@ -415,7 +414,7 @@ export function initialize() {
     // Mute topic in a muted stream
     $("body").on("click", ".message_header .stream_muted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );

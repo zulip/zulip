@@ -136,6 +136,12 @@ export function set_user_topic_visibility_policy(
     });
 }
 
+export function set_visibility_policy_for_element($elt, visibility_policy) {
+    const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+    const topic = $elt.attr("data-topic-name");
+    set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
+}
+
 export function set_user_topic(user_topic) {
     const stream_id = user_topic.stream_id;
     const topic = user_topic.topic_name;

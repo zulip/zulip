@@ -17,7 +17,6 @@ import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -1271,7 +1270,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.MUTED);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.MUTED,
+        );
     });
 
     // Unmute topic in a unmuted stream
@@ -1280,7 +1282,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     // Unmute topic in a muted stream
@@ -1289,7 +1294,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.UNMUTED);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.UNMUTED,
+        );
     });
 
     // Mute topic in a muted stream
@@ -1298,7 +1306,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {

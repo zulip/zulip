@@ -54,9 +54,3 @@ export function toggle_topic_visibility_policy(message) {
         }
     }
 }
-
-export function mute_or_unmute_topic($elt, visibility_policy) {
-    const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
-    const topic = $elt.attr("data-topic-name");
-    user_topics.set_user_topic_visibility_policy(stream_id, topic, visibility_policy);
-}
