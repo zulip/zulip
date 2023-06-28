@@ -2479,7 +2479,7 @@ def export_realm_wrapper(
     return public_url
 
 
-def get_realm_exports_serialized(user: UserProfile) -> list[dict[str, Any]]:
+def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
     # Exclude exports made via shell. 'acting_user=None', since they
     # aren't supported in the current API format.
     #
@@ -2487,7 +2487,7 @@ def get_realm_exports_serialized(user: UserProfile) -> list[dict[str, Any]]:
     # appropriate way to express for who issued them; this requires an
     # API change.
     all_exports = RealmAuditLog.objects.filter(
-        realm=user.realm, event_type=AuditLogEventType.REALM_EXPORTED
+        realm=realm, event_type=AuditLogEventType.REALM_EXPORTED
     ).exclude(acting_user=None)
     exports_dict = {}
     for export in all_exports:
@@ -2505,9 +2505,7 @@ def get_realm_exports_serialized(user: UserProfile) -> list[dict[str, Any]]:
         pending = deleted_timestamp is None and failed_timestamp is None and export_path is None
 
         if export_path is not None and not deleted_timestamp:
-            export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(
-                user.realm, export_path
-            )
+            export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(realm, export_path)
 
         assert acting_user is not None
         exports_dict[export.id] = dict(
