@@ -267,12 +267,19 @@ $user_status_emoji_width: 24px;
 }
 
 #user_search_section {
+    white-space: nowrap;
+    margin-bottom: 10px;
+
     & input {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         padding-right: 20px;
         width: calc(100% - 40px - 3px);
+    }
+
+    .clear_search_button {
+        margin-left: -1px;
     }
 }
 

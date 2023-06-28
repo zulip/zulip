@@ -455,63 +455,8 @@ input:focus:invalid:focus {
   vertical-align: middle;
   padding-left: 5px;
 }
-.input-append {
-  display: inline-block;
-  margin-bottom: 10px;
-  vertical-align: middle;
-  font-size: 0;
-  white-space: nowrap;
-}
-.input-append input,
-.input-append .dropdown-menu,
-.input-append .popover {
-  font-size: 14px;
-}
-.input-append input {
-  position: relative;
-  margin-bottom: 0;
-  vertical-align: top;
-  -webkit-border-radius: 0 4px 4px 0;
-  -moz-border-radius: 0 4px 4px 0;
-  border-radius: 0 4px 4px 0;
-}
-.input-append input:focus {
-  z-index: 2;
-}
-.input-append .btn,
-.input-append .btn-group > .dropdown-toggle {
-  vertical-align: top;
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  border-radius: 0;
-}
-.input-append .active {
-  background-color: #a9dba9;
-  border-color: #46a546;
-}
-.input-append input {
-  -webkit-border-radius: 4px 0 0 4px;
-  -moz-border-radius: 4px 0 0 4px;
-  border-radius: 4px 0 0 4px;
-}
-.input-append input + .btn-group .btn:last-child {
-  -webkit-border-radius: 0 4px 4px 0;
-  -moz-border-radius: 0 4px 4px 0;
-  border-radius: 0 4px 4px 0;
-}
-.input-append .btn,
-.input-append .btn-group {
-  margin-left: -1px;
-}
-.input-append .btn:last-child,
-.input-append .btn-group:last-child > .dropdown-toggle {
-  -webkit-border-radius: 0 4px 4px 0;
-  -moz-border-radius: 0 4px 4px 0;
-  border-radius: 0 4px 4px 0;
-}
 .form-inline input,
-.form-inline .help-inline,
-.form-inline .input-append {
+.form-inline .help-inline {
   display: inline-block;
   margin-bottom: 0;
   vertical-align: middle;
@@ -522,9 +467,6 @@ input:focus:invalid:focus {
 .form-inline label,
 .form-inline .btn-group {
   display: inline-block;
-}
-.form-inline .input-append {
-  margin-bottom: 0;
 }
 .nav {
   margin-left: 0;
@@ -1321,10 +1263,6 @@ button.close {
   }
   .row {
     margin-left: 0;
-  }
-  .input-append input {
-    display: inline-block;
-    width: auto;
   }
   .modal {
     position: fixed;

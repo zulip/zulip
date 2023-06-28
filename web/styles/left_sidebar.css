@@ -114,6 +114,10 @@ li.show-more-topics {
         & input {
             width: calc(100% - 50px);
         }
+
+        .clear_search_button {
+            margin-left: -1px;
+        }
     }
 
     & li {
@@ -714,8 +718,17 @@ li.topic-list-item {
     top: -0.5px;
     z-index: 1;
 
-    & input {
-        padding-right: 20px;
+    .input-append {
+        white-space: nowrap;
+        margin-bottom: 10px;
+
+        & input {
+            padding-right: 20px;
+        }
+
+        .clear_search_button {
+            margin-left: -1px;
+        }
     }
 }
 
