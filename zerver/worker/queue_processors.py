@@ -161,8 +161,10 @@ def register_worker(
         test_queues.add(queue_name)
 
 
-def get_worker(queue_name: str, threaded: bool = False) -> "QueueProcessingWorker":
-    return worker_classes[queue_name](threaded=threaded)
+def get_worker(
+    queue_name: str, threaded: bool = False, disable_timeout: bool = False
+) -> "QueueProcessingWorker":
+    return worker_classes[queue_name](threaded=threaded, disable_timeout=disable_timeout)
 
 
 def get_active_worker_queues(only_test_queues: bool = False) -> List[str]:
@@ -222,9 +224,10 @@ class QueueProcessingWorker(ABC):
     # startup and steady-state memory.
     PREFETCH = 100
 
-    def __init__(self, threaded: bool = False) -> None:
+    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
         self.q: Optional[SimpleQueueClient] = None
         self.threaded = threaded
+        self.disable_timeout = disable_timeout
         if not hasattr(self, "queue_name"):
             raise WorkerDeclarationError("Queue worker declared without queue_name")
 
@@ -302,7 +305,7 @@ class QueueProcessingWorker(ABC):
                 self.update_statistics()
 
             time_start = time.time()
-            if self.MAX_CONSUME_SECONDS and not self.threaded:
+            if self.MAX_CONSUME_SECONDS and not self.threaded and not self.disable_timeout:
                 try:
                     signal.signal(
                         signal.SIGALRM,
@@ -763,8 +766,8 @@ class MissedMessageWorker(QueueProcessingWorker):
 
 @assign_queue("email_senders")
 class EmailSendingWorker(LoopQueueProcessingWorker):
-    def __init__(self, threaded: bool = False) -> None:
-        super().__init__(threaded)
+    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
+        super().__init__(threaded, disable_timeout)
         self.connection: BaseEmailBackend = initialize_connection(None)
 
     @retry_send_email_failures
@@ -1178,9 +1181,13 @@ class NoopWorker(QueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
     def __init__(
-        self, threaded: bool = False, max_consume: int = 1000, slow_queries: Sequence[int] = []
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        max_consume: int = 1000,
+        slow_queries: Sequence[int] = [],
     ) -> None:
-        super().__init__(threaded)
+        super().__init__(threaded, disable_timeout)
         self.consumed = 0
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)
@@ -1202,9 +1209,13 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
     batch_size = 100
 
     def __init__(
-        self, threaded: bool = False, max_consume: int = 1000, slow_queries: Sequence[int] = []
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        max_consume: int = 1000,
+        slow_queries: Sequence[int] = [],
     ) -> None:
-        super().__init__(threaded)
+        super().__init__(threaded, disable_timeout)
         self.consumed = 0
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)

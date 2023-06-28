@@ -431,10 +431,11 @@ def queue_json_publish(
     elif processor:
         processor(event)
     else:
+        # The else branch is only hit during tests, where rabbitmq is not enabled.
         # Must be imported here: A top section import leads to circular imports
         from zerver.worker.queue_processors import get_worker
 
-        get_worker(queue_name).consume_single_event(event)
+        get_worker(queue_name, disable_timeout=True).consume_single_event(event)
 
 
 def retry_event(

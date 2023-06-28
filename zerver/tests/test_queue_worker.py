@@ -703,35 +703,51 @@ class WorkerTest(ZulipTestCase):
 
             def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == "timeout":
-                    time.sleep(5)
+                    time.sleep(1.5)
                 processed.append(data["type"])
 
         fake_client = FakeClient()
-        for msg in ["good", "fine", "timeout", "back to normal"]:
-            fake_client.enqueue("timeout_worker", {"type": msg})
 
-        fn = os.path.join(settings.QUEUE_ERROR_DIR, "timeout_worker.errors")
-        with suppress(FileNotFoundError):
-            os.remove(fn)
+        def assert_timeout(should_timeout: bool, threaded: bool, disable_timeout: bool) -> None:
+            processed.clear()
+            for msg in ["good", "fine", "timeout", "back to normal"]:
+                fake_client.enqueue("timeout_worker", {"type": msg})
 
-        with simulated_queue_client(fake_client):
-            worker = TimeoutWorker()
-            worker.setup()
-            with self.assertLogs(level="ERROR") as m:
-                worker.start()
-                self.assertEqual(
-                    m.records[0].message,
-                    "Timed out in timeout_worker after 1 seconds processing 1 events",
-                )
-                self.assertIn(m.records[0].stack_info, m.output[0])
+            fn = os.path.join(settings.QUEUE_ERROR_DIR, "timeout_worker.errors")
+            with suppress(FileNotFoundError):
+                os.remove(fn)
 
-        self.assertEqual(processed, ["good", "fine", "back to normal"])
-        with open(fn) as f:
-            line = f.readline().strip()
-        events = orjson.loads(line.split("\t")[1])
-        self.assert_length(events, 1)
-        event = events[0]
-        self.assertEqual(event["type"], "timeout")
+            with simulated_queue_client(fake_client):
+                worker = TimeoutWorker(threaded=threaded, disable_timeout=disable_timeout)
+                worker.setup()
+                if not should_timeout:
+                    worker.start()
+                else:
+                    with self.assertLogs(level="ERROR") as m:
+                        worker.start()
+                        self.assertEqual(
+                            m.records[0].message,
+                            "Timed out in timeout_worker after 1 seconds processing 1 events",
+                        )
+                        self.assertIn(m.records[0].stack_info, m.output[0])
+
+            if not should_timeout:
+                self.assertEqual(processed, ["good", "fine", "timeout", "back to normal"])
+                return
+
+            self.assertEqual(processed, ["good", "fine", "back to normal"])
+            with open(fn) as f:
+                line = f.readline().strip()
+            events = orjson.loads(line.split("\t")[1])
+            self.assert_length(events, 1)
+            event = events[0]
+            self.assertEqual(event["type"], "timeout")
+
+        # Do the bulky truth table check
+        assert_timeout(should_timeout=False, threaded=True, disable_timeout=False)
+        assert_timeout(should_timeout=False, threaded=True, disable_timeout=True)
+        assert_timeout(should_timeout=True, threaded=False, disable_timeout=False)
+        assert_timeout(should_timeout=False, threaded=False, disable_timeout=True)
 
     def test_embed_links_timeout(self) -> None:
         @queue_processors.assign_queue("timeout_worker", is_test_queue=True)
