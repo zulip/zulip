@@ -603,9 +603,21 @@ class NarrowLibraryTest(ZulipTestCase):
             reject_events = scenario["reject_events"]
             narrow_filter = build_narrow_filter(narrow)
             for e in accept_events:
-                self.assertTrue(narrow_filter(e))
+                message = e["message"]
+                flags = e["flags"]
+                if message is None:
+                    message = {}
+                if flags is None:
+                    flags = []
+                self.assertTrue(narrow_filter(message=message, flags=flags))
             for e in reject_events:
-                self.assertFalse(narrow_filter(e))
+                message = e["message"]
+                flags = e["flags"]
+                if message is None:
+                    message = {}
+                if flags is None:
+                    flags = []
+                self.assertFalse(narrow_filter(message=message, flags=flags))
 
     def test_build_narrow_filter_invalid(self) -> None:
         with self.assertRaises(JsonableError):

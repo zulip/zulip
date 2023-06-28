@@ -9,7 +9,6 @@ from typing import (
     Generic,
     Iterable,
     List,
-    Mapping,
     Optional,
     Sequence,
     Set,
@@ -23,6 +22,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
+from mypy_extensions import NamedArg
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, Row
 from sqlalchemy.sql import (
@@ -132,14 +132,14 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     )
 
 
-def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
+def build_narrow_filter(
+    narrow: Collection[Sequence[str]],
+) -> Callable[[NamedArg(Dict[str, Any], "message"), NamedArg(List[str], "flags")], bool]:
     """Changes to this function should come with corresponding changes to
     NarrowLibraryTest."""
     check_supported_events_narrow_filter(narrow)
 
-    def narrow_filter(event: Mapping[str, Any]) -> bool:
-        message = event["message"]
-        flags = event["flags"]
+    def narrow_filter(*, message: Dict[str, Any], flags: List[str]) -> bool:
         for element in narrow:
             operator = element[0]
             operand = element[1]

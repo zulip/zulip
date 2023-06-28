@@ -226,7 +226,7 @@ class ClientDescriptor:
                 # older servers that don't support user_topic.
                 return False
         if event["type"] == "message":
-            return self.narrow_filter(event)
+            return self.narrow_filter(message=event["message"], flags=event["flags"])
         if event["type"] == "typing" and "stream_id" in event:
             # Typing notifications for stream messages are only
             # delivered if the stream_typing_notifications
