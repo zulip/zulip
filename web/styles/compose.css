@@ -76,6 +76,7 @@
 
 .autocomplete_secondary {
     opacity: 0.8;
+    font-size: 85%;
 }
 
 .active .autocomplete_secondary {
