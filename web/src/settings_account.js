@@ -563,9 +563,7 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
 
-        function validate_input(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        function validate_input() {
             const old_password = $("#old_password").val();
             const new_password = $("#new_password").val();
 
@@ -618,9 +616,7 @@ export function set_up() {
         }
     });
 
-    function do_change_password(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    function do_change_password() {
         const $change_password_error = $("#change_password_modal").find("#dialog_error");
         $change_password_error.hide();
 
@@ -683,9 +679,7 @@ export function set_up() {
         );
     });
 
-    function do_change_email(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    function do_change_email() {
         const $change_email_error = $("#change_email_modal").find("#dialog_error");
         const data = {};
         data.email = $("#change_email_form").find("input[name='email']").val();

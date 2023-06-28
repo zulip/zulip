@@ -292,10 +292,7 @@ export function add_a_new_bot() {
         });
     }
 
-    function validate_input(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+    function validate_input() {
         const bot_short_name = $("#create_bot_short_name").val();
 
         if (is_local_part(bot_short_name)) {

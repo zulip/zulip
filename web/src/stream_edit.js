@@ -452,8 +452,6 @@ export function initialize() {
     });
 
     function save_stream_info(e) {
-        e.preventDefault();
-        e.stopPropagation();
         const sub = get_sub_for_target(e.currentTarget);
 
         const url = `/json/streams/${sub.stream_id}`;
