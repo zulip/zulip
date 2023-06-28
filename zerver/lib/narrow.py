@@ -85,7 +85,23 @@ from zerver.models import (
     get_user_including_cross_realm,
 )
 
+
+@dataclass
+class NarrowTerm:
+    # In our current use case we don't yet handle negated narrow terms.
+    operator: str
+    operand: str
+
+
 stop_words_list: Optional[List[str]] = None
+
+
+def narrow_dataclasses_from_tuples(tups: Collection[Sequence[str]]) -> Collection[NarrowTerm]:
+    """
+    This method assumes that the callers are in our event-handling codepath, and
+    therefore as of summer 2023, they do not yet support the "negated" flag.
+    """
+    return [NarrowTerm(operator=tup[0], operand=tup[1]) for tup in tups]
 
 
 def read_stop_words() -> List[str]:
@@ -100,9 +116,9 @@ def read_stop_words() -> List[str]:
     return stop_words_list
 
 
-def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> None:
-    for element in narrow:
-        operator = element[0]
+def check_supported_events_narrow_filter(narrow: Collection[NarrowTerm]) -> None:
+    for narrow_term in narrow:
+        operator = narrow_term.operator
         if operator not in ["stream", "topic", "sender", "is"]:
             raise JsonableError(_("Operator {} not supported.").format(operator))
 
@@ -133,16 +149,14 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
 
 
 def build_narrow_filter(
-    narrow: Collection[Sequence[str]],
+    narrow: Collection[NarrowTerm],
 ) -> Callable[[NamedArg(Dict[str, Any], "message"), NamedArg(List[str], "flags")], bool]:
     """Changes to this function should come with corresponding changes to
     NarrowLibraryTest."""
     check_supported_events_narrow_filter(narrow)
 
     def narrow_filter(*, message: Dict[str, Any], flags: List[str]) -> bool:
-        for element in narrow:
-            operator = element[0]
-            operand = element[1]
+        def satisfies_operator(*, operator: str, operand: str) -> bool:
             if operator == "stream":
                 if message["type"] != "stream":
                     return False
@@ -176,6 +190,12 @@ def build_narrow_filter(
                 topic_name = get_topic_from_message_info(message)
                 if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
                     return False
+            return True
+
+        for narrow_term in narrow:
+            # TODO: Eventually handle negated narrow terms.
+            if not satisfies_operator(operator=narrow_term.operator, operand=narrow_term.operand):
+                return False
 
         return True
 
