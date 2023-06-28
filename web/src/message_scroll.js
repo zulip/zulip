@@ -164,21 +164,23 @@ export function initialize() {
                 // Mark new selected message as read
                 messages = [event.msg_list.get(event.id)];
             }
-            if (event.msg_list.can_mark_messages_read()) {
-                unread_ops.notify_server_messages_read(messages, {from: "pointer"});
-            } else if (
-                unread.get_unread_messages(messages).length !== 0 &&
-                // The below checks might seem redundant, but it's
-                // possible this logic, which runs after a delay, lost
-                // a race with switching to another view, like Recent
-                // Topics, and we don't want to display this banner
-                // in such a view.
-                //
-                // This can likely be fixed more cleanly with another approach.
-                narrow_state.filter() !== undefined &&
-                message_lists.current === event.msg_list
-            ) {
-                unread_ui.notify_messages_remain_unread();
+            if (unread_ops.is_window_focused()) {
+                if (event.msg_list.can_mark_messages_read()) {
+                    unread_ops.notify_server_messages_read(messages, {from: "pointer"});
+                } else if (
+                    unread.get_unread_messages(messages).length !== 0 &&
+                    // The below checks might seem redundant, but it's
+                    // possible this logic, which runs after a delay, lost
+                    // a race with switching to another view, like recent
+                    // conversations, and we don't want to display this banner
+                    // in such a view.
+                    //
+                    // This can likely be fixed more cleanly with another approach.
+                    narrow_state.filter() !== undefined &&
+                    message_lists.current === event.msg_list
+                ) {
+                    unread_ui.notify_messages_remain_unread();
+                }
             }
         }
     });
