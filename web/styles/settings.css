@@ -2050,6 +2050,15 @@ $option_title_width: 180px;
     }
 }
 
+#admin_users_table .deactivated_user,
+#admin_deactivated_users_table .reactivated_user {
+    color: hsl(0deg 0% 64%);
+
+    & a {
+        color: inherit;
+    }
+}
+
 .settings_url_input,
 .settings_text_input {
     padding: 4px 6px;
