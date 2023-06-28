@@ -35,7 +35,11 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
+from zerver.lib.narrow import (
+    check_supported_events_narrow_filter,
+    narrow_dataclasses_from_tuples,
+    read_stop_words,
+)
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
@@ -1466,10 +1470,14 @@ def do_events_register(
     spectator_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
+    # TODO: We eventually want to upstream this code to the caller, but
+    # serialization concerns make it a bit difficult.
+    modern_narrow = narrow_dataclasses_from_tuples(narrow)
+
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
-    check_supported_events_narrow_filter(narrow)
+    check_supported_events_narrow_filter(modern_narrow)
 
     notification_settings_null = client_capabilities.get("notification_settings_null", False)
     bulk_message_deletion = client_capabilities.get("bulk_message_deletion", False)

@@ -30,6 +30,7 @@ from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperatorError,
     NarrowBuilder,
+    NarrowTerm,
     build_narrow_filter,
     exclude_muting_conditions,
     find_first_unread_anchor,
@@ -592,7 +593,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
 class NarrowLibraryTest(ZulipTestCase):
     def test_build_narrow_filter(self) -> None:
-        narrow_filter = build_narrow_filter([["stream", "devel"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="stream", operand="devel")])
 
         self.assertTrue(
             narrow_filter(
@@ -616,7 +617,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["topic", "bark"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="topic", operand="bark")])
 
         self.assertTrue(
             narrow_filter(
@@ -652,7 +653,12 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["stream", "devel"], ["topic", "python"]])
+        narrow_filter = build_narrow_filter(
+            [
+                NarrowTerm(operator="stream", operand="devel"),
+                NarrowTerm(operator="topic", operand="python"),
+            ]
+        )
 
         self.assertTrue(
             narrow_filter(
@@ -682,7 +688,9 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["sender", "hamlet@zulip.com"]])
+        narrow_filter = build_narrow_filter(
+            [NarrowTerm(operator="sender", operand="hamlet@zulip.com")]
+        )
 
         self.assertTrue(
             narrow_filter(
@@ -700,7 +708,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["is", "dm"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="dm")])
 
         self.assertTrue(
             narrow_filter(
@@ -718,7 +726,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["is", "private"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="private")])
 
         self.assertTrue(
             narrow_filter(
@@ -736,7 +744,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["is", "starred"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="starred")])
 
         self.assertTrue(
             narrow_filter(
@@ -754,7 +762,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["is", "alerted"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="alerted")])
 
         self.assertTrue(
             narrow_filter(
@@ -772,7 +780,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["is", "mentioned"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="mentioned")])
 
         self.assertTrue(
             narrow_filter(
@@ -790,7 +798,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["is", "unread"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="unread")])
 
         self.assertTrue(
             narrow_filter(
@@ -808,7 +816,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([["is", "resolved"]])
+        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="resolved")])
 
         self.assertTrue(
             narrow_filter(
@@ -832,7 +840,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
     def test_build_narrow_filter_invalid(self) -> None:
         with self.assertRaises(JsonableError):
-            build_narrow_filter(["invalid_operator", "operand"])
+            build_narrow_filter([NarrowTerm(operator="invalid_operator", operand="operand")])
 
     def test_is_spectator_compatible(self) -> None:
         self.assertTrue(is_spectator_compatible([]))

@@ -39,7 +39,7 @@ from tornado import autoreload
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
-from zerver.lib.narrow import build_narrow_filter
+from zerver.lib.narrow import build_narrow_filter, narrow_dataclasses_from_tuples
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.middleware import async_request_timer_restart
@@ -97,6 +97,10 @@ class ClientDescriptor:
         pronouns_field_type_supported: bool = True,
         linkifier_url_template: bool = False,
     ) -> None:
+        # TODO: We eventually want to upstream this code to the caller, but
+        # serialization concerns make it a bit difficult.
+        modern_narrow = narrow_dataclasses_from_tuples(narrow)
+
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -115,7 +119,7 @@ class ClientDescriptor:
         self.client_type_name = client_type_name
         self._timeout_handle: Any = None  # TODO: should be return type of ioloop.call_later
         self.narrow = narrow
-        self.narrow_filter = build_narrow_filter(narrow)
+        self.narrow_filter = build_narrow_filter(modern_narrow)
         self.bulk_message_deletion = bulk_message_deletion
         self.stream_typing_notifications = stream_typing_notifications
         self.user_settings_object = user_settings_object
