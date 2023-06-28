@@ -290,6 +290,7 @@ function show_modal() {
         html_body,
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "add-custom-emoji-modal",
+        form_id: "add-custom-emoji-form",
         loading_spinner: true,
         on_click: add_custom_emoji,
         post_render: add_custom_emoji_post_render,
