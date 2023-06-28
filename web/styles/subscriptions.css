@@ -497,6 +497,7 @@ h4.user_group_setting_subsection_title {
 #clear_search_stream_name,
 #clear_search_group_name {
     right: 5px !important;
+    margin-left: -1px;
 }
 
 .stream-title {
