@@ -22,6 +22,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
+import * as message_events from "./message_events";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -214,7 +215,7 @@ export function send_message(request = create_message_object()) {
     let local_id;
     let locally_echoed;
 
-    const message = echo.try_deliver_locally(request);
+    const message = echo.try_deliver_locally(request, message_events.insert_new_messages);
     if (message) {
         // We are rendering this message locally with an id
         // like 92l99.01 that corresponds to a reasonable

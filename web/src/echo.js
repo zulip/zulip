@@ -7,7 +7,6 @@ import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
-import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
@@ -51,13 +50,6 @@ function hide_retry_spinner($row) {
         return false;
     }
     return true;
-}
-
-function insert_message(message) {
-    // It is a little bit funny to go through the message_events
-    // codepath, but it's sort of the idea behind local echo that
-    // we are simulating server events before they actually arrive.
-    message_events.insert_new_messages([message], true);
 }
 
 function show_message_failed(message_id, failed_msg) {
@@ -181,7 +173,7 @@ export function build_display_recipient(message) {
     return display_recipient;
 }
 
-export function insert_local_message(message_request, local_id_float) {
+export function insert_local_message(message_request, local_id_float, insert_new_messages) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
@@ -207,7 +199,8 @@ export function insert_local_message(message_request, local_id_float) {
 
     message.display_recipient = build_display_recipient(message);
 
-    insert_message(message);
+    insert_new_messages([message], true);
+
     return message;
 }
 
@@ -215,7 +208,7 @@ export function is_slash_command(content) {
     return !content.startsWith("/me") && content.startsWith("/");
 }
 
-export function try_deliver_locally(message_request) {
+export function try_deliver_locally(message_request, insert_new_messages) {
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }
@@ -268,7 +261,7 @@ export function try_deliver_locally(message_request) {
         compose_ui.make_compose_box_original_size();
     }
 
-    const message = insert_local_message(message_request, local_id_float);
+    const message = insert_local_message(message_request, local_id_float, insert_new_messages);
     return message;
 }
 
