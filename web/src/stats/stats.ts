@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
@@ -9,6 +10,43 @@ import {$t, $t_html} from "../i18n";
 import {page_params} from "./page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
+
+type DateFormatter = (date: Date) => string;
+
+type AggregatedData<T> = {
+    dates: Date[];
+    values: T;
+    last_value_is_partial: boolean;
+};
+
+// Partial used here because the @types/plotly.js define the full
+// set of properties while we only assign several of them.
+type PlotTrace = {
+    trace: Partial<Plotly.PlotData>;
+};
+
+type DataByEveryoneMe<T> = {
+    everyone: T;
+    me: T;
+};
+
+type DataByEveryoneUser<T> = {
+    everyone: T;
+    user: T;
+};
+
+type DataByUserType<T> = {
+    human: T;
+    bot: T;
+    me: T;
+};
+
+type DataByTime<T> = {
+    cumulative: T;
+    year: T;
+    month: T;
+    week: T;
+};
 
 const font_14pt = {
     family: "Open Sans, sans-serif",
@@ -25,22 +63,22 @@ const font_12pt = {
 let last_full_update = Number.POSITIVE_INFINITY;
 
 // Copied from attachments_ui.js
-function bytes_to_size(bytes, kb_with_1024_bytes = false) {
+function bytes_to_size(bytes: number, kb_with_1024_bytes = false): string {
     const kb_size = kb_with_1024_bytes ? 1024 : 1000;
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     if (bytes === 0) {
         return "0 B";
     }
-    const i = Number.parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    const i = Math.round(Math.floor(Math.log(bytes) / Math.log(kb_size)));
     let size = Math.round(bytes / Math.pow(kb_size, i));
     if (i > 0 && size < 10) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
     }
-    return size + " " + sizes[i];
+    return `${size} ${sizes[i]}`;
 }
 
 // TODO: should take a dict of arrays and do it for all keys
-function partial_sums(array) {
+function partial_sums(array: number[]): number[] {
     let accumulator = 0;
     return array.map((o) => {
         accumulator += o;
@@ -49,20 +87,20 @@ function partial_sums(array) {
 }
 
 // Assumes date is a round number of hours
-function floor_to_local_day(date) {
+function floor_to_local_day(date: Date): Date {
     const date_copy = new Date(date.getTime());
     date_copy.setHours(0);
     return date_copy;
 }
 
 // Assumes date is a round number of hours
-function floor_to_local_week(date) {
+function floor_to_local_week(date: Date): Date {
     const date_copy = floor_to_local_day(date);
     date_copy.setHours(-24 * date.getDay());
     return date_copy;
 }
 
-function format_date(date, include_hour) {
+function format_date(date: Date, include_hour: boolean): string {
     const months = [
         $t({defaultMessage: "January"}),
         $t({defaultMessage: "February"}),
@@ -85,17 +123,17 @@ function format_date(date, include_hour) {
 
         const str = hour >= 12 ? "PM" : "AM";
 
-        return month_str + " " + day + ", " + (hour % 12) + ":00" + str;
+        return `${month_str} ${day}, ${hour % 12}:00${str}`;
     }
-    return month_str + " " + day + ", " + year;
+    return `${month_str} ${day}, ${year}`;
 }
 
-function update_last_full_update(end_times) {
+function update_last_full_update(end_times: number[]): void {
     if (end_times.length === 0) {
         return;
     }
 
-    last_full_update = Math.min(last_full_update, end_times.at(-1));
+    last_full_update = Math.min(last_full_update, end_times.at(-1)!);
     const update_time = new Date(last_full_update * 1000);
     const locale_date = update_time.toLocaleDateString("en-US", {
         year: "numeric",
@@ -124,7 +162,10 @@ $(() => {
 });
 
 // Helper used in vertical bar charts
-function make_rangeselector(button1, button2) {
+function make_rangeselector(
+    button1: Partial<Plotly.RangeSelectorButton>,
+    button2: Partial<Plotly.RangeSelectorButton>,
+): Partial<Plotly.RangeSelector> {
     return {
         x: -0.045,
         y: -0.62,
@@ -136,41 +177,47 @@ function make_rangeselector(button1, button2) {
     };
 }
 
+type ActiveUserData = {
+    _1day: Plotly.Datum[];
+    _15day: Plotly.Datum[];
+    all_time: Plotly.Datum[];
+};
+
 // SUMMARY STATISTICS
-function get_user_summary_statistics(data) {
-    if (data.length === 0) {
+function get_user_summary_statistics(data: ActiveUserData): void {
+    if (Object.keys(data).length === 0) {
         return;
     }
 
     // Users that are not deactivated and are not bots.
-    const total_users = data.all_time.at(-1);
+    const total_users = data.all_time.at(-1)!;
     const total_users_string = total_users.toLocaleString();
 
     $("#id_total_users").text(total_users_string);
     $("#id_total_users").closest("summary-stats").show();
 
     // Users that have been active in the last 15 days and are not bots.
-    const active_fifeteen_day_users = data._15day.at(-1);
+    const active_fifeteen_day_users = data._15day.at(-1)!;
     const active_fifteen_day_users_string = active_fifeteen_day_users.toLocaleString();
 
     $("#id_active_fifteen_day_users").text(active_fifteen_day_users_string);
     $("#id_active_fifteen_day_users").closest("summary-stats").show();
 }
 
-function get_total_messages_sent(data) {
-    if (data.length === 0) {
+function get_total_messages_sent(data: DataByUserType<number[]>): void {
+    if (Object.keys(data).length === 0) {
         return;
     }
 
-    const total_messages_sent = data.human.at(-1) + data.bot.at(-1);
+    const total_messages_sent = data.human.at(-1)! + data.bot.at(-1)!;
     const total_messages_string = total_messages_sent.toLocaleString();
 
     $("#id_total_messages_sent").text(total_messages_string);
     $("#id_total_messages_sent").closest("summary-stats").show();
 }
 
-function get_thirty_days_messages_sent(data) {
-    if (data.length === 0) {
+function get_thirty_days_messages_sent(data: DataByUserType<number[]>): void {
+    if (Object.keys(data).length === 0) {
         return;
     }
 
@@ -188,7 +235,7 @@ function get_thirty_days_messages_sent(data) {
     $("#id_thirty_days_messages_sent").closest("summary-stats").show();
 }
 
-function set_storage_space_used_statistic(upload_space_used) {
+function set_storage_space_used_statistic(upload_space_used: number): void {
     let space_used = "N/A";
     if (upload_space_used !== null) {
         space_used = bytes_to_size(upload_space_used, true);
@@ -198,7 +245,7 @@ function set_storage_space_used_statistic(upload_space_used) {
     $("#id_storage_space_used").closest("summary-stats").show();
 }
 
-function set_guest_users_statistic(guest_users) {
+function set_guest_users_statistic(guest_users: number): void {
     let guest_users_string = "N/A";
     if (guest_users !== null) {
         guest_users_string = guest_users.toLocaleString();
@@ -209,7 +256,7 @@ function set_guest_users_statistic(guest_users) {
 }
 
 // PLOTLY CHARTS
-function populate_messages_sent_over_time(data) {
+function populate_messages_sent_over_time(data: SentData): void {
     // Content rendered by this method is titled as "Messages sent over time" on the webpage
 
     if (data.end_times.length === 0) {
@@ -218,9 +265,20 @@ function populate_messages_sent_over_time(data) {
     }
 
     // Helper functions
-    function make_traces(dates, values, type, date_formatter) {
+    function make_traces(
+        dates: Date[],
+        values: DataByUserType<number[]>,
+        type: Plotly.PlotType,
+        date_formatter: DateFormatter,
+    ): DataByUserType<Partial<Plotly.PlotData>> {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type, hoverinfo: "none", text, textposition: "none"};
+        const common: Partial<Plotly.PlotData> = {
+            x: dates,
+            type,
+            hoverinfo: "none",
+            text,
+            textposition: "none",
+        };
         return {
             human: {
                 // 5062a0
@@ -245,7 +303,7 @@ function populate_messages_sent_over_time(data) {
         };
     }
 
-    const layout = {
+    const layout: Partial<Plotly.Layout> = {
         barmode: "group",
         width: 750,
         height: 400,
@@ -276,53 +334,65 @@ function populate_messages_sent_over_time(data) {
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
 
-    function add_hover_handler() {
-        document.querySelector("#id_messages_sent_over_time").on("plotly_hover", (data) => {
-            $("#hoverinfo").show();
-            document.querySelector("#hover_date").textContent =
-                data.points[0].data.text[data.points[0].pointNumber];
-            const values = [null, null, null];
-            for (const trace of data.points) {
-                values[trace.curveNumber] = trace.y;
-            }
-            const hover_text_ids = ["#hover_me", "#hover_human", "#hover_bot"];
-            const hover_value_ids = ["#hover_me_value", "#hover_human_value", "#hover_bot_value"];
-            for (const [i, value] of values.entries()) {
-                if (value !== null) {
-                    document.querySelector(hover_text_ids[i]).style.display = "inline";
-                    document.querySelector(hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(hover_value_ids[i]).textContent = value;
-                } else {
-                    document.querySelector(hover_text_ids[i]).style.display = "none";
-                    document.querySelector(hover_value_ids[i]).style.display = "none";
+    function add_hover_handler(): void {
+        document
+            .querySelector<Plotly.PlotlyHTMLElement>("#id_messages_sent_over_time")!
+            .on("plotly_hover", (data) => {
+                $("#hoverinfo").show();
+                document.querySelector("#hover_date")!.textContent =
+                    data.points[0].data.text[data.points[0].pointNumber];
+                const values: Plotly.Datum[] = [null, null, null];
+                for (const trace of data.points) {
+                    values[trace.curveNumber] = trace.y;
                 }
-            }
-        });
+                const hover_text_ids = ["#hover_me", "#hover_human", "#hover_bot"];
+                const hover_value_ids = [
+                    "#hover_me_value",
+                    "#hover_human_value",
+                    "#hover_bot_value",
+                ];
+                for (const [i, value] of values.entries()) {
+                    if (value !== null) {
+                        document.querySelector<HTMLElement>(hover_text_ids[i])!.style.display =
+                            "inline";
+                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                            "inline";
+                        document.querySelector<HTMLElement>(hover_value_ids[i])!.textContent =
+                            value.toString();
+                    } else {
+                        document.querySelector<HTMLElement>(hover_text_ids[i])!.style.display =
+                            "none";
+                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                            "none";
+                    }
+                }
+            });
     }
 
     const start_dates = data.end_times.map(
-        (timestamp) =>
+        (timestamp: number) =>
             // data.end_times are the ends of hour long intervals.
             new Date(timestamp * 1000 - 60 * 60 * 1000),
     );
 
-    function aggregate_data(aggregation) {
+    function aggregate_data(aggregation: "day" | "week"): AggregatedData<DataByUserType<number[]>> {
         let start;
         let is_boundary;
         if (aggregation === "day") {
             start = floor_to_local_day(start_dates[0]);
-            is_boundary = function (date) {
+            is_boundary = function (date: Date) {
                 return date.getHours() === 0;
             };
-        } else if (aggregation === "week") {
+        } else {
+            assert(aggregation === "week");
             start = floor_to_local_week(start_dates[0]);
-            is_boundary = function (date) {
+            is_boundary = function (date: Date) {
                 return date.getHours() === 0 && date.getDay() === 0;
             };
         }
         const dates = [start];
-        const values = {human: [], bot: [], me: []};
-        let current = {human: 0, bot: 0, me: 0};
+        const values: DataByUserType<number[]> = {human: [], bot: [], me: []};
+        let current: DataByUserType<number> = {human: 0, bot: 0, me: 0};
         let i_init = 0;
         if (is_boundary(start_dates[0])) {
             current = {
@@ -351,13 +421,13 @@ function populate_messages_sent_over_time(data) {
             dates,
             values,
             last_value_is_partial: !is_boundary(
-                new Date(start_dates.at(-1).getTime() + 60 * 60 * 1000),
+                new Date(start_dates.at(-1)!.getTime() + 60 * 60 * 1000),
             ),
         };
     }
 
     // Generate traces
-    let date_formatter = function (date) {
+    let date_formatter = function (date: Date): string {
         return format_date(date, true);
     };
     let values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
@@ -377,7 +447,7 @@ function populate_messages_sent_over_time(data) {
     const last_week_is_partial = info.last_value_is_partial;
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
-    const dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
+    const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
     values = {
         human: partial_sums(data.everyone.human),
         bot: partial_sums(data.everyone.bot),
@@ -395,7 +465,12 @@ function populate_messages_sent_over_time(data) {
     // graph to any bar graph, since otherwise the rangeselector shows both (plotly bug)
     let clicked_cumulative = false;
 
-    function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
+    function draw_or_update_plot(
+        rangeselector: Partial<Plotly.RangeSelector>,
+        traces: DataByUserType<Partial<Plotly.PlotData>>,
+        last_value_is_partial: boolean,
+        initial_draw: boolean,
+    ): void {
         $("#daily_button, #weekly_button, #cumulative_button").removeClass("selected");
         $("#id_messages_sent_over_time > div").removeClass("spinner");
         if (initial_draw) {
@@ -403,14 +478,16 @@ function populate_messages_sent_over_time(data) {
             traces.bot.visible = "legendonly";
             traces.me.visible = "legendonly";
         } else {
-            const plotDiv = document.querySelector("#id_messages_sent_over_time");
-            traces.me.visible = plotDiv.data[0].visible;
-            traces.human.visible = plotDiv.data[1].visible;
-            traces.bot.visible = plotDiv.data[2].visible;
+            const plotDiv = document.querySelector<Plotly.PlotlyHTMLElement>(
+                "#id_messages_sent_over_time",
+            )!;
+            traces.me.visible = (plotDiv.data[0] as Plotly.PlotData).visible;
+            traces.human.visible = (plotDiv.data[1] as Plotly.PlotData).visible;
+            traces.bot.visible = (plotDiv.data[2] as Plotly.PlotData).visible;
         }
-        layout.xaxis.rangeselector = rangeselector;
+        layout.xaxis!.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
-            Plotly.newPlot(
+            void Plotly.newPlot(
                 "id_messages_sent_over_time",
                 [traces.me, traces.human, traces.bot],
                 layout,
@@ -418,11 +495,18 @@ function populate_messages_sent_over_time(data) {
             );
             add_hover_handler();
         } else {
-            Plotly.deleteTraces("id_messages_sent_over_time", [0, 1, 2]);
-            Plotly.addTraces("id_messages_sent_over_time", [traces.me, traces.human, traces.bot]);
-            Plotly.relayout("id_messages_sent_over_time", layout);
+            void Plotly.deleteTraces("id_messages_sent_over_time", [0, 1, 2]);
+            void Plotly.addTraces("id_messages_sent_over_time", [
+                traces.me,
+                traces.human,
+                traces.bot,
+            ]);
+            void Plotly.relayout("id_messages_sent_over_time", layout);
         }
-        $("#id_messages_sent_over_time").attr("last_value_is_partial", last_value_is_partial);
+        $("#id_messages_sent_over_time").attr(
+            "last_value_is_partial",
+            last_value_is_partial.toString(),
+        );
     }
 
     // Click handlers for aggregation buttons
@@ -446,7 +530,7 @@ function populate_messages_sent_over_time(data) {
     });
 
     // Initial drawing of plot
-    if (weekly_traces.human.x.length < 12) {
+    if (weekly_traces.human.x!.length < 12) {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, true);
         $("#daily_button").addClass("selected");
     } else {
@@ -455,7 +539,7 @@ function populate_messages_sent_over_time(data) {
     }
 }
 
-function round_to_percentages(values, total) {
+function round_to_percentages(values: number[], total: number): string[] {
     return values.map((x) => {
         if (x === total) {
             return "100%";
@@ -478,23 +562,32 @@ function round_to_percentages(values, total) {
 }
 
 // Last label will turn into "Other" if time_series data has a label not in labels
-function compute_summary_chart_data(time_series_data, num_steps, labels_) {
-    const data = new Map();
+function compute_summary_chart_data(
+    time_series_data: Record<string, number[]>,
+    num_steps: number,
+    labels_: string[],
+): {
+    values: number[];
+    labels: string[];
+    percentages: string[];
+    total: number;
+} {
+    const data = new Map<string, number>();
     for (const [key, array] of Object.entries(time_series_data)) {
         if (array.length < num_steps) {
             num_steps = array.length;
         }
         let sum = 0;
         for (let i = 1; i <= num_steps; i += 1) {
-            sum += array.at(-i);
+            sum += array.at(-i)!;
         }
         data.set(key, sum);
     }
     const labels = [...labels_];
-    const values = [];
+    const values: number[] = [];
     for (const label of labels) {
         if (data.has(label)) {
-            values.push(data.get(label));
+            values.push(data.get(label)!);
             data.delete(label);
         } else {
             values.push(0);
@@ -518,15 +611,19 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     };
 }
 
-function populate_messages_sent_by_client(data) {
+function populate_messages_sent_by_client(data: SentData): void {
     // Content rendered by this method is titled as "Messages sent by client" on the webpage
 
-    const layout = {
+    type PlotDataByMessageClient = PlotTrace & {
+        trace_annotations: Partial<Plotly.PlotData>;
+    };
+
+    const layout: Partial<Plotly.Layout> = {
         width: 750,
-        height: null, // set in draw_plot()
+        height: undefined, // set in draw_plot()
         margin: {l: 10, r: 10, b: 40, t: 10},
         font: font_14pt,
-        xaxis: {range: null}, // set in draw_plot()
+        xaxis: {range: undefined}, // set in draw_plot()
         yaxis: {showticklabels: false},
         showlegend: false,
     };
@@ -537,7 +634,7 @@ function populate_messages_sent_by_client(data) {
         30,
         data.display_order.slice(0, 12),
     );
-    const label_values = [];
+    const label_values: {label: string; value: number}[] = [];
     for (let i = 0; i < everyone_month.values.length; i += 1) {
         label_values.push({
             label: everyone_month.labels[i],
@@ -545,17 +642,24 @@ function populate_messages_sent_by_client(data) {
         });
     }
     label_values.sort((a, b) => b.value - a.value);
-    const labels = [];
+    const labels: string[] = [];
     for (const item of label_values) {
         labels.push(item.label);
     }
 
-    function make_plot_data(time_series_data, num_steps) {
+    function make_plot_data(
+        time_series_data: Record<string, number[]>,
+        num_steps: number,
+    ): PlotDataByMessageClient {
         const plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
         plot_data.values.reverse();
         plot_data.labels.reverse();
         plot_data.percentages.reverse();
-        const annotations = {values: [], labels: [], text: []};
+        const annotations: {values: number[]; labels: string[]; text: string[]} = {
+            values: [],
+            labels: [],
+            text: [],
+        };
         for (let i = 0; i < plot_data.values.length; i += 1) {
             if (plot_data.values[i] > 0) {
                 annotations.values.push(plot_data.values[i]);
@@ -586,7 +690,7 @@ function populate_messages_sent_by_client(data) {
         };
     }
 
-    const plot_data = {
+    const plot_data: DataByEveryoneUser<DataByTime<PlotDataByMessageClient>> = {
         everyone: {
             cumulative: make_plot_data(data.everyone, data.end_times.length),
             year: make_plot_data(data.everyone, 365),
@@ -601,8 +705,8 @@ function populate_messages_sent_by_client(data) {
         },
     };
 
-    let user_button = "everyone";
-    let time_button;
+    let user_button: "everyone" | "user" = "everyone";
+    let time_button: "cumulative" | "year" | "month" | "week";
     if (data.end_times.length >= 30) {
         time_button = "month";
         $("#messages_by_client_last_month_button").addClass("selected");
@@ -621,12 +725,12 @@ function populate_messages_sent_by_client(data) {
         }
     }
 
-    function draw_plot() {
+    function draw_plot(): void {
         $("#id_messages_sent_by_client > div").removeClass("spinner");
         const data_ = plot_data[user_button][time_button];
-        layout.height = layout.margin.b + data_.trace.x.length * 30;
-        layout.xaxis.range = [0, Math.max(...data_.trace.x) * 1.3];
-        Plotly.newPlot(
+        layout.height = layout.margin!.b! + data_.trace.x!.length * 30;
+        layout.xaxis!.range = [0, Math.max(...(data_.trace.x as number[])) * 1.3];
+        void Plotly.newPlot(
             "id_messages_sent_by_client",
             [data_.trace, data_.trace_annotations],
             layout,
@@ -637,12 +741,12 @@ function populate_messages_sent_by_client(data) {
     draw_plot();
 
     // Click handlers
-    function set_user_button($button) {
+    function set_user_button($button: JQuery): void {
         $("#pie_messages_sent_by_client button[data-user]").removeClass("selected");
         $button.addClass("selected");
     }
 
-    function set_time_button($button) {
+    function set_time_button($button: JQuery): void {
         $("#pie_messages_sent_by_client button[data-time]").removeClass("selected");
         $button.addClass("selected");
     }
@@ -650,18 +754,23 @@ function populate_messages_sent_by_client(data) {
     $("#pie_messages_sent_by_client button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
-            user_button = $(this).attr("data-user");
+            user_button = $(this).attr("data-user")! as "everyone" | "user";
         }
         if ($(this).attr("data-time")) {
             set_time_button($(this));
-            time_button = $(this).attr("data-time");
+            time_button = $(this).attr("data-time")! as "cumulative" | "year" | "month" | "week";
         }
         draw_plot();
     });
 }
 
-function populate_messages_sent_by_message_type(data) {
+function populate_messages_sent_by_message_type(data: SentData): void {
     // Content rendered by this method is titled as "Messages sent by recipient type" on the webpage
+
+    type PlotDataByMessageType = {
+        trace: Partial<Plotly.PieData>;
+        total_html: string;
+    };
 
     const layout = {
         margin: {l: 90, r: 0, b: 10, t: 0},
@@ -673,13 +782,16 @@ function populate_messages_sent_by_message_type(data) {
         font: font_12pt,
     };
 
-    function make_plot_data(time_series_data, num_steps) {
+    function make_plot_data(
+        time_series_data: Record<string, number[]>,
+        num_steps: number,
+    ): PlotDataByMessageType {
         const plot_data = compute_summary_chart_data(
             time_series_data,
             num_steps,
             data.display_order,
         );
-        const labels = [];
+        const labels: string[] = [];
         for (let i = 0; i < plot_data.labels.length; i += 1) {
             labels.push(plot_data.labels[i] + " (" + plot_data.percentages[i] + ")");
         }
@@ -707,7 +819,7 @@ function populate_messages_sent_by_message_type(data) {
         };
     }
 
-    const plot_data = {
+    const plot_data: DataByEveryoneUser<DataByTime<PlotDataByMessageType>> = {
         everyone: {
             cumulative: make_plot_data(data.everyone, data.end_times.length),
             year: make_plot_data(data.everyone, 365),
@@ -722,8 +834,8 @@ function populate_messages_sent_by_message_type(data) {
         },
     };
 
-    let user_button = "everyone";
-    let time_button;
+    let user_button: "everyone" | "user" = "everyone";
+    let time_button: "cumulative" | "year" | "month" | "week";
     if (data.end_times.length >= 30) {
         time_button = "month";
         $("#messages_by_type_last_month_button").addClass("selected");
@@ -731,7 +843,7 @@ function populate_messages_sent_by_message_type(data) {
         time_button = "cumulative";
         $("#messages_by_type_cumulative_button").addClass("selected");
     }
-    const totaldiv = document.querySelector("#pie_messages_sent_by_type_total");
+    const totaldiv = document.querySelector("#pie_messages_sent_by_type_total")!;
 
     if (data.end_times.length < 365) {
         $("#pie_messages_sent_by_type button[data-time='year']").remove();
@@ -743,9 +855,9 @@ function populate_messages_sent_by_message_type(data) {
         }
     }
 
-    function draw_plot() {
+    function draw_plot(): void {
         $("#id_messages_sent_by_message_type > div").removeClass("spinner");
-        Plotly.newPlot(
+        void Plotly.newPlot(
             "id_messages_sent_by_message_type",
             [plot_data[user_button][time_button].trace],
             layout,
@@ -757,12 +869,12 @@ function populate_messages_sent_by_message_type(data) {
     draw_plot();
 
     // Click handlers
-    function set_user_button($button) {
+    function set_user_button($button: JQuery): void {
         $("#pie_messages_sent_by_type button[data-user]").removeClass("selected");
         $button.addClass("selected");
     }
 
-    function set_time_button($button) {
+    function set_time_button($button: JQuery): void {
         $("#pie_messages_sent_by_type button[data-time]").removeClass("selected");
         $button.addClass("selected");
     }
@@ -770,17 +882,17 @@ function populate_messages_sent_by_message_type(data) {
     $("#pie_messages_sent_by_type button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
-            user_button = $(this).attr("data-user");
+            user_button = $(this).attr("data-user") as "everyone" | "user";
         }
         if ($(this).attr("data-time")) {
             set_time_button($(this));
-            time_button = $(this).attr("data-time");
+            time_button = $(this).attr("data-time") as "cumulative" | "year" | "month" | "week";
         }
         draw_plot();
     });
 }
 
-function populate_number_of_users(data) {
+function populate_number_of_users(data: UserCountData): void {
     // Content rendered by this method is titled as "Active users" on the webpage
 
     const weekly_rangeselector = make_rangeselector(
@@ -788,7 +900,7 @@ function populate_number_of_users(data) {
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
 
-    const layout = {
+    const layout: Partial<Plotly.Layout> = {
         width: 750,
         height: 370,
         margin: {l: 40, r: 10, b: 40, t: 0},
@@ -802,11 +914,11 @@ function populate_number_of_users(data) {
         font: font_12pt,
     };
 
-    const end_dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
+    const end_dates: Date[] = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
 
     const text = end_dates.map((date) => format_date(date, false));
 
-    function make_traces(values, type) {
+    function make_traces(values: Plotly.Datum[], type: Plotly.PlotType): Partial<Plotly.PlotData> {
         return {
             x: end_dates,
             y: values,
@@ -818,29 +930,33 @@ function populate_number_of_users(data) {
         };
     }
 
-    function add_hover_handler() {
-        document.querySelector("#id_number_of_users").on("plotly_hover", (data) => {
-            $("#users_hover_info").show();
-            document.querySelector("#users_hover_date").textContent =
-                data.points[0].data.text[data.points[0].pointNumber];
-            const values = [null, null, null];
-            for (const trace of data.points) {
-                values[trace.curveNumber] = trace.y;
-            }
-            const hover_value_ids = [
-                "#users_hover_1day_value",
-                "#users_hover_15day_value",
-                "#users_hover_all_time_value",
-            ];
-            for (const [i, value] of values.entries()) {
-                if (value !== null) {
-                    document.querySelector(hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(hover_value_ids[i]).textContent = value;
-                } else {
-                    document.querySelector(hover_value_ids[i]).style.display = "none";
+    function add_hover_handler(): void {
+        document
+            .querySelector<Plotly.PlotlyHTMLElement>("#id_number_of_users")!
+            .on("plotly_hover", (data) => {
+                $("#users_hover_info").show();
+                document.querySelector("#users_hover_date")!.textContent =
+                    data.points[0].data.text[data.points[0].pointNumber];
+                const values: Plotly.Datum[] = [null, null, null];
+                for (const trace of data.points) {
+                    values[trace.curveNumber] = trace.y;
                 }
-            }
-        });
+                const hover_value_ids = [
+                    "#users_hover_1day_value",
+                    "#users_hover_15day_value",
+                    "#users_hover_all_time_value",
+                ];
+                for (const [i, value] of values.entries()) {
+                    if (value !== null) {
+                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                            "inline";
+                        document.querySelector(hover_value_ids[i])!.textContent = value.toString();
+                    } else {
+                        document.querySelector<HTMLElement>(hover_value_ids[i])!.style.display =
+                            "none";
+                    }
+                }
+            });
     }
 
     const _1day_trace = make_traces(data.everyone._1day, "bar");
@@ -851,11 +967,11 @@ function populate_number_of_users(data) {
 
     // Redraw the plot every time for simplicity. If we have perf problems with this in the
     // future, we can copy the update behavior from populate_messages_sent_over_time
-    function draw_or_update_plot(trace) {
+    function draw_or_update_plot(trace: Plotly.Data): void {
         $("#1day_actives_button, #15day_actives_button, #all_time_actives_button").removeClass(
             "selected",
         );
-        Plotly.newPlot("id_number_of_users", [trace], layout, {displayModeBar: false});
+        void Plotly.newPlot("id_number_of_users", [trace], layout, {displayModeBar: false});
         add_hover_handler();
     }
 
@@ -880,7 +996,7 @@ function populate_number_of_users(data) {
     get_user_summary_statistics(data.everyone);
 }
 
-function populate_messages_read_over_time(data) {
+function populate_messages_read_over_time(data: ReadData): void {
     // Content rendered by this method is titled as "Messages read over time" on the webpage
 
     if (data.end_times.length === 0) {
@@ -889,9 +1005,20 @@ function populate_messages_read_over_time(data) {
     }
 
     // Helper functions
-    function make_traces(dates, values, type, date_formatter) {
+    function make_traces(
+        dates: Date[],
+        values: DataByEveryoneMe<number[]>,
+        type: Plotly.PlotType,
+        date_formatter: DateFormatter,
+    ): DataByEveryoneMe<Partial<Plotly.PlotData>> {
         const text = dates.map((date) => date_formatter(date));
-        const common = {x: dates, type, hoverinfo: "none", text, textposition: "none"};
+        const common: Partial<Plotly.PlotData> = {
+            x: dates,
+            type,
+            hoverinfo: "none",
+            text,
+            textposition: "none",
+        };
         return {
             everyone: {
                 name: $t({defaultMessage: "Everyone"}),
@@ -908,7 +1035,7 @@ function populate_messages_read_over_time(data) {
         };
     }
 
-    const layout = {
+    const layout: Partial<Plotly.Layout> = {
         barmode: "group",
         width: 750,
         height: 400,
@@ -939,53 +1066,65 @@ function populate_messages_read_over_time(data) {
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
 
-    function add_hover_handler() {
-        document.querySelector("#id_messages_read_over_time").on("plotly_hover", (data) => {
-            $("#read_hover_info").show();
-            document.querySelector("#read_hover_date").textContent =
-                data.points[0].data.text[data.points[0].pointNumber];
-            const values = [null, null];
-            for (const trace of data.points) {
-                values[trace.curveNumber] = trace.y;
-            }
-            const read_hover_text_ids = ["#read_hover_me", "#read_hover_everyone"];
-            const read_hover_value_ids = ["#read_hover_me_value", "#read_hover_everyone_value"];
-            for (const [i, value] of values.entries()) {
-                if (value !== null) {
-                    document.querySelector(read_hover_text_ids[i]).style.display = "inline";
-                    document.querySelector(read_hover_value_ids[i]).style.display = "inline";
-                    document.querySelector(read_hover_value_ids[i]).textContent = value;
-                } else {
-                    document.querySelector(read_hover_text_ids[i]).style.display = "none";
-                    document.querySelector(read_hover_value_ids[i]).style.display = "none";
+    function add_hover_handler(): void {
+        document
+            .querySelector<Plotly.PlotlyHTMLElement>("#id_messages_read_over_time")!
+            .on("plotly_hover", (data) => {
+                $("#read_hover_info").show();
+                document.querySelector("#read_hover_date")!.textContent =
+                    data.points[0].data.text[data.points[0].pointNumber];
+                const values: Plotly.Datum[] = [null, null];
+                for (const trace of data.points) {
+                    values[trace.curveNumber] = trace.y;
                 }
-            }
-        });
+                const read_hover_text_ids = ["#read_hover_me", "#read_hover_everyone"];
+                const read_hover_value_ids = ["#read_hover_me_value", "#read_hover_everyone_value"];
+                for (const [i, value] of values.entries()) {
+                    if (value !== null) {
+                        document.querySelector<HTMLElement>(read_hover_text_ids[i])!.style.display =
+                            "inline";
+                        document.querySelector<HTMLElement>(
+                            read_hover_value_ids[i],
+                        )!.style.display = "inline";
+                        document.querySelector<HTMLElement>(read_hover_value_ids[i])!.textContent =
+                            value.toString();
+                    } else {
+                        document.querySelector<HTMLElement>(read_hover_text_ids[i])!.style.display =
+                            "none";
+                        document.querySelector<HTMLElement>(
+                            read_hover_value_ids[i],
+                        )!.style.display = "none";
+                    }
+                }
+            });
     }
 
     const start_dates = data.end_times.map(
-        (timestamp) =>
+        (timestamp: number) =>
             // data.end_times are the ends of hour long intervals.
             new Date(timestamp * 1000 - 60 * 60 * 1000),
     );
 
-    function aggregate_data(aggregation) {
+    function aggregate_data(
+        aggregation: "day" | "week",
+    ): AggregatedData<DataByEveryoneMe<number[]>> {
         let start;
         let is_boundary;
         if (aggregation === "day") {
             start = floor_to_local_day(start_dates[0]);
-            is_boundary = function (date) {
+            is_boundary = function (date: Date) {
                 return date.getHours() === 0;
             };
-        } else if (aggregation === "week") {
+        } else {
+            assert(aggregation === "week");
             start = floor_to_local_week(start_dates[0]);
-            is_boundary = function (date) {
+            is_boundary = function (date: Date) {
                 return date.getHours() === 0 && date.getDay() === 0;
             };
         }
         const dates = [start];
-        const values = {everyone: [], me: []};
-        let current = {everyone: 0, me: 0};
+        const values: DataByEveryoneMe<number[]> = {everyone: [], me: []};
+        let current: DataByEveryoneMe<number> = {everyone: 0, me: 0};
         let i_init = 0;
         if (is_boundary(start_dates[0])) {
             current = {everyone: data.everyone.read[0], me: data.user.read[0]};
@@ -1007,13 +1146,13 @@ function populate_messages_read_over_time(data) {
             dates,
             values,
             last_value_is_partial: !is_boundary(
-                new Date(start_dates.at(-1).getTime() + 60 * 60 * 1000),
+                new Date(start_dates.at(-1)!.getTime() + 60 * 60 * 1000),
             ),
         };
     }
 
     // Generate traces
-    let date_formatter = function (date) {
+    let date_formatter = function (date: Date): string {
         return format_date(date, true);
     };
     let values = {me: data.user.read, everyone: data.everyone.read};
@@ -1032,7 +1171,7 @@ function populate_messages_read_over_time(data) {
     const last_week_is_partial = info.last_value_is_partial;
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
-    const dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
+    const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
     values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
     date_formatter = function (date) {
         return format_date(date, true);
@@ -1045,7 +1184,12 @@ function populate_messages_read_over_time(data) {
     // graph to any bar graph, since otherwise the rangeselector shows both (plotly bug)
     let clicked_cumulative = false;
 
-    function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
+    function draw_or_update_plot(
+        rangeselector: Partial<Plotly.RangeSelector>,
+        traces: DataByEveryoneMe<Partial<Plotly.PlotData>>,
+        last_value_is_partial: boolean,
+        initial_draw: boolean,
+    ): void {
         $("#read_daily_button, #read_weekly_button, #read_cumulative_button").removeClass(
             "selected",
         );
@@ -1054,22 +1198,32 @@ function populate_messages_read_over_time(data) {
             traces.everyone.visible = true;
             traces.me.visible = "legendonly";
         } else {
-            const plotDiv = document.querySelector("#id_messages_read_over_time");
-            traces.me.visible = plotDiv.data[0].visible;
-            traces.everyone.visible = plotDiv.data[1].visible;
+            const plotDiv = document.querySelector<Plotly.PlotlyHTMLElement>(
+                "#id_messages_read_over_time",
+            )!;
+            traces.me.visible = (plotDiv.data[0] as Plotly.PlotData).visible;
+            traces.everyone.visible = (plotDiv.data[1] as Plotly.PlotData).visible;
         }
-        layout.xaxis.rangeselector = rangeselector;
+        layout.xaxis!.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
-            Plotly.newPlot("id_messages_read_over_time", [traces.me, traces.everyone], layout, {
-                displayModeBar: false,
-            });
+            void Plotly.newPlot(
+                "id_messages_read_over_time",
+                [traces.me, traces.everyone],
+                layout,
+                {
+                    displayModeBar: false,
+                },
+            );
             add_hover_handler();
         } else {
-            Plotly.deleteTraces("id_messages_read_over_time", [0, 1]);
-            Plotly.addTraces("id_messages_read_over_time", [traces.me, traces.everyone]);
-            Plotly.relayout("id_messages_read_over_time", layout);
+            void Plotly.deleteTraces("id_messages_read_over_time", [0, 1]);
+            void Plotly.addTraces("id_messages_read_over_time", [traces.me, traces.everyone]);
+            void Plotly.relayout("id_messages_read_over_time", layout);
         }
-        $("#id_messages_read_over_time").attr("last_value_is_partial", last_value_is_partial);
+        $("#id_messages_read_over_time").attr(
+            "last_value_is_partial",
+            last_value_is_partial.toString(),
+        );
     }
 
     // Click handlers for aggregation buttons
@@ -1093,7 +1247,7 @@ function populate_messages_read_over_time(data) {
     });
 
     // Initial drawing of plot
-    if (weekly_traces.everyone.x.length < 12) {
+    if (weekly_traces.everyone.x!.length < 12) {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, true);
         $("#read_daily_button").addClass("selected");
     } else {
@@ -1102,8 +1256,35 @@ function populate_messages_read_over_time(data) {
     }
 }
 
-function get_chart_data(data, callback) {
-    $.get({
+type CommonData = {
+    end_times: number[];
+    display_order: string[];
+};
+
+type ReadData = DataByEveryoneUser<
+    {
+        read: number[];
+    } & DataByTime<PlotTrace>
+> &
+    CommonData;
+
+type SentData = DataByEveryoneUser<DataByUserType<number[]>> & CommonData;
+
+type UserCountData = {
+    everyone: ActiveUserData;
+} & CommonData;
+
+function get_chart_data(
+    data: {
+        chart_name: string;
+        min_length: string;
+    },
+    callback:
+        | ((data: SentData) => void)
+        | ((data: ReadData) => void)
+        | ((data: UserCountData) => void),
+): void {
+    void $.get({
         url: "/json/analytics/chart_data" + page_params.data_url_suffix,
         data,
         success(data) {
