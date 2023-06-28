@@ -261,8 +261,6 @@ export function initialize() {
     });
 
     function save_group_info(e) {
-        e.preventDefault();
-        e.stopPropagation();
         const group = get_user_group_for_target(e.currentTarget);
 
         const url = `/json/user_groups/${group.id}`;

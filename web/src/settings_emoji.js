@@ -200,10 +200,7 @@ export function add_custom_emoji_post_render() {
 function show_modal() {
     const html_body = render_add_emoji();
 
-    function add_custom_emoji(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+    function add_custom_emoji() {
         dialog_widget.show_dialog_spinner();
 
         const $emoji_status = $("#dialog_error");

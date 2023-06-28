@@ -300,10 +300,7 @@ export function populate_user_groups() {
     }
 }
 
-export function add_user_group(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
+export function add_user_group() {
     const $user_group_status = $("#dialog_error");
 
     const group = {
