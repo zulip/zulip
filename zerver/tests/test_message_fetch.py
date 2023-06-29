@@ -31,7 +31,7 @@ from zerver.lib.narrow import (
     BadNarrowOperatorError,
     NarrowBuilder,
     NarrowTerm,
-    build_narrow_filter,
+    build_narrow_predicate,
     exclude_muting_conditions,
     find_first_unread_anchor,
     is_spectator_compatible,
@@ -592,24 +592,24 @@ class NarrowBuilderTest(ZulipTestCase):
 
 
 class NarrowLibraryTest(ZulipTestCase):
-    def test_build_narrow_filter(self) -> None:
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="stream", operand="devel")])
+    def test_build_narrow_predicate(self) -> None:
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="stream", operand="devel")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"display_recipient": "devel", "type": "stream"},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "private"},
                 flags=[],
             )
         )
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"display_recipient": "social", "type": "stream"},
                 flags=[],
             )
@@ -617,35 +617,35 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="topic", operand="bark")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="topic", operand="bark")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream", "subject": "BarK"},
                 flags=[],
             )
         )
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream", "topic": "bark"},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "private"},
                 flags=[],
             )
         )
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream", "subject": "play with tail"},
                 flags=[],
             )
         )
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream", "topic": "play with tail"},
                 flags=[],
             )
@@ -653,7 +653,7 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter(
+        narrow_predicate = build_narrow_predicate(
             [
                 NarrowTerm(operator="stream", operand="devel"),
                 NarrowTerm(operator="topic", operand="python"),
@@ -661,26 +661,26 @@ class NarrowLibraryTest(ZulipTestCase):
         )
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"display_recipient": "devel", "type": "stream", "subject": "python"},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "private"},
                 flags=[],
             )
         )
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"display_recipient": "devel", "type": "stream", "subject": "java"},
                 flags=[],
             )
         )
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"display_recipient": "social", "type": "stream"},
                 flags=[],
             )
@@ -688,19 +688,19 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter(
+        narrow_predicate = build_narrow_predicate(
             [NarrowTerm(operator="sender", operand="hamlet@zulip.com")]
         )
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"sender_email": "hamlet@zulip.com"},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"sender_email": "cordelia@zulip.com"},
                 flags=[],
             )
@@ -708,17 +708,17 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="dm")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="dm")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "private"},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream"},
                 flags=[],
             )
@@ -726,17 +726,17 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="private")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="private")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "private"},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream"},
                 flags=[],
             )
@@ -744,17 +744,17 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="starred")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="starred")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=["starred"],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=["alerted"],
             )
@@ -762,17 +762,17 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="alerted")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="alerted")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=["mentioned"],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=["starred"],
             )
@@ -780,17 +780,17 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="mentioned")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="mentioned")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=["mentioned"],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=["starred"],
             )
@@ -798,17 +798,17 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="unread")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="unread")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={},
                 flags=["read"],
             )
@@ -816,31 +816,31 @@ class NarrowLibraryTest(ZulipTestCase):
 
         ###
 
-        narrow_filter = build_narrow_filter([NarrowTerm(operator="is", operand="resolved")])
+        narrow_predicate = build_narrow_predicate([NarrowTerm(operator="is", operand="resolved")])
 
         self.assertTrue(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream", "subject": "✔ python"},
                 flags=[],
             )
         )
 
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "private"},
                 flags=[],
             )
         )
         self.assertFalse(
-            narrow_filter(
+            narrow_predicate(
                 message={"type": "stream", "subject": "java"},
                 flags=[],
             )
         )
 
-    def test_build_narrow_filter_invalid(self) -> None:
+    def test_build_narrow_predicate_invalid(self) -> None:
         with self.assertRaises(JsonableError):
-            build_narrow_filter([NarrowTerm(operator="invalid_operator", operand="operand")])
+            build_narrow_predicate([NarrowTerm(operator="invalid_operator", operand="operand")])
 
     def test_is_spectator_compatible(self) -> None:
         self.assertTrue(is_spectator_compatible([]))
