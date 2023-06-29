@@ -22,7 +22,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
-from mypy_extensions import NamedArg
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, Row
 from sqlalchemy.sql import (
@@ -150,7 +149,7 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
 
 def build_narrow_filter(
     narrow: Collection[NarrowTerm],
-) -> Callable[[NamedArg(Dict[str, Any], "message"), NamedArg(List[str], "flags")], bool]:
+) -> Callable[..., bool]:
     """Changes to this function should come with corresponding changes to
     NarrowLibraryTest."""
     check_supported_events_narrow_filter(narrow)
