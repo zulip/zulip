@@ -181,7 +181,15 @@ class DocPageTest(ZulipTestCase):
 
         for endpoint in endpoint_list:
             url = f"/api/{endpoint}"
-            self._test(url, "", doc_html_str=True)
+            self._test_normal_path(
+                url=url,
+                expected_content="",
+                extra_strings=[],
+                landing_missing_strings=[],
+                landing_page=True,
+                doc_html_str=True,
+                search_disabled=False,
+            )
 
     def test_api_doc_404_status_codes(self) -> None:
         result = self.client_get(
