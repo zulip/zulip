@@ -1615,7 +1615,7 @@ export class MessageListView {
 
     show_messages_as_unread(message_ids) {
         const $table = rows.get_table(this.table_name);
-        const $rows_to_show_as_unread = $table.find(".message_row").filter((index, $row) => {
+        const $rows_to_show_as_unread = $table.find(".message_row").filter((_index, $row) => {
             const message_id = Number.parseFloat($row.getAttribute("zid"));
             return message_ids.includes(message_id);
         });

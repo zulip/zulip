@@ -194,7 +194,7 @@ run_test("not_scrolling", () => {
     };
 
     let get_min_load_count_called = false;
-    const get_min_load_count = (offset, load_count) => {
+    const get_min_load_count = (_offset, load_count) => {
         get_min_load_count_called = true;
         return load_count;
     };

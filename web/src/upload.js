@@ -364,7 +364,7 @@ export function setup_upload(config) {
         }
     });
 
-    uppy.on("upload-error", (file, error, response) => {
+    uppy.on("upload-error", (file, _error, response) => {
         const message = response ? response.body.msg : undefined;
         show_error_message(config, message, file.id);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));

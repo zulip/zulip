@@ -120,7 +120,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override, mock_templ
     // can be helpful in testing conditionals inside the template.
 
     // Let's set the mock to just return the rendered html.
-    mock_template("typing_notifications.hbs", true, (args, rendered_html) => rendered_html);
+    mock_template("typing_notifications.hbs", true, (_args, rendered_html) => rendered_html);
 
     // Since we only have two(<MAX_USERS_TO_DISPLAY_NAME) typists, both of them
     // should be rendered but not 'Several people are typing…'

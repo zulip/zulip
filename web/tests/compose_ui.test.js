@@ -475,10 +475,10 @@ run_test("format_text", ({override}) => {
     let wrap_selection_called = false;
     let wrap_syntax = "";
 
-    override(text_field_edit, "set", (field, text) => {
+    override(text_field_edit, "set", (_field, text) => {
         set_text = text;
     });
-    override(text_field_edit, "wrapSelection", (field, syntax) => {
+    override(text_field_edit, "wrapSelection", (_field, syntax) => {
         wrap_selection_called = true;
         wrap_syntax = syntax;
     });
@@ -627,7 +627,7 @@ run_test("format_text", ({override}) => {
 
 run_test("markdown_shortcuts", ({override_rewire}) => {
     let format_text_type;
-    override_rewire(compose_ui, "format_text", ($textarea, type) => {
+    override_rewire(compose_ui, "format_text", (_$textarea, type) => {
         format_text_type = type;
     });
 

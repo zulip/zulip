@@ -43,7 +43,7 @@ async function checkFile(file) {
     const promises = [];
 
     visit(doc, {
-        Map(key, node) {
+        Map(_key, node) {
             if (node.has("$ref") && node.items.length !== 1) {
                 const {line, col} = lineCounter.linePos(node.range[0]);
                 console.error("%s:%d:%d: Siblings of $ref have no effect", file, line, col);
@@ -51,7 +51,7 @@ async function checkFile(file) {
             }
         },
 
-        Pair(key, node) {
+        Pair(_key, node) {
             if (
                 node.key instanceof Scalar &&
                 node.key.value === "allOf" &&

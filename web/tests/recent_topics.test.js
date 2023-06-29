@@ -44,7 +44,7 @@ let expected_data_to_replace_in_list_widget;
 const ListWidget = mock_esm("../src/list_widget", {
     modifier: noop,
 
-    create(container, mapped_topic_values, opts) {
+    create(_container, mapped_topic_values, opts) {
         const formatted_topics = [];
         ListWidget.modifier = opts.modifier;
         for (const item of mapped_topic_values) {
@@ -522,7 +522,7 @@ test("test_filter_pm", ({mock_template}) => {
         i += 1;
     });
 
-    mock_template("recent_topic_row.hbs", true, (data, html) => {
+    mock_template("recent_topic_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
 
@@ -805,7 +805,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     rt.clear_for_tests();
 
     mock_template("recent_topics_table.hbs", false, () => {});
-    mock_template("recent_topic_row.hbs", true, (data, html) => {
+    mock_template("recent_topic_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
 

@@ -102,7 +102,7 @@ export class BuddyList extends BuddyListConf {
 
     get_items() {
         const $obj = this.$container.find(`${this.item_sel}`);
-        return $obj.map((i, elem) => $(elem));
+        return $obj.map((_i, elem) => $(elem));
     }
 
     first_key() {

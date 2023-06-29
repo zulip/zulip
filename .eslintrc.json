@@ -93,7 +93,10 @@
         "no-undef-init": "error",
         "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
-        "no-unused-vars": ["error", {"ignoreRestSiblings": true}],
+        "no-unused-vars": [
+            "error",
+            {"args": "all", "argsIgnorePattern": "^_", "ignoreRestSiblings": true}
+        ],
         "no-use-before-define": ["error", {"functions": false}],
         "no-useless-concat": "error",
         "no-useless-constructor": "error",
@@ -186,7 +189,10 @@
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
-                "@typescript-eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}],
+                "@typescript-eslint/no-unused-vars": [
+                    "error",
+                    {"args": "all", "argsIgnorePattern": "^_", "ignoreRestSiblings": true}
+                ],
                 "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
                 "@typescript-eslint/promise-function-async": "error",
                 "import/no-cycle": "error",

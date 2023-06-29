@@ -327,7 +327,7 @@ export function handle_keydown(event, $textarea) {
     }
 }
 
-export function handle_keyup(event, $textarea) {
+export function handle_keyup(_event, $textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
 }

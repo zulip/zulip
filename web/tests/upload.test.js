@@ -215,7 +215,7 @@ test("upload_files", async ({mock_template, override_rewire}) => {
         },
     };
     let hide_upload_banner_called = false;
-    override_rewire(upload, "hide_upload_banner", (uppy, config) => {
+    override_rewire(upload, "hide_upload_banner", (_uppy, config) => {
         hide_upload_banner_called = true;
         assert.equal(config.mode, "compose");
     });
@@ -380,7 +380,7 @@ test("file_input", ({override_rewire}) => {
         },
     };
     let upload_files_called = false;
-    override_rewire(upload, "upload_files", (uppy, config, files) => {
+    override_rewire(upload, "upload_files", (_uppy, config, files) => {
         assert.equal(config.mode, "compose");
         assert.equal(files, files);
         upload_files_called = true;
