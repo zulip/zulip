@@ -463,7 +463,6 @@ def do_send_missedmessage_events_reply_in_zulip(
         stream_email_notify="stream_email_notify" in unique_triggers,
         followed_topic_email_notify="followed_topic_email_notify" in unique_triggers,
         followed_topic_wildcard_mentioned="followed_topic_wildcard_mentioned" in unique_triggers,
-        mention_count=triggers.count("mentioned") + triggers.count("wildcard_mentioned"),
         mentioned_user_group_name=mentioned_user_group_name,
     )
 
