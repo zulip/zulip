@@ -97,7 +97,7 @@ so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Emoji**, toggle **Display names of reacting users when few users have
    reacted to a message**.

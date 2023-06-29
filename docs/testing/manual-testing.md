@@ -483,7 +483,7 @@ Do these tasks as Cordelia.
   - Change full name (Hamlet should see the name change)
   - Customize profile picture
   - Deactivate account (and then log in as Iago to re-activate Cordelia)
-- Display settings
+- Preferences
   - Right now, these unfortunately require reloads to take effect.
   - Default language (change to Spanish)
   - 24-hour time (and then test going back to AM/PM)

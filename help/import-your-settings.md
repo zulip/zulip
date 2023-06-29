@@ -14,7 +14,7 @@ The import will include your:
 
 - [Name and avatar](/#settings/profile)
 - [Privacy settings](/#settings/account-and-privacy)
-- [Display settings](/#settings/display-settings)
+- [Preferences](/#settings/preferences)
 - [Notification settings](/#settings/notifications)
 - Tutorial completion status.
 
