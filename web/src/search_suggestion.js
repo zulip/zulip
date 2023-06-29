@@ -749,7 +749,16 @@ export function get_search_result(query) {
     // `has` and `is` operators work only on predefined categories. Default suggestion
     // is not displayed in that case. e.g. `messages that contain abc` as
     // a suggestion for `has:abc`does not make sense.
-    if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
+    if (last.operator === "search") {
+        suggestion = {
+            search_string: last.operand,
+            description_html: `search for <strong>${Handlebars.Utils.escapeExpression(
+                last.operand,
+            )}</strong>`,
+        };
+        attacher.prepend_base(suggestion);
+        attacher.push(suggestion);
+    } else if (last.operator !== "" && last.operator !== "has" && last.operator !== "is") {
         suggestion = get_default_suggestion(search_operators);
         attacher.push(suggestion);
     }
