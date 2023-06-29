@@ -1156,9 +1156,10 @@ test("unparse", () => {
     assert.deepEqual(Filter.unparse(operators), string);
 });
 
-test("describe", () => {
+test("describe", ({mock_template}) => {
     let narrow;
     let string;
+    mock_template("search_description.hbs", true, (_data, html) => html);
 
     narrow = [{operator: "streams", operand: "public"}];
     string = "streams public";
@@ -1186,7 +1187,7 @@ test("describe", () => {
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "JS"},
     ];
-    string = "stream devel &gt; JS";
+    string = "stream devel > JS";
     assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
