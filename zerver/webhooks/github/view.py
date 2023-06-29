@@ -216,7 +216,6 @@ def get_issue_labeled_or_unlabeled_body(helper: Helper) -> str:
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
         label_name=payload["label"]["name"].tame(check_string),
-        label_url=payload["label"]["url"].tame(check_string),
         user_url=get_sender_url(payload),
         title=issue["title"].tame(check_string) if include_title else None,
     )
