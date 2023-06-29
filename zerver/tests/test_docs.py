@@ -38,29 +38,17 @@ class DocPageTest(ZulipTestCase):
             print("ERROR: {}".format(content.get("msg")))
             print()
 
-    def _test(
+    def _test_normal_path(
         self,
+        *,
         url: str,
         expected_content: str,
-        extra_strings: Sequence[str] = [],
-        landing_missing_strings: Sequence[str] = [],
-        landing_page: bool = True,
-        doc_html_str: bool = False,
-        search_disabled: bool = False,
+        extra_strings: Sequence[str],
+        landing_missing_strings: Sequence[str],
+        landing_page: bool,
+        doc_html_str: bool,
+        search_disabled: bool,
     ) -> None:
-        # Test the URL on the "zephyr" subdomain
-        result = self.get_doc(url, subdomain="zephyr")
-        self.print_msg_if_error(url, result)
-
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(expected_content, str(result.content))
-        for s in extra_strings:
-            self.assertIn(s, str(result.content))
-        if not doc_html_str:
-            self.assert_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow" />'], result
-            )
-
         # Test the URL on the root subdomain
         result = self.get_doc(url, subdomain="")
         self.print_msg_if_error(url, result)
@@ -77,6 +65,7 @@ class DocPageTest(ZulipTestCase):
 
         if not landing_page:
             return
+
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             # Test the URL on the root subdomain with the landing page setting
             result = self.get_doc(url, subdomain="")
@@ -108,6 +97,34 @@ class DocPageTest(ZulipTestCase):
                     ['<meta name="robots" content="noindex,nofollow" />'], result
                 )
 
+    def _test_zephyr_path(
+        self,
+        *,
+        url: str,
+        expected_content: str,
+        extra_strings: Sequence[str],
+        landing_missing_strings: Sequence[str],
+        landing_page: bool,
+        doc_html_str: bool,
+        search_disabled: bool,
+    ) -> None:
+        # Test the URL on the "zephyr" subdomain
+        result = self.get_doc(url, subdomain="zephyr")
+        self.print_msg_if_error(url, result)
+
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(expected_content, str(result.content))
+        for s in extra_strings:
+            self.assertIn(s, str(result.content))
+        if not doc_html_str:
+            self.assert_in_success_response(
+                ['<meta name="robots" content="noindex,nofollow" />'], result
+            )
+
+        if not landing_page:
+            return
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             # Test the URL on the "zephyr" subdomain with the landing page setting
             result = self.get_doc(url, subdomain="zephyr")
             self.print_msg_if_error(url, result)
@@ -120,6 +137,35 @@ class DocPageTest(ZulipTestCase):
                 self.assert_in_success_response(
                     ['<meta name="robots" content="noindex,nofollow" />'], result
                 )
+
+    def _test(
+        self,
+        url: str,
+        expected_content: str,
+        extra_strings: Sequence[str] = [],
+        landing_missing_strings: Sequence[str] = [],
+        landing_page: bool = True,
+        doc_html_str: bool = False,
+        search_disabled: bool = False,
+    ) -> None:
+        self._test_normal_path(
+            url=url,
+            expected_content=expected_content,
+            extra_strings=extra_strings,
+            landing_missing_strings=landing_missing_strings,
+            landing_page=landing_page,
+            doc_html_str=doc_html_str,
+            search_disabled=search_disabled,
+        )
+        self._test_zephyr_path(
+            url=url,
+            expected_content=expected_content,
+            extra_strings=extra_strings,
+            landing_missing_strings=landing_missing_strings,
+            landing_page=landing_page,
+            doc_html_str=doc_html_str,
+            search_disabled=search_disabled,
+        )
 
     def test_api_doc_endpoints(self) -> None:
         # We extract the set of /api/ endpoints to check by parsing
