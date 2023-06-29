@@ -170,10 +170,6 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 opts.has_status = has_status;
             }
 
-            if (store.onPillCreate !== undefined) {
-                store.onPillCreate();
-            }
-
             const pill_html = render_input_pill(opts);
             const payload: InputPill<T> = {
                 item,
@@ -182,6 +178,10 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
 
             store.pills.push(payload);
             store.$input.before(payload.$element);
+
+            if (store.onPillCreate !== undefined) {
+                store.onPillCreate();
+            }
         },
 
         // this appends a pill to the end of the container but before the
