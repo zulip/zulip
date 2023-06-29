@@ -416,7 +416,7 @@ export function maybe_load_newer_messages(opts) {
 
     const anchor = get_frontfill_anchor(msg_list);
 
-    function load_more(data, args) {
+    function load_more(_data, args) {
         if (args.fetch_again && args.msg_list === message_lists.current) {
             maybe_load_newer_messages({msg_list: message_lists.current});
         }

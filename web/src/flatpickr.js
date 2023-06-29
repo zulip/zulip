@@ -30,7 +30,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         disableMobile: true,
         time_24hr: user_settings.twenty_four_hour_time,
         minuteIncrement: 1,
-        onKeyDown(selectedDates, dateStr, instance, event) {
+        onKeyDown(_selectedDates, _dateStr, instance, event) {
             // See also the keydown handler below.
             //
             // TODO: Add a clear explanation of exactly how key

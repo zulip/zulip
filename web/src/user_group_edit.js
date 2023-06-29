@@ -153,7 +153,7 @@ export function setup_group_settings(node) {
             {label: $t({defaultMessage: "General"}), key: "group_general_settings"},
             {label: $t({defaultMessage: "Members"}), key: "group_member_settings"},
         ],
-        callback(name, key) {
+        callback(_name, key) {
             $(".group_setting_section").hide();
             $(`.${CSS.escape(key)}`).show();
             select_tab = key;

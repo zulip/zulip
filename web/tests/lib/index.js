@@ -54,7 +54,7 @@ assert.notEqual(files.length, 0, "No tests found");
 
 // Set up our namespace helpers.
 const window = new Proxy(global, {
-    set(obj, prop, value) {
+    set(_obj, prop, value) {
         namespace.set_global(prop, value);
         return true;
     },

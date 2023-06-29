@@ -127,7 +127,7 @@ export class TaskData {
                 return event;
             },
 
-            inbound: (sender_id, data) => {
+            inbound: (_sender_id, data) => {
                 // All message readers may strike/unstrike todo tasks.
                 const key = data.key;
                 if (typeof key !== "string") {

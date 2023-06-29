@@ -242,7 +242,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     })();
 
     // This is the additional setup which is common to both the tests below.
-    override(transmit, "send_message", (payload, success, error) => {
+    override(transmit, "send_message", (_payload, _success, error) => {
         stub_state.send_msg_called += 1;
         error("Error sending message: Server says 408");
     });

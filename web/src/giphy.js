@@ -117,7 +117,7 @@ async function renderGIPHYGrid(targetEl) {
                     );
                     hide_giphy_popover();
                 },
-                onGifVisible(gif, e) {
+                onGifVisible(_gif, e) {
                     // Set tabindex for all the GIFs that
                     // are visible to the user. This allows
                     // user to navigate the GIFs using tab.

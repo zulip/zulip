@@ -628,7 +628,7 @@ export function setup_page(callback) {
                 },
             ],
             html_class: "stream_sorter_toggle",
-            callback(value, key) {
+            callback(_value, key) {
                 switch_stream_sort(key);
             },
         });
@@ -644,7 +644,7 @@ export function setup_page(callback) {
                 {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
                 {label: $t({defaultMessage: "All streams"}), key: "all-streams"},
             ],
-            callback(value, key) {
+            callback(_value, key) {
                 switch_stream_tab(key);
             },
         });
@@ -952,7 +952,7 @@ function ajaxSubscribe(stream, color, $stream_row) {
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream, color}])},
-        success(resp, statusText, xhr) {
+        success(_resp, _statusText, xhr) {
             if (overlays.streams_open()) {
                 $("#create_stream_name").val("");
             }

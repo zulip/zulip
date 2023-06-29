@@ -70,7 +70,7 @@ const bot = {
 };
 
 run_test("empty_narrow_html", ({mock_template}) => {
-    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
     let actual_html = empty_narrow_html("This is a title", "<h1> This is the html </h1>");
     assert.equal(
@@ -197,7 +197,7 @@ run_test("urls", () => {
 run_test("show_empty_narrow_message", ({mock_template}) => {
     page_params.stop_words = [];
 
-    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
     narrow_state.reset_current_filter();
     narrow_banner.show_empty_narrow_message();
@@ -523,7 +523,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
 run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
     page_params.stop_words = [];
 
-    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
     narrow_state.reset_current_filter();
     set_filter([["search", "grail"]]);
@@ -539,7 +539,7 @@ run_test("hide_empty_narrow_message", () => {
 run_test("show_search_stopwords", ({mock_template}) => {
     page_params.stop_words = ["what", "about"];
 
-    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
     const expected_search_data = {
         has_stop_word: true,
@@ -604,7 +604,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
 
 run_test("show_invalid_narrow_message", ({mock_template}) => {
     narrow_state.reset_current_filter();
-    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
+    mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
 
     stream_data.add_sub({name: "streamA", stream_id: 88});
     stream_data.add_sub({name: "streamB", stream_id: 77});

@@ -820,7 +820,7 @@ export function process_hotkey(e, hotkey) {
     // Shortcuts that don't require a message
     switch (event_name) {
         case "narrow_private":
-            return do_narrow_action((target, opts) => {
+            return do_narrow_action((_target, opts) => {
                 narrow.by("is", "dm", opts);
             });
         case "query_streams":

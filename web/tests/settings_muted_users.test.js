@@ -19,7 +19,7 @@ run_test("settings", ({override}) => {
     people.add_active_user({user_id: 5, email: "five@zulip.com", full_name: "Feivel Fiverson"});
     muted_users.add_muted_user(5, 1577836800);
     let populate_list_called = false;
-    override(list_widget, "create", ($container, list) => {
+    override(list_widget, "create", (_$container, list) => {
         assert.deepEqual(list, [
             {
                 date_muted_str: "Jan 1, 2020",

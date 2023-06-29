@@ -38,7 +38,7 @@ export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
 
-    const emoticon_replacer = function (match, g1, offset, str) {
+    const emoticon_replacer = function (match, _g1, offset, str) {
         const prev_char = str[offset - 1];
         const next_char = str[offset + match.length];
 

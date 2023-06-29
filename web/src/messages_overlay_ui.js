@@ -34,7 +34,7 @@ export function focus_on_sibling_element(context) {
     }
 }
 
-export function modals_handle_events(e, event_key, context) {
+export function modals_handle_events(_e, event_key, context) {
     initialize_focus(event_key, context);
 
     // This detects up arrow key presses when the overlay

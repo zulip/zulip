@@ -705,7 +705,7 @@ class Attacher {
     }
 }
 
-export function get_search_result(base_query, query) {
+export function get_search_result(_base_query, query) {
     let suggestion;
 
     // search_operators correspond to the operators for the query in the input.

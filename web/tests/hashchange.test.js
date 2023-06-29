@@ -346,7 +346,7 @@ run_test("save_narrow", ({override}) => {
     assert.equal(window.location.hash, "#narrow/is/dm");
 
     let url_pushed;
-    override(history, "pushState", (state, title, url) => {
+    override(history, "pushState", (_state, _title, url) => {
         url_pushed = url;
     });
 

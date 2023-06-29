@@ -291,7 +291,7 @@ test("handlers", ({override, mock_template}) => {
 
     let narrowed;
 
-    override(narrow, "by", (method, email) => {
+    override(narrow, "by", (_method, email) => {
         assert.equal(email, "alice@zulip.com");
         narrowed = true;
     });
@@ -482,7 +482,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
 });
 
 test("insert_alice_then_fred", ({override, mock_template}) => {
-    mock_template("presence_row.hbs", true, (data, html) => html);
+    mock_template("presence_row.hbs", true, (_data, html) => html);
 
     let appended_html;
     override(buddy_list.$container, "append", (html) => {
@@ -500,7 +500,7 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
 });
 
 test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
-    mock_template("presence_row.hbs", true, (data, html) => html);
+    mock_template("presence_row.hbs", true, (_data, html) => html);
 
     let appended_html;
     override(buddy_list.$container, "append", (html) => {
