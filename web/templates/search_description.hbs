@@ -1,0 +1,42 @@
+{{~#each parts ~}}
+
+    {{#if (eq this.type "plain_text")~}}
+        {{~this.content~}}
+    {{else if (eq this.type "stream_topic")}}
+        {{~!-- squash whitespace --~}}
+        stream {{this.stream}} > {{this.topic}}
+        {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "invalid_has")}}
+        {{~!-- squash whitespace --~}}
+        invalid {{this.operand}} operand for has operator
+        {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "prefix_for_operator")}}
+        {{~!-- squash whitespace --~}}
+        {{this.prefix_for_operator}} {{this.operand}}
+        {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "is_operator")}}
+        {{#if (eq this.operand "mentioned")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}@-mentions
+            {{~!-- squash whitespace --~}}
+        {{else if (or (eq this.operand "starred") (eq this.operand "alerted") (eq this.operand "unread"))}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}{{this.operand}} messages
+            {{~!-- squash whitespace --~}}
+        {{else if (or (eq this.operand "dm") (eq this.operand "private"))}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}direct messages
+            {{~!-- squash whitespace --~}}
+        {{else if (eq this.operand "resolved")}}
+            {{~!-- squash whitespace --~}}
+            {{this.verb}}topics marked as resolved
+            {{~!-- squash whitespace --~}}
+        {{else}}
+            {{~!-- squash whitespace --~}}
+            invalid {{this.operand}} operand for is operator
+            {{~!-- squash whitespace --~}}
+        {{~/if~}}
+    {{~/if~}}
+    {{~#if (not @last)~}}, {{/if~}}
+
+{{~/each~}}

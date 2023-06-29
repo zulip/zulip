@@ -79,7 +79,9 @@ function test(label, f) {
     });
 }
 
-test("basic_get_suggestions", ({override}) => {
+test("basic_get_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (data, html) => html);
+
     const query = "fred";
 
     override(narrow_state, "stream", () => "office");
@@ -99,7 +101,9 @@ test("basic_get_suggestions_for_spectator", () => {
     page_params.is_spectator = false;
 });
 
-test("subset_suggestions", () => {
+test("subset_suggestions", ({mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     const query = "stream:Denmark topic:Hamlet shakespeare";
 
     const suggestions = get_suggestions(query);
@@ -113,7 +117,9 @@ test("subset_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("dm_suggestions", ({override}) => {
+test("dm_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     let query = "is:dm";
     let suggestions = get_suggestions(query);
     let expected = [
@@ -248,7 +254,9 @@ test("dm_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("group_suggestions", () => {
+test("group_suggestions", ({mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     // Entering a comma in a "dm:" query should immediately
     // generate suggestions for the next person.
     let query = "dm:bob@zulip.com,";
@@ -446,7 +454,9 @@ test("empty_query_suggestions", () => {
     assert.equal(describe("has:attachment"), "Messages that contain attachments");
 });
 
-test("has_suggestions", ({override}) => {
+test("has_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
@@ -506,7 +516,9 @@ test("has_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("check_is_suggestions", ({override}) => {
+test("check_is_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     override(narrow_state, "stream", () => {});
@@ -587,7 +599,9 @@ test("check_is_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("sent_by_me_suggestions", ({override}) => {
+test("sent_by_me_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     override(narrow_state, "stream", () => {});
 
     let query = "";
@@ -659,7 +673,8 @@ test("sent_by_me_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("topic_suggestions", ({override}) => {
+test("topic_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
     let suggestions;
     let expected;
 
@@ -703,7 +718,7 @@ test("topic_suggestions", ({override}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for te");
-    assert.equal(describe("stream:office topic:team"), "Stream office &gt; team");
+    assert.equal(describe("stream:office topic:team"), "Stream office > team");
 
     suggestions = get_suggestions("topic:staplers stream:office");
     expected = ["topic:staplers stream:office", "topic:staplers"];
@@ -783,7 +798,9 @@ test("topic_suggestions (limits)", () => {
     assert_result("z", []);
 });
 
-test("whitespace_glitch", ({override}) => {
+test("whitespace_glitch", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     const query = "stream:office "; // note trailing space
 
     override(stream_topic_history_util, "get_server_history", () => {});
@@ -796,7 +813,9 @@ test("whitespace_glitch", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("stream_completion", ({override}) => {
+test("stream_completion", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
 
@@ -818,7 +837,9 @@ test("stream_completion", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("people_suggestions", ({override}) => {
+test("people_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     let query = "te";
 
     override(narrow_state, "stream", () => {});
@@ -920,7 +941,9 @@ test("people_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("operator_suggestions", ({override}) => {
+test("operator_suggestions", ({override, mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     override(narrow_state, "stream", () => undefined);
 
     // Completed operator should return nothing
@@ -951,7 +974,9 @@ test("operator_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("queries_with_spaces", () => {
+test("queries_with_spaces", ({mock_template}) => {
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
     stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
     stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
 

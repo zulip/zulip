@@ -1,7 +1,7 @@
-import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
+import render_search_description from "../templates/search_description.hbs";
 
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -1030,34 +1030,14 @@ export class Filter {
         return "";
     }
 
-    static describe_is_operator(operator) {
-        const verb = operator.negated ? "exclude " : "";
-        const operand = operator.operand;
-
-        switch (operand) {
-            case "starred":
-            case "alerted":
-            case "unread":
-                return verb + operand + " messages";
-            case "mentioned":
-                return verb + "@-mentions";
-            case "dm":
-            case "private":
-                return verb + "direct messages";
-            case "resolved":
-                return verb + "topics marked as resolved";
-        }
-
-        return "invalid " + operand + " operand for is operator";
-    }
-
     // Convert a list of operators to a human-readable description.
-    static describe_unescaped(operators) {
-        if (operators.length === 0) {
-            return "all messages";
-        }
+    static parts_for_describe(operators) {
+        const parts = [];
 
-        let parts = [];
+        if (operators.length === 0) {
+            parts.push({type: "plain_text", content: "all messages"});
+            return parts;
+        }
 
         if (operators.length >= 2) {
             const is = (term, expected) => term.operator === expected && !term.negated;
@@ -1065,8 +1045,11 @@ export class Filter {
             if (is(operators[0], "stream") && is(operators[1], "topic")) {
                 const stream = operators[0].operand;
                 const topic = operators[1].operand;
-                const part = "stream " + stream + " > " + topic;
-                parts = [part];
+                parts.push({
+                    type: "stream_topic",
+                    stream,
+                    topic,
+                });
                 operators = operators.slice(2);
             }
         }
@@ -1075,7 +1058,12 @@ export class Filter {
             const operand = elem.operand;
             const canonicalized_operator = Filter.canonicalize_operator(elem.operator);
             if (canonicalized_operator === "is") {
-                return Filter.describe_is_operator(elem);
+                const verb = elem.negated ? "exclude " : "";
+                return {
+                    type: "is_operator",
+                    verb,
+                    operand,
+                };
             }
             if (canonicalized_operator === "has") {
                 // search_suggestion.get_suggestions takes care that this message will
@@ -1089,7 +1077,10 @@ export class Filter {
                     "attachments",
                 ];
                 if (!valid_has_operands.includes(operand)) {
-                    return "invalid " + operand + " operand for has operator";
+                    return {
+                        type: "invalid_has",
+                        operand,
+                    };
                 }
             }
             const prefix_for_operator = Filter.operator_to_prefix(
@@ -1097,15 +1088,24 @@ export class Filter {
                 elem.negated,
             );
             if (prefix_for_operator !== "") {
-                return prefix_for_operator + " " + operand;
+                return {
+                    type: "prefix_for_operator",
+                    prefix_for_operator,
+                    operand,
+                };
             }
-            return "unknown operator";
+            return {
+                type: "plain_text",
+                content: "unknown operator",
+            };
         });
-        return [...parts, ...more_parts].join(", ");
+        return [...parts, ...more_parts];
     }
 
     static search_description_as_html(operators) {
-        return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
+        return render_search_description({
+            parts: Filter.parts_for_describe(operators),
+        });
     }
 
     static is_spectator_compatible(ops) {
