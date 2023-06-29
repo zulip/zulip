@@ -100,13 +100,6 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4> This is a title </h4>
-    <div>
-        Some common words were excluded from your search. <br/>You searched for:
-        <span>stream: new</span>
-        <span>topic: test</span>
-            <span>search</span>
-            <del>a</del>
-    </div>
 </div>
 `,
     );
@@ -125,11 +118,6 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4> This is a title </h4>
-    <div>
-        You searched for:
-        <span>stream: hello world</span>
-            <span>searchA</span>
-    </div>
 </div>
 `,
     );
@@ -148,11 +136,6 @@ run_test("empty_narrow_html", ({mock_template}) => {
         actual_html,
         `<div class="empty_feed_notice">
     <h4> This is a title </h4>
-    <div>
-        You searched for:
-        <span>topic: hello</span>
-            <span>searchB</span>
-    </div>
 </div>
 `,
     );
@@ -263,7 +246,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", ""),
+        empty_narrow_html("translated: No search results", ""),
     );
     page_params.is_spectator = false;
 
@@ -482,7 +465,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results."),
+        empty_narrow_html("translated: No search results"),
     );
 
     set_filter([["is", "invalid"]]);
@@ -520,17 +503,6 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     );
 });
 
-run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
-    page_params.stop_words = [];
-
-    mock_template("empty_feed_notice.hbs", true, (data, html) => html);
-
-    narrow_state.reset_current_filter();
-    set_filter([["search", "grail"]]);
-    narrow_banner.show_empty_narrow_message();
-    assert.match($(".empty_feed_notice_main").html(), /<span>grail<\/span>/);
-});
-
 run_test("hide_empty_narrow_message", () => {
     narrow_banner.hide_empty_narrow_message();
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
@@ -554,7 +526,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", undefined, expected_search_data),
+        empty_narrow_html("translated: No search results", undefined, expected_search_data),
     );
 
     const expected_stream_search_data = {
@@ -573,7 +545,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
     narrow_banner.show_empty_narrow_message();
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No search results.", undefined, expected_stream_search_data),
+        empty_narrow_html("translated: No search results", undefined, expected_stream_search_data),
     );
 
     const expected_stream_topic_search_data = {
@@ -595,7 +567,7 @@ run_test("show_search_stopwords", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: No search results.",
+            "translated: No search results",
             undefined,
             expected_stream_topic_search_data,
         ),
@@ -617,7 +589,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: No search results.",
+            "translated: No search results",
             "translated HTML: <p>You are searching for messages that belong to more than one stream, which is not possible.</p>",
         ),
     );
@@ -630,7 +602,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: No search results.",
+            "translated: No search results",
             "translated HTML: <p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
         ),
     );
@@ -646,7 +618,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: No search results.",
+            "translated: No search results",
             "translated HTML: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
         ),
     );

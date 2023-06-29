@@ -9,16 +9,15 @@
         {{/tr}}
     </p>
 </div>
+<div class="empty_feed_notice_main"></div>
 <div class="all-messages-search-caution hidden-for-spectators" hidden>
     <p>
-        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
         {{#tr}}
         End of results from your
         <z-link>history</z-link>.
         {{#*inline "z-link"}}<a href="/help/search-for-messages#searching-shared-history"
           target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
-        &nbsp;
         <span>
             {{#tr}}
             Consider <z-link>searching all public streams</z-link>.
@@ -27,4 +26,3 @@
         </span>
     </p>
 </div>
-<div class="empty_feed_notice_main"></div>
