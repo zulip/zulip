@@ -36,7 +36,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import (
-    check_supported_events_narrow_filter,
+    check_narrow_for_events,
     narrow_dataclasses_from_tuples,
     read_stop_words,
 )
@@ -1477,7 +1477,7 @@ def do_events_register(
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
-    check_supported_events_narrow_filter(modern_narrow)
+    check_narrow_for_events(modern_narrow)
 
     notification_settings_null = client_capabilities.get("notification_settings_null", False)
     bulk_message_deletion = client_capabilities.get("bulk_message_deletion", False)

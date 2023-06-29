@@ -116,7 +116,7 @@ def read_stop_words() -> List[str]:
     return stop_words_list
 
 
-def check_supported_events_narrow_filter(narrow: Collection[NarrowTerm]) -> None:
+def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
     for narrow_term in narrow:
         operator = narrow_term.operator
         if operator not in ["stream", "topic", "sender", "is"]:
@@ -158,7 +158,7 @@ def build_narrow_filter(
 ) -> NarrowPredicate:
     """Changes to this function should come with corresponding changes to
     NarrowLibraryTest."""
-    check_supported_events_narrow_filter(narrow)
+    check_narrow_for_events(narrow)
 
     def narrow_filter(*, message: Dict[str, Any], flags: List[str]) -> bool:
         def satisfies_operator(*, operator: str, operand: str) -> bool:
