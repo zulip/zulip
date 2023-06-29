@@ -678,6 +678,13 @@ textarea.new_message_textarea,
         &:hover {
             background-color: var(--color-background-hover-new-topic-button);
         }
+
+        /* This is temporary until we figure out how to display
+         * the "New Topic" button on mobile-sized devices. */
+        @media (width < $ml_min) {
+            /* Override inline styles from JQuery after $.show() execution. */
+            display: none !important;
+        }
     }
 
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
