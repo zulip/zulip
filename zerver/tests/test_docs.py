@@ -198,9 +198,16 @@ class DocPageTest(ZulipTestCase):
             "/api/update-message": "propagate_mode",
         }
 
-        # Validate that the parsing logic isn't broken, since if it
-        # broke, the below would become a noop.
-        self.assertGreater(len(endpoint_list), 70)
+        """
+        We have 110 endpoints as of June 2023.  If the
+        way we represent links changes, or the way we put links
+        into the main /api page changes, or if somebody simply introduces
+        a bug into the test, there is a danger of losing coverage,
+        although this is mitigated by other factors such as line
+        coverage checks.  For that reason, as well as developer convenience,
+        we don't make the check here super precise.
+        """
+        self.assertGreater(len(endpoint_list), 100)
 
         for endpoint in endpoint_list:
             url = f"/api/{endpoint}"
