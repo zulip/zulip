@@ -153,14 +153,14 @@ class NarrowPredicate(Protocol):
         ...
 
 
-def build_narrow_filter(
+def build_narrow_predicate(
     narrow: Collection[NarrowTerm],
 ) -> NarrowPredicate:
     """Changes to this function should come with corresponding changes to
     NarrowLibraryTest."""
     check_narrow_for_events(narrow)
 
-    def narrow_filter(*, message: Dict[str, Any], flags: List[str]) -> bool:
+    def narrow_predicate(*, message: Dict[str, Any], flags: List[str]) -> bool:
         def satisfies_operator(*, operator: str, operand: str) -> bool:
             if operator == "stream":
                 if message["type"] != "stream":
@@ -204,7 +204,7 @@ def build_narrow_filter(
 
         return True
 
-    return narrow_filter
+    return narrow_predicate
 
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000

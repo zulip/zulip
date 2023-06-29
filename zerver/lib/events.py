@@ -1475,7 +1475,7 @@ def do_events_register(
     modern_narrow = narrow_dataclasses_from_tuples(narrow)
 
     # Technically we don't need to check this here because
-    # build_narrow_filter will check it, but it's nicer from an error
+    # build_narrow_predicate will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
     check_narrow_for_events(modern_narrow)
 
