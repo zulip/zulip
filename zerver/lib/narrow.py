@@ -10,6 +10,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Protocol,
     Sequence,
     Set,
     Tuple,
@@ -147,9 +148,14 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     )
 
 
+class NarrowPredicate(Protocol):
+    def __call__(self, *, message: Dict[str, Any], flags: List[str]) -> bool:
+        ...
+
+
 def build_narrow_filter(
     narrow: Collection[NarrowTerm],
-) -> Callable[..., bool]:
+) -> NarrowPredicate:
     """Changes to this function should come with corresponding changes to
     NarrowLibraryTest."""
     check_supported_events_narrow_filter(narrow)
