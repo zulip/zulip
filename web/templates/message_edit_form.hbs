@@ -5,7 +5,7 @@
     <div class="edit-controls">
         {{> copy_message_button message_id=this.message_id}}
         <textarea class="message_edit_content" maxlength="{{ max_message_length }}">{{content}}</textarea>
-        <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
+        <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;" data-simplebar>
             <div class="markdown_preview_spinner"></div>
             <div class="preview_content rendered_markdown"></div>
         </div>
