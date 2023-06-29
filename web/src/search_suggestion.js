@@ -705,7 +705,7 @@ class Attacher {
     }
 }
 
-export function get_search_result(_base_query, query) {
+export function get_search_result(query) {
     let suggestion;
 
     // search_operators correspond to the operators for the query in the input.
@@ -808,8 +808,8 @@ export function get_search_result(_base_query, query) {
     return attacher.result.slice(0, max_items);
 }
 
-export function get_suggestions(base_query, query) {
-    const result = get_search_result(base_query, query);
+export function get_suggestions(query) {
+    const result = get_search_result(query);
     return finalize_search_result(result);
 }
 
