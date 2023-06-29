@@ -1337,21 +1337,6 @@
         opacity: 0.7;
     }
 
-    .scheduled-messages-loading-logo,
-    .alert-zulip-logo,
-    .top-messages-logo,
-    .bottom-messages-logo {
-        & svg path {
-            fill: hsl(214deg 27% 18%);
-            stroke: hsl(214deg 27% 18%);
-        }
-
-        & svg circle {
-            fill: hsl(0deg 0% 100%);
-            stroke: hsl(0deg 0% 100%);
-        }
-    }
-
     .history-limited-box,
     .all-messages-search-caution {
         background-color: hsl(0deg 0% 0% / 20%);

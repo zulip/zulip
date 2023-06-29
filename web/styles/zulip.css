@@ -161,6 +161,9 @@ body {
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-failed-message-send-icon: hsl(3.88deg 98.84% 66.27%);
     --color-background-modal: hsl(0deg 0% 98%);
+    --color-zulip-logo: hsl(0deg 0% 0% / 34%);
+    --color-zulip-logo-loading: hsl(0deg 0% 27%);
+    --color-zulip-logo-z: hsl(0deg 0% 100%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -203,6 +206,9 @@ body {
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-background-modal: hsl(212deg 28% 18%);
+    --color-zulip-logo: hsl(0deg 0% 100% / 50%);
+    --color-zulip-logo-loading: hsl(0deg 0% 100%);
+    --color-zulip-logo-z: hsl(214deg 27% 18%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -350,14 +356,19 @@ p.n-margin {
 
     & svg {
         & circle {
-            fill: hsl(0deg 0% 27%);
-            stroke: hsl(0deg 0% 27%);
+            fill: var(--color-zulip-logo);
+            stroke: var(--color-zulip-logo);
         }
 
         & path {
-            fill: hsl(0deg 0% 100%);
-            stroke: hsl(0deg 0% 100%);
+            fill: var(--color-zulip-logo-z);
+            stroke: var(--color-zulip-logo-z);
         }
+    }
+
+    &.loading circle {
+        fill: var(--color-zulip-logo-loading);
+        stroke: var(--color-zulip-logo-loading);
     }
 }
 
