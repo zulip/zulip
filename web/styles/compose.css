@@ -82,6 +82,8 @@
 
     .stream_button_container,
     .private_button_container {
+        flex-shrink: 0;
+
         @media (width < $sm_min) {
             display: none;
         }
