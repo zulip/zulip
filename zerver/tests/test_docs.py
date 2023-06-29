@@ -376,16 +376,14 @@ class HelpTest(ZulipTestCase):
     def test_help_settings_links(self) -> None:
         result = self.client_get("/help/change-the-time-format")
         self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            'Go to <a href="/#settings/display-settings">Display settings</a>', str(result.content)
-        )
+        self.assertIn('Go to <a href="/#settings/preferences">Preferences</a>', str(result.content))
         # Check that the sidebar was rendered properly.
         self.assertIn("Getting started with Zulip", str(result.content))
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/help/change-the-time-format", subdomain="")
         self.assertEqual(result.status_code, 200)
-        self.assertIn("<strong>Display settings</strong>", str(result.content))
+        self.assertIn("<strong>Preferences</strong>", str(result.content))
         self.assertNotIn("/#settings", str(result.content))
 
     def test_help_relative_links_for_gear(self) -> None:

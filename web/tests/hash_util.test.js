@@ -52,7 +52,7 @@ run_test("hash_util", () => {
 
 run_test("test_get_hash_category", () => {
     assert.deepEqual(hash_util.get_hash_category("streams/subscribed"), "streams");
-    assert.deepEqual(hash_util.get_hash_category("#settings/display-settings"), "settings");
+    assert.deepEqual(hash_util.get_hash_category("#settings/preferences"), "settings");
     assert.deepEqual(hash_util.get_hash_category("#drafts"), "drafts");
     assert.deepEqual(hash_util.get_hash_category("invites"), "invites");
 

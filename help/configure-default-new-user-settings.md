@@ -15,7 +15,7 @@ preference settings, including the following:
 * Privacy settings, including:
     * [Displaying availability to other users](/help/status-and-availability)
     * [Allowing others to see when the user has read messages](/help/read-receipts)
-* Display settings, including:
+* Preferences, including:
     * Default view ([Recent conversations](/help/recent-conversations) vs.
       [All messages](/help/reading-strategies#all-messages))
     * [Light theme vs. dark theme](/help/dark-theme)

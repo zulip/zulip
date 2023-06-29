@@ -251,7 +251,7 @@ function do_hashchange_overlay(old_hash) {
     }
     const base = hash_util.get_current_hash_category();
     const old_base = hash_util.get_hash_category(old_hash);
-    const section = hash_util.get_current_hash_section();
+    let section = hash_util.get_current_hash_section();
 
     if (base === "groups" && (!page_params.development_environment || page_params.is_guest)) {
         // The #groups settings page is unfinished, and disabled in production.
@@ -260,7 +260,11 @@ function do_hashchange_overlay(old_hash) {
     }
 
     const coming_from_overlay = hash_util.is_overlay_hash(old_hash);
-
+    if (section === "display-settings") {
+        // Since display-settings was deprecated and replaced with preferences
+        // #settings/display-settings is being redirected to #settings/preferences.
+        section = "preferences";
+    }
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {

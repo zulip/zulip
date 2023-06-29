@@ -55,7 +55,7 @@ will be displayed as
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Emoji settings**, select **Convert emoticons before sending**.
 
@@ -80,7 +80,7 @@ you send. Zulip emoji are compatible with screen readers and other accessibility
 
 {start_tabs}
 
-{settings_tab|display-settings}
+{settings_tab|preferences}
 
 1. Under **Emoji**, select **Google**,
    **Twitter**, **Plain text**, or **Google blobs** for the emoji theme.
