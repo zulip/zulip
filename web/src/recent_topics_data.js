@@ -55,7 +55,7 @@ export function reify_message_id_if_available(opts) {
     // if a new message arrives in the topic from another user,
     // since it replaces the last_msg_id of the topic which
     // we were trying to reify.
-    for (const [, value] of topics.entries()) {
+    for (const value of topics.values()) {
         if (value.last_msg_id === opts.old_id) {
             value.last_msg_id = opts.new_id;
             return true;
