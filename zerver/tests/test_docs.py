@@ -173,13 +173,15 @@ class DocPageTest(ZulipTestCase):
         api_page_raw = str(self.client_get("/api/").content)
         ENDPOINT_REGEXP = re.compile(r"href=\"/api/\s*(.*?)\"")
         endpoint_list_set = set(re.findall(ENDPOINT_REGEXP, api_page_raw))
-        endpoint_list = [f"/api/{endpoint}" for endpoint in endpoint_list_set]
+        endpoint_list = sorted(endpoint_list_set)
+
         # Validate that the parsing logic isn't broken, since if it
         # broke, the below would become a noop.
         self.assertGreater(len(endpoint_list), 70)
 
         for endpoint in endpoint_list:
-            self._test(endpoint, "", doc_html_str=True)
+            url = f"/api/{endpoint}"
+            self._test(url, "", doc_html_str=True)
 
     def test_api_doc_404_status_codes(self) -> None:
         result = self.client_get(
