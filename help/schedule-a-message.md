@@ -69,10 +69,10 @@ can schedule a message for next morning to avoid disturbing others.
 
 1. Click **Send**.
 
-!!! tip ""
+!!! keyboard_tip ""
 
-    You can also click **Undo** in the confirmation banner shown immediately
-    after a message is scheduled.
+    You can also use <kbd>Enter</kbd> within the scheduled messages view to
+    edit or reschedule the selected message.
 
 {end_tabs}
 
@@ -86,6 +86,11 @@ can schedule a message for next morning to avoid disturbing others.
 
 1. Click the **trash** (<i class="fa fa-trash-o"></i>) icon on the message you
    want to delete.
+
+!!! keyboard_tip ""
+
+    You can also use <kbd>Backspace</kbd> within the scheduled messages view to
+    delete the selected message.
 
 {end_tabs}
 
@@ -104,3 +109,10 @@ can schedule a message for next morning to avoid disturbing others.
     box, and selecting **View scheduled messages**.
 
 {end_tabs}
+
+## Related articles
+
+* [Message drafts](/help/view-and-edit-your-message-drafts)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
+* [Edit or delete a message](/help/edit-or-delete-a-message)
