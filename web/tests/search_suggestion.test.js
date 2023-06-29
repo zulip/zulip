@@ -79,9 +79,7 @@ function test(label, f) {
     });
 }
 
-test("basic_get_suggestions", ({override, mock_template}) => {
-    mock_template("search_description.hbs", true, (data, html) => html);
-
+test("basic_get_suggestions", ({override}) => {
     const query = "fred";
 
     override(narrow_state, "stream", () => "office");
@@ -717,7 +715,7 @@ test("topic_suggestions", ({override, mock_template}) => {
     function describe(q) {
         return suggestions.lookup_table.get(q).description_html;
     }
-    assert.equal(describe("te"), "Search for te");
+    assert.equal(describe("te"), "Search for <strong>te</strong>");
     assert.equal(describe("stream:office topic:team"), "Stream office > team");
 
     suggestions = get_suggestions("topic:staplers stream:office");
