@@ -175,21 +175,55 @@ class DocPageTest(ZulipTestCase):
         endpoint_list_set = set(re.findall(ENDPOINT_REGEXP, api_page_raw))
         endpoint_list = sorted(endpoint_list_set)
 
+        # We want to make sure our regex captured the actual main page.
+        assert "" in endpoint_list
+
+        content = {
+            "/api/": "The Zulip API",
+            "/api/api-keys": "be careful with it",
+            "/api/create-user": "zuliprc-admin",
+            "/api/delete-queue": "Delete a previously registered queue",
+            "/api/get-events": "dont_block",
+            "/api/get-own-user": "does not accept any parameters.",
+            "/api/get-stream-id": "The name of the stream to access.",
+            "/api/get-streams": "include_public",
+            "/api/get-subscriptions": "Get all streams that the user is subscribed to.",
+            "/api/get-users": "client_gravatar",
+            "/api/installation-instructions": "No download required!",
+            "/api/register-queue": "apply_markdown",
+            "/api/render-message": "**foo**",
+            "/api/send-message": "steal away your hearts",
+            "/api/subscribe": "authorization_errors_fatal",
+            "/api/unsubscribe": "not_removed",
+            "/api/update-message": "propagate_mode",
+        }
+
         # Validate that the parsing logic isn't broken, since if it
         # broke, the below would become a noop.
         self.assertGreater(len(endpoint_list), 70)
 
         for endpoint in endpoint_list:
             url = f"/api/{endpoint}"
+
+            if url in content:
+                expected_content = content[url]
+                del content[url]
+            else:
+                # TODO: Just fill out dictionary for all ~110 endpoints
+                expected_content = ""
+
             self._test_normal_path(
                 url=url,
-                expected_content="",
+                expected_content=expected_content,
                 extra_strings=[],
                 landing_missing_strings=[],
                 landing_page=True,
                 doc_html_str=True,
                 search_disabled=False,
             )
+
+        # Make sure we exercised all content checks.
+        self.assert_length(content, 0)
 
     def test_api_doc_404_status_codes(self) -> None:
         result = self.client_get(
@@ -206,25 +240,6 @@ class DocPageTest(ZulipTestCase):
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(result.status_code, 404)
-
-    def test_specific_api_endpoints_for_content(self) -> None:
-        self._test("/api/", "The Zulip API")
-        self._test("/api/api-keys", "be careful with it")
-        self._test("/api/installation-instructions", "No download required!")
-        self._test("/api/send-message", "steal away your hearts")
-        self._test("/api/render-message", "**foo**")
-        self._test("/api/get-streams", "include_public")
-        self._test("/api/get-stream-id", "The name of the stream to access.")
-        self._test("/api/get-subscriptions", "Get all streams that the user is subscribed to.")
-        self._test("/api/get-users", "client_gravatar")
-        self._test("/api/register-queue", "apply_markdown")
-        self._test("/api/get-events", "dont_block")
-        self._test("/api/delete-queue", "Delete a previously registered queue")
-        self._test("/api/update-message", "propagate_mode")
-        self._test("/api/get-own-user", "does not accept any parameters.")
-        self._test("/api/subscribe", "authorization_errors_fatal")
-        self._test("/api/create-user", "zuliprc-admin")
-        self._test("/api/unsubscribe", "not_removed")
 
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", "Normal users", landing_page=False)
