@@ -36,8 +36,8 @@ from zerver.lib.message import (
 )
 from zerver.lib.muted_users import get_user_mutes
 from zerver.lib.narrow import (
+    NarrowTerm,
     check_narrow_for_events,
-    narrow_dataclasses_from_tuples,
     read_stop_words,
 )
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
@@ -1465,19 +1465,15 @@ def do_events_register(
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: Mapping[str, bool] = {},
-    narrow: Collection[Sequence[str]] = [],
+    narrow: Collection[NarrowTerm] = [],
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
-    # TODO: We eventually want to upstream this code to the caller, but
-    # serialization concerns make it a bit difficult.
-    modern_narrow = narrow_dataclasses_from_tuples(narrow)
-
     # Technically we don't need to check this here because
     # build_narrow_predicate will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
-    check_narrow_for_events(modern_narrow)
+    check_narrow_for_events(narrow)
 
     notification_settings_null = client_capabilities.get("notification_settings_null", False)
     bulk_message_deletion = client_capabilities.get("bulk_message_deletion", False)
@@ -1525,6 +1521,8 @@ def do_events_register(
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)
 
+    legacy_narrow = [[nt.operator, nt.operand] for nt in narrow]
+
     while True:
         # Note that we pass event_types, not fetch_event_types here, since
         # that's what controls which future events are sent.
@@ -1537,7 +1535,7 @@ def do_events_register(
             queue_lifespan_secs,
             event_types,
             all_public_streams,
-            narrow=narrow,
+            narrow=legacy_narrow,
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,
