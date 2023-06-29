@@ -135,6 +135,7 @@ class DocPageTest(ZulipTestCase):
         for endpoint in endpoint_list:
             self._test(endpoint, "", doc_html_str=True)
 
+    def test_api_doc_404_status_codes(self) -> None:
         result = self.client_get(
             "/api/nonexistent-page",
             follow=True,
@@ -150,7 +151,7 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
-        # Test some API doc endpoints for specific content and metadata.
+    def test_specific_api_endpoints_for_content(self) -> None:
         self._test("/api/", "The Zulip API")
         self._test("/api/api-keys", "be careful with it")
         self._test("/api/installation-instructions", "No download required!")
