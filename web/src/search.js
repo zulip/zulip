@@ -45,8 +45,7 @@ export function initialize({on_narrow_search}) {
 
     $search_query_box.typeahead({
         source(query) {
-            const base_query = "";
-            const suggestions = search_suggestion.get_suggestions(base_query, query);
+            const suggestions = search_suggestion.get_suggestions(query);
             // Update our global search_map hash
             search_map = suggestions.lookup_table;
             return suggestions.strings;
