@@ -365,7 +365,7 @@ class DocPageTest(ZulipTestCase):
         og_title = '<meta property="og:title" content="Zulip integrations" />'
         self._test(url, [og_title, og_description], doc_html_str=True)
 
-    def test_doc_html_str_non_ajax_call(self) -> None:
+    def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
