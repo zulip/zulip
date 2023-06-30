@@ -15,7 +15,7 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
-from zerver.lib.narrow import NarrowTerm
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
