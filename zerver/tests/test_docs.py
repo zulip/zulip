@@ -203,12 +203,19 @@ class DocPageTest(ZulipTestCase):
                 del content[url]
             else:
                 # TODO: Just fill out dictionary for all ~110 endpoints
-                expected_strings = []
+                #       with some specific data from the page.
+                expected_strings = ["This is an API doc"]
 
-            self._test(
-                url=url,
-                expected_strings=expected_strings,
-            )
+            # Mock OpenGraph call purely to speed up these tests.
+            with mock.patch(
+                "zerver.lib.html_to_text.html_to_text", return_value="This is an API doc"
+            ) as m:
+                self._test(
+                    url=url,
+                    expected_strings=expected_strings,
+                )
+                if url != "/api/":
+                    m.assert_called()
 
         # Make sure we exercised all content checks.
         self.assert_length(content, 0)
