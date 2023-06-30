@@ -90,6 +90,9 @@ class OpenAPISpec:
         # only cause some extra processing at startup and not data
         # corruption.
 
+        # Test with test_docs.py
+        import time
+        t = time.time()
         import yaml
         from jsonref import JsonRef
 
@@ -102,10 +105,28 @@ class OpenAPISpec:
 
             openapi = yaml.load(f, Loader=yaml.CSafeLoader)
 
-        spec = Spec.from_dict(openapi)
-        self._spec = spec
         self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
+
+        print("overhead to process yaml", time.time() - t)
+
+        with open("zulip_yaml.py", "w") as f:
+            f.write(f"openapi = {openapi}\n")
+            f.write(f"_openapi = {self._openapi}\n")
+            f.write(f"_endpoints_dict = {self._endpoints_dict}\n")
+
+        import zulip_yaml
+        openapi = zulip_yaml.openapi
+        self._openapi = zulip_yaml._openapi
+        self._endpoints_dict = zulip_yaml._endpoints_dict
+
+        # then run this in the shell:
+        # import time; t = time.time(); import zulip_yaml; print(time.time() - t)
+
+        t = time.time()
+        spec = Spec.from_dict(openapi)
+        print("overhead to build Spec object", time.time() - t)
+        self._spec = spec
         self.mtime = mtime
 
     def create_endpoints_dict(self) -> None:
