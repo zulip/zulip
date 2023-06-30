@@ -58,12 +58,30 @@ class DocPageTest(ZulipTestCase):
         url: str,
         subdomain: str,
         expected_strings: Sequence[str],
+        allow_robots: bool,
     ) -> "TestHttpResponse":
+        # For whatever reason, we have some urls that don't follow
+        # the same policies as the majority of our urls.
+        if url.startswith("/integrations/doc-html"):
+            allow_robots = True
+
+        if url.startswith("/attribution/"):
+            allow_robots = False
+
         result = self.get_doc(url, subdomain=subdomain)
         self.print_msg_if_error(url, result)
         self.assertEqual(result.status_code, 200)
         for s in expected_strings:
             self.assertIn(s, str(result.content))
+
+        if allow_robots:
+            self.assert_not_in_success_response(
+                ['<meta name="robots" content="noindex,nofollow" />'], result
+            )
+        else:
+            self.assert_in_success_response(
+                ['<meta name="robots" content="noindex,nofollow" />'], result
+            )
         return result
 
     def _test_normal_path(
@@ -72,20 +90,14 @@ class DocPageTest(ZulipTestCase):
         url: str,
         expected_strings: Sequence[str],
         landing_missing_strings: Sequence[str],
-        doc_html_str: bool,
-        search_disabled: bool,
     ) -> None:
         # Test the URL on the root subdomain
         result = self._check_basic_fetch(
             url=url,
             subdomain="",
             expected_strings=expected_strings,
+            allow_robots=False,
         )
-
-        if not doc_html_str:
-            self.assert_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow" />'], result
-            )
 
         if not self._is_landing_page(url):
             return
@@ -96,13 +108,15 @@ class DocPageTest(ZulipTestCase):
                 url=url,
                 subdomain="",
                 expected_strings=expected_strings,
+                allow_robots=True,
             )
 
             for s in landing_missing_strings:
                 self.assertNotIn(s, str(result.content))
 
-            if not doc_html_str and not search_disabled:
-                # Confirm page has the following HTML elements:
+            # Confirm page has the following HTML elements:
+            # (I have no idea why we don't support this for /attribution/.)
+            if not url.startswith("/attribution/"):
                 self.assert_in_success_response(
                     [
                         "<title>",
@@ -112,14 +126,6 @@ class DocPageTest(ZulipTestCase):
                     ],
                     result,
                 )
-            if search_disabled:
-                self.assert_in_success_response(
-                    ['<meta name="robots" content="noindex,nofollow" />'], result
-                )
-            else:
-                self.assert_not_in_success_response(
-                    ['<meta name="robots" content="noindex,nofollow" />'], result
-                )
 
     def _test_zephyr_path(
         self,
@@ -127,58 +133,42 @@ class DocPageTest(ZulipTestCase):
         url: str,
         expected_strings: Sequence[str],
         landing_missing_strings: Sequence[str],
-        doc_html_str: bool,
-        search_disabled: bool,
     ) -> None:
         # Test the URL on the "zephyr" subdomain
-        result = self._check_basic_fetch(
+        self._check_basic_fetch(
             url=url,
             subdomain="zephyr",
             expected_strings=expected_strings,
+            allow_robots=False,
         )
-
-        if not doc_html_str:
-            self.assert_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow" />'], result
-            )
 
         if not self._is_landing_page(url):
             return
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             # Test the URL on the "zephyr" subdomain with the landing page setting
-            result = self._check_basic_fetch(
+            self._check_basic_fetch(
                 url=url,
                 subdomain="zephyr",
                 expected_strings=expected_strings,
+                allow_robots=False,
             )
-
-            if not doc_html_str:
-                self.assert_in_success_response(
-                    ['<meta name="robots" content="noindex,nofollow" />'], result
-                )
 
     def _test(
         self,
         url: str,
         expected_strings: Sequence[str] = [],
         landing_missing_strings: Sequence[str] = [],
-        doc_html_str: bool = False,
-        search_disabled: bool = False,
     ) -> None:
         self._test_normal_path(
             url=url,
             expected_strings=expected_strings,
             landing_missing_strings=landing_missing_strings,
-            doc_html_str=doc_html_str,
-            search_disabled=search_disabled,
         )
         self._test_zephyr_path(
             url=url,
             expected_strings=expected_strings,
             landing_missing_strings=landing_missing_strings,
-            doc_html_str=doc_html_str,
-            search_disabled=search_disabled,
         )
 
     def test_api_doc_endpoints(self) -> None:
@@ -237,8 +227,6 @@ class DocPageTest(ZulipTestCase):
                 url=url,
                 expected_strings=expected_strings,
                 landing_missing_strings=[],
-                doc_html_str=True,
-                search_disabled=False,
             )
 
         # Make sure we exercised all content checks.
@@ -304,8 +292,11 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/end-point/", ["Case study: End Point"])
         self._test("/case-studies/atolio/", ["Case study: Atolio"])
         self._test("/case-studies/asciidoctor/", ["Case study: Asciidoctor"])
-        # <meta name="robots" content="noindex,nofollow" /> always true on these pages
-        self._test("/attribution/", ["Website attributions"], search_disabled=True)
+
+    def test_oddball_attributions_page(self) -> None:
+        # Look elsewhere in the code--this page never allows robots nor does
+        # it provide og data.
+        self._test("/attribution/", ["Website attributions"])
 
     def test_open_organizations_endpoint(self) -> None:
         zulip_dev_info = ["Zulip Dev", "great for testing!"]
@@ -331,7 +322,7 @@ class DocPageTest(ZulipTestCase):
 
         for integration in INTEGRATIONS:
             url = f"/integrations/doc-html/{integration}"
-            self._test(url, expected_strings=[], doc_html_str=True)
+            self._test(url, expected_strings=[])
 
         result = self.client_get(
             "/integrations/doc-html/nonexistent_integration",
@@ -347,7 +338,7 @@ class DocPageTest(ZulipTestCase):
         url = "/integrations/doc/github"
         title = '<meta property="og:title" content="GitHub | Zulip integrations" />'
         description = '<meta property="og:description" content="Zulip comes with over'
-        self._test(url, [title, description], doc_html_str=True)
+        self._test(url, [title, description])
 
         # Test category pages
         for category in CATEGORIES:
@@ -358,12 +349,12 @@ class DocPageTest(ZulipTestCase):
             else:
                 title = f"<title>{CATEGORIES[category]} tools | Zulip integrations</title>"
                 og_title = f'<meta property="og:title" content="{CATEGORIES[category]} tools | Zulip integrations" />'
-            self._test(url, [title, og_title, og_description], doc_html_str=True)
+            self._test(url, [title, og_title, og_description])
 
         # Test integrations index page
         url = "/integrations/"
         og_title = '<meta property="og:title" content="Zulip integrations" />'
-        self._test(url, [og_title, og_description], doc_html_str=True)
+        self._test(url, [og_title, og_description])
 
     def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404
