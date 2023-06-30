@@ -294,6 +294,7 @@ $time_column_min_width: 50px; /* + padding */
 
             .status-message {
                 font-weight: normal;
+                opacity: 0.6;
             }
 
             .message_content {
