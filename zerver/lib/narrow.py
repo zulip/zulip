@@ -47,6 +47,7 @@ from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import get_first_visible_message_id
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -85,23 +86,7 @@ from zerver.models import (
     get_user_including_cross_realm,
 )
 
-
-@dataclass
-class NarrowTerm:
-    # In our current use case we don't yet handle negated narrow terms.
-    operator: str
-    operand: str
-
-
 stop_words_list: Optional[List[str]] = None
-
-
-def narrow_dataclasses_from_tuples(tups: Collection[Sequence[str]]) -> Collection[NarrowTerm]:
-    """
-    This method assumes that the callers are in our event-handling codepath, and
-    therefore as of summer 2023, they do not yet support the "negated" flag.
-    """
-    return [NarrowTerm(operator=tup[0], operand=tup[1]) for tup in tups]
 
 
 def read_stop_words() -> List[str]:

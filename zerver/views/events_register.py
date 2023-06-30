@@ -9,7 +9,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
-from zerver.lib.narrow import narrow_dataclasses_from_tuples
+from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_dict, check_int, check_list, check_string
