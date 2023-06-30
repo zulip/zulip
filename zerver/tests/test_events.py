@@ -3261,6 +3261,18 @@ class SubscribeActionTest(BaseAction):
             10,
         )
 
+        stream.invite_only = False
+        stream.save()
+
+        # Subscribe as a guest to a public stream.
+        self.user_profile = self.example_user("polonius")
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.user_profile], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_stream_create("events[0]", events[0])
+        check_subscription_add("events[1]", events[1])
+
 
 class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:

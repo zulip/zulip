@@ -1170,11 +1170,15 @@ paths:
 
                                 This event is also sent when a user gains access to a stream they
                                 previously [could not access](/help/stream-permissions), such as
-                                when a private stream is made public, or when a user is subscribed
-                                to a private stream.
+                                when a private stream is made public, or when a [guest user](/help/roles-and-permissions)
+                                is subscribed to a public (or private) stream.
 
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the stream; just that it exists.
+
+                                **Changes**: Prior to Zulip 8.0 (feature level 192), this event was
+                                not sent when guest users gained access to a public stream by being
+                                subscribed.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"

@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 192**
+
+* [`GET /events`](/api/get-events): Stream creation events are now
+  sent when guest users gain access to a public stream by being
+  subscribed. Guest users previously only received these events when
+  subscribed to private streams.
+
 **Feature level 191**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
