@@ -4656,6 +4656,34 @@ class SubscriptionAPITest(ZulipTestCase):
             ([web_public_stream], [public_stream, private_stream]),
         )
 
+        # Guest can be subscribed by other users.
+        normal_user = self.example_user("aaron")
+        with self.capture_send_event_calls(expected_num_events=6) as events:
+            self.common_subscribe_to_streams(
+                self.example_user("hamlet"),
+                ["Denmark"],
+                dict(principals=orjson.dumps([guest_user.id, normal_user.id]).decode()),
+            )
+
+        # Verify that stream creation event is sent to guest user only.
+        stream_create_events = [
+            event
+            for event in events
+            if event["event"]["type"] == "stream" and event["event"]["op"] == "create"
+        ]
+        self.assert_length(stream_create_events, 1)
+        self.assertEqual(stream_create_events[0]["users"], [guest_user.id])
+
+        # Verify that subscription add event is sent to both the users.
+        subscription_add_events = [
+            event
+            for event in events
+            if event["event"]["type"] == "subscription" and event["event"]["op"] == "add"
+        ]
+        self.assert_length(subscription_add_events, 2)
+        self.assertEqual(subscription_add_events[0]["users"], [guest_user.id])
+        self.assertEqual(subscription_add_events[1]["users"], [normal_user.id])
+
     def test_users_getting_add_peer_event(self) -> None:
         """
         Check users getting add_peer_event is correct
@@ -4781,7 +4809,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
-        # send_stream_creation_events_for_private_streams.
+        # send_stream_creation_events_for_previously_inaccessible_streams.
         with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
             with self.assert_database_query_count(num_streams + 12):
                 self.common_subscribe_to_streams(

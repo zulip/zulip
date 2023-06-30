@@ -345,14 +345,16 @@ def bulk_add_subs_to_db_with_logging(
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
-def send_stream_creation_events_for_private_streams(
+def send_stream_creation_events_for_previously_inaccessible_streams(
     realm: Realm,
     stream_dict: Dict[int, Stream],
     altered_user_dict: Dict[int, Set[int]],
+    altered_guests: Set[int],
 ) -> None:
     for stream_id, stream_users_ids in altered_user_dict.items():
         stream = stream_dict[stream_id]
 
+        notify_user_ids = []
         if not stream.is_public():
             # Users newly added to invite-only streams
             # need a `create` notification.  The former, because
@@ -362,9 +364,14 @@ def send_stream_creation_events_for_private_streams(
             # Realm admins already have all created private streams.
             realm_admin_ids = {user.id for user in realm.get_admin_users_and_bots()}
             notify_user_ids = list(stream_users_ids - realm_admin_ids)
+        else:
+            # Guese users need a `create` notification for
+            # public streams as well because they need the stream
+            # to exist before they get the "subscribe" notification.
+            notify_user_ids = list(stream_users_ids & altered_guests)
 
-            if notify_user_ids:
-                send_stream_creation_event(realm, stream, notify_user_ids)
+        if notify_user_ids:
+            send_stream_creation_event(realm, stream, notify_user_ids)
 
 
 def send_peer_subscriber_events(
@@ -538,8 +545,11 @@ def bulk_add_subscriptions(
     )
 
     altered_user_dict: Dict[int, Set[int]] = defaultdict(set)
+    altered_guests: Set[int] = set()
     for sub_info in subs_to_add + subs_to_activate:
         altered_user_dict[sub_info.stream.id].add(sub_info.user.id)
+        if sub_info.user.is_guest:
+            altered_guests.add(sub_info.user.id)
 
     stream_dict = {stream.id: stream for stream in streams}
 
@@ -555,10 +565,11 @@ def bulk_add_subscriptions(
     # being subscribed; we can skip these notifications when this is
     # being called from the new user creation flow.
     if not from_user_creation:
-        send_stream_creation_events_for_private_streams(
+        send_stream_creation_events_for_previously_inaccessible_streams(
             realm=realm,
             stream_dict=stream_dict,
             altered_user_dict=altered_user_dict,
+            altered_guests=altered_guests,
         )
 
         send_subscription_add_events(
