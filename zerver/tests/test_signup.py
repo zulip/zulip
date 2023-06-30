@@ -1134,9 +1134,9 @@ class EmailUnsubscribeTests(ZulipTestCase):
         click even when logged out to stop receiving them.
         """
         user_profile = self.example_user("hamlet")
-        # Simulate a new user signing up, which enqueues 3 welcome e-mails.
+        # Simulate scheduling welcome e-mails for a new user.
         enqueue_welcome_emails(user_profile)
-        self.assertEqual(3, ScheduledEmail.objects.filter(users=user_profile).count())
+        self.assertEqual(2, ScheduledEmail.objects.filter(users=user_profile).count())
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")

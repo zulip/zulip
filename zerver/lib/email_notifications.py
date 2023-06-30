@@ -756,38 +756,37 @@ def get_org_type_zulip_guide(realm: Realm) -> Tuple[Any, str]:
     return (None, "")
 
 
-def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
-    from zerver.context_processors import common_context
-
+def welcome_sender_information() -> Tuple[Optional[str], str]:
     if settings.WELCOME_EMAIL_SENDER is not None:
-        # line break to avoid triggering lint rule
         from_name = settings.WELCOME_EMAIL_SENDER["name"]
         from_address = settings.WELCOME_EMAIL_SENDER["email"]
     else:
         from_name = None
         from_address = FromAddress.support_placeholder
 
-    other_account_count = (
-        UserProfile.objects.filter(delivery_email__iexact=user.delivery_email)
-        .exclude(id=user.id)
-        .count()
-    )
-    unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
+    return (from_name, from_address)
+
+
+def send_account_registered_email(user: UserProfile, realm_creation: bool = False) -> None:
+    # Imported here to avoid import cycles.
+    from zerver.context_processors import common_context
+
+    from_name, from_address = welcome_sender_information()
     realm_url = user.realm.uri
 
-    followup_day1_context = common_context(user)
-    followup_day1_context.update(
+    account_registered_context = common_context(user)
+    account_registered_context.update(
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
         is_demo_org=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
 
-    followup_day1_context["getting_organization_started_link"] = (
+    account_registered_context["getting_organization_started_link"] = (
         realm_url + "/help/getting-your-organization-started-with-zulip"
     )
 
-    followup_day1_context["getting_user_started_link"] = (
+    account_registered_context["getting_user_started_link"] = (
         realm_url + "/help/getting-started-with-zulip"
     )
 
@@ -795,13 +794,13 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
     from zproject.backends import ZulipLDAPAuthBackend, email_belongs_to_ldap
 
     if email_belongs_to_ldap(user.realm, user.delivery_email):
-        followup_day1_context["ldap"] = True
+        account_registered_context["ldap"] = True
         for backend in get_backends():
             # If the user is doing authentication via LDAP, Note that
             # we exclude ZulipLDAPUserPopulator here, since that
             # isn't used for authentication.
             if isinstance(backend, ZulipLDAPAuthBackend):
-                followup_day1_context["ldap_username"] = backend.django_to_ldap_username(
+                account_registered_context["ldap_username"] = backend.django_to_ldap_username(
                     user.delivery_email
                 )
                 break
@@ -812,8 +811,22 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         to_user_ids=[user.id],
         from_name=from_name,
         from_address=from_address,
-        context=followup_day1_context,
+        context=account_registered_context,
     )
+
+
+def enqueue_welcome_emails(user: UserProfile) -> None:
+    # Imported here to avoid import cycles.
+    from zerver.context_processors import common_context
+
+    from_name, from_address = welcome_sender_information()
+    other_account_count = (
+        UserProfile.objects.filter(delivery_email__iexact=user.delivery_email)
+        .exclude(id=user.id)
+        .count()
+    )
+    unsubscribe_link = one_click_unsubscribe_link(user, "welcome")
+    realm_url = user.realm.uri
 
     # Any emails scheduled below should be added to the logic in get_onboarding_email_schedule
     # to determine how long to delay sending the email based on when the user signed up.
