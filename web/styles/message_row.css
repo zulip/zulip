@@ -240,6 +240,13 @@ $time_column_max_width: 150px;
                     ".      more      .        .   "
                     ".      reactions .        .   ";
 
+                .inline_profile_picture {
+                    /* The picture can participate in the baseline group to achieve
+                       the effect of centering the first/only line and timestamp
+                       on a me-message. */
+                    align-self: baseline;
+                }
+
                 .message_sender {
                     /* Don't display message sender as flexbox for me-messages. */
                     display: block;
