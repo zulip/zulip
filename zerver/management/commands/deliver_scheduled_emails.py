@@ -1,7 +1,6 @@
 """\
 Send email messages that have been queued for later delivery by
-various things (at this time invitation reminders and day1/day2
-followup emails).
+various things (e.g. invitation reminders and welcome emails).
 
 This management command is run via supervisor.
 """

@@ -587,7 +587,7 @@ i18n_urls = [
         name="confirm_email_change",
     ),
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
-    # including the welcome emails (day 1 & 2), missed PMs, etc.
+    # including welcome emails, missed direct messages, etc.
     path(
         "accounts/unsubscribe/<email_type>/<confirmation_key>",
         email_unsubscribe,
