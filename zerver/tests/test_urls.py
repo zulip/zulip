@@ -33,6 +33,23 @@ class PublicURLTest(ZulipTestCase):
                 msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}",
             )
 
+    def test_help_pages(self) -> None:
+        # Test all files in help documentation directory (except for 'index.md',
+        # 'missing.md' and `help/include/` files).
+
+        help_urls = []
+        for doc in os.listdir("./help/"):
+            if doc.startswith(".") or "~" in doc or "#" in doc:
+                continue  # nocoverage -- just here for convenience
+            if doc in {"index.md", "include", "missing.md"}:
+                continue
+            url = "/help/" + os.path.splitext(doc)[0]  # Strip the extension.
+            help_urls.append(url)
+
+        # We have lots of help files, so this will be expensive!
+        self.assertGreater(len(help_urls), 190)
+        self.fetch("client_get", help_urls, 200)
+
     def test_public_urls(self) -> None:
         """
         Test which views are accessible when not logged in.
@@ -72,14 +89,6 @@ class PublicURLTest(ZulipTestCase):
                 "/help/" + "z" * 1000,
             ],
         }
-
-        # Add all files in help documentation directory (except for 'index.md',
-        # 'missing.md' and `help/include/` files) to `get_urls['200']` list.
-        for doc in os.listdir("./help/"):
-            if doc.startswith(".") or "~" in doc or "#" in doc:
-                continue  # nocoverage -- just here for convenience
-            if doc not in {"index.md", "include", "missing.md"}:
-                get_urls[200].append("/help/" + os.path.splitext(doc)[0])  # Strip the extension.
 
         post_urls = {
             200: ["/accounts/login/"],
