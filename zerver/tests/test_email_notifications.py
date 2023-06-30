@@ -30,6 +30,7 @@ from zerver.lib.email_notifications import (
     handle_missedmessage_emails,
     include_realm_name_in_missedmessage_emails_subject,
     relative_to_full_url,
+    send_account_registered_email,
 )
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
@@ -224,7 +225,7 @@ class TestCustomEmails(ZulipTestCase):
 class TestFollowupEmails(ZulipTestCase):
     def test_day1_email_context(self) -> None:
         hamlet = self.example_user("hamlet")
-        enqueue_welcome_emails(hamlet)
+        send_account_registered_email(hamlet)
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
         )
@@ -240,7 +241,7 @@ class TestFollowupEmails(ZulipTestCase):
         ScheduledEmail.objects.all().delete()
 
         iago = self.example_user("iago")
-        enqueue_welcome_emails(iago)
+        send_account_registered_email(iago)
         scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
         email_data = orjson.loads(scheduled_emails[0].data)
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
@@ -344,6 +345,7 @@ class TestFollowupEmails(ZulipTestCase):
         realm = get_realm("zulip")
 
         # Hamlet has account only in Zulip realm so day1, day2 and zulip_guide emails should be sent
+        send_account_registered_email(self.example_user("hamlet"))
         enqueue_welcome_emails(self.example_user("hamlet"))
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
@@ -368,6 +370,7 @@ class TestFollowupEmails(ZulipTestCase):
         realm.save()
 
         # Hamlet is not an admin so the `/for/communities/` zulip_guide should not be sent
+        send_account_registered_email(self.example_user("hamlet"))
         enqueue_welcome_emails(self.example_user("hamlet"))
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet).order_by(
             "scheduled_timestamp"
@@ -383,6 +386,7 @@ class TestFollowupEmails(ZulipTestCase):
         ScheduledEmail.objects.all().delete()
 
         # Iago is an admin so the `/for/communities/` zulip_guide should be sent
+        send_account_registered_email(self.example_user("iago"))
         enqueue_welcome_emails(self.example_user("iago"))
         scheduled_emails = ScheduledEmail.objects.filter(users=iago).order_by("scheduled_timestamp")
         self.assert_length(scheduled_emails, 3)
@@ -404,6 +408,7 @@ class TestFollowupEmails(ZulipTestCase):
         realm.save()
 
         # Cordelia has account in more than 1 realm so day2 email should not be sent
+        send_account_registered_email(self.example_user("cordelia"))
         enqueue_welcome_emails(self.example_user("cordelia"))
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
             "scheduled_timestamp"
@@ -428,6 +433,7 @@ class TestFollowupEmails(ZulipTestCase):
         realm.save()
 
         # In this case, Cordelia should only be sent the day1 email
+        send_account_registered_email(self.example_user("cordelia"))
         enqueue_welcome_emails(self.example_user("cordelia"))
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         self.assert_length(scheduled_emails, 1)
@@ -437,7 +443,8 @@ class TestFollowupEmails(ZulipTestCase):
 
     def test_followup_emails_for_regular_realms(self) -> None:
         cordelia = self.example_user("cordelia")
-        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+        send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
+        enqueue_welcome_emails(self.example_user("cordelia"))
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
             "scheduled_timestamp"
         )
@@ -466,7 +473,8 @@ class TestFollowupEmails(ZulipTestCase):
             days=30
         )
         cordelia.realm.save()
-        enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
+        send_account_registered_email(self.example_user("cordelia"), realm_creation=True)
+        enqueue_welcome_emails(self.example_user("cordelia"))
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia).order_by(
             "scheduled_timestamp"
         )
@@ -500,10 +508,7 @@ class TestFollowupEmails(ZulipTestCase):
             enqueue_welcome_emails(self.example_user("cordelia"))
 
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
-        self.assert_length(scheduled_emails, 1)
-        self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
-        )
+        self.assert_length(scheduled_emails, 0)
         self.assertEqual(
             m.output,
             [f"ERROR:root:Unknown organization type '{invalid_org_type_id}'"],
@@ -2185,8 +2190,8 @@ class TestFollowupEmailDelay(ZulipTestCase):
         )
 
 
-class TestCustomEmailSender(ZulipTestCase):
-    def test_custom_email_sender(self) -> None:
+class TestCustomWelcomeEmailSender(ZulipTestCase):
+    def test_custom_welcome_email_sender(self) -> None:
         name = "Nonreg Email"
         email = self.nonreg_email("test")
         with override_settings(
@@ -2201,6 +2206,5 @@ class TestCustomEmailSender(ZulipTestCase):
                 "scheduled_timestamp"
             )
             email_data = orjson.loads(scheduled_emails[0].data)
-            self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
             self.assertEqual(email_data["from_name"], name)
             self.assertEqual(email_data["from_address"], email)

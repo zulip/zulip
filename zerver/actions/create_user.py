@@ -19,7 +19,7 @@ from zerver.actions.users import change_user_is_active, get_service_dicts_for_bo
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
-from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
@@ -277,7 +277,11 @@ def process_new_human_user(
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)
     if realm.send_welcome_emails:
-        enqueue_welcome_emails(user_profile, realm_creation)
+        enqueue_welcome_emails(user_profile)
+
+    # Schedule an initial email with the user's
+    # new account details and log-in information.
+    send_account_registered_email(user_profile, realm_creation)
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
