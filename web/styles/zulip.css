@@ -83,8 +83,10 @@ body {
     --right-sidebar-width: 250px;
 
     /*
-    Message box line-height.
+    Message box elements and values.
     */
+    --message-box-avatar-width: 35px;
+    --message-box-avatar-height: var(--message-box-avatar-width);
     --message-box-line-height: 1.214;
 
     /*
@@ -1851,8 +1853,12 @@ div.focused_table {
 
 .inline_profile_picture {
     display: inline-block;
-    width: 35px;
-    height: 35px;
+    width: var(--message-box-avatar-width);
+    height: var(--message-box-avatar-height);
+    /* Don't inherit the line-height from message-avatar;
+       this preserves the dimensions and rounded corners
+       on the image itself. */
+    line-height: 1;
     margin-right: 11px;
     vertical-align: top;
     border-radius: 4px;
