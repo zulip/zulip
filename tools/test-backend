@@ -395,7 +395,12 @@ def main() -> None:
     # dynamic resolution of the test runner type with the django-stubs mypy plugin.
     TestRunner = cast("Type[Runner]", get_runner(settings))
 
-    parallel = default_parallel if options.processes is None else options.processes
+    if options.processes:
+        parallel = options.processes
+    elif options.profile:
+        parallel = 1
+    else:
+        parallel = default_parallel
     if parallel > 1:
         print(f"-- Running tests in parallel mode with {parallel} processes.", flush=True)
     else:
