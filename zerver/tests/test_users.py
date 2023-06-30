@@ -1618,7 +1618,7 @@ class ActivateTest(ZulipTestCase):
     def test_clear_scheduled_jobs(self) -> None:
         user = self.example_user("hamlet")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             user.realm,
             to_user_ids=[user.id],
             delay=datetime.timedelta(hours=1),
@@ -1631,7 +1631,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1647,7 +1647,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1662,7 +1662,7 @@ class ActivateTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=[hamlet.id, iago.id],
             delay=datetime.timedelta(hours=1),
@@ -1688,7 +1688,7 @@ class ActivateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         to_user_ids = [hamlet.id, iago.id]
         send_future_email(
-            "zerver/emails/followup_day1",
+            "zerver/emails/followup_day2",
             iago.realm,
             to_user_ids=to_user_ids,
             delay=datetime.timedelta(hours=1),
@@ -1711,7 +1711,7 @@ class ActivateTest(ZulipTestCase):
             [
                 f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
                 "had empty users and address attributes: "
-                "{'template_prefix': 'zerver/emails/followup_day1', 'from_name': None, "
+                "{'template_prefix': 'zerver/emails/followup_day2', 'from_name': None, "
                 "'from_address': None, 'language': None, 'context': {}}"
             ],
         )
