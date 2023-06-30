@@ -243,11 +243,26 @@ $time_column_max_width: 150px;
                 .message_sender {
                     /* Don't display message sender as flexbox for me-messages. */
                     display: block;
-                    /* This preserves a consistent bottom padding on the me-message
+                    /* This preserves a consistent bottom spacing on the me-message
                        grid, which ordinarily benefits from the margin of <p>
                        elements in the markdown--which single-line me-messages do
-                       not receive. */
-                    margin-bottom: 3px;
+                       not receive.
+
+                       It also ensures a uniform space-relationship between the top: of the avatar and the top of the sender_name line.
+
+                       However, this should all arguably be handled from the grid
+                       container or grid definition itself.
+
+                       TODO: Improve the variable name below; note use with bot
+                       icon, which should likewise be reframed somehow. */
+                    margin: $sender_name_distance_below_flex_center 0;
+
+                    /* Set the same line-height as on message content for
+                       me-messages.
+
+                       TODO: Make this value a CSS variable. */
+
+                    line-height: 1.214;
 
                     /* Display message components inline, with wrapping white-space,
                        so the sender name and message display as a continuous line
@@ -325,13 +340,11 @@ $time_column_max_width: 150px;
                    message-box grid's baseline group, too. */
                 align-items: baseline;
 
+                margin-top: $sender_name_distance_below_flex_center;
+
                 .zulip-icon.zulip-icon-bot {
                     align-self: center;
                     padding: $sender_name_distance_below_flex_center 0 0 5px;
-                }
-
-                .sender_name {
-                    margin-top: $sender_name_distance_below_flex_center;
                 }
 
                 .sender_name,
