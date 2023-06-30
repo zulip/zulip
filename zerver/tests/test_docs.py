@@ -38,6 +38,20 @@ class DocPageTest(ZulipTestCase):
             print("ERROR: {}".format(content.get("msg")))
             print()
 
+    def _is_landing_page(self, url: str) -> bool:
+        for prefix in [
+            "/api/",
+            "/devlogin/",
+            "/devtools/",
+            "/emails/",
+            "/errors/",
+            "/help/",
+            "/integrations/",
+        ]:
+            if url.startswith(prefix):
+                return False
+        return True
+
     def _test_normal_path(
         self,
         *,
@@ -45,7 +59,6 @@ class DocPageTest(ZulipTestCase):
         expected_content: str,
         extra_strings: Sequence[str],
         landing_missing_strings: Sequence[str],
-        landing_page: bool,
         doc_html_str: bool,
         search_disabled: bool,
     ) -> None:
@@ -63,7 +76,7 @@ class DocPageTest(ZulipTestCase):
         for s in extra_strings:
             self.assertIn(s, str(result.content))
 
-        if not landing_page:
+        if not self._is_landing_page(url):
             return
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
@@ -104,7 +117,6 @@ class DocPageTest(ZulipTestCase):
         expected_content: str,
         extra_strings: Sequence[str],
         landing_missing_strings: Sequence[str],
-        landing_page: bool,
         doc_html_str: bool,
         search_disabled: bool,
     ) -> None:
@@ -121,7 +133,7 @@ class DocPageTest(ZulipTestCase):
                 ['<meta name="robots" content="noindex,nofollow" />'], result
             )
 
-        if not landing_page:
+        if not self._is_landing_page(url):
             return
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
@@ -144,7 +156,6 @@ class DocPageTest(ZulipTestCase):
         expected_content: str,
         extra_strings: Sequence[str] = [],
         landing_missing_strings: Sequence[str] = [],
-        landing_page: bool = True,
         doc_html_str: bool = False,
         search_disabled: bool = False,
     ) -> None:
@@ -153,7 +164,6 @@ class DocPageTest(ZulipTestCase):
             expected_content=expected_content,
             extra_strings=extra_strings,
             landing_missing_strings=landing_missing_strings,
-            landing_page=landing_page,
             doc_html_str=doc_html_str,
             search_disabled=search_disabled,
         )
@@ -162,7 +172,6 @@ class DocPageTest(ZulipTestCase):
             expected_content=expected_content,
             extra_strings=extra_strings,
             landing_missing_strings=landing_missing_strings,
-            landing_page=landing_page,
             doc_html_str=doc_html_str,
             search_disabled=search_disabled,
         )
@@ -224,7 +233,6 @@ class DocPageTest(ZulipTestCase):
                 expected_content=expected_content,
                 extra_strings=[],
                 landing_missing_strings=[],
-                landing_page=True,
                 doc_html_str=True,
                 search_disabled=False,
             )
@@ -249,15 +257,13 @@ class DocPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 404)
 
     def test_dev_environment_endpoints(self) -> None:
-        self._test("/devlogin/", "Normal users", landing_page=False)
-        self._test("/devtools/", "Useful development URLs", landing_page=False)
-        self._test(
-            "/emails/", "manually generate most of the emails by clicking", landing_page=False
-        )
+        self._test("/devlogin/", "Normal users")
+        self._test("/devtools/", "Useful development URLs")
+        self._test("/emails/", "manually generate most of the emails by clicking")
 
     def test_error_endpoints(self) -> None:
-        self._test("/errors/404/", "Page not found", landing_page=False)
-        self._test("/errors/5xx/", "Internal server error", landing_page=False)
+        self._test("/errors/404/", "Page not found")
+        self._test("/errors/5xx/", "Internal server error")
 
     def test_corporate_portico_endpoints(self) -> None:
         self._test("/team/", "industry veterans")
