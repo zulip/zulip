@@ -403,7 +403,7 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
             )  # Generates emails and redirects to /emails/
             self.assertEqual("/emails/", result["Location"])  # Make sure redirect URL is correct.
 
-            # The above call to /emails/generate/ creates 15 emails and
+            # The above call to /emails/generate/ creates the emails and
             # logs the below line for every email.
             output_log = (
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
