@@ -84,12 +84,7 @@ class DocPageTest(ZulipTestCase):
             )
         return result
 
-    def _test_normal_path(
-        self,
-        *,
-        url: str,
-        expected_strings: Sequence[str],
-    ) -> None:
+    def _test(self, url: str, expected_strings: Sequence[str]) -> None:
         # Test the URL on the root subdomain
         self._check_basic_fetch(
             url=url,
@@ -123,45 +118,40 @@ class DocPageTest(ZulipTestCase):
                     result,
                 )
 
-    def _test_zephyr_path(
-        self,
-        *,
-        url: str,
-        expected_strings: Sequence[str],
-    ) -> None:
-        # Test the URL on the "zephyr" subdomain
-        self._check_basic_fetch(
-            url=url,
-            subdomain="zephyr",
-            expected_strings=expected_strings,
-            allow_robots=False,
-        )
+    def test_zephyr_disallows_robots(self) -> None:
+        sample_urls = [
+            "/apps/",
+            "/case-studies/end-point/",
+            "/communities/",
+            "/devlogin/",
+            "/devtools/",
+            "/emails/",
+            "/errors/404/",
+            "/errors/5xx/",
+            "/integrations/",
+            "/integrations/",
+            "/integrations/bots",
+            "/integrations/doc-html/asana",
+            "/integrations/doc/github",
+            "/team/",
+        ]
 
-        if not self._is_landing_page(url):
-            return
-
-        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            # Test the URL on the "zephyr" subdomain with the landing page setting
+        for url in sample_urls:
             self._check_basic_fetch(
                 url=url,
                 subdomain="zephyr",
-                expected_strings=expected_strings,
+                expected_strings=[],
                 allow_robots=False,
             )
 
-    def _test(
-        self,
-        url: str,
-        expected_strings: Sequence[str] = [],
-    ) -> None:
-        self._test_normal_path(
-            url=url,
-            expected_strings=expected_strings,
-        )
-        self._test_zephyr_path(
-            url=url,
-            expected_strings=expected_strings,
-        )
+            if self._is_landing_page(url):
+                with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+                    self._check_basic_fetch(
+                        url=url,
+                        subdomain="zephyr",
+                        expected_strings=[],
+                        allow_robots=False,
+                    )
 
     def test_api_doc_endpoints(self) -> None:
         # We extract the set of /api/ endpoints to check by parsing
@@ -215,7 +205,7 @@ class DocPageTest(ZulipTestCase):
                 # TODO: Just fill out dictionary for all ~110 endpoints
                 expected_strings = []
 
-            self._test_normal_path(
+            self._test(
                 url=url,
                 expected_strings=expected_strings,
             )
