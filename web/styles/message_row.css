@@ -242,6 +242,13 @@ $time_column_min_width: 50px; /* + padding */
                     ".      more      .        . .   "
                     ".      reactions .        . .   ";
 
+                .message-avatar {
+                    /* Set the line-height to match the height of the avatar image
+                       to center me-messages within the baseline group. */
+                    line-height: var(--message-box-avatar-height);
+                    align-self: baseline;
+                }
+
                 .message_sender {
                     /* Don't display message sender as flexbox for me-messages. */
                     display: block;
