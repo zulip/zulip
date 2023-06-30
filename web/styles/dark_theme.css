@@ -475,7 +475,7 @@
     select,
     .pill-container,
     .user-status-content-wrapper,
-    #custom-expiration-time-input,
+    .custom-input-time-value,
     #searchbox #search_query,
     #org-join-settings .dropdown-widget-button {
         background-color: hsl(0deg 0% 0% / 20%);

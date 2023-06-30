@@ -2523,7 +2523,7 @@ textarea.invitee_emails {
     }
 }
 
-#custom-expiration-time-input,
+.custom-input-time-value,
 #invite-user-form {
     margin: 0;
 }
@@ -2564,7 +2564,7 @@ textarea.invitee_emails {
     }
 }
 
-#custom-expiration-time-input {
+.custom-input-time-value {
     width: 5ch;
     margin-right: 15px;
 
@@ -2586,7 +2586,7 @@ textarea.invitee_emails {
     }
 }
 
-#custom-expiration-time-unit {
+.custom-input-time-unit {
     width: auto;
 }
 
