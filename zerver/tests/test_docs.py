@@ -89,10 +89,9 @@ class DocPageTest(ZulipTestCase):
         *,
         url: str,
         expected_strings: Sequence[str],
-        landing_missing_strings: Sequence[str],
     ) -> None:
         # Test the URL on the root subdomain
-        result = self._check_basic_fetch(
+        self._check_basic_fetch(
             url=url,
             subdomain="",
             expected_strings=expected_strings,
@@ -110,9 +109,6 @@ class DocPageTest(ZulipTestCase):
                 expected_strings=expected_strings,
                 allow_robots=True,
             )
-
-            for s in landing_missing_strings:
-                self.assertNotIn(s, str(result.content))
 
             # Confirm page has the following HTML elements:
             # (I have no idea why we don't support this for /attribution/.)
@@ -132,7 +128,6 @@ class DocPageTest(ZulipTestCase):
         *,
         url: str,
         expected_strings: Sequence[str],
-        landing_missing_strings: Sequence[str],
     ) -> None:
         # Test the URL on the "zephyr" subdomain
         self._check_basic_fetch(
@@ -158,17 +153,14 @@ class DocPageTest(ZulipTestCase):
         self,
         url: str,
         expected_strings: Sequence[str] = [],
-        landing_missing_strings: Sequence[str] = [],
     ) -> None:
         self._test_normal_path(
             url=url,
             expected_strings=expected_strings,
-            landing_missing_strings=landing_missing_strings,
         )
         self._test_zephyr_path(
             url=url,
             expected_strings=expected_strings,
-            landing_missing_strings=landing_missing_strings,
         )
 
     def test_api_doc_endpoints(self) -> None:
@@ -226,7 +218,6 @@ class DocPageTest(ZulipTestCase):
             self._test_normal_path(
                 url=url,
                 expected_strings=expected_strings,
-                landing_missing_strings=[],
             )
 
         # Make sure we exercised all content checks.
@@ -265,7 +256,7 @@ class DocPageTest(ZulipTestCase):
         # Test the i18n version of one of these pages.
         self._test("/en/history/", ["Zulip released as open source!"])
         self._test("/values/", ["designed our company"])
-        self._test("/hello/", ["Chat for distributed teams"], landing_missing_strings=["xyz"])
+        self._test("/hello/", ["Chat for distributed teams"])
         self._test("/communities/", ["Open communities directory"])
         self._test("/development-community/", ["Zulip development community"])
         self._test("/features/", ["Beautiful messaging"])
