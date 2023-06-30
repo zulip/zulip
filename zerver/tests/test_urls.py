@@ -1,6 +1,7 @@
 import importlib
 import os
 from typing import List
+from unittest import mock
 
 import django.urls.resolvers
 from django.test import Client
@@ -48,7 +49,17 @@ class PublicURLTest(ZulipTestCase):
 
         # We have lots of help files, so this will be expensive!
         self.assertGreater(len(help_urls), 190)
-        self.fetch("client_get", help_urls, 200)
+
+        expected_tag = """<meta property="og:description" content="This is a help page" />"""
+
+        for url in help_urls:
+            with mock.patch(
+                "zerver.lib.html_to_text.html_to_text", return_value="This is a help page"
+            ) as m:
+                response = self.client_get(url)
+                m.assert_called_once()
+                self.assertIn(expected_tag, response.content.decode())
+                self.assertEqual(response.status_code, 200)
 
     def test_public_urls(self) -> None:
         """
