@@ -17,11 +17,14 @@ export function message_unhover() {
 
 export function message_hover($message_row) {
     const id = rows.id($message_row);
+    const message = message_lists.current.get(id);
+
     if ($current_message_hover && rows.id($current_message_hover) === id) {
+        return;
+    } else if (message.locally_echoed) {
         return;
     }
 
-    const message = message_lists.current.get(rows.id($message_row));
     message_unhover();
     $current_message_hover = $message_row;
 
