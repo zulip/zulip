@@ -1,55 +1,13 @@
-# Edit or delete a message
+# Delete a message
 
-Zulip makes it possible to edit the content of your messages, letting you fix
-typos, clarify your thoughts, etc. You can also delete your messages if this is
-allowed in your organization.
+Zulip lets you delete the content of your messages or delete messages completely
+if these actions are allowed in your organization. Only server administrators
+can restore deleted messages.
 
 Organization administrators can
 [configure](/help/restrict-message-editing-and-deletion) who can edit and delete
 messages, and set time limits for these actions. Administrators can delete other
-users' messages, but can never edit the content.
-
-!!! tip ""
-
-    You can also [edit message topics](/help/rename-a-topic).
-
-## Edit a message
-
-{start_tabs}
-
-{tab|desktop-web}
-
-{!message-actions.md!}
-
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon.  If you do not see
-   the **pencil** (<i class="fa fa-pencil"></i>) icon, you do not have
-   permission to edit this message.
-
-1. Edit the content of the message.
-
-1. Click **Save**.
-
-{tab|mobile}
-
-{!message-long-press-menu.md!}
-
-1. Tap **Edit message**.  If you do not see the **Edit message** option, you do
-   not have permission to edit this message.
-
-1. Edit the content of the message.
-
-1. Approve by tapping the **checkmark**
-   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
-   button in the bottom right corner of the app.
-
-{end_tabs}
-
-!!! tip ""
-
-    After you have edited a message, the message is publicly
-    marked as **EDITED**. You can
-    [view a message's edit history](/help/view-a-messages-edit-history)
-    if it is [enabled](/help/disable-message-edit-history) in your organization.
+users' messages completely, but cannot edit a message to delete its content.
 
 ## Delete message content
 
@@ -127,8 +85,8 @@ the `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
 
 ## Related articles
 
-* [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [Delete a topic](/help/delete-a-topic)
 * [Archive a stream](/help/archive-a-stream)
 * [Message retention policy](/help/message-retention-policy)
+* [Edit a message](/help/edit-a-message)
 * [Restrict message editing and deletion](/help/restrict-message-editing-and-deletion)
