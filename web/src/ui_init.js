@@ -5,7 +5,6 @@ import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json
 import generated_pygments_data from "../generated/pygments_data.json";
 import * as fenced_code from "../shared/src/fenced_code";
 import render_compose from "../templates/compose.hbs";
-import render_edit_content_button from "../templates/edit_content_button.hbs";
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
@@ -49,9 +48,9 @@ import * as linkifiers from "./linkifiers";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
-import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_fetch from "./message_fetch";
+import * as message_list_hover from "./message_list_hover";
 import * as message_list_tooltips from "./message_list_tooltips";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
@@ -79,7 +78,6 @@ import * as recent_view_ui from "./recent_view_ui";
 import * as reload from "./reload";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
-import * as rows from "./rows";
 import * as scheduled_messages from "./scheduled_messages";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
 import * as scroll_bar from "./scroll_bar";
@@ -134,51 +132,6 @@ import * as user_topics from "./user_topics";
 /* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
-
-let $current_message_hover;
-function message_unhover() {
-    if ($current_message_hover === undefined) {
-        return;
-    }
-    $current_message_hover.find("span.edit_content").empty();
-    $current_message_hover = undefined;
-}
-
-function message_hover($message_row) {
-    const id = rows.id($message_row);
-    if ($current_message_hover && rows.id($current_message_hover) === id) {
-        return;
-    }
-
-    const message = message_lists.current.get(rows.id($message_row));
-    message_unhover();
-    $current_message_hover = $message_row;
-
-    if (!message.sent_by_me) {
-        // The actions and reactions icon hover logic is handled entirely by CSS
-        return;
-    }
-
-    // But the message edit hover icon is determined by whether the message is still editable
-    const is_content_editable = message_edit.is_content_editable(message);
-
-    const can_move_message = message_edit.can_move_message(message);
-    const args = {
-        is_content_editable: is_content_editable && !message.status_message,
-        can_move_message,
-        msg_id: id,
-    };
-    const $edit_content = $message_row.find(".edit_content");
-    $edit_content.html(render_edit_content_button(args));
-
-    let data_template_id = "view-source-tooltip-template";
-    if (args.is_content_editable) {
-        data_template_id = "edit-content-tooltip-template";
-    } else if (args.can_move_message) {
-        data_template_id = "move-message-tooltip-template";
-    }
-    $edit_content.attr("data-tooltip-template-id", data_template_id);
-}
 
 function initialize_bottom_whitespace() {
     $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
@@ -345,58 +298,6 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("more_dense_mode");
     }
 
-    $("#main_div").on("mouseover", ".message-list .message_row", function () {
-        const $row = $(this).closest(".message_row");
-        message_hover($row);
-    });
-
-    $("#main_div").on("mouseleave", ".message-list .message_row", () => {
-        message_unhover();
-    });
-
-    $("#main_div").on("mouseover", ".sender_info_hover", function () {
-        const $row = $(this).closest(".message_row");
-        $row.addClass("sender_name_hovered");
-    });
-
-    $("#main_div").on("mouseout", ".sender_info_hover", function () {
-        const $row = $(this).closest(".message_row");
-        $row.removeClass("sender_name_hovered");
-    });
-
-    function handle_video_preview_mouseenter($elem) {
-        // Set image height and css vars for play button position, if not done already
-        const setPosition = !$elem.data("entered-before");
-        if (setPosition) {
-            const imgW = $elem.find("img")[0].width;
-            const imgH = $elem.find("img")[0].height;
-            // Ensure height doesn't change on mouse enter
-            $elem.css("height", `${imgH}px`);
-            // variables to set play button position
-            const marginLeft = (imgW - 30) / 2;
-            const marginTop = (imgH - 26) / 2;
-            $elem.css("--margin-left", `${marginLeft}px`).css("--margin-top", `${marginTop}px`);
-            $elem.data("entered-before", true);
-        }
-        $elem.addClass("fa fa-play");
-    }
-
-    $("#main_div").on("mouseenter", ".youtube-video a", function () {
-        handle_video_preview_mouseenter($(this));
-    });
-
-    $("#main_div").on("mouseleave", ".youtube-video a", function () {
-        $(this).removeClass("fa fa-play");
-    });
-
-    $("#main_div").on("mouseenter", ".embed-video a", function () {
-        handle_video_preview_mouseenter($(this));
-    });
-
-    $("#main_div").on("mouseleave", ".embed-video a", function () {
-        $(this).removeClass("fa fa-play");
-    });
-
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
     });
@@ -452,18 +353,6 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
         }
-    });
-
-    $("body").on("mouseover", ".message_edit_content", function () {
-        $(this).closest(".message_row").find(".copy_message").show();
-    });
-
-    $("body").on("mouseout", ".message_edit_content", function () {
-        $(this).closest(".message_row").find(".copy_message").hide();
-    });
-
-    $("body").on("mouseenter", ".copy_message", function () {
-        $(this).show();
     });
 
     if (!page_params.realm_allow_message_editing) {
@@ -691,6 +580,7 @@ export function initialize_everything() {
     scroll_bar.initialize();
     message_viewport.initialize();
     navbar_alerts.initialize();
+    message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize({on_send_message_success: compose.send_message_success});
     stream_edit.initialize();
