@@ -36,6 +36,7 @@ from zerver.lib.url_encoding import (
 )
 from zerver.models import (
     Message,
+    NotificationTriggers,
     Realm,
     Recipient,
     Stream,
@@ -524,7 +525,8 @@ def do_send_missedmessage_events_reply_in_zulip(
                 {
                     m["message"].sender
                     for m in missed_messages
-                    if m["trigger"] == "mentioned" or m["trigger"] == "wildcard_mentioned"
+                    if m["trigger"] == NotificationTriggers.MENTION
+                    or m["trigger"] == NotificationTriggers.WILDCARD_MENTION
                 }
             )
         message = missed_messages[0]["message"]
