@@ -1826,61 +1826,29 @@ class MarkdownTest(ZulipTestCase):
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)
 
-    def test_mention_wildcard(self) -> None:
+    def test_mention_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@**all** test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(
-            rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">@all</span> test</p>',
-        )
-        self.assertTrue(rendering_result.mentions_stream_wildcard)
+        for stream_wildcard in stream_wildcards:
+            content = f"@**{stream_wildcard}** test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f'<p><span class="user-mention" data-user-id="*">@{stream_wildcard}</span> test</p>',
+            )
+            self.assertTrue(rendering_result.mentions_stream_wildcard)
 
-    def test_mention_everyone(self) -> None:
+    def test_mention_at_stream_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        content = "@**everyone** test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(
-            rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">@everyone</span> test</p>',
-        )
-        self.assertTrue(rendering_result.mentions_stream_wildcard)
-
-    def test_mention_stream(self) -> None:
-        user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
-
-        content = "@**stream** test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(
-            rendering_result.rendered_content,
-            '<p><span class="user-mention" data-user-id="*">@stream</span> test</p>',
-        )
-        self.assertTrue(rendering_result.mentions_stream_wildcard)
-
-    def test_mention_at_wildcard(self) -> None:
-        user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
-
-        content = "@all test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(rendering_result.rendered_content, "<p>@all test</p>")
-        self.assertFalse(rendering_result.mentions_stream_wildcard)
-        self.assertEqual(rendering_result.mentions_user_ids, set())
-
-    def test_mention_at_everyone(self) -> None:
-        user_profile = self.example_user("othello")
-        msg = Message(sender=user_profile, sending_client=get_client("test"))
-
-        content = "@everyone test"
-        rendering_result = render_markdown(msg, content)
-        self.assertEqual(rendering_result.rendered_content, "<p>@everyone test</p>")
-        self.assertFalse(rendering_result.mentions_stream_wildcard)
-        self.assertEqual(rendering_result.mentions_user_ids, set())
+        for stream_wildcard in stream_wildcards:
+            content = f"@{stream_wildcard} test"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(rendering_result.rendered_content, f"<p>@{stream_wildcard} test</p>")
+            self.assertFalse(rendering_result.mentions_stream_wildcard)
+            self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_mention_word_starting_with_at_wildcard(self) -> None:
         user_profile = self.example_user("othello")
