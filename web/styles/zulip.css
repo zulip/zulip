@@ -782,6 +782,7 @@ li,
     width: 10px;
     padding: 6px;
     display: block;
+    cursor: pointer;
     /* The below two avoids the padded element from displaying
     its own border and background color */
     border: none;
