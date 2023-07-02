@@ -791,9 +791,29 @@ li,
     icon is clickable and is needed because of reduced
     opacity of readonly textarea */
     z-index: 2;
+    transition: transform 0.3s ease;
 
     &:hover svg path {
         fill: hsl(200deg 100% 40%);
+        animation: pulse 1s infinite;
+    }
+}
+
+.copy_button_base svg path {
+    transition: transform 0.3s ease;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
     }
 }
 
