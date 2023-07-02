@@ -582,6 +582,12 @@ A temporary team so that I can get some webhook fixtures!
         expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment\n~~~"
         self.check_webhook("discussion_comment", TOPIC_DISCUSSION, expected_message)
 
+    def test_discussion_comment_msg_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20 Lets discuss](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment\n~~~"
+        self.check_webhook("discussion_comment", expected_topic, expected_message)
+
     def test_discussion_comment_edited_msg(self) -> None:
-        expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment edited\n~~~"
+        expected_message = "sbansal1999 edited a [comment](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment edited\n~~~"
         self.check_webhook("discussion_comment__edited", TOPIC_DISCUSSION, expected_message)
