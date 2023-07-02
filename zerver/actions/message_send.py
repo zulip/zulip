@@ -19,7 +19,9 @@ from typing import (
 )
 
 import orjson
+import user_profile
 from django.conf import settings
+from django.contrib.messages.context_processors import messages
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import F
@@ -70,6 +72,7 @@ from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import filter_by_exact_message_topic
+from zerver.lib.translate import translate_message
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.validator import check_widget_content
@@ -832,6 +835,13 @@ def do_send_messages(
             )
 
         bulk_insert_ums(ums)
+
+        # Modify the message payload to include the translated message
+        for msg in user_messages:
+            original_message = msg['content']
+            target_language_code = user_profile.default_language
+            translated_message = translate_message(original_message, target_language_code)
+            msg['translated_content'] = translated_message
 
         for send_request in send_message_requests:
             do_widget_post_save_actions(send_request)
