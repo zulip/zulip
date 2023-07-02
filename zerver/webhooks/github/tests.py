@@ -12,7 +12,7 @@ TOPIC_DEPLOYMENT = "public-repo / Deployment on production"
 TOPIC_ORGANIZATION = "baxterandthehackers organization"
 TOPIC_BRANCH = "public-repo / changes"
 TOPIC_WIKI = "public-repo / wiki pages"
-TOPIC_DISCUSSION = "public-repo discussion #90: Welcome to discussions!"
+TOPIC_DISCUSSION = "testing-gh discussion #20: Lets discuss"
 
 
 class GitHubWebhookTest(WebhookTestCase):
@@ -575,9 +575,9 @@ A temporary team so that I can get some webhook fixtures!
         self.assertTrue(stack_info)
 
     def test_discussion_msg(self) -> None:
-        expected_message = "Codertocat created [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90) in General:\n\n~~~ quote\n### Welcome to discussions!\nWe're glad to have you here!\n~~~"
+        expected_message = "sbansal1999 created [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20) in General:\n\n~~~ quote\n### Lets discuss\nSome random text about which no one cares.\r\n\n~~~"
         self.check_webhook("discussion", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_comment_msg(self) -> None:
-        expected_message = "Codertocat [commented](https://github.com/baxterthehacker/public-repo/discussions/90#discussioncomment-544078) on [discussion #90](https://github.com/baxterthehacker/public-repo/discussions/90):\n\n~~~ quote\nI have so many questions to ask you!\n~~~"
+        expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n~~~ quote\nsome random comment\n~~~"
         self.check_webhook("discussion_comment", TOPIC_DISCUSSION, expected_message)
