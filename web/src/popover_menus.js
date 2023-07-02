@@ -169,11 +169,7 @@ export function show_sender_info() {
             clearInterval(interval);
             const $items = get_popover_items_for_instance(get_current_user_card_instance());
 
-            if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
-                popovers.focus_first_popover_item($items, 1);
-            } else {
-                popovers.focus_first_popover_item($items);
-            }
+            popovers.focus_first_popover_item($items);
         }
     }, 50);
 }
@@ -979,7 +975,7 @@ export function initialize() {
         });
 
         $popper.one("click", ".compose_private_message", (e) => {
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             const email = people.get_by_user_id(user_id).email;
             compose_actions.start("private", {
                 trigger: "popover send private",
@@ -992,7 +988,7 @@ export function initialize() {
         });
 
         $popper.one("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             const email = people.get_by_user_id(user_id).email;
             popovers.hide_all();
             if (overlays.is_active()) {
@@ -1002,7 +998,7 @@ export function initialize() {
         });
 
         $popper.one("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             const email = people.get_by_user_id(user_id).email;
             popovers.hide_all();
             if (overlays.is_active()) {
@@ -1015,7 +1011,7 @@ export function initialize() {
             if (!compose_state.composing()) {
                 compose_actions.start("stream", {trigger: "sidebar user actions"});
             }
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             const name = people.get_by_user_id(user_id).full_name;
             const mention = people.get_mention_syntax(name, user_id);
             compose_ui.insert_syntax_and_focus(mention);
@@ -1023,16 +1019,15 @@ export function initialize() {
         });
 
         $popper.one("click", ".info_popover_actions .clear_status", (e) => {
-            const me = popovers.elem_to_user_id($(e.target).parents("ul"));
+            e.preventDefault();
+            const me = popovers.elem_to_user_id($(e.target).parents("nav"));
             user_status.server_update_status({
                 user_id: me,
                 status_text: "",
                 emoji_name: "",
                 emoji_code: "",
-                success() {
-                    $(".info_popover_actions #status_message").empty();
-                },
             });
+            popovers.hide_all();
         });
 
         $popper.one("click", ".invisible_mode_turn_on", () => {
@@ -1052,51 +1047,40 @@ export function initialize() {
         $popper.one("click", ".update_status_text", popovers.open_user_status_modal);
 
         $popper.one("click", ".info_popover_actions .view_full_user_profile", (e) => {
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             const user = people.get_by_user_id(user_id);
             user_profile.show_user_profile(user);
         });
         popover_menus_data.init_email_clipboard();
         popover_menus_data.init_email_tooltip(user);
 
-        // manage user popover click handlers:
-        $popper.on("click", ".user_info_popover_manage_menu_btn", (e) => {
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+        $popper.one("click", ".sidebar-popover-manage-user", (e) => {
+            e.stopPropagation();
+            popovers.hide_all();
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             const user = people.get_by_user_id(user_id);
-            popovers.show_user_info_popover_manage_menu(e.target, user);
+            if (user.is_bot) {
+                settings_bots.show_edit_bot_info_modal(user_id, true);
+            } else {
+                settings_users.show_edit_user_info_modal(user_id, true);
+            }
         });
 
-        $("body")
-            .off("click", ".sidebar-popover-manage-user")
-            .one("click", ".sidebar-popover-manage-user", (e) => {
-                e.stopPropagation();
-                popovers.hide_all();
-                const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
-                const user = people.get_by_user_id(user_id);
-                if (user.is_bot) {
-                    settings_bots.show_edit_bot_info_modal(user_id, true);
-                } else {
-                    settings_users.show_edit_user_info_modal(user_id, true);
-                }
-            });
+        $popper.one("click", ".sidebar-popover-mute-user", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
+            popovers.hide_all();
 
-        $("body")
-            .off("click", ".sidebar-popover-mute-user")
-            .one("click", ".sidebar-popover-mute-user", (e) => {
-                const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
-                popovers.hide_all();
+            muted_users_ui.confirm_mute_user(user_id);
+        });
 
-                muted_users_ui.confirm_mute_user(user_id);
-            });
-
-        $("body").on("click", ".sidebar-popover-unmute-user", (e) => {
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+        $popper.one("click", ".sidebar-popover-unmute-user", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             popovers.hide_all();
             muted_users_ui.unmute_user(user_id);
         });
 
-        $("body").on("click", ".sidebar-popover-reactivate-user", (e) => {
-            const user_id = popovers.elem_to_user_id($(e.target).parents("ul"));
+        $popper.one("click", ".sidebar-popover-reactivate-user", (e) => {
+            const user_id = popovers.elem_to_user_id($(e.target).parents("nav"));
             popovers.hide_all();
 
             function handle_confirm() {
@@ -1119,14 +1103,17 @@ export function initialize() {
             settings_users.confirm_reactivation(user_id, handle_confirm, true);
         });
 
+        $popper.find(".clear_status").each(function () {
+            tippy(this, {
+                placement: "top",
+                appendTo: document.body,
+                interactive: true,
+            });
+        });
+
         $(".simplebar-content-wrapper").on("scroll", () => {
             instance.hide();
         });
-    }
-
-    function get_boundary_padding() {
-        const bottomBoundary = $("body").outerHeight() - $("#compose-content").offset().top;
-        return {top: 10, bottom: bottomBoundary};
     }
 
     function placement_on_mobile(instance) {
@@ -1156,6 +1143,7 @@ export function initialize() {
     const user_card_options = {
         arrow: false,
         popperOptions: {
+            strategy: "fixed",
             modifiers: [
                 {
                     name: "flip",
@@ -1193,12 +1181,20 @@ export function initialize() {
             instance.setContent(parse_html(content.innerHTML));
             instance.setProps({
                 popperOptions: {
+                    strategy: "fixed",
                     modifiers: [
                         {
                             name: "preventOverflow",
                             options: {
                                 altAxis: true,
-                                padding: get_boundary_padding(),
+                                padding: {top: 10, bottom: $("#compose").outerHeight()},
+                            },
+                        },
+                        {
+                            name: "eventListeners",
+                            options: {
+                                scroll: false,
+                                resize: false,
                             },
                         },
                     ],

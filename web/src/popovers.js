@@ -4,7 +4,6 @@ import {hideAll} from "tippy.js";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
 import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
 import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
-import render_user_info_popover_manage_menu from "../templates/user_info_popover_manage_menu.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
@@ -12,9 +11,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
-import * as muted_users from "./muted_users";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
 import * as realm_playground from "./realm_playground";
@@ -79,39 +76,39 @@ export function hide_user_info_popover_manage_menu() {
     }
 }
 
-export function show_user_info_popover_manage_menu(element, user) {
-    const $last_popover_elem = $current_user_info_popover_manage_menu;
-    hide_user_info_popover_manage_menu();
-    if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
-        return;
-    }
+// export function show_user_info_popover_manage_menu(element, user) {
+//     const $last_popover_elem = $current_user_info_popover_manage_menu;
+//     hide_user_info_popover_manage_menu();
+//     if ($last_popover_elem !== undefined && $last_popover_elem.get()[0] === element) {
+//         return;
+//     }
 
-    const is_me = people.is_my_user_id(user.user_id);
-    const is_muted = muted_users.is_user_muted(user.user_id);
-    const is_system_bot = user.is_system_bot;
-    const muting_allowed = !is_me;
+//     const is_me = people.is_my_user_id(user.user_id);
+//     const is_muted = muted_users.is_user_muted(user.user_id);
+//     const is_system_bot = user.is_system_bot;
+//     const muting_allowed = !is_me;
 
-    const args = {
-        can_mute: muting_allowed && !is_muted,
-        can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
-        can_unmute: muting_allowed && is_muted,
-        is_active: people.is_active_user_for_popover(user.user_id),
-        is_bot: user.is_bot,
-        user_id: user.user_id,
-    };
+//     const args = {
+//         can_mute: muting_allowed && !is_muted,
+//         can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
+//         can_unmute: muting_allowed && is_muted,
+//         is_active: people.is_active_user_for_popover(user.user_id),
+//         is_bot: user.is_bot,
+//         user_id: user.user_id,
+//     };
 
-    const $popover_elt = $(element);
-    $popover_elt.popover({
-        content: render_user_info_popover_manage_menu(args),
-        placement: "bottom",
-        html: true,
-        trigger: "manual",
-        fixed: true,
-    });
+//     const $popover_elt = $(element);
+//     $popover_elt.popover({
+//         content: render_user_info_popover_manage_menu(args),
+//         placement: "bottom",
+//         html: true,
+//         trigger: "manual",
+//         fixed: true,
+//     });
 
-    $popover_elt.popover("show");
-    $current_user_info_popover_manage_menu = $popover_elt;
-}
+//     $popover_elt.popover("show");
+//     $current_user_info_popover_manage_menu = $popover_elt;
+// }
 
 // exporting for testability
 export const _test_calculate_info_popover_placement = calculate_info_popover_placement;
@@ -221,11 +218,11 @@ export function popover_items_handle_keyboard(key, $items) {
         return;
     }
     if (index === -1) {
-        if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
-            index = 1;
-        } else {
-            index = 0;
-        }
+        // if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
+        //     index = 1;
+        // } else {
+        index = 0;
+        // }
     } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
         index += 1;
     } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {

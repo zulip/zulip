@@ -660,15 +660,18 @@
 
     .tippy-box[data-theme~="light-border"],
     .dropdown-menu ul,
-    .dropdown .dropdown-menu,
-    .popover,
-    .popover-title,
-    .popover-content {
+    .dropdown .dropdown-menu {
         background-color: hsl(212deg 32% 14%);
     }
 
     .tippy_popover {
         color: hsl(236deg 33% 90%);
+        border: 1px solid hsl(0deg 0% 0% / 40%);
+
+        .popover-title,
+        .popover-content {
+            background-color: var(--bg-popover-dark);
+        }
     }
 
     .dropdown-menu a {
@@ -1542,6 +1545,58 @@
                     color: hsl(0deg 0% 100%);
                 }
             }
+        }
+    }
+
+    .user-info-popover-header {
+        background-color: var(--bg-popover-dark);
+
+        .full-name {
+            color: hsl(0deg 0% 100%);
+        }
+
+        .user-type {
+            color: hsl(0deg 0% 50%);
+        }
+    }
+
+    .popover-menu {
+        background-color: var(--bg-popover-dark);
+
+        .list {
+            border-color: hsl(0deg 0% 0% / 40%);
+        }
+
+        .text-item,
+        .user_popover_email a {
+            color: hsl(0deg 0% 50% / 100%);
+        }
+
+        .link-item {
+            & a {
+                color: hsl(0deg 0% 100% / 80%);
+
+                &:hover,
+                &:focus {
+                    background: hsl(0deg 0% 100% / 5%);
+                }
+
+                &:active {
+                    background: hsl(0deg 0% 100% / 10%);
+                }
+            }
+        }
+
+        .tooltip-hotkey-hint {
+            color: hsl(225deg 100% 84%);
+            border-color: hsl(225deg 100% 84%);
+        }
+    }
+
+    .user_popover_email {
+        & .success {
+            background: var(--color-success-light-green);
+            color: var(--color-success-green);
         }
     }
 }

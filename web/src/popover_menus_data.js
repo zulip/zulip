@@ -170,44 +170,29 @@ export function clipboard_enable(arg) {
 
 function copy_email_handler(e) {
     const $email_el = $(e.trigger.parentElement);
-    const $copy_icon = $email_el.find("i");
-
-    // only change the parent element's text back to email
-    // and not overwrite the tooltip.
-    const email_textnode = $email_el[0].childNodes[2];
 
     $email_el.addClass("email_copied");
-    email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
 
     setTimeout(() => {
         $email_el.removeClass("email_copied");
-        email_textnode.nodeValue = $copy_icon.attr("data-clipboard-text");
     }, 1500);
     e.clearSelection();
 }
 
 export function init_email_clipboard() {
-    /*
-        This shows (and enables) the copy-text icon for folks
-        who have names that would overflow past the right
-        edge of our user mention popup.
-    */
     $(".user_popover_email").each(function () {
-        if (this.clientWidth < this.scrollWidth) {
-            const $email_el = $(this);
-            const $copy_email_icon = $email_el.find("i");
+        const $email_el = $(this);
+        const $copy_email_icon = $email_el.find("a");
 
-            /*
-                For deactivated users, the copy-email icon will
-                not even be present in the HTML, so we don't do
-                anything.  We don't reveal emails for deactivated
-                users.
-            */
-            if ($copy_email_icon[0]) {
-                $copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
-                copy_email_clipboard.on("success", copy_email_handler);
-            }
+        /*
+            For deactivated users, the copy-email icon will
+            not even be present in the HTML, so we don't do
+            anything.  We don't reveal emails for deactivated
+            users.
+        */
+        if ($copy_email_icon[0]) {
+            const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
+            copy_email_clipboard.on("success", copy_email_handler);
         }
     });
 }
@@ -219,11 +204,12 @@ export function init_email_tooltip(user) {
         edge of our user mention popup.
     */
 
-    $(".user_popover_email").each(function () {
+    $(".user_popover_email .text").each(function () {
         if (this.clientWidth < this.scrollWidth) {
             tippy(this, {
-                placement: "bottom",
+                placement: "top",
                 content: people.get_visible_email(user),
+                appendTo: document.body,
                 interactive: true,
             });
         }
@@ -260,6 +246,7 @@ export function render_user_info_popover(
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
     const spectator_view = page_params.is_spectator;
+    const is_muted = muted_users.is_user_muted(user.user_id);
 
     // TODO: The show_manage_menu calculation can get a lot simpler
     // if/when we allow muting bot users.
@@ -312,6 +299,9 @@ export function render_user_info_popover(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
+        can_mute: muting_allowed && !is_muted,
+        can_manage_user: page_params.is_admin && !is_me && !is_system_bot,
+        can_unmute: muting_allowed && is_muted,
     };
 
     if (user.is_bot) {

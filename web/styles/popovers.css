@@ -58,17 +58,21 @@
 
 .tippy_popover {
     width: auto;
+    min-width: 240px;
     z-index: 1010;
     border-radius: 6px;
     color: inherit;
     padding: 0;
-    border: 1px solid hsl(0deg 0% 0% / 20%);
+    border: 1px solid hsl(0deg 0% 0% / 40%);
     box-shadow: 0 5px 10px hsl(0deg 0% 0% / 20%);
     white-space: normal;
+    overflow: auto;
 
-    .popover-title {
+    .popover-title,
+    .popover-content {
         padding: 0;
-        border-color: hsl(0deg 0% 0% / 20%);
+        border: 0;
+        background-color: var(--bg-popover-light);
     }
 
     .popover_info li {
@@ -94,10 +98,6 @@
     .tippy-box {
         border: 0;
         border-radius: 6px;
-    }
-
-    .popover-content {
-        padding: 9px;
     }
 
     .tippy-content {
@@ -386,11 +386,11 @@ ul {
 }
 
 .bot-owner-name {
-    text-decoration: underline;
+    color: var(--color-link-blue);
 
     &:hover {
+        text-decoration: underline;
         cursor: pointer;
-        color: hsl(200deg 100% 40%);
     }
 }
 
@@ -909,5 +909,222 @@ ul {
 #send_later_modal {
     .modal__content {
         padding-bottom: 16px;
+    }
+}
+
+.user-info-popover-header {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 7px;
+    text-align: left;
+    padding: 4px;
+    background-color: hsl(0deg 0% 100%);
+    overflow-y: hidden;
+
+    .avatar {
+        position: relative;
+        width: 64px;
+        height: 64px;
+    }
+
+    .avatar-image {
+        width: 64px;
+        height: 64px;
+        border-radius: 4px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .status-circle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        top: unset;
+        left: unset;
+        right: -1px;
+        bottom: -1px;
+        border: solid 1px hsl(0deg 0% 100%);
+        border-radius: 50%;
+    }
+
+    .status-circle-bot::before {
+        font-size: 12px;
+        position: absolute;
+        top: unset;
+        left: unset;
+        right: -1px;
+        bottom: -2px;
+    }
+
+    #status_message {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .status_emoji {
+        width: 16px;
+        height: 16px;
+    }
+
+    .text-area {
+        flex-grow: 1;
+        padding-top: 4px;
+
+        & p {
+            margin: 0 0 4px;
+        }
+    }
+
+    .full-name {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 20px;
+        color: hsl(0deg 0% 15%);
+        max-width: 150px;
+        word-break: break-word;
+    }
+
+    .user-type {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        color: hsl(0deg 0% 40%);
+    }
+}
+
+.popover-menu {
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: var(--bg-popover-light);
+
+    .list {
+        margin: 0;
+        padding: 4px 0;
+        list-style: none;
+        border-bottom: solid 1px hsl(0deg 0% 0% / 10%);
+        background: none !important;
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:first-child {
+            margin-top: -5px;
+        }
+    }
+
+    .text-item,
+    .link-item a {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        font-size: 15px;
+        line-height: 16px;
+
+        & i {
+            width: 16px;
+            height: 16px;
+            font-size: 16px;
+            text-align: center;
+        }
+    }
+
+    .text-item {
+        color: hsl(0deg 0% 40%);
+    }
+
+    .link-item {
+        & i {
+            color: var(--color-icon-purple);
+        }
+
+        & a {
+            color: hsl(0deg 0% 15%);
+            text-decoration: none;
+
+            &:hover,
+            &:focus {
+                background: hsl(0deg 0% 0% / 5%);
+                outline: none;
+            }
+
+            &:active {
+                background: hsl(0deg 0% 0% / 10%);
+            }
+        }
+    }
+
+    .clear_status {
+        margin-left: auto;
+        color: hsl(0deg 0% 40% / 100%);
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .status_emoji {
+        width: 16px;
+        height: 16px;
+    }
+
+    & span.tooltip-hotkey-hint {
+        margin-left: auto;
+        padding: 0 4px;
+        color: hsl(227deg 78% 59%);
+        border-color: hsl(227deg 78% 59%);
+    }
+}
+
+.user_popover_email {
+    position: relative;
+
+    & a {
+        color: hsl(0deg 0% 40%);
+    }
+
+    & i {
+        display: none;
+    }
+
+    &:hover {
+        & i {
+            display: block;
+            margin-left: auto;
+        }
+    }
+
+    & .text {
+        flex-grow: 1;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    & .success {
+        display: none;
+        position: absolute;
+        top: -100%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--color-success-green);
+        background: var(--bg-success-white-green);
+        font-size: 0.9em;
+        padding: 3px 6px;
+        border-radius: 5px;
+        border: solid 1px var(--color-success-light-green);
+    }
+
+    &.email_copied {
+        & .success {
+            display: block;
+        }
+
+        & i {
+            display: none;
+        }
     }
 }
