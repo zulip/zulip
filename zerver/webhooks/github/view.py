@@ -36,7 +36,6 @@ fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~"
-DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussion #{discussion_id}]({discussion_url}):\n\n~~~ quote\n{body}\n~~~"
 
 
 class Helper:
@@ -180,19 +179,12 @@ def get_issue_body(helper: Helper) -> str:
 def get_issue_comment_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
-    action = payload["action"].tame(check_string)
     comment = payload["comment"]
     issue = payload["issue"]
 
-    if action == "created":
-        action = "[commented]"
-    else:
-        action = f"{action} a [comment]"
-    action += "({}) on".format(comment["html_url"].tame(check_string))
-
     return get_pull_request_event_message(
         user_name=get_sender_name(payload),
-        action=action,
+        action=get_comment_action(payload),
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
         message=comment["body"].tame(check_string),
@@ -331,13 +323,25 @@ def get_discussion_body(helper: Helper) -> str:
 
 def get_discussion_comment_body(helper: Helper) -> str:
     payload = helper.payload
-    return DISCUSSION_COMMENT_TEMPLATE.format(
-        author=get_sender_name(payload),
-        body=payload["comment"]["body"].tame(check_string),
-        discussion_url=payload["discussion"]["html_url"].tame(check_string),
-        comment_url=payload["comment"]["html_url"].tame(check_string),
-        discussion_id=payload["discussion"]["number"].tame(check_int),
+    return get_pull_request_event_message(
+        user_name=get_sender_name(payload),
+        action=get_comment_action(payload),
+        url=payload["discussion"]["html_url"].tame(check_string),
+        number=payload["discussion"]["number"].tame(check_int),
+        message=payload["comment"]["body"].tame(check_string),
+        title=payload["discussion"]["title"].tame(check_string) if helper.include_title else None,
+        type="discussion",
     )
+
+
+def get_comment_action(payload: WildValue) -> str:
+    action = payload["action"].tame(check_string)
+    if action == "created":
+        action = "[commented]"
+    else:
+        action = f"{action} a [comment]"
+    action += "({}) on".format(payload["comment"]["html_url"].tame(check_string))
+    return action
 
 
 def get_public_body(helper: Helper) -> str:
