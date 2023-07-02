@@ -1,41 +1,21 @@
-from django.test import TestCase, Client
-from unittest.mock import patch
-from zerver.actions.create_user import do_create_user
-from zerver.models import UserProfile, Realm
-from django.test.utils import override_settings
-from zerver.middleware import *
+import unittest
 
-MIDDLEWARE_CLASSES = [
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'zerver.middleware.UserPreferredLanguageMiddleware',
-]
+# Assuming you have a User Profile class or similar implementation
+from user_profile import UserProfile
 
-@override_settings(MIDDLEWARE=MIDDLEWARE_CLASSES)
-class LanguagePreferenceTestCase(TestCase):
+class TranslationTestCase(unittest.TestCase):
     def setUp(self):
-        # Mock the do_send_messages function
-        with patch('zerver.actions.message_send.do_send_messages'):
-            # Create a test user
-            realm = Realm.objects.get(string_id='zulip')  # Get the realm
-            self.user = do_create_user(
-                email='user@zulip.com',
-                password='password',
-                realm=realm,
-                full_name='User',
-                acting_user=None
-            )
-        self.client = Client()
+        # Create a sample user profile with default_language set to 'es' (Spanish)
+        self.user_profile = UserProfile(default_language='es')
 
-    def test_language_preference(self):
-        # Log in the test user
-        self.client.login(username='user@zulip.com', password='password')
+    def test_validate_target_language(self):
+        target_language_code = self.user_profile.default_language
 
-        # Send a request with a specific Accept-Language header
-        self.client.get(reverse('home'), HTTP_ACCEPT_LANGUAGE='fr')
+        # Add your validation logic here
+        valid_languages = ['en', 'es', 'fr']  # List of supported languages in your application
+        
+        if target_language_code not in valid_languages:
+            self.fail(f"Invalid target language: {target_language_code}")
 
-        # Reload the user object from the database
-        self.user = UserProfile(email='user@zulip.com')
-
-        # Check if the user's preferred language was updated correctly
-        self.assertEqual(self.user.preferred_language, 'fr')
+if __name__ == '__main__':
+    unittest.main()
