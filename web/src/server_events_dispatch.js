@@ -746,7 +746,7 @@ export function dispatch_normal_event(event) {
                 unread_ui.update_unread_banner();
             }
             if (event.property === "color_scheme") {
-                setTimeout(() => {
+                requestAnimationFrame(() => {
                     if (event.value === settings_config.color_scheme_values.night.code) {
                         dark_theme.enable();
                         realm_logo.render();
@@ -758,7 +758,7 @@ export function dispatch_normal_event(event) {
                         realm_logo.render();
                     }
                     message_lists.update_recipient_bar_background_color();
-                }, 300);
+                });
             }
             if (event.property === "starred_message_counts") {
                 starred_messages_ui.rerender_ui();
