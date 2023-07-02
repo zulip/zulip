@@ -17,7 +17,7 @@ const test_message = events.test_message;
 const test_user = events.test_user;
 const typing_person1 = events.typing_person1;
 
-set_global("setTimeout", (func) => func());
+set_global("requestAnimationFrame", (func) => func());
 
 const activity = mock_esm("../src/activity");
 const alert_words_ui = mock_esm("../src/alert_words_ui");

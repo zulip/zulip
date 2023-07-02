@@ -847,15 +847,19 @@ export function initialize() {
     $("body").on("click", "#gear-menu .dark-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
-        dark_theme.enable();
-        message_lists.update_recipient_bar_background_color();
+        requestAnimationFrame(() => {
+            dark_theme.enable();
+            message_lists.update_recipient_bar_background_color();
+        });
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
-        dark_theme.disable();
-        message_lists.update_recipient_bar_background_color();
+        requestAnimationFrame(() => {
+            dark_theme.disable();
+            message_lists.update_recipient_bar_background_color();
+        });
     });
 
     $("body").on("click", "#header-container .brand", (e) => {
