@@ -26,7 +26,7 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
         )
         # Create a request with the HTTP_ACCEPT_LANGUAGE header
         request = self.factory.get('/')
-        request.META['HTTP_ACCEPT_LANGUAGE'] = 'en-US'
+        request.META['HTTP_ACCEPT_LANGUAGE'] = 'fr'
 
         # Set the user on the request
         request.user = self.user
@@ -38,12 +38,22 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
         self.user.refresh_from_db()
 
         # Assert that the user's user_preferred_language field is set correctly
-        self.assertEqual(self.user.user_preferred_language, 'en-US')
+        self.assertEqual(self.user.user_preferred_language, 'fr')
 
     def test_set_user_preferred_language_no_user(self):
+        # Create a user
+        realm = Realm.objects.get(string_id='zulip')  # Get the realm
+        self.user = do_create_user(
+            email='user@zulip.com',
+            password='password',
+            realm=realm,
+            full_name='User',
+            acting_user=None
+        )
         # Create a request with the HTTP_ACCEPT_LANGUAGE header
         request = self.factory.get('/')
         request.META['HTTP_ACCEPT_LANGUAGE'] = 'en-US'
+        request.user = self.user
 
         # Call the middleware
         self.middleware(request)
