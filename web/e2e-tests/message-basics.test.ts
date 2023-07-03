@@ -162,6 +162,7 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
         expect_message,
     );
     await un_narrow(page);
+    await expect_home(page);
 }
 
 async function expect_non_existing_user(page: Page): Promise<void> {
@@ -188,6 +189,7 @@ async function search_non_existing_user(page: Page, str: string, item: string): 
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await expect_non_existing_user(page);
     await un_narrow(page);
+    await expect_home(page);
 }
 
 async function search_tests(page: Page): Promise<void> {
