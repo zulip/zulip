@@ -1488,8 +1488,6 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-
-
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")
         self.subscribe(user_profile, "Denmark")
@@ -2666,6 +2664,7 @@ class CheckMessageTest(ZulipTestCase):
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
+
     def test_send_message_translation(self) -> None:
         user_profile = self.example_user('hamlet')
         self.login_user(user_profile)
