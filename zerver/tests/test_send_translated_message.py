@@ -1,7 +1,7 @@
 import unittest
 from django.contrib.auth.models import User
 from django.utils.translation import activate
-from zerver.actions_send import do_send_messages
+
 
 from zerver.lib.message import SendMessageRequest
 from zerver.lib.translate import translate_message
