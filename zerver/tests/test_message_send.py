@@ -5,6 +5,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -2665,21 +2666,12 @@ class CheckMessageTest(ZulipTestCase):
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
 
-    def test_send_message_translation(self) -> None:
-        user_profile = self.example_user('hamlet')
-        self.login_user(user_profile)
-        # Set the user's preferred language to French
-        user_profile.user_preferred_language = 'fr'
-        user_profile.save()
-        # Create a send_message_request with a message content
-        send_message_request = SendMessageRequest(sender=user_profile, message_content='good morning')
-        # Activate the sender's preferred language
-        activate(user_profile.user_preferred_language)
-        # Translate the message content using the sender's preferred language
-        translated_content = translate_message(send_message_request.message_content,
-                                               user_profile.user_preferred_language)
-        # Update the message content with the translated text
-        send_message_request.message_content = translated_content
+    def test_send_message_translation(self):
+        # Create a user with a preferred language
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        user.user_preferred_language = 'fr'
+        user.save()
+        translated_content = translate_message("good morning", user.user_preferred_language)
 
-        # Verify that the translated message is included in the message payload
-        self.assertEqual(send_message_request.message_content, 'bonjour')
+        # Assert that the message content has been translated correctly
+        self.assertEqual(translated_content, 'bonjour')
