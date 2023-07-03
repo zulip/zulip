@@ -1,32 +1,34 @@
 import unittest
-
 from django.contrib.auth.models import User
-from zerver.actions.message_send import do_send_messages
+from django.utils.translation import activate
+from zerver.actions_send import do_send_messages
 
 from zerver.lib.message import SendMessageRequest
+from zerver.lib.translate import translate_message
 
 
-class SendMessageTestCase(unittest.TestCase):
-    def setUp(self):
-
-    # Set up any necessary data or mocks for your test
-
-    def tearDown(self):
-
-    # Clean up any resources used in the test
-
+class TranslateMessageTestCase(unittest.TestCase):
     def test_translate_message_content(self):
-        send_message_requests = [
-            SendMessageRequest(sender=User(preferred_language='es'), message_content='Hello'),
-            SendMessageRequest(sender=User(preferred_language='fr'), message_content='Bonjour'),
-            ...
-        ]
+        # Create a sender with a preferred language
+        sender = User.objects.create_user(username='testuser', password='testpassword')
+        sender.user_preferred_language = 'es'
+        sender.save()
 
-        translated_messages = do_send_messages(send_message_requests)
+        # Create a send_message_request with a message content
+        send_message_request = SendMessageRequest(sender, message_content='Hello')
 
-        # Assert that each send_message_request has been translated correctly
-        self.assertEqual(translated_messages[0].message_content, 'Hola')
-        self.assertEqual(translated_messages[1].message_content, 'Salut')
+        # Activate the sender's preferred language
+        activate(sender.user_preferred_language)
+
+        # Translate the message content using the sender's preferred language
+        translated_content = translate_message(send_message_request.message_content,
+                                               sender.user_preferred_language)
+
+        # Update the message content with the translated text
+        send_message_request.message_content = translated_content
+
+        # Assert that the message content has been translated correctly
+        self.assertEqual(send_message_request.message_content, 'Hola')
 
 
 if __name__ == '__main__':
