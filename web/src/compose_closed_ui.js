@@ -15,29 +15,7 @@ export function get_recipient_label(message) {
 
     if (message === undefined) {
         if (message_lists.current.visibly_empty()) {
-            // For empty narrows where there's a clear reply target,
-            // i.e. stream+topic or a single direct message conversation,
-            // we label the button as replying to the thread.
-            if (narrow_state.narrowed_to_topic()) {
-                message = {
-                    stream: narrow_state.stream(),
-                    topic: narrow_state.topic(),
-                };
-            } else if (narrow_state.pm_ids_string()) {
-                // TODO: This is a total hack.  Ideally, we'd rework
-                // this to not duplicate the actual compose_actions.js
-                // logic for what happens when you click the button,
-                // and not call into random modules with hacky fake
-                // "message" objects.
-                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string());
-                const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
-                message = {
-                    display_reply_to: message_store.get_pm_full_names({
-                        type: "private",
-                        display_recipient: user_ids_dicts,
-                    }),
-                };
-            }
+            treat_fake_messages(message);
         } else {
             message = message_lists.current.selected_message();
         }
@@ -51,6 +29,43 @@ export function get_recipient_label(message) {
         }
     }
     return "";
+}
+
+function treat_fake_messages(message) {
+    // For empty narrows where there's a clear reply target,
+    // i.e. stream+topic or a single PM conversation, we label
+    // the button as replying to the thread.
+    if (narrow_state.narrowed_to_topic()) {
+        treat_update_recent_topics_button(message);
+    } else if (narrow_state.pm_ids_string()) {
+        treat_video_call_name_requirement(message);
+    }
+    return message;
+}
+
+function treat_update_recent_topics_button(message) {
+    message = {
+        stream: narrow_state.stream(),
+        topic: narrow_state.topic(),
+    };
+    return message;
+}
+
+function treat_video_call_name_requirement(message) {
+    // TODO: This is a total hack.  Ideally, we'd rework
+    // this to not duplicate the actual compose_actions.js
+    // logic for what happens when you click the button,
+    // and not call into random modules with hacky fake
+    // "message" objects.
+    const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string());
+    const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
+    message = {
+        display_reply_to: message_store.get_pm_full_names({
+            type: "private",
+            display_recipient: user_ids_dicts,
+        }),
+    };
+    return message;
 }
 
 function update_reply_button_state(disable = false) {
