@@ -18,9 +18,12 @@ class MessageTranslationTestCase(unittest.TestCase):
         )
 
     def login_user(self, user_profile):
-        self.client = Client()
+        user_profile.set_password('testpassword')
+        user_profile.save()
 
+        self.client = Client()
         logged_in = self.client.login(username=user_profile.email, password='testpassword')
+
         self.assertTrue(logged_in)
 
     def test_send_message_translation(self):
