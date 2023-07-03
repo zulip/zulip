@@ -277,6 +277,36 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
         self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
 
+        # Test invalid prefixes for user group name.
+        params = {
+            "name": "@test",
+            "members": orjson.dumps([hamlet.id]).decode(),
+            "description": "Test group",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group name cannot start with '@'.")
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+
+        params["name"] = "role:manager"
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'role:'.")
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+
+        params["name"] = "user:1"
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'user:'.")
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+
+        params["name"] = "stream:1"
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'stream:'.")
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+
+        params["name"] = "channel:1"
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'channel:'.")
+        self.assert_length(UserGroup.objects.filter(realm=hamlet.realm), 10)
+
     def test_can_mention_group_setting_during_user_group_creation(self) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -424,6 +454,27 @@ class UserGroupAPITestCase(UserGroupTestCase):
         params = {"name": "a" * (UserGroup.MAX_NAME_LENGTH + 1)}
         result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
         self.assert_json_error(result, "User group name cannot exceed 100 characters.")
+
+        # Test invalid prefixes for user group name.
+        params = {"name": "@test"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "User group name cannot start with '@'.")
+
+        params = {"name": "role:manager"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'role:'.")
+
+        params = {"name": "user:1"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'user:'.")
+
+        params = {"name": "stream:1"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'stream:'.")
+
+        params = {"name": "channel:1"}
+        result = self.client_patch(f"/json/user_groups/{user_group.id}", info=params)
+        self.assert_json_error(result, "User group name cannot start with 'channel:'.")
 
     def test_update_can_mention_group_setting(self) -> None:
         hamlet = self.example_user("hamlet")

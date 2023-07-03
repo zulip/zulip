@@ -107,6 +107,10 @@ def check_user_group_name(group_name: str) -> str:
             _("User group name cannot exceed {} characters.").format(UserGroup.MAX_NAME_LENGTH)
         )
 
+    for invalid_prefix in UserGroup.INVALID_NAME_PREFIXES:
+        if group_name.startswith(invalid_prefix):
+            raise JsonableError(_("User group name cannot start with '{}'.").format(invalid_prefix))
+
     return group_name
 
 
