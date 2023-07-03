@@ -2,12 +2,15 @@ import unittest
 from django.contrib.auth.models import User
 from django.utils.translation import activate
 from zerver.lib.translate import translate_message
+import zerver.actions.message_send as self
+
+from zerver.models import UserProfile
 
 
 class MessageTranslationTestCase(unittest.TestCase):
     def test_send_translated_message(self):
-        user = User.objects.create(
-            username='test',
+        user = UserProfile.objects.create(
+            email='test@example.com',
             user_preferred_language='es'
         )
 
