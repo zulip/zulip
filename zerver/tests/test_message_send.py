@@ -1488,24 +1488,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-    def test_send_message_translation(self) -> None:
-        user_profile = self.example_user('hamlet')
-        self.login_user(user_profile)
-        # Set the user's preferred language to French
-        user_profile.user_preferred_language = 'fr'
-        user_profile.save()
-        # Create a send_message_request with a message content
-        send_message_request = SendMessageRequest(sender=user_profile, message_content='good morning')
-        # Activate the sender's preferred language
-        activate(user_profile.user_preferred_language)
-        # Translate the message content using the sender's preferred language
-        translated_content = translate_message(send_message_request.message_content,
-                                               user_profile.user_preferred_language)
-        # Update the message content with the translated text
-        send_message_request.message_content = translated_content
 
-        # Verify that the translated message is included in the message payload
-        self.assertEqual(send_message_request.message_content, 'bonjour')
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")
@@ -2683,3 +2666,21 @@ class CheckMessageTest(ZulipTestCase):
         realm.refresh_from_db()
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
+    def test_send_message_translation(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login_user(user_profile)
+        # Set the user's preferred language to French
+        user_profile.user_preferred_language = 'fr'
+        user_profile.save()
+        # Create a send_message_request with a message content
+        send_message_request = SendMessageRequest(sender=user_profile, message_content='good morning')
+        # Activate the sender's preferred language
+        activate(user_profile.user_preferred_language)
+        # Translate the message content using the sender's preferred language
+        translated_content = translate_message(send_message_request.message_content,
+                                               user_profile.user_preferred_language)
+        # Update the message content with the translated text
+        send_message_request.message_content = translated_content
+
+        # Verify that the translated message is included in the message payload
+        self.assertEqual(send_message_request.message_content, 'bonjour')
