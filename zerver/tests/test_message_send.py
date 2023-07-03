@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import activate
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
@@ -64,6 +65,9 @@ from zerver.models import (
     get_user,
 )
 from zerver.views.message_send import InvalidMirrorInputError
+
+from zulip.zerver.lib.message import SendMessageRequest
+from zulip.zerver.lib.translate import translate_message
 
 
 class MessagePOSTTest(ZulipTestCase):
@@ -1484,6 +1488,25 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
+    def test_send_message_translation(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login_user(user_profile)
+        # Set the user's preferred language to French
+        user_profile.user_preferred_language = 'fr'
+        user_profile.save()
+        # Create a send_message_request with a message content
+        send_message_request = SendMessageRequest(sender=user_profile, message_content='good morning')
+        # Activate the sender's preferred language
+        activate(user_profile.user_preferred_language)
+        # Translate the message content using the sender's preferred language
+        translated_content = translate_message(send_message_request.message_content,
+                                               user_profile.user_preferred_language)
+        # Update the message content with the translated text
+        send_message_request.message_content = translated_content
+
+        # Verify that the translated message is included in the message payload
+        self.assertEqual(send_message_request.message_content, 'bonjour')
+
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")
         self.subscribe(user_profile, "Denmark")
@@ -1873,8 +1896,8 @@ class StreamMessagesTest(ZulipTestCase):
         realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(is_active=True, is_bot=False, realm=realm)[
-            0:3
-        ]:
+                            0:3
+                            ]:
             self.subscribe(user_profile, stream.name)
 
         self.assert_stream_message(non_ascii_stream_name, topic_name="hümbüǵ", content="hümbüǵ")
