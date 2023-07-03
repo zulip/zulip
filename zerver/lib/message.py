@@ -158,7 +158,7 @@ class SendMessageRequest:
     pm_mention_email_disabled_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
-    preferred_language: str
+
     # IDs of users who have followed the topic the message is being sent to, and have the followed topic push notifications setting ON.
     followed_topic_push_user_ids: Set[int]
     # IDs of users who have followed the topic the message is being sent to, and have the followed topic email notifications setting ON.
