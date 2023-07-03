@@ -15,7 +15,7 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
 
         # Create a user
         realm = Realm.objects.get(string_id='zulip')  # Get the realm
-        user = get_user_model().objects.create_user(
+        self.user = get_user_model().objects.create_user(
             username='',
             email='user@zulip.com',
             password='password',
@@ -48,4 +48,4 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
         self.middleware(request)
 
         # Assert that the user_preferred_language field is not set
-        self.assertFalse(hasattr(request.user, 'user_preferred_language'))
+        self.assertFalse(hasattr(request.self.user, 'user_preferred_language'))
