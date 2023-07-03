@@ -1899,7 +1899,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     is_mirror_dummy = models.BooleanField(default=False)
 
     #default_language for translation
-     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
+    default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Zephyr/Jabber mirroring.
