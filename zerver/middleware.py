@@ -454,7 +454,8 @@ def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
     else:
         return html_csrf_failure(request, reason)
 
-#Code for adding translation feature setting user_preferred_language to browser's default language
+
+# Code for adding translation feature setting user_preferred_language to browser's default language
 class SetUserPreferredLanguageMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -469,11 +470,8 @@ class SetUserPreferredLanguageMiddleware:
             request.user.save()
 
         response = self.get_response(request)
-        
+
         return response
-        
-
-
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
