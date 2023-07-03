@@ -659,6 +659,25 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             response_dict = self.assert_json_success(result)
             assert sanitize_name(expected) in response_dict["uri"]
 
+    def test_sanitize_file_name(self) -> None:
+        self.login("hamlet")
+        for uploaded_filename, expected in [
+            ("../foo", "foo"),
+            (".. ", "uploaded-file"),
+            ("/", "f1"),
+            ("./", "f1"),
+            ("././", "f1"),
+            (".!", "uploaded-file"),
+            ("**", "uploaded-file"),
+        ]:
+            fp = StringIO("bah!")
+            fp.name = urllib.parse.quote(uploaded_filename)
+
+            result = self.client_post("/json/user_uploads", {"f1": fp})
+            response_dict = self.assert_json_success(result)
+            self.assertNotIn(response_dict["uri"], uploaded_filename)
+            self.assertTrue(response_dict["uri"].endswith("/" + expected))
+
     def test_realm_quota(self) -> None:
         """
         Realm quota for uploading should not be exceeded.
