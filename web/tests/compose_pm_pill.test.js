@@ -6,7 +6,6 @@ const {mock_esm, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-const compose_recipient = mock_esm("../src/compose_recipient");
 const input_pill = mock_esm("../src/input_pill");
 const people = zrequire("people");
 
@@ -17,8 +16,6 @@ let pills = {
 };
 
 run_test("pills", ({override}) => {
-    override(compose_recipient, "update_placeholder_text", () => {});
-
     const othello = {
         user_id: 1,
         email: "othello@example.com",
@@ -144,19 +141,22 @@ run_test("pills", ({override}) => {
 
     // We stub the return value of input_pill.create(), manually add widget functions to it.
     pills.onPillCreate = (callback) => {
-        // Exercise our callback for line coverage. It is
-        // just compose_recipient.update_placeholder_text(),
-        // which we override.
         callback();
     };
     pills.onPillRemove = (callback) => {
         callback();
     };
 
+    let on_pill_create_or_remove_call_count = 0;
     compose_pm_pill.initialize({
-        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+        on_pill_create_or_remove() {
+            on_pill_create_or_remove_call_count += 1;
+        },
     });
     assert.ok(compose_pm_pill.widget);
+    // Called two times via our overridden onPillCreate and onPillRemove methods.
+    // Normally these would be called via `set_from_typeahead` method.
+    assert.equal(on_pill_create_or_remove_call_count, 2);
 
     compose_pm_pill.set_from_typeahead(othello);
     compose_pm_pill.set_from_typeahead(hamlet);
