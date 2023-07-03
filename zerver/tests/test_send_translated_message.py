@@ -6,11 +6,22 @@ from django.utils.translation import activate
 from zerver.lib.message import SendMessageRequest
 from zerver.lib.translate import translate_message
 
+from zerver.actions.create_user import do_create_user
+from zerver.models import Realm
+
 
 class TranslateMessageTestCase(unittest.TestCase):
     def test_translate_message_content(self):
         # Create a sender with a preferred language
-        sender = User.objects.create_user(username='testuser', password='testpassword')
+        realm = Realm.objects.get(string_id='zulip')  # Get the realm
+        sender = do_create_user(
+            email='user@zulip.com',
+            password='password',
+            realm=realm,
+            full_name='User',
+            acting_user=None
+        )
+
         sender.user_preferred_language = 'es'
         sender.save()
 
