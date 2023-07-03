@@ -4,6 +4,8 @@ from django.test.client import RequestFactory
 
 from zerver.middleware import *
 
+from zulip.zerver.models import Realm
+
 
 class SetUserPreferredLanguageMiddlewareTestCase(TestCase):
     def setUp(self):
@@ -12,10 +14,13 @@ class SetUserPreferredLanguageMiddlewareTestCase(TestCase):
 
     def test_set_user_preferred_language(self):
         # Create a user
+        realm = Realm.objects.get(string_id='zulip')  # Get the realm
         user = get_user_model().objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='test_password'
+            email='user@zulip.com',
+            password='password',
+            realm=realm,
+            full_name='User',
+            acting_user=None
         )
 
         # Create a request with the user
