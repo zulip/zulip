@@ -36,7 +36,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase, TransactionTestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
@@ -138,7 +138,7 @@ class UploadSerializeMixin(SerializeMixin):
         super().setUpClass()
 
 
-class ZulipTestCase(TestCase):
+class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
     maxDiff: Optional[int] = None
 
@@ -1685,30 +1685,6 @@ Output:
             realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
         )
 
-    @contextmanager
-    def capture_send_event_calls(
-        self, expected_num_events: int
-    ) -> Iterator[List[Mapping[str, Any]]]:
-        lst: List[Mapping[str, Any]] = []
-
-        # process_notification takes a single parameter called 'notice'.
-        # lst.append takes a single argument called 'object'.
-        # Some code might call process_notification using keyword arguments,
-        # so mypy doesn't allow assigning lst.append to process_notification
-        # So explicitly change parameter name to 'notice' to work around this problem
-        with mock.patch(
-            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
-        ):
-            # Some `send_event` calls need to be executed only after the current transaction
-            # commits (using `on_commit` hooks). Because the transaction in Django tests never
-            # commits (rather, gets rolled back after the test completes), such events would
-            # never be sent in tests, and we would be unable to verify them. Hence, we use
-            # this helper to make sure the `send_event` calls actually run.
-            with self.captureOnCommitCallbacks(execute=True):
-                yield lst
-
-        self.assert_length(lst, expected_num_events)
-
     def create_user_notifications_data_object(
         self, *, user_id: int, **kwargs: Any
     ) -> UserMessageNotificationsData:
@@ -1819,6 +1795,96 @@ Output:
             # Prevent from using the old user object
             user.refresh_from_db()
             self.assertEqual(user.long_term_idle, expected)
+
+
+class ZulipTestCase(ZulipTestCaseMixin, TestCase):
+    @contextmanager
+    def capture_send_event_calls(
+        self, expected_num_events: int
+    ) -> Iterator[List[Mapping[str, Any]]]:
+        lst: List[Mapping[str, Any]] = []
+
+        # process_notification takes a single parameter called 'notice'.
+        # lst.append takes a single argument called 'object'.
+        # Some code might call process_notification using keyword arguments,
+        # so mypy doesn't allow assigning lst.append to process_notification
+        # So explicitly change parameter name to 'notice' to work around this problem
+        with mock.patch(
+            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
+        ):
+            # Some `send_event` calls need to be executed only after the current transaction
+            # commits (using `on_commit` hooks). Because the transaction in Django tests never
+            # commits (rather, gets rolled back after the test completes), such events would
+            # never be sent in tests, and we would be unable to verify them. Hence, we use
+            # this helper to make sure the `send_event` calls actually run.
+            with self.captureOnCommitCallbacks(execute=True):
+                yield lst
+
+        self.assert_length(lst, expected_num_events)
+
+
+def get_row_ids_in_all_tables() -> (
+    Iterator[Tuple[str, Set[int]]]
+):  # nocoverage # Will be tested with the UserGroup transaction test case
+    all_models = apps.get_models(include_auto_created=True)
+    ignored_tables = {"django_session"}
+
+    for model in all_models:
+        table_name = model._meta.db_table
+        if table_name in ignored_tables:
+            continue
+        ids = model.objects.all().values_list("id", flat=True)
+        yield table_name, set(ids)
+
+
+class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
+    """The default Django TestCase wraps each test in a transaction. This
+    is invaluable for being able to rollback the transaction and thus
+    efficiently do many tests containing database changes, but it
+    prevents testing certain transaction-related races and locking
+    bugs.
+
+    This test class is intended to be used (sparingly!) for tests that
+    need to verify transaction related behavior, like locking with
+    select_for_update or transaction.atomic(durable=True).
+
+    Unlike ZulipTestCase, ZulipTransactionTestCase has the following traits:
+    1. Does not offer isolation between tests by wrapping them inside an atomic transaction.
+    2. Changes are committed to the current worker's test database, so side effects carry on.
+
+    All ZulipTransactionTestCase tests must be carefully written to
+    avoid side effects on the database; while Django runs
+    TransactionTestCase after all normal TestCase tests on a given
+    test worker to avoid pollution, they can break other
+    ZulipTransactionTestCase tests if they leak state.
+    """
+
+    def setUp(self) -> None:  # nocoverage # Will be tested with the UserGroup transaction test case
+        super().setUp()
+        self.models_ids_set = dict(get_row_ids_in_all_tables())
+
+    def tearDown(
+        self,
+    ) -> None:  # nocoverage # Will be tested with the UserGroup transaction test case
+        """Verifies that the test did not adjust the set of rows in the test
+        database. This is a sanity check to help ensure that tests
+        using this class do not have unintended side effects on the
+        test database.
+        """
+        super().tearDown()
+        for table_name, ids in get_row_ids_in_all_tables():
+            self.assertSetEqual(
+                self.models_ids_set[table_name],
+                ids,
+                f"{table_name} got a different set of ids after this test",
+            )
+
+    def _fixture_teardown(self) -> None:
+        """We override the default _fixture_teardown method defined on
+        TransactionTestCase, so that the test database does not get
+        flushed/deleted after each test using this class.
+        """
+        # nocoverage # Will be tested with the UserGroup transaction test case
 
 
 class WebhookTestCase(ZulipTestCase):
