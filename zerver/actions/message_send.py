@@ -788,6 +788,8 @@ def do_send_messages(
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
     with transaction.atomic():
         Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
+        
+      
 
         # Claim attachments in message
         for send_request in send_message_requests:
@@ -837,13 +839,7 @@ def do_send_messages(
 
         bulk_insert_ums(ums)
 
-        # Modify the message payload to include the translated message
-        for msg in user_messages:
-            original_message = send_request.message.content
-            target_language_code= request.META.get('HTTP_ACCEPT_LANGUAGE')
-            translated_message = translate_message(original_message, target_language_code)
-            msg['translated_content'] = translated_message
-
+       
         for send_request in send_message_requests:
             do_widget_post_save_actions(send_request)
 

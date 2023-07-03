@@ -1,21 +1,39 @@
-import unittest
+from django.test import RequestFactory, TestCase
+from django.contrib.auth.models import User
+from zerver.middleware import SetUserPreferredLanguageMiddleware
 
-# Assuming you have a User Profile class or similar implementation
-from user_profile import UserProfile
-
-class TranslationTestCase(unittest.TestCase):
+class SetUserPreferredLanguageMiddlewareTest(TestCase):
     def setUp(self):
-        # Create a sample user profile with default_language set to 'es' (Spanish)
-        self.user_profile = UserProfile(default_language='es')
+        self.factory = RequestFactory()
+        self.middleware = SetUserPreferredLanguageMiddleware(lambda r: None)
 
-    def test_validate_target_language(self):
-        target_language_code = self.user_profile.default_language
+    def test_set_user_preferred_language(self):
+        # Create a user
+        user = User.objects.create_user(username='testuser', password='testpassword')
 
-        # Add your validation logic here
-        valid_languages = ['en', 'es', 'fr']  # List of supported languages in your application
-        
-        if target_language_code not in valid_languages:
-            self.fail(f"Invalid target language: {target_language_code}")
+        # Create a request with the HTTP_ACCEPT_LANGUAGE header
+        request = self.factory.get('/')
+        request.META['HTTP_ACCEPT_LANGUAGE'] = 'en-US,en;q=0.9'
 
-if __name__ == '__main__':
-    unittest.main()
+        # Set the user on the request
+        request.user = user
+
+        # Call the middleware
+        self.middleware(request)
+
+        # Refresh the user from the database
+        user.refresh_from_db()
+
+        # Assert that the user's user_preferred_language field is set correctly
+        self.assertEqual(user.user_preferred_language, 'en-US')
+
+    def test_set_user_preferred_language_no_user(self):
+        # Create a request with the HTTP_ACCEPT_LANGUAGE header
+        request = self.factory.get('/')
+        request.META['HTTP_ACCEPT_LANGUAGE'] = 'en-US,en;q=0.9'
+
+ # Call the middleware
+        self.middleware(request)
+
+        # Assert that the user_preferred_language field is not set
+        self.assertFalse(hasattr(request.user, 'user_preferred_language'))

@@ -165,6 +165,7 @@ MIDDLEWARE = (
     "zerver.middleware.RequestContext",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "zerver.middleware.SetUserPreferredLanguageMiddleware"
     # Important: All middleware before LogRequests should be
     # inexpensive, because any time spent in that middleware will not
     # be counted in the LogRequests instrumentation of how time was
