@@ -17,6 +17,7 @@ from typing import (
     TypedDict,
     Union,
 )
+from httpx import request
 
 import orjson
 import user_profile
@@ -839,7 +840,7 @@ def do_send_messages(
         # Modify the message payload to include the translated message
         for msg in user_messages:
             original_message = send_request.message.content
-            target_language_code = user_profile.default_language
+            target_language_code= request.META.get('HTTP_ACCEPT_LANGUAGE')
             translated_message = translate_message(original_message, target_language_code)
             msg['translated_content'] = translated_message
 
