@@ -16178,7 +16178,7 @@ paths:
             ID of the user group whose members are allowed to mention the new
             user group.
 
-            This setting cannot be set to `"@role:internet"` and `"@role:owners"`
+            This setting cannot be set to `"role:internet"` and `"role:owners"`
             system groups.
 
             **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
@@ -16315,7 +16315,7 @@ paths:
             ID of the new user group whose members are allowed to mention the
             group.
 
-            This setting cannot be set to `"@role:internet"` and `"@role:owners"`
+            This setting cannot be set to `"role:internet"` and `"role:owners"`
             system groups.
 
             **Changes**: New in Zulip 8.0 (feature level 191). Previously, groups
@@ -16458,7 +16458,7 @@ paths:
                             {
                               "description": "Owners of this organization",
                               "id": 1,
-                              "name": "@role:owners",
+                              "name": "role:owners",
                               "members": [1],
                               "direct_subgroup_ids": [],
                               "is_system_group": true,
@@ -16467,7 +16467,7 @@ paths:
                             {
                               "description": "Administrators of this organization, including owners",
                               "id": 2,
-                              "name": "@role:administrators",
+                              "name": "role:administrators",
                               "members": [2],
                               "direct_subgroup_ids": [1],
                               "is_system_group": true,
@@ -19263,7 +19263,7 @@ components:
 
         This setting can currently only be set to user groups that are
         system groups, except for the system groups named
-        `"@role:internet"` and `"@role:owners"`.
+        `"role:internet"` and `"role:owners"`.
 
         **Changes**: New in Zulip 7.0 (feature level 161).
       schema:

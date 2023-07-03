@@ -2262,14 +2262,14 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
     can_mention_group = models.ForeignKey("self", on_delete=models.RESTRICT)
 
     # Names for system groups.
-    FULL_MEMBERS_GROUP_NAME = "@role:fullmembers"
-    EVERYONE_ON_INTERNET_GROUP_NAME = "@role:internet"
-    OWNERS_GROUP_NAME = "@role:owners"
-    ADMINISTRATORS_GROUP_NAME = "@role:administrators"
-    MODERATORS_GROUP_NAME = "@role:moderators"
-    MEMBERS_GROUP_NAME = "@role:members"
-    EVERYONE_GROUP_NAME = "@role:everyone"
-    NOBODY_GROUP_NAME = "@role:nobody"
+    FULL_MEMBERS_GROUP_NAME = "role:fullmembers"
+    EVERYONE_ON_INTERNET_GROUP_NAME = "role:internet"
+    OWNERS_GROUP_NAME = "role:owners"
+    ADMINISTRATORS_GROUP_NAME = "role:administrators"
+    MODERATORS_GROUP_NAME = "role:moderators"
+    MEMBERS_GROUP_NAME = "role:members"
+    EVERYONE_GROUP_NAME = "role:everyone"
+    NOBODY_GROUP_NAME = "role:nobody"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full

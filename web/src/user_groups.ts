@@ -236,15 +236,15 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 
     const system_user_groups = settings_config.system_user_groups_list
         .filter((group) => {
-            if (!allow_internet_group && group.name === "@role:internet") {
+            if (!allow_internet_group && group.name === "role:internet") {
                 return false;
             }
 
-            if (!allow_owners_group && group.name === "@role:owners") {
+            if (!allow_owners_group && group.name === "role:owners") {
                 return false;
             }
 
-            if (!allow_nobody_group && group.name === "@role:nobody") {
+            if (!allow_nobody_group && group.name === "role:nobody") {
                 return false;
             }
 

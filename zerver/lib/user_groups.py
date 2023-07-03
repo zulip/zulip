@@ -85,17 +85,17 @@ def access_user_group_for_setting(
 
     if not allow_internet_group and user_group.name == UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME:
         raise JsonableError(
-            _("'{}' setting cannot be set to '@role:internet' group.").format(setting_name)
+            _("'{}' setting cannot be set to 'role:internet' group.").format(setting_name)
         )
 
     if not allow_owners_group and user_group.name == UserGroup.OWNERS_GROUP_NAME:
         raise JsonableError(
-            _("'{}' setting cannot be set to '@role:owners' group.").format(setting_name)
+            _("'{}' setting cannot be set to 'role:owners' group.").format(setting_name)
         )
 
     if not allow_nobody_group and user_group.name == UserGroup.NOBODY_GROUP_NAME:
         raise JsonableError(
-            _("'{}' setting cannot be set to '@role:nobody' group.").format(setting_name)
+            _("'{}' setting cannot be set to 'role:nobody' group.").format(setting_name)
         )
 
     return user_group

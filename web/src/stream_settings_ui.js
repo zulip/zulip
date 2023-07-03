@@ -671,7 +671,7 @@ export function setup_page(callback) {
             ),
             default_text: $t({defaultMessage: "No user groups"}),
             include_current_item: false,
-            value: user_groups.get_user_group_from_name("@role:administrators").id,
+            value: user_groups.get_user_group_from_name("role:administrators").id,
         };
         new_stream_can_remove_subscribers_group_widget = new DropdownListWidget(opts);
 

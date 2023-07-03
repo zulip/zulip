@@ -246,7 +246,7 @@ run_test("is_user_in_group", () => {
 
 run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
     const nobody = {
-        name: "@role:nobody",
+        name: "role:nobody",
         description: "foo",
         id: 1,
         members: new Set([]),
@@ -254,7 +254,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([]),
     };
     const owners = {
-        name: "@role:owners",
+        name: "role:owners",
         description: "foo",
         id: 2,
         members: new Set([1]),
@@ -262,7 +262,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([]),
     };
     const admins = {
-        name: "@role:administrators",
+        name: "role:administrators",
         description: "foo",
         id: 3,
         members: new Set([2]),
@@ -270,7 +270,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([1]),
     };
     const moderators = {
-        name: "@role:moderators",
+        name: "role:moderators",
         description: "foo",
         id: 4,
         members: new Set([3]),
@@ -278,7 +278,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([2]),
     };
     const members = {
-        name: "@role:members",
+        name: "role:members",
         description: "foo",
         id: 5,
         members: new Set([4]),
@@ -286,7 +286,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([6]),
     };
     const everyone = {
-        name: "@role:everyone",
+        name: "role:everyone",
         description: "foo",
         id: 6,
         members: new Set([]),
@@ -294,7 +294,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([4]),
     };
     const full_members = {
-        name: "@role:fullmembers",
+        name: "role:fullmembers",
         description: "foo",
         id: 7,
         members: new Set([5]),
@@ -302,7 +302,7 @@ run_test("get_realm_user_groups_for_dropdown_list_widget", () => {
         direct_subgroup_ids: new Set([3]),
     };
     const internet = {
-        name: "@role:internet",
+        name: "role:internet",
         id: 8,
         members: new Set([]),
         is_system_group: true,

@@ -242,7 +242,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check default value of can_mention_group setting.
         everyone_system_group = UserGroup.objects.get(
-            name="@role:everyone", realm=hamlet.realm, is_system_group=True
+            name="role:everyone", realm=hamlet.realm, is_system_group=True
         )
         support_group = UserGroup.objects.get(name="support", realm=hamlet.realm)
         self.assertEqual(support_group.can_mention_group, everyone_system_group)
@@ -314,7 +314,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             hamlet.realm, "leadership", [hamlet], acting_user=None
         )
         moderators_group = UserGroup.objects.get(
-            name="@role:moderators", realm=hamlet.realm, is_system_group=True
+            name="role:moderators", realm=hamlet.realm, is_system_group=True
         )
         params = {
             "name": "support",
@@ -339,7 +339,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(test_group.can_mention_group, leadership_group)
 
         nobody_group = UserGroup.objects.get(
-            name="@role:nobody", realm=hamlet.realm, is_system_group=True
+            name="role:nobody", realm=hamlet.realm, is_system_group=True
         )
         params = {
             "name": "marketing",
@@ -353,7 +353,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(marketing_group.can_mention_group, nobody_group)
 
         internet_group = UserGroup.objects.get(
-            name="@role:internet", realm=hamlet.realm, is_system_group=True
+            name="role:internet", realm=hamlet.realm, is_system_group=True
         )
         params = {
             "name": "frontend",
@@ -363,11 +363,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to '@role:internet' group."
+            result, "'can_mention_group' setting cannot be set to 'role:internet' group."
         )
 
         owners_group = UserGroup.objects.get(
-            name="@role:owners", realm=hamlet.realm, is_system_group=True
+            name="role:owners", realm=hamlet.realm, is_system_group=True
         )
         params = {
             "name": "frontend",
@@ -377,7 +377,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to '@role:owners' group."
+            result, "'can_mention_group' setting cannot be set to 'role:owners' group."
         )
 
         params = {
@@ -484,7 +484,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         moderators_group = UserGroup.objects.get(
-            name="@role:moderators", realm=hamlet.realm, is_system_group=True
+            name="role:moderators", realm=hamlet.realm, is_system_group=True
         )
 
         self.login("hamlet")
@@ -505,7 +505,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(support_group.can_mention_group, marketing_group)
 
         nobody_group = UserGroup.objects.get(
-            name="@role:nobody", realm=hamlet.realm, is_system_group=True
+            name="role:nobody", realm=hamlet.realm, is_system_group=True
         )
         params = {
             "can_mention_group_id": orjson.dumps(nobody_group.id).decode(),
@@ -516,25 +516,25 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(support_group.can_mention_group, nobody_group)
 
         owners_group = UserGroup.objects.get(
-            name="@role:owners", realm=hamlet.realm, is_system_group=True
+            name="role:owners", realm=hamlet.realm, is_system_group=True
         )
         params = {
             "can_mention_group_id": orjson.dumps(owners_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to '@role:owners' group."
+            result, "'can_mention_group' setting cannot be set to 'role:owners' group."
         )
 
         internet_group = UserGroup.objects.get(
-            name="@role:internet", realm=hamlet.realm, is_system_group=True
+            name="role:internet", realm=hamlet.realm, is_system_group=True
         )
         params = {
             "can_mention_group_id": orjson.dumps(internet_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(
-            result, "'can_mention_group' setting cannot be set to '@role:internet' group."
+            result, "'can_mention_group' setting cannot be set to 'role:internet' group."
         )
 
         params = {
