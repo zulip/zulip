@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-13 17:21+0000\n"
+"POT-Creation-Date: 2023-07-03 20:21+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4509,6 +4509,11 @@ msgstr ""
 #: zerver/middleware.py:464
 #, python-brace-format
 msgid "CSRF error: {reason}"
+msgstr ""
+
+#: zerver/middleware.py:628
+#, python-brace-format
+msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr ""
 
 #: zerver/models.py:500

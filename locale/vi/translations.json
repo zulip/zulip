@@ -1382,7 +1382,7 @@
   "{minutes} min to edit": "{minutes} tối thiểu để chỉnh sửa",
   "{minutes} minutes ago": "{minutes} một vài phút trước",
   "{modal_heading_text}": "",
-  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, other {}}",
+  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, other {Tin nhắn này đã được<z-link> đọc</z-link> bởi {num_of_people} người:}}",
   "{seconds} sec to edit": "{seconds} giây để chỉnh sửa",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",

@@ -650,7 +650,7 @@
   "Menus": "選單",
   "Message #{stream_name}": "",
   "Message #{stream_name} > {topic_name}": "",
-  "Message actions": "",
+  "Message actions": "訊息動作",
   "Message deletion": "",
   "Message edit history": "訊息編輯歷史",
   "Message editing": "訊息編輯",

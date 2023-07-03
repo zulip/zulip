@@ -1382,7 +1382,7 @@
   "{minutes} min to edit": "Düzenlemek için {minutes} dakika",
   "{minutes} minutes ago": "{minutes} dakika önce",
   "{modal_heading_text}": "",
-  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {} other {}}",
+  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Bu mesaj {num_of_people} kişi tarafından <z-link>okunmuştur</z-link> :} other {Bu mesaj {num_of_people} kişi tarafından <z-link>okunmuştur</z-link>:}}",
   "{seconds} sec to edit": "Düzenlemek için {seconds} saniye",
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "{username} [dedi]({link_to_message}):",

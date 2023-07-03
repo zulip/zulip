@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-13 17:21+0000\n"
+"POT-Creation-Date: 2023-07-03 20:21+0000\n"
 "PO-Revision-Date: 2021-05-27 07:08+0000\n"
 "Last-Translator: Akash Nimare <svnitakash@gmail.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/"
@@ -4600,6 +4600,11 @@ msgstr ""
 #: zerver/middleware.py:464
 #, python-brace-format
 msgid "CSRF error: {reason}"
+msgstr ""
+
+#: zerver/middleware.py:628
+#, python-brace-format
+msgid "Reverse proxy misconfiguration: {proxy_reason}"
 msgstr ""
 
 #: zerver/models.py:500
