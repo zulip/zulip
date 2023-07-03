@@ -254,6 +254,11 @@ def main() -> None:
         help=("Include webhook tests.  By default, they are skipped for performance."),
     )
     parser.add_argument(
+        "--include-transaction-tests",
+        action="store_true",
+        help=("Include transaction tests.  By default, they are skipped for performance."),
+    )
+    parser.add_argument(
         "--generate-stripe-fixtures",
         action="store_true",
         help=("Generate Stripe test fixtures by making requests to Stripe test network"),
@@ -271,6 +276,7 @@ def main() -> None:
 
     args = options.args
     include_webhooks = options.coverage or options.include_webhooks
+    include_transaction_tests = options.coverage or options.include_transaction_tests
 
     if options.processes is not None and options.processes < 1:
         raise argparse.ArgumentTypeError("option processes: Only positive integers are allowed.")
@@ -349,6 +355,9 @@ def main() -> None:
 
     if full_suite and include_webhooks:
         suites.append("zerver.webhooks")
+
+    if full_suite and include_transaction_tests:
+        suites.append("zerver.transaction_tests")
 
     if options.generate_stripe_fixtures:
         if full_suite:
