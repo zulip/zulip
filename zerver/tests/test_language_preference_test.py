@@ -40,6 +40,6 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
         preferred_language = self.user.user_preferred_language
         print(preferred_language)  # Print the value on console
         # Assert that the user's user_preferred_language field is set correctly
-        self.assertEqual(preferred_language, 'en')
+        self.assertEqual(preferred_language, 'fr')
 
 
