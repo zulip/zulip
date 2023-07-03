@@ -100,6 +100,8 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import send_event
 
+from zulip.zerver.lib.i18n import get_language_name
+
 
 def compute_irc_user_fullname(email: str) -> str:
     return Address(addr_spec=email).username + " (IRC)"
@@ -800,20 +802,13 @@ def do_send_messages(
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
 
-        for send_message_request in send_message_requests_maybe_none:
-            if send_message_request is not None:
-                sender = send_message_request.sender
-                preferred_language = sender.user_preferred_language
-
-                # Activate and set preferred language for translations
-                activate(preferred_language)
-
-                # Translate message content using preferred language
-                translated_content = translate_message(send_message_request.message_content,
-                                                       preferred_language)
-
-                # Update message content with translated text
-                send_message_request.message_content = translated_content
+        for send_message_request in send_message_requests:
+            sender = send_message_request.sender
+            preferred_language = sender.user_preferred_language
+            activate(preferred_language)
+            translated_content = translate_message(send_message_request.message_content, preferred_language)
+            send_message_request.message_content = translated_content
+            send_message_request.message.set_language(get_language_name(preferred_language))
 
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
