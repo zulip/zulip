@@ -17,6 +17,8 @@ from typing import (
     TypedDict,
     Union,
 )
+
+import self
 from httpx import request
 
 import orjson
@@ -291,8 +293,8 @@ def get_recipient_info(
                 if user_id_to_visibility_policy.get(
                     row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
                 )
-                == UserTopic.VisibilityPolicy.FOLLOWED
-                and row["followed_topic_" + setting]
+                   == UserTopic.VisibilityPolicy.FOLLOWED
+                   and row["followed_topic_" + setting]
             }
 
         followed_topic_email_user_ids = followed_topic_notification_recipients(
@@ -628,6 +630,7 @@ def build_message_send_dict(
         widget_content=widget_content_dict,
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
+        preferred_language=self.preferred_language,
     )
 
     return message_send_dict
@@ -792,8 +795,6 @@ def do_send_messages(
     with transaction.atomic():
         Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
 
-
-
         # Claim attachments in message
         for send_request in send_message_requests:
             if do_claim_attachments(
@@ -803,7 +804,7 @@ def do_send_messages(
                 send_request.message.save(update_fields=["has_attachment"])
 
         for send_message_request in send_message_requests:
-            preferred_language = send_message_request.preferred_language
+            preferred_language = user_profile.user_preferred_language
             activate(preferred_language)
             translated_content = translate_message(send_message_request.message_content, preferred_language)
             send_message_request.message_content = translated_content
@@ -848,7 +849,6 @@ def do_send_messages(
             )
 
         bulk_insert_ums(ums)
-
 
         for send_request in send_message_requests:
             do_widget_post_save_actions(send_request)

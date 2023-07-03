@@ -1818,7 +1818,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     # zerver/migrations/0295_case_insensitive_email_indexes.py.
     delivery_email = models.EmailField(blank=False, db_index=True)
     email = models.EmailField(blank=False, db_index=True)
-
+    user_preferred_language = models.CharField(max_length=10, blank=True, null=True)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     # Foreign key to the Recipient object for PERSONAL type messages to this user.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
