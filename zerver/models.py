@@ -2234,8 +2234,10 @@ class PasswordTooWeakError(Exception):
 
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+    MAX_NAME_LENGTH = 100
+
     objects: CTEManager = CTEManager()
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=MAX_NAME_LENGTH)
     direct_members = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
     )

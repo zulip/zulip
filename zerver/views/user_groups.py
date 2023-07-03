@@ -26,6 +26,7 @@ from zerver.lib.user_groups import (
     access_user_group_by_id,
     access_user_group_for_setting,
     access_user_groups_as_potential_subgroups,
+    check_user_group_name,
     get_direct_memberships_of_users,
     get_recursive_subgroups_for_groups,
     get_subgroup_ids,
@@ -51,6 +52,7 @@ def add_user_group(
     can_mention_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
+    name = check_user_group_name(name)
 
     group_settings_map = {}
     request_settings_dict = locals()
@@ -107,6 +109,7 @@ def edit_user_group(
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
     if name is not None and name != user_group.name:
+        name = check_user_group_name(name)
         do_update_user_group_name(user_group, name, acting_user=user_profile)
 
     if description is not None and description != user_group.description:

@@ -101,6 +101,15 @@ def access_user_group_for_setting(
     return user_group
 
 
+def check_user_group_name(group_name: str) -> str:
+    if len(group_name) > UserGroup.MAX_NAME_LENGTH:
+        raise JsonableError(
+            _("User group name cannot exceed {} characters.").format(UserGroup.MAX_NAME_LENGTH)
+        )
+
+    return group_name
+
+
 def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
