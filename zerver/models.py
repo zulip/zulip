@@ -2235,6 +2235,7 @@ class PasswordTooWeakError(Exception):
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_NAME_LENGTH = 100
+    INVALID_NAME_PREFIXES = ["@", "role:", "user:", "stream:", "channel:"]
 
     objects: CTEManager = CTEManager()
     name = models.CharField(max_length=MAX_NAME_LENGTH)
