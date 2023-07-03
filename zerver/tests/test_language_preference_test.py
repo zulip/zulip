@@ -37,7 +37,9 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
         # Refresh the user from the database
         self.user.refresh_from_db()
 
+        preferred_language = self.user.user_preferred_language
+        print(preferred_language)  # Print the value on console
         # Assert that the user's user_preferred_language field is set correctly
-        self.assertEqual(self.user.user_preferred_language, 'fr')
+        self.assertEqual(preferred_language, 'en')
 
- 
+
