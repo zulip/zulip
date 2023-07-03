@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 
 from zerver.models import Realm
 
+from zerver.actions.create_user import do_create_user
+
 
 class SetUserPreferredLanguageMiddlewareTest(TestCase):
     def setUp(self):
@@ -14,11 +16,13 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
     def test_set_user_preferred_language(self):
 
         # Create a user
-
-        self.user = get_user_model().objects.create_user(
+        realm = Realm.objects.get(string_id='zulip')  # Get the realm
+        self.user = do_create_user(
             email='user@zulip.com',
-            password='password'
-
+            password='password',
+            realm=realm,
+            full_name='User',
+            acting_user=None
         )
         # Create a request with the HTTP_ACCEPT_LANGUAGE header
         request = self.factory.get('/')
