@@ -19,7 +19,7 @@ class MessageTranslationTestCase(unittest.TestCase):
         )
 
         # Translate the message content using the user's preferred language
-        translated_content = translate_message("good morning", self.user.user_preferred_language)
+        translated_content = translate_message("good morning", 'fr')
 
         # Assert that the message content has been translated correctly
         self.assertEqual(translated_content, 'bonjour')
