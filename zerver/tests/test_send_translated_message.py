@@ -1,13 +1,11 @@
 import unittest
 from django.contrib.auth.models import User
 from django.utils.translation import activate
-
-
-from zerver.lib.message import SendMessageRequest
+from zerver.message import SendMessageRequest
 from zerver.lib.translate import translate_message
+from zerver.models import Realm
 
 from zerver.actions.create_user import do_create_user
-from zerver.models import Realm
 
 
 class TranslateMessageTestCase(unittest.TestCase):
@@ -26,7 +24,7 @@ class TranslateMessageTestCase(unittest.TestCase):
         sender.save()
 
         # Create a send_message_request with a message content
-        send_message_request = SendMessageRequest(sender, message_content='Hello')
+        send_message_request = SendMessageRequest(sender=sender, message_content='Hello')
 
         # Activate the sender's preferred language
         activate(sender.user_preferred_language)
