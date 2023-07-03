@@ -838,7 +838,7 @@ def do_send_messages(
 
         # Modify the message payload to include the translated message
         for msg in user_messages:
-            original_message = msg['content']
+            original_message = send_request.message.content
             target_language_code = user_profile.default_language
             translated_message = translate_message(original_message, target_language_code)
             msg['translated_content'] = translated_message
