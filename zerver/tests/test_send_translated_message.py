@@ -22,8 +22,10 @@ class MessageTranslationTestCase(unittest.TestCase):
         user_profile.save()
 
         self.client = Client()
-        logged_in = self.client.login(username=user_profile.email, password='testpassword')
-
+        try:
+            logged_in = self.client.login(username=user_profile.email, password='testpassword')
+        except Exception as e:
+            print(e)
         self.assertTrue(logged_in)
 
     def test_send_message_translation(self):
