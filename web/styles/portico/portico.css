@@ -1,3 +1,7 @@
+:root {
+    --color-background-modal: hsl(0deg 0% 98%);
+}
+
 body {
     background-color: hsl(0deg 0% 98%);
     font-family: "Source Sans 3", sans-serif;
