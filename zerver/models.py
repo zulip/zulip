@@ -1776,6 +1776,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     Incoming webhook bots are limited to only sending messages via webhooks.
     Thus, it is less of a security risk to expose their API keys to third-party services,
     since they can't be used to read messages.
+
     """
     INCOMING_WEBHOOK_BOT = 2
     # This value is also being used in web/src/settings_bots.js.
@@ -1896,6 +1897,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     # mirroring integration, so that we can display mirrored content
     # like native Zulip messages (with a name + avatar, etc.).
     is_mirror_dummy = models.BooleanField(default=False)
+
+    #default_language for translation
+     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     # Users with this flag set are allowed to forge messages as sent by another
     # user and to send to private streams; also used for Zephyr/Jabber mirroring.
