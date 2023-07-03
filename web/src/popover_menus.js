@@ -220,10 +220,13 @@ export function register_popover_menu(target, popover_props) {
 }
 
 export function toggle_message_actions_menu(message) {
-    if (message.locally_echoed) {
+    if (message.locally_echoed || message_edit.is_editing(message.id)) {
         // Don't open the popup for locally echoed messages for now.
         // It creates bugs with things like keyboard handlers when
         // we get the server response.
+        // We also suppress the popup for messages in an editing state,
+        // including previews, when a user tries to reach them from the
+        // keyboard.
         return true;
     }
 
