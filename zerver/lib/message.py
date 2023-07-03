@@ -158,6 +158,7 @@ class SendMessageRequest:
     pm_mention_email_disabled_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
+    preferred_language: str
     # IDs of users who have followed the topic the message is being sent to, and have the followed topic push notifications setting ON.
     followed_topic_push_user_ids: Set[int]
     # IDs of users who have followed the topic the message is being sent to, and have the followed topic email notifications setting ON.
@@ -1303,8 +1304,8 @@ def apply_unread_message_event(
             stream_id not in state["muted_stream_ids"]
             # This next check hits the database.
             and not topic_has_visibility_policy(
-                user_profile, stream_id, topic, UserTopic.VisibilityPolicy.MUTED
-            )
+            user_profile, stream_id, topic, UserTopic.VisibilityPolicy.MUTED
+        )
         ):
             state["unmuted_stream_msgs"].add(message_id)
 
@@ -1592,8 +1593,8 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
     # Now we need to map all the recipient_id objects to lists of user IDs
     for recipient_id, user_profile_id in (
         Subscription.objects.filter(recipient_id__in=recipient_map.keys())
-        .exclude(user_profile_id=user_profile.id)
-        .values_list("recipient_id", "user_profile_id")
+            .exclude(user_profile_id=user_profile.id)
+            .values_list("recipient_id", "user_profile_id")
     ):
         recipient_map[recipient_id]["user_ids"].append(user_profile_id)
 
