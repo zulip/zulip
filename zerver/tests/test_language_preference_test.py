@@ -4,7 +4,7 @@ from django.test.client import RequestFactory
 
 from zerver.middleware import *
 
-from zulip.zerver.models import Realm
+from zerver.models import Realm
 
 
 class SetUserPreferredLanguageMiddlewareTestCase(TestCase):
