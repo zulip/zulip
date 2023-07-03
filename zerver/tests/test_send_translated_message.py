@@ -9,7 +9,6 @@ from django.test import Client
 
 class MessageTranslationTestCase(unittest.TestCase):
 
-    @staticmethod
     def create_user(self, preferred_language):
         realm = Realm.objects.get(string_id='zulip')
         return UserProfile.objects.create(
