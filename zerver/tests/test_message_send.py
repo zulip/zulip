@@ -66,8 +66,8 @@ from zerver.models import (
 )
 from zerver.views.message_send import InvalidMirrorInputError
 
-from zulip.zerver.lib.message import SendMessageRequest
-from zulip.zerver.lib.translate import translate_message
+from zerver.lib.message import SendMessageRequest
+from zerver.lib.translate import translate_message
 
 
 class MessagePOSTTest(ZulipTestCase):
