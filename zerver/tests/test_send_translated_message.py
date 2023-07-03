@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 from django.contrib.auth.models import User
 from django.utils.translation import activate
-from zerver.translate translate_message
+from zerver.translate import translate_message
 from zerver.actions.create_user import do_create_user
 from zerver.models import Realm
 
