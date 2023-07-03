@@ -41,7 +41,7 @@ $(() => {
 
     $.fn.expectOne = function () {
         if (blueslip && this.length !== 1) {
-            blueslip.error("Expected one element in jQuery set, found more", {length: this.length});
+            blueslip.error("Expected one element in jQuery set", {length: this.length});
         }
         return this;
     };
