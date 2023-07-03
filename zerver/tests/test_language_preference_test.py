@@ -14,12 +14,11 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
     def test_set_user_preferred_language(self):
 
         # Create a user
-        realm = Realm.objects.get(string_id='zulip')  # Get the realm
+
         self.user = get_user_model().objects.create_user(
-            username='hamlet',
             email='user@zulip.com',
             password='password'
-         
+
         )
         # Create a request with the HTTP_ACCEPT_LANGUAGE header
         request = self.factory.get('/')
