@@ -2666,12 +2666,13 @@ class CheckMessageTest(ZulipTestCase):
         ret = check_message(sender, client, addressee, message_content, realm)
         self.assertEqual(ret.message.sender.id, sender.id)
 
-    def test_send_message_translation(self):
-        # Create a user with a preferred language
-        user = User.objects.create_user(username='testuser', password='testpassword')
-        user.user_preferred_language = 'fr'
-        user.save()
-        translated_content = translate_message("good morning", user.user_preferred_language)
+    def test_send_message_translation(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login_user(user_profile)
+        preferred_language = user_profile.user_preferred_language
 
-        # Assert that the message content has been translated correctly
-        self.assertEqual(translated_content, 'bonjour')
+        # Translate a message content using the user's preferred language
+        translated_content = translate_message('good morning', preferred_language)
+
+        # Assert that the message has been translated correctly
+        self.assertEqual(translated_content, 'buenos días')
