@@ -93,6 +93,17 @@ tr.admin td:first-child {
                 0 0 8px hsl(206.494deg 80% 62% / 60%);
         }
     }
+
+    .label {
+        padding: 2px 4px;
+        font-size: 11.844px;
+        font-weight: bold;
+        line-height: 14px;
+        color: hsl(0deg 0% 100%);
+        text-shadow: 0 -1px 0 hsla(0deg 0% 0% / 25%);
+        background-color: hsl(0deg 0% 60%);
+        border-radius: 3px;
+    }
 }
 
 .support-realm-icon {
