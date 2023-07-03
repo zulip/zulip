@@ -35,8 +35,8 @@ from zerver.models import UserProfile
 fixture_to_headers = get_http_headers_from_filename("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
-DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n```quote\n### {title}\n{body}\n```"
-DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussion #{discussion_id}]({discussion_url}):\n```quote\n{body}\n```"
+DISCUSSION_TEMPLATE = "{author} created [discussion #{discussion_id}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~"
+DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussion #{discussion_id}]({discussion_url}):\n\n~~~ quote\n{body}\n~~~"
 
 
 class Helper:
@@ -396,7 +396,7 @@ def get_team_body(helper: Helper) -> str:
     if "description" in changes:
         actor = get_sender_name(payload)
         new_description = payload["team"]["description"].tame(check_string)
-        return f"**{actor}** changed the team description to:\n```quote\n{new_description}\n```"
+        return f"**{actor}** changed the team description to:\n\n~~~ quote\n{new_description}\n~~~"
     if "name" in changes:
         original_name = changes["name"]["from"].tame(check_string)
         new_name = payload["team"]["name"].tame(check_string)
