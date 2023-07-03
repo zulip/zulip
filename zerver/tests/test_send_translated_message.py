@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from django.contrib.auth.models import User
 from django.utils.translation import activate
 from zerver.lib.translate import translate_message
@@ -9,10 +9,8 @@ from zerver.models import Realm
 
 
 class MessageSendTestCase(unittest.TestCase):
-    @patch(
-        'zerver.lib.message.SendMessageRequest')  # Replace 'path.to' with the actual import path of SendMessageRequest
-    def test_send_message_translation(self, mock_send_message_request):
-        # Create a sender a preferred language
+    def test_send_message_translation(self):
+        # Create a sender with a preferred language
         realm = Realm.objects.get(string_id='zulip')  # Get the realm
         sender = do_create_user(
             email='user@zulip.com',
@@ -23,8 +21,10 @@ class MessageSendTestCase(unittest.TestCase):
         )
 
         sender.user_preferred_language = 'fr'
-        sender.save  # Create a mock object for SendMessageRequest
-        send_message_request = mock_send_message_request.return_value
+        sender.save()
+
+        # Create a mock object for SendMessageRequest
+        send_message_request = MagicMock()
         send_message_request.sender = sender
         send_message_request.message_content = 'good morning'
 
