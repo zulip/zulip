@@ -77,6 +77,7 @@ from zerver.lib.translate import translate_message
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.validator import check_widget_content
+from django.utils.translation import activate, gettext as _
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
@@ -788,8 +789,8 @@ def do_send_messages(
     user_message_flags: Dict[int, Dict[int, List[str]]] = defaultdict(dict)
     with transaction.atomic():
         Message.objects.bulk_create(send_request.message for send_request in send_message_requests)
-        
-      
+
+
 
         # Claim attachments in message
         for send_request in send_message_requests:
@@ -798,6 +799,21 @@ def do_send_messages(
             ):
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
+
+        for send_message_request in send_message_requests_maybe_none:
+            if send_message_request is not None:
+                sender = send_message_request.sender
+                preferred_language = sender.user_preferred_language
+
+                # Activate and set preferred language for translations
+                activate(preferred_language)
+
+                # Translate message content using preferred language
+                translated_content = translate_message(send_message_request.message_content,
+                                                       preferred_language)
+
+                # Update message content with translated text
+                send_message_request.message_content = translated_content
 
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
@@ -839,7 +855,7 @@ def do_send_messages(
 
         bulk_insert_ums(ums)
 
-       
+
         for send_request in send_message_requests:
             do_widget_post_save_actions(send_request)
 
