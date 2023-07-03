@@ -440,7 +440,7 @@ class RealmImportExportTest(ExportFile):
 
         exported_usergroups = data["zerver_usergroup"]
         self.assert_length(exported_usergroups, 9)
-        self.assertEqual(exported_usergroups[2]["name"], "@role:administrators")
+        self.assertEqual(exported_usergroups[2]["name"], "role:administrators")
         self.assertFalse("direct_members" in exported_usergroups[2])
         self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
@@ -1206,7 +1206,7 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_group_group_membership(r: Realm) -> Set[str]:
-            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            usergroup = UserGroup.objects.get(realm=r, name="role:members")
             group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
             subgroups = {membership.subgroup.name for membership in group_group_membership}
             return subgroups
@@ -1226,7 +1226,7 @@ class RealmImportExportTest(ExportFile):
             # We already check the subgroups of the group through GroupGroupMembership
             # objects, but we also want to check that direct_subgroups field is set
             # correctly since we do not include this in export data.
-            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            usergroup = UserGroup.objects.get(realm=r, name="role:members")
             direct_subgroups = usergroup.direct_subgroups.all()
             direct_subgroup_names = {group.name for group in direct_subgroups}
             return direct_subgroup_names

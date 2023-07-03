@@ -1400,7 +1400,7 @@ class NormalActionsTest(BaseAction):
 
         # Test can_mention_group setting update
         moderators_group = UserGroup.objects.get(
-            name="@role:moderators", realm=self.user_profile.realm, is_system_group=True
+            name="role:moderators", realm=self.user_profile.realm, is_system_group=True
         )
         events = self.verify_action(
             lambda: do_change_user_group_permission_setting(
