@@ -100,7 +100,7 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import send_event
 
-from zulip.zerver.lib.i18n import get_language_name
+from zerver.lib.i18n import get_language_name
 
 
 def compute_irc_user_fullname(email: str) -> str:
