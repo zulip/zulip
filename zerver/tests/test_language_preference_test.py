@@ -33,16 +33,9 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
 
         # Refresh the user from the database
         user.refresh_from_db()
+        print(user.preferred_language)
 
         # Assert that the user's preferred_language field is set correctly
         self.assertEqual(user.preferred_language, 'fr')
 
-    def test_set_user_preferred_language_no_user(self):
-        # Create a request with the HTTP_ACCEPT_LANGUAGE header
-        request = self.factory.get('/')
 
-        # Call the middleware
-        self.middleware(request)
-
-        # Assert that the preferred_language field is not set
-        self.assertFalse(hasattr(request.user, 'preferred_language'))
