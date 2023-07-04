@@ -1366,6 +1366,34 @@ export function initialize() {
         ...user_card_options,
     });
 
+    register_popover_menu(
+        ".recent_topics_participant_avatar, .recent_topics_participant_overflow",
+        {
+            placement: "right",
+            onCreate(instance) {
+                const participant_user_id = Number.parseInt(
+                    $(instance.reference).parent().attr("data-user-id"),
+                    10,
+                );
+                const user = people.get_by_user_id(participant_user_id);
+                instance.context = {user};
+            },
+            ...user_card_options,
+        },
+    );
+
+    register_popover_menu(".view_user_profile", {
+        placement: "right",
+        onCreate(instance) {
+            const participant_user_id = Number.parseInt(
+                $(instance.reference).attr("data-user-id"),
+                10,
+            );
+            const user = people.get_by_user_id(participant_user_id);
+            instance.context = {user};
+        },
+        ...user_card_options,
+    });
     user_card_popover_from_hotkey = function () {
         return tippy(".selected_message", {
             placement: "left",
