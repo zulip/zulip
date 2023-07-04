@@ -497,6 +497,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
+    preferred_language = models.CharField(max_length=10, blank=True, null=True)
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
@@ -736,6 +737,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         create_web_public_stream_policy=int,
         default_code_block_language=(str, type(None)),
         default_language=str,
+        preferred_language=str,
         delete_own_message_policy=int,
         description=str,
         digest_emails_enabled=bool,
@@ -1511,6 +1513,7 @@ class UserBaseSettings(models.Model):
     # restore a version of the setting, preserving who had it enabled.
     left_side_userlist = models.BooleanField(default=False)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
+    preferred_language = models.CharField(max_length=10, blank=True, null=True)
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
     default_view = models.TextField(default="recent_topics")
@@ -1674,6 +1677,7 @@ class UserBaseSettings(models.Model):
         # Instead, see `modern_settings` below.
         color_scheme=int,
         default_language=str,
+        preferred_language=str,
         default_view=str,
         demote_inactive_streams=int,
         dense_mode=bool,
@@ -1818,7 +1822,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     # zerver/migrations/0295_case_insensitive_email_indexes.py.
     delivery_email = models.EmailField(blank=False, db_index=True)
     email = models.EmailField(blank=False, db_index=True)
-    user_preferred_language = models.CharField(max_length=10, blank=True, null=True)
+
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     # Foreign key to the Recipient object for PERSONAL type messages to this user.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
@@ -1899,6 +1903,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     is_mirror_dummy = models.BooleanField(default=False)
 
     #default_language for translation
+    preferred_language = models.CharField(max_length=10, blank=True, null=True)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     # Users with this flag set are allowed to forge messages as sent by another

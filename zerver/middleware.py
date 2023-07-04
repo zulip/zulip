@@ -466,7 +466,7 @@ class SetUserPreferredLanguageMiddleware:
 
         # Update user_preferred_language for authenticated users only
         if request.user.is_authenticated and preferred_language:
-            request.user.user_preferred_language = preferred_language.strip()
+            request.user.preferred_language = preferred_language.strip()
             request.user.save()
 
         response = self.get_response(request)

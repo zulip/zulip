@@ -21,7 +21,7 @@ class MessageTranslationTestCase(unittest.TestCase):
             acting_user=None
         )
 
-        self.user.user_preferred_language = preferred_language
+        self.user.preferred_language = preferred_language
         self.user.save()
         return self.user
 
