@@ -1,7 +1,9 @@
 import $ from "jquery";
 
+import render_editing_notifications from "../templates/editing_notifications.hbs";
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
+import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -69,6 +71,24 @@ export function render_notifications_for_narrow() {
     }
 }
 
+function render_notifications_for_editing_messages(operation, message_id) {
+    const $row = message_lists.current.get_row(message_id);
+    const $editing_notifications = $row.find("#editing_notifications");
+
+    if (operation === "display") {
+        $(".message_edit_notice").hide();
+        $editing_notifications.html(
+            render_editing_notifications({
+                typing: true,
+            }),
+        );
+        $editing_notifications.show();
+    } else {
+        $editing_notifications.hide();
+        $(".message_edit_notice").show();
+    }
+}
+
 export function hide_notification(event) {
     const recipients = event.recipients.map((user) => user.user_id);
     recipients.sort();
@@ -78,7 +98,11 @@ export function hide_notification(event) {
     const removed = typing_data.remove_typist(recipients, event.sender.user_id);
 
     if (removed) {
-        render_notifications_for_narrow();
+        if (event.message_id) {
+            render_notifications_for_editing_messages("hide", event.message_id);
+        } else {
+            render_notifications_for_narrow();
+        }
     }
 }
 
@@ -91,7 +115,11 @@ export function display_notification(event) {
 
     typing_data.add_typist(recipients, sender_id);
 
-    render_notifications_for_narrow();
+    if (event.message_id) {
+        render_notifications_for_editing_messages("display", event.message_id);
+    } else {
+        render_notifications_for_narrow();
+    }
 
     typing_data.kickstart_inbound_timer(recipients, TYPING_STARTED_EXPIRY_PERIOD, () => {
         hide_notification(event);

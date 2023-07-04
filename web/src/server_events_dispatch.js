@@ -627,7 +627,7 @@ export function dispatch_normal_event(event) {
             }
             break;
         case "typing":
-            if (event.sender.user_id === page_params.user_id) {
+            if (event.sender.user_id === page_params.user_id && !event.message_id) {
                 // typing notifications are sent to the user who is typing
                 // as well as recipients; we ignore such self-generated events.
                 return;
