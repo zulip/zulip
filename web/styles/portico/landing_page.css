@@ -3554,11 +3554,14 @@ button {
 
     & blockquote {
         font-size: 18px;
+        padding: 0 0 0 15px;
+        border-left: 5px solid hsl(0deg 0% 93%);
     }
 
     & blockquote::before {
         font-size: 20px;
         font-weight: 700;
+        content: "";
     }
 
     & cite {
@@ -3575,6 +3578,7 @@ button {
         position: relative;
         background: hsl(0deg 0% 93%);
         padding: 20px;
+        margin: 0 0 20px;
     }
 
     & blockquote::after {
