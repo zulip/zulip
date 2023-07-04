@@ -1331,4 +1331,15 @@ export function initialize() {
             ...user_card_options,
         });
     }
+
+    register_popover_menu(".user-list-sidebar-menu-icon", {
+        placement: "left",
+        onCreate(instance) {
+            const $target = $(instance.reference).closest("li");
+            const user_id = popovers.elem_to_user_id($target.find("a"));
+            const user = people.get_by_user_id(user_id);
+            instance.context = {user, template_class: "sidebar_user_popover"};
+        },
+        ...user_card_options,
+    });
 }

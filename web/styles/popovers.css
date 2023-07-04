@@ -58,6 +58,76 @@
     }
 }
 
+.user_popover,
+.sidebar_user_popover {
+    width: auto;
+    z-index: 1010;
+    border-radius: 6px;
+    color: inherit;
+    padding: 0;
+    border: 1px solid hsl(0deg 0% 0% / 20%);
+    box-shadow: 0 5px 10px hsl(0deg 0% 0% / 20%);
+    white-space: normal;
+
+    .popover-title {
+        padding: 0;
+        border-color: hsl(0deg 0% 0% / 20%);
+    }
+
+    .popover_info li {
+        word-wrap: break-word;
+    }
+
+    .sub_disable_btn_hint {
+        padding-left: 5px;
+        padding-right: 5px;
+        font-size: small;
+        text-align: justify;
+    }
+}
+
+.user_info_card_tippy {
+    max-width: 240px;
+
+    .tippy-box {
+        border: 0;
+        border-radius: 6px;
+    }
+
+    .popover-content {
+        padding: 9px;
+    }
+
+    .popover-inner {
+        border: 0;
+        box-shadow: 0;
+    }
+
+    .tippy-content {
+        padding: 0%;
+        font-size: 14px;
+    }
+}
+
+.user_info_popover_manage_menu {
+    z-index: 9999;
+}
+
+@media (width > $sm_min) {
+    .user_info_card_tippy.sidebar_user_popover_tippy {
+        position: fixed;
+        right: 200px !important;
+    }
+}
+
+@media (width < $sm_min) {
+    .user_info_card_tippy {
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+}
+
 .popover-content {
     padding: 5px 0;
 }
@@ -100,13 +170,6 @@
     &:hover,
     &:focus {
         text-decoration: none;
-    }
-}
-
-.user_popover_manage_menu {
-    .zulip-icon {
-        /* Overriding CSS margin */
-        margin-right: 0;
     }
 }
 
