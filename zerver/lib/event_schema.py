@@ -1404,6 +1404,7 @@ typing_start_event = event_dict_type(
         ("recipients", ListType(typing_person_type)),
         ("stream_id", int),
         ("topic", str),
+        ("message_id", OptionalType(int)),
     ],
 )
 check_typing_start = make_checker(typing_start_event)
@@ -1419,6 +1420,7 @@ typing_stop_event = event_dict_type(
         ("recipients", ListType(typing_person_type)),
         ("stream_id", int),
         ("topic", str),
+        ("message_id", OptionalType(int)),
     ],
 )
 check_typing_stop = make_checker(typing_stop_event)

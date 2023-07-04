@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from django.utils.translation import gettext as _
 
@@ -9,7 +9,11 @@ from zerver.tornado.django_api import send_event
 
 
 def do_send_typing_notification(
-    realm: Realm, sender: UserProfile, recipient_user_profiles: List[UserProfile], operator: str
+    realm: Realm,
+    sender: UserProfile,
+    recipient_user_profiles: List[UserProfile],
+    operator: str,
+    message_id: Optional[int] = None,
 ) -> None:
     sender_dict = {"user_id": sender.id, "email": sender.email}
 
@@ -23,6 +27,7 @@ def do_send_typing_notification(
         op=operator,
         sender=sender_dict,
         recipients=recipient_dicts,
+        message_id=message_id,
     )
 
     # Only deliver the notification to active user recipients
@@ -31,9 +36,10 @@ def do_send_typing_notification(
     send_event(realm, event, user_ids_to_notify)
 
 
-# check_send_typing_notification:
 # Checks the typing notification and sends it
-def check_send_typing_notification(sender: UserProfile, user_ids: List[int], operator: str) -> None:
+def check_send_typing_notification(
+    sender: UserProfile, user_ids: List[int], operator: str, message_id: Optional[int] = None
+) -> None:
     realm = sender.realm
 
     if sender.id not in user_ids:
@@ -60,11 +66,16 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
         sender=sender,
         recipient_user_profiles=user_profiles,
         operator=operator,
+        message_id=message_id,
     )
 
 
 def do_send_stream_typing_notification(
-    sender: UserProfile, operator: str, stream: Stream, topic: str
+    sender: UserProfile,
+    operator: str,
+    stream: Stream,
+    topic: str,
+    message_id: Optional[int] = None,
 ) -> None:
     sender_dict = {"user_id": sender.id, "email": sender.email}
 
@@ -75,6 +86,7 @@ def do_send_stream_typing_notification(
         sender=sender_dict,
         stream_id=stream.id,
         topic=topic,
+        message_id=message_id,
     )
 
     user_ids_to_notify = get_user_ids_for_streams({stream.id})[stream.id]

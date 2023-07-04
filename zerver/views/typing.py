@@ -23,6 +23,7 @@ def send_notification_backend(
     ),
     operator: str = REQ("op", str_validator=check_string_in(VALID_OPERATOR_TYPES)),
     notification_to: List[int] = REQ("to", json_validator=check_list(check_int)),
+    message_id: Optional[str] = REQ("message_id", default=None),
     topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
     to_length = len(notification_to)
@@ -34,6 +35,10 @@ def send_notification_backend(
     if recipient_type_name == "private":
         # TODO: Use "direct" in typing notification events.
         recipient_type_name = "direct"
+
+    message_id_send = None
+    if message_id:
+        message_id_send = int(message_id)
 
     if recipient_type_name == "stream":
         if to_length > 1:
@@ -50,12 +55,12 @@ def send_notification_backend(
         # permission to send messages to it.
         stream = access_stream_by_id(user_profile, stream_id)[0]
         access_stream_for_send_message(user_profile, stream, forwarder_user_profile=None)
-        do_send_stream_typing_notification(user_profile, operator, stream, topic)
+        do_send_stream_typing_notification(user_profile, operator, stream, topic, message_id_send)
     else:
         if not user_profile.send_private_typing_notifications:
             raise JsonableError(_("User has disabled typing notifications for direct messages"))
 
         user_ids = notification_to
-        check_send_typing_notification(user_profile, user_ids, operator)
+        check_send_typing_notification(user_profile, user_ids, operator, message_id_send)
 
     return json_success(request)

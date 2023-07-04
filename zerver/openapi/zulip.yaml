@@ -2538,6 +2538,11 @@ paths:
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     typing notifications were only for direct messages.
+                                message_id:
+                                  type: integer
+                                  nullable: true
+                                  description: |
+                                    Only present if typing is happening when a message is being edited.
                               example:
                                 {
                                   "type": "typing",
@@ -2656,6 +2661,11 @@ paths:
 
                                     **Changes**: New in Zulip 4.0 (feature level 58). Previously,
                                     typing notifications were only for direct messages.
+                                message_id:
+                                  type: integer
+                                  nullable: true
+                                  description: |
+                                    Only present if typing is happening when a message is being edited.
                               example:
                                 {
                                   "type": "typing",
