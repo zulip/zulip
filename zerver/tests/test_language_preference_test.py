@@ -1,5 +1,6 @@
-from django.test import RequestFactory
+from django.test import RequestFactory, TestCase
 from zerver.middleware import SetUserPreferredLanguageMiddleware
+
 
 from zerver.models import UserProfile
 
