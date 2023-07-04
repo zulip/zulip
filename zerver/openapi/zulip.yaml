@@ -11546,7 +11546,8 @@ paths:
                             name:
                               type: string
                               description: |
-                                The name of the bot.
+                                A machine-readable unique name identifying the integration, all-lower-case without
+                                spaces.
                             display_name:
                               type: string
                               description: |
