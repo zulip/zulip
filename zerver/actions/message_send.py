@@ -18,14 +18,10 @@ from typing import (
     Union,
 )
 
-
 from zerver.models import UserProfile as self
 
-
-
-
 import orjson
-import user_profile
+
 from django.conf import settings
 from django.contrib.messages.context_processors import messages
 from django.core.exceptions import ValidationError
