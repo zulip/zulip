@@ -983,7 +983,7 @@ export function process_hotkey(e, hotkey) {
             lightbox.show_from_selected_message();
             return true;
         case "show_sender_info":
-            popovers.show_sender_info();
+            popover_menus.toggle_user_card_popover_from_hotkey();
             return true;
         // ':': open reactions to message
         case "toggle_reactions_popover": {

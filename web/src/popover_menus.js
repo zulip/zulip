@@ -69,6 +69,7 @@ import * as user_topics from "./user_topics";
 
 let message_actions_popover_keyboard_toggle = false;
 let selected_send_later_timestamp;
+let user_card_popover_from_hotkey;
 
 const popover_instances = {
     compose_control_buttons: null,
@@ -156,6 +157,28 @@ function get_popover_items_for_instance(instance) {
     }
 
     return $current_elem.find("li:not(.divider):visible a");
+}
+
+export function toggle_user_card_popover_from_hotkey() {
+    const $message = $(".selected_message");
+    if ($message[0]._tippy) {
+        $message[0]._tippy.destroy();
+    } else {
+        user_card_popover_from_hotkey().show();
+    }
+
+    const interval = setInterval(() => {
+        if (get_current_user_card_instance()) {
+            clearInterval(interval);
+            const $items = get_popover_items_for_instance(get_current_user_card_instance());
+
+            if ($(".user_info_popover_manage_menu_btn").is(":visible")) {
+                popovers.focus_first_popover_item($items, 1);
+            } else {
+                popovers.focus_first_popover_item($items);
+            }
+        }
+    }, 50);
 }
 
 export function user_info_popover_handle_keyboard(key) {
@@ -1342,4 +1365,30 @@ export function initialize() {
         },
         ...user_card_options,
     });
+
+    user_card_popover_from_hotkey = function () {
+        return tippy(".selected_message", {
+            placement: "left",
+            appendTo: () => document.body,
+            interactive: true,
+            theme: "light-border",
+            trigger: "manual",
+            onCreate(instance) {
+                const $row = $(instance.reference).closest(".message_row");
+                const message = message_lists.current.get(rows.id($row));
+                const user = people.get_by_user_id(message.sender_id);
+                message_lists.current.select_id(message.id);
+
+                if (user === undefined) {
+                    // This is never supposed to happen, not even for deactivated
+                    // users, so we'll need to debug this error if it occurs.
+                    blueslip.error("Bad sender in message" + message.sender_id);
+                    return;
+                }
+                const is_sender_popover = message.sender_id === user.user_id;
+                instance.context = {user, is_sender_popover, has_message_context: true};
+            },
+            ...user_card_options,
+        })[0];
+    };
 }
