@@ -7,7 +7,7 @@ from zerver.models import UserProfile
 
 class SetUserPreferredLanguageMiddlewareTest(TestCase):
 
-    def setup(self):
+    def setUp(self):
         self.factory = RequestFactory()
         self.middleware = SetUserPreferredLanguageMiddleware(lambda r: None)
 
