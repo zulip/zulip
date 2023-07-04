@@ -17,7 +17,7 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
         # Create a user
         realm = Realm.objects.get(string_id='zulip')  # Get the realm
         self.user = do_create_user(
-            email='user@zulip.com',
+            email='user1@zulip.com',
             password='password',
             realm=realm,
             full_name='User',
