@@ -1394,6 +1394,27 @@ export function initialize() {
         },
         ...user_card_options,
     });
+
+    register_popover_menu(".sender_name_user_card, .profile_picture", {
+        placement: "right",
+        onCreate(instance) {
+            const $row = $(instance.reference).closest(".message_row");
+            const message = message_lists.current.get(rows.id($row));
+            const user = people.get_by_user_id(message.sender_id);
+            message_lists.current.select_id(message.id);
+
+            if (user === undefined) {
+                // This is never supposed to happen, not even for deactivated
+                // users, so we'll need to debug this error if it occurs.
+                blueslip.error("Bad sender in message" + message.sender_id);
+                return;
+            }
+            const is_sender_popover = message.sender_id === user.user_id;
+            instance.context = {user, is_sender_popover, has_message_context: true};
+        },
+        ...user_card_options,
+    });
+
     user_card_popover_from_hotkey = function () {
         return tippy(".selected_message", {
             placement: "left",
@@ -1419,4 +1440,33 @@ export function initialize() {
             ...user_card_options,
         })[0];
     };
+
+    register_popover_menu(".user-mention", {
+        placement: "right",
+        onCreate(instance) {
+            const $row = $(instance.reference).closest(".message_row");
+            const message = message_lists.current.get(rows.id($row));
+
+            const id_string = $(instance.reference).attr("data-user-id");
+            // We fallback to email to handle legacy Markdown that was rendered
+            // before we cut over to using data-user-id
+            const email = $(instance.reference).attr("data-user-email");
+            if (id_string === "*" || email === "*") {
+                instance.destroy();
+                return;
+            }
+
+            let user;
+            if (id_string) {
+                const user_id = Number.parseInt(id_string, 10);
+                user = people.get_by_user_id(user_id);
+            } else {
+                user = people.get_by_email(email);
+            }
+            message_lists.current.select_id(message.id);
+            const is_sender_popover = message.sender_id === user.user_id;
+            instance.context = {user, is_sender_popover, has_message_context: true};
+        },
+        ...user_card_options,
+    });
 }

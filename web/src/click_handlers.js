@@ -118,6 +118,15 @@ export function initialize() {
             return true;
         }
 
+        // Enable user info card to be opened by clicking on the sender name, user avatar, or user mention pill .
+        if (
+            $target.is(".sender_name_user_card") ||
+            $target.is(".profile_picture") ||
+            $target.is(".user-mention")
+        ) {
+            return true;
+        }
+
         // Inline image and twitter previews.
         if ($target.is("img.message_inline_image") || $target.is("img.twitter-avatar")) {
             return true;
