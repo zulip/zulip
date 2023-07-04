@@ -18,8 +18,11 @@ from typing import (
     Union,
 )
 
-import self
-from httpx import request
+
+from zerver.models import UserProfile as self
+
+
+
 
 import orjson
 import user_profile
