@@ -1,6 +1,6 @@
 import unittest
 
-from zerver.lib.translate import translate_message
+from zerver.lib.translate import translate_messages
 
 from zerver.models import Realm, UserProfile
 
@@ -46,7 +46,7 @@ class MessageTranslationTestCase(unittest.TestCase):
         preferred_language = UserProfile.preferred_language
 
         # Translate a message content using the user's preferred language
-        translated_content = translate_message('good morning', preferred_language)
+        translated_content = translate_messages('good morning', preferred_language)
 
         # Assert that the message has been translated correctly
         self.assertEqual(translated_content, 'buenos días')
