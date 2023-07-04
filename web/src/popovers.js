@@ -177,7 +177,7 @@ function show_user_group_info_popover(element, group, message) {
         };
         $elt.popover({
             placement: calculate_info_popover_placement(popover_size, $elt),
-            template: render_user_group_info_popover({class: "message-info-popover"}),
+            template: render_user_group_info_popover({class: "group-info-popover"}),
             content: render_user_group_info_popover_content(args),
             html: true,
             trigger: "manual",
