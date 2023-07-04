@@ -1,4 +1,5 @@
 import datetime
+import user_profile
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
@@ -635,6 +636,13 @@ def build_message_send_dict(
     return message_send_dict
 
 
+def translate_message(message_content):
+    preferred_language = user_profile.preferred_language
+    activate(preferred_language)
+    translated_content = translate_message(message_content, preferred_language)
+    return translated_content
+
+
 def create_user_messages(
     message: Message,
     rendering_result: MessageRenderingResult,
@@ -803,9 +811,7 @@ def do_send_messages(
                 send_request.message.save(update_fields=["has_attachment"])
 
         for send_message_request in send_message_requests:
-            preferred_language = user_profile.preferred_language
-            activate(preferred_language)
-            translated_content = translate_message(send_message_request.message_content, preferred_language)
+            translated_content = translate_message(send_message_request.message_content)
             send_message_request.message_content = translated_content
             send_message_request.message.set_language(get_language_name(preferred_language))
 
