@@ -4,6 +4,8 @@ from zerver.middleware import SetUserPreferredLanguageMiddleware
 
 from zerver.models import UserProfile
 
+from zerver.models import Realm
+
 
 class SetUserPreferredLanguageMiddlewareTest(TestCase):
 
@@ -13,8 +15,12 @@ class SetUserPreferredLanguageMiddlewareTest(TestCase):
 
     def test_set_user_preferred_language(self):
         # Create a user
-        user = UserProfile.objects.create(email='test@example.com')
+        realm = Realm.objects.get(string_id='zulip')
 
+        user = UserProfile.objects.create(
+            email='test@example.com',
+            realm=realm
+        )
         # Create a request with the HTTP_ACCEPT_LANGUAGE header
         request = self.factory.get('/')
         request.META['HTTP_ACCEPT_LANGUAGE'] = 'fr'
