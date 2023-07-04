@@ -1,44 +1,41 @@
-from django.test import RequestFactory, TestCase, override_settings
-
+from django.test import RequestFactory
 from zerver.middleware import SetUserPreferredLanguageMiddleware
 
-from zerver.models import Realm
-
-from zerver.actions.create_user import do_create_user
+from zerver.models import UserProfile
 
 
 class SetUserPreferredLanguageMiddlewareTest(TestCase):
-    def setUp(self):
+
+    def setup(self):
         self.factory = RequestFactory()
         self.middleware = SetUserPreferredLanguageMiddleware(lambda r: None)
 
     def test_set_user_preferred_language(self):
-
         # Create a user
-        realm = Realm.objects.get(string_id='zulip')  # Get the realm
-        self.user = do_create_user(
-            email='user1@zulip.com',
-            password='password',
-            realm=realm,
-            full_name='User',
-            acting_user=None
-        )
+        user = UserProfile.objects.create(email='test@example.com')
+
         # Create a request with the HTTP_ACCEPT_LANGUAGE header
         request = self.factory.get('/')
         request.META['HTTP_ACCEPT_LANGUAGE'] = 'fr'
 
         # Set the user on the request
-        request.user = self.user
+        request.user = user
 
         # Call the middleware
         self.middleware(request)
 
         # Refresh the user from the database
-        self.user.refresh_from_db()
+        user.refresh_from_db()
 
-        preferred_language = self.user.user_preferred_language
-        print(preferred_language)  # Print the value on console
-        # Assert that the user's user_preferred_language field is set correctly
-        self.assertEqual(preferred_language, 'fr')
+        # Assert that the user's preferred_language field is set correctly
+        self.assertEqual(user.preferred_language, 'fr')
 
+    def test_set_user_preferred_language_no_user(self):
+        # Create a request with the HTTP_ACCEPT_LANGUAGE header
+        request = self.factory.get('/')
 
+        # Call the middleware
+        self.middleware(request)
+
+        # Assert that the preferred_language field is not set
+        self.assertFalse(hasattr(request.user, 'preferred_language'))
