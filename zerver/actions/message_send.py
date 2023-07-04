@@ -813,8 +813,8 @@ def do_send_messages(
                 send_request.message.save(update_fields=["has_attachment"])
 
         for send_request in send_message_requests:
-            translated_content = translate_message(send_request.message)
-            send_request.message = translated_content
+            translated_content = translate_message(send_request.message.content)
+            send_request.message.content = translated_content
         # send_request.message.set_language(get_language_name(preferred_language))
 
         ums: List[UserMessageLite] = []
