@@ -2028,9 +2028,9 @@ button {
 
 .portico-landing.why-page .main blockquote {
     background-color: hsl(0deg 0% 100%);
-    border-color: hsl(168deg 24% 51%);
+    border-left: 5px solid hsl(168deg 24% 51%);
     padding: 20px 30px;
-    margin-top: 20px;
+    margin: 20px 0;
     font-size: 1.05em;
 
     & p {
@@ -3582,10 +3582,6 @@ button {
         background: hsl(0deg 0% 93%);
         padding: 20px;
         margin: 0 0 20px;
-    }
-
-    & blockquote::after {
-        content: "";
     }
 
     .author {
