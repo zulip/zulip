@@ -352,31 +352,21 @@ export function process_escape_key(e) {
 function handle_popover_events(event_name) {
     const popover_menu_visible_instance = popover_menus.get_visible_instance();
 
-    if (popover_menu_visible_instance) {
-        popover_menus.sidebar_menu_instance_handle_keyboard(
-            popover_menu_visible_instance,
-            event_name,
-        );
-        return true;
-    }
-
     if (popovers.user_info_manage_menu_popped()) {
         popovers.user_info_popover_manage_menu_handle_keyboard(event_name);
         return true;
     }
 
-    if (popovers.message_info_popped()) {
-        popovers.user_info_popover_for_message_handle_keyboard(event_name);
+    if (popover_menus.get_current_user_card_instance()) {
+        popover_menus.user_info_popover_handle_keyboard(event_name);
         return true;
     }
 
-    if (popovers.user_info_popped()) {
-        popovers.user_info_popover_handle_keyboard(event_name);
-        return true;
-    }
-
-    if (popovers.user_sidebar_popped()) {
-        popovers.user_sidebar_popover_handle_keyboard(event_name);
+    if (popover_menu_visible_instance) {
+        popover_menus.sidebar_menu_instance_handle_keyboard(
+            popover_menu_visible_instance,
+            event_name,
+        );
         return true;
     }
 
@@ -704,7 +694,7 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    if (overlays.settings_open() && !popovers.user_info_popped()) {
+    if (overlays.settings_open()) {
         return false;
     }
 
