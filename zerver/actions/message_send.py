@@ -637,7 +637,7 @@ def build_message_send_dict(
 
 
 def translate_message(message_content):
-    preferred_language = user_profile.preferred_language
+    preferred_language = UserProfile.preferred_language
     activate(preferred_language)
     translated_content = translate_message(message_content, preferred_language)
     return translated_content

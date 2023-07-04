@@ -1903,7 +1903,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     is_mirror_dummy = models.BooleanField(default=False)
 
     #default_language for translation
-    preferred_language = models.CharField(max_length=10, blank=True, null=True)
+    preferred_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     # Users with this flag set are allowed to forge messages as sent by another

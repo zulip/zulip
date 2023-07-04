@@ -43,7 +43,7 @@ class MessageTranslationTestCase(unittest.TestCase):
 
         # Rest of the test case...
 
-        preferred_language = user_profile.user_preferred_language
+        preferred_language = UserProfile.preferred_language
 
         # Translate a message content using the user's preferred language
         translated_content = translate_message('good morning', preferred_language)
