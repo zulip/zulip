@@ -57,10 +57,12 @@ function get_focus_area(msg_type, opts) {
 export const _get_focus_area = get_focus_area;
 
 export function set_focus(msg_type, opts) {
+    // Called mainly when opening the compose box or switching the
+    // message type to set the focus in the first empty input in the
+    // compose box.
     if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
         const focus_area = get_focus_area(msg_type, opts);
-        const $elt = $(focus_area);
-        $elt.trigger("focus").trigger("select");
+        $(focus_area).trigger("focus");
     }
 }
 
