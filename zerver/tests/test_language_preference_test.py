@@ -1,7 +1,6 @@
 from django.test import RequestFactory, TestCase, override_settings
-from django.contrib.auth.models import User
+
 from zerver.middleware import SetUserPreferredLanguageMiddleware
-from django.contrib.auth import get_user_model
 
 from zerver.models import Realm
 
