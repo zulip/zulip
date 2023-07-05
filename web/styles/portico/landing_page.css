@@ -1543,6 +1543,7 @@ button {
     line-height: 1.6;
     text-align: left;
     border: none;
+    margin: 0 0 20px;
 
     opacity: 0.8;
 }
