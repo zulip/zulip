@@ -414,6 +414,10 @@
             outline-offset: -1px;
             outline-color: hsl(176deg 46% 41%);
         }
+
+        &:hover svg path {
+            fill: hsl(200deg 100% 40%);
+        }
     }
 
     .code-section {
