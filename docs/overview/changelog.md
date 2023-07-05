@@ -17,6 +17,38 @@ log][commit-log] for an up-to-date list of all changes.
 
 ## Zulip 7.x series
 
+### 7.2 -- 2023-07-05
+
+- Started logging a more accurate, detailed, and actionable error messages when
+  [common reverse proxy mis-configurations][proxies] are detected.
+
+- Improved [reverse proxy documentation][proxies] to clarify that trust of
+  `X-Fowarded-Proto` is also necessary.
+
+- Removed [reverse proxy][proxies] nginx configuration files when the
+  [`loadbalancer.ips`](../production/deployment.md#ips)
+  setting has been unset.
+- Improved error-handling of scheduled emails, so they cannot attempt infinite
+  deliveries of a message with no recipients.
+- Fixed a bug with the
+  [PGroonga integration](../subsystems/full-text-search.md#multi-language-full-text-search)
+  that would cause the PostgreSQL server to crash when a search was run.
+- Fixed a bug that would cause some messages not to be marked as read.
+- Fixed a bug that still showed file-upload banners after re-opening the compose
+  box.
+- Fixed a bug that prevented file uploads with very unusual file names.
+- Adjusted the bot icon to make it more visible on the light theme.
+- Fixed minor rendering issues on the “press enter to send” indicator.
+- Fixed the scrollbar behavior on the stream settings page.
+- Improved error reporting when a Slack token fails to validate during
+  [import](https://zulip.com/help/import-from-slack#export-your-slack-data),
+  such as a token having too few permissions.
+- Added support for IPv6
+  [nameservers in the nginx configuration](../production/deployment.md#nameserver).
+- Updated translations.
+
+[proxies]: ../production/deployment.md#configuring-zulip-to-trust-proxies
+
 ### 7.1 -- 2023-06-13
 
 - Added checks to check that Zulip is being installed on a
