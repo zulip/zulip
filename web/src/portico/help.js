@@ -46,19 +46,33 @@ function add_copy_to_clipboard_element($codehilite) {
         },
     });
 
+    // Show a tippy tooltip when the button is hovered
+    const tooltipCopy = tippy($copy_button[0], {
+        content: "Copy code",
+        trigger: "mouseenter",
+        placement: "top",
+    });
+
     // Show a tippy tooltip when the code is copied
+    const tooltipCopied = tippy($copy_button[0], {
+        content: "Copied!",
+        trigger: "manual",
+        placement: "top",
+    });
+
+    // Copy code on button click
+    $copy_button.on("click", () => {
+        clipboard.onClick({currentTarget: $copy_button[0]});
+    });
+
+    // Show "Copied!" tooltip when code is successfully copied
     clipboard.on("success", () => {
-        const tooltip = tippy($copy_button[0], {
-            content: "Copied!",
-            trigger: "manual",
-            placement: "top",
-        });
+        tooltipCopy.hide();
+        tooltipCopied.show();
 
-        tooltip.show();
-
-        // Show the tooltip for 1s
+        // Hide the "Copied!" tooltip after 1 second
         setTimeout(() => {
-            tooltip.hide();
+            tooltipCopied.hide();
         }, 1000);
     });
 }
