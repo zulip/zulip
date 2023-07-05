@@ -89,15 +89,25 @@ server's state on another machine perfectly.
 
 ### Restoring backups
 
-First, [install a new Zulip server through Step 3][install-server]
-with the same version of both the base OS and Zulip from your previous
-installation. Then, run as root:
+1. Install the same base OS as the backup was taken on. If you want to [upgrade
+   the OS][upgrade-os], you should do this after restoring the backup.
+
+1. [Install a new Zulip server through Step 3][install-server], with the same
+   version of PostgreSQL that the backup was taken on, by passing the desired
+   version with [the `--postgresql-version` argument][installer-options]. If
+   you want to [upgrade the version of PostgreSQL][upgrade-pg], you should do this after
+   restoring the backup.
+
+1. As root, import the backup:
 
 ```bash
 /home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
 ```
 
 When that finishes, your Zulip server should be fully operational again.
+
+[upgrade-os]: upgrade.md#upgrading-the-operating-system
+[upgrade-pg]: upgrade.md#upgrading-postgresql
 
 #### Changing the hostname
 
