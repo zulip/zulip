@@ -1971,7 +1971,6 @@ class TestMissedMessages(ZulipTestCase):
 
         # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
-            # Soft reactivate the user by sending a personal message
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(
@@ -1986,7 +1985,6 @@ class TestMissedMessages(ZulipTestCase):
 
         # Group mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
-            # Soft reactivate the user by sending a personal message
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_missedmessage_emails(

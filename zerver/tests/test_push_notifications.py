@@ -1689,7 +1689,6 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
-            # Soft reactivate the user by sending a personal message
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
@@ -1699,7 +1698,6 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         # Group mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
-            # Soft reactivate the user by sending a personal message
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
