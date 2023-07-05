@@ -18,23 +18,6 @@ The Zulip server-side configuration is straightforward:
 1. Pick a client name for your SCIM client. This name is internal to
    your Zulip configuration, so the name of your IdP provider is a
    good choice. We'll use `okta` in the examples below.
-1. First a SCIM client entry needs to be added to the database. Run
-   `manage.py add_scim_client <client name> -r <subdomain>`. For
-   example, if your organization is hosted on a subdomain
-   (`subdomain.zulip.example.com`):
-
-   ```bash
-   /home/zulip/deployments/current/manage.py add_scim_client okta -r 'subdomain'
-   ```
-
-   Or your organization is hosted on the root domain (`zulip.example.com`):
-
-   ```bash
-   /home/zulip/deployments/current/manage.py add_scim_client okta -r ""
-   ```
-
-   See the [management command documentation](./management-commands.md)
-   for details on how to run management commands.
 
 1. Configure the Zulip server by adding a `SCIM_CONFIG` block to your
    `/etc/zulip/settings.py`:
