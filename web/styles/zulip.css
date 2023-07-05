@@ -750,8 +750,7 @@ body.has-overlay-scrollbar {
     }
 }
 
-.column-middle,
-#compose-content {
+.column-middle {
     margin-right: var(--right-sidebar-width);
     margin-left: calc(
         var(--left-sidebar-width) + var(--left-sidebar-collapse-widget-gutter)

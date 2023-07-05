@@ -50,7 +50,6 @@
     }
 }
 
-/* Main geometry for this element is in zulip.css */
 #compose-content {
     background-color: hsl(232deg 30% 92%);
     transition: background-color 200ms linear;
@@ -890,26 +889,6 @@ input.recipient_box {
     &:hover,
     &:focus {
         box-shadow: none;
-    }
-}
-
-@media (width < $xl_min) {
-    #compose-content {
-        margin-right: 7px;
-    }
-}
-
-@media (width < $md_min) {
-    #compose-content {
-        margin-right: 7px;
-        margin-left: 7px;
-    }
-}
-
-@media (width < $mm_min) {
-    #compose-content {
-        margin-right: 5px;
-        margin-left: 5px;
     }
 }
 
