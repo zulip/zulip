@@ -474,4 +474,17 @@
             display: block;
         }
     }
+
+    & blockquote {
+        padding: 0 0 0 15px;
+        margin: 0 0 20px;
+        border-left: 5px solid hsl(0deg 0% 93%);
+
+        & p {
+            font-size: 17.5px;
+            font-weight: 300;
+            line-height: 1.25;
+            margin-bottom: 0;
+        }
+    }
 }
