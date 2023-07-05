@@ -21,6 +21,7 @@ from django_stubs_ext import StrPromise
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_change_user_role
 from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
@@ -33,7 +34,15 @@ from zerver.lib.email_notifications import (
 )
 from zerver.lib.send_email import FromAddress, deliver_scheduled_emails, send_custom_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Realm, ScheduledEmail, UserMessage, UserProfile, get_realm, get_stream
+from zerver.models import (
+    Realm,
+    ScheduledEmail,
+    UserMessage,
+    UserProfile,
+    UserTopic,
+    get_realm,
+    get_stream,
+)
 
 
 class TestCustomEmails(ZulipTestCase):
@@ -1955,6 +1964,17 @@ class TestMissedMessages(ZulipTestCase):
                 [{"message_id": personal_message_id, "trigger": "private_message"}],
             )
 
+        # Hamlet FOLLOWS the topic.
+        # 'wildcard_mentions_notify' is disabled to verify the corner case when only
+        # 'enable_followed_topic_wildcard_mentions_notify' is enabled (True by default).
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            get_stream("Denmark", hamlet.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        do_change_user_setting(hamlet, "wildcard_mentions_notify", False, acting_user=None)
+
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
             mention = "@**all**"
@@ -1968,6 +1988,15 @@ class TestMissedMessages(ZulipTestCase):
                     }
                 ],
             )
+
+        # Reset
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            get_stream("Denmark", hamlet.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+        )
+        do_change_user_setting(hamlet, "wildcard_mentions_notify", True, acting_user=None)
 
         # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
