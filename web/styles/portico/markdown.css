@@ -399,6 +399,7 @@
     }
 
     .copy-codeblock {
+        cursor: pointer;
         /* Invisible default button */
         background: none;
         border: none;
