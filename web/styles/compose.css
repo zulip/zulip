@@ -223,9 +223,18 @@
 }
 
 #compose {
-    position: fixed;
+    /* .column-middle is set to `position: relative`,
+       so it acts as the positioning context for
+       sticky positioning. */
+    position: sticky;
+    /* The element will render by default at the far
+       left of `.column-middle`, so only the bottom
+       positioning property is needed here. */
     bottom: 0;
-    left: 0;
+    /* TODO: Set establish and reference this value
+       using a CSS variable */
+    max-width: 870px;
+    width: 100%;
     z-index: 4;
 }
 
@@ -894,6 +903,9 @@ input.recipient_box {
 
 #compose.compose-fullscreen {
     z-index: 99;
+    height: calc(
+        100vh - var(--navbar-alerts-wrapper-height) - var(--header-height)
+    );
 
     .message_comp {
         flex: 1;
