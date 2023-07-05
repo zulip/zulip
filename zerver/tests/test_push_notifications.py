@@ -26,7 +26,8 @@ from analytics.models import InstallationCount, RealmCount
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.user_settings import do_regenerate_api_key
+from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -71,6 +72,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserMessage,
+    UserTopic,
     get_client,
     get_display_recipient,
     get_realm,
@@ -1675,6 +1677,19 @@ class HandlePushNotificationTest(PushNotificationTest):
                 {"message_id": personal_message_id, "trigger": "private_message"},
             )
 
+        # User FOLLOWS the topic.
+        # 'wildcard_mentions_notify' is disabled to verify the corner case when only
+        # 'enable_followed_topic_wildcard_mentions_notify' is enabled (True by default).
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+
         # Stream wildcard mention in followed topic should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
             mention = "@**all**"
@@ -1686,6 +1701,17 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "trigger": "stream_wildcard_mentioned_in_followed_topic",
                 },
             )
+
+        # Reset
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+        )
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", True, acting_user=None
+        )
 
         # Stream Wildcard mention should NOT soft reactivate the user
         with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
