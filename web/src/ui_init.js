@@ -231,7 +231,7 @@ function initialize_navbar() {
 }
 
 function initialize_compose_box() {
-    $("#compose-container").append(
+    $("#compose").append(
         render_compose({
             embedded: $("#compose").attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,

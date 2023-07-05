@@ -31,15 +31,13 @@ body {
 
     /* Implementation for fluid layout width setting. */
     .header-main,
-    .app .app-main,
-    #compose-container {
+    .app .app-main {
         max-width: 1400px;
     }
 
     &.fluid_layout_width {
         .header-main,
-        .app .app-main,
-        #compose-container {
+        .app .app-main {
             max-width: inherit;
         }
     }

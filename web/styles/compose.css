@@ -230,13 +230,6 @@
     z-index: 4;
 }
 
-#compose-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin: auto;
-}
-
 #compose_top {
     display: flex;
     justify-content: space-between;
@@ -922,10 +915,6 @@ input.recipient_box {
 
 #compose.compose-fullscreen {
     z-index: 99;
-
-    #compose-container {
-        height: 100%;
-    }
 
     .message_comp {
         flex: 1;
