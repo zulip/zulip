@@ -24,7 +24,7 @@ up-to-date list of all changes.
   [PGroonga integration](../subsystems/full-text-search.md#multi-language-full-text-search)
   that would cause the PostgreSQL server to crash when a search was run.
 - Fixed a bug that would cause some messages not to be marked as read.
-- Fixed a bug that still shoed file-upload banners after re-opening the compose
+- Fixed a bug that still showed file-upload banners after re-opening the compose
   box.
 - Fixed a bug that prevented file uploads with very unusual file names.
 - Adjusted the bot icon to make it more visible on the light theme.
