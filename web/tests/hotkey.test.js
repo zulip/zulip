@@ -63,14 +63,9 @@ const overlays = mock_esm("../src/overlays", {
     active_modal: () => undefined,
     is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
-const popovers = mock_esm("../src/popovers", {
-    user_info_manage_menu_popped: () => false,
-    message_info_popped: () => false,
-    user_sidebar_popped: () => false,
-    user_info_popped: () => false,
-});
 const popover_menus = mock_esm("../src/popover_menus", {
     get_visible_instance: () => undefined,
+    get_current_user_card_instance: () => undefined,
 });
 const reactions = mock_esm("../src/reactions");
 const search = mock_esm("../src/search");
@@ -369,7 +364,7 @@ run_test("misc", ({override}) => {
     assert_mapping("J", navigate, "page_down");
     assert_mapping("k", navigate, "up");
     assert_mapping("K", navigate, "page_up");
-    assert_mapping("u", popovers, "show_sender_info");
+    assert_mapping("u", popover_menus, "show_sender_info");
     assert_mapping("i", popover_menus, "toggle_message_actions_menu");
     assert_mapping(":", reactions, "open_reactions_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");

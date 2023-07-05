@@ -1252,13 +1252,6 @@ export function initialize() {
         filters = new Set(ls.get(ls_key));
     }
 
-    $("body").on("click", "#recent_topics_table .participant_profile", function (e) {
-        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
-        e.stopPropagation();
-        const user = people.get_by_user_id(participant_user_id);
-        popovers.show_user_info_popover(this, user);
-    });
-
     $("body").on(
         "keydown",
         ".on_hover_topic_mute, .on_hover_topic_unmute",

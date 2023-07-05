@@ -174,6 +174,13 @@ body {
     --color-background-text-hover-direct-mention: hsl(240deg 70% 70% / 30%);
     --color-background-text-group-mention: hsl(183deg 60% 45% / 18%);
     --color-background-text-hover-group-mention: hsl(183deg 60% 45% / 30%);
+    --color-icon-purple: hsl(240deg 35% 60%);
+    --bg-popover-light: hsl(0deg 0% 100%);
+    --bg-popover-dark: hsl(0deg 0% 17% / 100%);
+    --color-link-blue: hsl(217deg 100% 50% / 100%);
+    --color-success-green: hsl(153deg 100% 20% / 100%);
+    --color-success-light-green: hsl(151deg 28% 63% / 100%);
+    --bg-success-white-green: hsl(149deg 51% 91% / 100%);
 }
 
 %dark-theme {
@@ -2692,30 +2699,6 @@ select.invite-as {
 .no-drag {
     -webkit-user-drag: none;
     user-select: none;
-}
-
-.user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
-
-    & i {
-        cursor: pointer;
-
-        &.hide_copy_icon {
-            display: none;
-        }
-    }
-}
-
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170deg 48% 54%);
-}
-
-.email_copied i {
-    display: none !important;
 }
 
 .flatpickr-calendar {

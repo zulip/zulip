@@ -355,6 +355,7 @@ $time_column_max_width: 150px;
                        having any affect on height of the container. */
                     position: absolute;
                     margin-top: $distance_of_non_text_elements_from_message_box_top;
+                    z-index: 3;
                 }
 
                 .sender_name {
