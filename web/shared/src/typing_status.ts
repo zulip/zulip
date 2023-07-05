@@ -3,8 +3,8 @@ import assert from "minimalistic-assert";
 
 type TypingStatusWorker = {
     get_current_time: () => number;
-    notify_server_start: (recipient_ids: number[]) => void;
-    notify_server_stop: (recipient_ids: number[]) => void;
+    notify_server_start: (recipient_ids: number[], message_id: number | null) => void;
+    notify_server_stop: (recipient_ids: number[], message_id: number | null) => void;
 };
 
 type TypingStatusState = {
@@ -29,23 +29,27 @@ const TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
 export let state: TypingStatusState | null = null;
 
 /** Exported only for tests. */
-export function stop_last_notification(worker: TypingStatusWorker): void {
+export function stop_last_notification(
+    worker: TypingStatusWorker,
+    message_id: number | null,
+): void {
     assert(state !== null, "State object should not be null here.");
     clearTimeout(state.idle_timer);
-    worker.notify_server_stop(state.current_recipient_ids);
+    worker.notify_server_stop(state.current_recipient_ids, message_id);
     state = null;
 }
 
 /** Exported only for tests. */
 export function start_or_extend_idle_timer(
     worker: TypingStatusWorker,
+    message_id: number | null,
 ): ReturnType<typeof setTimeout> {
     function on_idle_timeout(): void {
         // We don't do any real error checking here, because
         // if we've been idle, we need to tell folks, and if
         // our current recipients has changed, previous code will
         // have stopped the timer.
-        stop_last_notification(worker);
+        stop_last_notification(worker, message_id);
     }
 
     if (state?.idle_timer) {
@@ -63,17 +67,22 @@ function actually_ping_server(
     worker: TypingStatusWorker,
     recipient_ids: number[],
     current_time: number,
+    message_id: number | null,
 ): void {
-    worker.notify_server_start(recipient_ids);
+    worker.notify_server_start(recipient_ids, message_id);
     set_next_start_time(current_time);
 }
 
 /** Exported only for tests. */
-export function maybe_ping_server(worker: TypingStatusWorker, recipient_ids: number[]): void {
+export function maybe_ping_server(
+    worker: TypingStatusWorker,
+    recipient_ids: number[],
+    message_id: number | null,
+): void {
     assert(state !== null, "State object should not be null here.");
     const current_time = worker.get_current_time();
     if (current_time > state.next_send_start_time) {
-        actually_ping_server(worker, recipient_ids, current_time);
+        actually_ping_server(worker, recipient_ids, current_time, message_id);
     }
 }
 
@@ -103,17 +112,21 @@ export function maybe_ping_server(worker: TypingStatusWorker, recipient_ids: num
  *   addressed to, as a sorted array of user IDs; or `null` if no direct message
  *   is being composed anymore.
  */
-export function update(worker: TypingStatusWorker, new_recipient_ids: number[] | null): void {
+export function update(
+    worker: TypingStatusWorker,
+    new_recipient_ids: number[] | null,
+    message_id: number | null,
+): void {
     if (state !== null) {
         // We need to use _.isEqual for comparisons; === doesn't work
         // on arrays.
         if (_.isEqual(new_recipient_ids, state.current_recipient_ids)) {
             // Nothing has really changed, except we may need
             // to send a ping to the server.
-            maybe_ping_server(worker, new_recipient_ids!);
+            maybe_ping_server(worker, new_recipient_ids!, message_id);
 
             // We can also extend out our idle time.
-            state.idle_timer = start_or_extend_idle_timer(worker);
+            state.idle_timer = start_or_extend_idle_timer(worker, message_id);
 
             return;
         }
@@ -121,7 +134,7 @@ export function update(worker: TypingStatusWorker, new_recipient_ids: number[] |
         // We apparently stopped talking to our old recipients,
         // so we must stop the old notification.  Don't return
         // yet, because we may have new recipients.
-        stop_last_notification(worker);
+        stop_last_notification(worker, message_id);
     }
 
     if (new_recipient_ids === null) {
@@ -135,8 +148,8 @@ export function update(worker: TypingStatusWorker, new_recipient_ids: number[] |
     state = {
         current_recipient_ids: new_recipient_ids,
         next_send_start_time: 0,
-        idle_timer: start_or_extend_idle_timer(worker),
+        idle_timer: start_or_extend_idle_timer(worker, message_id),
     };
     const current_time = worker.get_current_time();
-    actually_ping_server(worker, new_recipient_ids, current_time);
+    actually_ping_server(worker, new_recipient_ids, current_time, message_id);
 }

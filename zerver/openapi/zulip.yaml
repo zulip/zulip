@@ -16090,6 +16090,15 @@ paths:
               - stop
           example: start
           required: true
+        - name: message_id
+          in: query
+          description: |
+            ID of the message being edited. Only present if typing is happening when
+            a message is being edited.
+          schema:
+            type: string
+            nullable: true
+          example: "120"
         - name: to
           in: query
           description: |

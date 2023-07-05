@@ -36,9 +36,7 @@ def send_notification_backend(
         # TODO: Use "direct" in typing notification events.
         recipient_type_name = "direct"
 
-    message_id_send = None
-    if message_id:
-        message_id_send = int(message_id)
+    message_id_send = int(message_id) if message_id is not None else None
 
     if recipient_type_name == "stream":
         if to_length > 1:

@@ -61,9 +61,9 @@ run_test("basics", ({override, override_rewire}) => {
         events.timer_cleared = false;
     }
 
-    function call_handler(new_recipient) {
+    function call_handler(new_recipient, message_id) {
         clear_events();
-        typing_status.update(worker, new_recipient);
+        typing_status.update(worker, new_recipient, message_id);
     }
 
     worker = {
