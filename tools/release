@@ -112,6 +112,7 @@ gh auth status \
     || fail "Not authenticated to github"
 
 # Extract the changelog, print it
+changelog_anchor="zulip-server-${version//./-}"
 changelog=$(VERSION="$version" perl -nle '$v=quotemeta($ENV{VERSION}); print if $rc = /^### $v/ .. /^#{1,3} (?!$v)/ and $rc !~ /E0/' docs/overview/changelog.md)
 echo "$changelog"
 
@@ -145,6 +146,6 @@ if [ -n "$is_prerelease" ]; then
 fi
 gh release create "$version" \
     --title "Zulip Server $version" \
-    --notes-file <(echo "$changelog") \
+    --notes "[Complete release notes](https://zulip.readthedocs.io/en/latest/overview/changelog.html#${changelog_anchor})" \
     "${params[@]}" \
     "$TARBALL"
