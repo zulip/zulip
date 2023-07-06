@@ -698,13 +698,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # structurally very similar to dropbox_image, and possibly
         # should be rewritten to use open graph, but has some value.
         parsed_url = urllib.parse.urlparse(url)
-        if parsed_url.netloc.lower().endswith(".wikipedia.org"):
+        if parsed_url.netloc.lower().endswith(".wikipedia.org") and parsed_url.path.startswith(
+            "/wiki/File:"
+        ):
             # Redirecting from "/wiki/File:" to "/wiki/Special:FilePath/File:"
             # A possible alternative, that avoids the redirect after hitting "Special:"
             # is using the first characters of md5($filename) to generate the URL
-            domain = parsed_url.scheme + "://" + parsed_url.netloc
-            correct_url = domain + parsed_url.path[:6] + "Special:FilePath" + parsed_url.path[5:]
-            return correct_url
+            newpath = parsed_url.path.replace("/wiki/File:", "/wiki/Special:FilePath/File:", 1)
+            return parsed_url._replace(path=newpath).geturl()
         if parsed_url.netloc == "linx.li":
             return "https://linx.li/s" + parsed_url.path
         return None
