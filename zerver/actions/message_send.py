@@ -1067,6 +1067,7 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         query=query,
         message=message,
     )
+    print(f"Message Content Query", messages)
 
     if messages.exists():
         return messages[0].id
