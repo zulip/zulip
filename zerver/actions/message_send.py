@@ -776,7 +776,7 @@ def get_active_presence_idle_user_ids(
 
 def translate_messages(send_request, content):
     # requests = get_current_request()
-    preferred_language = send_request.message.sender.userprofile.preferred_language
+    preferred_language = send_request.message.sender.preferred_language
     print(f"preferred_language do_send_message", preferred_language)
 
     translated_content = translate_message(content, preferred_language)
