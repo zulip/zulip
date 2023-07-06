@@ -1390,7 +1390,6 @@ def check_message(
     """
     stream = None
     # Translate the message content
-
     if addressee.is_stream():
         recipient = addressee.stream()
     elif addressee.is_private():
@@ -1398,8 +1397,13 @@ def check_message(
     else:
         raise AssertionError("Invalid message type")
 
-    recipient_id = recipient.id
-    
+    if isinstance(recipient, list):
+        # For a private message, get the first recipient's ID
+        recipient_id = recipient[0].id
+    else:
+        # For a stream message, get the recipient ID
+        recipient_id = recipient.id
+
     message_content = translate_messages(recipient_id, message_content_raw)
     print(f"message_content after translation", message_content)
     # message_content = normalize_body(message_content_raw)
