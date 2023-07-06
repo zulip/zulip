@@ -19,6 +19,7 @@ from typing import (
     Union,
 )
 
+from django.http import request
 from zerver.models import UserProfile as self
 
 import orjson
@@ -774,7 +775,7 @@ def get_active_presence_idle_user_ids(
 
 
 def translate_messages(content):
-    preferred_language = UserProfile.preferred_language
+    preferred_language = UserProfile.objects.get(user=request.user).preferred_language
     print(f"preferred_language do_send_message",preferred_language)
 
     translated_content = translate_message(content, preferred_language)
