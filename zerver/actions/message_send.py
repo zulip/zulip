@@ -821,7 +821,10 @@ def do_send_messages(
 
         for send_request in send_message_requests:
             translated_content = translate_messages(send_request, send_request.message.content)
+            print(f"translated_content do_send_message", translated_content)
             send_request.message.content = translated_content
+            print(f"send_request.message.content ", send_request.message.content)
+
             # send_request.message.set_language(get_language_name(preferred_language))
 
         ums: List[UserMessageLite] = []
