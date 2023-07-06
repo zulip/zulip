@@ -220,7 +220,7 @@ class PermissionTest(ZulipTestCase):
         self.assertFalse(othello_dict["is_owner"])
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -230,7 +230,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=5) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -281,7 +281,7 @@ class PermissionTest(ZulipTestCase):
         # Giveth
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=6) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -292,7 +292,7 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.capture_send_event_calls(expected_num_events=4) as events:
+        with self.capture_send_event_calls(expected_num_events=5) as events:
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -518,9 +518,42 @@ class PermissionTest(ZulipTestCase):
         )
 
         req = dict(role=orjson.dumps(new_role).decode())
+
+        # The basic events sent in all cases on changing role are - one event
+        # for changing role and one event each for adding and removing user
+        # from system user group.
         num_events = 3
+
         if UserProfile.ROLE_MEMBER in [old_role, new_role]:
-            num_events = 4
+            # There is one additional event for adding/removing user from
+            # the "Full members" group as well.
+            num_events += 1
+
+        if new_role == UserProfile.ROLE_GUEST:
+            # There is one additional event deleting the unsubscribed public
+            # streams that the user will not able to access after becoming guest.
+            num_events += 1
+
+        if old_role == UserProfile.ROLE_GUEST:
+            # User will receive one event for creation of unsubscribed public
+            # (and private, if the new role is owner or admin) streams that
+            # they did not have access to previously and 3 more peer_add
+            # events for each of the public stream.
+            if new_role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]:
+                # If the new role is owner or admin, the peer_add event will be
+                # sent for one private stream as well.
+                num_events += 5
+            else:
+                num_events += 4
+        elif new_role in [
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+            UserProfile.ROLE_REALM_OWNER,
+        ] and old_role not in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]:
+            # If old_role is not guest and user's role is changed to admin or owner from moderator
+            # or member, then the user gains access to unsubscribed private streams and thus
+            # receives one event for stream creation and one peer_add event for it.
+            num_events += 2
+
         with self.capture_send_event_calls(expected_num_events=num_events) as events:
             result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_success(result)

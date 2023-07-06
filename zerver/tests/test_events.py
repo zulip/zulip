@@ -1859,10 +1859,19 @@ class NormalActionsTest(BaseAction):
         self.user_profile.refresh_from_db()
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+
+        self.make_stream("Test private stream", invite_only=True)
+        self.subscribe(self.example_user("othello"), "Test private stream")
+
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
+            if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
+                num_events = 6
+            else:
+                num_events = 5
+
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role, acting_user=None),
-                num_events=4,
+                num_events=num_events,
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
@@ -1872,8 +1881,11 @@ class NormalActionsTest(BaseAction):
 
             if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
                 check_user_group_remove_members("events[3]", events[3])
+                check_stream_create("events[4]", events[4])
+                check_subscription_peer_add("events[5]", events[5])
             else:
                 check_user_group_add_members("events[3]", events[3])
+                check_stream_delete("events[4]", events[4])
 
     def test_change_is_billing_admin(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -1896,10 +1908,18 @@ class NormalActionsTest(BaseAction):
         self.user_profile.refresh_from_db()
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+
+        self.make_stream("Test private stream", invite_only=True)
+        self.subscribe(self.example_user("othello"), "Test private stream")
+
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
+            if role == UserProfile.ROLE_REALM_OWNER:
+                num_events = 6
+            else:
+                num_events = 5
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role, acting_user=None),
-                num_events=4,
+                num_events=num_events,
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
@@ -1909,8 +1929,11 @@ class NormalActionsTest(BaseAction):
 
             if role == UserProfile.ROLE_REALM_OWNER:
                 check_user_group_remove_members("events[3]", events[3])
+                check_stream_create("events[4]", events[4])
+                check_subscription_peer_add("events[5]", events[5])
             else:
                 check_user_group_add_members("events[3]", events[3])
+                check_stream_delete("events[4]", events[4])
 
     def test_change_is_moderator(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
@@ -1950,9 +1973,16 @@ class NormalActionsTest(BaseAction):
 
         do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
+            if role == UserProfile.ROLE_MEMBER:
+                # When changing role from guest to member, peer_add events are also sent
+                # to make sure the subscribers info is provided to the clients for the
+                # streams added by stream creation event.
+                num_events = 7
+            else:
+                num_events = 5
             events = self.verify_action(
                 lambda: do_change_user_role(self.user_profile, role, acting_user=None),
-                num_events=4,
+                num_events=num_events,
             )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
@@ -1962,8 +1992,12 @@ class NormalActionsTest(BaseAction):
 
             if role == UserProfile.ROLE_GUEST:
                 check_user_group_remove_members("events[3]", events[3])
+                check_stream_delete("events[4]", events[4])
             else:
                 check_user_group_add_members("events[3]", events[3])
+                check_stream_create("events[4]", events[4])
+                check_subscription_peer_add("events[5]", events[5])
+                check_subscription_peer_add("events[6]", events[6])
 
     def test_change_notification_settings(self) -> None:
         for notification_setting in self.user_profile.notification_setting_types:
