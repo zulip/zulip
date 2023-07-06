@@ -18,7 +18,7 @@ from django.utils.cache import patch_vary_headers
 from django.utils.crypto import constant_time_compare
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.log import log_response
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, get_language_from_request
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
@@ -462,12 +462,16 @@ class SetUserPreferredLanguageMiddleware:
 
     def __call__(self, request):
         # Retrieve browser default language
-        preferred_language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        preferred_language = get_language_from_request(request)
+        # Print the preferred language to the console
+        print(f"Preferred Language: {preferred_language}")
 
         # Update user_preferred_language for authenticated users only
         if request.user.is_authenticated and preferred_language:
             request.user.preferred_language = preferred_language.strip()
             request.user.save()
+            # Print the preferred language to the console
+            print(f" User's Preferred Language: { request.user.preferred_language}")
 
         response = self.get_response(request)
 

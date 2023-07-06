@@ -638,11 +638,11 @@ def build_message_send_dict(
     return message_send_dict
 
 
-def translate_message(message_content):
-    preferred_language = UserProfile.preferred_language
+    def translate_message(message_content):
+        preferred_language = UserProfile.preferred_language
 
-    translated_content = translate_messages(message_content, preferred_language)
-    return translated_content
+        translated_content = translate_messages(message_content, preferred_language)
+        return translated_content
 
 
 def create_user_messages(
