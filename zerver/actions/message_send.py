@@ -107,6 +107,8 @@ from zerver.tornado.django_api import send_event
 
 from zerver.lib.translate import translate_message
 
+from zulip.zerver.lib.request import get_current_request
+
 
 def compute_irc_user_fullname(email: str) -> str:
     return Address(addr_spec=email).username + " (IRC)"
@@ -775,7 +777,8 @@ def get_active_presence_idle_user_ids(
 
 
 def translate_messages(content):
-    preferred_language = UserProfile.objects.get(user=request.user).preferred_language
+    requests = get_current_request()
+    preferred_language = UserProfile.objects.get(user=requests.user).preferred_language
     print(f"preferred_language do_send_message",preferred_language)
 
     translated_content = translate_message(content, preferred_language)
@@ -814,10 +817,13 @@ def do_send_messages(
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
 
-        for send_request in send_message_requests:
-            translated_content = translate_messages(send_request.message.content)
-            send_request.message.content = translated_content
+        #for send_request in send_message_requests:
+         #   translated_content = translate_messages(send_request.message.content)
+          #  send_request.message.content = translated_content
         # send_request.message.set_language(get_language_name(preferred_language))
+        for message in messages:
+            translated_content = translate_messages(message['content'])
+            message['content'] = translated_content
 
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
