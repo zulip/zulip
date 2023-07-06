@@ -19,9 +19,6 @@ const rows = mock_esm("../src/rows");
 mock_esm("../src/emoji_picker", {
     hide_emoji_popover: noop,
 });
-mock_esm("../src/giphy", {
-    hide_giphy_popover: noop,
-});
 const message_lists = mock_esm("../src/message_lists", {
     current: {
         view: {
