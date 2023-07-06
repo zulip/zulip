@@ -774,9 +774,10 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-def translate_messages(send_request, content):
-    recipient = send_request.message.recipient
-    recipient_profile = UserProfile.objects.get(id=recipient.type_id)
+def translate_messages(sender, content):
+    recipient_profile = Recipient.objects.get(id=sender.recipient_id)
+    # recipient = send_request.message.recipient
+    #recipient_profile = UserProfile.objects.get(id=recipient.type_id)
 
     preferred_language = recipient_profile.preferred_language
     # preferred_language = recipient.userprofile.preferred_language
@@ -1388,7 +1389,7 @@ def check_message(
     stream = None
     # Translate the message content
     message_content = translate_messages(sender, message_content_raw)
-    print(f"message_content after translation",message_content)
+    print(f"message_content after translation", message_content)
     # message_content = normalize_body(message_content_raw)
 
     if realm is None:
