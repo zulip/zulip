@@ -19,6 +19,9 @@ from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.lib.sessions import delete_user_sessions
+from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
+from zerver.lib.stream_traffic import get_streams_traffic
+from zerver.lib.streams import get_streams_for_user, stream_to_dict
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_active_bots_owned_by_user
@@ -28,6 +31,7 @@ from zerver.models import (
     RealmAuditLog,
     Recipient,
     Service,
+    Stream,
     Subscription,
     UserGroupMembership,
     UserProfile,
@@ -309,12 +313,71 @@ def do_deactivate_user(
             )
 
 
+def send_stream_events_for_role_update(
+    user_profile: UserProfile, old_accessible_streams: List[Stream]
+) -> None:
+    current_accessible_streams = get_streams_for_user(
+        user_profile,
+        include_all_active=user_profile.is_realm_admin,
+        include_web_public=True,
+    )
+
+    old_accessible_stream_ids = {stream.id for stream in old_accessible_streams}
+    current_accessible_stream_ids = {stream.id for stream in current_accessible_streams}
+
+    now_accessible_stream_ids = current_accessible_stream_ids - old_accessible_stream_ids
+    if now_accessible_stream_ids:
+        recent_traffic = get_streams_traffic(now_accessible_stream_ids, user_profile.realm)
+
+        now_accessible_streams = [
+            stream
+            for stream in current_accessible_streams
+            if stream.id in now_accessible_stream_ids
+        ]
+        event = dict(
+            type="stream",
+            op="create",
+            streams=[stream_to_dict(stream, recent_traffic) for stream in now_accessible_streams],
+        )
+        send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+        subscriber_peer_info = bulk_get_subscriber_peer_info(
+            user_profile.realm, now_accessible_streams
+        )
+        for stream_id, stream_subscriber_set in subscriber_peer_info.subscribed_ids.items():
+            peer_add_event = dict(
+                type="subscription",
+                op="peer_add",
+                stream_ids=[stream_id],
+                user_ids=sorted(stream_subscriber_set),
+            )
+            send_event_on_commit(user_profile.realm, peer_add_event, [user_profile.id])
+
+    now_inaccessible_stream_ids = old_accessible_stream_ids - current_accessible_stream_ids
+    if now_inaccessible_stream_ids:
+        now_inaccessible_streams = [
+            stream for stream in old_accessible_streams if stream.id in now_inaccessible_stream_ids
+        ]
+        event = dict(
+            type="stream",
+            op="delete",
+            streams=[stream_to_dict(stream) for stream in now_inaccessible_streams],
+        )
+        send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+
 @transaction.atomic(durable=True)
 def do_change_user_role(
     user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.role
     old_system_group = get_system_user_group_for_user(user_profile)
+
+    previously_accessible_streams = get_streams_for_user(
+        user_profile,
+        include_web_public=True,
+        include_all_active=user_profile.is_realm_admin,
+    )
 
     user_profile.role = value
     user_profile.save(update_fields=["role"])
@@ -371,6 +434,8 @@ def do_change_user_role(
         update_users_in_full_members_system_group(
             user_profile.realm, [user_profile.id], acting_user=acting_user
         )
+
+    send_stream_events_for_role_update(user_profile, previously_accessible_streams)
 
 
 def do_make_user_billing_admin(user_profile: UserProfile) -> None:

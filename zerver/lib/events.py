@@ -882,26 +882,6 @@ def apply_event(
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
                     state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
 
-                    # TODO: Probably rather than writing the perfect
-                    # live-update code for the case of racing with the
-                    # current user changing roles, we should just do a
-                    # full refetch.
-                    if "never_subscribed" in state:
-                        sub_info = gather_subscriptions_helper(
-                            user_profile,
-                            include_subscribers=include_subscribers,
-                        )
-                        state["subscriptions"] = sub_info.subscriptions
-                        state["unsubscribed"] = sub_info.unsubscribed
-                        state["never_subscribed"] = sub_info.never_subscribed
-
-                    if "streams" in state:
-                        state["streams"] = do_get_streams(
-                            user_profile,
-                            include_web_public=True,
-                            include_all_active=user_profile.is_realm_admin,
-                        )
-
                     if state["is_guest"]:
                         state["realm_default_streams"] = []
                     else:
