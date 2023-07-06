@@ -1386,8 +1386,10 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
-
-    message_content = normalize_body(message_content_raw)
+    # Translate the message content
+    message_content = translate_messages(sender, message_content_raw)
+    print(f"message_content after translation",message_content)
+    # message_content = normalize_body(message_content_raw)
 
     if realm is None:
         realm = sender.realm
@@ -1468,7 +1470,7 @@ def check_message(
     message.content = message_content
     message.recipient = recipient
     message.realm = realm
-    print(f"messageContent Check Message",message.content)
+    print(f"messageContent Check Message", message.content)
     if addressee.is_stream():
         message.set_topic_name(topic_name)
     if forged and forged_timestamp is not None:
