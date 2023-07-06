@@ -104,7 +104,7 @@ from zerver.tornado.django_api import send_event
 
 
 
-from .zerver.lib.translate import translate_message
+from zerver.lib.translate import translate_message
 
 
 def compute_irc_user_fullname(email: str) -> str:
