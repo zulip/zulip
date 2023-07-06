@@ -824,6 +824,7 @@ def do_send_messages(
             print(f"translated_content do_send_message", translated_content)
             send_request.message.content = translated_content
             print(f"send_request.message.content ", send_request.message.content)
+            send_request.message.save()
 
             # send_request.message.set_language(get_language_name(preferred_language))
 
