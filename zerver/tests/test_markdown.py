@@ -757,6 +757,11 @@ class MarkdownTest(ZulipTestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted.rendered_content, expected)
 
+        content = "https://en.wikipedia.org/static/images/icons/wikipedia.png"
+        expected = '<div class="message_inline_image"><a href="https://en.wikipedia.org/static/images/icons/wikipedia.png"><img data-src-fullsize="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fstatic%2Fimages%2Ficons%2Fwikipedia.png&amp;size=full" src="/thumbnail?url=https%3A%2F%2Fen.wikipedia.org%2Fstatic%2Fimages%2Ficons%2Fwikipedia.png&amp;size=thumbnail"></a></div>'
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted.rendered_content, expected)
+
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:
         ret = image_preview_enabled()
