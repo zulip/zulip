@@ -775,9 +775,10 @@ def get_active_presence_idle_user_ids(
 
 
 def translate_messages(sender, content):
-    recipient_profile = Recipient.objects.get(id=sender.recipient_id)
+    recipient = Recipient.objects.get(id=sender.recipient_id)
+    recipient_profile = UserProfile.objects.get(id=recipient.type_id)
     # recipient = send_request.message.recipient
-    #recipient_profile = UserProfile.objects.get(id=recipient.type_id)
+    # recipient_profile = UserProfile.objects.get(id=recipient.type_id)
 
     preferred_language = recipient_profile.preferred_language
     # preferred_language = recipient.userprofile.preferred_language
