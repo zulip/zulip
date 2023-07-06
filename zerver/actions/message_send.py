@@ -638,13 +638,6 @@ def build_message_send_dict(
     return message_send_dict
 
 
-    def translate_message(message_content):
-        preferred_language = UserProfile.preferred_language
-
-        translated_content = translate_messages(message_content, preferred_language)
-        return translated_content
-
-
 def create_user_messages(
     message: Message,
     rendering_result: MessageRenderingResult,
@@ -778,6 +771,13 @@ def get_active_presence_idle_user_ids(
             user_ids.add(user_notifications_data.user_id)
 
     return filter_presence_idle_user_ids(user_ids)
+
+
+def translate_message(content):
+    preferred_language = UserProfile.preferred_language
+
+    translated_content = translate_messages(content, preferred_language)
+    return translated_content
 
 
 def do_send_messages(
