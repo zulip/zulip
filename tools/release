@@ -30,16 +30,14 @@ if [[ "$version" =~ -[0-9a-z]+$ ]]; then
 fi
 
 is_major_release=
-if [[ "$version" =~ ^[0-9]+\.0$ ]]; then
+if [[ "$version" =~ ^[0-9]+\.0(-[0-9a-z]+)?$ ]]; then
     [ "$branch" == "main" ] \
         || fail "Did not expect $version to be released from $branch, expected main"
-    is_major_release=1
-else
-    if [ -n "$is_prerelease" ]; then
-        expected_branch="${version}-branch"
-    else
-        expected_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
+    if [ -z "$is_prerelease" ]; then
+        is_major_release=1
     fi
+else
+    expected_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
     [ "$branch" == "$expected_branch" ] \
         || fail "Did not expect $version to be released from $branch, expected $expected_branch"
 fi
