@@ -774,9 +774,9 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-def translate_messages(content):
-    requests = get_current_request()
-    preferred_language = UserProfile.objects.get(user=requests.user).preferred_language
+def translate_messages(send_request, content):
+    # requests = get_current_request()
+    preferred_language = send_request.message.sender.userprofile.preferred_language
     print(f"preferred_language do_send_message", preferred_language)
 
     translated_content = translate_message(content, preferred_language)
@@ -816,7 +816,7 @@ def do_send_messages(
                 send_request.message.save(update_fields=["has_attachment"])
 
         for send_request in send_message_requests:
-            translated_content = translate_messages(send_request.message.content)
+            translated_content = translate_messages(send_request, send_request.message.content)
             send_request.message.content = translated_content
             # send_request.message.set_language(get_language_name(preferred_language))
 
