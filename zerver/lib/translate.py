@@ -1,7 +1,7 @@
 from translate import Translator
 
 
-def translate_messages(text: str, target_language_code: str) -> str:
+def translate_message(text: str, target_language_code: str) -> str:
     """
     Translates given text string to specified target language using chosen translation api.
     :param text: Input Text String (str)
