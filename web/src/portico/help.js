@@ -9,9 +9,9 @@ import * as common from "../common";
 import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 
-function registerCodeSection($codeSection) {
-    const $li = $codeSection.find("ul.nav li");
-    const $blocks = $codeSection.find(".blocks div");
+function register_code_section($code_section) {
+    const $li = $code_section.find("ul.nav li");
+    const $blocks = $code_section.find(".blocks div");
 
     $li.on("click", function () {
         const tab_key = this.dataset.tabKey;
@@ -103,7 +103,7 @@ function highlight_current_article() {
 function render_code_sections() {
     $(".code-section").each(function () {
         activate_correct_tab($(this));
-        registerCodeSection($(this));
+        register_code_section($(this));
     });
 
     // Add a copy-to-clipboard button for each .codehilite element
