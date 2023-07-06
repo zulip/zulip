@@ -289,7 +289,8 @@ class RealmAuthenticationMethod(models.Model):
         unique_together = ("realm", "name")
 
 
-class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class Realm(
+    models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -497,7 +498,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
 
     # Defaults for new users
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
-    preferred_language = models.CharField(max_length=10, null=True)
+    preferred_language = models.CharField(max_length=50, null=True)
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
@@ -1513,7 +1514,7 @@ class UserBaseSettings(models.Model):
     # restore a version of the setting, preserving who had it enabled.
     left_side_userlist = models.BooleanField(default=False)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
-    preferred_language = models.CharField(max_length=10, blank=True, null=True)
+    preferred_language = models.CharField(max_length=50, blank=True, null=True)
     # This setting controls which view is rendered first when Zulip loads.
     # Values for it are URL suffix after `#`.
     default_view = models.TextField(default="recent_topics")
@@ -1768,7 +1769,8 @@ class RealmUserDefault(UserBaseSettings):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
-class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class UserProfile(AbstractBaseUser, PermissionsMixin,
+                  UserBaseSettings):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
@@ -1902,8 +1904,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     # like native Zulip messages (with a name + avatar, etc.).
     is_mirror_dummy = models.BooleanField(default=False)
 
-    #default_language for translation
-    preferred_language = models.CharField(max_length=10, null=True)
+    # default_language for translation
+    preferred_language = models.CharField(max_length=50, null=True)
     default_language = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
 
     # Users with this flag set are allowed to forge messages as sent by another
@@ -2248,7 +2250,8 @@ class PasswordTooWeakError(Exception):
     pass
 
 
-class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
+class UserGroup(
+    models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     objects: CTEManager = CTEManager()
     name = models.CharField(max_length=100)
     direct_members = models.ManyToManyField(
@@ -2841,7 +2844,7 @@ def clear_client_cache() -> None:  # nocoverage
 def get_client(name: str) -> Client:
     # Accessing KEY_PREFIX through the module is necessary
     # because we need the updated value of the variable.
-    cache_name = cache.KEY_PREFIX + name[0 : Client.MAX_NAME_LENGTH]
+    cache_name = cache.KEY_PREFIX + name[0: Client.MAX_NAME_LENGTH]
     if cache_name not in get_client_cache:
         result = get_client_remote_cache(name)
         get_client_cache[cache_name] = result
@@ -2854,7 +2857,7 @@ def get_client_cache_key(name: str) -> str:
 
 @cache_with_key(get_client_cache_key, timeout=3600 * 24 * 7)
 def get_client_remote_cache(name: str) -> Client:
-    (client, _) = Client.objects.get_or_create(name=name[0 : Client.MAX_NAME_LENGTH])
+    (client, _) = Client.objects.get_or_create(name=name[0: Client.MAX_NAME_LENGTH])
     return client
 
 
@@ -3473,7 +3476,7 @@ class UserMessage(AbstractUserMessage):
                 "user_profile",
                 "message",
                 condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
-                | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
+                          | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
                 name="zerver_usermessage_wildcard_mentioned_message_id",
             ),
             models.Index(
@@ -4951,7 +4954,7 @@ def get_fake_email_domain(realm: Realm) -> str:
     except ValidationError:
         raise InvalidFakeEmailDomainError(
             settings.FAKE_EMAIL_DOMAIN + " is not a valid domain. "
-            "Consider setting the FAKE_EMAIL_DOMAIN setting."
+                                         "Consider setting the FAKE_EMAIL_DOMAIN setting."
         )
 
     return settings.FAKE_EMAIL_DOMAIN
