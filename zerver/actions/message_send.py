@@ -774,9 +774,10 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-def translate_messages(sender, content):
-    recipient = Recipient.objects.get(id=sender.recipient_id)
+def translate_messages(recipient_id, content):
+    recipient = Recipient.objects.get(id=recipient_id)
     recipient_profile = UserProfile.objects.get(id=recipient.type_id)
+
     # recipient = send_request.message.recipient
     # recipient_profile = UserProfile.objects.get(id=recipient.type_id)
 
@@ -821,14 +822,14 @@ def do_send_messages(
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
 
-        for send_request in send_message_requests:
-            translated_content = translate_messages(send_request, send_request.message.content)
-            print(f"translated_content do_send_message", translated_content)
-            send_request.message.content = translated_content
-            print(f"send_request.message.content ", send_request.message.content)
-            send_request.message.save()
+        # for send_request in send_message_requests:
+        #   translated_content = translate_messages(send_request, send_request.message.content)
+        #   print(f"translated_content do_send_message", translated_content)
+        #   send_request.message.content = translated_content
+        #  print(f"send_request.message.content ", send_request.message.content)
+        #  send_request.message.save()
 
-            # send_request.message.set_language(get_language_name(preferred_language))
+        # send_request.message.set_language(get_language_name(preferred_language))
 
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
@@ -1389,7 +1390,8 @@ def check_message(
     """
     stream = None
     # Translate the message content
-    message_content = translate_messages(sender, message_content_raw)
+    recipient_id = addressee.recipient.id
+    message_content = translate_messages(recipient_id, message_content_raw)
     print(f"message_content after translation", message_content)
     # message_content = normalize_body(message_content_raw)
 
