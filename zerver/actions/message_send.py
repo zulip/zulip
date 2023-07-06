@@ -1067,7 +1067,6 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         query=query,
         message=message,
     )
-    print(f"Message Content Query", messages)
 
     if messages.exists():
         return messages[0].id
@@ -1469,6 +1468,7 @@ def check_message(
     message.content = message_content
     message.recipient = recipient
     message.realm = realm
+    print(f"messageContent Check Message",message.content)
     if addressee.is_stream():
         message.set_topic_name(topic_name)
     if forged and forged_timestamp is not None:
