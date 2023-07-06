@@ -3650,7 +3650,11 @@ class StripeTest(StripeTestCase):
             num_invoices: Optional[int] = None,
         ) -> Tuple[Realm, Optional[Customer], Optional[CustomerPlan], List[stripe.Invoice]]:
             realm_string_id = "realm_" + str(random.randrange(1, 1000000))
-            realm = Realm.objects.create(string_id=realm_string_id)
+            realm = do_create_realm(
+                string_id=realm_string_id,
+                name=realm_string_id,
+                plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
+            )
             users = []
             for i in range(users_to_create):
                 user = UserProfile.objects.create(

@@ -11,6 +11,7 @@ from zerver.actions.bots import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
 )
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
     do_create_user,
@@ -70,7 +71,6 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
-from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     EmojiInfo,
@@ -1058,9 +1058,8 @@ class TestRealmAuditLog(ZulipTestCase):
         )
 
     def test_system_user_groups_creation(self) -> None:
-        realm = Realm.objects.create(string_id="test", name="foo")
         now = timezone_now()
-        create_system_user_groups_for_realm(realm)
+        realm = do_create_realm(string_id="test", name="foo")
 
         # The expected number of system user group is the total number of roles
         # from UserGroup.SYSTEM_USER_GROUP_ROLE_MAP in addition to
