@@ -18,6 +18,14 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 7.5
+
+**Feature level 186**
+
+* [`POST /register`](/api/register-queue): `streams` field in the response
+  now included web-public streams as well. This change was backported from
+  Zulip 8.0, where it was introduced in feature level 205.
+
 ## Changes in Zulip 7.0
 
 **Feature level 185**
