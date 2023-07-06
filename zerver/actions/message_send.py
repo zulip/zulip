@@ -103,8 +103,6 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import send_event
 
-
-
 from zerver.lib.translate import translate_message
 
 from zerver.lib.request import get_current_request
@@ -779,7 +777,7 @@ def get_active_presence_idle_user_ids(
 def translate_messages(content):
     requests = get_current_request()
     preferred_language = UserProfile.objects.get(user=requests.user).preferred_language
-    print(f"preferred_language do_send_message",preferred_language)
+    print(f"preferred_language do_send_message", preferred_language)
 
     translated_content = translate_message(content, preferred_language)
     return translated_content
@@ -817,13 +815,10 @@ def do_send_messages(
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
 
-        #for send_request in send_message_requests:
-         #   translated_content = translate_messages(send_request.message.content)
-          #  send_request.message.content = translated_content
-        # send_request.message.set_language(get_language_name(preferred_language))
-        for message in messages:
-            translated_content = translate_messages(message['content'])
-            message['content'] = translated_content
+        for send_request in send_message_requests:
+            translated_content = translate_messages(send_request.message.content)
+            send_request.message.content = translated_content
+            # send_request.message.set_language(get_language_name(preferred_language))
 
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
