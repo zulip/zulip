@@ -1130,15 +1130,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 return insertion_index
 
             uncle = grandparent[insertion_index]
-            inline_image_classes = [
+            inline_image_classes = {
                 "message_inline_image",
                 "message_inline_ref",
                 "inline-preview-twitter",
-            ]
+            }
             if (
                 uncle.tag != "div"
                 or "class" not in uncle.keys()
-                or uncle.attrib["class"] not in inline_image_classes
+                or not (set(uncle.attrib["class"].split()) & inline_image_classes)
             ):
                 return insertion_index
 
