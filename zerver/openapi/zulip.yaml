@@ -11804,6 +11804,9 @@ paths:
 
                           For organization administrators, this will include all private streams
                           in the organization.
+
+                          **Changes**: As of Zulip 8.0 (feature level 205), this will include all
+                          web-public streams in the organization as well.
                       realm_default_streams:
                         type: array
                         items:

@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 205**
+
+* [`POST /register`](/api/register-queue): `streams` field in the response
+  now included web-public streams as well.
+
 **Feature level 204**
 
 * [`POST /register`](/api/register-queue): Added
