@@ -16,7 +16,7 @@ import * as timerender from "./timerender";
 export const keyboard_handling_context = {
     get_items_ids() {
         const scheduled_messages_ids = {};
-        var p1=0;
+        let p1=0;
         for (const message of scheduled_messages.scheduled_messages_data) {
             scheduled_messages_ids[p1]=(message.scheduled_message_id);
             p1=p1+1;
