@@ -1353,9 +1353,6 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
-    print(f"addressee stream name: {addressee.stream_name()}")
-    print(f"addressee stream ID: {addressee.stream_id()}")
-    print(f"addressee topic: {addressee.topic()}")
 
     message_content = normalize_body(message_content_raw)
 
@@ -1392,6 +1389,7 @@ def check_message(
             type=Recipient.STREAM,
         )
 
+        print(f"recipient details",recipient)
         if not skip_stream_access_check:
             access_stream_for_send_message(
                 sender=sender, stream=stream, forwarder_user_profile=forwarder_user_profile
