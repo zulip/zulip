@@ -1436,7 +1436,7 @@ def check_message(
 
     message.content = message_content
     message.recipient = recipient
-    translate_message = translate_messages(message.content, message.recipient)
+    translate_message = translate_messages(message.content, message.recipient.type_id)
     print(f"translate_message", translate_message)
 
     message.realm = realm
@@ -1705,8 +1705,8 @@ def internal_send_huddle_message(
 
 
 def translate_messages(message_content, recipient_id):
-    recipient = Recipient.objects.get(id=recipient_id)
-    recipient_profile = UserProfile.objects.get(id=recipient.type_id)
+
+    recipient_profile = UserProfile.objects.get(id=recipient_id)
 
     preferred_language = recipient_profile.preferred_language
 
