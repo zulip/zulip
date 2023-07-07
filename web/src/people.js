@@ -1419,6 +1419,10 @@ export function filter_for_user_settings_search(persons, query) {
     return persons.filter((person) => matches_user_settings_search(person, query));
 }
 
+export function filter_for_user_settings_role(persons, value) {
+    return persons.filter((person) => person.role === value);
+}
+
 export function maybe_incr_recipient_count(message) {
     if (message.type !== "private") {
         return;

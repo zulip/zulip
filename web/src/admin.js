@@ -201,6 +201,15 @@ export function build_page() {
         realm_enable_read_receipts: page_params.realm_enable_read_receipts,
         allow_sorting_deactivated_users_list_by_email:
             settings_users.allow_sorting_deactivated_users_list_by_email(),
+        roles: [
+            {role: $t({defaultMessage: "All roles"}), code: 0},
+            ...Object.values(settings_config.user_role_values)
+                .reverse()
+                .map((value) => ({
+                    role: value.description,
+                    code: value.code,
+                })),
+        ],
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
