@@ -1435,6 +1435,7 @@ def check_message(
     message.sender = sender
     message.content = message_content
     message.recipient = recipient
+    print(f"Message details", message.recipient)
     message.realm = realm
     if addressee.is_stream():
         message.set_topic_name(topic_name)
