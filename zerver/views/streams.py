@@ -378,7 +378,7 @@ def update_stream_backend(
 
     for setting_name, permissions_configuration in Stream.stream_permission_group_settings.items():
         request_settings_dict = locals()
-        setting_group_id_name = setting_name + "_id"
+        setting_group_id_name = permissions_configuration.id_field_name
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
