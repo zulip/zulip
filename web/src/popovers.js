@@ -667,7 +667,7 @@ export function user_info_popover_manage_menu_handle_keyboard(key) {
 
 export function show_sender_info() {
     const $message = $(".selected_message");
-    let $sender = $message.find(".inline_profile_picture");
+    let $sender = $message.find(".message-avatar");
     if ($sender.length === 0) {
         // Messages without an avatar have an invisible message_sender
         // element that's roughly in the right place.
@@ -732,7 +732,7 @@ export function hide_playground_links_popover() {
 export function register_click_handlers() {
     $("#main_div").on(
         "click",
-        ".sender_name, .sender_name-in-status, .inline_profile_picture",
+        ".sender_name, .sender_name-in-status, .message-avatar",
         function (e) {
             const $row = $(this).closest(".message_row");
             e.stopPropagation();
