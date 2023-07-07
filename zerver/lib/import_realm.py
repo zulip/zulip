@@ -938,6 +938,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     logging.info("Importing realm data from %s", realm_data_filename)
     with open(realm_data_filename, "rb") as f:
         data = orjson.loads(f.read())
+
+    # Merge in zerver_userprofile_mirrordummy
+    data["zerver_userprofile"] = data["zerver_userprofile"] + data["zerver_userprofile_mirrordummy"]
+    del data["zerver_userprofile_mirrordummy"]
+    data["zerver_userprofile"].sort(key=lambda r: r["id"])
+
     remove_denormalized_recipient_column_from_data(data)
 
     sort_by_date = data.get("sort_by_date", False)
@@ -1018,11 +1024,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
         new_recipient_id = Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user_id).id
         update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
-
-    # Merge in zerver_userprofile_mirrordummy
-    data["zerver_userprofile"] = data["zerver_userprofile"] + data["zerver_userprofile_mirrordummy"]
-    del data["zerver_userprofile_mirrordummy"]
-    data["zerver_userprofile"].sort(key=lambda r: r["id"])
 
     # To remap foreign key for UserProfile.last_active_message_id
     update_message_foreign_keys(import_dir=import_dir, sort_by_date=sort_by_date)
