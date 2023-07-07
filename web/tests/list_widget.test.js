@@ -674,7 +674,10 @@ run_test("render item", () => {
         const regex = new RegExp(`\\<tr data-item=${item}\\>.*?<\\/tr\\>`);
         assert.ok(expected_queries.includes(query));
         if (query.includes(`data-item='${INITIAL_RENDER_COUNT}'`)) {
-            return undefined; // This item is not rendered, so we find nothing
+            // This item is not rendered, so we find nothing so return an empty stub.
+            return {
+                length: 0,
+            };
         }
         return {
             // Return a JQuery stub for the original HTML.
@@ -685,6 +688,7 @@ run_test("render item", () => {
                 called = true;
                 $container.$appended_data.replace(regex, new_html);
             },
+            length: 1,
         };
     };
 

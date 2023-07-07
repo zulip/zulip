@@ -287,7 +287,7 @@ export function create<Key = unknown, Item = Key>(
                 return;
             }
             const $html_item = meta.$scroll_container.find(opts.html_selector(item));
-            if (!$html_item) {
+            if ($html_item.length === 0) {
                 // We don't have the item in the current scroll container; it'll be
                 // rendered with updated data when it is scrolled to.
                 return;
