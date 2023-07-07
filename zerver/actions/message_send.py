@@ -286,8 +286,8 @@ def get_recipient_info(
                 if user_id_to_visibility_policy.get(
                     row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
                 )
-                == UserTopic.VisibilityPolicy.FOLLOWED
-                and row["followed_topic_" + setting]
+                   == UserTopic.VisibilityPolicy.FOLLOWED
+                   and row["followed_topic_" + setting]
             }
 
         followed_topic_email_user_ids = followed_topic_notification_recipients(
@@ -1389,7 +1389,7 @@ def check_message(
             type=Recipient.STREAM,
         )
 
-        print(f"recipient details",recipient)
+        print(f"recipient details", recipient)
         if not skip_stream_access_check:
             access_stream_for_send_message(
                 sender=sender, stream=stream, forwarder_user_profile=forwarder_user_profile
