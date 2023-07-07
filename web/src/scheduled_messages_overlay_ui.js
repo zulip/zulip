@@ -15,11 +15,11 @@ import * as timerender from "./timerender";
 
 export const keyboard_handling_context = {
     get_items_ids() {
-        const scheduled_messages_ids = [];
+        const scheduled_messages_ids = {};
         for (const message of scheduled_messages.scheduled_messages_data) {
-            scheduled_messages_ids.push(message.scheduled_message_id);
+            scheduled_messages_ids[key]=(message.scheduled_message_id);
         }
-        return scheduled_messages_ids;
+        return scheduled_messages_ids[keys];
     },
     on_enter() {
         const focused_element_id = Number.parseInt(
