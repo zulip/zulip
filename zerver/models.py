@@ -2269,6 +2269,7 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
             allow_nobody_group=True,
             default_group_name=EVERYONE_GROUP_NAME,
             default_for_system_groups=NOBODY_GROUP_NAME,
+            id_field_name="can_mention_group_id",
         ),
     }
 
@@ -2628,6 +2629,7 @@ class Stream(models.Model):
             allow_owners_group=False,
             allow_nobody_group=False,
             default_group_name=UserGroup.ADMINISTRATORS_GROUP_NAME,
+            id_field_name="can_remove_subscribers_group_id",
         ),
     }
 

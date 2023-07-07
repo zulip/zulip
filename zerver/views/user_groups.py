@@ -59,7 +59,7 @@ def add_user_group(
     group_settings_map = {}
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = setting_name + "_id"
+        setting_group_id_name = permission_config.id_field_name
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
@@ -122,7 +122,7 @@ def edit_user_group(
 
     request_settings_dict = locals()
     for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
-        setting_group_id_name = setting_name + "_id"
+        setting_group_id_name = permission_config.id_field_name
 
         if setting_group_id_name not in request_settings_dict:  # nocoverage
             continue
