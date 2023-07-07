@@ -1,5 +1,4 @@
 import datetime
-import user_profile
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
@@ -19,13 +18,8 @@ from typing import (
     Union,
 )
 
-from django.http import request
-from zerver.models import UserProfile as self
-
 import orjson
-
 from django.conf import settings
-from django.contrib.messages.context_processors import messages
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import F
@@ -76,11 +70,9 @@ from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import filter_by_exact_message_topic
-
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.validator import check_widget_content
-from django.utils.translation import activate, gettext as _
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
@@ -104,8 +96,6 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event
 
 from zerver.lib.translate import translate_message
-
-from zerver.lib.request import get_current_request
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -178,10 +168,10 @@ class RecipientInfoResult:
     pm_mention_push_disabled_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
-    wildcard_mention_user_ids: Set[int]
+    stream_wildcard_mention_user_ids: Set[int]
     followed_topic_email_user_ids: Set[int]
     followed_topic_push_user_ids: Set[int]
-    followed_topic_wildcard_mention_user_ids: Set[int]
+    stream_wildcard_mention_in_followed_topic_user_ids: Set[int]
     muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
@@ -207,14 +197,14 @@ def get_recipient_info(
     sender_id: int,
     stream_topic: Optional[StreamTopicTarget],
     possibly_mentioned_user_ids: AbstractSet[int] = set(),
-    possible_wildcard_mention: bool = True,
+    possible_stream_wildcard_mention: bool = True,
 ) -> RecipientInfoResult:
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
-    wildcard_mention_user_ids: Set[int] = set()
+    stream_wildcard_mention_user_ids: Set[int] = set()
     followed_topic_push_user_ids: Set[int] = set()
     followed_topic_email_user_ids: Set[int] = set()
-    followed_topic_wildcard_mention_user_ids: Set[int] = set()
+    stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
 
     if recipient.type == Recipient.PERSONAL:
@@ -234,7 +224,7 @@ def get_recipient_info(
                 realm_id=realm_id,
                 stream_id=stream_topic.stream_id,
                 topic_name=stream_topic.topic_name,
-                possible_wildcard_mention=possible_wildcard_mention,
+                possible_stream_wildcard_mention=possible_stream_wildcard_mention,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
             .annotate(
@@ -305,14 +295,14 @@ def get_recipient_info(
         )
         followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
 
-        if possible_wildcard_mention:
-            # We calculate `wildcard_mention_user_ids` and `followed_topic_wildcard_mention_user_ids`
-            # only if there's a possible wildcard mention in the message. This is important so as
+        if possible_stream_wildcard_mention:
+            # We calculate `stream_wildcard_mention_user_ids` and `followed_topic_wildcard_mention_user_ids`
+            # only if there's a possible stream wildcard mention in the message. This is important so as
             # to avoid unnecessarily sending huge user ID lists with thousands of elements to the
             # event queue (which can happen because these settings are `True` by default for new users.)
-            wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
-            followed_topic_wildcard_mention_user_ids = followed_topic_notification_recipients(
-                "wildcard_mentions_notify"
+            stream_wildcard_mention_user_ids = notification_recipients("wildcard_mentions_notify")
+            stream_wildcard_mention_in_followed_topic_user_ids = (
+                followed_topic_notification_recipients("wildcard_mentions_notify")
             )
 
     elif recipient.type == Recipient.HUDDLE:
@@ -430,10 +420,10 @@ def get_recipient_info(
         pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
-        wildcard_mention_user_ids=wildcard_mention_user_ids,
+        stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
         followed_topic_push_user_ids=followed_topic_push_user_ids,
         followed_topic_email_user_ids=followed_topic_email_user_ids,
-        followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
+        stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
         muted_sender_user_ids=muted_sender_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
@@ -553,7 +543,7 @@ def build_message_send_dict(
         sender_id=message.sender_id,
         stream_topic=stream_topic,
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
-        possible_wildcard_mention=mention_data.message_has_wildcards(),
+        possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
     )
 
     # Render our message_dicts.
@@ -582,16 +572,18 @@ def build_message_send_dict(
         members = mention_data.get_group_members(group_id)
         rendering_result.mentions_user_ids.update(members)
 
-    # Only send data to Tornado about wildcard mentions if message
-    # rendering determined the message had an actual wildcard
-    # mention in it (and not e.g. wildcard mention syntax inside a
+    # Only send data to Tornado about stream wildcard mentions if message
+    # rendering determined the message had an actual stream wildcard
+    # mention in it (and not e.g. stream wildcard mention syntax inside a
     # code block).
-    if rendering_result.mentions_wildcard:
-        wildcard_mention_user_ids = info.wildcard_mention_user_ids
-        followed_topic_wildcard_mention_user_ids = info.followed_topic_wildcard_mention_user_ids
+    if rendering_result.mentions_stream_wildcard:
+        stream_wildcard_mention_user_ids = info.stream_wildcard_mention_user_ids
+        stream_wildcard_mention_in_followed_topic_user_ids = (
+            info.stream_wildcard_mention_in_followed_topic_user_ids
+        )
     else:
-        wildcard_mention_user_ids = set()
-        followed_topic_wildcard_mention_user_ids = set()
+        stream_wildcard_mention_user_ids = set()
+        stream_wildcard_mention_in_followed_topic_user_ids = set()
 
     """
     Once we have the actual list of mentioned ids from message
@@ -627,13 +619,12 @@ def build_message_send_dict(
         default_bot_user_ids=info.default_bot_user_ids,
         service_bot_tuples=info.service_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
-        wildcard_mention_user_ids=wildcard_mention_user_ids,
-        followed_topic_wildcard_mention_user_ids=followed_topic_wildcard_mention_user_ids,
+        stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
+        stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
-
     )
 
     return message_send_dict
@@ -660,7 +651,7 @@ def create_user_messages(
     is_stream_message = message.is_stream_message()
 
     base_flags = 0
-    if rendering_result.mentions_wildcard:
+    if rendering_result.mentions_stream_wildcard:
         base_flags |= UserMessage.flags.wildcard_mentioned
     if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
         base_flags |= UserMessage.flags.is_private
@@ -774,22 +765,6 @@ def get_active_presence_idle_user_ids(
     return filter_presence_idle_user_ids(user_ids)
 
 
-def translate_messages(recipient_id, content):
-    recipient = Recipient.objects.get(id=recipient_id)
-    recipient_profile = UserProfile.objects.get(id=recipient.type_id)
-
-    # recipient = send_request.message.recipient
-    # recipient_profile = UserProfile.objects.get(id=recipient.type_id)
-
-    preferred_language = recipient_profile.preferred_language
-    # preferred_language = recipient.userprofile.preferred_language
-    # preferred_language = send_request.message.recipient.preferred_language
-    print(f"preferred_language do_send_message", preferred_language)
-
-    translated_content = translate_message(content, preferred_language)
-    return translated_content
-
-
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
@@ -821,15 +796,6 @@ def do_send_messages(
             ):
                 send_request.message.has_attachment = True
                 send_request.message.save(update_fields=["has_attachment"])
-
-        # for send_request in send_message_requests:
-        #   translated_content = translate_messages(send_request, send_request.message.content)
-        #   print(f"translated_content do_send_message", translated_content)
-        #   send_request.message.content = translated_content
-        #  print(f"send_request.message.content ", send_request.message.content)
-        #  send_request.message.save()
-
-        # send_request.message.set_language(get_language_name(preferred_language))
 
         ums: List[UserMessageLite] = []
         for send_request in send_message_requests:
@@ -950,10 +916,10 @@ def do_send_messages(
                 pm_mention_email_disabled_user_ids=send_request.pm_mention_email_disabled_user_ids,
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
-                wildcard_mention_user_ids=send_request.wildcard_mention_user_ids,
+                stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
                 followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
                 followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
-                followed_topic_wildcard_mention_user_ids=send_request.followed_topic_wildcard_mention_user_ids,
+                stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
             )
@@ -978,11 +944,11 @@ def do_send_messages(
             ),
             stream_push_user_ids=list(send_request.stream_push_user_ids),
             stream_email_user_ids=list(send_request.stream_email_user_ids),
-            wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
+            stream_wildcard_mention_user_ids=list(send_request.stream_wildcard_mention_user_ids),
             followed_topic_push_user_ids=list(send_request.followed_topic_push_user_ids),
             followed_topic_email_user_ids=list(send_request.followed_topic_email_user_ids),
-            followed_topic_wildcard_mention_user_ids=list(
-                send_request.followed_topic_wildcard_mention_user_ids
+            stream_wildcard_mention_in_followed_topic_user_ids=list(
+                send_request.stream_wildcard_mention_in_followed_topic_user_ids
             ),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
@@ -1389,24 +1355,9 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
-    # Translate the message content
-    if addressee.is_stream():
-        recipient = addressee.stream()
-    elif addressee.is_private():
-        recipient = addressee.user_profiles()
-    else:
-        raise AssertionError("Invalid message type")
+    print(f"addressee details", addressee)
 
-    if isinstance(recipient, list):
-        # For a private message, get the first recipient's ID
-        recipient_id = recipient[0].id
-    else:
-        # For a stream message, get the recipient ID
-        recipient_id = recipient.id
-
-    message_content = translate_messages(recipient_id, message_content_raw)
-    print(f"message_content after translation", message_content)
-    # message_content = normalize_body(message_content_raw)
+    message_content = normalize_body(message_content_raw)
 
     if realm is None:
         realm = sender.realm
@@ -1487,7 +1438,6 @@ def check_message(
     message.content = message_content
     message.recipient = recipient
     message.realm = realm
-    print(f"messageContent Check Message", message.content)
     if addressee.is_stream():
         message.set_topic_name(topic_name)
     if forged and forged_timestamp is not None:
@@ -1536,7 +1486,7 @@ def check_message(
 
     if (
         stream is not None
-        and message_send_dict.rendering_result.mentions_wildcard
+        and message_send_dict.rendering_result.mentions_stream_wildcard
         and not wildcard_mention_allowed(sender, stream)
     ):
         raise JsonableError(
@@ -1750,3 +1700,14 @@ def internal_send_huddle_message(
         return None
     message_ids = do_send_messages([message])
     return message_ids[0]
+
+
+def translate_messages(message_content, recipient_id):
+    recipient = Recipient.objects.get(id=recipient_id)
+    recipient_profile = UserProfile.objects.get(id=recipient.type_id)
+
+    preferred_language = recipient_profile.preferred_language
+
+    translated_content = translate_message(message_content, preferred_language)
+
+    return translated_content
