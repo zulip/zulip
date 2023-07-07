@@ -31,7 +31,9 @@ whenever you need a reminder of the formatting syntax below.
 
 ## Text emphasis
 
-{!emphasis.md!}
+{!emphasis-intro.md!}
+
+{!emphasis-examples.md!}
 
 !!! tip ""
     You can also use buttons or keyboard shortcuts (<kbd>Ctrl</kbd> +
