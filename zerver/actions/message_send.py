@@ -1433,9 +1433,12 @@ def check_message(
 
     message = Message()
     message.sender = sender
+    translate_message = translate_messages(message.recipient, message.content)
+    print(f"translate_message", translate_message)
+
     message.content = message_content
     message.recipient = recipient
-    print(f"Message details", message.recipient)
+
     message.realm = realm
     if addressee.is_stream():
         message.set_topic_name(topic_name)
