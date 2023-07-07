@@ -1433,11 +1433,11 @@ def check_message(
 
     message = Message()
     message.sender = sender
-    translate_message = translate_messages(message.content, message.recipient)
-    print(f"translate_message", translate_message)
 
     message.content = message_content
     message.recipient = recipient
+    translate_message = translate_messages(message.content, message.recipient)
+    print(f"translate_message", translate_message)
 
     message.realm = realm
     if addressee.is_stream():
