@@ -1353,7 +1353,9 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
-    print(f"addressee details", addressee)
+    print(f"addressee stream name: {addressee.stream_name()}")
+    print(f"addressee stream ID: {addressee.stream_id()}")
+    print(f"addressee topic: {addressee.topic()}")
 
     message_content = normalize_body(message_content_raw)
 
