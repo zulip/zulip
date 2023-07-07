@@ -1355,7 +1355,7 @@ def check_message(
     for high-level documentation on this subsystem.
     """
     stream = None
-    print(f"addressee details", addressee)
+    #print(f"addressee details", addressee)
 
     message_content = normalize_body(message_content_raw)
 
