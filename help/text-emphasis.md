@@ -1,6 +1,10 @@
 # Text emphasis
 
-{!emphasis.md!}
+{!emphasis-intro.md!}
+
+## Examples
+
+{!emphasis-examples.md!}
 
 ## Making text bold
 
