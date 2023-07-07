@@ -1,6 +1,7 @@
 import datetime
 import re
 import time
+import time_machine
 from io import StringIO
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 from unittest import mock
@@ -118,34 +119,28 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = (
             scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=more_than_scheduled_delivery_datetime,
-        ):
-            # mock time that will be set for delivered_message
-            with mock.patch(
-                "zerver.actions.message_send.timezone_now",
-                return_value=more_than_scheduled_delivery_datetime,
-            ):
-                result = try_deliver_one_scheduled_message(logger)
-                self.assertTrue(result)
-                logger.info.assert_called_once_with(
-                    "Sending scheduled message %s with date %s (sender: %s)",
-                    scheduled_message.id,
-                    scheduled_message.scheduled_timestamp,
-                    scheduled_message.sender_id,
-                )
-                scheduled_message.refresh_from_db()
-                assert isinstance(scheduled_message.delivered_message_id, int)
-                self.assertEqual(scheduled_message.delivered, True)
-                self.assertEqual(scheduled_message.failed, False)
-                delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
-                self.assertEqual(delivered_message.content, scheduled_message.content)
-                self.assertEqual(
-                    delivered_message.rendered_content, scheduled_message.rendered_content
-                )
-                self.assertEqual(delivered_message.topic_name(), scheduled_message.topic_name())
-                self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+        
+        with time_machine.travel(more_than_scheduled_delivery_datetime):
+            result = try_deliver_one_scheduled_message(logger)
+            self.assertTrue(result)
+            logger.info.assert_called_once_with(
+                "Sending scheduled message %s with date %s (sender: %s)",
+                scheduled_message.id,
+                scheduled_message.scheduled_timestamp,
+                scheduled_message.sender_id,
+            )
+            scheduled_message.refresh_from_db()
+            assert isinstance(scheduled_message.delivered_message_id, int)
+            self.assertEqual(scheduled_message.delivered, True)
+            self.assertEqual(scheduled_message.failed, False)
+            delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
+            self.assertEqual(delivered_message.content, scheduled_message.content)
+            self.assertEqual(
+                delivered_message.rendered_content, scheduled_message.rendered_content
+            )
+            self.assertEqual(delivered_message.topic_name(), scheduled_message.topic_name())
+            self.assertEqual(delivered_message.date_sent.replace(microsecond=0), 
+                             more_than_scheduled_delivery_datetime)
 
     def test_successful_deliver_direct_scheduled_message(self) -> None:
         logger = mock.Mock()
