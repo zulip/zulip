@@ -11,17 +11,9 @@ export function clear_for_testing(): void {
     stream_subscribers.clear();
 }
 
-function assert_number(id: number): void {
-    if (typeof id !== "number") {
-        blueslip.error("You must pass ids as numbers to peer_data", {id});
-    }
-}
-
 function get_user_set(stream_id: number): LazySet {
     // This is an internal function to get the LazySet of users.
     // We create one on the fly as necessary, but we warn in that case.
-    assert_number(stream_id);
-
     if (!sub_store.get(stream_id)) {
         blueslip.warn(`We called get_user_set for an untracked stream: ${stream_id}`);
     }
