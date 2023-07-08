@@ -128,7 +128,7 @@ export function build_page() {
         language_list,
         realm_default_language_name: get_language_name(page_params.realm_default_language),
         realm_default_language_code: page_params.realm_default_language,
-        realm_preferred_language_name :get_language_name(page_params.realm_preferred_language)
+        realm_preferred_language_name :get_language_name(page_params.realm_preferred_language),
         realm_preferred_language_code: page_params.realm_preferred_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
