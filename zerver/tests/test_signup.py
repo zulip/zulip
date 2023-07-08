@@ -27,7 +27,6 @@ from zerver.actions.create_user import add_new_user_history
 from zerver.actions.default_streams import (
     do_add_default_stream,
     do_create_default_stream_group,
-    get_default_streams_for_realm,
 )
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -38,6 +37,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
+from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.initial_password import initial_password
@@ -3690,9 +3690,10 @@ class UserSignUpTest(ZulipTestCase):
         stream_name = "Rome"
         realm = get_realm("zulip")
         stream = get_stream(stream_name, realm)
-        default_streams = get_default_streams_for_realm(realm.id)
-        default_streams_name = [stream.name for stream in default_streams]
-        self.assertNotIn(stream_name, default_streams_name)
+        default_stream_names = {
+            stream["name"] for stream in get_default_streams_for_realm_as_dicts(realm.id)
+        }
+        self.assertNotIn(stream_name, default_stream_names)
 
         # Invite user.
         self.ldap_invite_and_signup_as(

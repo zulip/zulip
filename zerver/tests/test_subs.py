@@ -22,7 +22,6 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_streams_from_default_stream_group,
-    get_default_streams_for_realm,
     lookup_default_stream_groups,
 )
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
@@ -35,6 +34,7 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
@@ -2673,9 +2673,8 @@ class StreamAdminTest(ZulipTestCase):
 
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm: Realm) -> Set[str]:
-        streams = get_default_streams_for_realm(realm.id)
-        stream_names = [s.name for s in streams]
-        return set(stream_names)
+        streams = get_default_streams_for_realm_as_dicts(realm.id)
+        return {s["name"] for s in streams}
 
     def test_add_and_remove_default_stream(self) -> None:
         realm = get_realm("zulip")

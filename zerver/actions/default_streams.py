@@ -3,8 +3,11 @@ from typing import Any, Dict, Iterable, List
 from django.db import transaction
 from django.utils.translation import gettext as _
 
+from zerver.lib.default_streams import (
+    get_default_stream_ids_for_realm,
+    get_default_streams_for_realm_as_dicts,
+)
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.types import APIStreamDict
 from zerver.models import (
     DefaultStream,
     DefaultStreamGroup,
@@ -50,7 +53,7 @@ def lookup_default_stream_groups(
 def notify_default_streams(realm: Realm) -> None:
     event = dict(
         type="default_streams",
-        default_streams=streams_to_dicts_sorted(get_default_streams_for_realm(realm.id)),
+        default_streams=get_default_streams_for_realm_as_dicts(realm.id),
     )
     send_event_on_commit(realm, event, active_non_guest_user_ids(realm.id))
 
@@ -84,9 +87,9 @@ def do_remove_default_stream(stream: Stream) -> None:
 def do_create_default_stream_group(
     realm: Realm, group_name: str, description: str, streams: List[Stream]
 ) -> None:
-    default_streams = get_default_streams_for_realm(realm.id)
+    default_stream_ids = get_default_stream_ids_for_realm(realm.id)
     for stream in streams:
-        if stream in default_streams:
+        if stream.id in default_stream_ids:
             raise JsonableError(
                 _(
                     "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
@@ -111,9 +114,9 @@ def do_create_default_stream_group(
 def do_add_streams_to_default_stream_group(
     realm: Realm, group: DefaultStreamGroup, streams: List[Stream]
 ) -> None:
-    default_streams = get_default_streams_for_realm(realm.id)
+    default_stream_ids = get_default_stream_ids_for_realm(realm.id)
     for stream in streams:
-        if stream in default_streams:
+        if stream.id in default_stream_ids:
             raise JsonableError(
                 _(
                     "'{stream_name}' is a default stream and cannot be added to '{group_name}'",
@@ -174,18 +177,6 @@ def do_change_default_stream_group_description(
 def do_remove_default_stream_group(realm: Realm, group: DefaultStreamGroup) -> None:
     group.delete()
     notify_default_stream_groups(realm)
-
-
-def get_default_streams_for_realm(realm_id: int) -> List[Stream]:
-    return [
-        default.stream
-        for default in DefaultStream.objects.select_related().filter(realm_id=realm_id)
-    ]
-
-
-# returns default streams in JSON serializable format
-def streams_to_dicts_sorted(streams: List[Stream]) -> List[APIStreamDict]:
-    return sorted((stream.to_dict() for stream in streams), key=lambda elt: elt["name"])
 
 
 def default_stream_groups_to_dicts_sorted(

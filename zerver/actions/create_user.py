@@ -11,7 +11,6 @@ from django.utils.translation import override as override_language
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from confirmation import settings as confirmation_settings
-from zerver.actions.default_streams import get_default_streams_for_realm
 from zerver.actions.invites import notify_invites_changed
 from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
@@ -19,6 +18,7 @@ from zerver.actions.user_groups import do_send_user_group_members_update_event
 from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
+from zerver.lib.default_streams import get_default_streams_for_realm
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
