@@ -2,6 +2,7 @@ import $ from "jquery";
 import Cookies from "js-cookie";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
+import  preferred_language_modal_table from "../templates/preferred_language_modal.hbs"
 
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
@@ -24,8 +25,14 @@ export const user_settings_panel = {};
 
 export let user_default_language_name;
 
+export let user_preferred_language_name;
+
 export function set_default_language_name(name) {
     user_default_language_name = name;
+}
+
+export function set_preferred_language_name(preferred_language_name) {
+    user_preferred_language_name = preferred_language_name;
 }
 
 function change_display_setting(data, $status_el, success_msg_html, sticky) {
@@ -124,6 +131,8 @@ function default_language_modal_post_render() {
     }
 }
 
+
+
 export function launch_default_language_setting_modal() {
     let selected_language = user_settings.default_language;
 
@@ -144,6 +153,61 @@ export function launch_default_language_setting_modal() {
         focus_submit_on_open: true,
         single_footer_button: true,
         post_render: default_language_modal_post_render,
+        on_click() {},
+    });
+}
+function preferred_language_modal_post_render() {
+    $("#language_selection_modal")
+        .find(".language")
+        .on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dialog_widget.close_modal();
+
+            const $link = $(e.target).closest("a[data-code]");
+            const setting_value = $link.attr("data-code");
+            const data = {preferred_language: setting_value};
+
+            const new_preferred_language = $link.attr("data-name");
+            $(
+                "#user-display-settings .language_selection_widget .language_selection_button span",
+            ).text(new_preferred_language);
+
+            change_display_setting(
+                data,
+                $("#settings_content").find(".general-settings-status"),
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a class='reload_link'>${content_html.join("")}</a>`,
+                    },
+                ),
+                true,
+            );
+        });
+}
+export function launch_preferred_language_setting_modal() {
+    let selected_language = user_settings.preferred_language;
+
+
+
+    const html_body = render_dialog_default_language({
+        language_list: get_language_list_columns(selected_language),
+    });
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Select language"}),
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Close"}),
+        id: "language_selection_modal",
+        close_on_submit: true,
+        focus_submit_on_open: true,
+        single_footer_button: true,
+        post_render: preferred_language_modal_post_render(),
         on_click() {},
     });
 }
@@ -319,6 +383,8 @@ export function update_page(property) {
 export function initialize() {
     const user_language_name = get_language_name(user_settings.default_language);
     set_default_language_name(user_language_name);
+    const preferred_language_name=get_language_name(user_settings.preferred_language)
+    set_preferred_language_name(preferred_language_name)
 
     user_settings_panel.container = "#user-display-settings";
     user_settings_panel.settings_object = user_settings;

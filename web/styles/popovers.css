@@ -881,6 +881,17 @@ ul {
         column-count: 1;
     }
 }
+        .preferred_language_modal_table {
+    column-count: 3;
+
+    @media (width < $md_min) {
+        column-count: 2;
+    }
+
+    @media (width < $sm_min) {
+        column-count: 1;
+    }
+}
 
 #send_later_popover {
     & hr {

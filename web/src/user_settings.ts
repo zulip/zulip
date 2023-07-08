@@ -26,6 +26,7 @@ export type UserSettings = (StreamNotificationSettings &
     FollowedTopicNotificationSettings) & {
     color_scheme: number;
     default_language: string;
+    preferred_language:string;
     default_view: string;
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
