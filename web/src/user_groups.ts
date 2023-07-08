@@ -5,7 +5,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
-type UserGroup = {
+export type UserGroup = {
     description: string;
     id: number;
     name: string;

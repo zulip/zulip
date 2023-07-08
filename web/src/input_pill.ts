@@ -58,7 +58,7 @@ type InputPillRenderingDetails = {
 };
 
 // These are the functions that are exposed to other modules.
-type InputPillContainer<T> = {
+export type InputPillContainer<T> = {
     appendValue: (text: string) => void;
     appendValidatedData: (item: InputPillItem<T>) => void;
     getByElement: (element: HTMLElement) => InputPill<T> | undefined;
