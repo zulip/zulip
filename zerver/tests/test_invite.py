@@ -25,7 +25,6 @@ from confirmation.models import (
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import do_create_user, process_new_human_user
-from zerver.actions.default_streams import get_default_streams_for_realm
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -37,6 +36,7 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.user_settings import do_change_full_name
 from zerver.actions.users import change_user_is_active
 from zerver.context_processors import common_context
+from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.send_email import (
     FromAddress,
     deliver_scheduled_emails,
@@ -708,7 +708,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(self.invite(invitee, []))
         self.assertTrue(find_key_by_email(invitee))
 
-        default_streams = get_default_streams_for_realm(realm.id)
+        default_streams = get_default_streams_for_realm_as_dicts(realm.id)
         self.assert_length(default_streams, 1)
 
         self.submit_reg_form_for_user(invitee, "password")
@@ -2294,7 +2294,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email3, invite_link)
         # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
         self.check_user_subscribed_only_to_streams(name3, [])
 
     def test_multiuse_link_different_realms(self) -> None:
@@ -2363,7 +2363,7 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
         # User is not subscribed to default streams as well.
-        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.assert_length(get_default_streams_for_realm_as_dicts(self.realm.id), 1)
         self.check_user_subscribed_only_to_streams("alice", [])
 
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
