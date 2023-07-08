@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from unittest import mock
 
 import orjson
+import time_machine
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
@@ -118,34 +119,25 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = (
             scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=more_than_scheduled_delivery_datetime,
-        ):
-            # mock time that will be set for delivered_message
-            with mock.patch(
-                "zerver.actions.message_send.timezone_now",
-                return_value=more_than_scheduled_delivery_datetime,
-            ):
-                result = try_deliver_one_scheduled_message(logger)
-                self.assertTrue(result)
-                logger.info.assert_called_once_with(
-                    "Sending scheduled message %s with date %s (sender: %s)",
-                    scheduled_message.id,
-                    scheduled_message.scheduled_timestamp,
-                    scheduled_message.sender_id,
-                )
-                scheduled_message.refresh_from_db()
-                assert isinstance(scheduled_message.delivered_message_id, int)
-                self.assertEqual(scheduled_message.delivered, True)
-                self.assertEqual(scheduled_message.failed, False)
-                delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
-                self.assertEqual(delivered_message.content, scheduled_message.content)
-                self.assertEqual(
-                    delivered_message.rendered_content, scheduled_message.rendered_content
-                )
-                self.assertEqual(delivered_message.topic_name(), scheduled_message.topic_name())
-                self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+
+        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
+            result = try_deliver_one_scheduled_message(logger)
+            self.assertTrue(result)
+            logger.info.assert_called_once_with(
+                "Sending scheduled message %s with date %s (sender: %s)",
+                scheduled_message.id,
+                scheduled_message.scheduled_timestamp,
+                scheduled_message.sender_id,
+            )
+            scheduled_message.refresh_from_db()
+            assert isinstance(scheduled_message.delivered_message_id, int)
+            self.assertEqual(scheduled_message.delivered, True)
+            self.assertEqual(scheduled_message.failed, False)
+            delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
+            self.assertEqual(delivered_message.content, scheduled_message.content)
+            self.assertEqual(delivered_message.rendered_content, scheduled_message.rendered_content)
+            self.assertEqual(delivered_message.topic_name(), scheduled_message.topic_name())
+            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
     def test_successful_deliver_direct_scheduled_message(self) -> None:
         logger = mock.Mock()
@@ -167,36 +159,28 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + datetime.timedelta(
             minutes=1
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=more_than_scheduled_delivery_datetime,
-        ):
-            with mock.patch(
-                "zerver.actions.message_send.timezone_now",
-                return_value=more_than_scheduled_delivery_datetime,
-            ):
-                result = try_deliver_one_scheduled_message(logger)
-                self.assertTrue(result)
-                logger.info.assert_called_once_with(
-                    "Sending scheduled message %s with date %s (sender: %s)",
-                    scheduled_message.id,
-                    scheduled_message.scheduled_timestamp,
-                    scheduled_message.sender_id,
-                )
-                scheduled_message.refresh_from_db()
-                assert isinstance(scheduled_message.delivered_message_id, int)
-                self.assertEqual(scheduled_message.delivered, True)
-                self.assertEqual(scheduled_message.failed, False)
-                delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
-                self.assertEqual(delivered_message.content, scheduled_message.content)
-                self.assertEqual(
-                    delivered_message.rendered_content, scheduled_message.rendered_content
-                )
-                self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
-                sender_user_message = UserMessage.objects.get(
-                    message_id=scheduled_message.delivered_message_id, user_profile_id=sender.id
-                )
-                self.assertTrue(sender_user_message.flags.read)
+
+        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
+            result = try_deliver_one_scheduled_message(logger)
+            self.assertTrue(result)
+            logger.info.assert_called_once_with(
+                "Sending scheduled message %s with date %s (sender: %s)",
+                scheduled_message.id,
+                scheduled_message.scheduled_timestamp,
+                scheduled_message.sender_id,
+            )
+            scheduled_message.refresh_from_db()
+            assert isinstance(scheduled_message.delivered_message_id, int)
+            self.assertEqual(scheduled_message.delivered, True)
+            self.assertEqual(scheduled_message.failed, False)
+            delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
+            self.assertEqual(delivered_message.content, scheduled_message.content)
+            self.assertEqual(delivered_message.rendered_content, scheduled_message.rendered_content)
+            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+            sender_user_message = UserMessage.objects.get(
+                message_id=scheduled_message.delivered_message_id, user_profile_id=sender.id
+            )
+            self.assertTrue(sender_user_message.flags.read)
 
         # Check error is sent if an edit happens after the scheduled
         # message is successfully sent.
@@ -231,36 +215,28 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + datetime.timedelta(
             minutes=1
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=more_than_scheduled_delivery_datetime,
-        ):
-            with mock.patch(
-                "zerver.actions.message_send.timezone_now",
-                return_value=more_than_scheduled_delivery_datetime,
-            ):
-                result = try_deliver_one_scheduled_message(logger)
-                self.assertTrue(result)
-                logger.info.assert_called_once_with(
-                    "Sending scheduled message %s with date %s (sender: %s)",
-                    scheduled_message.id,
-                    scheduled_message.scheduled_timestamp,
-                    scheduled_message.sender_id,
-                )
-                scheduled_message.refresh_from_db()
-                assert isinstance(scheduled_message.delivered_message_id, int)
-                self.assertEqual(scheduled_message.delivered, True)
-                self.assertEqual(scheduled_message.failed, False)
-                delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
-                self.assertEqual(delivered_message.content, scheduled_message.content)
-                self.assertEqual(
-                    delivered_message.rendered_content, scheduled_message.rendered_content
-                )
-                self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
-                sender_user_message = UserMessage.objects.get(
-                    message_id=scheduled_message.delivered_message_id, user_profile_id=sender.id
-                )
-                self.assertFalse(sender_user_message.flags.read)
+
+        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
+            result = try_deliver_one_scheduled_message(logger)
+            self.assertTrue(result)
+            logger.info.assert_called_once_with(
+                "Sending scheduled message %s with date %s (sender: %s)",
+                scheduled_message.id,
+                scheduled_message.scheduled_timestamp,
+                scheduled_message.sender_id,
+            )
+            scheduled_message.refresh_from_db()
+            assert isinstance(scheduled_message.delivered_message_id, int)
+            self.assertEqual(scheduled_message.delivered, True)
+            self.assertEqual(scheduled_message.failed, False)
+            delivered_message = Message.objects.get(id=scheduled_message.delivered_message_id)
+            self.assertEqual(delivered_message.content, scheduled_message.content)
+            self.assertEqual(delivered_message.rendered_content, scheduled_message.rendered_content)
+            self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
+            sender_user_message = UserMessage.objects.get(
+                message_id=scheduled_message.delivered_message_id, user_profile_id=sender.id
+            )
+            self.assertFalse(sender_user_message.flags.read)
 
     def verify_deliver_scheduled_message_failure(
         self, scheduled_message: ScheduledMessage, logger: mock.Mock, expected_failure_message: str
@@ -292,10 +268,8 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message.scheduled_timestamp
             + datetime.timedelta(minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1)
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=too_late_to_send_message_datetime,
-        ):
+
+        with time_machine.travel(too_late_to_send_message_datetime, tick=False):
             self.verify_deliver_scheduled_message_failure(
                 scheduled_message, logger, expected_failure_message
             )
@@ -322,10 +296,8 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = (
             scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=more_than_scheduled_delivery_datetime,
-        ):
+
+        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
             scheduled_message = self.last_scheduled_message()
             scheduled_message.realm.deactivated = True
             scheduled_message.realm.save()
@@ -353,10 +325,8 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = (
             scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=more_than_scheduled_delivery_datetime,
-        ):
+
+        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
             scheduled_message = self.last_scheduled_message()
             change_user_is_active(scheduled_message.sender, False)
             self.verify_deliver_scheduled_message_failure(
@@ -379,10 +349,8 @@ class ScheduledMessageTest(ZulipTestCase):
         more_than_scheduled_delivery_datetime = (
             scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=more_than_scheduled_delivery_datetime,
-        ):
+
+        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
             scheduled_message = self.last_scheduled_message()
             scheduled_message.delivery_type = ScheduledMessage.REMIND
             scheduled_message.save()
@@ -421,10 +389,8 @@ class ScheduledMessageTest(ZulipTestCase):
             scheduled_message.scheduled_timestamp
             + datetime.timedelta(minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1)
         )
-        with mock.patch(
-            "zerver.actions.scheduled_messages.timezone_now",
-            return_value=too_late_to_send_message_datetime,
-        ):
+
+        with time_machine.travel(too_late_to_send_message_datetime, tick=False):
             self.verify_deliver_scheduled_message_failure(
                 scheduled_message, logger, expected_failure_message
             )
