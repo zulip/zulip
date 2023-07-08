@@ -53,6 +53,9 @@ const admin_settings_label = {
     realm_default_language: $t({
         defaultMessage: "Language for automated messages and invitation emails",
     }),
+    realm_preferred_language: $t({
+        defaultMessage: "Language for Translating messages ",
+    }),
     realm_allow_message_editing: $t({defaultMessage: "Allow message editing"}),
     realm_enable_read_receipts: $t({defaultMessage: "Enable read receipts"}),
     realm_enable_read_receipts_parens_text: $t({
@@ -125,6 +128,8 @@ export function build_page() {
         language_list,
         realm_default_language_name: get_language_name(page_params.realm_default_language),
         realm_default_language_code: page_params.realm_default_language,
+        realm_preferred_language_name :get_language_name(page_params.realm_preferred_language)
+        realm_preferred_language_code: page_params.realm_preferred_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,

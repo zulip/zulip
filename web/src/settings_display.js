@@ -361,6 +361,10 @@ export function update_page(property) {
         $container.find(".default_language_name").text(user_default_language_name);
         return;
     }
+     if (property === "preferred_language") {
+        $container.find(".preferred_language_name").text(user_default_language_name);
+        return;
+    }
 
     // settings_org.set_input_element_value doesn't support radio
     // button widgets like these.
