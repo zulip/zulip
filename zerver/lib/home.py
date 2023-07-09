@@ -157,6 +157,7 @@ def build_page_params_for_home_page_load(
             include_streams=False,
         )
         default_language = register_ret["user_settings"]["default_language"]
+        preferred_language = register_ret["user_settings"]["preferred_language"]
     else:
         # The spectator client will be fetching the /register response
         # for spectators via the API. But we still need to set the
@@ -165,13 +166,21 @@ def build_page_params_for_home_page_load(
             "queue_id": None,
         }
         default_language = realm.default_language
+        preferred_language = realm.preferred_language
 
     if user_profile is None:
-        request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language)
+        request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language),
+        request_preferred_language = request.COOKIES.get(settings.PREFERRED_LANGUAGE_COOKIE_NAME,
+                                                         preferred_language)
     else:
         request_language = get_and_set_request_language(
             request,
             default_language,
+            translation.get_language_from_path(request.path_info),
+        )
+        request_preferred_language = get_and_set_request_language(
+            request,
+            preferred_language,
             translation.get_language_from_path(request.path_info),
         )
 
@@ -244,11 +253,14 @@ def build_page_params_for_home_page_load(
         page_params["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
+    page_params["translation_data_preferred_language"] = get_language_translation_data(
+        request_preferred_language)
 
     if user_profile is None:
         # Get rendered version of realm description which is displayed in right
         # sidebar for spectator.
         page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
         page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
+        page_params["preferred_language_cookie_name"] = settings.PREFERRED_LANGUAGE_COOKIE_NAME
 
     return register_ret["queue_id"], page_params

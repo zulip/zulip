@@ -839,6 +839,11 @@ export function initialize() {
         e.stopPropagation();
         settings_display.launch_default_language_setting_modal();
     });
+    $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        settings_display.launch_preferred_language_setting_modal();
+    });
 
     // We cannot update recipient bar color using dark_theme.enable/disable due to
     // it being called before message lists are initialized and the order cannot be changed.

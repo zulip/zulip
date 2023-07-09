@@ -519,6 +519,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         "corporate_enabled": settings.CORPORATE_ENABLED,
     }
     language = realm.default_language
+
     send_email_to_admins(
         "zerver/emails/realm_reactivation",
         realm,

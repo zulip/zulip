@@ -87,6 +87,7 @@ def events_register_backend(
     if maybe_user_profile.is_authenticated:
         user_profile = maybe_user_profile
         spectator_requested_language = None
+        preferred_requested_language = None
         assert isinstance(user_profile, UserProfile)
         realm = user_profile.realm
         include_streams = True
@@ -115,6 +116,9 @@ def events_register_backend(
         # Language set by spectator to be passed down to clients as user_settings.
         spectator_requested_language = request.COOKIES.get(
             settings.LANGUAGE_COOKIE_NAME, realm.default_language
+        )
+        preferred_requested_language = request.COOKIES.get(
+            settings.PREFERRED_LANGUAGE_COOKIE_NAME, realm.preferred_language
         )
 
         all_public_streams = False
@@ -150,6 +154,7 @@ def events_register_backend(
         client_capabilities=client_capabilities,
         fetch_event_types=fetch_event_types,
         spectator_requested_language=spectator_requested_language,
+        preferred_requested_language=preferred_requested_language,
         pronouns_field_type_supported=pronouns_field_type_supported,
     )
     return json_success(request, data=ret)

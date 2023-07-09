@@ -39,6 +39,7 @@ export const page_params: {
     realm_user_group_edit_policy: number;
     realm_waiting_period_threshold: number;
     request_language: string;
+    request_preferred_language:string;
     server_avatar_changes_disabled: boolean;
     server_name_changes_disabled: boolean;
     server_needs_upgrade: boolean;

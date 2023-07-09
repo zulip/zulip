@@ -115,6 +115,7 @@ def fetch_initial_state_data(
     include_subscribers: bool = True,
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
+    preferred_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
 ) -> Dict[str, Any]:
@@ -413,6 +414,7 @@ def fetch_initial_state_data(
         settings_user = user_profile
     else:
         assert spectator_requested_language is not None
+        assert preferred_requested_language is not None
         # When UserProfile=None, we want to serve the values for various
         # settings as the defaults.  Instead of copying the default values
         # from models.py here, we access these default values from a
@@ -434,6 +436,7 @@ def fetch_initial_state_data(
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
             default_language=spectator_requested_language,
+            preferredLanguage=preferred_requested_language
         )
     if want("realm_user"):
         state["raw_users"] = get_raw_user_data(
@@ -1465,6 +1468,7 @@ def do_events_register(
     narrow: Collection[NarrowTerm] = [],
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
+    preferred_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
@@ -1510,6 +1514,7 @@ def do_events_register(
             # Force include_streams=False for security reasons.
             include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
+            preferred_requested_language=preferred_requested_language,
         )
 
         post_process_state(user_profile, ret, notification_settings_null=False)

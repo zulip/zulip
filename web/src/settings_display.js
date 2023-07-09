@@ -194,7 +194,6 @@ export function launch_preferred_language_setting_modal() {
     let selected_language = user_settings.preferred_language;
 
 
-
     const html_body = render_dialog_default_language({
         language_list: get_language_list_columns(selected_language),
     });
@@ -207,9 +206,10 @@ export function launch_preferred_language_setting_modal() {
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,
-        post_render: preferred_language_modal_post_render(),
+        post_render: preferred_language_modal_post_render,
         on_click() {},
     });
+
 }
 
 export function set_up(settings_panel) {
