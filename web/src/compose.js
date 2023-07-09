@@ -734,8 +734,8 @@ export function initialize() {
                 on_timestamp_selection,
                 get_timestamp_for_flatpickr(),
                 {
-                    // place the time picker above the icon and center it horizontally
-                    position: "above center",
+                    // place the time picker wherever there is space and center it horizontally
+                    position: "auto center",
                 },
             );
         }
