@@ -362,7 +362,7 @@ export function update_page(property) {
         return;
     }
      if (property === "preferred_language") {
-        $container.find(".preferred_language_name").text(user_default_language_name);
+        $container.find(".preferred_language_name").text(user_preferred_language_name);
         return;
     }
 
