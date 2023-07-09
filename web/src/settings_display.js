@@ -190,6 +190,15 @@ function user_preferred_language_modal_post_render() {
             );
         });
 }
+
+function preferred_language_modal_post_render() {
+    if (page_params.is_spectator) {
+        spectator_preferred_language_modal_post_render();
+    }
+    else {
+        user_preferred_language_modal_post_render();
+    }
+}
 function spectator_preferred_language_modal_post_render() {
     $("#language_selection_modal")
         .find(".preferred_language")
@@ -202,14 +211,6 @@ function spectator_preferred_language_modal_post_render() {
             Cookies.set(page_params.preferred_language_cookie_name, $link.attr("data-code"));
             window.location.reload();
         });
-}
-function preferred_language_modal_post_render() {
-    if (page_params.is_spectator) {
-        spectator_preferred_language_modal_post_render();
-    }
-    else {
-        user_preferred_language_modal_post_render();
-    }
 }
 export function launch_preferred_language_setting_modal() {
     let selected_language = user_settings.preferred_language;

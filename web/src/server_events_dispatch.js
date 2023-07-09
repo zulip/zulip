@@ -705,6 +705,15 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
             }
+               if (event.property === "preferred_language") {
+                // We additionally need to set the preferred language name.
+                //
+                // Note that this does not change translations at all;
+                // a reload is fundamentally required because we
+                // cannot rerender with the new language the strings
+                // present in the backend/Jinja2 templates.
+                settings_display.set_preferred_language_name(event.language_name);
+            }
             if (
                 event.property === "default_view" && // If current hash is empty (default view), and the
                 // user changes the default view while in settings,
@@ -767,6 +776,13 @@ export function dispatch_normal_event(event) {
                 scroll_bar.set_layout_width();
             }
             if (event.property === "default_language") {
+                // TODO: Make this change the view immediately rather than
+                // requiring a reload.  This is likely fairly difficult,
+                // because various i18n strings are rendered by the
+                // server; we may want to instead just trigger a page
+                // reload.
+            }
+            if (event.property === "preferred_language") {
                 // TODO: Make this change the view immediately rather than
                 // requiring a reload.  This is likely fairly difficult,
                 // because various i18n strings are rendered by the
