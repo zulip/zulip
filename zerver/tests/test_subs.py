@@ -2818,7 +2818,14 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         # Test adding streams to existing default stream group
         group = lookup_default_stream_groups(["group1"], realm)[0]
-        new_stream_names = ["stream4", "stream5"]
+        new_stream_names = [
+            "stream4",
+            "stream5",
+            "stream6",
+            "stream7",
+            "stream8",
+            "stream9",
+        ]
         new_streams = []
         for new_stream_name in new_stream_names:
             new_stream = ensure_stream(realm, new_stream_name, acting_user=None)
@@ -2832,7 +2839,8 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assertEqual(get_streams(default_stream_groups[0]), streams)
 
         # Test removing streams from existing default stream group
-        do_remove_streams_from_default_stream_group(realm, group, new_streams)
+        with self.assert_database_query_count(16):
+            do_remove_streams_from_default_stream_group(realm, group, new_streams)
         remaining_streams = streams[0:3]
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
