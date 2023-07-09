@@ -31,7 +31,6 @@ from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
-from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
 from zerver.lib.streams import create_stream_if_needed
@@ -1466,7 +1465,6 @@ class StreamMessagesTest(ZulipTestCase):
         stream_name = "Denmark"
         topic_name = "foo"
         content = "whatever"
-        realm = sender.realm
 
         # To get accurate count of the queries, we should make sure that
         # caches don't come into play. If we count queries while caches are
@@ -1474,7 +1472,6 @@ class StreamMessagesTest(ZulipTestCase):
         # persistent, so our test can also fail if cache is invalidated
         # during the course of the unit test.
         flush_per_request_caches()
-        cache_delete(get_stream_cache_key(stream_name, realm.id))
         with self.assert_database_query_count(13):
             check_send_stream_message(
                 sender=sender,
