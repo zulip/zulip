@@ -871,6 +871,13 @@ exports.fixtures = {
         value: "fr",
         language_name: "French",
     },
+     user_settings__preferred_language: {
+        type: "user_settings",
+        op: "update",
+        property: "default_language",
+        value: "fr",
+        preferred_language_name: "French",
+    },
 
     user_settings__default_view_all_messages: {
         type: "user_settings",

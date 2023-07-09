@@ -712,7 +712,7 @@ export function dispatch_normal_event(event) {
                 // a reload is fundamentally required because we
                 // cannot rerender with the new language the strings
                 // present in the backend/Jinja2 templates.
-                settings_display.set_preferred_language_name(event.language_name);
+                settings_display.set_preferred_language_name(event.preferred_language_name);
             }
             if (
                 event.property === "default_view" && // If current hash is empty (default view), and the
