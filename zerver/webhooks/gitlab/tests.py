@@ -255,6 +255,12 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook("note_hook__issue_note", expected_topic, expected_message)
 
+    def test_note_design_issue_event_message(self) -> None:
+        expected_topic = "testing-zulip-gitlab-integration / issue #1"
+        expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot_from_2023-06-28_01-44-54.png#note_1458583152) on [issue #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nhello\n~~~"
+
+        self.check_webhook("note_hook__issue_design_note", expected_topic, expected_message)
+
     def test_note_confidential_issue_event_message(self) -> None:
         expected_subject = "testing-zulip-gitlab-integration / issue #1 Add more lines"
         expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406130881) on [issue #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nSome more comments\n~~~"
@@ -267,6 +273,13 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "[[testing-zulip-gitlab-integration](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration)] Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1#note_1406279810) on [issue #1 Add more lines](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nThis is again a random comment.\n~~~"
 
         self.check_webhook("note_hook__issue_note", expected_topic, expected_message)
+
+    def test_note_design_issue_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "[[testing-zulip-gitlab-integration](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration)] Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1/designs/Screenshot_from_2023-06-28_01-44-54.png#note_1458583152) on [issue #1](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/issues/1):\n\n~~~ quote\nhello\n~~~"
+
+        self.check_webhook("note_hook__issue_design_note", expected_topic, expected_message)
 
     def test_note_snippet_old_event_message(self) -> None:
         expected_topic = "my-awesome-project / snippet #2 test"

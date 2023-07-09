@@ -213,6 +213,34 @@ def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> 
     )
 
 
+def get_commented_design_event_body(payload: WildValue, include_title: bool) -> str:
+    comment = payload["object_attributes"]
+    repository_url = payload["repository"]["homepage"]
+    new_path = comment["original_position"]["new_path"].tame(check_string)
+    assert isinstance(new_path, str)
+    new_path_split = new_path.split("/")
+    issue_number = new_path_split[1][new_path_split[1].find("-") + 1 :]
+    url = repository_url.tame(check_string) + "/-/issues/" + issue_number
+
+    return get_pull_request_event_message(
+        user_name=get_issue_user_name(payload),
+        action="[commented]({}) on".format(
+            url
+            + "/"
+            + new_path_split[0]
+            + "/"
+            + new_path_split[2]
+            + "#note_"
+            + str(comment["id"].tame(check_int))
+        ),
+        url=url,
+        number=int(issue_number),
+        message=comment["note"].tame(check_string),
+        type="issue",
+        title=None,
+    )
+
+
 def get_commented_merge_request_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
@@ -392,6 +420,7 @@ EVENT_FUNCTION_MAPPER: Dict[str, EventFunction] = {
     "Confidential Issue Hook reopen": partial(get_issue_event_body, action="reopened"),
     "Confidential Issue Hook update": partial(get_issue_event_body, action="updated"),
     "Note Hook Commit": get_commented_commit_event_body,
+    "Note Hook DesignManagement::Design": get_commented_design_event_body,
     "Note Hook MergeRequest": get_commented_merge_request_event_body,
     "Note Hook Issue": get_commented_issue_event_body,
     "Confidential Note Hook Issue": get_commented_issue_event_body,
@@ -481,6 +510,18 @@ def get_subject_based_on_event(
             type="issue",
             id=payload["issue"]["iid"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
+        )
+    elif event.startswith("Note Hook Design"):
+        comment = payload["object_attributes"]
+        new_path = comment["original_position"]["new_path"].value
+        assert isinstance(new_path, str)
+        new_path_split = new_path.split("/")
+        issue_number = new_path_split[1][new_path_split[1].find("-") + 1 :]
+        return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type="issue",
+            id=issue_number,
+            title="",
         )
     elif event == "Note Hook MergeRequest":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
