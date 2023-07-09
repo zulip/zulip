@@ -42,7 +42,7 @@ details summary::-webkit-details-marker {
 }
 
 .top-menu-items-group-1 {
-    margin-right: 32px;
+    margin-right: 16px;
 }
 
 .top-menu-item,
@@ -182,7 +182,7 @@ details summary::-webkit-details-marker {
 }
 
 .top-menu-submenu-backdrop {
-    background: hsl(240deg 100% 10%);
+    background: hsl(240deg 100% 10% / 60%);
     opacity: 0;
     height: 0;
     width: 100%;
@@ -607,7 +607,7 @@ details summary::-webkit-details-marker {
     }
 }
 
-@media (width <= 940px) {
+@media (width <= 980px) {
     .top-menu {
         display: none;
     }
