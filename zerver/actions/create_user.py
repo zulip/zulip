@@ -18,7 +18,7 @@ from zerver.actions.user_groups import do_send_user_group_members_update_event
 from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
-from zerver.lib.default_streams import get_default_streams_for_realm
+from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
@@ -137,10 +137,13 @@ def set_up_streams_for_new_human_user(
         prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
     )
 
-    # If the Preregistration object didn't explicitly list some streams (it happens when user
-    # directly signs up without any invitation), we add the default streams
+    # If the Preregistration object didn't explicitly list some streams (it
+    # happens when user directly signs up without any invitation), we add the
+    # default streams for the realm. Note that we are fine with "slim" Stream
+    # objects for calling bulk_add_subscriptions and add_new_user_history,
+    # which we verify in StreamSetupTest tests that check query counts.
     if len(streams) == 0 and not user_was_invited:
-        streams = get_default_subs(user_profile)
+        streams = get_slim_realm_default_streams(realm.id)
 
     for default_stream_group in default_stream_groups:
         default_stream_group_streams = default_stream_group.streams.all()
@@ -610,9 +613,3 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         stream_dict=stream_dict,
         private_peer_dict=subscriber_peer_info.private_peer_dict,
     )
-
-
-def get_default_subs(user_profile: UserProfile) -> List[Stream]:
-    # Right now default streams are realm-wide.  This wrapper gives us flexibility
-    # to some day further customize how we set up default streams for new users.
-    return get_default_streams_for_realm(user_profile.realm_id)
