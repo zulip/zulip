@@ -43,10 +43,12 @@
         text-transform: uppercase;
         border-bottom: 0;
         margin-bottom: 0;
+        margin-block-start: 0;
+        margin-block-end: 0;
     }
 
     .footer__section ul {
-        margin: 28px 0 0;
+        margin: 20px 0 28px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -83,7 +85,7 @@
     }
 
     .footer__legal {
-        margin: 24px 0 5px;
+        margin: 12px 0 5px;
         padding: 0 52px;
         border-top: 1px solid hsl(0deg 0% 100% / 10%);
 
