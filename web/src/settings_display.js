@@ -194,7 +194,7 @@ export function launch_preferred_language_setting_modal() {
     let selected_language = user_settings.preferred_language;
 
 
-    const html_body = render_dialog_default_language({
+    const html_body = preferred_language_modal_table({
         language_list: get_language_list_columns(selected_language),
     });
 
