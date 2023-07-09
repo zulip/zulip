@@ -115,6 +115,50 @@ def notify_new_user(user_profile: UserProfile) -> None:
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
 
+def set_up_streams_for_new_human_user(
+    *,
+    user_profile: UserProfile,
+    prereg_user: Optional[PreregistrationUser] = None,
+    default_stream_groups: Sequence[DefaultStreamGroup] = [],
+) -> None:
+    realm = user_profile.realm
+
+    if prereg_user is not None:
+        streams: List[Stream] = list(prereg_user.streams.all())
+        acting_user: Optional[UserProfile] = prereg_user.referred_by
+
+        # A PregistrationUser should not be used for another UserProfile
+        assert prereg_user.created_user is None, "PregistrationUser should not be reused"
+    else:
+        streams = []
+        acting_user = None
+
+    user_was_invited = prereg_user is not None and (
+        prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
+    )
+
+    # If the Preregistration object didn't explicitly list some streams (it happens when user
+    # directly signs up without any invitation), we add the default streams
+    if len(streams) == 0 and not user_was_invited:
+        streams = get_default_subs(user_profile)
+
+    for default_stream_group in default_stream_groups:
+        default_stream_group_streams = default_stream_group.streams.all()
+        for stream in default_stream_group_streams:
+            if stream not in streams:
+                streams.append(stream)
+
+    bulk_add_subscriptions(
+        realm,
+        streams,
+        [user_profile],
+        from_user_creation=True,
+        acting_user=acting_user,
+    )
+
+    add_new_user_history(user_profile, streams)
+
+
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
     """Give you the last ONBOARDING_TOTAL_MESSAGES messages on your public
     streams, so you have something to look at in your home view once
@@ -169,42 +213,16 @@ def process_new_human_user(
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     realm_creation: bool = False,
 ) -> None:
+    # subscribe to default/invitation streams and
+    # fill in some recent historical messages
+    set_up_streams_for_new_human_user(
+        user_profile=user_profile,
+        prereg_user=prereg_user,
+        default_stream_groups=default_stream_groups,
+    )
+
     realm = user_profile.realm
-
     mit_beta_user = realm.is_zephyr_mirror_realm
-    if prereg_user is not None:
-        streams: List[Stream] = list(prereg_user.streams.all())
-        acting_user: Optional[UserProfile] = prereg_user.referred_by
-
-        # A PregistrationUser should not be used for another UserProfile
-        assert prereg_user.created_user is None, "PregistrationUser should not be reused"
-    else:
-        streams = []
-        acting_user = None
-
-    user_was_invited = prereg_user is not None and (
-        prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
-    )
-    # If the Preregistration object didn't explicitly list some streams (it happens when user
-    # directly signs up without any invitation), we add the default streams
-    if len(streams) == 0 and not user_was_invited:
-        streams = get_default_subs(user_profile)
-
-    for default_stream_group in default_stream_groups:
-        default_stream_group_streams = default_stream_group.streams.all()
-        for stream in default_stream_group_streams:
-            if stream not in streams:
-                streams.append(stream)
-
-    bulk_add_subscriptions(
-        realm,
-        streams,
-        [user_profile],
-        from_user_creation=True,
-        acting_user=acting_user,
-    )
-
-    add_new_user_history(user_profile, streams)
 
     # mit_beta_users don't have a referred_by field
     if (
