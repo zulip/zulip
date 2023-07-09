@@ -68,9 +68,7 @@ from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 @transaction.atomic(savepoint=False)
-def do_deactivate_stream(
-    stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
-) -> None:
+def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) -> None:
     # If the stream is already deactivated, this is a no-op
     if stream.deactivated is True:
         raise JsonableError(_("Stream is already deactivated"))
