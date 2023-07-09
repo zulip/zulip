@@ -4,14 +4,18 @@ from zerver.lib.types import APIStreamDict
 from zerver.models import DefaultStream, Stream
 
 
-def get_default_streams_for_realm(realm_id: int) -> List[Stream]:
-    # TODO: Deprecate this extremely expensive query. We can't immediately
-    #       just improve it by removing select_related(), because then you
-    #       may get the opposite problem of multiple round trips.
-    return [
-        default.stream
-        for default in DefaultStream.objects.select_related().filter(realm_id=realm_id)
-    ]
+def get_slim_realm_default_streams(realm_id: int) -> List[Stream]:
+    # We really want this query to be simple and just get "thin" Stream objects
+    # in one round trip.
+    #
+    # The above is enforced by at least three tests that verify query counts,
+    # and test_query_count in test_subs.py makes sure that the query itself is
+    # not like 11000 bytes, which is what we had in a prior version that used
+    # select_related() with not arguments (and thus joined to too many tables).
+    #
+    # Please be careful about modifying this code, as it has had a history
+    # of performance problems.
+    return list(Stream.objects.filter(defaultstream__realm_id=realm_id))
 
 
 def get_default_stream_ids_for_realm(realm_id: int) -> Set[int]:
@@ -23,11 +27,6 @@ def get_default_streams_for_realm_as_dicts(realm_id: int) -> List[APIStreamDict]
     Return all the default streams for a realm using a list of dictionaries sorted
     by stream name.
     """
-
-    # This slightly convoluted construction makes it so that the Django ORM gets
-    # all the data it needs to serialize default streams as a list of dictionaries
-    # using a single query without using select_related().
-    # This is enforced by test_query_count in test_subs.py.
-    stream_ids = DefaultStream.objects.filter(realm_id=realm_id).values_list("stream_id")
-    streams = Stream.objects.filter(id__in=stream_ids)
-    return sorted((stream.to_dict() for stream in streams), key=lambda elt: elt["name"])
+    streams = get_slim_realm_default_streams(realm_id)
+    stream_dicts = [stream.to_dict() for stream in streams]
+    return sorted(stream_dicts, key=lambda stream: stream["name"])
