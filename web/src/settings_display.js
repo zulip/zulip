@@ -156,9 +156,9 @@ export function launch_default_language_setting_modal() {
         on_click() {},
     });
 }
-function preferred_language_modal_post_render() {
+function user_preferred_language_modal_post_render() {
     $("#language_selection_modal")
-        .find(".language")
+        .find(".preferred_language")
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -190,6 +190,27 @@ function preferred_language_modal_post_render() {
             );
         });
 }
+function spectator_preferred_language_modal_post_render() {
+    $("#language_selection_modal")
+        .find(".preferred_language")
+        .on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dialog_widget.close_modal();
+
+            const $link = $(e.target).closest("a[data-code]");
+            Cookies.set(page_params.preferred_language_cookie_name, $link.attr("data-code"));
+            window.location.reload();
+        });
+}
+function preferred_language_modal_post_render() {
+    if (page_params.is_spectator) {
+        spectator_preferred_language_modal_post_render();
+    }
+    else {
+        user_preferred_language_modal_post_render();
+    }
+}
 export function launch_preferred_language_setting_modal() {
     let selected_language = user_settings.preferred_language;
 
@@ -211,6 +232,7 @@ export function launch_preferred_language_setting_modal() {
     });
 
 }
+
 
 export function set_up(settings_panel) {
     meta.loaded = true;
