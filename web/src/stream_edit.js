@@ -32,6 +32,7 @@ import * as stream_settings_data from "./stream_settings_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
@@ -514,14 +515,19 @@ export function initialize() {
             html_submit_button: $t_html({defaultMessage: "Copy address"}),
             help_link: "/help/message-a-stream-by-email#configuration-options",
             on_click() {},
-            close_on_submit: true,
+            close_on_submit: false,
         });
         $("#show-sender").prop("checked", true);
 
-        new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
+        const clipboard = new ClipboardJS("#copy_email_address_modal .dialog_submit_button", {
             text() {
                 return address;
             },
+        });
+
+        // Show a tippy tooltip when the stream email address copied
+        clipboard.on("success", (e) => {
+            show_copied_confirmation(e.trigger);
         });
 
         $("#copy_email_address_modal .tag-checkbox").on("change", () => {

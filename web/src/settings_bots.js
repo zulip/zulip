@@ -20,6 +20,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as settings_users from "./settings_users";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as user_profile from "./user_profile";
 
@@ -610,7 +611,7 @@ export function set_up() {
         user_profile.show_user_profile(bot, "user-profile-streams-tab");
     });
 
-    new ClipboardJS("#copy_zuliprc", {
+    const clipboard = new ClipboardJS("#copy_zuliprc", {
         text(trigger) {
             const $bot_info = $(trigger).closest(".bot-information-box").find(".bot_info");
             const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
@@ -618,6 +619,11 @@ export function set_up() {
             const data = generate_zuliprc_content(bot);
             return data;
         },
+    });
+
+    // Show a tippy tooltip when the bot zuliprc is copied
+    clipboard.on("success", (e) => {
+        show_copied_confirmation(e.trigger);
     });
 
     $("#bots_lists_navbar .active-bots-tab").on("click", (e) => {

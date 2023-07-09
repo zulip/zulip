@@ -19,8 +19,13 @@ const bot_data_params = {
     ],
 };
 
-function ClipboardJS(sel) {
-    assert.equal(sel, "#copy_zuliprc");
+class ClipboardJS {
+    constructor(sel) {
+        assert.equal(sel, "#copy_zuliprc");
+    }
+    on() {
+        // do nothing.
+    }
 }
 mock_cjs("clipboard", ClipboardJS);
 
