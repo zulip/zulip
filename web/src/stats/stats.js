@@ -875,7 +875,7 @@ function populate_number_of_users(data) {
     });
 
     // Initial drawing of plot
-    draw_or_update_plot(all_time_trace, true);
+    draw_or_update_plot(all_time_trace);
     $("#all_time_actives_button").addClass("selected");
     get_user_summary_statistics(data.everyone);
 }
