@@ -531,10 +531,6 @@ def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
     return f"bot_dicts_in_realm:{realm_id}"
 
 
-def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
-    return f"stream_by_realm_and_name:{realm_id}:{make_safe_digest(stream_name.strip().lower())}"
-
-
 def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
@@ -672,13 +668,6 @@ def flush_stream(
     from zerver.models import UserProfile
 
     stream = instance
-    items_for_remote_cache = {}
-
-    if update_fields is None:
-        cache_delete(get_stream_cache_key(stream.name, stream.realm_id))
-    else:
-        items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
-        cache_set_many(items_for_remote_cache)
 
     if (
         update_fields is None

@@ -17,11 +17,9 @@ from zerver.actions.default_streams import (
 )
 from zerver.actions.message_send import internal_send_stream_message
 from zerver.lib.cache import (
-    cache_delete,
     cache_delete_many,
     cache_set,
     display_recipient_cache_key,
-    get_stream_cache_key,
     to_dict_cache_key_id,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -117,10 +115,6 @@ def do_deactivate_stream(stream: Stream, *, acting_user: Optional[UserProfile]) 
     default_stream_groups_for_stream = DefaultStreamGroup.objects.filter(streams__id=stream.id)
     for group in default_stream_groups_for_stream:
         do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
-
-    # Remove the old stream information from remote cache.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
-    cache_delete(old_cache_key)
 
     stream_dict = stream.to_dict()
     stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
@@ -1102,13 +1096,6 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     recipient_id: int = stream.recipient_id
     messages = Message.objects.filter(recipient_id=recipient_id).only("id")
 
-    # Update the display recipient and stream, which are easy single
-    # items to set.
-    old_cache_key = get_stream_cache_key(old_name, stream.realm_id)
-    new_cache_key = get_stream_cache_key(stream.name, stream.realm_id)
-    if old_cache_key != new_cache_key:
-        cache_delete(old_cache_key)
-        cache_set(new_cache_key, stream)
     cache_set(display_recipient_cache_key(recipient_id), stream.name)
 
     # Delete cache entries for everything else, which is cheaper and
