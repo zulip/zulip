@@ -2839,7 +2839,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assertEqual(get_streams(default_stream_groups[0]), streams)
 
         # Test removing streams from existing default stream group
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(5):
             do_remove_streams_from_default_stream_group(realm, group, new_streams)
         remaining_streams = streams[0:3]
         default_stream_groups = get_default_stream_groups(realm)
