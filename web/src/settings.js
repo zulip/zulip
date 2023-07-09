@@ -110,6 +110,7 @@ export function build_page() {
         user_can_change_email: settings_data.user_can_change_email(),
         user_role_text: people.get_user_type(page_params.user_id),
         default_language_name: settings_display.user_default_language_name,
+        preferred_language_name: settings_display.user_preferred_language_name,
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         settings_object: user_settings,
         send_read_receipts_tooltip: $t({
