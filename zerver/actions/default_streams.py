@@ -137,16 +137,18 @@ def do_add_streams_to_default_stream_group(
 def do_remove_streams_from_default_stream_group(
     realm: Realm, group: DefaultStreamGroup, streams: List[Stream]
 ) -> None:
+    group_stream_ids = {stream.id for stream in group.streams.all()}
     for stream in streams:
-        if stream not in group.streams.all():
+        if stream.id not in group_stream_ids:
             raise JsonableError(
                 _(
                     "Stream '{stream_name}' is not present in default stream group '{group_name}'",
                 ).format(stream_name=stream.name, group_name=group.name)
             )
-        group.streams.remove(stream)
 
-    group.save()
+    delete_stream_ids = {stream.id for stream in streams}
+
+    group.streams.remove(*delete_stream_ids)
     notify_default_stream_groups(realm)
 
 
