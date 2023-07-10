@@ -174,6 +174,7 @@ function user_preferred_language_modal_post_render() {
     $("#preferred_language_selection_modal")
         .find(".preferred_language")
         .on("click", (e) => {
+            console.log("Clicked")
             e.preventDefault();
             e.stopPropagation();
             dialog_widget.close_modal();

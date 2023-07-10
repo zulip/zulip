@@ -112,7 +112,7 @@ export function get_preferred_language_list_columns(preferred_language: string):
             name_with_percent = `${language.name} (${language.percent_translated}%)`;
         }
 
-        const selected = preferred_language === language.code || preferred_language === language.locale;
+        const selected = preferred_language === language.code;
         formatted_preferred_language_list.push({
             code: language.code,
             name: language.name,
