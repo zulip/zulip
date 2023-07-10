@@ -81,6 +81,15 @@ syntax_highlight_as_map = {
 }
 
 
+def is_sample_event(event: Dict[str, Any]) -> bool:
+    # This is just a heuristic to detect the sample event, this should
+    # not be used for making important behavior decisions.
+    title = event.get("title", "")
+    if title == "This is an example Python exception":
+        return True
+    return False
+
+
 def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
     traceback = ""
     if lines is not None:
@@ -103,12 +112,10 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
 
     # We shouldn't support the officially deprecated Raven series of
     # Python SDKs.
-    if platform_name == "python" and int(event["version"]) < 7:
+    if platform_name == "python" and int(event["version"]) < 7 and not is_sample_event(event):
         # The sample event is still an old "version" -- accept it even
         # though we don't accept events from the old Python SDK.
-        tags = event.get("tags", [])
-        if ["sample_event", "yes"] not in tags:
-            raise UnsupportedWebhookEventTypeError("Raven SDK")
+        raise UnsupportedWebhookEventTypeError("Raven SDK")
     context = {
         "title": topic,
         "level": event["level"],
