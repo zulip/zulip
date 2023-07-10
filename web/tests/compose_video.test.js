@@ -29,7 +29,7 @@ set_global(
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose = zrequire("compose");
 function stub_out_video_calls() {
-    const $elem = $("#below-compose-content .video_link");
+    const $elem = $(".compose_bottom_top_container .video_link");
     $elem.toggle = (show) => {
         /* istanbul ignore if */
         if (show) {
@@ -234,7 +234,7 @@ test("test_video_chat_button_toggle disabled", ({override}) => {
 
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
     compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), false);
+    assert.equal($(".compose_bottom_top_container .video_link").visible(), false);
 });
 
 test("test_video_chat_button_toggle no url", ({override}) => {
@@ -244,7 +244,7 @@ test("test_video_chat_button_toggle no url", ({override}) => {
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = null;
     compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), false);
+    assert.equal($(".compose_bottom_top_container .video_link").visible(), false);
 });
 
 test("test_video_chat_button_toggle enabled", ({override}) => {
@@ -254,5 +254,5 @@ test("test_video_chat_button_toggle enabled", ({override}) => {
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.jitsi_meet.id;
     page_params.jitsi_server_url = "https://meet.jit.si";
     compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), true);
+    assert.equal($(".compose_bottom_top_container .video_link").visible(), true);
 });

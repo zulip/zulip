@@ -174,21 +174,15 @@
     height: 100%;
 }
 
-#below-compose-content {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+.compose_bottom_top_container {
     margin-top: 6px;
+    display: flex;
+}
+
+.compose_bottom_bottom_container {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: -2px;
-
-    .compose_bottom_top_container {
-        display: flex;
-    }
-
-    .compose_bottom_bottom_container {
-        display: flex;
-        justify-content: space-between;
-    }
 }
 
 #compose_limit_indicator {
