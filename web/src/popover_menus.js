@@ -180,6 +180,11 @@ function on_show_prep(instance) {
         // being triggered.
         e.stopPropagation();
     });
+    $(instance.popper).on("mousewheel", (e) => {
+        // Prevents user from scrolling with mousewheel while popover menu is
+        // open and mouse is over popover menu.
+        e.preventDefault();
+    });
     $(instance.popper).one("click", ".navigate_and_close_popover", (e) => {
         // Handler for links inside popover which don't need a special click handler.
         e.stopPropagation();
