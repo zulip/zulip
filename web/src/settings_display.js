@@ -172,7 +172,7 @@ function spectator_preferred_language_modal_post_render() {
 }
 function user_preferred_language_modal_post_render() {
     $("#preferred_language_selection_modal")
-        .find(".preferred_language")
+        .find(".language")
         .on("click", (e) => {
             console.log("Clicked")
             e.preventDefault();
