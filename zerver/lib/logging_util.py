@@ -11,6 +11,7 @@ from typing import Optional, Tuple, Union
 import orjson
 from django.conf import settings
 from django.core.cache import cache
+from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
 
 
@@ -222,10 +223,8 @@ class ZulipWebhookFormatter(ZulipFormatter):
         return "\n".join(multiline)
 
     def format(self, record: logging.LogRecord) -> str:
-        from zerver.lib.request import get_current_request
-
-        request = get_current_request()
-        if not request:
+        request: Optional[HttpRequest] = getattr(record, "request", None)
+        if request is None:
             record.user = None
             record.client = None
             record.url = None

@@ -33,7 +33,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import REQ, RequestNotes, has_request_variables, set_request, unset_request
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import (
     AsynchronousResponse,
     json_response,
@@ -224,15 +224,6 @@ def write_log_line(
         if len(error_data) > 200:
             error_data = "[content more than 200 characters]"
         logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requester_for_logs)
-
-
-class RequestContext(MiddlewareMixin):
-    def __call__(self, request: HttpRequest) -> HttpResponseBase:
-        set_request(request)
-        try:
-            return self.get_response(request)
-        finally:
-            unset_request()
 
 
 # We take advantage of `has_request_variables` being called multiple times
