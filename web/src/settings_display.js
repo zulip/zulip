@@ -8,7 +8,7 @@ import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import * as emojisets from "./emojisets";
 import * as hash_util from "./hash_util";
-import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
+import {$t_html, get_language_list_columns, get_preferred_language_list_columns,get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -213,11 +213,11 @@ function spectator_preferred_language_modal_post_render() {
         });
 }
 export function launch_preferred_language_setting_modal() {
-    let selected_language = user_settings.preferred_language;
+    let selected_preferred_language = user_settings.preferred_language;
 
 
     const html_body = preferred_language_modal_table({
-        language_list: get_language_list_columns(selected_language),
+        language_list: get_preferred_language_list_columns(selected_preferred_language),
     });
 
     dialog_widget.launch({

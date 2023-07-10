@@ -104,3 +104,21 @@ export function get_language_list_columns(default_language: string): Language[] 
     }
     return formatted_list;
 }
+export function get_preferred_language_list_columns(preferred_language: string): Language[] {
+    const formatted_preferred_language_list: Language[] = [];
+    for (const language of language_list) {
+        let name_with_percent = language.name;
+        if (language.percent_translated !== undefined) {
+            name_with_percent = `${language.name} (${language.percent_translated}%)`;
+        }
+
+        const selected = preferred_language === language.code || preferred_language === language.locale;
+        formatted_preferred_language_list.push({
+            code: language.code,
+            name: language.name,
+            name_with_percent,
+            selected,
+        });
+    }
+    return formatted_preferred_language_list;
+}
