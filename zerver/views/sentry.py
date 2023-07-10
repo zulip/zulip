@@ -17,7 +17,7 @@ from zerver.lib.validator import (
 
 class SentryTunnelSession(OutgoingSession):
     def __init__(self) -> None:
-        super().__init__(role="sentry_tunnel", timeout=5)
+        super().__init__(role="sentry_tunnel", timeout=1)
 
 
 @csrf_exempt
