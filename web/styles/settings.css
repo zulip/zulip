@@ -500,6 +500,22 @@ input[type="checkbox"] {
     }
 }
 
+.preferred_language_selection_widget {
+    .title {
+        margin-bottom: 3px;
+    }
+
+    .language_selection_button {
+        text-decoration: none;
+        color: hsl(0deg 0% 20%);
+
+        .fa.fa-pencil {
+            margin-left: 5px;
+        }
+    }
+}
+
+
 .remove-attachment {
     margin-right: 5px !important;
     font-size: 1.1em !important;

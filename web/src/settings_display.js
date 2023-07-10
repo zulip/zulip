@@ -170,7 +170,7 @@ function user_preferred_language_modal_post_render() {
 
             const new_preferred_language = $link.attr("data-name");
             $(
-                "#user-display-settings .language_selection_widget .language_selection_button span",
+                "#user-display-settings .preferred_language_selection_widget.hbs .language_selection_button span",
             ).text(new_preferred_language);
 
             change_display_setting(
