@@ -204,64 +204,6 @@ def shutdown_server() -> None:
         IS_SERVER_UP = False
 
 
-# postgresql.version is required for database servers, but wasn't
-# previously; fill it in based on what the OS provides.
-postgresql_version = None
-if os.path.exists("/etc/init.d/postgresql"):
-    postgresql_version = get_config(config_file, "postgresql", "version")
-    django_pg_version = subprocess.check_output(
-        # We use the _current_ deploy's manage.py, since ours has not
-        # yet had its virtualenv configured yet.
-        [
-            "../current/manage.py",
-            "shell",
-            "-c",
-            "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))",
-        ],
-        preexec_fn=su_to_zulip,
-        text=True,
-    ).strip()
-    if not postgresql_version:
-        postgresql_version = django_pg_version
-        subprocess.check_call(
-            [
-                "crudini",
-                "--set",
-                "/etc/zulip/zulip.conf",
-                "postgresql",
-                "version",
-                postgresql_version,
-            ]
-        )
-    elif postgresql_version != django_pg_version:
-        logging.critical(
-            "PostgreSQL version mismatch: %s (running) vs %s (configured)",
-            django_pg_version,
-            postgresql_version,
-        )
-        logging.info(
-            "/etc/zulip/zulip.conf claims that Zulip is running PostgreSQL\n"
-            "%s, but the server is connected to a PostgreSQL running\n"
-            "version %s.  Check the output from pg_lsclusters to verify\n"
-            "which clusters are running, and update /etc/zulip/zulip.conf to match.\n"
-            "\n"
-            "In general, this results from manually upgrading PostgreSQL; you\n"
-            "should follow our instructions for using our tool to do so:\n"
-            "https://zulip.readthedocs.io/en/latest/production/upgrade.html#upgrading-postgresql",
-            postgresql_version,
-            django_pg_version,
-        )
-        sys.exit(1)
-
-    if int(postgresql_version) < 12:
-        logging.critical("Unsupported PostgreSQL version: %s", postgresql_version)
-        logging.info(
-            "Please upgrade to PostgreSQL 12 or newer first.\n"
-            "See https://zulip.readthedocs.io/en/latest/production/"
-            "upgrade-or-modify.html#upgrading-postgresql"
-        )
-        sys.exit(1)
-
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
     run_psql_as_postgres(
@@ -274,17 +216,13 @@ if not (minimal_change or args.skip_puppet):
     # We need to temporarily hold pgroonga, if installed -- upgrading
     # it without running the appropriate upgrade SQL can cause
     # PostgreSQL to crash
-    if postgresql_version is not None and get_config_bool(config_file, "machine", "pgroonga"):
-        subprocess.check_call(
-            ["apt-mark", "hold", f"postgresql-{postgresql_version}-pgdg-pgroonga"]
-        )
+    if get_config_bool(config_file, "machine", "pgroonga"):
+        subprocess.check_call(["apt-mark", "hold", "postgresql-*-pgdg-pgroonga"])
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
-    if postgresql_version is not None and get_config_bool(config_file, "machine", "pgroonga"):
-        subprocess.check_call(
-            ["apt-mark", "unhold", f"postgresql-{postgresql_version}-pgdg-pgroonga"]
-        )
+    if get_config_bool(config_file, "machine", "pgroonga"):
+        subprocess.check_call(["apt-mark", "unhold", "postgresql-*-pgdg-pgroonga"])
 
 # To bootstrap zulip-puppet-apply, we need to install the system yaml
 # package; new installs get this, but old installs may not have it.
