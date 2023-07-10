@@ -261,6 +261,16 @@ This is an example python exception
 ```"""
         self.check_webhook("sample_event_through_alert", expected_topic, expected_message)
 
+    def test_sample_event_through_plugin(self) -> None:
+        expected_topic = "This is an example Python exception"
+        expected_message = """\
+**New message event:** [This is an example Python exception](https://nitk-46.sentry.io/issues/4218258981/events/4dc4fc2858aa450eb658be9e5b8ad149/)
+```quote
+**level:** error
+**timestamp:** 2023-07-09 20:41:24
+```"""
+        self.check_webhook("sample_event_through_plugin", expected_topic, expected_message)
+
     def test_raven_sdk_python_event(self) -> None:
         payload = self.get_body("raven_sdk_python_event")
         result = self.client_post(
