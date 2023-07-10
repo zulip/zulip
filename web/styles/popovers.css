@@ -870,6 +870,7 @@ ul {
     width: min(750px, 70vw);
 }
 
+
 .default_language_modal_table {
     column-count: 3;
 
@@ -881,7 +882,12 @@ ul {
         column-count: 1;
     }
 }
-        .preferred_language_modal_table {
+
+
+#preferred_language_selection_modal {
+    width: min(750px, 70vw);
+}
+.preferred_language_modal_table {
     column-count: 3;
 
     @media (width < $md_min) {
@@ -892,6 +898,7 @@ ul {
         column-count: 1;
     }
 }
+
 
 #send_later_popover {
     & hr {

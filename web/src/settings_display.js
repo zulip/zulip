@@ -158,7 +158,7 @@ export function launch_default_language_setting_modal() {
 }
 
 function spectator_preferred_language_modal_post_render() {
-    $("#language_selection_modal")
+    $("#preferred_language_selection_modal")
         .find(".preferred_language")
         .on("click", (e) => {
             e.preventDefault();
@@ -171,7 +171,7 @@ function spectator_preferred_language_modal_post_render() {
         });
 }
 function user_preferred_language_modal_post_render() {
-    $("#language_selection_modal")
+    $("#preferred_language_selection_modal")
         .find(".preferred_language")
         .on("click", (e) => {
             e.preventDefault();
@@ -225,7 +225,7 @@ export function launch_preferred_language_setting_modal() {
         html_heading: $t_html({defaultMessage: "Select language"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Close"}),
-        id: "language_selection_modal",
+        id: "preferred_language_selection_modal",
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,

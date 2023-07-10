@@ -276,6 +276,18 @@ td .button {
     }
 }
 
+#preferred_language_selection_modal {
+    & table {
+        width: 90%;
+        margin-top: 20px;
+        border-collapse: separate;
+    }
+
+    & td {
+        padding-top: 1px;
+    }
+}
+
 .settings-section {
     display: none;
     width: calc(100% - 40px);
