@@ -156,6 +156,20 @@ export function launch_default_language_setting_modal() {
         on_click() {},
     });
 }
+
+function spectator_preferred_language_modal_post_render() {
+    $("#language_selection_modal")
+        .find(".preferred_language")
+        .on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dialog_widget.close_modal();
+
+            const $link = $(e.target).closest("a[data-code]");
+            Cookies.set(page_params.preferred_language_cookie_name, $link.attr("data-code"));
+            window.location.reload();
+        });
+}
 function user_preferred_language_modal_post_render() {
     $("#language_selection_modal")
         .find(".preferred_language")
@@ -190,7 +204,6 @@ function user_preferred_language_modal_post_render() {
             );
         });
 }
-
 function preferred_language_modal_post_render() {
     if (page_params.is_spectator) {
         spectator_preferred_language_modal_post_render();
@@ -199,19 +212,7 @@ function preferred_language_modal_post_render() {
         user_preferred_language_modal_post_render();
     }
 }
-function spectator_preferred_language_modal_post_render() {
-    $("#language_selection_modal")
-        .find(".preferred_language")
-        .on("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dialog_widget.close_modal();
 
-            const $link = $(e.target).closest("a[data-code]");
-            Cookies.set(page_params.preferred_language_cookie_name, $link.attr("data-code"));
-            window.location.reload();
-        });
-}
 export function launch_preferred_language_setting_modal() {
     let selected_preferred_language = user_settings.preferred_language;
 
