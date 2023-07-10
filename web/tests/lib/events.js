@@ -874,7 +874,7 @@ exports.fixtures = {
      user_settings__preferred_language: {
         type: "user_settings",
         op: "update",
-        property: "default_language",
+        property: "preferred_language",
         value: "fr",
         preferred_language_name: "French",
     },

@@ -202,6 +202,7 @@ export function dispatch_normal_event(event) {
                 default_code_block_language: noop,
                 default_language: noop,
                 delete_own_message_policy: noop,
+                preferred_language: noop,
                 description: noop,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
@@ -673,6 +674,7 @@ export function dispatch_normal_event(event) {
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
+                "preferred_language",
                 "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
