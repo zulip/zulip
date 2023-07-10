@@ -22,7 +22,7 @@ from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
-from sentry_sdk import capture_exception
+from sentry_sdk import capture_exception, set_tag
 from sentry_sdk.integrations.logging import ignore_logger
 from typing_extensions import Concatenate, ParamSpec
 
@@ -296,6 +296,8 @@ class LogRequests(MiddlewareMixin):
             request_notes.client_name = "Unparsable"
             request_notes.client_version = None
 
+        set_tag("client", request_notes.client_name)
+
         request_notes.log_data = {}
         record_request_start_data(request_notes.log_data)
 
@@ -562,6 +564,8 @@ class HostDomainMiddleware(MiddlewareMixin):
                 return None
 
             return render(request, "zerver/invalid_realm.html", status=404)
+
+        set_tag("realm", request_notes.realm.string_id)
 
         # Check that we're not using the non-canonical form of a REALM_HOSTS subdomain
         if subdomain in settings.REALM_HOSTS:
