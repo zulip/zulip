@@ -10,8 +10,9 @@ import os
 import re
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union, cast
 
+import openapi_core
 import orjson
-from openapi_core import Spec, openapi_request_validator, openapi_response_validator
+from openapi_core import Spec
 from openapi_core.protocols import Response
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
@@ -436,11 +437,10 @@ def validate_against_openapi_schema(
         orjson.dumps(content).decode(),
         status_code=int(status_code),
     )
-    result = openapi_response_validator.validate(
-        openapi_spec.spec(), mock_request, cast(Response, mock_response)
-    )
     try:
-        result.raise_for_errors()
+        openapi_core.validate_response(
+            mock_request, cast(Response, mock_response), spec=openapi_spec.spec()
+        )
     except OpenAPIValidationError as error:
         message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
         message += f"\n\n{type(error).__name__}: {error}"
@@ -520,19 +520,6 @@ def validate_request(
     if url == "/user_uploads" or url.startswith("/realm/emoji/"):
         return
 
-    # Now using the openapi_core APIs, validate the request schema
-    # against the OpenAPI documentation.
-    assert isinstance(data, dict)
-    mock_request = MockRequest(
-        "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
-    )
-    result = openapi_request_validator.validate(openapi_spec.spec(), mock_request)
-    errors = list(result.errors)
-
-    # If no errors are raised, then validation is successful
-    if not errors:
-        return
-
     # Requests that do not validate against the OpenAPI spec must either:
     # * Have returned a 400 (bad request) error
     # * Have returned a 200 (success) with this request marked as intentionally
@@ -542,8 +529,17 @@ def validate_request(
     if status_code.startswith("2") and intentionally_undocumented:
         return
 
-    # Show a block error message explaining the options for fixing it.
-    msg = f"""
+    # Now using the openapi_core APIs, validate the request schema
+    # against the OpenAPI documentation.
+    assert isinstance(data, dict)
+    mock_request = MockRequest(
+        "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
+    )
+    try:
+        openapi_core.validate_request(mock_request, spec=openapi_spec.spec())
+    except OpenAPIValidationError as error:
+        # Show a block error message explaining the options for fixing it.
+        msg = f"""
 
 Error!  The OpenAPI schema for {method} {url} is not consistent
 with the parameters passed in this HTTP request.  Consider:
@@ -556,7 +552,7 @@ with the parameters passed in this HTTP request.  Consider:
 
 See https://zulip.readthedocs.io/en/latest/documentation/api.html for help.
 
-The errors logged by the OpenAPI validator are below:\n"""
-    for error in errors:
-        msg += f"* {error}\n"
-    raise SchemaError(msg)
+The error logged by the OpenAPI validator is below:
+{error}
+"""
+        raise SchemaError(msg)
