@@ -46,17 +46,17 @@ DISCUSSION_COMMENT_TEMPLATE = "{author} [commented]({comment_url}) on [discussio
 class Helper:
     def __init__(
         self,
+        request: HttpRequest,
         payload: WildValue,
         include_title: bool,
     ) -> None:
+        self.request = request
         self.payload = payload
         self.include_title = include_title
 
     def log_unsupported(self, event: str) -> None:
         summary = f"The '{event}' event isn't currently supported by the GitHub webhook"
-        log_unsupported_webhook_event(
-            summary=summary,
-        )
+        log_unsupported_webhook_event(request=self.request, summary=summary)
 
 
 def get_opened_or_update_pull_request_body(helper: Helper) -> str:
@@ -794,6 +794,7 @@ def api_github_webhook(
     body_function = EVENT_FUNCTION_MAPPER[event]
 
     helper = Helper(
+        request=request,
         payload=payload,
         include_title=user_specified_topic is not None,
     )
