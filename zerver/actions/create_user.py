@@ -54,8 +54,9 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
 
 
-ONBOARDING_TOTAL_MESSAGES = 1000
-ONBOARDING_UNREAD_MESSAGES = 20
+MAX_NUM_ONBOARDING_MESSAGES = 1000
+MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
+
 ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
 
 DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
@@ -163,46 +164,50 @@ def set_up_streams_for_new_human_user(
 
 
 def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
-    """Give you the last ONBOARDING_TOTAL_MESSAGES messages on your public
-    streams, so you have something to look at in your home view once
-    you finish the tutorial.  The most recent ONBOARDING_UNREAD_MESSAGES
-    are marked unread.
     """
-    one_week_ago = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
+    Give the user some messages in their feed, so that they can learn how to
+    use the home view in a realistic way after finishing the tutorial.
 
+    Mark the very most recent messages as unread.
+    """
+
+    # Find recipient ids for the user's streams that were passed to us.
+    # (Only look at public streams.)
     recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
-    recent_messages = Message.objects.filter(
-        recipient_id__in=recipient_ids, date_sent__gt=one_week_ago
-    ).order_by("-id")
-    message_ids_to_use = list(
-        reversed(recent_messages.values_list("id", flat=True)[0:ONBOARDING_TOTAL_MESSAGES])
-    )
-    if len(message_ids_to_use) == 0:
-        return
 
-    # Handle the race condition where a message arrives between
-    # bulk_add_subscriptions above and the Message query just above
-    already_ids = set(
-        UserMessage.objects.filter(
-            message_id__in=message_ids_to_use, user_profile=user_profile
-        ).values_list("message_id", flat=True)
+    # Start by finding recent messages matching those recipients.
+    one_week_ago = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
+    recent_message_ids = set(
+        Message.objects.filter(recipient_id__in=recipient_ids, date_sent__gt=one_week_ago)
+        .order_by("-id")
+        .values_list("id", flat=True)[0:MAX_NUM_ONBOARDING_MESSAGES]
     )
 
-    # Mark the newest ONBOARDING_UNREAD_MESSAGES as unread.
-    marked_unread = 0
-    ums_to_create = []
-    for message_id in reversed(message_ids_to_use):
-        if message_id in already_ids:
-            continue
+    if len(recent_message_ids) > 0:
+        # Handle the race condition where a message arrives between
+        # bulk_add_subscriptions above and the Message query just above
+        already_used_ids = set(
+            UserMessage.objects.filter(
+                message_id__in=recent_message_ids, user_profile=user_profile
+            ).values_list("message_id", flat=True)
+        )
 
-        um = UserMessage(user_profile=user_profile, message_id=message_id)
-        if marked_unread < ONBOARDING_UNREAD_MESSAGES:
-            marked_unread += 1
-        else:
-            um.flags = UserMessage.flags.read
-        ums_to_create.append(um)
+        # Exclude the already-used ids and sort them.
+        backfill_message_ids = sorted(recent_message_ids - already_used_ids)
 
-    UserMessage.objects.bulk_create(reversed(ums_to_create))
+        # Find which message ids we should mark as read.
+        # (We don't want too many unread messages.)
+        older_message_ids = set(backfill_message_ids[:-MAX_NUM_ONBOARDING_UNREAD_MESSAGES])
+
+        # Create UserMessage rows for the backfill.
+        ums_to_create = []
+        for message_id in backfill_message_ids:
+            um = UserMessage(user_profile=user_profile, message_id=message_id)
+            if message_id in older_message_ids:
+                um.flags = UserMessage.flags.read
+            ums_to_create.append(um)
+
+        UserMessage.objects.bulk_create(ums_to_create)
 
 
 # Does the processing for a new user account:

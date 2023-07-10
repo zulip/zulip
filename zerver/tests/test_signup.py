@@ -268,10 +268,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.example_user("hamlet"), streams[0].name, "test"
         )
 
-        # Overwrite ONBOARDING_UNREAD_MESSAGES to 2
-        ONBOARDING_UNREAD_MESSAGES = 2
+        # Overwrite MAX_NUM_ONBOARDING_UNREAD_MESSAGES to 2
+        MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 2
         with patch(
-            "zerver.actions.create_user.ONBOARDING_UNREAD_MESSAGES", ONBOARDING_UNREAD_MESSAGES
+            "zerver.actions.create_user.MAX_NUM_ONBOARDING_UNREAD_MESSAGES",
+            MAX_NUM_ONBOARDING_UNREAD_MESSAGES,
         ):
             add_new_user_history(user_profile, streams)
 
@@ -291,7 +292,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             ).flags.read.is_set
         )
 
-        # Verify that the ONBOARDING_UNREAD_MESSAGES latest messages
+        # Verify that the MAX_NUM_ONBOARDING_UNREAD_MESSAGES latest messages
         # that weren't the race message are marked as unread.
         latest_messages = (
             UserMessage.objects.filter(
@@ -299,7 +300,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 message__recipient__type=Recipient.STREAM,
             )
             .exclude(message_id=race_message_id)
-            .order_by("-message_id")[0:ONBOARDING_UNREAD_MESSAGES]
+            .order_by("-message_id")[0:MAX_NUM_ONBOARDING_UNREAD_MESSAGES]
         )
         self.assert_length(latest_messages, 2)
         for msg in latest_messages:
@@ -312,7 +313,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
                 message__recipient__type=Recipient.STREAM,
             )
             .exclude(message_id=race_message_id)
-            .order_by("-message_id")[ONBOARDING_UNREAD_MESSAGES : ONBOARDING_UNREAD_MESSAGES + 1]
+            .order_by("-message_id")[
+                MAX_NUM_ONBOARDING_UNREAD_MESSAGES : MAX_NUM_ONBOARDING_UNREAD_MESSAGES + 1
+            ]
         )
         self.assertGreater(len(older_messages), 0)
         for msg in older_messages:
