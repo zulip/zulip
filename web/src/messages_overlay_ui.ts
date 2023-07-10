@@ -1,24 +1,36 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 
-export function row_with_focus(context) {
+type Context = {
+    items_container_selector: string;
+    items_list_selector: string;
+    row_item_selector: string;
+    box_item_selector: string;
+    id_attribute_name: string;
+    get_items_ids(): number[];
+    on_enter(): void;
+    on_delete(): void;
+};
+
+export function row_with_focus(context: Context): JQuery {
     const focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`)[0];
     return $(focused_item).parent(`.${CSS.escape(context.row_item_selector)}`);
 }
 
-export function activate_element(elem, context) {
+export function activate_element(elem: JQuery | HTMLElement, context: Context): void {
     $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
     $(elem).expectOne().addClass("active");
     elem.focus();
 }
 
-export function get_focused_element_id(context) {
-    return row_with_focus(context).attr(context.id_attribute_name);
+export function get_focused_element_id(context: Context): string {
+    return row_with_focus(context).attr(context.id_attribute_name)!;
 }
 
-export function focus_on_sibling_element(context) {
+export function focus_on_sibling_element(context: Context): void {
     const $next_row = row_after_focus(context);
     const $prev_row = row_before_focus(context);
-    let elem_to_be_focused_id;
+    let elem_to_be_focused_id: string | undefined;
 
     // Try to get the next item in the list and 'focus' on it.
     // Use previous item as a fallback.
@@ -28,13 +40,13 @@ export function focus_on_sibling_element(context) {
         elem_to_be_focused_id = $prev_row.attr(context.id_attribute_name);
     }
 
-    const new_focus_element = get_element_by_id(elem_to_be_focused_id, context);
+    const new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
     if (new_focus_element[0] !== undefined) {
-        activate_element(new_focus_element[0].children[0], context);
+        activate_element(new_focus_element[0].children[0] as HTMLElement, context);
     }
 }
 
-export function modals_handle_events(event_key, context) {
+export function modals_handle_events(event_key: string, context: Context): void {
     initialize_focus(event_key, context);
 
     // This detects up arrow key presses when the overlay
@@ -58,16 +70,16 @@ export function modals_handle_events(event_key, context) {
     }
 }
 
-export function set_initial_element(element_id, context) {
+export function set_initial_element(element_id: string, context: Context): void {
     if (element_id) {
         const current_element = get_element_by_id(element_id, context);
-        const focus_element = current_element[0].children[0];
+        const focus_element = current_element[0].children[0] as HTMLElement;
         activate_element(focus_element, context);
         $(`.${CSS.escape(context.items_list_selector)}`)[0].scrollTop = 0;
     }
 }
 
-function row_before_focus(context) {
+function row_before_focus(context: Context): JQuery {
     const $focused_row = row_with_focus(context);
     const $prev_row = $focused_row.prev(`.${CSS.escape(context.row_item_selector)}:visible`);
     // The draft modal can have two sub-sections. This handles the edge case
@@ -84,7 +96,7 @@ function row_before_focus(context) {
     return $prev_row;
 }
 
-function row_after_focus(context) {
+function row_after_focus(context: Context): JQuery {
     const $focused_row = row_with_focus(context);
     const $next_row = $focused_row.next(`.${CSS.escape(context.row_item_selector)}:visible`);
     // The draft modal can have two sub-sections. This handles the edge case
@@ -100,7 +112,7 @@ function row_after_focus(context) {
     return $next_row;
 }
 
-function initialize_focus(event_name, context) {
+function initialize_focus(event_name: string, context: Context): void {
     // If an item is not focused in modal, then focus the last item
     // if up_arrow is clicked or the first item if down_arrow is clicked.
     if (
@@ -118,12 +130,12 @@ function initialize_focus(event_name, context) {
 
     let element;
 
-    function get_last_element() {
-        const last_id = modal_items_ids.at(-1);
+    function get_last_element(): JQuery {
+        const last_id = modal_items_ids.at(-1) ?? "";
         return get_element_by_id(last_id, context);
     }
 
-    function get_first_element() {
+    function get_first_element(): JQuery {
         const first_id = modal_items_ids[0];
         return get_element_by_id(first_id, context);
     }
@@ -133,18 +145,20 @@ function initialize_focus(event_name, context) {
     } else if (event_name === "down_arrow") {
         element = get_first_element();
     }
-    const focus_element = element[0].children[0];
+
+    assert(element !== undefined, "Element is undefined in initialize_focus");
+    const focus_element = element[0].children[0] as HTMLElement;
     activate_element(focus_element, context);
 }
 
-function scroll_to_element($element, context) {
+function scroll_to_element($element: JQuery, context: Context): void {
     if ($element[0] === undefined) {
         return;
     }
     if ($element[0].children[0] === undefined) {
         return;
     }
-    activate_element($element[0].children[0], context);
+    activate_element($element[0].children[0] as HTMLElement, context);
 
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
     const $items_container = $(`.${CSS.escape(context.items_container_selector)}`);
@@ -157,7 +171,7 @@ function scroll_to_element($element, context) {
 
     // If focused element is last, scroll to the bottom.
     if ($box_item.last()[0].parentElement === $element[0]) {
-        $items_list[0].scrollTop = $items_list[0].scrollHeight - $items_list.height();
+        $items_list[0].scrollTop = $items_list[0].scrollHeight - ($items_list.height() ?? 0);
     }
 
     // If focused element is cut off from the top, scroll up halfway in modal.
@@ -176,6 +190,6 @@ function scroll_to_element($element, context) {
     }
 }
 
-function get_element_by_id(id, context) {
+function get_element_by_id(id: number | string, context: Context): JQuery {
     return $(`[${context.id_attribute_name}='${id}']`);
 }
