@@ -505,7 +505,7 @@ input[type="checkbox"] {
         margin-bottom: 3px;
     }
 
-    .language_selection_button {
+    .preferred_language_selection_button {
         text-decoration: none;
         color: hsl(0deg 0% 20%);
 
