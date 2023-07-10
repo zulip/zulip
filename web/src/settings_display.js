@@ -229,7 +229,7 @@ export function launch_preferred_language_setting_modal() {
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,
-        post_render: preferred_language_modal_post_render,
+        post_render: user_preferred_language_modal_post_render,
         on_click() {},
     });
 
