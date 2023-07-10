@@ -10,12 +10,10 @@ $message_box_margin: 3px;
 
    But in some locales, the time encoding is wider, (especially where
    the "PM" abbreviation is longer), so we allow the column to be
-   wider for individual messages if required, to prevent ugly
-   line-wrapping. In practice, it's unlikely we'll see anything wider
-   than 60px; so the precise value of $time_column_max_width should be
-   unimportant. */
+   wider for individual messages if required, up to `max-content`, to
+   prevent ugly line-wrapping. In practice, it's unlikely we'll see
+   anything wider than 60px. */
 $time_column_min_width: 50px; /* + padding */
-$time_column_max_width: 150px;
 
 .message_row {
     display: grid;
@@ -126,18 +124,22 @@ $time_column_max_width: 150px;
         padding-left: 10px;
         grid-template:
             25px repeat(3, auto) /
-            $avatar_column_width auto 55px fit-content($time_column_max_width);
+            $avatar_column_width auto 55px 3px minmax(
+                $time_column_min_width,
+                max-content
+            );
         /* Named grid areas provide flexibility for positioning grid items
            reliably, even if the row or column definitions of the grid change. */
         grid-template-areas:
-            "edited message   controls time"
-            ".      message   .        .   "
-            ".      more      .        .   "
-            ".      reactions .        .   ";
+            "edited message   controls . time"
+            ".      message   .        . .   "
+            ".      more      .        . .   "
+            ".      reactions .        . .   ";
 
         @media (width < $sm_min) {
-            grid-template-columns: $avatar_column_width auto max-content fit-content(
-                    $time_column_max_width
+            grid-template-columns: $avatar_column_width auto max-content 3px minmax(
+                    $time_column_min_width,
+                    max-content
                 );
         }
 
@@ -164,7 +166,6 @@ $time_column_max_width: 150px;
         .message_time {
             justify-self: end;
             padding-right: 5px;
-            min-width: $time_column_min_width;
             text-align: end;
             grid-area: time;
 
@@ -223,10 +224,10 @@ $time_column_max_width: 150px;
     &.include-sender {
         .messagebox .messagebox-content {
             grid-template-areas:
-                "avatar sender    controls time"
-                "avatar message   .        .   "
-                ".      more      .        .   "
-                ".      reactions .        .   ";
+                "avatar sender    controls . time"
+                "avatar message   .        . .   "
+                ".      more      .        . .   "
+                ".      reactions .        . .   ";
 
             .message_edit {
                 /* No top margin when there's a sender row */
@@ -235,10 +236,10 @@ $time_column_max_width: 150px;
 
             &.is-me-message {
                 grid-template-areas:
-                    "avatar sender    controls time"
-                    "avatar sender    .        .   "
-                    ".      more      .        .   "
-                    ".      reactions .        .   ";
+                    "avatar sender    controls . time"
+                    "avatar sender    .        . .   "
+                    ".      more      .        . .   "
+                    ".      reactions .        . .   ";
 
                 .message_sender {
                     /* Don't display message sender as flexbox for me-messages. */
