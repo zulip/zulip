@@ -162,7 +162,6 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 MIDDLEWARE = [
     "zerver.middleware.TagRequests",
     "zerver.middleware.SetRemoteAddrFromRealIpHeader",
-    "zerver.middleware.RequestContext",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # Important: All middleware before LogRequests should be
