@@ -159,7 +159,7 @@ export function launch_default_language_setting_modal() {
 
 function spectator_preferred_language_modal_post_render() {
     $("#preferred_language_selection_modal")
-        .find(".preferred_language")
+        .find(".language")
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -170,11 +170,11 @@ function spectator_preferred_language_modal_post_render() {
             window.location.reload();
         });
 }
-function user_preferred_language_modal_post_render() {
+function user_preferred_language_modal_post_render(callback) {
     $("#preferred_language_selection_modal")
         .find(".language")
         .on("click", (e) => {
-            console.log("Clicked")
+
             e.preventDefault();
             e.stopPropagation();
             dialog_widget.close_modal();
@@ -190,6 +190,7 @@ function user_preferred_language_modal_post_render() {
 
             change_display_setting(
                 data,
+
                 $("#settings_content").find(".general-settings-status"),
                 $t_html(
                     {
@@ -203,8 +204,12 @@ function user_preferred_language_modal_post_render() {
                 ),
                 true,
             );
+            callback(data);
         });
 }
+
+
+
 function preferred_language_modal_post_render() {
     if (page_params.is_spectator) {
         spectator_preferred_language_modal_post_render();
@@ -283,6 +288,28 @@ export function set_up(settings_panel) {
             .find(".alert-notification");
         change_display_setting(data, $status_element);
     });
+
+    $container.find(".setting_preferred_language_choice").on("click", function () {
+  user_preferred_language_modal_post_render(data => {
+      console.log(data)
+    // data contains the preferred language
+    $.channel.patch({
+      url: "/json/settings",
+      data,
+      success() {
+           console.log("Preferred language updated!");
+      },
+      error(xhr) {
+        ui_report.error(
+
+                    settings_ui.strings.failure_html,
+                    xhr,
+                    $container.find(".setting_preferred_language_choice").expectOne(),
+                );
+      }
+    });
+  });
+});
 
     $container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};

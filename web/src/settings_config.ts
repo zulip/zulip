@@ -535,7 +535,7 @@ export const display_settings_labels = {
     ),
     escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
     default_language_settings_label: $t({defaultMessage: "Language"}),
-    preferred_language_settings_label:$t({defaultMessage: "Preferred Language" })
+    preferred_language_settings_label: $t({defaultMessage: "Preferred Language" })
 };
 
 export const notification_settings_labels = {
