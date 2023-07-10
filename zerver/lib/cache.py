@@ -378,6 +378,7 @@ def generic_bulk_cached_fetch(
 
     # Only call query_function if there are some ids to fetch from the database:
     if len(needed_ids) > 0:
+        raise Exception("You should not be hitting the DB for any of the benchmarks!")
         db_objects = query_function(needed_ids)
     else:
         db_objects = []

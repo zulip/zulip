@@ -111,10 +111,6 @@ else:
 WEBPACK_BUNDLES = "webpack-bundles/"
 
 if not PUPPETEER_TESTS:
-    # Use local memory cache for backend tests.
-    CACHES["default"] = {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    }
 
     # This logger is used only for automated tests validating the
     # error-handling behavior of the zulip_admins handler.
