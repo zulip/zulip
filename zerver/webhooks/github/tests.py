@@ -145,6 +145,11 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
         self.check_webhook("issue_comment", expected_topic, expected_message)
 
+    def test_issue_comment_pull_request_comment_msg(self) -> None:
+        expected_topic = "public-repo / issue #1 Update the README with new informa..."
+        expected_message = "sbansal1999 [commented](https://github.com/sbansal1999/public-repo/pull/1#issuecomment-1631445420) on [issue #1](https://github.com/sbansal1999/public-repo/pull/1):\n\n~~~ quote\nSome comment\n~~~"
+        self.check_webhook("issue_comment__pull_request_comment", expected_topic, expected_message)
+
     def test_issue_msg(self) -> None:
         expected_message = "baxterthehacker opened [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.check_webhook("issues", TOPIC_ISSUE, expected_message)
