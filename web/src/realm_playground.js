@@ -27,7 +27,7 @@ export function get_playground_info_for_languages(lang) {
     return map_language_to_playground_info.get(lang);
 }
 
-function sort_pygments_pretty_names_by_priority(generated_pygments_data, comparator_func) {
+function sort_pygments_pretty_names_by_priority(comparator_func) {
     const priority_sorted_pygments_data = Object.keys(generated_pygments_data.langs).sort(
         comparator_func,
     );
@@ -83,7 +83,7 @@ export function get_pygments_typeahead_list_for_settings(query) {
     return language_labels;
 }
 
-export function initialize({playground_data, generated_pygments_data, pygments_comparator_func}) {
+export function initialize({playground_data, pygments_comparator_func}) {
     update_playgrounds(playground_data);
-    sort_pygments_pretty_names_by_priority(generated_pygments_data, pygments_comparator_func);
+    sort_pygments_pretty_names_by_priority(pygments_comparator_func);
 }

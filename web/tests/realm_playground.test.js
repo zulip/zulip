@@ -30,7 +30,6 @@ run_test("get_pygments_typeahead_list_for_composebox", () => {
     ];
     realm_playground.initialize({
         playground_data,
-        generated_pygments_data: pygments_data,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
 
@@ -70,7 +69,6 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     ];
     realm_playground.initialize({
         playground_data,
-        generated_pygments_data: pygments_data,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
 
