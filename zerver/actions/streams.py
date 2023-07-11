@@ -370,7 +370,7 @@ def send_stream_creation_events_for_private_streams(
             notify_user_ids = list(stream_users_ids - realm_admin_ids)
 
             if notify_user_ids:
-                send_stream_creation_event(stream, notify_user_ids)
+                send_stream_creation_event(realm, stream, notify_user_ids)
 
 
 def send_peer_subscriber_events(
@@ -853,6 +853,8 @@ def do_change_stream_permission(
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
 
+    realm = stream.realm
+
     with transaction.atomic():
         stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])
 
@@ -871,7 +873,7 @@ def do_change_stream_permission(
             )
 
             RealmAuditLog.objects.create(
-                realm=stream.realm,
+                realm=realm,
                 acting_user=acting_user,
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -887,7 +889,7 @@ def do_change_stream_permission(
 
         if old_history_public_to_subscribers_value != stream.history_public_to_subscribers:
             RealmAuditLog.objects.create(
-                realm=stream.realm,
+                realm=realm,
                 acting_user=acting_user,
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -915,7 +917,7 @@ def do_change_stream_permission(
             )
 
             RealmAuditLog.objects.create(
-                realm=stream.realm,
+                realm=realm,
                 acting_user=acting_user,
                 modified_stream=stream,
                 event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
@@ -950,7 +952,7 @@ def do_change_stream_permission(
         )
         non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
         notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
-        send_stream_creation_event(stream, list(notify_stream_creation_ids))
+        send_stream_creation_event(realm, stream, list(notify_stream_creation_ids))
 
         # Add subscribers info to the stream object. We need to send peer_add
         # events to users who were previously subscribed to the streams as
