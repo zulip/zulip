@@ -992,7 +992,13 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
     realm = context["realm"]
     exportable_user_ids = context["exportable_user_ids"]
 
-    query = UserProfile.objects.filter(realm_id=realm.id)
+    query = UserProfile.objects.filter(realm_id=realm.id).exclude(
+        # These were, in some early versions of Zulip, inserted into
+        # the first realm that was created.  In those cases, rather
+        # than include them here, we will include them in the
+        # crossrealm user list, below.
+        email__in=settings.CROSS_REALM_BOT_EMAILS,
+    )
     exclude = EXCLUDED_USER_PROFILE_FIELDS
     rows = make_raw(list(query), exclude=exclude)
 
