@@ -236,7 +236,7 @@ export function launch_preferred_language_setting_modal() {
         close_on_submit: true,
         focus_submit_on_open: true,
         single_footer_button: true,
-        post_render: user_preferred_language_modal_post_render,
+        post_render: preferred_language_modal_post_render,
         on_click() {},
     });
 
@@ -422,6 +422,7 @@ export function initialize() {
     set_default_language_name(user_language_name);
     const preferred_language_name=get_language_name(user_settings.preferred_language)
     set_preferred_language_name(preferred_language_name)
+    console.log("preferred_language_name",preferred_language_name)
 
     user_settings_panel.container = "#user-display-settings";
     user_settings_panel.settings_object = user_settings;

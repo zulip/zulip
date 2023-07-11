@@ -716,6 +716,7 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
 
                 settings_display.set_preferred_language_name(event.preferred_language_name);
+                console.log("set_preferred_language_name(event.preferred_language_name);",event.preferred_language_name)
             }
             if (
                 event.property === "default_view" && // If current hash is empty (default view), and the
@@ -785,13 +786,7 @@ export function dispatch_normal_event(event) {
                 // server; we may want to instead just trigger a page
                 // reload.
             }
-            if (event.property === "preferred_language") {
-                // TODO: Make this change the view immediately rather than
-                // requiring a reload.  This is likely fairly difficult,
-                // because various i18n strings are rendered by the
-                // server; we may want to instead just trigger a page
-                // reload.
-            }
+
             if (event.property === "emojiset") {
                 settings_display.report_emojiset_change(settings_display.user_settings_panel);
 
