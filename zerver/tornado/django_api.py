@@ -180,7 +180,7 @@ def send_event(
         for user in users:
             user_id = user if isinstance(user, int) else user["id"]
             port_user_map[get_user_id_tornado_port(realm_ports, user_id)].append(user)
-
+    print(f"queue_json_publish.....", realm.preferred_language)
     for port, port_users in port_user_map.items():
         queue_json_publish(
             notify_tornado_queue_name(port),
