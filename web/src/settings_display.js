@@ -292,7 +292,10 @@ export function set_up(settings_panel) {
 
      $container.find("preferred_language").on("change", function () {
         const data = {preferred_language: $(this).val()};
-
+        const current_preferred_language = settings_object.preferred_language;
+        if (current_preferred_language === data.preferred_language) {
+            return;
+        }
         const $spinner = $container.find(".preferred_language_selection_widget").expectOne();
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
