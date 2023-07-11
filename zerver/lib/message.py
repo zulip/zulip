@@ -52,6 +52,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
 from zerver.lib.url_preview.types import UrlEmbedData
+from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.user_topics import build_topic_mute_checker, topic_has_visibility_policy
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
@@ -62,6 +63,7 @@ from zerver.models import (
     Stream,
     SubMessage,
     Subscription,
+    UserGroup,
     UserMessage,
     UserProfile,
     UserTopic,
@@ -1632,6 +1634,21 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
+
+
+def check_user_group_mention_allowed(sender: UserProfile, user_group_ids: List[int]) -> None:
+    user_groups = UserGroup.objects.filter(id__in=user_group_ids).select_related(
+        "can_mention_group"
+    )
+
+    for group in user_groups:
+        can_mention_group = group.can_mention_group
+        if not is_user_in_group(can_mention_group, sender, direct_member_only=False):
+            raise JsonableError(
+                _(
+                    "You are not allowed to mention user group '{user_group_name}'. You must be a member of '{can_mention_group_name}' to mention this group."
+                ).format(user_group_name=group.name, can_mention_group_name=can_mention_group.name)
+            )
 
 
 def parse_message_time_limit_setting(
