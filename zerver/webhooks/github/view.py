@@ -190,13 +190,14 @@ def get_issue_comment_body(helper: Helper) -> str:
         action = f"{action} a [comment]"
     action += "({}) on".format(comment["html_url"].tame(check_string))
 
-    return get_issue_event_message(
+    return get_pull_request_event_message(
         user_name=get_sender_name(payload),
         action=action,
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
         message=comment["body"].tame(check_string),
         title=issue["title"].tame(check_string) if include_title else None,
+        type="PR" if is_pull_request_comment_event(payload) else "issue",
     )
 
 
