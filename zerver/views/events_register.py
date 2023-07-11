@@ -157,4 +157,5 @@ def events_register_backend(
         preferred_requested_language=preferred_requested_language,
         pronouns_field_type_supported=pronouns_field_type_supported,
     )
+    print(f"preferred_requested_language=preferred_requested_language",preferred_requested_language)
     return json_success(request, data=ret)
