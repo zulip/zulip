@@ -117,9 +117,9 @@ def events_register_backend(
         spectator_requested_language = request.COOKIES.get(
             settings.LANGUAGE_COOKIE_NAME, realm.default_language
         )
-        preferred_requested_language = request.COOKIES.get(
-            settings.PREFERRED_LANGUAGE_COOKIE_NAME, realm.preferred_language
-        )
+        # preferred_requested_language = request.COOKIES.get(
+        #     settings.PREFERRED_LANGUAGE_COOKIE_NAME, realm.preferred_language
+        # )
 
         all_public_streams = False
         include_streams = False
