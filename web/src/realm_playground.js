@@ -2,7 +2,6 @@ import generated_pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
 
 import {$t} from "./i18n";
-import * as typeahead_helper from "./typeahead_helper";
 
 const map_language_to_playground_info = new Map();
 const map_pygments_pretty_name_to_aliases = new Map();
@@ -28,9 +27,9 @@ export function get_playground_info_for_languages(lang) {
     return map_language_to_playground_info.get(lang);
 }
 
-export function sort_pygments_pretty_names_by_priority(generated_pygments_data) {
+function sort_pygments_pretty_names_by_priority(generated_pygments_data, comparator_func) {
     const priority_sorted_pygments_data = Object.keys(generated_pygments_data.langs).sort(
-        typeahead_helper.compare_language,
+        comparator_func,
     );
     for (const alias of priority_sorted_pygments_data) {
         const pretty_name = generated_pygments_data.langs[alias].pretty_name;
@@ -84,7 +83,7 @@ export function get_pygments_typeahead_list_for_settings(query) {
     return language_labels;
 }
 
-export function initialize(playground_data, generated_pygments_data) {
+export function initialize({playground_data, generated_pygments_data, pygments_comparator_func}) {
     update_playgrounds(playground_data);
-    sort_pygments_pretty_names_by_priority(generated_pygments_data);
+    sort_pygments_pretty_names_by_priority(generated_pygments_data, pygments_comparator_func);
 }

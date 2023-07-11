@@ -9,6 +9,7 @@ const pygments_data = zrequire("../generated/pygments_data.json");
 
 const {$t} = zrequire("i18n");
 const realm_playground = zrequire("realm_playground");
+const typeahead_helper = zrequire("typeahead_helper");
 
 run_test("get_pygments_typeahead_list_for_composebox", () => {
     // When no Code Playground is configured, the list of candidates should
@@ -27,7 +28,11 @@ run_test("get_pygments_typeahead_list_for_composebox", () => {
             url_prefix: "https://example.com/?q=",
         },
     ];
-    realm_playground.initialize(playground_data, pygments_data);
+    realm_playground.initialize({
+        playground_data,
+        generated_pygments_data: pygments_data,
+        pygments_comparator_func: typeahead_helper.compare_language,
+    });
 
     // Verify that Code Playground's pygments_language shows up in the result.
     // As well as all of pygments_data. Order doesn't matter and the result
@@ -63,7 +68,11 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
             url_prefix: "https://example.com/?q=",
         },
     ];
-    realm_playground.initialize(playground_data, pygments_data);
+    realm_playground.initialize({
+        playground_data,
+        generated_pygments_data: pygments_data,
+        pygments_comparator_func: typeahead_helper.compare_language,
+    });
 
     let candidates = realm_playground.get_pygments_typeahead_list_for_settings("");
     let iterator = candidates.entries();
