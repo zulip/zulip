@@ -117,7 +117,7 @@ function parse_with_options({raw_content, helper_config, options}) {
                     classes = "user-mention silent";
                     display_text = mention;
                 } else {
-                    // Wildcard mention
+                    // Stream Wildcard mention
                     mentioned_wildcard = true;
                     display_text = "@" + mention;
                     classes = "user-mention";

@@ -50,6 +50,7 @@ from zerver.lib.mention import (
     get_possible_mentions_info,
     possible_mentions,
     possible_user_group_mentions,
+    stream_wildcards,
 )
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
@@ -1966,12 +1967,11 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
-    def test_silent_wildcard_mention(self) -> None:
+    def test_silent_stream_wildcard_mention(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
-        wildcards = ["all", "everyone", "stream"]
-        for wildcard in wildcards:
+        for wildcard in stream_wildcards:
             content = f"@_**{wildcard}**"
             rendering_result = render_markdown(msg, content)
             self.assertEqual(
@@ -2132,7 +2132,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.rendered_content, expected)
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
-    def test_wildcard_mention_in_quotes(self) -> None:
+    def test_stream_wildcard_mention_in_quotes(self) -> None:
         user_profile = self.example_user("othello")
         message = Message(sender=user_profile, sending_client=get_client("test"))
 
@@ -2146,8 +2146,7 @@ class MarkdownTest(ZulipTestCase):
             self.assertEqual(rendering_result.rendered_content, expected)
             self.assertFalse(rendering_result.mentions_stream_wildcard)
 
-        wildcards = ["all", "everyone", "stream"]
-        for wildcard in wildcards:
+        for wildcard in stream_wildcards:
             assert_silent_mention(f"> @**{wildcard}**", wildcard)
             assert_silent_mention(f"> @_**{wildcard}**", wildcard)
             assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
