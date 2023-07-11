@@ -183,10 +183,7 @@ function user_preferred_language_modal_post_render() {
             const $link = $(e.target).closest("a[data-code]");
             const setting_value = $link.attr("data-code");
             const data = {preferred_language: setting_value};
-            const current_preferred_language = settings_object.preferred_language;
-        if (current_preferred_language === data.preferred_language) {
-            return;
-        }
+           
             const new_preferred_language = $link.attr("data-name");
             $(
                 "#user-display-settings .preferred_language_selection_widget .preferred_language_selection_button span",
