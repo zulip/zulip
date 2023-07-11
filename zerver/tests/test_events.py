@@ -3044,6 +3044,44 @@ class UserDisplayActionTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "delivery_email")
         self.assertEqual(events[0]["person"]["delivery_email"], cordelia.delivery_email)
 
+    def test_stream_creation_events(self) -> None:
+        action = lambda: self.subscribe(self.example_user("hamlet"), "Test stream")
+        events = self.verify_action(action, num_events=2)
+        check_stream_create("events[0]", events[0])
+        check_subscription_add("events[1]", events[1])
+
+        # Check that guest user does not receive stream creation itself of public
+        # stream.
+        self.user_profile = self.example_user("polonius")
+        action = lambda: self.subscribe(self.example_user("hamlet"), "Test stream 2")
+        events = self.verify_action(action, num_events=0, state_change_expected=False)
+
+        self.user_profile = self.example_user("hamlet")
+        action = lambda: self.subscribe(
+            self.example_user("hamlet"), "Private test stream", invite_only=True
+        )
+        events = self.verify_action(action, num_events=2)
+        check_stream_create("events[0]", events[0])
+        check_subscription_add("events[1]", events[1])
+
+        # A non-admin user who is not subscribed to the private stream does not
+        # receive stream creation event.
+        self.user_profile = self.example_user("othello")
+        action = lambda: self.subscribe(
+            self.example_user("hamlet"), "Private test stream 2", invite_only=True
+        )
+        events = self.verify_action(action, num_events=0, state_change_expected=False)
+
+        # An admin user who is not subscribed to the private stream also
+        # receives stream creation event.
+        action = lambda: self.subscribe(
+            self.example_user("hamlet"), "Private test stream 3", invite_only=True
+        )
+        self.user_profile = self.example_user("iago")
+        events = self.verify_action(action, num_events=2)
+        check_stream_create("events[0]", events[0])
+        check_subscription_peer_add("events[1]", events[1])
+
 
 class SubscribeActionTest(BaseAction):
     def test_subscribe_events(self) -> None:

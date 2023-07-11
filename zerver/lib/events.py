@@ -997,22 +997,22 @@ def apply_event(
     elif event["type"] == "stream":
         if event["op"] == "create":
             for stream in event["streams"]:
-                if not stream["invite_only"]:
-                    stream_data = copy.deepcopy(stream)
-                    if include_subscribers:
-                        stream_data["subscribers"] = []
+                stream_data = copy.deepcopy(stream)
+                if include_subscribers:
+                    stream_data["subscribers"] = []
 
-                    # We know the stream has no traffic, and this
-                    # field is not present in the event.
-                    #
-                    # TODO: Probably this should just be added to the event.
-                    stream_data["stream_weekly_traffic"] = None
+                # We know the stream has no traffic, and this
+                # field is not present in the event.
+                #
+                # TODO: Probably this should just be added to the event.
+                stream_data["stream_weekly_traffic"] = None
 
-                    # Add stream to never_subscribed (if not invite_only)
-                    state["never_subscribed"].append(stream_data)
+                # Add stream to never_subscribed (if not invite_only)
+                state["never_subscribed"].append(stream_data)
                 if "streams" in state:
                     state["streams"].append(stream)
 
+            state["never_subscribed"].sort(key=lambda elt: elt["name"])
             if "streams" in state:
                 state["streams"].sort(key=lambda elt: elt["name"])
 
