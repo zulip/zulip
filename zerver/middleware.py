@@ -456,26 +456,26 @@ def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
 
 
 # Code for adding translation feature setting user_preferred_language to browser's default language
-class SetUserPreferredLanguageMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        # Retrieve browser default language
-        preferred_language = get_language_from_request(request)
-        # Print the preferred language to the console
-        print(f"Preferred Language: {preferred_language}")
-
-        # Update user_preferred_language for authenticated users only
-        if request.user.is_authenticated and preferred_language:
-            request.user.preferred_language = preferred_language.strip()
-            request.user.save()
-            # Print the preferred language to the console
-            print(f" User's Preferred Language: { request.user.preferred_language}")
-
-        response = self.get_response(request)
-
-        return response
+# class SetUserPreferredLanguageMiddleware:
+#     def __init__(self, get_response):
+#         self.get_response = get_response
+#
+#     def __call__(self, request):
+#         # Retrieve browser default language
+#         preferred_language = get_language_from_request(request)
+#         # Print the preferred language to the console
+#         print(f"Preferred Language: {preferred_language}")
+#
+#         # Update user_preferred_language for authenticated users only
+#         if request.user.is_authenticated and preferred_language:
+#             request.user.preferred_language = preferred_language.strip()
+#             request.user.save()
+#             # Print the preferred language to the console
+#             print(f" User's Preferred Language: { request.user.preferred_language}")
+#
+#         response = self.get_response(request)
+#
+#         return response
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):

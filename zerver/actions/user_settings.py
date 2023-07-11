@@ -483,6 +483,7 @@ def do_change_user_setting(
             print(f"Language Name  get_language_name(setting_value)", get_language_name(setting_value))
             print(f"Language Name get from Realm", user_profile.realm.preferred_language)
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
+        print(f"Language Name get from Realm in db", user_profile.preferred_language)
 
     # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
