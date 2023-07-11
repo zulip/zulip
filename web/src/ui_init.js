@@ -108,6 +108,7 @@ import * as top_left_corner from "./top_left_corner";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
+import * as typeahead_helper from "./typeahead_helper";
 import * as typing from "./typing";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -712,7 +713,11 @@ export function initialize_everything() {
     message_scroll.initialize();
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(page_params.realm_linkifiers);
-    realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
+    realm_playground.initialize({
+        playground_data: page_params.realm_playgrounds,
+        generated_pygments_data,
+        pygments_comparator_func: typeahead_helper.compare_language,
+    });
     compose.initialize();
     // Typeahead must be initialized after compose.initialize()
     composebox_typeahead.initialize({
