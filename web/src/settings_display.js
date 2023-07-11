@@ -170,7 +170,7 @@ function spectator_preferred_language_modal_post_render() {
             window.location.reload();
         });
 }
-function user_preferred_language_modal_post_render(callback) {
+function user_preferred_language_modal_post_render() {
     $("#preferred_language_selection_modal")
         .find(".language")
         .on("click", (e) => {
@@ -204,7 +204,7 @@ function user_preferred_language_modal_post_render(callback) {
                 ),
                 true,
             );
-            callback(data);
+
         });
 }
 
@@ -289,28 +289,26 @@ export function set_up(settings_panel) {
         change_display_setting(data, $status_element);
     });
 
-    $container.find(".setting_preferred_language_choice").on("click", function () {
-  user_preferred_language_modal_post_render(data => {
-      console.log(data)
-    // data contains the preferred language
-    $.channel.patch({
-      url: "/json/settings",
-      data,
-      success() {
-           console.log("Preferred language updated!");
-      },
-      error(xhr) {
-        ui_report.error(
 
+     $container.find("preferred_language_selection_widget").on("change", function () {
+        const data = {preferred_language: $(this).val()};
+
+        const $spinner = $container.find(".preferred_language_selection_widget").expectOne();
+        loading.make_indicator($spinner, {text: settings_ui.strings.saving});
+
+        channel.patch({
+            url: "/json/settings",
+            data,
+            success() {},
+            error(xhr) {
+                ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $container.find(".setting_preferred_language_choice").expectOne(),
+                    $container.find(".preferred_language_selection_widget").expectOne(),
                 );
-      }
+            },
+        });
     });
-  });
-});
-
     $container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
         const current_emojiset = settings_object.emojiset;
