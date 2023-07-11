@@ -666,6 +666,15 @@ def is_merge_queue_push_event(payload: WildValue) -> bool:
     return payload["ref"].tame(check_string).startswith("refs/heads/gh-readonly-queue/")
 
 
+def is_pull_request_comment_event(payload: WildValue) -> bool:
+    # When a comment is made on a PR, the event still has the header
+    # "issue_comment", but the payload has a "pull_request" key.
+    # This is just a workaround to get the correct topic.
+    if "pull_request" in payload["issue"]:
+        return True
+    return False
+
+
 def get_topic_based_on_type(payload: WildValue, event: str) -> str:
     if "pull_request" in event:
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
@@ -675,9 +684,10 @@ def get_topic_based_on_type(payload: WildValue, event: str) -> str:
             title=payload["pull_request"]["title"].tame(check_string),
         )
     elif event.startswith("issue"):
+        type_for_topic = "PR" if is_pull_request_comment_event(payload) else "issue"
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
-            type="issue",
+            type=type_for_topic,
             id=payload["issue"]["number"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
         )
