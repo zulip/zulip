@@ -294,13 +294,13 @@ export function set_up(settings_panel) {
     });
 
 
-     $container.find("preferred_language_name").on("click", function () {
+     $container.find("preferred_language").on("click", function () {
         const data = {preferred_language: $(this).val()};
         const current_preferred_language = settings_object.preferred_language;
         if (current_preferred_language === data.preferred_language) {
             return;
         }
-        const $spinner = $container.find(".preferred_language_name").expectOne();
+        const $spinner = $container.find(".preferred_language_selection_widget").expectOne();
         loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
@@ -311,7 +311,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    $container.find(".preferred_language_name").expectOne(),
+                    $container.find(".preferred_language_selection_widget").expectOne(),
                 );
             },
         });
