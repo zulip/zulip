@@ -481,7 +481,7 @@ def do_change_user_setting(
             assert isinstance(setting_value, str)
             legacy_event["language_name"] = get_language_name(setting_value)
             print(f"Language Name  get_language_name(setting_value)", get_language_name(setting_value))
-
+            print(f"Language Name get from Realm", user_profile.realm.preferred_language)
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     # Updates to the time zone display setting are sent to all users
