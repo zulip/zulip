@@ -88,12 +88,15 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     context = {"realm_name": user_profile.realm.name, "new_email": new_email}
     language = user_profile.default_language
+    preferred_language = user_profile.preferred_language
+    print("f  preferred_language = user_profile.preferred_language",preferred_language)
     send_email(
         "zerver/emails/notify_change_in_email",
         to_emails=[old_email],
         from_name=FromAddress.security_email_from_name(user_profile=user_profile),
         from_address=FromAddress.SUPPORT,
         language=language,
+        preferred_language=preferred_language,
         context=context,
         realm=user_profile.realm,
     )
@@ -118,12 +121,15 @@ def check_settings_values(
     notification_sound: Optional[str],
     email_notifications_batching_period_seconds: Optional[int],
     default_language: Optional[str] = None,
+    preferred_language: Optional[str] = None,
 ) -> None:
     # We can't use REQ for this widget because
     # get_available_language_codes requires provisioning to be
     # complete.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid default_language"))
+    if preferred_language is not None and preferred_language not in get_available_language_codes():
+        raise JsonableError(_("Invalid preferred_language"))
 
     if (
         notification_sound is not None
@@ -168,6 +174,7 @@ def json_change_settings(
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
     display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_language: Optional[str] = REQ(default=None),
+    preferred_language: Optional[str] = REQ(default=None),
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),
@@ -256,6 +263,15 @@ def json_change_settings(
         check_settings_values(
             notification_sound, email_notifications_batching_period_seconds, default_language
         )
+    if (
+       preferred_language is not None
+        or notification_sound is not None
+        or email_notifications_batching_period_seconds is not None
+    ):
+        check_settings_values(
+            notification_sound, email_notifications_batching_period_seconds, preferred_language
+        )
+
 
     if new_password is not None:
         return_data: Dict[str, Any] = {}
