@@ -355,7 +355,7 @@ def get_users_for_soft_deactivation(
     return users_to_deactivate
 
 
-def do_soft_activate_users(users: Iterable[UserProfile]) -> List[UserProfile]:
+def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     users_soft_activated = []
     for user_profile in users:
         user_activated = reactivate_user_if_soft_deactivated(user_profile)
