@@ -178,12 +178,12 @@ def build_page_params_for_home_page_load(
             default_language,
             translation.get_language_from_path(request.path_info),
         )
-        request_preferred_language = get_and_set_request_language(
-            request,
-            preferred_language,
-            translation.get_language_from_path(request.path_info),
-        )
-        print(f"request_preferred_language",request_preferred_language)
+        # request_preferred_language = get_and_set_request_language(
+        #     request,
+        #     preferred_language,
+        #     translation.get_language_from_path(request.path_info),
+        # )
+        # print(f"request_preferred_language",request_preferred_language)
 
     furthest_read_time = get_furthest_read_time(user_profile)
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
@@ -254,8 +254,8 @@ def build_page_params_for_home_page_load(
         page_params["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
-    page_params["translation_data_preferred_language"] = get_language_translation_data(
-        request_preferred_language)
+    #page_params["translation_data_preferred_language"] = get_language_translation_data(
+     #   request_preferred_language)
 
     if user_profile is None:
         # Get rendered version of realm description which is displayed in right
