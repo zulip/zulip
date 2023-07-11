@@ -183,6 +183,7 @@ def build_page_params_for_home_page_load(
             preferred_language,
             translation.get_language_from_path(request.path_info),
         )
+        print(f"request_preferred_language",request_preferred_language)
 
     furthest_read_time = get_furthest_read_time(user_profile)
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
