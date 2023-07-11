@@ -57,7 +57,11 @@ if settings.BILLING_ENABLED:
 MAX_NUM_ONBOARDING_MESSAGES = 1000
 MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
 
-ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
+# We don't want to mark years-old messages as unread, since that might
+# feel like Zulip is buggy, but in low-traffic or bursty-traffic
+# organizations, it's reasonable for the most recent 20 messages to be
+# several weeks old and still be a good place to start.
+ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=12)
 
 DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 
@@ -176,9 +180,9 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
     recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
 
     # Start by finding recent messages matching those recipients.
-    one_week_ago = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
+    one_month_ago = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
     recent_message_ids = set(
-        Message.objects.filter(recipient_id__in=recipient_ids, date_sent__gt=one_week_ago)
+        Message.objects.filter(recipient_id__in=recipient_ids, date_sent__gt=one_month_ago)
         .order_by("-id")
         .values_list("id", flat=True)[0:MAX_NUM_ONBOARDING_MESSAGES]
     )
