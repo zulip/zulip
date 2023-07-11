@@ -572,7 +572,9 @@ input.recipient_box {
 }
 
 #compose-send-button {
-    padding: 3px 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
     margin-bottom: 0;
     font-weight: 600;
     font-size: 0.9em;
@@ -580,8 +582,6 @@ input.recipient_box {
 
     .loader {
         display: none;
-        position: relative;
-        top: -6px;
     }
 }
 
@@ -756,9 +756,6 @@ input.recipient_box {
 
 .compose_right_float_container {
     display: flex;
-    flex-direction: row;
-    white-space: nowrap;
-    margin-top: 2px;
     height: 24px;
 
     &.disabled-compose-send-button-container {
@@ -874,11 +871,8 @@ input.recipient_box {
 #send_later {
     display: flex;
     align-items: center;
-    float: right;
-    color: hsl(0deg 0% 100%);
     border-radius: 0 4px 4px 0;
     padding: 0;
-    margin: 0;
 
     .zulip-icon {
         padding: 5px 9px;
