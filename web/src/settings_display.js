@@ -159,7 +159,7 @@ export function launch_default_language_setting_modal() {
 
 function spectator_preferred_language_modal_post_render() {
     $("#preferred_language_selection_modal")
-        .find(".language")
+        .find(".preferred_language")
         .on("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -172,7 +172,7 @@ function spectator_preferred_language_modal_post_render() {
 }
 function user_preferred_language_modal_post_render() {
     $("#preferred_language_selection_modal")
-        .find(".language")
+        .find(".preferred_language")
         .on("click", (e) => {
 
             e.preventDefault();
@@ -290,7 +290,7 @@ export function set_up(settings_panel) {
     });
 
 
-     $container.find("preferred_language_selection_widget").on("change", function () {
+     $container.find("preferred_language").on("change", function () {
         const data = {preferred_language: $(this).val()};
 
         const $spinner = $container.find(".preferred_language_selection_widget").expectOne();
