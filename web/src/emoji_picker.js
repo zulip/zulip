@@ -620,9 +620,6 @@ function register_popover_events($popover) {
 }
 
 export function build_emoji_popover($elt, id) {
-    const template_args = {
-        class: "emoji-info-popover",
-    };
     let placement = popovers.compute_placement($elt, APPROX_HEIGHT, APPROX_WIDTH, true);
 
     if (placement === "viewport_center") {
@@ -632,7 +629,7 @@ export function build_emoji_popover($elt, id) {
         placement = "left";
     }
 
-    let template = render_emoji_popover(template_args);
+    let template = render_emoji_popover();
 
     // if the window is mobile sized, add the `.popover-flex` wrapper to the emoji
     // popover so that it will be wrapped in flex and centered in the screen.
