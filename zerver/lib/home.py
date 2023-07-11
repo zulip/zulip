@@ -157,7 +157,7 @@ def build_page_params_for_home_page_load(
             include_streams=False,
         )
         default_language = register_ret["user_settings"]["default_language"]
-        preferred_language = register_ret["user_settings"]["preferred_language"]
+        #preferred_language = register_ret["user_settings"]["preferred_language"]
     else:
         # The spectator client will be fetching the /register response
         # for spectators via the API. But we still need to set the
@@ -166,7 +166,7 @@ def build_page_params_for_home_page_load(
             "queue_id": None,
         }
         default_language = realm.default_language
-        preferred_language = realm.preferred_language
+       # preferred_language = realm.preferred_language
 
     if user_profile is None:
         request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language),
