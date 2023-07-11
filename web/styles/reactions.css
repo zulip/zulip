@@ -155,7 +155,6 @@
     }
 
     .emoji-popover {
-        display: block;
         width: 250px;
 
         .reacted {
