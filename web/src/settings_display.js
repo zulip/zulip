@@ -29,10 +29,12 @@ export let user_preferred_language_name;
 
 export function set_default_language_name(name) {
     user_default_language_name = name;
+
 }
 
 export function set_preferred_language_name(preferred_language_name) {
     user_preferred_language_name = preferred_language_name;
+     console.log("user_preferred_language_name",user_preferred_language_name)
 }
 
 function change_display_setting(data, $status_el, success_msg_html, sticky) {
@@ -50,6 +52,7 @@ function change_display_setting(data, $status_el, success_msg_html, sticky) {
         $status_el.data("sticky_msg_html", success_msg_html);
     }
     settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
+    console.log("do_settings_change",data)
 }
 
 function spectator_default_language_modal_post_render() {
@@ -196,7 +199,7 @@ function user_preferred_language_modal_post_render() {
                 $t_html(
                     {
                         defaultMessage:
-                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                            "Saved. ",
                     },
                     {
                         "z-link": (content_html) =>
