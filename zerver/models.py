@@ -7,7 +7,6 @@ from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
     TYPE_CHECKING,
-    AbstractSet,
     Any,
     Callable,
     Dict,
@@ -15,7 +14,6 @@ from typing import (
     List,
     Optional,
     Pattern,
-    Sequence,
     Set,
     Tuple,
     TypedDict,
@@ -63,7 +61,6 @@ from zerver.lib.cache import (
     bot_dict_fields,
     bot_dicts_in_realm_cache_key,
     bot_profile_cache_key,
-    bulk_cached_fetch,
     cache_delete,
     cache_set,
     cache_with_key,
@@ -119,8 +116,6 @@ MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 SECONDS_PER_DAY = 86400
-
-STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 
 if TYPE_CHECKING:
     # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
@@ -2884,8 +2879,8 @@ def get_stream_by_id_in_realm(stream_id: int, realm: Realm) -> Stream:
     return Stream.objects.select_related().get(id=stream_id, realm=realm)
 
 
-def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]:
-    def fetch_streams_by_name(stream_names: List[str]) -> QuerySet[Stream]:
+def bulk_get_streams(realm: Realm, stream_names: Set[str]) -> Dict[str, Any]:
+    def fetch_streams_by_name(stream_names: Set[str]) -> QuerySet[Stream]:
         #
         # This should be just
         #
@@ -2897,24 +2892,12 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         where_clause = (
             "upper(zerver_stream.name::text) IN (SELECT upper(name) FROM unnest(%s) AS name)"
         )
-        return (
-            get_active_streams(realm)
-            .select_related()
-            .extra(where=[where_clause], params=(list(stream_names),))
-        )
+        return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))
 
-    def stream_name_to_cache_key(stream_name: str) -> str:
-        return get_stream_cache_key(stream_name, realm.id)
-
-    def stream_to_lower_name(stream: Stream) -> str:
-        return stream.name.lower()
-
-    return bulk_cached_fetch(
-        stream_name_to_cache_key,
-        fetch_streams_by_name,
-        [stream_name.lower() for stream_name in stream_names],
-        id_fetcher=stream_to_lower_name,
-    )
+    if not stream_names:
+        return {}
+    streams = list(fetch_streams_by_name(stream_names))
+    return {stream.name.lower(): stream for stream in streams}
 
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
