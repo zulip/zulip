@@ -406,19 +406,19 @@ test("marked", () => {
                 '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
-            input: "Wildcard mention: @**all**\nWildcard silent mention: @_**all**",
+            input: "Stream Wildcard mention: @**all**\nStream Wildcard silent mention: @_**all**",
             expected:
-                '<p>Wildcard mention: <span class="user-mention" data-user-id="*">@all</span><br>\nWildcard silent mention: <span class="user-mention silent" data-user-id="*">all</span></p>',
+                '<p>Stream Wildcard mention: <span class="user-mention" data-user-id="*">@all</span><br>\nStream Wildcard silent mention: <span class="user-mention silent" data-user-id="*">all</span></p>',
         },
         {
-            input: "> Wildcard mention in quote: @**all**\n\n> Another wildcard mention in quote: @_**all**",
+            input: "> Stream Wildcard mention in quote: @**all**\n\n> Another stream wildcard mention in quote: @_**all**",
             expected:
-                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
         },
         {
-            input: "```quote\nWildcard mention in quote: @**all**\n```\n\n```quote\nAnother wildcard mention in quote: @_**all**\n```",
+            input: "```quote\nStream Wildcard mention in quote: @**all**\n```\n\n```quote\nAnother stream wildcard mention in quote: @_**all**\n```",
             expected:
-                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+                '<blockquote>\n<p>Stream Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another stream wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
         },
         {
             input: "User group mention: @*backend*\nUser group silent mention: @_*hamletcharacters*",
