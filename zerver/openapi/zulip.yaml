@@ -1168,6 +1168,11 @@ paths:
                                 the new stream exists (for private streams, only subscribers and
                                 organization administrators will receive this event).
 
+                                This event is also sent when a user gains access to a stream they
+                                previously [could not access](/help/stream-permissions), such as
+                                when a private stream is made public, or when a user is subscribed
+                                to a private stream.
+
                                 Note that organization administrators who are not subscribed will
                                 not be able to see content on the stream; just that it exists.
                               properties:
