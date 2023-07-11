@@ -183,7 +183,7 @@ function user_preferred_language_modal_post_render() {
             const $link = $(e.target).closest("a[data-code]");
             const setting_value = $link.attr("data-code");
             const data = {preferred_language: setting_value};
-           
+
             const new_preferred_language = $link.attr("data-name");
             $(
                 "#user-display-settings .preferred_language_selection_widget .preferred_language_selection_button span",
@@ -291,28 +291,7 @@ export function set_up(settings_panel) {
     });
 
 
-     $container.find(".preferred_language").on("click", function () {
-        const data = {preferred_language: $(this).val()};
-        const current_preferred_language = settings_object.preferred_language;
-        if (current_preferred_language === data.preferred_language) {
-            return;
-        }
-        const $spinner = $container.find(".preferred_language_selection_widget").expectOne();
-        loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
-        channel.patch({
-            url: "/json/settings",
-            data,
-            success() {},
-            error(xhr) {
-                ui_report.error(
-                    settings_ui.strings.failure_html,
-                    xhr,
-                    $container.find(".preferred_language_selection_widget").expectOne(),
-                );
-            },
-        });
-    });
     $container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
         const current_emojiset = settings_object.emojiset;
@@ -416,7 +395,7 @@ export function update_page(property) {
         return;
     }
      if (property === "preferred_language") {
-        $container.find(".preferred_language_name").text(user_preferred_language_name);
+        $container.find(".preferred_language").text(user_preferred_language_name);
         return;
     }
 
