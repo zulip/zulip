@@ -5,6 +5,7 @@ from django.conf import settings
 
 from zerver.apps import flush_cache
 from zerver.lib.cache import (
+    MAX_NUM_ROWS_FOR_CACHE_LOOKUP,
     MEMCACHED_MAX_KEY_LENGTH,
     InvalidCacheKeyError,
     bulk_cached_fetch,
@@ -15,11 +16,13 @@ from zerver.lib.cache import (
     cache_set,
     cache_set_many,
     cache_with_key,
+    generic_bulk_cached_fetch,
     safe_cache_get_many,
     safe_cache_set_many,
     user_profile_by_id_cache_key,
     validate_cache_key,
 )
+from zerver.lib.create_user import create_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile, get_realm, get_system_bot, get_user, get_user_profile_by_id
 
@@ -243,6 +246,78 @@ def get_user_email(user: UserProfile) -> str:
 
 
 class GenericBulkCachedFetchTest(ZulipTestCase):
+    def test_max_num_rows_to_database(self) -> None:
+        realm = get_realm("zulip")
+
+        def cache_key_function(user_id: int) -> str:
+            return f"test_user_key{user_id}"
+
+        def id_fetcher(user: UserProfile) -> int:
+            return user.id
+
+        def cache_transformer(user: UserProfile) -> str:
+            return user.email
+
+        extractor = lambda obj: obj
+        setter = lambda obj: obj
+
+        def get_user_dict(object_ids: List[int]) -> Dict[int, str]:
+            def query_function(user_ids: List[int]) -> List[UserProfile]:
+                # If we get called, we are assuming in this test that
+                # we either skipped the cache entirely or the cache
+                # was cold.
+                self.assertEqual(user_ids, object_ids)
+                return list(UserProfile.objects.filter(id__in=user_ids).only("id", "email"))
+
+            return generic_bulk_cached_fetch(
+                cache_key_function=cache_key_function,
+                query_function=query_function,
+                object_ids=object_ids,
+                extractor=extractor,
+                setter=setter,
+                cache_transformer=cache_transformer,
+                id_fetcher=id_fetcher,
+            )
+
+        new_users = [
+            create_user(
+                email=f"user{i}@zulip.com",
+                password=None,
+                realm=realm,
+                full_name="full_name",
+            )
+            for i in range(MAX_NUM_ROWS_FOR_CACHE_LOOKUP + 1)
+        ]
+
+        new_user_emails = {user.id: user.email for user in new_users}
+
+        big_user_id_list = [user.id for user in new_users]
+        small_user_id_list = big_user_id_list[: MAX_NUM_ROWS_FOR_CACHE_LOOKUP - 1]
+
+        expected_big_result = new_user_emails
+        expected_small_result = {
+            user_id: new_user_emails[user_id] for user_id in small_user_id_list
+        }
+
+        # Test small queries first
+        with self.assert_database_query_count(1):
+            result = get_user_dict(small_user_id_list)
+        self.assertEqual(result, expected_small_result)
+
+        with self.assert_database_query_count(0, keep_cache_warm=True):
+            result = get_user_dict(small_user_id_list)
+        self.assertEqual(result, expected_small_result)
+
+        # Now test big queries
+        with self.assert_database_query_count(1):
+            result = get_user_dict(big_user_id_list)
+        self.assertEqual(result, expected_big_result)
+
+        # We still hit the database even though the cache is warm.
+        with self.assert_database_query_count(1, keep_cache_warm=True):
+            result = get_user_dict(big_user_id_list)
+        self.assertEqual(result, expected_big_result)
+
     def test_query_function_called_only_if_needed(self) -> None:
         hamlet = self.example_user("hamlet")
         # Get the user cached:

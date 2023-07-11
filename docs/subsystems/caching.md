@@ -222,15 +222,80 @@ keys in) `memcached` when provisioning and when starting `run-dev`.
 You can run the server with that behavior disabled using
 `tools/run-dev --no-clear-memcached`.
 
-### Performance
+### Bulk fetching
 
-One thing be careful about with memcached queries is to avoid doing
-them in loops (the same applies for database queries!). Instead, one
-should use a bulk query. We have a fancy function,
-`generate_bulk_cached_fetch`, which is super magical and handles this
-for us, with support for a bunch of fancy features like marshalling
-data before/after going into the cache (e.g. to compress `message`
-objects to minimize data transfer between Django and memcached).
+There is a fixed round trip cost for both accessing the database
+(generally expensive) and accessing memcached (generally cheap but not
+completely negligible).
+
+As such, you always want to avoid fetching individual data items
+within loops. Instead, you want to strive to send a single bulk query
+to the database or make a single round trip to memcached using the
+`get_many` helper from Django's caching backends.
+
+Zulip has a generic helper called `generic_bulk_cached_fetch` that
+helps programmers with bulk fetches. Before getting into the details
+of that function, it is helpful to understand some of the performance
+considerations.
+
+If you have more than 30 keys or so, then you almost certainly want to
+go directly to the database. While each database query has a high
+fixed cost, its marginal costs per row are generally quite small on
+any reasonable query. The cutoff point of 30 keys was determined by
+benchmarking a fairly typical Zulip query. Of course, that number may
+vary from machine to machine or use case to use case. As of 2023 we
+don't completely understand why postgres outperforms `get_many` at
+scale. We can always make future measurements to re-visit the 30
+number if we discover how to improve our bulk caching code (which
+currently mostly delegates to Django).
+
+A reasonable hypothesis is that postgres is just extremely
+well-tuned for fetching large amounts of data. The 2023 measurements
+showed about a 20-microsecond marginal cost per Stream row for large
+database fetches (1000+ rows) on a typical developer machine.
+
+You also want to consider that in order for cache lookups to actually
+save you time on any particular bulk fetch, you generally need to get
+successful cache hits for every single key, because otherwise you
+still incur the large fixed cost of hitting the database. The fixed
+cost is generally on the order of a couple milliseconds, so it's not
+the end of the world if you can't completely resolve a bulk request
+from the cache. Even if you get a cache miss on some keys, then
+subsequent cache lookups for the same set of keys will succeed, and it
+is certainly plausible for that to happen for things like message
+fetching.
+
+Also, you will sometimes get synergy from bulk requests populating a
+cache with key/value pairs that help future single-key requests.
+
+Last but not least, you want to consider that while using memcached
+does in some sense relieve pressure from the database, it is in fact
+competing for CPU and memory to a certain degree as well.
+
+We want to avoid programmers having to micro-manage these
+considerations for every type of bulk request, and that brings us back
+to the `generic_bulk_cached_fetch` helper, which orchestrates bulk
+fetches for database queries that we augment with caching. Despite its
+highly generic nature, the code for the function is fairly easy to
+read due to its straightforward methodology:
+
+    * short-circuit if zero keys are passed in to it
+    * if lots of keys need to be looked up, then immediately go to the
+      database and return results to the caller
+    * try to fetch as many values as we can from the cache
+    * fetch the remaining values from the database
+    * update the cache appropriately
+    * marry the results together in a dictionary
+
+The above sketch omits a few details related to how we marshall data
+to and from the cache and post-process query results, but the code has
+basically been in place for a decade, and it's reliable.
+
+The only tuning parameter for the function is a constant that we call
+`MAX_NUM_ROWS_FOR_CACHE_LOOKUP`.
+
+We currently set `MAX_NUM_ROWS_FOR_CACHE_LOOKUP` to 20 rows, and that
+is based on the above considerations.
 
 ## In-process caching in Django
 

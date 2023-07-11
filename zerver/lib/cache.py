@@ -35,6 +35,10 @@ if TYPE_CHECKING:
     # they cannot be imported at runtime due to cyclic dependency.
     from zerver.models import Attachment, Message, MutedUser, Realm, Stream, SubMessage, UserProfile
 
+# See `docs/subsystems/caching.md` for more info on this parameter.
+# Please read the documentation very carefully before modifying this.
+MAX_NUM_ROWS_FOR_CACHE_LOOKUP = 20
+
 MEMCACHED_MAX_KEY_LENGTH = 250
 
 ParamT = ParamSpec("ParamT")
@@ -358,6 +362,9 @@ def generic_bulk_cached_fetch(
     if len(object_ids) == 0:
         # Nothing to fetch.
         return {}
+
+    if len(object_ids) > MAX_NUM_ROWS_FOR_CACHE_LOOKUP:
+        return {id_fetcher(row): cache_transformer(row) for row in query_function(list(object_ids))}
 
     cache_keys: Dict[ObjKT, str] = {}
     for object_id in object_ids:
