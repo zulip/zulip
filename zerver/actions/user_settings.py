@@ -439,9 +439,11 @@ def do_change_user_setting(
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
 
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
     if setting_name == "preferred_language":
         assert isinstance(setting_value, str)
-        event["language_name"] = get_language_name(setting_value)
+        event["preferred_language_name"] = get_language_name(setting_value)
 
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
@@ -472,6 +474,13 @@ def do_change_user_setting(
             legacy_event["language_name"] = get_language_name(setting_value)
 
 
+
+        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
+
+        if setting_name == "preferred_language":
+            assert isinstance(setting_value, str)
+            legacy_event["language_name"] = get_language_name(setting_value)
+            print(f"Language Name ", get_language_name(setting_value))
 
         send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
