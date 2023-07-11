@@ -169,7 +169,7 @@ function spectator_preferred_language_modal_post_render() {
             dialog_widget.close_modal();
 
             const $link = $(e.target).closest("a[data-code]");
-            Cookies.set(page_params.preferred_language_cookie_name, $link.attr("data-code"));
+            //Cookies.set(page_params.preferred_language_cookie_name, $link.attr("data-code"));
             window.location.reload();
         });
 }

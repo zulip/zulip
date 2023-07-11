@@ -170,8 +170,8 @@ def build_page_params_for_home_page_load(
 
     if user_profile is None:
         request_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME, default_language),
-        request_preferred_language = request.COOKIES.get(settings.PREFERRED_LANGUAGE_COOKIE_NAME,
-                                                         preferred_language)
+        # request_preferred_language = request.COOKIES.get(settings.PREFERRED_LANGUAGE_COOKIE_NAME,
+        #                                                  preferred_language)
     else:
         request_language = get_and_set_request_language(
             request,
@@ -262,6 +262,6 @@ def build_page_params_for_home_page_load(
         # sidebar for spectator.
         page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
         page_params["language_cookie_name"] = settings.LANGUAGE_COOKIE_NAME
-        page_params["preferred_language_cookie_name"] = settings.PREFERRED_LANGUAGE_COOKIE_NAME
+        #page_params["preferred_language_cookie_name"] = settings.PREFERRED_LANGUAGE_COOKIE_NAME
 
     return register_ret["queue_id"], page_params
