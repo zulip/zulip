@@ -715,7 +715,6 @@ export function initialize_everything() {
     linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize({
         playground_data: page_params.realm_playgrounds,
-        generated_pygments_data,
         pygments_comparator_func: typeahead_helper.compare_language,
     });
     compose.initialize();
