@@ -129,7 +129,7 @@ class Command(ZulipBaseCommand):
             # We need to do a new query because the `get_users` path
             # passes us a list rather than a QuerySet.
             users = (
-                UserProfile.objects.select_related()
+                UserProfile.objects.select_related("realm")
                 .filter(id__in=[u.id for u in users])
                 .exclude(
                     Q(tos_version=None) | Q(tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
