@@ -173,7 +173,7 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: Optional[bool]
-    can_remove_subscribers_group_id: int
+    can_remove_subscribers_group: int
     color: str
     date_created: int
     description: str
@@ -200,7 +200,7 @@ class SubscriptionStreamDict(TypedDict):
 
 
 class NeverSubscribedStreamDict(TypedDict):
-    can_remove_subscribers_group_id: int
+    can_remove_subscribers_group: int
     date_created: int
     description: str
     first_message_id: Optional[int]
@@ -223,7 +223,7 @@ class APIStreamDict(TypedDict):
     with few exceptions and possible additional fields.
     """
 
-    can_remove_subscribers_group_id: int
+    can_remove_subscribers_group: int
     date_created: int
     description: str
     first_message_id: Optional[int]

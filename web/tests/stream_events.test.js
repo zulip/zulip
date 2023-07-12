@@ -249,11 +249,11 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal(args.val, 20);
     }
 
-    // Test stream can_remove_subscribers_group_id change event
+    // Test stream can_remove_subscribers_group change event
     {
         const stub = make_stub();
         override(stream_settings_ui, "update_can_remove_subscribers_group_id", stub.f);
-        stream_events.update_property(stream_id, "can_remove_subscribers_group_id", 3);
+        stream_events.update_property(stream_id, "can_remove_subscribers_group", 3);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
         assert.equal(args.sub.stream_id, stream_id);

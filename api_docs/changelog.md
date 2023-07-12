@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 197**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream),
+  [`GET users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams),
+  [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Renamed
+  stream setting `can_remove_subscribers_group_id`
+  to `can_remove_subscribers_group`.
+
 **Feature level 196**
 
 * [`POST /realm/playgrounds`](/api/add-code-playground): `url_prefix` is

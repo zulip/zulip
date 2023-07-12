@@ -50,7 +50,7 @@ exports.test_streams = {
         is_web_public: false,
         message_retention_days: null,
         stream_post_policy: 1,
-        can_remove_subscribers_group_id: 2,
+        can_remove_subscribers_group: 2,
     },
     test: {
         name: "test",
@@ -65,7 +65,7 @@ exports.test_streams = {
         is_announcement_only: false,
         message_retention_days: null,
         stream_post_policy: 1,
-        can_remove_subscribers_group_id: 2,
+        can_remove_subscribers_group: 2,
     },
 };
 

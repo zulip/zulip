@@ -286,7 +286,7 @@ test("admin_options", () => {
             stream_id: 1,
             is_muted: true,
             invite_only: false,
-            can_remove_subscribers_group_id: admins_group.id,
+            can_remove_subscribers_group: admins_group.id,
         };
         stream_data.add_sub(sub);
         return sub;
@@ -339,7 +339,7 @@ test("stream_settings", () => {
         color: "cinnamon",
         subscribed: true,
         invite_only: false,
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
 
     const blue = {
@@ -348,7 +348,7 @@ test("stream_settings", () => {
         color: "blue",
         subscribed: false,
         invite_only: false,
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
 
     const amber = {
@@ -360,7 +360,7 @@ test("stream_settings", () => {
         history_public_to_subscribers: true,
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
         message_retention_days: 10,
-        can_remove_subscribers_group_id: admins_group.id,
+        can_remove_subscribers_group: admins_group.id,
     };
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
@@ -398,7 +398,7 @@ test("stream_settings", () => {
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
-    assert.equal(sub.can_remove_subscribers_group_id, moderators_group.id);
+    assert.equal(sub.can_remove_subscribers_group, moderators_group.id);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
@@ -970,7 +970,7 @@ test("can_unsubscribe_others", () => {
         subscribed: true,
         color: "red",
         stream_id: 1,
-        can_remove_subscribers_group_id: admins.id,
+        can_remove_subscribers_group: admins.id,
     };
     stream_data.add_sub(sub);
 
@@ -979,7 +979,7 @@ test("can_unsubscribe_others", () => {
     people.initialize_current_user(moderator_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
-    sub.can_remove_subscribers_group_id = moderators.id;
+    sub.can_remove_subscribers_group = moderators.id;
     people.initialize_current_user(admin_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     people.initialize_current_user(moderator_user_id);
@@ -987,7 +987,7 @@ test("can_unsubscribe_others", () => {
     people.initialize_current_user(member_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), false);
 
-    sub.can_remove_subscribers_group_id = all.id;
+    sub.can_remove_subscribers_group = all.id;
     people.initialize_current_user(admin_user_id);
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     people.initialize_current_user(moderator_user_id);
@@ -996,7 +996,7 @@ test("can_unsubscribe_others", () => {
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
 
     // Even with the nobody system group, admins can still unsubscribe others.
-    sub.can_remove_subscribers_group_id = nobody.id;
+    sub.can_remove_subscribers_group = nobody.id;
     page_params.is_admin = true;
     assert.equal(stream_data.can_unsubscribe_others(sub), true);
     page_params.is_admin = false;
