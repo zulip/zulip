@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+from collections import defaultdict
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
 
@@ -1549,6 +1550,35 @@ class RealmImportExportTest(ExportFile):
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
+
+    def test_system_usergroup_audit_logs(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm(realm)
+
+        # Simulate an external export where user groups are missing.
+        data = read_json("realm.json")
+        data.pop("zerver_usergroup")
+        data.pop("zerver_realmauditlog")
+        with open(export_fn("realm.json"), "wb") as f:
+            f.write(orjson.dumps(data))
+
+        with self.assertLogs(level="INFO"):
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
+        user_membership_logs = RealmAuditLog.objects.filter(
+            realm=imported_realm,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        ).values_list("modified_user_id", "modified_user_group__name")
+        logged_membership_by_user_id = defaultdict(set)
+        for user_id, user_group_name in user_membership_logs:
+            logged_membership_by_user_id[user_id].add(user_group_name)
+
+        # Make sure that all users get logged as a member in their
+        # corresponding system groups.
+        for user in UserProfile.objects.filter(realm=imported_realm):
+            expected_group_names = {UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
+            if UserGroup.MEMBERS_GROUP_NAME in expected_group_names:
+                expected_group_names.add(UserGroup.FULL_MEMBERS_GROUP_NAME)
+            self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)
 
 
 class SingleUserExportTest(ExportFile):

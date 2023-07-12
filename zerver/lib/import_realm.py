@@ -1677,3 +1677,15 @@ def add_users_to_system_user_groups(
                 UserGroupMembership(user_profile=user_profile, user_group=full_members_system_group)
             )
     UserGroupMembership.objects.bulk_create(usergroup_memberships)
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=realm,
+            modified_user=membership.user_profile,
+            modified_user_group=membership.user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=now,
+            acting_user=None,
+        )
+        for membership in usergroup_memberships
+    )
