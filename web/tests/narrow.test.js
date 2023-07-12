@@ -819,10 +819,11 @@ run_test("narrow_compute_title", ({override}) => {
     assert.equal(narrow.compute_narrow_title(filter), "joe");
 
     filter = new Filter([{operator: "dm", operand: "joe@example.com,sally@doesnotexist.com"}]);
-    blueslip.expect("warn", "Unknown emails: joe@example.com,sally@doesnotexist.com");
+    blueslip.expect("warn", "Unknown emails");
     assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid users");
 
+    blueslip.reset();
     filter = new Filter([{operator: "dm", operand: "sally@doesnotexist.com"}]);
-    blueslip.expect("warn", "Unknown emails: sally@doesnotexist.com");
+    blueslip.expect("warn", "Unknown emails");
     assert.equal(narrow.compute_narrow_title(filter), "translated: Invalid user");
 });

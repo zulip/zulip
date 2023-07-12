@@ -15,6 +15,7 @@ export type DisplayRecipientUser = {
     full_name: string;
     id: number;
     is_mirror_dummy: boolean;
+    unknown_local_echo_user?: boolean;
 };
 
 export type DisplayRecipient = string | DisplayRecipientUser[];
@@ -36,6 +37,15 @@ export type MessageReaction = {
     emoji_code: string;
     reaction_type: MessageReactionType;
     user_id: number;
+};
+
+// TODO/typescript: Move this to submessage.js
+export type Submessage = {
+    id: number;
+    sender_id: number;
+    message_id: number;
+    content: string;
+    msg_type: string;
 };
 
 // TODO/typescript: Move this to server_events
@@ -63,17 +73,60 @@ export type RawMessage = {
     sender_realm_str: string;
     stream_id?: number;
     subject: string;
-    submessages: string[];
+    submessages: Submessage[];
     timestamp: number;
     topic_links: TopicLink[];
     type: MessageType;
     flags: string[];
 } & MatchedMessage;
 
+// We add these boolean properties to Raw message in `message_store.set_message_booleans` method.
+export type MessageWithBooleans = Omit<RawMessage, "flags"> & {
+    unread: boolean;
+    historical: boolean;
+    starred: boolean;
+    mentioned: boolean;
+    mentioned_me_directly: boolean;
+    wildcard_mentioned: boolean;
+    collapsed: boolean;
+    alerted: boolean;
+};
+
 // TODO/typescript: Move this to message_store
-export type Message = RawMessage & {
+export type MessageCleanReaction = {
+    class: string;
+    count: number;
+    emoji_alt_code: boolean;
+    emoji_code: string;
+    emoji_name: string;
+    is_realm_emoji: boolean;
+    label: string;
+    local_id: string;
+    reaction_type: string;
+    user_ids: number[];
+    vote_text: string;
+};
+
+// TODO/typescript: Move this to message_store
+export type Message = Omit<MessageWithBooleans, "reactions"> & {
+    // Added in `reactions.set_clean_reactions`.
+    clean_reactions: Map<string, MessageCleanReaction>;
+
+    // Added in `message_helper.process_new_message`.
+    sent_by_me: boolean;
+    is_private?: boolean;
+    is_stream?: boolean;
+    stream?: string;
+    reply_to: string;
+    display_reply_to?: string;
+    pm_with_url?: string;
     to_user_ids?: string;
     topic: string;
+
+    // These properties are used in `message_list_view.js`.
+    starred_status: string;
+    message_reactions: MessageCleanReaction[];
+    url: string;
 };
 
 // TODO/typescript: Move this to server_events_dispatch
