@@ -430,7 +430,7 @@ export function update_message_retention_setting(sub, message_retention_days) {
 }
 
 export function update_can_remove_subscribers_group_id(sub, can_remove_subscribers_group_id) {
-    sub.can_remove_subscribers_group_id = can_remove_subscribers_group_id;
+    sub.can_remove_subscribers_group = can_remove_subscribers_group_id;
 }
 
 export function receives_notifications(stream_id, notification_name) {
@@ -558,7 +558,7 @@ export function can_unsubscribe_others(sub) {
     }
 
     return user_groups.is_user_in_group(
-        sub.can_remove_subscribers_group_id,
+        sub.can_remove_subscribers_group,
         people.my_current_user_id(),
     );
 }

@@ -269,7 +269,9 @@ def update_stream_backend(
     message_retention_days: Optional[Union[int, str]] = REQ(
         json_validator=check_string_or_int, default=None
     ),
-    can_remove_subscribers_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_remove_subscribers_group_id: Optional[int] = REQ(
+        "can_remove_subscribers_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
@@ -393,7 +395,7 @@ def update_stream_backend(
 
         if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
             setting_group_id_name
-        ] != getattr(stream, setting_name):
+        ] != getattr(stream, setting_group_id_name):
             if sub is None and stream.invite_only:
                 # Admins cannot change this setting for unsubscribed private streams.
                 raise JsonableError(_("Invalid stream ID"))
@@ -570,7 +572,9 @@ def add_subscriptions_backend(
     message_retention_days: Union[str, int] = REQ(
         json_validator=check_string_or_int, default=RETENTION_DEFAULT
     ),
-    can_remove_subscribers_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_remove_subscribers_group_id: Optional[int] = REQ(
+        "can_remove_subscribers_group", json_validator=check_int, default=None
+    ),
     announce: bool = REQ(json_validator=check_bool, default=False),
     principals: Union[Sequence[str], Sequence[int]] = REQ(
         json_validator=check_principals,
@@ -591,11 +595,11 @@ def add_subscriptions_backend(
             allow_nobody_group=False,
         )
     else:
-        can_remove_subscribers_group_default = Stream.stream_permission_group_settings[
+        can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
             "can_remove_subscribers_group"
         ].default_group_name
         can_remove_subscribers_group = UserGroup.objects.get(
-            name=can_remove_subscribers_group_default,
+            name=can_remove_subscribers_group_default_name,
             realm=user_profile.realm,
             is_system_group=True,
         )

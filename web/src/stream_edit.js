@@ -210,13 +210,13 @@ export function show_settings_for(node) {
     });
 
     const opts = {
-        widget_name: "can_remove_subscribers_group_id",
+        widget_name: "can_remove_subscribers_group",
         data: user_groups.get_realm_user_groups_for_dropdown_list_widget(
             "can_remove_subscribers_group",
         ),
         default_text: $t({defaultMessage: "No user groups"}),
         include_current_item: false,
-        value: sub.can_remove_subscribers_group_id,
+        value: sub.can_remove_subscribers_group,
         on_update() {
             settings_org.save_discard_widget_status_handler(
                 $("#stream_permission_settings"),

@@ -247,7 +247,7 @@ export function update_message_retention_setting(sub, new_value) {
 
 export function update_can_remove_subscribers_group_id(sub, new_value) {
     stream_data.update_can_remove_subscribers_group_id(sub, new_value);
-    stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group_id");
+    stream_ui_updates.update_setting_element(sub, "can_remove_subscribers_group");
     stream_edit_subscribers.rerender_subscribers_list(sub);
 }
 
@@ -665,7 +665,7 @@ export function setup_page(callback) {
         $("#streams_overlay_container").empty();
 
         const opts = {
-            widget_name: "new_stream_can_remove_subscribers_group_id",
+            widget_name: "new_stream_can_remove_subscribers_group",
             data: user_groups.get_realm_user_groups_for_dropdown_list_widget(
                 "can_remove_subscribers_group",
             ),

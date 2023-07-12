@@ -374,7 +374,7 @@ def send_subscription_add_events(
                 stream_weekly_traffic=stream_info.stream_weekly_traffic,
                 subscribers=stream_info.subscribers,
                 # Fields from Stream.API_FIELDS
-                can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group_id"],
+                can_remove_subscribers_group=stream_dict["can_remove_subscribers_group"],
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
@@ -1440,7 +1440,7 @@ def do_change_stream_group_based_setting(
     event = dict(
         op="update",
         type="stream",
-        property=setting_name + "_id",
+        property=setting_name,
         value=user_group.id,
         stream_id=stream.id,
         name=stream.name,

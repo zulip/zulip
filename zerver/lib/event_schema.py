@@ -50,7 +50,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 basic_stream_fields = [
-    ("can_remove_subscribers_group_id", int),
+    ("can_remove_subscribers_group", int),
     ("date_created", int),
     ("description", str),
     ("first_message_id", OptionalType(int)),
@@ -1282,7 +1282,7 @@ def check_stream_update(
     elif prop == "stream_post_policy":
         assert extra_keys == set()
         assert value in Stream.STREAM_POST_POLICY_TYPES
-    elif prop == "can_remove_subscribers_group_id":
+    elif prop == "can_remove_subscribers_group":
         assert extra_keys == set()
         assert isinstance(value, int)
     else:

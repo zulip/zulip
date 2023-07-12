@@ -72,7 +72,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
         sub = SubscriptionStreamDict(
             audible_notifications=audible_notifications,
-            can_remove_subscribers_group_id=can_remove_subscribers_group_id,
+            can_remove_subscribers_group=can_remove_subscribers_group_id,
             color=color,
             date_created=date_created,
             description=description,
@@ -156,7 +156,7 @@ def build_stream_dict_for_sub(
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
         audible_notifications=audible_notifications,
-        can_remove_subscribers_group_id=can_remove_subscribers_group_id,
+        can_remove_subscribers_group=can_remove_subscribers_group_id,
         color=color,
         date_created=date_created,
         description=description,
@@ -207,7 +207,7 @@ def build_stream_dict_for_never_sub(
 
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
-        can_remove_subscribers_group_id=can_remove_subscribers_group_id,
+        can_remove_subscribers_group=can_remove_subscribers_group_id,
         date_created=date_created,
         description=description,
         first_message_id=first_message_id,
@@ -443,7 +443,6 @@ def gather_subscriptions_helper(
         stream_id = get_stream_id(sub_dict)
         sub_unsub_stream_ids.add(stream_id)
         raw_stream_dict = all_streams_map[stream_id]
-
         stream_dict = build_stream_dict_for_sub(
             user=user_profile,
             sub_dict=sub_dict,

@@ -2708,7 +2708,7 @@ class Stream(models.Model):
 
     def to_dict(self) -> APIStreamDict:
         return APIStreamDict(
-            can_remove_subscribers_group_id=self.can_remove_subscribers_group_id,
+            can_remove_subscribers_group=self.can_remove_subscribers_group_id,
             date_created=datetime_to_timestamp(self.date_created),
             description=self.description,
             first_message_id=self.first_message_id,
