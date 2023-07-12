@@ -194,7 +194,7 @@ def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Real
         name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
     )
     for stream in data[table]:
-        stream["can_remove_subscribers_group_id"] = admins_group.id
+        stream["can_remove_subscribers_group"] = admins_group
 
 
 def create_subscription_events(data: TableData, realm_id: int) -> None:
@@ -986,6 +986,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         fix_datetime_fields(data, "zerver_stream")
         re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
         if role_system_groups_dict is not None:
+            # Because the system user groups are missing, we manually set up
+            # the defaults for can_remove_subscribers_group for all the
+            # streams.
             fix_streams_can_remove_subscribers_group_column(data, realm)
         else:
             re_map_foreign_keys(
