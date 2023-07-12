@@ -132,7 +132,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, An
     subscriptions_to_add = []
     event_time = timezone_now()
     all_subscription_logs = []
-    profiles = UserProfile.objects.select_related().filter(realm=realm)
+    profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
     for i, stream_name in enumerate(stream_dict):
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
@@ -621,7 +621,7 @@ class Command(BaseCommand):
 
             subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
             profiles: Sequence[UserProfile] = list(
-                UserProfile.objects.select_related().filter(is_bot=False).order_by("email")
+                UserProfile.objects.select_related("realm").filter(is_bot=False).order_by("email")
             )
 
             if options["test_suite"]:
