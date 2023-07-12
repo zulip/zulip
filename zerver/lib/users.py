@@ -223,7 +223,7 @@ def user_ids_to_users(user_ids: Sequence[int], realm: Realm) -> List[UserProfile
     # users should be included.
 
     def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
-        return list(UserProfile.objects.filter(id__in=user_ids).select_related())
+        return list(UserProfile.objects.filter(id__in=user_ids).select_related("realm"))
 
     user_profiles_by_id: Dict[int, UserProfile] = bulk_cached_fetch(
         cache_key_function=user_profile_by_id_cache_key,
