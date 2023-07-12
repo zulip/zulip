@@ -139,7 +139,7 @@ def api_freshdesk_webhook(
 ) -> HttpResponse:
     ticket = payload["freshdesk_webhook"]
 
-    subject = (
+    topic = (
         f"#{ticket['ticket_id'].tame(check_string)}: {ticket['ticket_subject'].tame(check_string)}"
     )
     event_info = parse_freshdesk_event(ticket["triggered_event"].tame(check_string))
@@ -154,5 +154,5 @@ def api_freshdesk_webhook(
         # Not an event we know handle; do nothing.
         return json_success(request)
 
-    check_send_webhook_message(request, user_profile, subject, content)
+    check_send_webhook_message(request, user_profile, topic, content)
     return json_success(request)

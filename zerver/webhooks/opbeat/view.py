@@ -115,14 +115,14 @@ def api_opbeat_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     """
-    This uses the subject name from opbeat to make the subject,
+    This uses the subject name from opbeat to make the topic,
     and the summary from Opbeat as the message body, with
     details about the object mentioned.
     """
 
-    message_subject = payload["title"].tame(check_string)
+    topic = payload["title"].tame(check_string)
 
     message = format_object(payload, "base", "")
 
-    check_send_webhook_message(request, user_profile, message_subject, message)
+    check_send_webhook_message(request, user_profile, topic, message)
     return json_success(request)

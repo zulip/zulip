@@ -78,7 +78,7 @@ def prettify_date(date_string: str) -> str:
 def process_card_action(payload: WildValue, action_type: str) -> Optional[Tuple[str, str]]:
     proper_action = get_proper_action(payload, action_type)
     if proper_action is not None:
-        return get_subject(payload), get_body(payload, proper_action)
+        return get_topic(payload), get_body(payload, proper_action)
     return None
 
 
@@ -131,7 +131,7 @@ def get_proper_action(payload: WildValue, action_type: str) -> Optional[str]:
     return action_type
 
 
-def get_subject(payload: WildValue) -> str:
+def get_topic(payload: WildValue) -> str:
     return get_action_data(payload)["board"]["name"].tame(check_string)
 
 

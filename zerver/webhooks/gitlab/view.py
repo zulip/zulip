@@ -436,7 +436,7 @@ def api_gitlab_webhook(
             project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
             body = f"[{project_url}] {body}"
 
-        topic = get_subject_based_on_event(event, payload, use_merge_request_title)
+        topic = get_topic_based_on_event(event, payload, use_merge_request_title)
         check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success(request)
 
@@ -445,9 +445,7 @@ def get_body_based_on_event(event: str) -> EventFunction:
     return EVENT_FUNCTION_MAPPER[event]
 
 
-def get_subject_based_on_event(
-    event: str, payload: WildValue, use_merge_request_title: bool
-) -> str:
+def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_title: bool) -> str:
     if event == "Push Hook":
         return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
     elif event == "Job Hook" or event == "Build Hook":

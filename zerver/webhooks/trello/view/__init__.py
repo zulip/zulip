@@ -24,17 +24,17 @@ def api_trello_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     action_type = payload["action"]["type"].tame(check_string)
-    message = get_subject_and_body(payload, action_type)
+    message = get_topic_and_body(payload, action_type)
     if message is None:
         return json_success(request)
     else:
-        subject, body = message
+        topic, body = message
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)
 
 
-def get_subject_and_body(payload: WildValue, action_type: str) -> Optional[Tuple[str, str]]:
+def get_topic_and_body(payload: WildValue, action_type: str) -> Optional[Tuple[str, str]]:
     if action_type in SUPPORTED_CARD_ACTIONS:
         return process_card_action(payload, action_type)
     if action_type in IGNORED_CARD_ACTIONS:
