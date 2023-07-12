@@ -590,6 +590,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         logging.debug("Processing missedmessage_emails event: %s", event)
         # When we consume an event, check if there are existing pending emails
         # for that user, and if so use the same scheduled timestamp.
+
         user_profile_id: int = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
         batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
@@ -714,7 +715,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         with transaction.atomic():
             events_to_process = ScheduledMessageNotificationEmail.objects.filter(
                 scheduled_timestamp__lte=current_time
-            )
+            ).select_for_update()
 
             # Batch the entries by user
             events_by_recipient: Dict[int, Dict[int, MissedMessageData]] = defaultdict(dict)
