@@ -46,7 +46,7 @@ def api_uptimerobot_webhook(
 
     try:
         body = get_body_for_http_request(payload, event_type)
-        subject = get_subject_for_http_request(payload)
+        topic = get_topic_for_http_request(payload)
     except ValidationError:
         message = MISCONFIGURED_PAYLOAD_ERROR_MESSAGE.format(
             bot_name=user_profile.full_name,
@@ -56,11 +56,11 @@ def api_uptimerobot_webhook(
 
         raise JsonableError(_("Invalid payload"))
 
-    check_send_webhook_message(request, user_profile, subject, body, event)
+    check_send_webhook_message(request, user_profile, topic, body, event)
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: WildValue) -> str:
+def get_topic_for_http_request(payload: WildValue) -> str:
     return UPTIMEROBOT_TOPIC_TEMPLATE.format(
         monitor_friendly_name=payload["monitor_friendly_name"].tame(check_string)
     )

@@ -166,7 +166,7 @@ def get_issue_title(payload: WildValue) -> str:
     return get_in(payload, ["issue", "fields", "summary"]).tame(check_string)
 
 
-def get_issue_subject(payload: WildValue) -> str:
+def get_issue_topic(payload: WildValue) -> str:
     return f"{get_issue_id(payload)}: {get_issue_title(payload)}"
 
 
@@ -370,10 +370,10 @@ def api_jira_webhook(
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
-    subject = get_issue_subject(payload)
+    topic = get_issue_topic(payload)
     content: str = content_func(payload, user_profile)
 
     check_send_webhook_message(
-        request, user_profile, subject, content, event, unquote_url_parameters=True
+        request, user_profile, topic, content, event, unquote_url_parameters=True
     )
     return json_success(request)

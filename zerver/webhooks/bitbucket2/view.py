@@ -93,15 +93,15 @@ def api_bitbucket2_webhook(
         if branch and branches and branches.find(branch) == -1:
             return json_success(request)
 
-        subjects = get_push_subjects(payload)
+        topics = get_push_topics(payload)
         bodies = get_push_bodies(request, payload)
 
-        for b, s in zip(bodies, subjects):
+        for b, t in zip(bodies, topics):
             check_send_webhook_message(
-                request, user_profile, s, b, type, unquote_url_parameters=True
+                request, user_profile, t, b, type, unquote_url_parameters=True
             )
     else:
-        subject = get_subject_based_on_type(payload, type)
+        topic = get_topic_based_on_type(payload, type)
         body_function = get_body_based_on_type(type)
         body = body_function(
             request,
@@ -110,13 +110,13 @@ def api_bitbucket2_webhook(
         )
 
         check_send_webhook_message(
-            request, user_profile, subject, body, type, unquote_url_parameters=True
+            request, user_profile, topic, body, type, unquote_url_parameters=True
         )
 
     return json_success(request)
 
 
-def get_subject_for_branch_specified_events(
+def get_topic_for_branch_specified_events(
     payload: WildValue, branch_name: Optional[str] = None
 ) -> str:
     return TOPIC_WITH_BRANCH_TEMPLATE.format(
@@ -125,28 +125,28 @@ def get_subject_for_branch_specified_events(
     )
 
 
-def get_push_subjects(payload: WildValue) -> List[str]:
-    subjects_list = []
+def get_push_topics(payload: WildValue) -> List[str]:
+    topics_list = []
     for change in payload["push"]["changes"]:
         potential_tag = (change["new"] or change["old"])["type"].tame(check_string)
         if potential_tag == "tag":
-            subjects_list.append(get_subject(payload))
+            topics_list.append(get_topic(payload))
         else:
             if change.get("new"):
                 branch_name = change["new"]["name"].tame(check_string)
             else:
                 branch_name = change["old"]["name"].tame(check_string)
-            subjects_list.append(get_subject_for_branch_specified_events(payload, branch_name))
-    return subjects_list
+            topics_list.append(get_topic_for_branch_specified_events(payload, branch_name))
+    return topics_list
 
 
-def get_subject(payload: WildValue) -> str:
+def get_topic(payload: WildValue) -> str:
     return BITBUCKET_TOPIC_TEMPLATE.format(
         repository_name=get_repository_name(payload["repository"])
     )
 
 
-def get_subject_based_on_type(payload: WildValue, type: str) -> str:
+def get_topic_based_on_type(payload: WildValue, type: str) -> str:
     if type.startswith("pull_request"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload["repository"]),
@@ -162,7 +162,7 @@ def get_subject_based_on_type(payload: WildValue, type: str) -> str:
             title=payload["issue"]["title"].tame(check_string),
         )
     assert type != "push"
-    return get_subject(payload)
+    return get_topic(payload)
 
 
 def get_type(request: HttpRequest, payload: WildValue) -> str:

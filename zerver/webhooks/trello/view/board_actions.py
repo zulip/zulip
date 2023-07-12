@@ -30,7 +30,7 @@ def process_board_action(
 ) -> Optional[Tuple[str, str]]:
     action_type = get_proper_action(payload, action_type)
     if action_type is not None:
-        return get_subject(payload), get_body(payload, action_type)
+        return get_topic(payload), get_body(payload, action_type)
     return None
 
 
@@ -47,7 +47,7 @@ def get_proper_action(payload: WildValue, action_type: Optional[str]) -> Optiona
     return action_type
 
 
-def get_subject(payload: WildValue) -> str:
+def get_topic(payload: WildValue) -> str:
     return get_action_data(payload)["board"]["name"].tame(check_string)
 
 

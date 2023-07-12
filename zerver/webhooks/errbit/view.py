@@ -18,13 +18,13 @@ def api_errbit_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    subject = get_subject(payload)
+    topic = get_topic(payload)
     body = get_body(payload)
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)
 
 
-def get_subject(payload: WildValue) -> str:
+def get_topic(payload: WildValue) -> str:
     project = payload["problem"]["app_name"].tame(check_string)
     project += " / " + payload["problem"]["environment"].tame(check_string)
     return ERRBIT_TOPIC_TEMPLATE.format(project_name=project)

@@ -26,11 +26,11 @@ def api_crashlytics_webhook(
 ) -> HttpResponse:
     event = payload["event"]
     if event == VERIFICATION_EVENT:
-        subject = CRASHLYTICS_SETUP_TOPIC_TEMPLATE
+        topic = CRASHLYTICS_SETUP_TOPIC_TEMPLATE
         body = CRASHLYTICS_SETUP_MESSAGE_TEMPLATE
     else:
         issue_body = payload["payload"]
-        subject = CRASHLYTICS_TOPIC_TEMPLATE.format(
+        topic = CRASHLYTICS_TOPIC_TEMPLATE.format(
             display_id=issue_body["display_id"].tame(check_int),
             title=issue_body["title"].tame(check_string),
         )
@@ -39,5 +39,5 @@ def api_crashlytics_webhook(
             url=issue_body["url"].tame(check_string),
         )
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)
