@@ -14,7 +14,7 @@ import threading
 import time
 import urllib
 from abc import ABC, abstractmethod
-from collections import deque
+from collections import defaultdict, deque
 from email.message import EmailMessage
 from functools import wraps
 from types import FrameType
@@ -64,7 +64,7 @@ from zerver.lib.email_mirror import (
     rate_limit_mirror_by_realm,
 )
 from zerver.lib.email_mirror import process_message as mirror_email
-from zerver.lib.email_notifications import handle_missedmessage_emails
+from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
@@ -717,21 +717,14 @@ class MissedMessageWorker(QueueProcessingWorker):
             )
 
             # Batch the entries by user
-            events_by_recipient: Dict[int, List[Dict[str, Any]]] = {}
+            events_by_recipient: Dict[int, Dict[int, MissedMessageData]] = defaultdict(dict)
             for event in events_to_process:
-                entry = dict(
-                    user_profile_id=event.user_profile_id,
-                    message_id=event.message_id,
-                    trigger=event.trigger,
-                    mentioned_user_group_id=event.mentioned_user_group_id,
+                events_by_recipient[event.user_profile_id][event.message_id] = MissedMessageData(
+                    trigger=event.trigger, mentioned_user_group_id=event.mentioned_user_group_id
                 )
-                if event.user_profile_id in events_by_recipient:
-                    events_by_recipient[event.user_profile_id].append(entry)
-                else:
-                    events_by_recipient[event.user_profile_id] = [entry]
 
             for user_profile_id in events_by_recipient:
-                events: List[Dict[str, Any]] = events_by_recipient[user_profile_id]
+                events = events_by_recipient[user_profile_id]
 
                 logging.info(
                     "Batch-processing %s missedmessage_emails events for user %s",
