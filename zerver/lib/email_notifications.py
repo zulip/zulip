@@ -6,9 +6,10 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import lxml.html
 from bs4 import BeautifulSoup
@@ -604,17 +605,15 @@ def do_send_missedmessage_events_reply_in_zulip(
     user_profile.save(update_fields=["last_reminder"])
 
 
-def handle_missedmessage_emails(
-    user_profile_id: int, missed_email_events: Iterable[Dict[str, Any]]
-) -> None:
-    message_ids = {
-        event.get("message_id"): {
-            "trigger": event.get("trigger"),
-            "mentioned_user_group_id": event.get("mentioned_user_group_id"),
-        }
-        for event in missed_email_events
-    }
+@dataclass
+class MissedMessageData:
+    trigger: str
+    mentioned_user_group_id: Optional[int] = None
 
+
+def handle_missedmessage_emails(
+    user_profile_id: int, message_ids: Dict[int, MissedMessageData]
+) -> None:
     user_profile = get_user_profile_by_id(user_profile_id)
     if user_profile.is_bot:  # nocoverage
         # We don't expect to reach here for bot users. However, this code exists
@@ -679,8 +678,8 @@ def handle_missedmessage_emails(
             message_info = message_ids.get(m.id)
             unique_messages[m.id] = dict(
                 message=m,
-                trigger=message_info["trigger"] if message_info else None,
-                mentioned_user_group_id=message_info.get("mentioned_user_group_id")
+                trigger=message_info.trigger if message_info else None,
+                mentioned_user_group_id=message_info.mentioned_user_group_id
                 if message_info is not None
                 else None,
             )
