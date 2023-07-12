@@ -55,12 +55,14 @@ from zerver.models import (
     InvalidFakeEmailDomainError,
     Message,
     PreregistrationUser,
+    RealmAuditLog,
     RealmDomain,
     RealmUserDefault,
     Recipient,
     ScheduledEmail,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserHotspot,
     UserProfile,
@@ -850,13 +852,42 @@ class BulkCreateUserTest(ZulipTestCase):
             ("Cher", "cher@zulip.com"),
         ]
 
+        now = timezone_now()
+        expected_user_group_names = {
+            UserGroup.MEMBERS_GROUP_NAME,
+            UserGroup.FULL_MEMBERS_GROUP_NAME,
+        }
         create_users(realm, name_list)
         bono = get_user_by_delivery_email("bono@zulip.com", realm)
         self.assertEqual(bono.email, "bono@zulip.com")
         self.assertEqual(bono.delivery_email, "bono@zulip.com")
+        user_group_names = set(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                modified_user=bono,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+            ).values_list("modified_user_group__name", flat=True)
+        )
+        self.assertSetEqual(
+            user_group_names,
+            expected_user_group_names,
+        )
 
         cher = get_user_by_delivery_email("cher@zulip.com", realm)
         self.assertEqual(cher.full_name, "Cher")
+        user_group_names = set(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                modified_user=cher,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time__gte=now,
+            ).values_list("modified_user_group__name", flat=True)
+        )
+        self.assertSetEqual(
+            user_group_names,
+            expected_user_group_names,
+        )
 
 
 class AdminCreateUserTest(ZulipTestCase):
