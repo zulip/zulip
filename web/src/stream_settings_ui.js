@@ -577,15 +577,23 @@ export function switch_stream_tab(tab_name) {
         use `toggler.goto`.
     */
 
-    if (tab_name === "all-streams") {
-        show_subscribed = false;
-        show_not_subscribed = false;
-    } else if (tab_name === "subscribed") {
-        show_subscribed = true;
-        show_not_subscribed = false;
-    } else if (tab_name === "not-subscribed") {
-        show_subscribed = false;
-        show_not_subscribed = true;
+    switch (tab_name) {
+        case "all-streams": {
+            show_subscribed = false;
+            show_not_subscribed = false;
+            break;
+        }
+        case "subscribed": {
+            show_subscribed = true;
+            show_not_subscribed = false;
+            break;
+        }
+        case "not-subscribed": {
+            show_subscribed = false;
+            show_not_subscribed = true;
+            break;
+        }
+        // No default
     }
 
     redraw_left_panel();

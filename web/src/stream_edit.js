@@ -50,14 +50,22 @@ export function setup_subscriptions_tab_hash(tab_key_value) {
     if ($("#subscription_overlay .right").hasClass("show")) {
         return;
     }
-    if (tab_key_value === "all-streams") {
-        browser_history.update("#streams/all");
-    } else if (tab_key_value === "subscribed") {
-        browser_history.update("#streams/subscribed");
-    } else if(tab_key_value === "not-subscribed") {
-        browser_history.update("#streams/notsubscribed");
-    } else {
-        blueslip.debug("Unknown tab_key_value: " + tab_key_value);
+    switch (tab_key_value) {
+        case "all-streams": {
+            browser_history.update("#streams/all");
+            break;
+        }
+        case "subscribed": {
+            browser_history.update("#streams/subscribed");
+            break;
+        }
+        case "not-subscribed": {
+            browser_history.update("#streams/notsubscribed");
+            break;
+        }
+        default: {
+            blueslip.debug("Unknown tab_key_value: " + tab_key_value);
+        }
     }
 }
 
