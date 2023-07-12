@@ -98,7 +98,7 @@ cache_fillers: Dict[
 ] = {
     "user": (get_users, user_cache_items, 3600 * 24 * 7, 10000),
     "client": (
-        lambda: Client.objects.select_related().all(),
+        lambda: Client.objects.all(),
         client_cache_items,
         3600 * 24 * 7,
         10000,
