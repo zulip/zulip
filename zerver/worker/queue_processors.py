@@ -714,7 +714,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         with transaction.atomic():
             events_to_process = ScheduledMessageNotificationEmail.objects.filter(
                 scheduled_timestamp__lte=current_time
-            ).select_related()
+            )
 
             # Batch the entries by user
             events_by_recipient: Dict[int, List[Dict[str, Any]]] = {}
