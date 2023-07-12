@@ -382,7 +382,7 @@ def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> List[Use
 
 
 def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[UserProfile]:
-    users_to_catch_up = UserProfile.objects.select_related().filter(
+    users_to_catch_up = UserProfile.objects.filter(
         long_term_idle=True,
         is_active=True,
         is_bot=False,
