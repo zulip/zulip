@@ -128,7 +128,8 @@ def zulip():
     },
     {
         markdown: "/me is busy working",
-        output_html: '<p><span class="sender_name-in-status">Iago</span> is busy working</p>',
+        output_html:
+            '<p><span class="sender_name">Iago</span> <span class="status-message">is busy working</span></p>',
     },
     {
         markdown: "<time:2023-05-28T13:30:00+05:30>",
