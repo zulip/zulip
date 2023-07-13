@@ -17,10 +17,11 @@ $time_column_min_width: 50px; /* + padding */
 
 .message_row {
     display: grid;
-    /* 2x2 grid:
-      date_unread_marker date_row
-      message_unread_marker messagebox */
-    grid-template: "date_unread_marker date_row" auto "message_unread_marker messagebox" auto / 2px 1fr;
+    grid-template: auto auto / 2px 1fr;
+    grid-template-areas:
+        "date_unread_marker    date_row  "
+        "message_unread_marker messagebox";
+
     border-left: 1px solid var(--color-message-list-border);
     border-right: 1px solid var(--color-message-list-border);
     background-color: var(--color-background-stream-message-content);
