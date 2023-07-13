@@ -531,7 +531,7 @@ def bot_dicts_in_realm_cache_key(realm_id: int) -> str:
     return f"bot_dicts_in_realm:{realm_id}"
 
 
-def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
+def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm: "Realm") -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
     from zerver.models import is_cross_realm_bot_email
@@ -541,13 +541,11 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
         keys.append(user_profile_by_id_cache_key(user_profile.id))
         for api_key in get_all_api_keys(user_profile):
             keys.append(user_profile_by_api_key_cache_key(api_key))
-        keys.append(user_profile_cache_key(user_profile.email, user_profile.realm))
-        keys.append(
-            user_profile_delivery_email_cache_key(user_profile.delivery_email, user_profile.realm)
-        )
+        keys.append(user_profile_cache_key(user_profile.email, realm))
+        keys.append(user_profile_delivery_email_cache_key(user_profile.delivery_email, realm))
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
-            keys.append(bot_profile_cache_key(user_profile.email, user_profile.realm_id))
+            keys.append(bot_profile_cache_key(user_profile.email, realm.id))
 
     cache_delete_many(keys)
 
@@ -581,7 +579,7 @@ def flush_user_profile(
     **kwargs: object,
 ) -> None:
     user_profile = instance
-    delete_user_profile_caches([user_profile])
+    delete_user_profile_caches([user_profile], user_profile.realm)
 
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
@@ -621,7 +619,7 @@ def flush_realm(
 ) -> None:
     realm = instance
     users = realm.get_active_users()
-    delete_user_profile_caches(users)
+    delete_user_profile_caches(users, realm)
 
     if (
         from_deletion
