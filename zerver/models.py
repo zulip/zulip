@@ -3817,7 +3817,7 @@ def get_user_profile_by_email(email: str) -> UserProfile:
     multiple users with a given (delivery) email address existing on a
     single server (in different realms).
     """
-    return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
+    return UserProfile.objects.select_related("realm").get(delivery_email__iexact=email.strip())
 
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
