@@ -317,7 +317,7 @@ class RealmTest(ZulipTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {"old_subdomain": "zulip", "new_subdomain": "newzulip"}
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
 
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
@@ -760,7 +760,7 @@ class RealmTest(ZulipTestCase):
             "old_value": Realm.ORG_TYPES["business"]["id"],
             "new_value": Realm.ORG_TYPES["government"]["id"],
         }
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.org_type, Realm.ORG_TYPES["government"]["id"])
 
@@ -782,7 +782,7 @@ class RealmTest(ZulipTestCase):
             "old_value": Realm.PLAN_TYPE_SELF_HOSTED,
             "new_value": Realm.PLAN_TYPE_STANDARD,
         }
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)

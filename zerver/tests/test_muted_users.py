@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
 from unittest import mock
 
-import orjson
-
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
 from zerver.lib.muted_users import get_mute_object, get_muting_users, get_user_mutes
@@ -113,7 +111,7 @@ class MutedUsersTests(ZulipTestCase):
             (
                 RealmAuditLog.USER_MUTED,
                 mute_time,
-                orjson.dumps({"muted_user_id": cordelia.id}).decode(),
+                {"muted_user_id": cordelia.id},
             ),
         )
 
@@ -173,7 +171,7 @@ class MutedUsersTests(ZulipTestCase):
             (
                 RealmAuditLog.USER_UNMUTED,
                 mute_time,
-                orjson.dumps({"unmuted_user_id": cordelia.id}).decode(),
+                {"unmuted_user_id": cordelia.id},
             ),
         )
 

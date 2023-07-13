@@ -1,6 +1,5 @@
 from typing import Dict, Iterable, List, Mapping, Sequence, TypedDict
 
-import orjson
 from django.db import transaction
 from django.db.models import F, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -379,13 +378,11 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
                 event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
                 event_time=creation_time,
                 modified_user_group=user_group,
-                extra_data=orjson.dumps(
-                    {
-                        RealmAuditLog.OLD_VALUE: None,
-                        RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
-                        "property": "can_mention_group",
-                    }
-                ).decode(),
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: None,
+                    RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
+                    "property": "can_mention_group",
+                },
             )
         )
     UserGroup.objects.bulk_update(groups_with_updated_settings, ["can_mention_group"])
@@ -404,7 +401,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
                     event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
                     event_time=now,
                     acting_user=None,
-                    extra_data=orjson.dumps({"subgroup_ids": [subgroup.id]}).decode(),
+                    extra_data={"subgroup_ids": [subgroup.id]},
                 ),
                 RealmAuditLog(
                     realm=realm,
@@ -412,7 +409,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
                     event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
                     event_time=now,
                     acting_user=None,
-                    extra_data=orjson.dumps({"supergroup_ids": [supergroup.id]}).decode(),
+                    extra_data={"supergroup_ids": [supergroup.id]},
                 ),
             ]
         )

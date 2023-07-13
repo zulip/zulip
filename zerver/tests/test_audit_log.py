@@ -1,7 +1,6 @@
 from datetime import timedelta
 from typing import Any, Dict, Union
 
-import orjson
 from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
 
@@ -124,7 +123,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_time__gte=now,
                 event_time__lte=now + timedelta(minutes=60),
             )
-            .order_by("event_time")
+            .order_by("event_time", "event_type")
             .values_list("event_type", flat=True)
         )
         self.assertEqual(
@@ -149,10 +148,10 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__lte=now + timedelta(minutes=60),
         ):
             if event.event_type == RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED:
-                self.assertIsNone(event.extra_data)
+                self.assertDictEqual(event.extra_data, {})
                 modified_user_group_names.append(assert_is_not_none(event.modified_user_group).name)
                 continue
-            extra_data = orjson.loads(assert_is_not_none(event.extra_data))
+            extra_data = event.extra_data
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertNotIn(RealmAuditLog.OLD_VALUE, extra_data)
 
@@ -189,7 +188,7 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__gte=now,
             event_time__lte=now + timedelta(minutes=60),
         ):
-            extra_data = orjson.loads(assert_is_not_none(event.extra_data))
+            extra_data = event.extra_data
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertIn(RealmAuditLog.OLD_VALUE, extra_data)
             self.assertIn(RealmAuditLog.NEW_VALUE, extra_data)
@@ -426,14 +425,14 @@ class TestRealmAuditLog(ZulipTestCase):
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )
-        extra_data = orjson.loads(assert_is_not_none(log_entry.extra_data))
+        extra_data = log_entry.extra_data
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
         do_reactivate_realm(realm)
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED
         )
-        extra_data = orjson.loads(assert_is_not_none(log_entry.extra_data))
+        extra_data = log_entry.extra_data
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
     def test_create_stream_if_needed(self) -> None:
@@ -501,7 +500,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=user,
         )
         self.assertEqual(realm_audit_logs.count(), 1)
-        extra_data = orjson.loads(assert_is_not_none(realm_audit_logs[0].extra_data))
+        extra_data = realm_audit_logs[0].extra_data
         expected_new_value = auth_method_dict
         self.assertEqual(extra_data[RealmAuditLog.OLD_VALUE], expected_old_value)
         self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], expected_new_value)
@@ -534,7 +533,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(value_expected).decode(),
+                extra_data=value_expected,
             ).count(),
             1,
         )
@@ -554,7 +553,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(value_expected).decode(),
+                extra_data=value_expected,
             ).count(),
             1,
         )
@@ -574,13 +573,11 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(
-                    {
-                        RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: stream.id,
-                        "property": "notifications_stream",
-                    }
-                ).decode(),
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream.id,
+                    "property": "notifications_stream",
+                },
             ).count(),
             1,
         )
@@ -600,13 +597,11 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(
-                    {
-                        RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: stream.id,
-                        "property": "signup_notifications_stream",
-                    }
-                ).decode(),
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream.id,
+                    "property": "signup_notifications_stream",
+                },
             ).count(),
             1,
         )
@@ -627,7 +622,7 @@ class TestRealmAuditLog(ZulipTestCase):
         assert audit_log is not None
         self.assert_length(audit_entries, 1)
         self.assertEqual(icon_source, realm.icon_source)
-        self.assertEqual(audit_log.extra_data, "{'icon_source': 'G', 'icon_version': 2}")
+        self.assertEqual(audit_log.extra_data, {"icon_source": "G", "icon_version": 2})
 
     def test_change_subscription_property(self) -> None:
         user = self.example_user("hamlet")
@@ -665,7 +660,7 @@ class TestRealmAuditLog(ZulipTestCase):
                     event_time__gte=now,
                     acting_user=user,
                     modified_user=user,
-                    extra_data=orjson.dumps(expected_extra_data).decode(),
+                    extra_data=expected_extra_data,
                 ).count(),
                 1,
             )
@@ -684,12 +679,10 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.USER_DEFAULT_SENDING_STREAM_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(
-                    {
-                        RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: stream.id,
-                    }
-                ).decode(),
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream.id,
+                },
             ).count(),
             1,
         )
@@ -703,12 +696,10 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.USER_DEFAULT_REGISTER_STREAM_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(
-                    {
-                        RealmAuditLog.OLD_VALUE: old_value,
-                        RealmAuditLog.NEW_VALUE: stream.id,
-                    }
-                ).decode(),
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_value,
+                    RealmAuditLog.NEW_VALUE: stream.id,
+                },
             ).count(),
             1,
         )
@@ -722,9 +713,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(
-                    {RealmAuditLog.OLD_VALUE: old_value, RealmAuditLog.NEW_VALUE: False}
-                ).decode(),
+                extra_data={RealmAuditLog.OLD_VALUE: old_value, RealmAuditLog.NEW_VALUE: False},
             ).count(),
             1,
         )
@@ -743,9 +732,10 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_time__gte=now,
                 acting_user=user,
                 modified_stream=stream,
-                extra_data=orjson.dumps(
-                    {RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: "updated name"}
-                ).decode(),
+                extra_data={
+                    RealmAuditLog.OLD_VALUE: old_name,
+                    RealmAuditLog.NEW_VALUE: "updated name",
+                },
             ).count(),
             1,
         )
@@ -784,7 +774,7 @@ class TestRealmAuditLog(ZulipTestCase):
                     event_time__gte=now,
                     acting_user=user,
                     modified_user=user,
-                    extra_data=orjson.dumps(expected_extra_data).decode(),
+                    extra_data=expected_extra_data,
                 ).count(),
                 1,
             )
@@ -810,7 +800,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -831,7 +821,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -852,7 +842,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_DOMAIN_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -884,7 +874,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_PLAYGROUND_ADDED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -911,7 +901,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_PLAYGROUND_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -942,7 +932,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_LINKIFIER_ADDED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -970,7 +960,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_LINKIFIER_CHANGED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -995,7 +985,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_LINKIFIER_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -1033,7 +1023,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_EMOJI_ADDED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -1062,7 +1052,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
                 event_time__gte=now,
                 acting_user=user,
-                extra_data=orjson.dumps(expected_extra_data).decode(),
+                extra_data=expected_extra_data,
             ).count(),
             1,
         )
@@ -1126,14 +1116,8 @@ class TestRealmAuditLog(ZulipTestCase):
 
             supergroup_id, subgroup_extra_data = logged_subgroup_entries[i]
             subgroup_id, supergroup_extra_data = logged_supergroup_entries[i]
-            assert subgroup_extra_data is not None
-            assert supergroup_extra_data is not None
-            self.assertEqual(
-                orjson.loads(subgroup_extra_data)["subgroup_ids"][0], expected_subgroup_id
-            )
-            self.assertEqual(
-                orjson.loads(supergroup_extra_data)["supergroup_ids"][0], expected_supergroup_id
-            )
+            self.assertEqual(subgroup_extra_data["subgroup_ids"][0], expected_subgroup_id)
+            self.assertEqual(supergroup_extra_data["supergroup_ids"][0], expected_supergroup_id)
             self.assertEqual(supergroup_id, expected_supergroup_id)
             self.assertEqual(subgroup_id, expected_subgroup_id)
 
@@ -1151,7 +1135,7 @@ class TestRealmAuditLog(ZulipTestCase):
         ):
             self.assertEqual(user_group_id, expected_user_group_id)
             self.assertDictEqual(
-                orjson.loads(assert_is_not_none(extra_data)),
+                extra_data,
                 {
                     RealmAuditLog.OLD_VALUE: None,
                     RealmAuditLog.NEW_VALUE: nobody_group.id,
@@ -1203,10 +1187,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assert_length(audit_log_entries, len(UserGroup.GROUP_PERMISSION_SETTINGS))
         self.assertListEqual(
-            [
-                orjson.loads(assert_is_not_none(audit_log.extra_data))
-                for audit_log in audit_log_entries
-            ],
+            [audit_log.extra_data for audit_log in audit_log_entries],
             [
                 {
                     RealmAuditLog.OLD_VALUE: None,
@@ -1264,7 +1245,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(audit_log_entry.modified_user_group, user_group)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
         self.assertDictEqual(
-            orjson.loads(assert_is_not_none(audit_log_entry.extra_data)),
+            audit_log_entry.extra_data,
             {"subgroup_ids": [subgroup.id for subgroup in subgroups]},
         )
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1277,7 +1258,7 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i])
             self.assertEqual(audit_log_entries[i].acting_user, hamlet)
             self.assertDictEqual(
-                orjson.loads(assert_is_not_none(audit_log_entries[i].extra_data)),
+                audit_log_entries[i].extra_data,
                 {"supergroup_ids": [user_group.id]},
             )
 
@@ -1290,7 +1271,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(audit_log_entry.modified_user_group, user_group)
         self.assertEqual(audit_log_entry.acting_user, hamlet)
         self.assertDictEqual(
-            orjson.loads(assert_is_not_none(audit_log_entry.extra_data)),
+            audit_log_entry.extra_data,
             {"subgroup_ids": [subgroup.id for subgroup in subgroups[:2]]},
         )
         audit_log_entries = RealmAuditLog.objects.filter(
@@ -1303,7 +1284,7 @@ class TestRealmAuditLog(ZulipTestCase):
             self.assertEqual(audit_log_entries[i].modified_user_group, subgroups[i])
             self.assertEqual(audit_log_entries[i].acting_user, hamlet)
             self.assertDictEqual(
-                orjson.loads(assert_is_not_none(audit_log_entries[i].extra_data)),
+                audit_log_entries[i].extra_data,
                 {"supergroup_ids": [user_group.id]},
             )
 
@@ -1326,7 +1307,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assert_length(audit_log_entries, 1)
         self.assertDictEqual(
-            orjson.loads(assert_is_not_none(audit_log_entries[0].extra_data)),
+            audit_log_entries[0].extra_data,
             {
                 RealmAuditLog.OLD_VALUE: "demo",
                 RealmAuditLog.NEW_VALUE: "bar",
@@ -1341,7 +1322,7 @@ class TestRealmAuditLog(ZulipTestCase):
         )
         self.assert_length(audit_log_entries, 1)
         self.assertDictEqual(
-            orjson.loads(assert_is_not_none(audit_log_entries[0].extra_data)),
+            audit_log_entries[0].extra_data,
             {
                 RealmAuditLog.OLD_VALUE: "No description",
                 RealmAuditLog.NEW_VALUE: "Foo",
@@ -1363,7 +1344,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 1)
         self.assertIsNone(audit_log_entries[0].acting_user)
         self.assertDictEqual(
-            orjson.loads(assert_is_not_none(audit_log_entries[0].extra_data)),
+            audit_log_entries[0].extra_data,
             {
                 RealmAuditLog.OLD_VALUE: old_group.id,
                 RealmAuditLog.NEW_VALUE: new_group.id,

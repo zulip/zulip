@@ -1,7 +1,6 @@
 import datetime
 from typing import Optional
 
-import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_flags import do_mark_muted_user_messages_as_read
@@ -28,7 +27,7 @@ def do_mute_user(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_MUTED,
         event_time=date_muted,
-        extra_data=orjson.dumps({"muted_user_id": muted_user.id}).decode(),
+        extra_data={"muted_user_id": muted_user.id},
     )
 
 
@@ -45,5 +44,5 @@ def do_unmute_user(mute_object: MutedUser) -> None:
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_UNMUTED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps({"unmuted_user_id": muted_user.id}).decode(),
+        extra_data={"unmuted_user_id": muted_user.id},
     )

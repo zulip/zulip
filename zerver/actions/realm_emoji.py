@@ -1,6 +1,5 @@
 from typing import IO, Dict, Optional
 
-import orjson
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -63,12 +62,10 @@ def check_add_realm_emoji(
         acting_user=author,
         event_type=RealmAuditLog.REALM_EMOJI_ADDED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_emoji": dict(sorted(realm_emoji_dict.items())),
-                "added_emoji": realm_emoji_dict[str(realm_emoji.id)],
-            }
-        ).decode(),
+        extra_data={
+            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
+            "added_emoji": realm_emoji_dict[str(realm_emoji.id)],
+        },
     )
     notify_realm_emoji(realm_emoji.realm, realm_emoji_dict)
     return realm_emoji
@@ -86,12 +83,10 @@ def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: Optional[User
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_emoji": dict(sorted(realm_emoji_dict.items())),
-                "deactivated_emoji": realm_emoji_dict[str(emoji.id)],
-            }
-        ).decode(),
+        extra_data={
+            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
+            "deactivated_emoji": realm_emoji_dict[str(emoji.id)],
+        },
     )
 
     notify_realm_emoji(realm, realm_emoji_dict)

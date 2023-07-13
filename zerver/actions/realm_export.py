@@ -1,4 +1,3 @@
-import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.export import get_realm_exports_serialized
@@ -14,11 +13,7 @@ def notify_realm_export(user_profile: UserProfile) -> None:
 
 
 def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> None:
-    # Give mypy a hint so it knows `orjson.loads`
-    # isn't being passed an `Optional[str]`.
-    export_extra_data = export.extra_data
-    assert export_extra_data is not None
-    export_data = orjson.loads(export_extra_data)
+    export_data = export.extra_data
     export_path = export_data.get("export_path")
 
     if export_path:
@@ -26,6 +21,6 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
         delete_export_tarball(export_path)
 
     export_data.update(deleted_timestamp=timezone_now().timestamp())
-    export.extra_data = orjson.dumps(export_data).decode()
+    export.extra_data = export_data
     export.save(update_fields=["extra_data"])
     notify_realm_export(user_profile)

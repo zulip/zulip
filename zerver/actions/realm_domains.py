@@ -1,6 +1,5 @@
 from typing import Optional
 
-import orjson
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -31,12 +30,10 @@ def do_add_realm_domain(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_domains": get_realm_domains(realm),
-                "added_domain": added_domain,
-            }
-        ).decode(),
+        extra_data={
+            "realm_domains": get_realm_domains(realm),
+            "added_domain": added_domain,
+        },
     )
 
     event = dict(
@@ -67,12 +64,10 @@ def do_change_realm_domain(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_domains": get_realm_domains(realm_domain.realm),
-                "changed_domain": changed_domain,
-            }
-        ).decode(),
+        extra_data={
+            "realm_domains": get_realm_domains(realm_domain.realm),
+            "changed_domain": changed_domain,
+        },
     )
 
     event = dict(
@@ -102,12 +97,10 @@ def do_remove_realm_domain(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_DOMAIN_REMOVED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_domains": get_realm_domains(realm),
-                "removed_domain": removed_domain,
-            }
-        ).decode(),
+        extra_data={
+            "realm_domains": get_realm_domains(realm),
+            "removed_domain": removed_domain,
+        },
     )
 
     if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.emails_restricted_to_domains:

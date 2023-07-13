@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-import orjson
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -53,17 +52,15 @@ def check_add_realm_playground(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_PLAYGROUND_ADDED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_playgrounds": realm_playgrounds,
-                "added_playground": RealmPlaygroundDict(
-                    id=realm_playground.id,
-                    name=realm_playground.name,
-                    pygments_language=realm_playground.pygments_language,
-                    url_template=realm_playground.url_template,
-                ),
-            }
-        ).decode(),
+        extra_data={
+            "realm_playgrounds": realm_playgrounds,
+            "added_playground": RealmPlaygroundDict(
+                id=realm_playground.id,
+                name=realm_playground.name,
+                pygments_language=realm_playground.pygments_language,
+                url_template=realm_playground.url_template,
+            ),
+        },
     )
     notify_realm_playgrounds(realm, realm_playgrounds)
     return realm_playground.id
@@ -87,12 +84,10 @@ def do_remove_realm_playground(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_PLAYGROUND_REMOVED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_playgrounds": realm_playgrounds,
-                "removed_playground": removed_playground,
-            }
-        ).decode(),
+        extra_data={
+            "realm_playgrounds": realm_playgrounds,
+            "removed_playground": removed_playground,
+        },
     )
 
     notify_realm_playgrounds(realm, realm_playgrounds)

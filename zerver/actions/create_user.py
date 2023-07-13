@@ -2,7 +2,6 @@ import datetime
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -445,11 +444,9 @@ def do_create_user(
             modified_user=user_profile,
             event_type=RealmAuditLog.USER_CREATED,
             event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            },
         )
 
         if realm_creation:
@@ -570,11 +567,9 @@ def do_activate_mirror_dummy_user(
             acting_user=acting_user,
             event_type=RealmAuditLog.USER_ACTIVATED,
             event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            },
         )
         do_increment_logging_stat(
             user_profile.realm,
@@ -600,11 +595,9 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         acting_user=acting_user,
         event_type=RealmAuditLog.USER_REACTIVATED,
         event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        },
     )
 
     bot_owner_changed = False

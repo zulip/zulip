@@ -2412,9 +2412,7 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
         failed_timestamp = None
         acting_user = export.acting_user
 
-        export_data = {}
-        if export.extra_data is not None:
-            export_data = orjson.loads(export.extra_data)
+        export_data = export.extra_data
 
         deleted_timestamp = export_data.get("deleted_timestamp")
         failed_timestamp = export_data.get("failed_timestamp")

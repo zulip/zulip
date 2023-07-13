@@ -2,7 +2,6 @@ import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, TypedDict, Union
 
 import django.db.utils
-import orjson
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -74,13 +73,11 @@ def create_user_group_in_database(
             event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
             event_time=creation_time,
             modified_user_group=user_group,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: None,
-                    RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
-                    "property": "can_mention_group",
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: None,
+                RealmAuditLog.NEW_VALUE: user_group.can_mention_group.id,
+                "property": "can_mention_group",
+            },
         ),
     ] + [
         RealmAuditLog(
@@ -234,12 +231,10 @@ def do_update_user_group_name(
             event_type=RealmAuditLog.USER_GROUP_NAME_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: name,
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: name,
+            },
         )
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
@@ -259,12 +254,10 @@ def do_update_user_group_description(
         event_type=RealmAuditLog.USER_GROUP_DESCRIPTION_CHANGED,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: description,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: description,
+        },
     )
     do_send_user_group_update_event(user_group, dict(description=description))
 
@@ -351,7 +344,7 @@ def add_subgroups_to_user_group(
             event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
             event_time=now,
             acting_user=acting_user,
-            extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
+            extra_data={"subgroup_ids": subgroup_ids},
         ),
         *(
             RealmAuditLog(
@@ -360,7 +353,7 @@ def add_subgroups_to_user_group(
                 event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
                 event_time=now,
                 acting_user=acting_user,
-                extra_data=orjson.dumps({"supergroup_ids": [user_group.id]}).decode(),
+                extra_data={"supergroup_ids": [user_group.id]},
             )
             for subgroup_id in subgroup_ids
         ),
@@ -385,7 +378,7 @@ def remove_subgroups_from_user_group(
             event_type=RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
             event_time=now,
             acting_user=acting_user,
-            extra_data=orjson.dumps({"subgroup_ids": subgroup_ids}).decode(),
+            extra_data={"subgroup_ids": subgroup_ids},
         ),
         *(
             RealmAuditLog(
@@ -394,7 +387,7 @@ def remove_subgroups_from_user_group(
                 event_type=RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_REMOVED,
                 event_time=now,
                 acting_user=acting_user,
-                extra_data=orjson.dumps({"supergroup_ids": [user_group.id]}).decode(),
+                extra_data={"supergroup_ids": [user_group.id]},
             )
             for subgroup_id in subgroup_ids
         ),
@@ -434,13 +427,11 @@ def do_change_user_group_permission_setting(
         event_type=RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
         event_time=timezone_now(),
         modified_user_group=user_group,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value.id,
-                RealmAuditLog.NEW_VALUE: setting_value_group.id,
-                "property": setting_name,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value.id,
+            RealmAuditLog.NEW_VALUE: setting_value_group.id,
+            "property": setting_name,
+        },
     )
 
     event_data_dict: Dict[str, Union[str, int]] = {setting_name: setting_value_group.id}

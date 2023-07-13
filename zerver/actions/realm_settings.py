@@ -2,7 +2,6 @@ import logging
 from email.headerregistry import Address
 from typing import Any, Dict, Literal, Optional, Tuple, Union
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.db.models import QuerySet
@@ -91,13 +90,11 @@ def do_set_realm_property(
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-                "property": name,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": name,
+        },
     )
 
     if name == "waiting_period_threshold":
@@ -149,13 +146,11 @@ def do_set_realm_authentication_methods(
             event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: updated_value,
-                    "property": "authentication_methods",
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: updated_value,
+                "property": "authentication_methods",
+            },
         )
 
     event = dict(
@@ -197,13 +192,11 @@ def do_set_realm_stream(
             event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time=event_time,
             acting_user=acting_user,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: stream_id,
-                    "property": field,
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: stream_id,
+                "property": field,
+            },
         )
 
     event = dict(
@@ -249,13 +242,11 @@ def do_set_realm_user_default_setting(
             event_type=RealmAuditLog.REALM_DEFAULT_USER_SETTINGS_CHANGED,
             event_time=event_time,
             acting_user=acting_user,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: value,
-                    "property": name,
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_value,
+                RealmAuditLog.NEW_VALUE: value,
+                "property": name,
+            },
         )
 
     event = dict(
@@ -289,11 +280,9 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
         event_type=RealmAuditLog.REALM_DEACTIVATED,
         event_time=event_time,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+        },
     )
 
     ScheduledEmail.objects.filter(realm=realm).delete()
@@ -331,11 +320,9 @@ def do_reactivate_realm(realm: Realm) -> None:
             realm=realm,
             event_type=RealmAuditLog.REALM_REACTIVATED,
             event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+            },
         )
 
 
@@ -431,7 +418,7 @@ def do_change_realm_org_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data=str({"old_value": old_value, "new_value": org_type}),
+        extra_data={"old_value": old_value, "new_value": org_type},
     )
 
     event = dict(type="realm", op="update", property="org_type", value=org_type)
@@ -455,7 +442,7 @@ def do_change_realm_plan_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data=str({"old_value": old_value, "new_value": plan_type}),
+        extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
     if plan_type == Realm.PLAN_TYPE_PLUS:
