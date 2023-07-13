@@ -49,4 +49,12 @@ class zulip::smokescreen {
     content => template('zulip/supervisor/smokescreen.conf.erb'),
     notify  => Service[supervisor],
   }
+
+  file { '/etc/logrotate.d/smokescreen':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/logrotate/smokescreen',
+  }
 }
