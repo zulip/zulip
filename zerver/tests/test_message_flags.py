@@ -298,10 +298,9 @@ class UnreadCountTests(ZulipTestCase):
             self.client_post(
                 "/json/messages/flags/narrow",
                 {
-                    "anchor": message_ids[3],
-                    "include_anchor": "false",
-                    "num_before": 0,
-                    "num_after": 5,
+                    "anchor": message_ids[0],
+                    "num_before": 2,
+                    "num_after": 2,
                     "narrow": orjson.dumps(
                         [
                             {"operator": "stream", "operand": "Verona"},
@@ -313,18 +312,20 @@ class UnreadCountTests(ZulipTestCase):
                 },
             )
         )
-        # In this topic (1, 3, 5, 7, 9), processes everything after 3.
-        self.assertEqual(response["processed_count"], 3)
-        self.assertEqual(response["updated_count"], 3)
-        self.assertEqual(response["first_processed_id"], message_ids[5])
-        self.assertEqual(response["last_processed_id"], message_ids[9])
-        self.assertEqual(response["found_oldest"], False)
-        self.assertEqual(response["found_newest"], True)
+        # In this topic (1, 3, 5, 7, 9), processes 1 and 3.
+        self.assertEqual(response["processed_count"], 2)
+        self.assertEqual(response["updated_count"], 1)
+        self.assertEqual(response["first_processed_id"], message_ids[1])
+        self.assertEqual(response["last_processed_id"], message_ids[3])
+        self.assertEqual(response["found_oldest"], True)
+        self.assertEqual(response["found_newest"], False)
+        message_ids_total = message_ids[0:4] 
+        message_ids_total.extend(message_ids[8:])
         self.assertCountEqual(
             UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
             .extra(where=[UserMessage.where_unread()])
             .values_list("message_id", flat=True),
-            message_ids[5::2],
+            message_ids_total,
         )
 
     def test_update_flags_for_narrow_misuse(self) -> None:
