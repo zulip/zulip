@@ -78,7 +78,7 @@ class Command(ZulipBaseCommand):
             realm = self.get_realm(options)
             user_profiles = self.get_users(options, realm, is_bot=False, include_deactivated=True)
         else:
-            user_profile_query = UserProfile.objects.select_related().filter(is_bot=False)
+            user_profile_query = UserProfile.objects.select_related("realm").filter(is_bot=False)
 
             if not user_profile_query.exists():
                 # This case provides a special error message if one
