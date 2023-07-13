@@ -830,16 +830,13 @@ class StripeTest(StripeTestCase):
             ],
         )
         self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
-        self.assertEqual(
-            orjson.loads(
-                assert_is_not_none(
-                    RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                    .values_list("extra_data", flat=True)
-                    .first()
-                )
-            )["automanage_licenses"],
-            True,
+        first_audit_log_entry = (
+            RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+            .values_list("extra_data", flat=True)
+            .first()
         )
+        assert first_audit_log_entry is not None
+        self.assertTrue(first_audit_log_entry["automanage_licenses"])
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -971,16 +968,13 @@ class StripeTest(StripeTestCase):
             ],
         )
         self.assertEqual(audit_log_entries[2][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
-        self.assertEqual(
-            orjson.loads(
-                assert_is_not_none(
-                    RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                    .values_list("extra_data", flat=True)
-                    .first()
-                )
-            )["automanage_licenses"],
-            False,
+        first_audit_log_entry = (
+            RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+            .values_list("extra_data", flat=True)
+            .first()
         )
+        assert first_audit_log_entry is not None
+        self.assertFalse(first_audit_log_entry["automanage_licenses"])
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -1099,16 +1093,13 @@ class StripeTest(StripeTestCase):
                 ],
             )
             self.assertEqual(audit_log_entries[3][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
-            self.assertEqual(
-                orjson.loads(
-                    assert_is_not_none(
-                        RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                        .values_list("extra_data", flat=True)
-                        .first()
-                    )
-                )["automanage_licenses"],
-                True,
+            first_audit_log_entry = (
+                RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                .values_list("extra_data", flat=True)
+                .first()
             )
+            assert first_audit_log_entry is not None
+            self.assertTrue(first_audit_log_entry["automanage_licenses"])
 
             realm = get_realm("zulip")
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -1365,16 +1356,13 @@ class StripeTest(StripeTestCase):
                 ],
             )
             self.assertEqual(audit_log_entries[2][0], RealmAuditLog.REALM_PLAN_TYPE_CHANGED)
-            self.assertEqual(
-                orjson.loads(
-                    assert_is_not_none(
-                        RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
-                        .values_list("extra_data", flat=True)
-                        .first()
-                    )
-                )["automanage_licenses"],
-                False,
+            first_audit_log_entry = (
+                RealmAuditLog.objects.filter(event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED)
+                .values_list("extra_data", flat=True)
+                .first()
             )
+            assert first_audit_log_entry is not None
+            self.assertFalse(first_audit_log_entry["automanage_licenses"])
 
             realm = get_realm("zulip")
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
@@ -2490,7 +2478,7 @@ class StripeTest(StripeTestCase):
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = str({"old_discount": None, "new_discount": Decimal("85")})
+        expected_extra_data = {"old_discount": None, "new_discount": str(Decimal("85"))}
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.login_user(user)
         # Check that the discount appears in page_params
@@ -2543,9 +2531,10 @@ class StripeTest(StripeTestCase):
             event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED
         ).last()
         assert realm_audit_log is not None
-        expected_extra_data = str(
-            {"old_discount": Decimal("25.0000"), "new_discount": Decimal("50")}
-        )
+        expected_extra_data = {
+            "old_discount": str(Decimal("25.0000")),
+            "new_discount": str(Decimal("50")),
+        }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, user)
 
@@ -2579,7 +2568,7 @@ class StripeTest(StripeTestCase):
         ).last()
         assert realm_audit_log is not None
         expected_extra_data = {"sponsorship_pending": True}
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
 
     def test_get_discount_for_realm(self) -> None:
@@ -2896,10 +2885,9 @@ class StripeTest(StripeTestCase):
         audit_log = RealmAuditLog.objects.get(
             event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN
         )
-        extra_data: str = assert_is_not_none(audit_log.extra_data)
         self.assertEqual(audit_log.realm, user.realm)
-        self.assertEqual(orjson.loads(extra_data)["monthly_plan_id"], monthly_plan.id)
-        self.assertEqual(orjson.loads(extra_data)["annual_plan_id"], annual_plan.id)
+        self.assertEqual(audit_log.extra_data["monthly_plan_id"], monthly_plan.id)
+        self.assertEqual(audit_log.extra_data["annual_plan_id"], annual_plan.id)
 
         invoice_plans_as_needed(self.next_month)
 
@@ -3916,7 +3904,7 @@ class StripeTest(StripeTestCase):
         assert realm_audit_log is not None
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
         self.assertEqual(realm_audit_log.acting_user, iago)
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
         update_billing_method_of_current_plan(realm, False, acting_user=iago)
         plan.refresh_from_db()
@@ -3927,7 +3915,7 @@ class StripeTest(StripeTestCase):
         assert realm_audit_log is not None
         expected_extra_data = {"charge_automatically": plan.charge_automatically}
         self.assertEqual(realm_audit_log.acting_user, iago)
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
     @mock_stripe()
     def test_customer_has_credit_card_as_default_payment_method(self, *mocks: Mock) -> None:
@@ -4552,7 +4540,7 @@ class BillingHelpersTest(ZulipTestCase):
             "old_value": RemoteZulipServer.PLAN_TYPE_SELF_HOSTED,
             "new_value": RemoteZulipServer.PLAN_TYPE_STANDARD,
         }
-        self.assertEqual(remote_realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(remote_realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(remote_server.plan_type, RemoteZulipServer.PLAN_TYPE_STANDARD)
 
     def test_deactivate_remote_server(self) -> None:

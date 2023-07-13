@@ -1054,22 +1054,20 @@ class DeferredWorker(QueueProcessingWorker):
             output_dir = tempfile.mkdtemp(prefix="zulip-export-")
             export_event = RealmAuditLog.objects.get(id=event["id"])
             user_profile = get_user_profile_by_id(event["user_profile_id"])
-            extra_data = {}
-            if export_event.extra_data is not None:
-                extra_data = orjson.loads(export_event.extra_data)
+            extra_data = export_event.extra_data
             if extra_data.get("started_timestamp") is not None:
                 logger.error(
                     "Marking export for realm %s as failed due to retry -- possible OOM during export?",
                     realm.string_id,
                 )
                 extra_data["failed_timestamp"] = timezone_now().timestamp()
-                export_event.extra_data = orjson.dumps(extra_data).decode()
+                export_event.extra_data = extra_data
                 export_event.save(update_fields=["extra_data"])
                 notify_realm_export(user_profile)
                 return
 
             extra_data["started_timestamp"] = timezone_now().timestamp()
-            export_event.extra_data = orjson.dumps(extra_data).decode()
+            export_event.extra_data = extra_data
             export_event.save(update_fields=["extra_data"])
 
             logger.info(
@@ -1089,7 +1087,7 @@ class DeferredWorker(QueueProcessingWorker):
                 )
             except Exception:
                 extra_data["failed_timestamp"] = timezone_now().timestamp()
-                export_event.extra_data = orjson.dumps(extra_data).decode()
+                export_event.extra_data = extra_data
                 export_event.save(update_fields=["extra_data"])
                 logging.exception(
                     "Data export for %s failed after %s",
@@ -1104,7 +1102,7 @@ class DeferredWorker(QueueProcessingWorker):
 
             # Update the extra_data field now that the export is complete.
             extra_data["export_path"] = urllib.parse.urlparse(public_url).path
-            export_event.extra_data = orjson.dumps(extra_data).decode()
+            export_event.extra_data = extra_data
             export_event.save(update_fields=["extra_data"])
 
             # Send a direct message notification letting the user who

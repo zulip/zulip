@@ -712,7 +712,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=end_time,
-            extra_data=orjson.dumps({"foo": "bar"}).decode(),
+            extra_data={"data": "foo"},
         )
         send_analytics_to_remote_server()
         check_counts(6, 4, 3, 2, 1)
@@ -722,11 +722,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=end_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+            },
         )
         send_analytics_to_remote_server()
         check_counts(7, 5, 3, 2, 2)
@@ -829,11 +827,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+            },
         )
         # Event type not in SYNCED_BILLING_EVENTS -- should not be included
         RealmAuditLog.objects.create(
@@ -888,12 +884,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
         self.assertEqual(remote_log_entry.backfilled, True)
         assert remote_log_entry.extra_data is not None
-        self.assertEqual(
-            orjson.loads(remote_log_entry.extra_data), {RealmAuditLog.ROLE_COUNT: user_count}
-        )
+        self.assertEqual(remote_log_entry.extra_data, {RealmAuditLog.ROLE_COUNT: user_count})
         self.assertEqual(remote_log_entry.event_type, RealmAuditLog.USER_REACTIVATED)
 
-    # This verify that the bouncer is forward-compatible with remote servers using
+    # This verifies that the bouncer is backwards-compatible with remote servers using
     # TextField to store extra_data.
     @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
     @responses.activate
@@ -904,7 +898,6 @@ class AnalyticsBouncerTest(BouncerTestCase):
             request_extra_data: object,
             *,
             expected_extra_data: object = None,
-            expected_extra_data_json: object = None,
             skip_audit_log_check: bool = False,
         ) -> None:
             user = self.example_user("hamlet")
@@ -949,27 +942,21 @@ class AnalyticsBouncerTest(BouncerTestCase):
             self.assertEqual(remote_log_entry.remote_id, log_entry.id)
             self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
             self.assertEqual(remote_log_entry.extra_data, expected_extra_data)
-            self.assertEqual(remote_log_entry.extra_data_json, expected_extra_data_json)
 
         # Pre-migration extra_data
         verify_request_with_overridden_extra_data(
             request_extra_data=orjson.dumps({"fake_data": 42}).decode(),
-            expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
-            expected_extra_data_json={"fake_data": 42},
+            expected_extra_data={"fake_data": 42},
         )
-        verify_request_with_overridden_extra_data(
-            request_extra_data=None, expected_extra_data=None, expected_extra_data_json={}
-        )
+        verify_request_with_overridden_extra_data(request_extra_data=None, expected_extra_data={})
         # Post-migration extra_data
         verify_request_with_overridden_extra_data(
             request_extra_data={"fake_data": 42},
-            expected_extra_data=orjson.dumps({"fake_data": 42}).decode(),
-            expected_extra_data_json={"fake_data": 42},
+            expected_extra_data={"fake_data": 42},
         )
         verify_request_with_overridden_extra_data(
             request_extra_data={},
-            expected_extra_data=orjson.dumps({}).decode(),
-            expected_extra_data_json={},
+            expected_extra_data={},
         )
         # Invalid extra_data
         with self.assertLogs(level="WARNING") as m:

@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional
 
-import orjson
 from django.db import transaction
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
@@ -57,16 +56,14 @@ def do_add_linkifier(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_LINKIFIER_ADDED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_linkifiers": realm_linkifiers,
-                "added_linkifier": LinkifierDict(
-                    pattern=pattern,
-                    url_template=url_template,
-                    id=linkifier.id,
-                ),
-            }
-        ).decode(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+            "added_linkifier": LinkifierDict(
+                pattern=pattern,
+                url_template=url_template,
+                id=linkifier.id,
+            ),
+        },
     )
     notify_linkifiers(realm, realm_linkifiers)
 
@@ -97,12 +94,13 @@ def do_remove_linkifier(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_LINKIFIER_REMOVED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_linkifiers": realm_linkifiers,
-                "removed_linkifier": {"pattern": pattern, "url_template": url_template},
-            }
-        ).decode(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+            "removed_linkifier": {
+                "pattern": pattern,
+                "url_template": url_template,
+            },
+        },
     )
     notify_linkifiers(realm, realm_linkifiers)
 
@@ -130,16 +128,14 @@ def do_update_linkifier(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_LINKIFIER_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_linkifiers": realm_linkifiers,
-                "changed_linkifier": LinkifierDict(
-                    pattern=pattern,
-                    url_template=url_template,
-                    id=linkifier.id,
-                ),
-            }
-        ).decode(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+            "changed_linkifier": LinkifierDict(
+                pattern=pattern,
+                url_template=url_template,
+                id=linkifier.id,
+            ),
+        },
     )
 
     notify_linkifiers(realm, realm_linkifiers)
@@ -187,10 +183,8 @@ def check_reorder_linkifiers(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_linkifiers": realm_linkifiers,
-            }
-        ).decode(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+        },
     )
     notify_linkifiers(realm, realm_linkifiers)

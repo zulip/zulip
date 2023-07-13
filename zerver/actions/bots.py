@@ -1,6 +1,5 @@
 from typing import Optional, Union
 
-import orjson
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
@@ -98,12 +97,10 @@ def do_change_default_sending_stream(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
+        },
     )
 
     if user_profile.is_bot:
@@ -141,12 +138,10 @@ def do_change_default_events_register_stream(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
+        },
     )
 
     if user_profile.is_bot:
@@ -185,12 +180,10 @@ def do_change_default_all_public_streams(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+        },
     )
 
     if user_profile.is_bot:

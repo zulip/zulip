@@ -482,7 +482,6 @@ def remote_server_post_analytics(
         remote_realm_audit_logs = []
         for row in realmauditlog_rows:
             extra_data = {}
-            extra_data_str = None
             # Remote servers that do support JSONField will pass extra_data
             # as a dict. Otherwise, extra_data will be either a string or None.
             if isinstance(row["extra_data"], str):
@@ -495,13 +494,12 @@ def remote_server_post_analytics(
                     extra_data = orjson.loads(row["extra_data"])
                 except orjson.JSONDecodeError:
                     raise JsonableError(_("Malformed audit log data"))
-                extra_data_str = row["extra_data"]
             elif row["extra_data"] is not None:
+                # This is guaranteed to succeed because row["extra_data"] would be parsed
+                # from JSON with our json validator and validated with check_dict if it
+                # is not a str or None.
                 assert isinstance(row["extra_data"], dict)
                 extra_data = row["extra_data"]
-                # This is guaranteed to succeed because row["extra_data"] would be parsed
-                # from JSON with our json validator if it is a dict.
-                extra_data_str = orjson.dumps(row["extra_data"]).decode()
             remote_realm_audit_logs.append(
                 RemoteRealmAuditLog(
                     realm_id=row["realm"],
@@ -511,8 +509,7 @@ def remote_server_post_analytics(
                         row["event_time"], tz=datetime.timezone.utc
                     ),
                     backfilled=row["backfilled"],
-                    extra_data=extra_data_str,
-                    extra_data_json=extra_data,
+                    extra_data=extra_data,
                     event_type=row["event_type"],
                 )
             )

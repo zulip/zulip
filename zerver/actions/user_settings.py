@@ -1,7 +1,6 @@
 import datetime
 from typing import Iterable, Optional, Union
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
@@ -195,8 +194,7 @@ def do_change_full_name(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
         event_time=event_time,
-        extra_data=old_name,
-        extra_data_json={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
+        extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
     )
     payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
     send_event(
@@ -352,7 +350,7 @@ def do_change_avatar_fields(
         realm=user_profile.realm,
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
-        extra_data=str({"avatar_source": avatar_source}),
+        extra_data={"avatar_source": avatar_source},
         event_time=event_time,
         acting_user=acting_user,
     )
@@ -410,13 +408,11 @@ def do_change_user_setting(
         event_time=event_time,
         acting_user=acting_user,
         modified_user=user_profile,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: setting_value,
-                "property": setting_name,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: setting_value,
+            "property": setting_name,
+        },
     )
 
     # Disabling digest emails should clear a user's email queue

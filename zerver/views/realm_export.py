@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -103,9 +102,7 @@ def delete_realm_export(request: HttpRequest, user: UserProfile, export_id: int)
     except RealmAuditLog.DoesNotExist:
         raise JsonableError(_("Invalid data export ID"))
 
-    export_data = {}
-    if audit_log_entry.extra_data is not None:
-        export_data = orjson.loads(audit_log_entry.extra_data)
+    export_data = audit_log_entry.extra_data
     if export_data.get("deleted_timestamp") is not None:
         raise JsonableError(_("Export already deleted"))
     if export_data.get("export_path") is None:

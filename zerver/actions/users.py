@@ -3,7 +3,6 @@ from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any, Dict, List, Optional
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -274,11 +273,9 @@ def do_deactivate_user(
             acting_user=acting_user,
             event_type=RealmAuditLog.USER_DEACTIVATED,
             event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            },
         )
         do_increment_logging_stat(
             user_profile.realm,
@@ -327,13 +324,11 @@ def do_change_user_role(
         acting_user=acting_user,
         event_type=RealmAuditLog.USER_ROLE_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        },
     )
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)

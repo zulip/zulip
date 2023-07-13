@@ -5,7 +5,6 @@ import orjson
 from django.core.exceptions import ValidationError
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.utils import assert_is_not_none
 from zerver.models import RealmAuditLog, RealmFilter, url_template_validator
 
 
@@ -275,15 +274,12 @@ class RealmFilterTest(ZulipTestCase):
 
         def assert_linkifier_audit_logs(expected_id_order: List[int]) -> None:
             """Check if the audit log created orders the linkifiers correctly"""
-            extra_data = orjson.loads(
-                assert_is_not_none(
-                    RealmAuditLog.objects.filter(
-                        acting_user=iago,
-                        event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED,
-                    )
-                    .latest("event_time")
-                    .extra_data
+            extra_data = (
+                RealmAuditLog.objects.filter(
+                    acting_user=iago, event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED
                 )
+                .latest("event_time")
+                .extra_data
             )
             audit_logged_ids = [
                 linkifier_dict["id"] for linkifier_dict in extra_data["realm_linkifiers"]

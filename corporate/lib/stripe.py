@@ -7,7 +7,6 @@ from decimal import Decimal
 from functools import wraps
 from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union
 
-import orjson
 import stripe
 from django.conf import settings
 from django.core.signing import Signer
@@ -487,12 +486,10 @@ def make_end_of_cycle_updates_if_needed(
                 realm=realm,
                 event_time=event_time,
                 event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
-                extra_data=orjson.dumps(
-                    {
-                        "monthly_plan_id": plan.id,
-                        "annual_plan_id": new_plan.id,
-                    }
-                ).decode(),
+                extra_data={
+                    "monthly_plan_id": plan.id,
+                    "annual_plan_id": new_plan.id,
+                },
             )
             return new_plan, new_plan_ledger_entry
 
@@ -625,12 +622,6 @@ def compute_plan_parameters(
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
 
-def decimal_to_float(obj: object) -> object:
-    if isinstance(obj, Decimal):
-        return float(obj)
-    raise TypeError  # nocoverage
-
-
 def is_free_trial_offer_enabled() -> bool:
     return settings.FREE_TRIAL_DAYS not in (None, 0)
 
@@ -656,8 +647,7 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
         event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED,
         server=remote_server,
         event_time=timezone_now(),
-        extra_data=str({"old_value": old_value, "new_value": plan_type}),
-        extra_data_json={"old_value": old_value, "new_value": plan_type},
+        extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
 
@@ -741,9 +731,7 @@ def process_initial_upgrade(
             acting_user=user,
             event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
-            extra_data=orjson.dumps(plan_params, default=decimal_to_float).decode(),
-            # Note that DjangoJSONEncoder has builtin support for parsing Decimal
-            extra_data_json=plan_params,
+            extra_data=plan_params,
         )
 
     if not free_trial:
@@ -979,8 +967,7 @@ def attach_discount_to_realm(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
         event_time=timezone_now(),
-        extra_data=str({"old_discount": old_discount, "new_discount": discount}),
-        extra_data_json={"old_discount": old_discount, "new_discount": discount},
+        extra_data={"old_discount": old_discount, "new_discount": discount},
     )
 
 
@@ -995,8 +982,7 @@ def update_sponsorship_status(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
         event_time=timezone_now(),
-        extra_data=str({"sponsorship_pending": sponsorship_pending}),
-        extra_data_json={"sponsorship_pending": sponsorship_pending},
+        extra_data={"sponsorship_pending": sponsorship_pending},
     )
 
 
@@ -1250,6 +1236,5 @@ def update_billing_method_of_current_plan(
             acting_user=acting_user,
             event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
             event_time=timezone_now(),
-            extra_data=str({"charge_automatically": charge_automatically}),
-            extra_data_json={"charge_automatically": charge_automatically},
+            extra_data={"charge_automatically": charge_automatically},
         )

@@ -1,4 +1,3 @@
-import ast
 import datetime
 import hashlib
 import secrets
@@ -11,7 +10,6 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Iterable,
     List,
     Optional,
     Pattern,
@@ -4448,8 +4446,7 @@ class AbstractRealmAuditLog(models.Model):
     ROLE_COUNT_HUMANS = "11"
     ROLE_COUNT_BOTS = "12"
 
-    extra_data = models.TextField(null=True)
-    extra_data_json = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
+    extra_data = models.JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     # Event types
     USER_CREATED = 101
@@ -4567,29 +4564,6 @@ class AbstractRealmAuditLog(models.Model):
 
     class Meta:
         abstract = True
-
-    def save(
-        self,
-        force_insert: bool = False,
-        force_update: bool = False,
-        using: Optional[str] = None,
-        update_fields: Optional[Iterable[str]] = None,
-    ) -> None:
-        # Unless extra_data is set and extra_data_json is unset (defaults to {})
-        # we do not attempt to auto convert extra_data to extra_data_json
-        if self.extra_data is not None and not self.extra_data_json:
-            try:
-                if self.extra_data.startswith("{'"):
-                    self.extra_data_json = ast.literal_eval(self.extra_data)
-                else:
-                    self.extra_data_json = orjson.loads(self.extra_data)
-            except (
-                Exception
-            ):  # nocoverage # This is not intended to happen at all for correctly written code
-                raise Exception(
-                    "extra_data_json must be explicitly set if extra_data is not str()'d from a dict or JSON-encoded."
-                )
-        super().save(force_insert, force_update, using, update_fields)
 
 
 class RealmAuditLog(AbstractRealmAuditLog):
