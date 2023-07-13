@@ -636,20 +636,6 @@ ul {
                     }
                 }
             }
-
-            & tbody:empty::after,
-            &:empty::after {
-                content: attr(data-empty);
-                display: block;
-
-                text-align: center;
-                color: hsl(0deg 0% 67%);
-            }
-
-            &:empty {
-                display: block;
-                padding: 5px;
-            }
         }
     }
 

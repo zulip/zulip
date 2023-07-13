@@ -53,14 +53,6 @@
             }
         }
 
-        .required-text:empty::after {
-            content: attr(data-empty);
-            display: block;
-            font-style: italic;
-            color: hsl(0deg 0% 67%);
-            position: absolute;
-        }
-
         #empty-table-message {
             background-color: var(--color-background);
             padding: 3em 1em;
