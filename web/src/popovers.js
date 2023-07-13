@@ -730,17 +730,13 @@ export function hide_playground_links_popover() {
 }
 
 export function register_click_handlers() {
-    $("#main_div").on(
-        "click",
-        ".sender_name, .sender_name-in-status, .message-avatar",
-        function (e) {
-            const $row = $(this).closest(".message_row");
-            e.stopPropagation();
-            const message = message_lists.current.get(rows.id($row));
-            const user = people.get_by_user_id(message.sender_id);
-            show_user_info_popover_for_message(this, user, message);
-        },
-    );
+    $("#main_div").on("click", ".sender_name, .message-avatar", function (e) {
+        const $row = $(this).closest(".message_row");
+        e.stopPropagation();
+        const message = message_lists.current.get(rows.id($row));
+        const user = people.get_by_user_id(message.sender_id);
+        show_user_info_popover_for_message(this, user, message);
+    });
 
     $("#main_div").on("click", ".user-mention", function (e) {
         const id_string = $(this).attr("data-user-id");

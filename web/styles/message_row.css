@@ -342,8 +342,7 @@ $time_column_min_width: 50px; /* + padding */
                     padding: $message_box_margin 0 0 5px;
                 }
 
-                .sender_name,
-                .sender_name-in-status {
+                .sender_name {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;

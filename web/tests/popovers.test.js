@@ -111,7 +111,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     page_params.is_spectator = false;
     override($.fn, "popover", noop);
 
-    const selection = ".sender_name, .sender_name-in-status, .message-avatar";
+    const selection = ".sender_name, .message-avatar";
     const handler = $("#main_div").get_on_handler("click", selection);
 
     const message = {
