@@ -235,14 +235,26 @@
 
     .typeahead-menu li a {
         padding: 3px 30px;
-
-        .search_list_item {
-            display: flex;
-            align-items: center;
-        }
+        /* Override white-space: nowrap from zulip.css */
+        white-space: normal;
 
         .search_list_item .pill-container {
             margin-left: 5px;
         }
+    }
+
+    .pill {
+        align-items: baseline;
+    }
+
+    .pill-image {
+        /* Add line-height equal to height to mimic baseline alignment. */
+        line-height: 20px;
+        align-self: center;
+    }
+
+    /* Break really long words (unlikely to happen). */
+    .search_list_item span {
+        word-break: break-word;
     }
 }
