@@ -1577,21 +1577,11 @@ td.pointer {
 .sender_name {
     display: inline-block;
     font-weight: 700;
-}
-
-.sender_name-in-status {
-    margin-right: 3px;
-    font-weight: 700;
-}
-
-.sender_name,
-.sender_name-in-status {
     color: var(--color-text-sender-name);
 }
 
 .sender_name_hovered {
-    .sender_name,
-    .sender_name-in-status {
+    .sender_name {
         color: hsl(200deg 100% 40%);
     }
 }
