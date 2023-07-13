@@ -14,6 +14,7 @@ import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
+import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 
 export function get_actions_popover_content_context(message_id) {
@@ -130,6 +131,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     const can_move_topic = settings_data.user_can_move_messages_between_streams();
     const can_rename_topic = settings_data.user_can_move_messages_to_another_topic();
+    const unread_count = unread.num_unread_for_topic(stream_id, topic_name) > 0;
     return {
         stream_name: sub.name,
         stream_id: sub.stream_id,
@@ -144,5 +146,6 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         color: sub.color,
         has_starred_messages,
         url,
+        unread_count,
     };
 }

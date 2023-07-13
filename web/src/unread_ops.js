@@ -489,3 +489,109 @@ export function initialize() {
             window_focused = false;
         });
 }
+
+export function mark_topic_as_unread(stream_id, topic, cont) {
+    //     channel.post({
+    //         url: "/json/messages/flags/narrow",
+    //         data: {stream_id, topic_name: topic},
+    //         success: cont,
+    //     });
+    // }
+    // {
+        const args = {
+            // We use an anchor of "oldest", not "first_unread", because
+            // "first_unread" will be the oldest non-muted unread message,
+            // which would result in muted unreads older than the first
+            // unread not being processed.
+            anchor: "oldest",
+            messages_read_till_now: 0,
+            num_after: INITIAL_BATCH_SIZE,
+            
+        };
+        const request = {
+            anchor: args.anchor,
+            // anchor="oldest" is an anchor ID lower than any valid
+            // message ID; and follow-up requests will have already
+            // processed the anchor ID, so we just want this to be
+            // unconditionally false.
+            include_anchor: false,
+            num_before: 0,
+            num_after: args.num_after,
+            op: "remove",
+            flag: "read",
+            // Since there's a database index on is:unread, it's a fast
+            // search query and thus worth including here as an optimization.
+            narrow: JSON.stringify([{operator: "is", operand: "unread", negated: true},{"negated":false,"operator":"stream","operand":stream_id},{"negated":false,"operator":"topic","operand": topic}]),
+            //,{"negated":false,"operator":"stream","operand":stream_id},{"negated":false,"operator":"topic","operand": topic}]
+        };
+        channel.post({
+            url: "/json/messages/flags/narrow",
+            data: request,
+            success(data) {
+                const messages_read_till_now = args.messages_read_till_now + data.updated_count;
+    
+                if (!data.found_newest) {
+                    // If we weren't able to make everything as read in a
+                    // single API request, then show a loading indicator.
+                    ui_report.loading(
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}",
+                            },
+                            {N: messages_read_till_now},
+                        ),
+                        $("#request-progress-status-banner"),
+                    );
+                    if (!loading_indicator_displayed) {
+                        loading.make_indicator(
+                            $("#request-progress-status-banner .loading-indicator"),
+                            {abs_positioned: true},
+                        );
+                        loading_indicator_displayed = true;
+                    }
+    
+                    mark_all_as_read({
+                        anchor: data.last_processed_id,
+                        messages_read_till_now,
+                        num_after: FOLLOWUP_BATCH_SIZE,
+                    });
+                } else {
+                    if (loading_indicator_displayed) {
+                        // Only show the success message if a progress banner was displayed.
+                        ui_report.loading(
+                            $t_html(
+                                {
+                                    defaultMessage:
+                                        "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}",
+                                },
+                                {N: messages_read_till_now},
+                            ),
+                            $("#request-progress-status-banner"),
+                            true,
+                        );
+                        loading_indicator_displayed = false;
+                    }
+    
+                    if (unread.old_unreads_missing) {
+                        // In the rare case that the user had more than
+                        // 50K total unreads on the server, the client
+                        // won't have known about all of them; this was
+                        // communicated to the client via
+                        // unread.old_unreads_missing.
+                        //
+                        // However, since we know we just marked
+                        // **everything** as read, we know that we now
+                        // have a correct data set of unreads.
+                        unread.clear_old_unreads_missing();
+                        blueslip.log("Cleared old_unreads_missing after bankruptcy.");
+                    }
+                }
+                dialog_widget.close_modal();
+            },
+            error(xhr) {
+               
+            },
+        });
+    }
+    

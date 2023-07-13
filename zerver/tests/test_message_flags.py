@@ -294,6 +294,39 @@ class UnreadCountTests(ZulipTestCase):
             message_ids[5::2],
         )
 
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[3],
+                    "include_anchor": "false",
+                    "num_before": 0,
+                    "num_after": 5,
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": "stream", "operand": "Verona"},
+                            {"operator": "topic", "operand": "topic 1"},
+                        ]
+                    ).decode(),
+                    "op": "remove",
+                    "flag": "read",
+                },
+            )
+        )
+        # In this topic (1, 3, 5, 7, 9), processes everything after 3.
+        self.assertEqual(response["processed_count"], 3)
+        self.assertEqual(response["updated_count"], 3)
+        self.assertEqual(response["first_processed_id"], message_ids[5])
+        self.assertEqual(response["last_processed_id"], message_ids[9])
+        self.assertEqual(response["found_oldest"], False)
+        self.assertEqual(response["found_newest"], True)
+        self.assertCountEqual(
+            UserMessage.objects.filter(user_profile_id=user.id, message_id__in=message_ids)
+            .extra(where=[UserMessage.where_unread()])
+            .values_list("message_id", flat=True),
+            message_ids[5::2],
+        )
+
     def test_update_flags_for_narrow_misuse(self) -> None:
         self.login("hamlet")
 
@@ -368,7 +401,7 @@ class UnreadCountTests(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid stream ID")
 
-    def test_mark_all_topics_unread_with_invalid_stream_name(self) -> None:
+    def test_mark_all_topics_read_with_invalid_stream_name(self) -> None:
         self.login("hamlet")
         invalid_stream_id = "12345678"
         result = self.client_post(

@@ -529,6 +529,11 @@ export function initialize() {
                 instance.hide();
             });
 
+            $popper.one("click", ".sidebar-popover-mark-topic-unread", () => {
+                unread_ops.mark_topic_as_unread(stream_id, topic_name);
+                instance.hide();
+            });
+
             $popper.one("click", ".sidebar-popover-delete-topic-messages", () => {
                 const html_body = render_delete_topic_modal({topic_name});
 
