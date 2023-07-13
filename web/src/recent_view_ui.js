@@ -293,8 +293,6 @@ export function hide_loading_indicator() {
     loading.destroy_indicator($("#recent_view_loading_messages_indicator"), {
         abs_positioned: false,
     });
-    // Show empty table text if there are no messages fetched.
-    $("#recent_view_table tbody").addClass("required-text");
 }
 
 export function process_messages(messages) {
