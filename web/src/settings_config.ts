@@ -519,17 +519,17 @@ export const expires_in_values = {
         description: $t({defaultMessage: "1 day"}),
         default: false,
     },
-    threeDays: {
+    three_days: {
         value: 3 * 24 * 60,
         description: $t({defaultMessage: "3 days"}),
         default: false,
     },
-    tenDays: {
+    ten_days: {
         value: 10 * 24 * 60,
         description: $t({defaultMessage: "10 days"}),
         default: true,
     },
-    thirtyDays: {
+    thirty_days: {
         value: 30 * 24 * 60,
         description: $t({defaultMessage: "30 days"}),
         default: false,
