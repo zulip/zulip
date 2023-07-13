@@ -363,14 +363,6 @@
         }
     }
 
-    .message_embed .data-container::after {
-        background: linear-gradient(
-            0deg,
-            hsl(212deg 28% 18%),
-            transparent 100%
-        );
-    }
-
     .column-left .left-sidebar,
     .stream_name_search_section,
     .group_name_search_section,

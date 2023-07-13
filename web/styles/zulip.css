@@ -1695,6 +1695,12 @@ div.focused_table {
 
     &.condensed {
         max-height: 8.5em;
+        /* Narrower screens need a bit more preview space because there is less space.
+           This is also important for link previews, since otherwise they would get cut
+           off halfway through the image. */
+        @media (width < $sm_min) {
+            max-height: 25em;
+        }
         min-height: 0;
         overflow: hidden;
     }
