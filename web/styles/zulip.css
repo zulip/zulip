@@ -264,6 +264,7 @@ body {
     --color-background-navbar: hsl(0deg 0% 13%);
     --color-background-active-narrow-filter: hsl(200deg 17% 18%);
     --color-background-hover-narrow-filter: hsl(136deg 25% 73% / 20%);
+    --color-background-hover-new-topic-button: hsl(235deg 100% 70% / 11%);
     --color-navbar-bottom-border: hsl(0deg 0% 0% / 60%);
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-background-modal: hsl(212deg 28% 18%);

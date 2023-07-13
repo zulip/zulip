@@ -485,6 +485,15 @@
         color: inherit;
     }
 
+    #compose_recipient_box #recipient_box_new_topic_button,
+    #compose_buttons #new_topic_button {
+        color: hsl(231deg 30% 65%);
+
+        &:hover {
+            color: hsl(231deg 30% 70%);
+        }
+    }
+
     .dropdown-list-search .dropdown-list-search-input:focus {
         background-color: hsl(225deg 6% 7%);
         border: 1px solid hsl(0deg 0% 100% / 50%);

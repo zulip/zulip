@@ -66,10 +66,13 @@
 
             transition: background-color 0.2s ease;
 
+            color: hsl(231deg 20% 55%);
+
             &:hover {
                 background-color: var(
                     --color-background-hover-new-topic-button
                 );
+                color: hsl(231deg 20% 40%);
             }
         }
     }
@@ -652,7 +655,6 @@ textarea.new_message_textarea,
     #recipient_box_new_topic_button {
         background: none;
         border: none;
-        color: inherit;
     }
 
     /* Styles for input in the recipient_box */
@@ -677,8 +679,11 @@ textarea.new_message_textarea,
         padding: 3px 10px;
         margin: 1px;
 
+        color: hsl(231deg 20% 55%);
+
         &:hover {
             background-color: var(--color-background-hover-new-topic-button);
+            color: hsl(231deg 20% 40%);
         }
 
         /* This is temporary until we figure out how to display
