@@ -256,7 +256,7 @@ export function initialize_kitchen_sink_stuff() {
     const throttled_mousewheelhandler = _.throttle((_e, delta) => {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
-        // page, the pointer may still need to move.
+        // page, the selected message may still need to move.
 
         if (delta < 0 && message_viewport.at_top()) {
             navigate.up();
@@ -269,7 +269,11 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.$scroll_container.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_overlay_or_modal_open() && narrow_state.is_message_feed_visible()) {
+        if (
+            !overlays.is_overlay_or_modal_open() &&
+            !popovers.any_active() &&
+            narrow_state.is_message_feed_visible()
+        ) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
