@@ -260,3 +260,16 @@ This is an example python exception
 **timestamp:** 2023-05-31 11:06:16
 ```"""
         self.check_webhook("sample_event_through_alert", expected_topic, expected_message)
+
+    def test_raven_sdk_python_event(self) -> None:
+        payload = self.get_body("raven_sdk_python_event")
+        result = self.client_post(
+            self.url,
+            payload,
+            content_type="application/json",
+        )
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'Raven SDK' event isn't currently supported by the Sentry webhook; ignoring",
+            result,
+        )

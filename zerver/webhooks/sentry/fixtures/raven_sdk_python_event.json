@@ -1,0 +1,134 @@
+{
+    "id": "4311163364",
+    "project": "python-raven",
+    "project_name": "python-raven",
+    "project_slug": "python-raven",
+    "logger": null,
+    "level": "error",
+    "culprit": "__main__ in <module>",
+    "message": "ZeroDivisionError: division by zero",
+    "url": "https://nitk-46.sentry.io/issues/4311163364/?referrer=webhooks_plugin",
+    "triggering_rules": [
+        "a"
+    ],
+    "event": {
+        "event_id": "b465c7ca9581475093a6f5c3c6a523d2",
+        "level": "error",
+        "version": "6",
+        "type": "error",
+        "fingerprint": [
+            "{{ default }}"
+        ],
+        "culprit": "__main__ in <module>",
+        "logentry": {
+            "formatted": "ZeroDivisionError: division by zero"
+        },
+        "logger": "",
+        "modules": {
+            "python": "3.10.6"
+        },
+        "platform": "python",
+        "timestamp": 1689194871.0,
+        "received": 1689194872.041476,
+        "exception": {
+            "values": [
+                {
+                    "type": "ZeroDivisionError",
+                    "value": "division by zero",
+                    "module": "builtins",
+                    "stacktrace": {
+                        "frames": [
+                            {
+                                "function": "<module>",
+                                "module": "__main__",
+                                "filename": "sentry/temp.py",
+                                "abs_path": "/home/sbansal1999/p/sentry/temp.py",
+                                "lineno": 6,
+                                "pre_context": [
+                                    "from raven import Client",
+                                    "",
+                                    "client = Client('https://6130e69dc19e426e87deaa54744be1cd@o4505261800423424.ingest.sentry.io/4505518370586624')",
+                                    "",
+                                    "try:"
+                                ],
+                                "context_line": "    1 / 0",
+                                "post_context": [
+                                    "except ZeroDivisionError:",
+                                    "    client.captureException()"
+                                ],
+                                "in_app": false,
+                                "vars": {
+                                    "Client": "<class 'raven.base.Client'>",
+                                    "__annotations__": {},
+                                    "__builtins__": "<module 'builtins' (built-in)>",
+                                    "__cached__": null,
+                                    "__doc__": null,
+                                    "__file__": "'/home/sbansal1999/p/sentry/temp.py'",
+                                    "__loader__": "<_frozen_importlib_external.SourceFileLoader object at 0x7fd40cfdd930>",
+                                    "__name__": "'__main__'",
+                                    "__package__": null,
+                                    "__spec__": null,
+                                    "client": "<raven.base.Client object at 0x7fd40d107c10>"
+                                },
+                                "data": {
+                                    "orig_in_app": -1
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "tags": [
+            [
+                "level",
+                "error"
+            ],
+            [
+                "server_name",
+                "sbansal1999-OMEN-Laptop-15-en0xxx"
+            ]
+        ],
+        "extra": {
+            "sys.argv": [
+                "'temp.py'"
+            ]
+        },
+        "sdk": {
+            "name": "raven-python",
+            "version": "6.10.0"
+        },
+        "ingest_path": [
+            {
+                "version": "23.6.2",
+                "public_key": "XE7QiyuNlja9PZ7I9qJlwQotzecWrUIN91BAO7Q5R38"
+            }
+        ],
+        "key_id": "3267509",
+        "project": 4505518370586624,
+        "grouping_config": {
+            "enhancements": "eJybzDRxc15qeXFJZU6qlZGBkbGugaGuoeEEAHJMCAM",
+            "id": "newstyle:2023-01-11"
+        },
+        "_metrics": {
+            "bytes.ingested.event": 1549,
+            "bytes.stored.event": 2356
+        },
+        "_ref": 4505518370586624,
+        "_ref_version": 2,
+        "hashes": [
+            "cac8c3af9240e70448922144a14f55b3"
+        ],
+        "location": "sentry/temp.py",
+        "metadata": {
+            "display_title_with_tree_label": false,
+            "filename": "sentry/temp.py",
+            "function": "<module>",
+            "type": "ZeroDivisionError",
+            "value": "division by zero"
+        },
+        "nodestore_insert": 1689194873.112506,
+        "title": "ZeroDivisionError: division by zero",
+        "id": "b465c7ca9581475093a6f5c3c6a523d2"
+    }
+}
