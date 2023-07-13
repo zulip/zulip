@@ -137,15 +137,21 @@
         letter-spacing: normal;
         padding-left: 0;
     }
-}
 
-.typeahead-menu li a {
-    .search_list_item {
+    .typeahead-menu {
         display: flex;
-        align-items: center;
+        flex-direction: column;
     }
 
-    .search_list_item .pill-container {
-        margin-left: 5px;
+    .typeahead-menu li a {
+        .search_list_item {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search_list_item .pill-container {
+            margin-left: 5px;
+        }
     }
 }
