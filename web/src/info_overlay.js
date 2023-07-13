@@ -182,7 +182,7 @@ Coffee`,
                         <span></span>
                     </div>
                     <div>
-                        <strong>Add tea</strong> - 2 tbsp
+                        <strong>Submit final budget</strong> - Due Friday
                     </div>
                 </label>
             </li>
@@ -192,7 +192,7 @@ Coffee`,
                         <input type="checkbox" class="task" checked="checked">
                         <span></span>
                     </div>
-                    <strike><em><strong>Add Water</strong> - 100 ml</em></strike>
+                    <strike><em><strong>Share draft budget</strong> - By Tuesday</em></strike>
                 </label>
             </li>
         </ul>
