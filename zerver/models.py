@@ -879,7 +879,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         )
 
     def get_active_users(self) -> QuerySet["UserProfile"]:
-        return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+        return UserProfile.objects.filter(realm=self, is_active=True)
 
     def get_first_human_user(self) -> Optional["UserProfile"]:
         """A useful value for communications with newly created realms.
