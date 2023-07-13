@@ -146,7 +146,7 @@ server via `ps -ef` or reading bash history. Prefer
         # throw an error if they don't exist.
         if realm is not None:
             try:
-                return UserProfile.objects.select_related().get(
+                return UserProfile.objects.select_related("realm").get(
                     delivery_email__iexact=email.strip(), realm=realm
                 )
             except UserProfile.DoesNotExist:
@@ -158,7 +158,9 @@ server via `ps -ef` or reading bash history. Prefer
         # optimistically try to see if there is exactly one user with
         # that email; if so, we'll return it.
         try:
-            return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
+            return UserProfile.objects.select_related("realm").get(
+                delivery_email__iexact=email.strip()
+            )
         except MultipleObjectsReturned:
             raise CommandError(
                 "This Zulip server contains multiple users with that email (in different realms);"
