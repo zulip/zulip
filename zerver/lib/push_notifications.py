@@ -1025,10 +1025,8 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         apple_devices = list(
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
         )
-        if android_devices:
-            send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
-        if apple_devices:
-            send_apple_push_notification(user_identity, apple_devices, apns_payload)
+        send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
+        send_apple_push_notification(user_identity, apple_devices, apns_payload)
 
     # We intentionally use the non-truncated message_ids here.  We are
     # assuming in this very rare case that the user has manually
