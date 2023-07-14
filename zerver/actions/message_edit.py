@@ -347,7 +347,8 @@ def get_visibility_policy_after_merge(
     return UserTopic.VisibilityPolicy.INHERIT
 
 
-# We use transaction.atomic to support select_for_update in the attachment codepath.
+# This must be called already in a transaction, with a write lock on
+# the target_message.
 @transaction.atomic(savepoint=False)
 def do_update_message(
     user_profile: UserProfile,
@@ -1154,6 +1155,7 @@ def check_time_limit_for_change_all_propagate_mode(
     )
 
 
+@transaction.atomic(durable=True)
 def check_update_message(
     user_profile: UserProfile,
     message_id: int,
@@ -1169,7 +1171,7 @@ def check_update_message(
     and raises a JsonableError if otherwise.
     It returns the number changed.
     """
-    message, ignored_user_message = access_message(user_profile, message_id)
+    message, ignored_user_message = access_message(user_profile, message_id, lock_message=True)
 
     if content is not None and not user_profile.realm.allow_message_editing:
         raise JsonableError(_("Your organization has turned off message editing"))
