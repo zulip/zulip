@@ -121,6 +121,7 @@ function render_code_sections() {
 }
 
 function scrollToHash(simplebar) {
+    try{
     const hash = window.location.hash;
     const scrollbar = simplebar.getScrollElement();
     if (hash !== "" && $(hash).length > 0) {
@@ -132,7 +133,8 @@ function scrollToHash(simplebar) {
         scrollbar.scrollTop = position;
     } else {
         scrollbar.scrollTop = 0;
-    }
+    }}
+    catch(error){}
 }
 
 const cache = new Map();
