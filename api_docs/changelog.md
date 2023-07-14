@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 198**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  [`GET /user_groups`](/api/get-user-groups),
+  [`POST /user_groups/create`](/api/create-user-group),
+  [`PATCH /user_groups/{user_group_id}`](/api/update-user-group):Renamed
+  group setting `can_mention_group_id` to `can_mention_group`.
+
 **Feature level 197**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),

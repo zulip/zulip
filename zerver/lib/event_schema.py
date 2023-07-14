@@ -1689,7 +1689,7 @@ group_type = DictType(
         ("direct_subgroup_ids", ListType(int)),
         ("description", str),
         ("is_system_group", bool),
-        ("can_mention_group_id", int),
+        ("can_mention_group", int),
     ]
 )
 
@@ -1737,7 +1737,7 @@ user_group_data_type = DictType(
         # force vertical
         ("name", str),
         ("description", str),
-        ("can_mention_group_id", int),
+        ("can_mention_group", int),
     ],
 )
 

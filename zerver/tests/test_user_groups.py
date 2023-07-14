@@ -320,7 +320,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "support",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Support team",
-            "can_mention_group_id": orjson.dumps(moderators_group.id).decode(),
+            "can_mention_group": orjson.dumps(moderators_group.id).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
@@ -331,7 +331,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "test",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Test group",
-            "can_mention_group_id": orjson.dumps(leadership_group.id).decode(),
+            "can_mention_group": orjson.dumps(leadership_group.id).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
@@ -345,7 +345,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "marketing",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Marketing team",
-            "can_mention_group_id": orjson.dumps(nobody_group.id).decode(),
+            "can_mention_group": orjson.dumps(nobody_group.id).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_success(result)
@@ -359,7 +359,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group_id": orjson.dumps(internet_group.id).decode(),
+            "can_mention_group": orjson.dumps(internet_group.id).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
@@ -373,7 +373,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group_id": orjson.dumps(owners_group.id).decode(),
+            "can_mention_group": orjson.dumps(owners_group.id).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(
@@ -384,7 +384,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "name": "frontend",
             "members": orjson.dumps([hamlet.id]).decode(),
             "description": "Frontend team",
-            "can_mention_group_id": orjson.dumps(1111).decode(),
+            "can_mention_group": orjson.dumps(1111).decode(),
         }
         result = self.client_post("/json/user_groups/create", info=params)
         self.assert_json_error(result, "Invalid user group")
@@ -489,7 +489,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         self.login("hamlet")
         params = {
-            "can_mention_group_id": orjson.dumps(moderators_group.id).decode(),
+            "can_mention_group": orjson.dumps(moderators_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
@@ -497,7 +497,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(support_group.can_mention_group, moderators_group)
 
         params = {
-            "can_mention_group_id": orjson.dumps(marketing_group.id).decode(),
+            "can_mention_group": orjson.dumps(marketing_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
@@ -508,7 +508,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name="role:nobody", realm=hamlet.realm, is_system_group=True
         )
         params = {
-            "can_mention_group_id": orjson.dumps(nobody_group.id).decode(),
+            "can_mention_group": orjson.dumps(nobody_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_success(result)
@@ -519,7 +519,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name="role:owners", realm=hamlet.realm, is_system_group=True
         )
         params = {
-            "can_mention_group_id": orjson.dumps(owners_group.id).decode(),
+            "can_mention_group": orjson.dumps(owners_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(
@@ -530,7 +530,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name="role:internet", realm=hamlet.realm, is_system_group=True
         )
         params = {
-            "can_mention_group_id": orjson.dumps(internet_group.id).decode(),
+            "can_mention_group": orjson.dumps(internet_group.id).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(
@@ -538,7 +538,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         params = {
-            "can_mention_group_id": orjson.dumps(1111).decode(),
+            "can_mention_group": orjson.dumps(1111).decode(),
         }
         result = self.client_patch(f"/json/user_groups/{support_group.id}", info=params)
         self.assert_json_error(result, "Invalid user group")

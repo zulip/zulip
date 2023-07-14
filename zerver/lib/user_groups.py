@@ -26,7 +26,7 @@ class UserGroupDict(TypedDict):
     members: List[int]
     direct_subgroup_ids: List[int]
     is_system_group: bool
-    can_mention_group_id: int
+    can_mention_group: int
 
 
 def access_user_group_by_id(
@@ -144,7 +144,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
             members=[],
             direct_subgroup_ids=[],
             is_system_group=user_group.is_system_group,
-            can_mention_group_id=user_group.can_mention_group_id,
+            can_mention_group=user_group.can_mention_group_id,
         )
 
     membership = UserGroupMembership.objects.filter(user_group__realm=realm).values_list(

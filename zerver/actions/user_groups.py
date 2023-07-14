@@ -183,7 +183,7 @@ def do_send_create_user_group_event(
             id=user_group.id,
             is_system_group=user_group.is_system_group,
             direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
-            can_mention_group_id=user_group.can_mention_group_id,
+            can_mention_group=user_group.can_mention_group_id,
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -443,6 +443,5 @@ def do_change_user_group_permission_setting(
         ).decode(),
     )
 
-    setting_id_name = setting_name + "_id"
-    event_data_dict: Dict[str, Union[str, int]] = {setting_id_name: setting_value_group.id}
+    event_data_dict: Dict[str, Union[str, int]] = {setting_name: setting_value_group.id}
     do_send_user_group_update_event(user_group, event_data_dict)

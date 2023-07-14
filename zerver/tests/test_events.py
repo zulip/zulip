@@ -1414,7 +1414,7 @@ class NormalActionsTest(BaseAction):
                 backend, "can_mention_group", moderators_group, acting_user=None
             )
         )
-        check_user_group_update("events[0]", events[0], "can_mention_group_id")
+        check_user_group_update("events[0]", events[0], "can_mention_group")
 
         # Test add members
         hamlet = self.example_user("hamlet")
