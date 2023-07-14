@@ -1,3 +1,5 @@
+import os
+
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
@@ -55,3 +57,29 @@ class IntegrationsTestCase(ZulipTestCase):
             "Add them to zerver.lib.integrations.DOC_SCREENSHOT_CONFIG"
         )
         self.assertFalse(missing_webhooks, message)
+
+    def test_no_missing_screenshot_path(self) -> None:
+        message = (
+            '"{path}" does not exist for webhook {webhook_name}.\n'
+            "Consider updating zerver.lib.integrations.DOC_SCREENSHOT_CONFIG\n"
+            'and running "tools/generate-integration-docs-screenshot" to keep the screenshots up-to-date.'
+        )
+        for integration_name in DOC_SCREENSHOT_CONFIG:
+            configs = DOC_SCREENSHOT_CONFIG[integration_name]
+            for screenshot_config in configs:
+                integration = INTEGRATIONS[integration_name]
+                if screenshot_config.fixture_name == "":
+                    # Such screenshot configs only use a placeholder
+                    # fixture_name.
+                    continue
+                fixture_path, image_path = get_fixture_and_image_paths(
+                    integration, screenshot_config
+                )
+                self.assertTrue(
+                    os.path.isfile(fixture_path),
+                    message.format(path=fixture_path, webhook_name=integration_name),
+                )
+                self.assertTrue(
+                    os.path.isfile(image_path),
+                    message.format(path=image_path, webhook_name=integration_name),
+                )
