@@ -2551,7 +2551,7 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=28,
+            query_count=27,
             cache_count=8,
             target_users=target_users,
             is_realm_admin=True,
@@ -2660,7 +2660,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=13,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
@@ -2674,7 +2674,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=other_user, acting_user=other_user)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=9,
+            query_count=8,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
