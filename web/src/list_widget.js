@@ -166,6 +166,7 @@ export function create($container, list, opts) {
         filtered_list: list,
         reverse_mode: false,
         filter_value: "",
+        $scroll_container: scroll_util.get_scroll_element(opts.$simplebar_container),
     };
 
     if (!valid_filter_opts(opts)) {
@@ -310,8 +311,6 @@ export function create($container, list, opts) {
         },
 
         set_up_event_handlers() {
-            meta.$scroll_container = scroll_util.get_scroll_element(opts.$simplebar_container);
-
             // on scroll of the nearest scrolling container, if it hits the bottom
             // of the container then fetch a new block of items and render them.
             meta.$scroll_container.on("scroll.list_widget_container", function () {
