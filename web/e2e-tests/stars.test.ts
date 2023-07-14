@@ -7,7 +7,7 @@ import * as common from "./lib/common";
 const message = "test star";
 
 async function stars_count(page: Page): Promise<number> {
-    return (await page.$$("#zhome .fa-star:not(.empty-star)")).length;
+    return (await page.$$("#zhome .zulip-icon-star-filled:not(.empty-star)")).length;
 }
 
 async function toggle_test_star_message(page: Page): Promise<void> {
@@ -49,7 +49,7 @@ async function stars_test(page: Page): Promise<void> {
     assert.strictEqual(await stars_count(page), 0, "Unexpected already starred message(s).");
 
     await toggle_test_star_message(page);
-    await page.waitForSelector("#zhome .fa-star", {visible: true});
+    await page.waitForSelector("#zhome .zulip-icon-star-filled", {visible: true});
     assert.strictEqual(
         await stars_count(page),
         1,
