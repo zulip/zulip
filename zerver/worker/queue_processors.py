@@ -68,6 +68,7 @@ from zerver.lib.email_notifications import MissedMessageData, handle_missedmessa
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.push_notifications import (
     clear_push_device_tokens,
     handle_push_notification,
@@ -99,7 +100,6 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     filter_to_valid_prereg_users,
-    flush_per_request_caches,
     get_bot_services,
     get_client,
     get_system_bot,

@@ -4,7 +4,6 @@ import hashlib
 import secrets
 import time
 from collections import defaultdict
-from contextlib import suppress
 from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
@@ -83,6 +82,10 @@ from zerver.lib.cache import (
     user_profile_cache_key,
 )
 from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.per_request_cache import (
+    flush_per_request_cache,
+    return_same_value_during_entire_request,
+)
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -183,17 +186,7 @@ def query_for_ids(
     return query
 
 
-# Doing 1000 remote cache requests to get_display_recipient is quite slow,
-# so add a local cache as well as the remote cache.
-#
-# This local cache has a lifetime of just a single request; it is
-# cleared inside `flush_per_request_caches` in our middleware.  It
-# could be replaced with smarter bulk-fetching logic that deduplicates
-# queries for the same recipient; this is just a convenient way to
-# write that code.
-per_request_display_recipient_cache: Dict[int, List[UserDisplayRecipient]] = {}
-
-
+@return_same_value_during_entire_request
 def get_display_recipient_by_id(
     recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
 ) -> List[UserDisplayRecipient]:
@@ -205,10 +198,7 @@ def get_display_recipient_by_id(
     # Have to import here, to avoid circular dependency.
     from zerver.lib.display_recipient import get_display_recipient_remote_cache
 
-    if recipient_id not in per_request_display_recipient_cache:
-        result = get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
-        per_request_display_recipient_cache[recipient_id] = result
-    return per_request_display_recipient_cache[recipient_id]
+    return get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_type_id)
 
 
 def get_display_recipient(recipient: "Recipient") -> List[UserDisplayRecipient]:
@@ -1310,22 +1300,9 @@ def get_linkifiers_cache_key(realm_id: int) -> str:
     return f"{cache.KEY_PREFIX}:all_linkifiers_for_realm:{realm_id}"
 
 
-# We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_linkifiers_cache: Dict[int, List[LinkifierDict]] = {}
-
-
-def realm_in_local_linkifiers_cache(realm_id: int) -> bool:
-    return realm_id in per_request_linkifiers_cache
-
-
-def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
-    if not realm_in_local_linkifiers_cache(realm_id):
-        per_request_linkifiers_cache[realm_id] = linkifiers_for_realm_remote_cache(realm_id)
-    return per_request_linkifiers_cache[realm_id]
-
-
+@return_same_value_during_entire_request
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
-def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
+def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
     return [
         LinkifierDict(
             pattern=linkifier.pattern,
@@ -1339,19 +1316,11 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
 def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
     realm_id = instance.realm_id
     cache_delete(get_linkifiers_cache_key(realm_id))
-    with suppress(KeyError):
-        per_request_linkifiers_cache.pop(realm_id)
+    flush_per_request_cache("linkifiers_for_realm")
 
 
 post_save.connect(flush_linkifiers, sender=RealmFilter)
 post_delete.connect(flush_linkifiers, sender=RealmFilter)
-
-
-def flush_per_request_caches() -> None:
-    global per_request_display_recipient_cache
-    per_request_display_recipient_cache = {}
-    global per_request_linkifiers_cache
-    per_request_linkifiers_cache = {}
 
 
 class RealmPlayground(models.Model):

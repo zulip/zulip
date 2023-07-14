@@ -55,6 +55,7 @@ from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
 from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
@@ -99,7 +100,6 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     clear_supported_auth_backends_cache,
-    flush_per_request_caches,
     get_realm,
     get_realm_stream,
     get_stream,

@@ -240,10 +240,10 @@ We generally try to avoid in-process backend caching in Zulip's Django
 codebase, because every Zulip production installation involves
 multiple servers. We do have a few, however:
 
-- `per_request_display_recipient_cache`: A cache flushed at the start
-  of every request; this simplifies correctly implementing our goal of
-  not repeatedly fetching the "display recipient" (e.g. stream name)
-  for each message in the `GET /messages` codebase.
+- `@return_same_value_during_entire_request`: We use this decorator to
+  cache values in memory during the lifetime of a request. We use this
+  for linkifiers and display recipients. The middleware knows how to
+  flush the relevant in-memory caches at the start of a request.
 - Caches of various data, like the `SourceMap` object, that are
   expensive to construct, not needed for most requests, and don't
   change once a Zulip server has been deployed in production.

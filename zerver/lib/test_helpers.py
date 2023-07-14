@@ -46,6 +46,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
 from zerver.lib.upload.s3 import S3UploadBackend
@@ -56,7 +57,6 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
-    flush_per_request_caches,
     get_client,
     get_realm,
     get_stream,
