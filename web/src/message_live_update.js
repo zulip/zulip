@@ -52,10 +52,10 @@ export function update_starred_view(message_id, new_value) {
         const $elt = $row.find(".star");
         const $star_container = $row.find(".star_container");
         if (starred) {
-            $elt.addClass("fa-star").removeClass("fa-star-o");
+            $elt.addClass("zulip-icon-star-filled").removeClass("zulip-icon-star");
             $star_container.removeClass("empty-star");
         } else {
-            $elt.removeClass("fa-star").addClass("fa-star-o");
+            $elt.removeClass("zulip-icon-star-filled").addClass("zulip-icon-star");
             $star_container.addClass("empty-star");
         }
         const data_template_id = starred
