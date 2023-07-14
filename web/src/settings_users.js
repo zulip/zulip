@@ -287,7 +287,7 @@ section.bots.create_table = () => {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier: render_admin_user_list,
-        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item)}']`),
+        html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id)}']`),
         filter: {
             $element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
@@ -380,7 +380,7 @@ export function update_bot_data(bot_user_id) {
         return;
     }
 
-    bot_list_widget.render_item(bot_user_id);
+    bot_list_widget.render_item(bot_info(bot_user_id));
 }
 
 export function update_user_data(user_id, new_data) {
