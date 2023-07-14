@@ -70,7 +70,13 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import EmojiInfo, Message, Realm, linkifiers_for_realm
+from zerver.models import (
+    EmojiInfo,
+    Message,
+    Realm,
+    get_name_keyed_dict_for_active_realm_emoji,
+    linkifiers_for_realm,
+)
 
 ReturnT = TypeVar("ReturnT")
 
@@ -2537,7 +2543,7 @@ def do_convert(
         stream_name_info = mention_data.get_stream_name_map(stream_names)
 
         if content_has_emoji_syntax(content):
-            active_realm_emoji = message_realm.get_active_emoji()
+            active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
         else:
             active_realm_emoji = {}
 

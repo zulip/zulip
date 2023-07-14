@@ -9,7 +9,14 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
-from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
+from zerver.models import (
+    Reaction,
+    Realm,
+    RealmEmoji,
+    UserProfile,
+    get_all_custom_emoji_for_realm,
+    get_name_keyed_dict_for_active_realm_emoji,
+)
 
 emoji_codes_path = static_path("generated/emoji/emoji_codes.json")
 if not os.path.exists(emoji_codes_path):  # nocoverage
@@ -56,10 +63,12 @@ def translate_emoticons(text: str) -> str:
 
 
 def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
-    realm_emojis = realm.get_active_emoji()
-    realm_emoji = realm_emojis.get(emoji_name)
+    # TODO: Just ask callers for realm_id. Also consider returning a
+    #       tiny dataclass instead of a tuple.
+    realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm.id)
+    realm_emoji = realm_emoji_dict.get(emoji_name)
     if realm_emoji is not None:
-        return str(realm_emojis[emoji_name]["id"]), Reaction.REALM_EMOJI
+        return str(realm_emoji["id"]), Reaction.REALM_EMOJI
     if emoji_name == "zulip":
         return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
     if emoji_name in name_to_codepoint:
@@ -71,7 +80,10 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_ty
     # For a given realm and emoji type, checks whether an emoji
     # code is valid for new reactions, or not.
     if emoji_type == "realm_emoji":
-        realm_emojis = realm.get_emoji()
+        # We cache emoji, so this generally avoids a round trip,
+        # but it does require deserializing a bigger data structure
+        # than we need.
+        realm_emojis = get_all_custom_emoji_for_realm(realm.id)
         realm_emoji = realm_emojis.get(emoji_code)
         if realm_emoji is None:
             raise JsonableError(_("Invalid custom emoji."))
