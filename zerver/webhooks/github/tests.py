@@ -284,6 +284,15 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", expected_topic, expected_message)
 
+    def test_pull_request_review_msg_edited(self) -> None:
+        ignored_actions = [
+            "edited",
+        ]
+        for action in ignored_actions:
+            data = dict(action=action)
+            payload = orjson.dumps(data).decode()
+            self.verify_post_is_ignored(payload, "pull_request_review")
+
     def test_pull_request_review_comment_msg(self) -> None:
         expected_message = "baxterthehacker created [PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.check_webhook("pull_request_review_comment", TOPIC_PR, expected_message)

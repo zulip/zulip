@@ -836,6 +836,12 @@ def get_zulip_event_name(
             return "pull_request_auto_merge"
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
+    # Github sends 2 events for reviews with comments. See #26145
+    elif header_event == "pull_request_review":
+        action = payload["action"].tame(check_string)
+        if action == "edited":
+            return None
+        return "pull_request_review"
     elif header_event == "push":
         if is_merge_queue_push_event(payload):
             return None
