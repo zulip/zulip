@@ -198,7 +198,7 @@ export function build_stream_list(force_rerender) {
         elems.push(sidebar_row.get_li());
     }
 
-    topic_list.clear();
+    topic_zoom.clear_topics();
     $parent.empty();
 
     const any_pinned_streams =
