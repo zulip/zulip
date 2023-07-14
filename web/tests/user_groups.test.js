@@ -16,7 +16,7 @@ run_test("user_groups", () => {
         members: new Set([1, 2]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5]),
-        can_mention_group_id: 2,
+        can_mention_group: 2,
     };
 
     const params = {};
@@ -34,7 +34,7 @@ run_test("user_groups", () => {
         members: new Set([3]),
         is_system_group: false,
         direct_subgroup_ids: new Set([]),
-        can_mention_group_id: 2,
+        can_mention_group: 2,
     };
     const all = {
         name: "Everyone",
@@ -42,7 +42,7 @@ run_test("user_groups", () => {
         members: new Set([1, 2, 3]),
         is_system_group: false,
         direct_subgroup_ids: new Set([4, 5, 6]),
-        can_mention_group_id: 1,
+        can_mention_group: 1,
     };
 
     user_groups.add(admins);

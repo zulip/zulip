@@ -12,7 +12,7 @@ export type UserGroup = {
     members: Set<number>;
     is_system_group: boolean;
     direct_subgroup_ids: Set<number>;
-    can_mention_group_id: number;
+    can_mention_group: number;
 };
 
 // The members field is a number array which we convert
@@ -46,7 +46,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
-        can_mention_group_id: user_group_raw.can_mention_group_id,
+        can_mention_group: user_group_raw.can_mention_group,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -96,7 +96,7 @@ export function get_user_groups_allowed_to_mention(): UserGroup[] {
 
     const user_groups = get_realm_user_groups();
     return user_groups.filter((group) => {
-        const can_mention_group_id = group.can_mention_group_id;
+        const can_mention_group_id = group.can_mention_group;
         return (
             page_params.user_id !== undefined &&
             is_user_in_group(can_mention_group_id, page_params.user_id)

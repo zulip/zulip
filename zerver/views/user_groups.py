@@ -49,7 +49,9 @@ def add_user_group(
     name: str = REQ(),
     members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
     description: str = REQ(),
-    can_mention_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_mention_group_id: Optional[int] = REQ(
+        "can_mention_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     name = check_user_group_name(name)
@@ -101,7 +103,9 @@ def edit_user_group(
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
     name: Optional[str] = REQ(default=None),
     description: Optional[str] = REQ(default=None),
-    can_mention_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    can_mention_group_id: Optional[int] = REQ(
+        "can_mention_group", json_validator=check_int, default=None
+    ),
 ) -> HttpResponse:
     if name is None and description is None and can_mention_group_id is None:
         raise JsonableError(_("No new data supplied"))
