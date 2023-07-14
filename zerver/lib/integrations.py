@@ -716,10 +716,8 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "buildbot": [ScreenshotConfig("started.json")],
     "canarytoken": [ScreenshotConfig("canarytoken_real.json")],
     "circleci": [
-        ScreenshotConfig(
-            "github_bionic_production_build_success_multiple_parties.json", image_name="001.png"
-        ),
-        ScreenshotConfig("bitbucket_private_repo_pull_request_failure.json", image_name="002.png"),
+        ScreenshotConfig("bitbucket_job_completed.json", image_name="001.png"),
+        ScreenshotConfig("github_job_completed.json", image_name="002.png"),
     ],
     "clubhouse": [ScreenshotConfig("story_create.json")],
     "codeship": [ScreenshotConfig("error_build.json")],
@@ -763,15 +761,15 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "jotform": [ScreenshotConfig("response.json")],
     "json": [ScreenshotConfig("json_github_push__1_commit.json")],
     "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
-    "lidarr": [ScreenshotConfig("lidarr_tracks_grabbed.json")],
+    "lidarr": [ScreenshotConfig("lidarr_album_grabbed.json")],
     "linear": [ScreenshotConfig("issue_create_complex.json")],
     "mention": [ScreenshotConfig("webfeeds.json")],
     "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
     "newrelic": [
-        ScreenshotConfig("incident_opened.json", "001.png"),
-        ScreenshotConfig("incident_acknowledged.json", "002.png"),
-        ScreenshotConfig("incident_closed.json", "003.png"),
+        ScreenshotConfig("incident_active_new.json", "001.png"),
+        ScreenshotConfig("incident_acknowledged_new.json", "002.png"),
+        ScreenshotConfig("incident_closed_new.json", "003.png"),
     ],
     "opbeat": [ScreenshotConfig("error_reopen.json")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
