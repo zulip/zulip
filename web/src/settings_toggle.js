@@ -19,7 +19,7 @@ export function initialize() {
             {label: $t({defaultMessage: "Personal"}), key: "settings"},
             {label: $t({defaultMessage: "Organization"}), key: "organization"},
         ],
-        callback(name, key) {
+        callback(_name, key) {
             if (key === "organization") {
                 settings_panel_menu.show_org_settings();
             } else {

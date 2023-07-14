@@ -15,6 +15,7 @@ const namespace = require("./namespace");
 const test = require("./test");
 const blueslip = require("./zblueslip");
 const zjquery = require("./zjquery");
+const zpage_billing_params = require("./zpage_billing_params");
 const zpage_params = require("./zpage_params");
 
 process.env.NODE_ENV = "test";
@@ -53,7 +54,7 @@ assert.notEqual(files.length, 0, "No tests found");
 
 // Set up our namespace helpers.
 const window = new Proxy(global, {
-    set(obj, prop, value) {
+    set(_obj, prop, value) {
         namespace.set_global(prop, value);
         return true;
     },
@@ -110,12 +111,15 @@ test.set_verbose(files.length === 1);
         ls_container.clear();
         _.throttle = immediate;
         _.debounce = immediate;
+        zpage_billing_params.reset();
         zpage_params.reset();
 
         namespace.mock_esm("../../src/blueslip", blueslip);
         require("../../src/blueslip");
         namespace.mock_esm("../../src/i18n", stub_i18n);
         require("../../src/i18n");
+        namespace.mock_esm("../../src/billing/page_params", zpage_billing_params);
+        require("../../src/billing/page_params");
         namespace.mock_esm("../../src/page_params", zpage_params);
         require("../../src/page_params");
         namespace.mock_esm("../../src/user_settings", zpage_params);

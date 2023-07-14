@@ -3,13 +3,13 @@ import logging
 import tempfile
 import time
 import traceback
-from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
+from typing import Any, Callable, Dict, List, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode, urljoin
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.db import connection
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.response import HttpResponseBase
 from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.shortcuts import render
@@ -22,7 +22,7 @@ from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
-from sentry_sdk import capture_exception
+from sentry_sdk import capture_exception, set_tag
 from sentry_sdk.integrations.logging import ignore_logger
 from typing_extensions import Concatenate, ParamSpec
 
@@ -33,7 +33,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticatio
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
-from zerver.lib.request import REQ, RequestNotes, has_request_variables, set_request, unset_request
+from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import (
     AsynchronousResponse,
     json_response,
@@ -124,17 +124,12 @@ def write_log_line(
     path: str,
     method: str,
     remote_ip: str,
-    requestor_for_logs: str,
+    requester_for_logs: str,
     client_name: str,
     client_version: Optional[str] = None,
     status_code: int = 200,
-    error_content: Optional[AnyStr] = None,
-    error_content_iter: Optional[Iterable[AnyStr]] = None,
+    error_content: Optional[bytes] = None,
 ) -> None:
-    assert error_content is None or error_content_iter is None
-    if error_content is not None:
-        error_content_iter = (error_content,)
-
     time_delta = -1
     # A time duration of -1 means the StartLogRequests middleware
     # didn't run for some reason
@@ -202,9 +197,9 @@ def write_log_line(
     else:
         extra_request_data = ""
     if client_version is None:
-        logger_client = f"({requestor_for_logs} via {client_name})"
+        logger_client = f"({requester_for_logs} via {client_name})"
     else:
-        logger_client = f"({requestor_for_logs} via {client_name}/{client_version})"
+        logger_client = f"({requester_for_logs} via {client_name}/{client_version})"
     logger_timing = f"{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}"
     logger_line = f"{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}"
     if status_code in [200, 304] and method == "GET" and path.startswith("/static"):
@@ -225,26 +220,10 @@ def write_log_line(
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
-        assert error_content_iter is not None
-        error_content_list = list(error_content_iter)
-        if not error_content_list:
-            error_data = ""
-        elif isinstance(error_content_list[0], str):
-            error_data = "".join(error_content_list)
-        elif isinstance(error_content_list[0], bytes):
-            error_data = repr(b"".join(error_content_list))
+        error_data = repr(error_content)
         if len(error_data) > 200:
             error_data = "[content more than 200 characters]"
-        logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requestor_for_logs)
-
-
-class RequestContext(MiddlewareMixin):
-    def __call__(self, request: HttpRequest) -> HttpResponseBase:
-        set_request(request)
-        try:
-            return self.get_response(request)
-        finally:
-            unset_request()
+        logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requester_for_logs)
 
 
 # We take advantage of `has_request_variables` being called multiple times
@@ -308,6 +287,8 @@ class LogRequests(MiddlewareMixin):
             request_notes.client_name = "Unparsable"
             request_notes.client_version = None
 
+        set_tag("client", request_notes.client_name)
+
         request_notes.log_data = {}
         record_request_start_data(request_notes.log_data)
 
@@ -349,20 +330,17 @@ class LogRequests(MiddlewareMixin):
 
         remote_ip = request.META["REMOTE_ADDR"]
 
-        # Get the requestor's identifier and client, if available.
+        # Get the requester's identifier and client, if available.
         request_notes = RequestNotes.get_notes(request)
-        requestor_for_logs = request_notes.requestor_for_logs
-        if requestor_for_logs is None:
+        requester_for_logs = request_notes.requester_for_logs
+        if requester_for_logs is None:
             if request_notes.remote_server is not None:
-                requestor_for_logs = request_notes.remote_server.format_requestor_for_logs()
+                requester_for_logs = request_notes.remote_server.format_requester_for_logs()
             elif request.user.is_authenticated:
-                requestor_for_logs = request.user.format_requestor_for_logs()
+                requester_for_logs = request.user.format_requester_for_logs()
             else:
-                requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
+                requester_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
 
-        content_iter = (
-            response.streaming_content if isinstance(response, StreamingHttpResponse) else None
-        )
         content = response.content if isinstance(response, HttpResponse) else None
 
         assert request_notes.client_name is not None and request_notes.log_data is not None
@@ -372,12 +350,11 @@ class LogRequests(MiddlewareMixin):
             request.path,
             request.method,
             remote_ip,
-            requestor_for_logs,
+            requester_for_logs,
             request_notes.client_name,
             client_version=request_notes.client_version,
             status_code=response.status_code,
             error_content=content,
-            error_content_iter=content_iter,
         )
         return response
 
@@ -579,6 +556,8 @@ class HostDomainMiddleware(MiddlewareMixin):
 
             return render(request, "zerver/invalid_realm.html", status=404)
 
+        set_tag("realm", request_notes.realm.string_id)
+
         # Check that we're not using the non-canonical form of a REALM_HOSTS subdomain
         if subdomain in settings.REALM_HOSTS:
             host = request.get_host().lower()
@@ -614,6 +593,50 @@ class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
             pass
         else:
             request.META["REMOTE_ADDR"] = real_ip
+
+
+class ProxyMisconfigurationError(JsonableError):
+    http_status_code = 500
+    data_fields = ["proxy_reason"]
+
+    def __init__(self, proxy_reason: str) -> None:
+        self.proxy_reason = proxy_reason
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Reverse proxy misconfiguration: {proxy_reason}")
+
+
+class DetectProxyMisconfiguration(MiddlewareMixin):
+    def process_view(
+        self,
+        request: HttpRequest,
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
+        kwargs: Dict[str, Any],
+    ) -> None:
+        proxy_state_header = request.headers.get("X-Proxy-Misconfiguration", "")
+        # Our nginx configuration sets this header if:
+        #  - there is an X-Forwarded-For set but no proxies configured in Zulip
+        #  - proxies are configured but the request did not come from them
+        #  - proxies are configured and the request came from them,
+        #    but there was no X-Forwarded-Proto header
+        #
+        # Note that the first two may be false-positives.  We only
+        # display the error if the request also came in over HTTP (and
+        # a trusted proxy didn't say they get it over HTTPS), which
+        # should be impossible because Zulip only supports external
+        # https:// URLs in production.  nginx configuration ensures
+        # that request.is_secure() is only true if our nginx is
+        # serving the request over HTTPS, or it came from a trusted
+        # proxy which reports that it is doing so.  This will result
+        # in false negatives if Zulip's nginx is serving responses
+        # over HTTPS to a proxy whose IP is not configured, or
+        # misconfigured, but we cannot distinguish this from a random
+        # client which is providing proxy headers to a correctly
+        # configured Zulip.
+        if proxy_state_header != "" and not request.is_secure():
+            raise ProxyMisconfigurationError(proxy_state_header)
 
 
 def alter_content(request: HttpRequest, content: bytes) -> bytes:
@@ -666,7 +689,7 @@ def validate_scim_bearer_token(request: HttpRequest) -> bool:
 
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.realm is not None
-    request_notes.requestor_for_logs = (
+    request_notes.requester_for_logs = (
         f"scim-client:{scim_client_name}:realm:{request_notes.realm.id}"
     )
 
@@ -705,3 +728,7 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
             return response
 
         return None
+
+
+class ZulipNoopMiddleware(MiddlewareMixin):
+    pass

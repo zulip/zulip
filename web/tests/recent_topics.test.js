@@ -44,7 +44,7 @@ let expected_data_to_replace_in_list_widget;
 const ListWidget = mock_esm("../src/list_widget", {
     modifier: noop,
 
-    create(container, mapped_topic_values, opts) {
+    create(_container, mapped_topic_values, opts) {
         const formatted_topics = [];
         ListWidget.modifier = opts.modifier;
         for (const item of mapped_topic_values) {
@@ -522,7 +522,7 @@ test("test_filter_pm", ({mock_template}) => {
         i += 1;
     });
 
-    mock_template("recent_topic_row.hbs", true, (data, html) => {
+    mock_template("recent_topic_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
 
@@ -805,7 +805,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     rt.clear_for_tests();
 
     mock_template("recent_topics_table.hbs", false, () => {});
-    mock_template("recent_topic_row.hbs", true, (data, html) => {
+    mock_template("recent_topic_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
 
@@ -871,7 +871,7 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 
-    // Process private message
+    // Process direct message
     rt_data.process_message({
         type: "private",
         to_user_ids: "6,7,8",

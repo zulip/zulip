@@ -1387,6 +1387,17 @@ def upload_custom_emoji(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "post", "200")
 
 
+@openapi_test_function("/realm/emoji/{emoji_name}:delete")
+def delete_custom_emoji(client: Client) -> None:
+    # {code_example|start}
+    # Delete a custom emoji.
+    emoji_name = "my_custom_emoji"
+    result = client.call_endpoint(f"realm/emoji/{emoji_name}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "delete", "200")
+
+
 @openapi_test_function("/users/me/alert_words:get")
 def get_alert_words(client: Client) -> None:
     # {code_example|start}
@@ -1599,11 +1610,15 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
 
 
 def test_queues(client: Client) -> None:
-    # Note that the example for api/get-events is not tested.
+    # Note that the example for api/get-events is not tested here.
+    #
     # Since, methods such as client.get_events() or client.call_on_each_message
     # are blocking calls and since the event queue backend is already
     # thoroughly tested in zerver/tests/test_event_queue.py, it is not worth
     # the effort to come up with asynchronous logic for testing those here.
+    #
+    # We do validate endpoint example responses in zerver/tests/test_openapi.py,
+    # as well as the example events returned by api/get-events.
     queue_id = register_queue(client)
     get_queue(client, queue_id)
     deregister_queue(client, queue_id)
@@ -1620,6 +1635,7 @@ def test_server_organizations(client: Client) -> None:
     remove_realm_playground(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
+    delete_custom_emoji(client)
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)

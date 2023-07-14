@@ -13,12 +13,12 @@ from zerver.models import (
     active_user_ids,
     get_realm_playgrounds,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_playgrounds(realm: Realm, realm_playgrounds: List[RealmPlaygroundDict]) -> None:
     event = dict(type="realm_playgrounds", realm_playgrounds=realm_playgrounds)
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 @transaction.atomic(durable=True)

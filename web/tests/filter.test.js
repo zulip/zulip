@@ -1162,114 +1162,114 @@ test("describe", () => {
 
     narrow = [{operator: "streams", operand: "public"}];
     string = "streams public";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "streams", operand: "public", negated: true}];
     string = "exclude streams public";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "is", operand: "starred"},
     ];
     string = "stream devel, starred messages";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "river"},
         {operator: "is", operand: "unread"},
     ];
     string = "stream river, unread messages";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "JS"},
     ];
     string = "stream devel &gt; JS";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch"},
     ];
     string = "direct messages, search for lunch";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "id", operand: 99}];
     string = "message ID 99";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "in", operand: "home"}];
     string = "messages in home";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "mentioned"}];
     string = "@-mentions";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "alerted"}];
     string = "alerted messages";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "resolved"}];
     string = "topics marked as resolved";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [{operator: "is", operand: "something_we_do_not_support"}];
     string = "invalid something_we_do_not_support operand for is operator";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     // this should be unreachable, but just in case
     narrow = [{operator: "bogus", operand: "foo"}];
     string = "unknown operator";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "JS", negated: true},
     ];
     string = "stream devel, exclude topic JS";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "is", operand: "dm"},
         {operator: "search", operand: "lunch", negated: true},
     ];
     string = "direct messages, exclude lunch";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "is", operand: "starred", negated: true},
     ];
     string = "stream devel, exclude starred messages";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "has", operand: "image", negated: true},
     ];
     string = "stream devel, exclude messages with one or more image";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
         {operator: "stream", operand: "devel"},
     ];
     string = "invalid abc operand for has operator, stream devel";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
         {operator: "stream", operand: "devel"},
     ];
     string = "exclude messages with one or more image, stream devel";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 
     narrow = [];
     string = "all messages";
-    assert.equal(Filter.describe(narrow), string);
+    assert.equal(Filter.search_description_as_html(narrow), string);
 });
 
 test("can_bucket_by", () => {

@@ -113,7 +113,7 @@ function select_div($div, selection) {
     selection.selectAllChildren($div[0]);
 }
 
-function remove_div(div, ranges, selection) {
+function remove_div(_div, ranges, selection) {
     window.setTimeout(() => {
         selection = window.getSelection();
         selection.removeAllRanges();

@@ -6,6 +6,11 @@ class CircleCiHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/circleci?stream={stream}&api_key={api_key}"
     WEBHOOK_DIR_NAME = "circleci"
 
+    def test_ping(self) -> None:
+        expected_topic = "Test event"
+        expected_message = "Webhook 'Testing' test event successful."
+        self.check_webhook("ping", expected_topic, expected_message)
+
     def test_bitbucket_job_completed(self) -> None:
         expected_topic = "circleci-webhook-testing"
         expected_message = """

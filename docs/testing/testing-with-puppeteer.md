@@ -33,7 +33,7 @@ web app, like "Type this key", "Wait until this HTML element
 appears/disappears", or "Click on this HTML element".
 
 For example, this function might test the `x` keyboard shortcut to
-open the compose box for a new private message:
+open the compose box for a new direct message:
 
 ```js
 async function test_private_message_compose_shortcut(page) {

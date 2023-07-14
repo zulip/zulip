@@ -14,7 +14,7 @@ import threading
 import time
 import urllib
 from abc import ABC, abstractmethod
-from collections import deque
+from collections import defaultdict, deque
 from email.message import EmailMessage
 from functools import wraps
 from types import FrameType
@@ -64,7 +64,7 @@ from zerver.lib.email_mirror import (
     rate_limit_mirror_by_realm,
 )
 from zerver.lib.email_mirror import process_message as mirror_email
-from zerver.lib.email_notifications import handle_missedmessage_emails
+from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.export import export_realm_wrapper
@@ -161,8 +161,10 @@ def register_worker(
         test_queues.add(queue_name)
 
 
-def get_worker(queue_name: str, threaded: bool = False) -> "QueueProcessingWorker":
-    return worker_classes[queue_name](threaded=threaded)
+def get_worker(
+    queue_name: str, threaded: bool = False, disable_timeout: bool = False
+) -> "QueueProcessingWorker":
+    return worker_classes[queue_name](threaded=threaded, disable_timeout=disable_timeout)
 
 
 def get_active_worker_queues(only_test_queues: bool = False) -> List[str]:
@@ -222,9 +224,10 @@ class QueueProcessingWorker(ABC):
     # startup and steady-state memory.
     PREFETCH = 100
 
-    def __init__(self, threaded: bool = False) -> None:
+    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
         self.q: Optional[SimpleQueueClient] = None
         self.threaded = threaded
+        self.disable_timeout = disable_timeout
         if not hasattr(self, "queue_name"):
             raise WorkerDeclarationError("Queue worker declared without queue_name")
 
@@ -302,7 +305,7 @@ class QueueProcessingWorker(ABC):
                 self.update_statistics()
 
             time_start = time.time()
-            if self.MAX_CONSUME_SECONDS and not self.threaded:
+            if self.MAX_CONSUME_SECONDS and not self.threaded and not self.disable_timeout:
                 try:
                     signal.signal(
                         signal.SIGALRM,
@@ -587,6 +590,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         logging.debug("Processing missedmessage_emails event: %s", event)
         # When we consume an event, check if there are existing pending emails
         # for that user, and if so use the same scheduled timestamp.
+
         user_profile_id: int = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
         batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
@@ -711,24 +715,17 @@ class MissedMessageWorker(QueueProcessingWorker):
         with transaction.atomic():
             events_to_process = ScheduledMessageNotificationEmail.objects.filter(
                 scheduled_timestamp__lte=current_time
-            ).select_related()
+            ).select_for_update()
 
             # Batch the entries by user
-            events_by_recipient: Dict[int, List[Dict[str, Any]]] = {}
+            events_by_recipient: Dict[int, Dict[int, MissedMessageData]] = defaultdict(dict)
             for event in events_to_process:
-                entry = dict(
-                    user_profile_id=event.user_profile_id,
-                    message_id=event.message_id,
-                    trigger=event.trigger,
-                    mentioned_user_group_id=event.mentioned_user_group_id,
+                events_by_recipient[event.user_profile_id][event.message_id] = MissedMessageData(
+                    trigger=event.trigger, mentioned_user_group_id=event.mentioned_user_group_id
                 )
-                if event.user_profile_id in events_by_recipient:
-                    events_by_recipient[event.user_profile_id].append(entry)
-                else:
-                    events_by_recipient[event.user_profile_id] = [entry]
 
             for user_profile_id in events_by_recipient:
-                events: List[Dict[str, Any]] = events_by_recipient[user_profile_id]
+                events = events_by_recipient[user_profile_id]
 
                 logging.info(
                     "Batch-processing %s missedmessage_emails events for user %s",
@@ -763,8 +760,8 @@ class MissedMessageWorker(QueueProcessingWorker):
 
 @assign_queue("email_senders")
 class EmailSendingWorker(LoopQueueProcessingWorker):
-    def __init__(self, threaded: bool = False) -> None:
-        super().__init__(threaded)
+    def __init__(self, threaded: bool = False, disable_timeout: bool = False) -> None:
+        super().__init__(threaded, disable_timeout)
         self.connection: BaseEmailBackend = initialize_connection(None)
 
     @retry_send_email_failures
@@ -1116,7 +1113,7 @@ class DeferredWorker(QueueProcessingWorker):
             export_event.extra_data = orjson.dumps(extra_data).decode()
             export_event.save(update_fields=["extra_data"])
 
-            # Send a private message notification letting the user who
+            # Send a direct message notification letting the user who
             # triggered the export know the export finished.
             with override_language(user_profile.default_language):
                 content = _(
@@ -1178,9 +1175,13 @@ class NoopWorker(QueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
     def __init__(
-        self, threaded: bool = False, max_consume: int = 1000, slow_queries: Sequence[int] = []
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        max_consume: int = 1000,
+        slow_queries: Sequence[int] = [],
     ) -> None:
-        super().__init__(threaded)
+        super().__init__(threaded, disable_timeout)
         self.consumed = 0
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)
@@ -1202,9 +1203,13 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
     batch_size = 100
 
     def __init__(
-        self, threaded: bool = False, max_consume: int = 1000, slow_queries: Sequence[int] = []
+        self,
+        threaded: bool = False,
+        disable_timeout: bool = False,
+        max_consume: int = 1000,
+        slow_queries: Sequence[int] = [],
     ) -> None:
-        super().__init__(threaded)
+        super().__init__(threaded, disable_timeout)
         self.consumed = 0
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)

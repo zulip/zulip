@@ -59,6 +59,19 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post("/json/register", skip_user_agent=True)
         self.assert_json_success(result)
 
+    def test_narrows(self) -> None:
+        user = self.example_user("hamlet")
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
+            munge = lambda obj: orjson.dumps(obj).decode()
+            narrow = [["stream", "devel"], ["is", "mentioned"]]
+            payload = dict(narrow=munge(narrow))
+            result = self.api_post(user, "/api/v1/register", payload)
+
+        # We want the test to abort before actually fetching data.
+        self.assert_json_error(result, "Could not allocate event queue")
+
+        self.assertEqual(m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]])
+
     def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
         # events_register code paths

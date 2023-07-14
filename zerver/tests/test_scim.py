@@ -693,7 +693,7 @@ class TestSCIMUser(SCIMTestCase):
                 m.output, [f"ERROR:django.request:Not Implemented: /scim/v2/Users/{hamlet.id}"]
             )
 
-    def test_scim_client_requestor_for_logs(self) -> None:
+    def test_scim_client_requester_for_logs(self) -> None:
         hamlet = self.example_user("hamlet")
         with self.assertLogs("zulip.requests", level="INFO") as m:
             result = self.client_get(f"/scim/v2/Users/{hamlet.id}", {}, **self.scim_headers())

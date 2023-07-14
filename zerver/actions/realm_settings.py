@@ -36,7 +36,7 @@ from zerver.models import (
     active_user_ids,
     get_realm,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import downgrade_now_without_creating_additional_invoices
@@ -83,7 +83,7 @@ def do_set_realm_property(
             data={name: value},
         )
 
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
@@ -435,7 +435,7 @@ def do_change_realm_org_type(
     )
 
     event = dict(type="realm", op="update", property="org_type", value=org_type)
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 @transaction.atomic(savepoint=False)
@@ -499,7 +499,7 @@ def do_change_realm_plan_type(
         "value": plan_type,
         "extra_data": {"upload_quota": realm.upload_quota_bytes()},
     }
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:

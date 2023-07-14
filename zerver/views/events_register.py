@@ -9,6 +9,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
+from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_dict, check_int, check_list, check_string
@@ -128,6 +129,11 @@ def events_register_backend(
     pronouns_field_type_supported = is_pronouns_field_type_supported(
         request.headers.get("User-Agent")
     )
+
+    # TODO: We eventually want to let callers pass in dictionaries over the wire,
+    #       but we will still need to support tuples for a long time.
+    modern_narrow = narrow_dataclasses_from_tuples(narrow)
+
     ret = do_events_register(
         user_profile,
         realm,
@@ -138,7 +144,7 @@ def events_register_backend(
         event_types,
         queue_lifespan_secs,
         all_public_streams,
-        narrow=narrow,
+        narrow=modern_narrow,
         include_subscribers=include_subscribers,
         include_streams=include_streams,
         client_capabilities=client_capabilities,

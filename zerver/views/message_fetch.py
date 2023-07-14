@@ -113,7 +113,7 @@ def get_messages_backend(
         # authentication code (where we should return an auth error).
         #
         # GetOldMessagesTest.test_unauthenticated_* tests ensure
-        # that we are not leaking any secure data (private messages and
+        # that we are not leaking any secure data (direct messages and
         # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError

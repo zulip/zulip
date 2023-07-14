@@ -31,25 +31,25 @@ export function activate_correct_tab($codeSection: JQuery): void {
     const $blocks = $codeSection.find(".blocks div");
 
     $li.each(function () {
-        const language = this.dataset.language;
+        const tab_key = this.dataset.tabKey;
         $(this).removeClass("active");
-        if (language === user_os) {
+        if (tab_key === user_os) {
             $(this).addClass("active");
         }
 
-        if (desktop_os.has(user_os) && language === "desktop-web") {
+        if (desktop_os.has(user_os) && tab_key === "desktop-web") {
             $(this).addClass("active");
         }
     });
 
     $blocks.each(function () {
-        const language = this.dataset.language;
+        const tab_key = this.dataset.tabKey;
         $(this).removeClass("active");
-        if (language === user_os) {
+        if (tab_key === user_os) {
             $(this).addClass("active");
         }
 
-        if (desktop_os.has(user_os) && language === "desktop-web") {
+        if (desktop_os.has(user_os) && tab_key === "desktop-web") {
             $(this).addClass("active");
         }
     });
@@ -58,9 +58,9 @@ export function activate_correct_tab($codeSection: JQuery): void {
     const $active_list_items = $li.filter(".active");
     if (!$active_list_items.length) {
         $li.first().addClass("active");
-        const language = $li.first()[0].dataset.language;
-        if (language) {
-            $blocks.filter("[data-language=" + language + "]").addClass("active");
+        const tab_key = $li.first()[0].dataset.tabKey;
+        if (tab_key) {
+            $blocks.filter("[data-tab-key=" + tab_key + "]").addClass("active");
         } else {
             blueslip.error("Tabbed instructions widget has no tabs to activate!");
         }

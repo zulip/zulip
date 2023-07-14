@@ -38,58 +38,76 @@ class DocPageTest(ZulipTestCase):
             print("ERROR: {}".format(content.get("msg")))
             print()
 
-    def _test(
+    def _is_landing_page(self, url: str) -> bool:
+        for prefix in [
+            "/api/",
+            "/devlogin/",
+            "/devtools/",
+            "/emails/",
+            "/errors/",
+            "/help/",
+            "/integrations/",
+        ]:
+            if url.startswith(prefix):
+                return False
+        return True
+
+    def _check_basic_fetch(
         self,
+        *,
         url: str,
-        expected_content: str,
-        extra_strings: Sequence[str] = [],
-        landing_missing_strings: Sequence[str] = [],
-        landing_page: bool = True,
-        doc_html_str: bool = False,
-        search_disabled: bool = False,
-    ) -> None:
-        # Test the URL on the "zephyr" subdomain
-        result = self.get_doc(url, subdomain="zephyr")
-        self.print_msg_if_error(url, result)
+        subdomain: str,
+        expected_strings: Sequence[str],
+        allow_robots: bool,
+    ) -> "TestHttpResponse":
+        # For whatever reason, we have some urls that don't follow
+        # the same policies as the majority of our urls.
+        if url.startswith("/integrations/doc-html"):
+            allow_robots = True
 
+        if url.startswith("/attribution/"):
+            allow_robots = False
+
+        result = self.get_doc(url, subdomain=subdomain)
+        self.print_msg_if_error(url, result)
         self.assertEqual(result.status_code, 200)
-        self.assertIn(expected_content, str(result.content))
-        for s in extra_strings:
+        for s in expected_strings:
             self.assertIn(s, str(result.content))
-        if not doc_html_str:
+
+        if allow_robots:
+            self.assert_not_in_success_response(
+                ['<meta name="robots" content="noindex,nofollow" />'], result
+            )
+        else:
             self.assert_in_success_response(
                 ['<meta name="robots" content="noindex,nofollow" />'], result
             )
+        return result
 
+    def _test(self, url: str, expected_strings: Sequence[str]) -> None:
         # Test the URL on the root subdomain
-        result = self.get_doc(url, subdomain="")
-        self.print_msg_if_error(url, result)
+        self._check_basic_fetch(
+            url=url,
+            subdomain="",
+            expected_strings=expected_strings,
+            allow_robots=False,
+        )
 
-        self.assertEqual(result.status_code, 200)
-        self.assertIn(expected_content, str(result.content))
-        if not doc_html_str:
-            self.assert_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow" />'], result
-            )
-
-        for s in extra_strings:
-            self.assertIn(s, str(result.content))
-
-        if not landing_page:
+        if not self._is_landing_page(url):
             return
+
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             # Test the URL on the root subdomain with the landing page setting
-            result = self.get_doc(url, subdomain="")
-            self.print_msg_if_error(url, result)
+            result = self._check_basic_fetch(
+                url=url,
+                subdomain="",
+                expected_strings=expected_strings,
+                allow_robots=True,
+            )
 
-            self.assertEqual(result.status_code, 200)
-            self.assertIn(expected_content, str(result.content))
-            for s in extra_strings:
-                self.assertIn(s, str(result.content))
-            for s in landing_missing_strings:
-                self.assertNotIn(s, str(result.content))
-            if not doc_html_str and not search_disabled:
-                # Confirm page has the following HTML elements:
+            # Confirm page has the following HTML elements:
+            # (I have no idea why we don't support this for /attribution/.)
+            if not url.startswith("/attribution/"):
                 self.assert_in_success_response(
                     [
                         "<title>",
@@ -99,27 +117,41 @@ class DocPageTest(ZulipTestCase):
                     ],
                     result,
                 )
-            if search_disabled:
-                self.assert_in_success_response(
-                    ['<meta name="robots" content="noindex,nofollow" />'], result
-                )
-            else:
-                self.assert_not_in_success_response(
-                    ['<meta name="robots" content="noindex,nofollow" />'], result
-                )
 
-            # Test the URL on the "zephyr" subdomain with the landing page setting
-            result = self.get_doc(url, subdomain="zephyr")
-            self.print_msg_if_error(url, result)
+    def test_zephyr_disallows_robots(self) -> None:
+        sample_urls = [
+            "/apps/",
+            "/case-studies/end-point/",
+            "/communities/",
+            "/devlogin/",
+            "/devtools/",
+            "/emails/",
+            "/errors/404/",
+            "/errors/5xx/",
+            "/integrations/",
+            "/integrations/",
+            "/integrations/bots",
+            "/integrations/doc-html/asana",
+            "/integrations/doc/github",
+            "/team/",
+        ]
 
-            self.assertEqual(result.status_code, 200)
-            self.assertIn(expected_content, str(result.content))
-            for s in extra_strings:
-                self.assertIn(s, str(result.content))
-            if not doc_html_str:
-                self.assert_in_success_response(
-                    ['<meta name="robots" content="noindex,nofollow" />'], result
-                )
+        for url in sample_urls:
+            self._check_basic_fetch(
+                url=url,
+                subdomain="zephyr",
+                expected_strings=[],
+                allow_robots=False,
+            )
+
+            if self._is_landing_page(url):
+                with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+                    self._check_basic_fetch(
+                        url=url,
+                        subdomain="zephyr",
+                        expected_strings=[],
+                        allow_robots=False,
+                    )
 
     def test_api_doc_endpoints(self) -> None:
         # We extract the set of /api/ endpoints to check by parsing
@@ -127,14 +159,68 @@ class DocPageTest(ZulipTestCase):
         api_page_raw = str(self.client_get("/api/").content)
         ENDPOINT_REGEXP = re.compile(r"href=\"/api/\s*(.*?)\"")
         endpoint_list_set = set(re.findall(ENDPOINT_REGEXP, api_page_raw))
-        endpoint_list = [f"/api/{endpoint}" for endpoint in endpoint_list_set]
-        # Validate that the parsing logic isn't broken, since if it
-        # broke, the below would become a noop.
-        self.assertGreater(len(endpoint_list), 70)
+        endpoint_list = sorted(endpoint_list_set)
+
+        # We want to make sure our regex captured the actual main page.
+        assert "" in endpoint_list
+
+        content = {
+            "/api/": "The Zulip API",
+            "/api/api-keys": "be careful with it",
+            "/api/create-user": "zuliprc-admin",
+            "/api/delete-queue": "Delete a previously registered queue",
+            "/api/get-events": "dont_block",
+            "/api/get-own-user": "does not accept any parameters.",
+            "/api/get-stream-id": "The name of the stream to access.",
+            "/api/get-streams": "include_public",
+            "/api/get-subscriptions": "Get all streams that the user is subscribed to.",
+            "/api/get-users": "client_gravatar",
+            "/api/installation-instructions": "No download required!",
+            "/api/register-queue": "apply_markdown",
+            "/api/render-message": "**foo**",
+            "/api/send-message": "steal away your hearts",
+            "/api/subscribe": "authorization_errors_fatal",
+            "/api/unsubscribe": "not_removed",
+            "/api/update-message": "propagate_mode",
+        }
+
+        """
+        We have 110 endpoints as of June 2023.  If the
+        way we represent links changes, or the way we put links
+        into the main /api page changes, or if somebody simply introduces
+        a bug into the test, there is a danger of losing coverage,
+        although this is mitigated by other factors such as line
+        coverage checks.  For that reason, as well as developer convenience,
+        we don't make the check here super precise.
+        """
+        self.assertGreater(len(endpoint_list), 100)
 
         for endpoint in endpoint_list:
-            self._test(endpoint, "", doc_html_str=True)
+            url = f"/api/{endpoint}"
 
+            if url in content:
+                expected_strings = [content[url]]
+                del content[url]
+            else:
+                # TODO: Just fill out dictionary for all ~110 endpoints
+                #       with some specific data from the page.
+                expected_strings = ["This is an API doc"]
+
+            # Mock OpenGraph call purely to speed up these tests.
+            with mock.patch(
+                "zerver.lib.html_to_text.html_to_text", return_value="This is an API doc"
+            ) as m:
+                self._test(
+                    url=url,
+                    expected_strings=expected_strings,
+                )
+                if url != "/api/":
+                    m.assert_called()
+
+        # Make sure we exercised all content checks.
+        self.assert_length(content, 0)
+
+    def test_api_doc_404_status_codes(self) -> None:
         result = self.client_get(
             "/api/nonexistent-page",
             follow=True,
@@ -150,73 +236,55 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
-        # Test some API doc endpoints for specific content and metadata.
-        self._test("/api/", "The Zulip API")
-        self._test("/api/api-keys", "be careful with it")
-        self._test("/api/installation-instructions", "No download required!")
-        self._test("/api/send-message", "steal away your hearts")
-        self._test("/api/render-message", "**foo**")
-        self._test("/api/get-streams", "include_public")
-        self._test("/api/get-stream-id", "The name of the stream to access.")
-        self._test("/api/get-subscriptions", "Get all streams that the user is subscribed to.")
-        self._test("/api/get-users", "client_gravatar")
-        self._test("/api/register-queue", "apply_markdown")
-        self._test("/api/get-events", "dont_block")
-        self._test("/api/delete-queue", "Delete a previously registered queue")
-        self._test("/api/update-message", "propagate_mode")
-        self._test("/api/get-own-user", "does not accept any parameters.")
-        self._test("/api/subscribe", "authorization_errors_fatal")
-        self._test("/api/create-user", "zuliprc-admin")
-        self._test("/api/unsubscribe", "not_removed")
-
     def test_dev_environment_endpoints(self) -> None:
-        self._test("/devlogin/", "Normal users", landing_page=False)
-        self._test("/devtools/", "Useful development URLs", landing_page=False)
-        self._test(
-            "/emails/", "manually generate most of the emails by clicking", landing_page=False
-        )
+        self._test("/devlogin/", ["Normal users"])
+        self._test("/devtools/", ["Useful development URLs"])
+        self._test("/emails/", ["manually generate most of the emails by clicking"])
 
     def test_error_endpoints(self) -> None:
-        self._test("/errors/404/", "Page not found", landing_page=False)
-        self._test("/errors/5xx/", "Internal server error", landing_page=False)
+        self._test("/errors/404/", ["Page not found"])
+        self._test("/errors/5xx/", ["Internal server error"])
 
     def test_corporate_portico_endpoints(self) -> None:
-        self._test("/team/", "industry veterans")
-        self._test("/apps/", "Apps for every platform.")
+        self._test("/team/", ["industry veterans"])
+        self._test("/apps/", ["Apps for every platform."])
 
-        self._test("/history/", "Zulip released as open source!")
+        self._test("/history/", ["Zulip released as open source!"])
         # Test the i18n version of one of these pages.
-        self._test("/en/history/", "Zulip released as open source!")
-        self._test("/values/", "designed our company")
-        self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["xyz"])
-        self._test("/communities/", "Open communities directory")
-        self._test("/development-community/", "Zulip development community")
-        self._test("/features/", "Beautiful messaging")
-        self._test("/jobs/", "Work with us")
-        self._test("/self-hosting/", "Self-host Zulip")
-        self._test("/security/", "TLS encryption")
-        self._test("/use-cases/", "Use cases and customer stories")
-        self._test("/why-zulip/", "Why Zulip?")
-        self._test("/try-zulip/", "check out the Zulip app")
+        self._test("/en/history/", ["Zulip released as open source!"])
+        self._test("/values/", ["designed our company"])
+        self._test("/hello/", ["Chat for distributed teams"])
+        self._test("/communities/", ["Open communities directory"])
+        self._test("/development-community/", ["Zulip development community"])
+        self._test("/features/", ["Beautiful messaging"])
+        self._test("/jobs/", ["Work with us"])
+        self._test("/self-hosting/", ["Self-host Zulip"])
+        self._test("/security/", ["TLS encryption"])
+        self._test("/use-cases/", ["Use cases and customer stories"])
+        self._test("/why-zulip/", ["Why Zulip?"])
+        self._test("/try-zulip/", ["check out the Zulip app"])
         # /for/... pages
-        self._test("/for/open-source/", "for open source projects")
-        self._test("/for/events/", "for conferences and events")
-        self._test("/for/education/", "education pricing")
-        self._test("/for/research/", "for research")
-        self._test("/for/business/", "Communication efficiency represents")
-        self._test("/for/communities/", "Zulip for communities")
+        self._test("/for/open-source/", ["for open source projects"])
+        self._test("/for/events/", ["for conferences and events"])
+        self._test("/for/education/", ["education pricing"])
+        self._test("/for/research/", ["for research"])
+        self._test("/for/business/", ["Communication efficiency represents"])
+        self._test("/for/communities/", ["Zulip for communities"])
         # case-studies
-        self._test("/case-studies/tum/", "Technical University of Munich")
-        self._test("/case-studies/ucsd/", "UCSD")
-        self._test("/case-studies/rust/", "Rust programming language")
-        self._test("/case-studies/recurse-center/", "Recurse Center")
-        self._test("/case-studies/lean/", "Lean theorem prover")
-        self._test("/case-studies/idrift/", "Case study: iDrift AS")
-        self._test("/case-studies/end-point/", "Case study: End Point")
-        self._test("/case-studies/atolio/", "Case study: Atolio")
-        self._test("/case-studies/asciidoctor/", "Case study: Asciidoctor")
-        # <meta name="robots" content="noindex,nofollow" /> always true on these pages
-        self._test("/attribution/", "Website attributions", search_disabled=True)
+        self._test("/case-studies/tum/", ["Technical University of Munich"])
+        self._test("/case-studies/ucsd/", ["UCSD"])
+        self._test("/case-studies/rust/", ["Rust programming language"])
+        self._test("/case-studies/recurse-center/", ["Recurse Center"])
+        self._test("/case-studies/lean/", ["Lean theorem prover"])
+        self._test("/case-studies/idrift/", ["Case study: iDrift AS"])
+        self._test("/case-studies/end-point/", ["Case study: End Point"])
+        self._test("/case-studies/atolio/", ["Case study: Atolio"])
+        self._test("/case-studies/asciidoctor/", ["Case study: Asciidoctor"])
+
+    def test_oddball_attributions_page(self) -> None:
+        # Look elsewhere in the code--this page never allows robots nor does
+        # it provide og data.
+        self._test("/attribution/", ["Website attributions"])
 
     def test_open_organizations_endpoint(self) -> None:
         zulip_dev_info = ["Zulip Dev", "great for testing!"]
@@ -227,13 +295,13 @@ class DocPageTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm.want_advertise_in_communities_directory = True
         realm.save()
-        self._test("/communities/", "Open communities directory", extra_strings=zulip_dev_info)
+        self._test("/communities/", ["Open communities directory", *zulip_dev_info])
 
     def test_integration_doc_endpoints(self) -> None:
         self._test(
             "/integrations/",
-            "native integrations.",
-            extra_strings=[
+            expected_strings=[
+                "native integrations.",
                 "And hundreds more through",
                 "Zapier",
                 "IFTTT",
@@ -242,7 +310,7 @@ class DocPageTest(ZulipTestCase):
 
         for integration in INTEGRATIONS:
             url = f"/integrations/doc-html/{integration}"
-            self._test(url, "", doc_html_str=True)
+            self._test(url, expected_strings=[])
 
         result = self.client_get(
             "/integrations/doc-html/nonexistent_integration",
@@ -258,8 +326,7 @@ class DocPageTest(ZulipTestCase):
         url = "/integrations/doc/github"
         title = '<meta property="og:title" content="GitHub | Zulip integrations" />'
         description = '<meta property="og:description" content="Zulip comes with over'
-        self._test(url, title, doc_html_str=True)
-        self._test(url, description, doc_html_str=True)
+        self._test(url, [title, description])
 
         # Test category pages
         for category in CATEGORIES:
@@ -270,17 +337,14 @@ class DocPageTest(ZulipTestCase):
             else:
                 title = f"<title>{CATEGORIES[category]} tools | Zulip integrations</title>"
                 og_title = f'<meta property="og:title" content="{CATEGORIES[category]} tools | Zulip integrations" />'
-            self._test(url, title)
-            self._test(url, og_title, doc_html_str=True)
-            self._test(url, og_description, doc_html_str=True)
+            self._test(url, [title, og_title, og_description])
 
         # Test integrations index page
         url = "/integrations/"
         og_title = '<meta property="og:title" content="Zulip integrations" />'
-        self._test(url, og_title, doc_html_str=True)
-        self._test(url, og_description, doc_html_str=True)
+        self._test(url, [og_title, og_description])
 
-    def test_doc_html_str_non_ajax_call(self) -> None:
+    def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404
         for integration in list(INTEGRATIONS.keys())[5]:
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
@@ -312,16 +376,14 @@ class HelpTest(ZulipTestCase):
     def test_help_settings_links(self) -> None:
         result = self.client_get("/help/change-the-time-format")
         self.assertEqual(result.status_code, 200)
-        self.assertIn(
-            'Go to <a href="/#settings/display-settings">Display settings</a>', str(result.content)
-        )
+        self.assertIn('Go to <a href="/#settings/preferences">Preferences</a>', str(result.content))
         # Check that the sidebar was rendered properly.
         self.assertIn("Getting started with Zulip", str(result.content))
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/help/change-the-time-format", subdomain="")
         self.assertEqual(result.status_code, 200)
-        self.assertIn("<strong>Display settings</strong>", str(result.content))
+        self.assertIn("<strong>Preferences</strong>", str(result.content))
         self.assertNotIn("/#settings", str(result.content))
 
     def test_help_relative_links_for_gear(self) -> None:

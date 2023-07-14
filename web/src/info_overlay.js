@@ -40,21 +40,29 @@ const markdown_help_rows = [
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
     },
     {
-        markdown: "#**streamName**",
-        output_html: "<p><a>#streamName</a></p>",
+        markdown: "#**stream name**",
+        output_html: "<p><a>#stream name</a></p>",
         effect_html: "(links to a stream)",
     },
     {
+        markdown: "#**stream name>topic name**",
+        output_html: "<p><a>#stream name > topic name</a></p>",
+        effect_html: "(links to topic)",
+    },
+    {
         markdown: "@**Joe Smith**",
-        usage_html: "(autocompletes from @joe)",
         output_html: '<p><span class="user-mention">@Joe Smith</span></p>',
         effect_html: "(notifies Joe Smith)",
     },
     {
         markdown: "@_**Joe Smith**",
-        usage_html: "(autocompletes from @_joe)",
         output_html: '<p><span class="user-mention">Joe Smith</span></p>',
         effect_html: "(links to profile but doesn't notify Joe Smith)",
+    },
+    {
+        markdown: "@*support team*",
+        output_html: '<p><span class="user-group-mention">@support team</span></p>',
+        effect_html: "(notifies <b>support team</b> group)",
     },
     {
         markdown: "@**all**",
@@ -66,7 +74,6 @@ const markdown_help_rows = [
 * Tea
   * Green tea
   * Black tea
-  * Oolong tea
 * Coffee`,
     },
     {
@@ -111,20 +118,6 @@ def zulip():
     <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
     },
     {
-        note_html: $t_html(
-            {
-                defaultMessage:
-                    "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.",
-            },
-            {
-                "z-link": (content_html) =>
-                    `<a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">${content_html.join(
-                        "",
-                    )}</a>`,
-            },
-        ),
-    },
-    {
         markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
     },
     {
@@ -135,7 +128,13 @@ def zulip():
     },
     {
         markdown: "/me is busy working",
-        output_html: '<p><span class="sender_name-in-status">Iago</span> is busy working</p>',
+        output_html:
+            '<p><span class="sender_name">Iago</span> <span class="status-message">is busy working</span></p>',
+    },
+    {
+        markdown: "<time:2023-05-28T13:30:00+05:30>",
+        output_html:
+            '<p><time datetime="2023-05-28T08:00:00Z"><i class="fa fa-clock-o"></i>Sun, May 28, 2023, 1:30 PM</time></p>',
     },
     {
         markdown: `/poll What did you drink this morning?
@@ -166,6 +165,40 @@ Coffee`,
         <span>Coffee</span>
     </li>
     </ul>
+</div>
+`,
+    },
+    {
+        markdown: "/todo",
+        output_html: `\
+<div class="message_content rendered_markdown">
+   <div class="widget-content">
+      <div class="todo-widget">
+        <h4>Task list</h4>
+        <ul class="todo-widget new-style">
+            <li>
+                <label class="checkbox">
+                    <div>
+                        <input type="checkbox" class="task">
+                        <span></span>
+                    </div>
+                    <div>
+                        <strong>Submit final budget</strong> - Due Friday
+                    </div>
+                </label>
+            </li>
+            <li>
+                <label class="checkbox">
+                    <div>
+                        <input type="checkbox" class="task" checked="checked">
+                        <span></span>
+                    </div>
+                    <strike><em><strong>Share draft budget</strong> - By Tuesday</em></strike>
+                </label>
+            </li>
+        </ul>
+      </div>
+   </div>
 </div>
 `,
     },
@@ -217,7 +250,7 @@ export function set_up_toggler() {
             {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
             {label: $t({defaultMessage: "Search filters"}), key: "search-operators"},
         ],
-        callback(name, key) {
+        callback(_name, key) {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
             scroll_util

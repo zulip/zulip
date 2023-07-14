@@ -29,6 +29,7 @@ export function set_up($input, pills, opts) {
     const include_streams = (query) => opts.stream && query.trim().startsWith("#");
     const include_user_groups = opts.user_group;
     const include_users = opts.user;
+    const exclude_bots = opts.exclude_bots;
 
     $input.typeahead({
         items: 5,
@@ -54,7 +55,7 @@ export function set_up($input, pills, opts) {
                     // default user_pill.typeahead_source.
                     source = [...source, ...opts.user_source()];
                 } else {
-                    source = [...source, ...user_pill.typeahead_source(pills)];
+                    source = [...source, ...user_pill.typeahead_source(pills, exclude_bots)];
                 }
             }
             return source;

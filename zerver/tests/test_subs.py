@@ -22,7 +22,6 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_streams_from_default_stream_group,
-    get_default_streams_for_realm,
     lookup_default_stream_groups,
 )
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
@@ -35,6 +34,10 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.lib.default_streams import (
+    get_default_stream_ids_for_realm,
+    get_default_streams_for_realm_as_dicts,
+)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
@@ -74,6 +77,7 @@ from zerver.lib.test_helpers import (
     get_subscription,
     most_recent_message,
     most_recent_usermessage,
+    queries_captured,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
 from zerver.lib.types import (
@@ -268,7 +272,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Private stream")
 
         moderators_system_group = UserGroup.objects.get(
-            name="@role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm=realm, is_system_group=True
         )
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -474,10 +478,10 @@ class TestCreateStreams(ZulipTestCase):
         realm = user.realm
         self.login_user(user)
         moderators_system_group = UserGroup.objects.get(
-            name="@role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm=realm, is_system_group=True
         )
         admins_system_group = UserGroup.objects.get(
-            name="@role:administrators", realm=realm, is_system_group=True
+            name="role:administrators", realm=realm, is_system_group=True
         )
 
         post_data = {
@@ -514,7 +518,7 @@ class TestCreateStreams(ZulipTestCase):
         )
 
         internet_group = UserGroup.objects.get(
-            name="@role:internet", is_system_group=True, realm=realm
+            name="role:internet", is_system_group=True, realm=realm
         )
         post_data = {
             "subscriptions": orjson.dumps(
@@ -525,10 +529,10 @@ class TestCreateStreams(ZulipTestCase):
         result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
         self.assert_json_error(
             result,
-            "'can_remove_subscribers_group' setting cannot be set to '@role:internet' group.",
+            "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
         )
 
-        owners_group = UserGroup.objects.get(name="@role:owners", is_system_group=True, realm=realm)
+        owners_group = UserGroup.objects.get(name="role:owners", is_system_group=True, realm=realm)
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -538,10 +542,10 @@ class TestCreateStreams(ZulipTestCase):
         result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
         self.assert_json_error(
             result,
-            "'can_remove_subscribers_group' setting cannot be set to '@role:owners' group.",
+            "'can_remove_subscribers_group' setting cannot be set to 'role:owners' group.",
         )
 
-        nobody_group = UserGroup.objects.get(name="@role:nobody", is_system_group=True, realm=realm)
+        nobody_group = UserGroup.objects.get(name="role:nobody", is_system_group=True, realm=realm)
         post_data = {
             "subscriptions": orjson.dumps(
                 [{"name": "new_stream3", "description": "Third new stream"}]
@@ -551,7 +555,7 @@ class TestCreateStreams(ZulipTestCase):
         result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
         self.assert_json_error(
             result,
-            "'can_remove_subscribers_group' setting cannot be set to '@role:nobody' group.",
+            "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
         )
 
 
@@ -2067,7 +2071,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "stream_name1")
 
         moderators_system_group = UserGroup.objects.get(
-            name="@role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm=realm, is_system_group=True
         )
         self.login("shiva")
         result = self.client_patch(
@@ -2096,7 +2100,7 @@ class StreamAdminTest(ZulipTestCase):
         )
 
         internet_group = UserGroup.objects.get(
-            name="@role:internet", is_system_group=True, realm=realm
+            name="role:internet", is_system_group=True, realm=realm
         )
         result = self.client_patch(
             f"/json/streams/{stream.id}",
@@ -2104,27 +2108,27 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(
             result,
-            "'can_remove_subscribers_group' setting cannot be set to '@role:internet' group.",
+            "'can_remove_subscribers_group' setting cannot be set to 'role:internet' group.",
         )
 
-        owners_group = UserGroup.objects.get(name="@role:owners", is_system_group=True, realm=realm)
+        owners_group = UserGroup.objects.get(name="role:owners", is_system_group=True, realm=realm)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group_id": orjson.dumps(owners_group.id).decode()},
         )
         self.assert_json_error(
             result,
-            "'can_remove_subscribers_group' setting cannot be set to '@role:owners' group.",
+            "'can_remove_subscribers_group' setting cannot be set to 'role:owners' group.",
         )
 
-        nobody_group = UserGroup.objects.get(name="@role:nobody", is_system_group=True, realm=realm)
+        nobody_group = UserGroup.objects.get(name="role:nobody", is_system_group=True, realm=realm)
         result = self.client_patch(
             f"/json/streams/{stream.id}",
             {"can_remove_subscribers_group_id": orjson.dumps(nobody_group.id).decode()},
         )
         self.assert_json_error(
             result,
-            "'can_remove_subscribers_group' setting cannot be set to '@role:nobody' group.",
+            "'can_remove_subscribers_group' setting cannot be set to 'role:nobody' group.",
         )
 
         # For private streams, even admins must be subscribed to the stream to change
@@ -2414,7 +2418,7 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams except your own bots.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=7,
+            query_count=8,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_subbed=True,
@@ -2429,7 +2433,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2456,8 +2460,8 @@ class StreamAdminTest(ZulipTestCase):
             for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=27,
-            cache_count=9,
+            query_count=28,
+            cache_count=8,
             target_users=target_users,
             is_realm_admin=True,
             is_subbed=True,
@@ -2474,7 +2478,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2491,7 +2495,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=17,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2505,7 +2509,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=7,
+            query_count=8,
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
@@ -2517,7 +2521,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2531,7 +2535,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=19,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2549,7 +2553,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=10,
+            query_count=11,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2579,7 +2583,7 @@ class StreamAdminTest(ZulipTestCase):
         webhook_bot = self.example_user("webhook_bot")
         do_change_bot_owner(webhook_bot, bot_owner=other_user, acting_user=other_user)
         result = self.attempt_unsubscribe_of_principal(
-            query_count=8,
+            query_count=9,
             target_users=[webhook_bot],
             is_realm_admin=False,
             is_subbed=True,
@@ -2673,9 +2677,35 @@ class StreamAdminTest(ZulipTestCase):
 
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm: Realm) -> Set[str]:
-        streams = get_default_streams_for_realm(realm.id)
-        stream_names = [s.name for s in streams]
-        return set(stream_names)
+        streams = get_default_streams_for_realm_as_dicts(realm.id)
+        return {s["name"] for s in streams}
+
+    def test_query_count(self) -> None:
+        DefaultStream.objects.all().delete()
+        realm = get_realm("zulip")
+
+        new_stream_ids = set()
+
+        for i in range(5):
+            stream = ensure_stream(realm, f"stream {i}", acting_user=None)
+            new_stream_ids.add(stream.id)
+            do_add_default_stream(stream)
+
+        with queries_captured() as queries:
+            default_streams = get_default_streams_for_realm_as_dicts(realm.id)
+
+        self.assert_length(queries, 1)
+        self.assert_length(default_streams, 5)
+        self.assertEqual({dct["stream_id"] for dct in default_streams}, new_stream_ids)
+
+        # Make sure our query isn't some bloated select_related query.
+        self.assertLess(len(queries[0].sql), 800)
+
+        with queries_captured() as queries:
+            default_stream_ids = get_default_stream_ids_for_realm(realm.id)
+
+        self.assert_length(queries, 1)
+        self.assertEqual(default_stream_ids, new_stream_ids)
 
     def test_add_and_remove_default_stream(self) -> None:
         realm = get_realm("zulip")
@@ -2788,7 +2818,14 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         # Test adding streams to existing default stream group
         group = lookup_default_stream_groups(["group1"], realm)[0]
-        new_stream_names = ["stream4", "stream5"]
+        new_stream_names = [
+            "stream4",
+            "stream5",
+            "stream6",
+            "stream7",
+            "stream8",
+            "stream9",
+        ]
         new_streams = []
         for new_stream_name in new_stream_names:
             new_stream = ensure_stream(realm, new_stream_name, acting_user=None)
@@ -2802,7 +2839,8 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assertEqual(get_streams(default_stream_groups[0]), streams)
 
         # Test removing streams from existing default stream group
-        do_remove_streams_from_default_stream_group(realm, group, new_streams)
+        with self.assert_database_query_count(5):
+            do_remove_streams_from_default_stream_group(realm, group, new_streams)
         remaining_streams = streams[0:3]
         default_stream_groups = get_default_stream_groups(realm)
         self.assert_length(default_stream_groups, 1)
@@ -4618,6 +4656,34 @@ class SubscriptionAPITest(ZulipTestCase):
             ([web_public_stream], [public_stream, private_stream]),
         )
 
+        # Guest can be subscribed by other users.
+        normal_user = self.example_user("aaron")
+        with self.capture_send_event_calls(expected_num_events=6) as events:
+            self.common_subscribe_to_streams(
+                self.example_user("hamlet"),
+                ["Denmark"],
+                dict(principals=orjson.dumps([guest_user.id, normal_user.id]).decode()),
+            )
+
+        # Verify that stream creation event is sent to guest user only.
+        stream_create_events = [
+            event
+            for event in events
+            if event["event"]["type"] == "stream" and event["event"]["op"] == "create"
+        ]
+        self.assert_length(stream_create_events, 1)
+        self.assertEqual(stream_create_events[0]["users"], [guest_user.id])
+
+        # Verify that subscription add event is sent to both the users.
+        subscription_add_events = [
+            event
+            for event in events
+            if event["event"]["type"] == "subscription" and event["event"]["op"] == "add"
+        ]
+        self.assert_length(subscription_add_events, 2)
+        self.assertEqual(subscription_add_events[0]["users"], [guest_user.id])
+        self.assertEqual(subscription_add_events[1]["users"], [normal_user.id])
+
     def test_users_getting_add_peer_event(self) -> None:
         """
         Check users getting add_peer_event is correct
@@ -4743,7 +4809,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Verify that peer_event events are never sent in Zephyr
         # realm. This does generate stream creation events from
-        # send_stream_creation_events_for_private_streams.
+        # send_stream_creation_events_for_previously_inaccessible_streams.
         with self.capture_send_event_calls(expected_num_events=num_streams + 1) as events:
             with self.assert_database_query_count(num_streams + 12):
                 self.common_subscribe_to_streams(
@@ -4835,7 +4901,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users.
-        self.assert_length(cache_tries, 4)
+        self.assert_length(cache_tries, 3)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """

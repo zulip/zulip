@@ -4,7 +4,6 @@ import _ from "lodash";
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
-import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -39,7 +38,7 @@ import {user_settings} from "./user_settings";
 // highlighter that escapes (i.e. one that calls
 // typeahead_helper.highlight_with_escaping).
 
-// This is what we use for PM/compose typeaheads.
+// This is what we use for direct message/compose typeaheads.
 // We export it to allow tests to mock it.
 export const max_num_items = 8;
 
@@ -193,7 +192,7 @@ export function handle_enter($textarea, e) {
 // has reliable information about whether it was a Tab or a Shift+Tab.
 let $nextFocus = false;
 
-function handle_keydown(e) {
+function handle_keydown(e, {on_enter_send}) {
     const key = e.key;
 
     if (keydown_util.is_enter_event(e) || (key === "Tab" && !e.shiftKey)) {
@@ -234,7 +233,7 @@ function handle_keydown(e) {
                         compose_validate.validate_message_length() &&
                         !$("#compose-send-button").prop("disabled")
                     ) {
-                        compose.finish();
+                        on_enter_send();
                     }
                     return;
                 }
@@ -336,6 +335,9 @@ export function tokenize_compose_str(s) {
 }
 
 export function broadcast_mentions() {
+    if (!compose_validate.wildcard_mention_allowed()) {
+        return [];
+    }
     const wildcard_mention_array = ["all", "everyone"];
     let wildcard_string = "";
     if (compose_state.get_message_type() === "private") {
@@ -425,6 +427,7 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
         filter_pills: false,
+        filter_groups: !is_silent,
         ...opts,
     };
     return get_person_suggestions(query, opts);
@@ -461,7 +464,12 @@ export function get_person_suggestions(query, opts) {
         return persons.filter((item) => query_matches_person(query, item));
     }
 
-    const groups = user_groups.get_realm_user_groups();
+    let groups;
+    if (opts.filter_groups) {
+        groups = user_groups.get_user_groups_allowed_to_mention();
+    } else {
+        groups = user_groups.get_realm_user_groups();
+    }
 
     const filtered_groups = groups.filter((item) => query_matches_name(query, item));
 
@@ -1077,11 +1085,11 @@ export function initialize_compose_typeahead(selector) {
     });
 }
 
-export function initialize() {
+export function initialize({on_enter_send}) {
     update_emoji_data();
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").on("keydown", handle_keydown);
+    $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
     $("#stream_message_recipient_topic").typeahead({

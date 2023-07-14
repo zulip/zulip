@@ -22,6 +22,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
+import * as message_events from "./message_events";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -144,10 +145,10 @@ export function create_message_object() {
         message.private_message_recipient = recipient;
         message.to_user_ids = people.email_list_to_user_ids_string(emails);
 
-        // Note: The `undefined` case is for situations like the
-        // is_zephyr_mirror_realm case where users may be
-        // automatically created when you try to send a private
-        // message to their email address.
+        // Note: The `undefined` case is for situations like
+        // the is_zephyr_mirror_realm case where users may
+        // be automatically created when you try to send a
+        // direct message to their email address.
         if (message.to_user_ids !== undefined) {
             message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
@@ -187,6 +188,7 @@ export function clear_compose_box() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
+    compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     popover_menus.reset_selected_schedule_timestamp();
 }
@@ -213,7 +215,7 @@ export function send_message(request = create_message_object()) {
     let local_id;
     let locally_echoed;
 
-    const message = echo.try_deliver_locally(request);
+    const message = echo.try_deliver_locally(request, message_events.insert_new_messages);
     if (message) {
         // We are rendering this message locally with an id
         // like 92l99.01 that corresponds to a reasonable
@@ -417,7 +419,19 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
     }
 }
 
+function setup_compose_actions_hooks() {
+    compose_actions.register_compose_box_clear_hook(clear_invites);
+    compose_actions.register_compose_box_clear_hook(clear_private_stream_alert);
+    compose_actions.register_compose_box_clear_hook(clear_preview_area);
+
+    compose_actions.register_compose_cancel_hook(abort_xhr);
+    compose_actions.register_compose_cancel_hook(abort_video_callbacks);
+}
+
 export function initialize() {
+    // Register hooks for compose_actions.
+    setup_compose_actions_hooks();
+
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
 
     $("#compose-textarea").on("keydown", (event) => {
@@ -721,8 +735,8 @@ export function initialize() {
                 on_timestamp_selection,
                 get_timestamp_for_flatpickr(),
                 {
-                    // place the time picker above the icon and center it horizontally
-                    position: "above center",
+                    // place the time picker wherever there is space and center it horizontally
+                    position: "auto center",
                 },
             );
         }

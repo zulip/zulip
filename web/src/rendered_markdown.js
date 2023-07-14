@@ -11,6 +11,7 @@ import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rtl from "./rtl";
+import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import {show_copied_confirmation} from "./tippyjs";
@@ -82,15 +83,31 @@ export const update_elements = ($content) => {
         // We give special highlights to the mention buttons
         // that refer to the current user.
         if (user_id === "*" || people.is_my_user_id(user_id)) {
-            // Either a wildcard mention or us, so mark it.
-            $(this).addClass("user-mention-me");
+            const $message_header_stream = $content
+                .closest(".recipient_row")
+                .find(".message_header.message_header_stream");
+            // If stream message
+            if ($message_header_stream.length) {
+                const stream_id = Number.parseInt(
+                    $message_header_stream.attr("data-stream-id"),
+                    10,
+                );
+                // Don't highlight the mention if user is not subscribed to the stream.
+                if (stream_data.is_user_subscribed(stream_id, people.my_current_user_id())) {
+                    // Either a wildcard mention or us, so mark it.
+                    $(this).addClass("user-mention-me");
+                }
+            } else {
+                // Always highlight wildcard mentions in direct messages.
+                $(this).addClass("user-mention-me");
+            }
         }
         if (user_id && user_id !== "*" && !$(this).find(".highlight").length) {
             // If it's a mention of a specific user, edit the
             // mention text to show the user's current name,
             // assuming that you're not searching for text
             // inside the highlight.
-            const person = people.get_by_user_id(user_id, true);
+            const person = people.maybe_get_user_by_id(user_id);
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.

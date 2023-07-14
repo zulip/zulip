@@ -11,7 +11,6 @@ from django.utils.translation import override as override_language
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from confirmation import settings as confirmation_settings
-from zerver.actions.default_streams import get_default_streams_for_realm
 from zerver.actions.invites import notify_invites_changed
 from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
 from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
@@ -19,7 +18,8 @@ from zerver.actions.user_groups import do_send_user_group_members_update_event
 from zerver.actions.users import change_user_is_active, get_service_dicts_for_bot
 from zerver.lib.avatar import avatar_url
 from zerver.lib.create_user import create_user
-from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.default_streams import get_slim_realm_default_streams
+from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
@@ -48,15 +48,20 @@ from zerver.models import (
     bot_owner_user_ids,
     get_system_bot,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
 
 
-ONBOARDING_TOTAL_MESSAGES = 1000
-ONBOARDING_UNREAD_MESSAGES = 20
-ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=1)
+MAX_NUM_ONBOARDING_MESSAGES = 1000
+MAX_NUM_ONBOARDING_UNREAD_MESSAGES = 20
+
+# We don't want to mark years-old messages as unread, since that might
+# feel like Zulip is buggy, but in low-traffic or bursty-traffic
+# organizations, it's reasonable for the most recent 20 messages to be
+# several weeks old and still be a good place to start.
+ONBOARDING_RECENT_TIMEDELTA = datetime.timedelta(weeks=12)
 
 DEFAULT_HISTORICAL_FLAGS = UserMessage.flags.historical | UserMessage.flags.read
 
@@ -115,63 +120,14 @@ def notify_new_user(user_profile: UserProfile) -> None:
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
 
-def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
-    """Give you the last ONBOARDING_TOTAL_MESSAGES messages on your public
-    streams, so you have something to look at in your home view once
-    you finish the tutorial.  The most recent ONBOARDING_UNREAD_MESSAGES
-    are marked unread.
-    """
-    one_week_ago = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
-
-    recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
-    recent_messages = Message.objects.filter(
-        recipient_id__in=recipient_ids, date_sent__gt=one_week_ago
-    ).order_by("-id")
-    message_ids_to_use = list(
-        reversed(recent_messages.values_list("id", flat=True)[0:ONBOARDING_TOTAL_MESSAGES])
-    )
-    if len(message_ids_to_use) == 0:
-        return
-
-    # Handle the race condition where a message arrives between
-    # bulk_add_subscriptions above and the Message query just above
-    already_ids = set(
-        UserMessage.objects.filter(
-            message_id__in=message_ids_to_use, user_profile=user_profile
-        ).values_list("message_id", flat=True)
-    )
-
-    # Mark the newest ONBOARDING_UNREAD_MESSAGES as unread.
-    marked_unread = 0
-    ums_to_create = []
-    for message_id in reversed(message_ids_to_use):
-        if message_id in already_ids:
-            continue
-
-        um = UserMessage(user_profile=user_profile, message_id=message_id)
-        if marked_unread < ONBOARDING_UNREAD_MESSAGES:
-            marked_unread += 1
-        else:
-            um.flags = UserMessage.flags.read
-        ums_to_create.append(um)
-
-    UserMessage.objects.bulk_create(reversed(ums_to_create))
-
-
-# Does the processing for a new user account:
-# * Subscribes to default/invitation streams
-# * Fills in some recent historical messages
-# * Notifies other users in realm and Zulip about the signup
-# * Deactivates PreregistrationUser objects
-def process_new_human_user(
+def set_up_streams_for_new_human_user(
+    *,
     user_profile: UserProfile,
     prereg_user: Optional[PreregistrationUser] = None,
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
-    realm_creation: bool = False,
 ) -> None:
     realm = user_profile.realm
 
-    mit_beta_user = realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams: List[Stream] = list(prereg_user.streams.all())
         acting_user: Optional[UserProfile] = prereg_user.referred_by
@@ -185,10 +141,14 @@ def process_new_human_user(
     user_was_invited = prereg_user is not None and (
         prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
     )
-    # If the Preregistration object didn't explicitly list some streams (it happens when user
-    # directly signs up without any invitation), we add the default streams
+
+    # If the Preregistration object didn't explicitly list some streams (it
+    # happens when user directly signs up without any invitation), we add the
+    # default streams for the realm. Note that we are fine with "slim" Stream
+    # objects for calling bulk_add_subscriptions and add_new_user_history,
+    # which we verify in StreamSetupTest tests that check query counts.
     if len(streams) == 0 and not user_was_invited:
-        streams = get_default_subs(user_profile)
+        streams = get_slim_realm_default_streams(realm.id)
 
     for default_stream_group in default_stream_groups:
         default_stream_group_streams = default_stream_group.streams.all()
@@ -206,6 +166,76 @@ def process_new_human_user(
 
     add_new_user_history(user_profile, streams)
 
+
+def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -> None:
+    """
+    Give the user some messages in their feed, so that they can learn how to
+    use the home view in a realistic way after finishing the tutorial.
+
+    Mark the very most recent messages as unread.
+    """
+
+    # Find recipient ids for the user's streams that were passed to us.
+    # (Only look at public streams.)
+    recipient_ids = [stream.recipient_id for stream in streams if not stream.invite_only]
+
+    # Start by finding recent messages matching those recipients.
+    cutoff_date = timezone_now() - ONBOARDING_RECENT_TIMEDELTA
+    recent_message_ids = set(
+        Message.objects.filter(recipient_id__in=recipient_ids, date_sent__gt=cutoff_date)
+        .order_by("-id")
+        .values_list("id", flat=True)[0:MAX_NUM_ONBOARDING_MESSAGES]
+    )
+
+    if len(recent_message_ids) > 0:
+        # Handle the race condition where a message arrives between
+        # bulk_add_subscriptions above and the Message query just above
+        already_used_ids = set(
+            UserMessage.objects.filter(
+                message_id__in=recent_message_ids, user_profile=user_profile
+            ).values_list("message_id", flat=True)
+        )
+
+        # Exclude the already-used ids and sort them.
+        backfill_message_ids = sorted(recent_message_ids - already_used_ids)
+
+        # Find which message ids we should mark as read.
+        # (We don't want too many unread messages.)
+        older_message_ids = set(backfill_message_ids[:-MAX_NUM_ONBOARDING_UNREAD_MESSAGES])
+
+        # Create UserMessage rows for the backfill.
+        ums_to_create = []
+        for message_id in backfill_message_ids:
+            um = UserMessage(user_profile=user_profile, message_id=message_id)
+            if message_id in older_message_ids:
+                um.flags = UserMessage.flags.read
+            ums_to_create.append(um)
+
+        UserMessage.objects.bulk_create(ums_to_create)
+
+
+# Does the processing for a new user account:
+# * Subscribes to default/invitation streams
+# * Fills in some recent historical messages
+# * Notifies other users in realm and Zulip about the signup
+# * Deactivates PreregistrationUser objects
+def process_new_human_user(
+    user_profile: UserProfile,
+    prereg_user: Optional[PreregistrationUser] = None,
+    default_stream_groups: Sequence[DefaultStreamGroup] = [],
+    realm_creation: bool = False,
+) -> None:
+    # subscribe to default/invitation streams and
+    # fill in some recent historical messages
+    set_up_streams_for_new_human_user(
+        user_profile=user_profile,
+        prereg_user=prereg_user,
+        default_stream_groups=default_stream_groups,
+    )
+
+    realm = user_profile.realm
+    mit_beta_user = realm.is_zephyr_mirror_realm
+
     # mit_beta_users don't have a referred_by field
     if (
         not mit_beta_user
@@ -213,7 +243,7 @@ def process_new_human_user(
         and prereg_user.referred_by is not None
         and prereg_user.referred_by.is_active
     ):
-        # This is a cross-realm private message.
+        # This is a cross-realm direct message.
         with override_language(prereg_user.referred_by.default_language):
             internal_send_private_message(
                 get_system_bot(settings.NOTIFICATION_BOT, prereg_user.referred_by.realm_id),
@@ -251,7 +281,11 @@ def process_new_human_user(
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)
     if realm.send_welcome_emails:
-        enqueue_welcome_emails(user_profile, realm_creation)
+        enqueue_welcome_emails(user_profile)
+
+    # Schedule an initial email with the user's
+    # new account details and log-in information.
+    send_account_registered_email(user_profile, realm_creation)
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
@@ -311,20 +345,12 @@ def notify_created_user(user_profile: UserProfile) -> None:
         event: Dict[str, Any] = dict(
             type="realm_user", op="add", person=person_for_real_email_access_users
         )
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm, event, user_ids_with_real_email_access
-            )
-        )
+        send_event_on_commit(user_profile.realm, event, user_ids_with_real_email_access)
 
     if user_ids_without_real_email_access:
         assert person_for_without_real_email_access_users is not None
         event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
-        transaction.on_commit(
-            lambda event=event: send_event(
-                user_profile.realm, event, user_ids_without_real_email_access
-            )
-        )
+        send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -361,9 +387,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
 
 def notify_created_bot(user_profile: UserProfile) -> None:
     event = created_bot_event(user_profile)
-    transaction.on_commit(
-        lambda: send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
-    )
+    send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
 
 
 def do_create_user(
@@ -451,6 +475,14 @@ def do_create_user(
 
         system_user_group = get_system_user_group_for_user(user_profile)
         UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_user_group)
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            modified_user_group=system_user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=event_time,
+            acting_user=acting_user,
+        )
 
         if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
             full_members_system_group = UserGroup.objects.get(
@@ -460,6 +492,14 @@ def do_create_user(
             )
             UserGroupMembership.objects.create(
                 user_profile=user_profile, user_group=full_members_system_group
+            )
+            RealmAuditLog.objects.create(
+                realm=user_profile.realm,
+                modified_user=user_profile,
+                modified_user_group=full_members_system_group,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time=event_time,
+                acting_user=acting_user,
             )
 
     # Note that for bots, the caller will send an additional event
@@ -602,9 +642,3 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
         stream_dict=stream_dict,
         private_peer_dict=subscriber_peer_info.private_peer_dict,
     )
-
-
-def get_default_subs(user_profile: UserProfile) -> List[Stream]:
-    # Right now default streams are realm-wide.  This wrapper gives us flexibility
-    # to some day further customize how we set up default streams for new users.
-    return get_default_streams_for_realm(user_profile.realm_id)

@@ -219,7 +219,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertNotEqual(url_only_url, url)
         self.assertIn("user_uploads/temporary/", url_only_url)
         self.assertTrue(url_only_url.endswith("zulip.txt"))
-        # The generated URL has a token authorizing the requestor to access the file
+        # The generated URL has a token authorizing the requester to access the file
         # without being logged in.
         self.logout()
         self.assertEqual(self.client_get(url_only_url).getvalue(), b"zulip!")
@@ -359,7 +359,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.py"
         )
         self.assertEqual(response.status_code, 404)
-        self.assert_in_response("File not found.", response)
+        self.assert_in_response("This file does not exist or has been deleted.", response)
 
     def test_delete_old_unclaimed_attachments(self) -> None:
         # Upload some files and make them older than a week
@@ -554,7 +554,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
         self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_web_public)
 
-        # Then, have the owner PM it to another user, giving that other user access.
+        # Then, have it in a direct message to another user, giving that other user access.
         body = f"Second message ...[zulip.txt](http://{host}/user_uploads/" + d1_path_id + ")"
         self.send_personal_message(self.example_user("hamlet"), self.example_user("othello"), body)
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
@@ -657,6 +657,25 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             result = self.client_post("/json/user_uploads", {"f1": fp})
             response_dict = self.assert_json_success(result)
             assert sanitize_name(expected) in response_dict["uri"]
+
+    def test_sanitize_file_name(self) -> None:
+        self.login("hamlet")
+        for uploaded_filename, expected in [
+            ("../foo", "foo"),
+            (".. ", "uploaded-file"),
+            ("/", "f1"),
+            ("./", "f1"),
+            ("././", "f1"),
+            (".!", "uploaded-file"),
+            ("**", "uploaded-file"),
+        ]:
+            fp = StringIO("bah!")
+            fp.name = urllib.parse.quote(uploaded_filename)
+
+            result = self.client_post("/json/user_uploads", {"f1": fp})
+            response_dict = self.assert_json_success(result)
+            self.assertNotIn(response_dict["uri"], uploaded_filename)
+            self.assertTrue(response_dict["uri"].endswith("/" + expected))
 
     def test_realm_quota(self) -> None:
         """
@@ -1865,21 +1884,22 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.user_profile = self.example_user("hamlet")
 
     def test_currently_used_upload_space(self) -> None:
-        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm.id)))
         self.assertEqual(0, self.realm.currently_used_upload_space_bytes())
-        self.assertEqual(0, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+        self.assertEqual(0, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
 
         data = b"zulip!"
         upload_message_attachment("dummy.txt", len(data), "text/plain", data, self.user_profile)
         # notify_attachment_update function calls currently_used_upload_space_bytes which
         # updates the cache.
-        self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+        self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
         self.assert_length(data, self.realm.currently_used_upload_space_bytes())
 
         data2 = b"more-data!"
         upload_message_attachment("dummy2.txt", len(data2), "text/plain", data2, self.user_profile)
         self.assertEqual(
-            len(data) + len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0]
+            len(data) + len(data2),
+            cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0],
         )
         self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
 
@@ -1887,12 +1907,13 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         attachment.file_name = "dummy1.txt"
         attachment.save(update_fields=["file_name"])
         self.assertEqual(
-            len(data) + len(data2), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0]
+            len(data) + len(data2),
+            cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0],
         )
         self.assertEqual(len(data) + len(data2), self.realm.currently_used_upload_space_bytes())
 
         attachment.delete()
-        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
+        self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm.id)))
         self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
 
 

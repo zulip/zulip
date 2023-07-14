@@ -58,7 +58,7 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function analyze_edit_history(message) {
+function analyze_edit_history(message, last_edit_timestr) {
     // Returns a dict of booleans that describe the message's history:
     //   * edited: if the message has had its content edited
     //   * moved: if the message has had its stream/topic edited
@@ -100,6 +100,12 @@ function analyze_edit_history(message) {
                 moved = true;
             }
         }
+    } else if (last_edit_timestr !== undefined) {
+        // When the edit_history is disabled for the organization, we do not receive the edit_history
+        // variable in the message object. In this case, we will check if the last_edit_timestr is
+        // available or not. Since we don't have the edit_history, we can't determine if the message
+        // was moved or edited. Therefore, we simply mark the messages as edited.
+        edited = true;
     }
     return {edited, moved, resolve_toggled};
 }
@@ -281,10 +287,17 @@ export class MessageListView {
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
             const today = new Date();
+            let date = timerender.render_date(last_edit_time, today)[0].textContent;
+            // If the date is today or yesterday, we don't want to show the date as capitalized.
+            // Thus, we need to check if the date string contains a digit or not using regex,
+            // since any other date except today/yesterday will contain a digit.
+            if (date && !/\d/.test(date)) {
+                date = date.toLowerCase();
+            }
             return $t(
                 {defaultMessage: "{date} at {time}"},
                 {
-                    date: timerender.render_date(last_edit_time, today)[0].textContent,
+                    date,
                     time: timerender.stringify_time(last_edit_time),
                 },
             );
@@ -307,7 +320,7 @@ export class MessageListView {
         const include_sender = message_container.include_sender;
         const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
-        const edit_history_details = analyze_edit_history(message_container.msg);
+        const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
 
         if (
             last_edit_timestr === undefined ||
@@ -1202,7 +1215,9 @@ export class MessageListView {
 
     _rerender_header(message_containers) {
         // Given a list of messages that are in the **same** message group,
-        // rerender the header / recipient bar of the messages
+        // rerender the header / recipient bar of the messages. This method
+        // should only be called with rerender_messages as the rerendered
+        // header may need to be updated for the "sticky_header" class.
         if (message_containers.length === 0) {
             return;
         }
@@ -1308,6 +1323,10 @@ export class MessageListView {
 
         for (const messages_in_group of message_groups) {
             this._rerender_header(messages_in_group, message_content_edited);
+        }
+
+        if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
+            this.update_sticky_recipient_headers();
         }
     }
 
@@ -1615,7 +1634,7 @@ export class MessageListView {
 
     show_messages_as_unread(message_ids) {
         const $table = rows.get_table(this.table_name);
-        const $rows_to_show_as_unread = $table.find(".message_row").filter((index, $row) => {
+        const $rows_to_show_as_unread = $table.find(".message_row").filter((_index, $row) => {
             const message_id = Number.parseFloat($row.getAttribute("zid"));
             return message_ids.includes(message_id);
         });

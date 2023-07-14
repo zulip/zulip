@@ -17,7 +17,6 @@ import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users from "./muted_users";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
@@ -89,7 +88,7 @@ export const COLUMNS = {
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
 const MAX_SELECTABLE_TOPIC_COLS = 4;
-const MAX_SELECTABLE_PM_COLS = 3;
+const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
@@ -148,10 +147,10 @@ function get_row_type(row) {
 }
 
 function get_max_selectable_cols(row) {
-    // returns maximum number of columns in stream message or private message row.
+    // returns maximum number of columns in stream message or direct message row.
     const type = get_row_type(row);
     if (type === "private") {
-        return MAX_SELECTABLE_PM_COLS;
+        return MAX_SELECTABLE_DIRECT_MESSAGE_COLS;
     }
     return MAX_SELECTABLE_TOPIC_COLS;
 }
@@ -411,7 +410,7 @@ function format_conversation(conversation_data) {
         extra_sender_ids = all_senders.slice(0, -MAX_AVATAR);
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     } else if (type === "private") {
-        // Private message info
+        // Direct message info
         context.user_ids_string = last_msg.to_user_ids;
         context.rendered_pm_with = last_msg.display_recipient
             .filter(
@@ -446,8 +445,9 @@ function format_conversation(conversation_data) {
         // Display in most recent sender first order.
         // To match the behavior for streams, we display the set of users who've actually
         // participated, with the most recent participants first. It could make sense to
-        // display the other recipients on the PM conversation with different styling,
-        // but it's important to not destroy the information of "who's actually talked".
+        // display the other recipients on the direct message conversation with different
+        // styling, but it's important to not destroy the information of "who's actually
+        // talked".
         all_senders = recent_senders
             .get_pm_recent_senders(context.user_ids_string)
             .participants.reverse();
@@ -1051,7 +1051,7 @@ function page_down_navigation() {
 
 function check_row_type_transition(row, col) {
     // This function checks if the row is transitioning
-    // from type "Private messages" to "Stream" or vice versa.
+    // from type "Direct messages" to "Stream" or vice versa.
     // This helps in setting the col_focus as maximum column
     // of both the type are different.
     if (row < 0) {
@@ -1270,7 +1270,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.MUTED);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.MUTED,
+        );
     });
 
     // Unmute topic in a unmuted stream
@@ -1279,7 +1282,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     // Unmute topic in a muted stream
@@ -1288,7 +1294,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.UNMUTED);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.UNMUTED,
+        );
     });
 
     // Mute topic in a muted stream
@@ -1297,7 +1306,10 @@ export function initialize() {
         const $elt = $(e.target);
         const topic_row_index = $elt.closest("tr").index();
         focus_clicked_element(topic_row_index, COLUMNS.mute);
-        muted_topics_ui.mute_or_unmute_topic($elt, user_topics.all_visibility_policies.INHERIT);
+        user_topics.set_visibility_policy_for_element(
+            $elt,
+            user_topics.all_visibility_policies.INHERIT,
+        );
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {
@@ -1312,7 +1324,7 @@ export function initialize() {
         focus_clicked_element(topic_row_index, COLUMNS.read);
         const user_ids_string = $elt.attr("data-user-ids-string");
         if (user_ids_string) {
-            // PM row
+            // direct message row
             unread_ops.mark_pm_as_read(user_ids_string);
         } else {
             // Stream row

@@ -78,7 +78,7 @@ const draft_2 = {
     private_message_recipient: "aaron@zulip.com",
     reply_to: "aaron@zulip.com",
     type: "private",
-    content: "Test private message",
+    content: "Test direct message",
 };
 const short_msg = {
     stream: "stream",
@@ -238,7 +238,7 @@ test("remove_old_drafts", () => {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
-        content: "Test private message",
+        content: "Test direct message",
         updatedAt: new Date().setDate(-30),
     };
     const draft_model = drafts.draft_model;
@@ -507,7 +507,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
-        content: "Test private message",
+        content: "Test direct message",
         updatedAt: date(-1),
     };
     const draft_3 = {
@@ -521,14 +521,14 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "iago@zulip.com",
         type: "private",
-        content: "Test private message 2",
+        content: "Test direct message 2",
         updatedAt: date(-5),
     };
     const draft_5 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "zoe@zulip.com",
         type: "private",
-        content: "Test private message 3",
+        content: "Test direct message 3",
         updatedAt: date(-2),
     };
 
@@ -550,21 +550,21 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id2",
             is_stream: false,
             recipients: "Aaron",
-            raw_content: "Test private message",
+            raw_content: "Test direct message",
             time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
             recipients: "Aaron",
-            raw_content: "Test private message 3",
+            raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
             recipients: "Aaron",
-            raw_content: "Test private message 2",
+            raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
         },
         {
@@ -656,7 +656,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
-        content: "Test private message",
+        content: "Test direct message",
         updatedAt: date(-1),
     };
     const stream_draft_2 = {
@@ -670,14 +670,14 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "iago@zulip.com",
         type: "private",
-        content: "Test private message 2",
+        content: "Test direct message 2",
         updatedAt: date(-5),
     };
     const pm_draft_3 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "zoe@zulip.com",
         type: "private",
-        content: "Test private message 3",
+        content: "Test direct message 3",
         updatedAt: date(-2),
     };
 
@@ -686,21 +686,21 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             draft_id: "id2",
             is_stream: false,
             recipients: "Aaron",
-            raw_content: "Test private message",
+            raw_content: "Test direct message",
             time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
             recipients: "Aaron",
-            raw_content: "Test private message 3",
+            raw_content: "Test direct message 3",
             time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
             recipients: "Aaron",
-            raw_content: "Test private message 2",
+            raw_content: "Test direct message 2",
             time_stamp: "Jan 26",
         },
     ];

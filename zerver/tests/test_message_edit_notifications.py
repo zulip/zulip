@@ -3,10 +3,12 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import Subscription, UserPresence
+from zerver.models import Subscription, UserPresence, UserTopic, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications
 
 
@@ -396,7 +398,53 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # actual content of these messages.)
         self.assert_length(info["queue_messages"], 2)
 
-    def test_updates_with_wildcard_mention(self) -> None:
+    def test_updates_with_stream_wildcard_mention_in_followed_topic(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(cordelia, "Scotland")
+
+        do_change_user_setting(
+            cordelia, "enable_followed_topic_email_notifications", False, acting_user=None
+        )
+        do_change_user_setting(
+            cordelia, "enable_followed_topic_push_notifications", False, acting_user=None
+        )
+        do_change_user_setting(cordelia, "wildcard_mentions_notify", False, acting_user=None)
+        do_set_user_topic_visibility_policy(
+            user_profile=cordelia,
+            stream=get_stream("Scotland", cordelia.realm),
+            topic="test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        # We will simulate that the user still has an active client,
+        # but they don't have UserPresence rows, so we will still
+        # send offline notifications.
+        original_content = "no mention"
+        updated_content = "now we mention @**all**"
+        notification_message_data = self._send_and_update_message(
+            original_content,
+            updated_content,
+            connected_to_zulip=True,
+        )
+
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
+
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
+            message_id=message_id,
+            stream_wildcard_mention_in_followed_topic_email_notify=True,
+            stream_wildcard_mention_in_followed_topic_push_notify=True,
+            already_notified={},
+        )
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
+
+        # messages will get enqueued.
+        self.assert_length(info["queue_messages"], 2)
+
+    def test_updates_with_stream_wildcard_mention(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
 
@@ -418,8 +466,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             user_id=cordelia.id,
             acting_user_id=hamlet.id,
             message_id=message_id,
-            wildcard_mention_email_notify=True,
-            wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
             already_notified={},
         )
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)

@@ -103,7 +103,7 @@ any of the following:
 - **Do not send spam**, including unsolicited communications, promotions, or
   advertisements.
 - **Do not target other accounts with notification spam** by mentioning someone
-  or sending them private messages that they do not want.
+  or sending them direct messages that they do not want.
 - **Do not use other accounts to contact a user who has muted you** or create a
   new account in an organization that has deactivated your account for abusive
   behavior**.** Do not circumvent features we offer to enable users to protect

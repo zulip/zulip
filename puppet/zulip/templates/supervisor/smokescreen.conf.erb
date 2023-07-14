@@ -1,8 +1,10 @@
 [program:smokescreen]
-command=<%= @bin %> --listen-ip <%= @listen_address %>
+command=<%= @bin %> --listen-ip <%= @listen_address %> --expose-prometheus-metrics
 priority=15
 autostart=true
 autorestart=true
 user=zulip
 redirect_stderr=true
 stdout_logfile=/var/log/zulip/smokescreen.log
+stdout_logfile_maxbytes=0
+stdout_logfile_backups=0

@@ -32,7 +32,7 @@ async function test_send_messages(page: Page): Promise<void> {
 
     await common.send_multiple_messages(page, [
         {stream: "Verona", topic: "Reply test", content: "Compose stream reply test"},
-        {recipient: "cordelia@zulip.com", content: "Compose private message reply test"},
+        {recipient: "cordelia@zulip.com", content: "Compose direct message reply test"},
     ]);
 
     assert.equal((await page.$$("#zhome .message_row")).length, initial_msgs_count + 2);
@@ -74,9 +74,7 @@ async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): 
 async function test_reply_by_click_prepopulates_private_message_recipient(
     page: Page,
 ): Promise<void> {
-    const private_message = await page.$(
-        get_message_selector("Compose private message reply test"),
-    );
+    const private_message = await page.$(get_message_selector("Compose direct message reply test"));
     assert.ok(private_message !== null);
     await private_message.click();
     await page.waitForSelector("#private_message_recipient", {visible: true});

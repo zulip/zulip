@@ -75,7 +75,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "Go to [Display settings](#settings/display-settings) "
+                "Go to [Preferences](#settings/preferences) "
                 "to [switch between the light and dark themes](/help/dark-theme), "
                 "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
                 "[change your language](/help/change-your-language), and make other tweaks to your Zulip experience."
@@ -180,6 +180,7 @@ class TutorialTests(ZulipTestCase):
         self.send_huddle_message(user1, [bot, user2], content)
         user1_messages = message_stream_count(user1)
         self.assertEqual(most_recent_message(user1).content, content)
-        # Welcome bot should still respond to initial PM after group PM.
+        # Welcome bot should still respond to initial direct message
+        # after group direct message.
         self.send_personal_message(user1, bot, content)
         self.assertEqual(message_stream_count(user1), user1_messages + 2)

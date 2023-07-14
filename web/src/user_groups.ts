@@ -1,6 +1,7 @@
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as group_permission_settings from "./group_permission_settings";
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import type {User, UserGroupUpdateEvent} from "./types";
 
@@ -11,6 +12,7 @@ type UserGroup = {
     members: Set<number>;
     is_system_group: boolean;
     direct_subgroup_ids: Set<number>;
+    can_mention_group_id: number;
 };
 
 // The members field is a number array which we convert
@@ -44,6 +46,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
         direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
+        can_mention_group_id: user_group_raw.can_mention_group_id,
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -84,6 +87,21 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
 export function get_realm_user_groups(): UserGroup[] {
     const user_groups = [...user_group_by_id_dict.values()].sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => !group.is_system_group);
+}
+
+export function get_user_groups_allowed_to_mention(): UserGroup[] {
+    if (page_params.user_id === undefined) {
+        return [];
+    }
+
+    const user_groups = get_realm_user_groups();
+    return user_groups.filter((group) => {
+        const can_mention_group_id = group.can_mention_group_id;
+        return (
+            page_params.user_id !== undefined &&
+            is_user_in_group(can_mention_group_id, page_params.user_id)
+        );
+    });
 }
 
 export function is_direct_member_of(user_id: number, user_group_id: number): boolean {
@@ -218,15 +236,15 @@ export function get_realm_user_groups_for_dropdown_list_widget(
 
     const system_user_groups = settings_config.system_user_groups_list
         .filter((group) => {
-            if (!allow_internet_group && group.name === "@role:internet") {
+            if (!allow_internet_group && group.name === "role:internet") {
                 return false;
             }
 
-            if (!allow_owners_group && group.name === "@role:owners") {
+            if (!allow_owners_group && group.name === "role:owners") {
                 return false;
             }
 
-            if (!allow_nobody_group && group.name === "@role:nobody") {
+            if (!allow_nobody_group && group.name === "role:nobody") {
                 return false;
             }
 

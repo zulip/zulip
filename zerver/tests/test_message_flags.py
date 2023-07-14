@@ -11,8 +11,8 @@ from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,
     MessageDict,
+    RawUnreadDirectMessageDict,
     RawUnreadMessagesResult,
-    RawUnreadPrivateMessageDict,
     UnreadMessagesResult,
     add_message_to_unread_msgs,
     aggregate_unread_data,
@@ -1283,7 +1283,7 @@ class MessageAccessTests(ZulipTestCase):
             ),
         ]
 
-        # Starring private messages you didn't receive fails.
+        # Starring direct messages you didn't receive fails.
         self.login("cordelia")
         result = self.change_star(message_ids)
         self.assert_json_error(result, "Invalid message(s)")
@@ -1602,7 +1602,7 @@ class MarkUnreadTest(ZulipTestCase):
 
         # send message to self
         pm_dict = {
-            message_id: RawUnreadPrivateMessageDict(other_user_id=user.id),
+            message_id: RawUnreadDirectMessageDict(other_user_id=user.id),
         }
 
         raw_unread_data = RawUnreadMessagesResult(
@@ -1642,7 +1642,7 @@ class MarkUnreadTest(ZulipTestCase):
         add_message_to_unread_msgs(user.id, raw_unread_data, message_id, message_details)
         self.assertEqual(
             raw_unread_data["pm_dict"],
-            {message_id: RawUnreadPrivateMessageDict(other_user_id=user.id)},
+            {message_id: RawUnreadDirectMessageDict(other_user_id=user.id)},
         )
 
     def test_stream_messages_unread(self) -> None:

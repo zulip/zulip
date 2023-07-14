@@ -27,11 +27,11 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-language="{data_language}" tabindex="0">{label}</li>
+<li data-tab-key="{data_tab_key}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div data-language="{data_language}" markdown="1">
+<div data-tab-key="{data_tab_key}" markdown="1">
 {content}
 </div>
 """.strip()
@@ -125,7 +125,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 tab_class = "no-tabs"
                 tab_section["tabs"] = [
                     {
-                        "tab_name": "instructions-for-all-platforms",
+                        "tab_key": "instructions-for-all-platforms",
                         "start": tab_section["start_tabs_index"],
                     }
                 ]
@@ -155,7 +155,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
             content = "\n".join(lines[start_index:end_index]).strip()
             tab_content_block = DIV_TAB_CONTENT_TEMPLATE.format(
-                data_language=tab["tab_name"],
+                data_tab_key=tab["tab_key"],
                 # Wrapping the content in two newlines is necessary here.
                 # If we don't do this, the inner Markdown does not get
                 # rendered properly.
@@ -167,14 +167,14 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def generate_nav_bar(self, tab_section: Dict[str, Any]) -> str:
         li_elements = []
         for tab in tab_section["tabs"]:
-            tab_name = tab.get("tab_name")
-            tab_label = TAB_SECTION_LABELS.get(tab_name)
+            tab_key = tab.get("tab_key")
+            tab_label = TAB_SECTION_LABELS.get(tab_key)
             if tab_label is None:
                 raise ValueError(
-                    f"Tab '{tab_name}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
+                    f"Tab '{tab_key}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
                 )
 
-            li = NAV_LIST_ITEM_TEMPLATE.format(data_language=tab_name, label=tab_label)
+            li = NAV_LIST_ITEM_TEMPLATE.format(data_tab_key=tab_key, label=tab_label)
             li_elements.append(li)
 
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
@@ -189,7 +189,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
             tab_content_match = TAB_CONTENT_REGEX.search(line)
             if tab_content_match:
                 block.setdefault("tabs", [])
-                tab = {"start": index, "tab_name": tab_content_match.group(1)}
+                tab = {"start": index, "tab_key": tab_content_match.group(1)}
                 block["tabs"].append(tab)
 
             end_match = END_TABBED_SECTION_REGEX.search(line)

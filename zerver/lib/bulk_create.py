@@ -1,6 +1,7 @@
 from typing import Any, Collection, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 from django.db.models import Model
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
@@ -146,6 +147,18 @@ def bulk_create_users(
             )
 
     UserGroupMembership.objects.bulk_create(group_memberships_to_create)
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=realm,
+            modified_user=membership.user_profile,
+            modified_user_group=membership.user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=now,
+            acting_user=None,
+        )
+        for membership in group_memberships_to_create
+    )
 
 
 def bulk_set_users_or_streams_recipient_fields(

@@ -1,15 +1,37 @@
 import $ from "jquery";
+import {z} from "zod";
 
 import * as loading from "../loading";
-import {page_params} from "../page_params";
+
+import {page_params} from "./page_params";
+
+type FormDataObject = Record<string, string>;
+
+export type Prices = {
+    monthly: number;
+    annual: number;
+};
+
+export type DiscountDetails = {
+    opensource: string;
+    research: string;
+    nonprofit: string;
+    event: string;
+    education: string;
+    education_nonprofit: string;
+};
+
+export const stripe_session_url_schema = z.object({
+    stripe_session_url: z.string(),
+});
 
 export function create_ajax_request(
-    url,
-    form_name,
-    ignored_inputs = [],
+    url: string,
+    form_name: string,
+    ignored_inputs: string[] = [],
     type = "POST",
-    success_callback,
-) {
+    success_callback: (response: unknown) => void,
+): void {
     const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
     const form_input_section = `#${CSS.escape(form_name)}-input-section`;
@@ -30,7 +52,7 @@ export function create_ajax_request(
     $(zulip_limited_section).hide();
     $(free_trial_alert_message).hide();
 
-    const data = {};
+    const data: FormDataObject = {};
 
     for (const item of $form.serializeArray()) {
         if (ignored_inputs.includes(item.name)) {
@@ -39,11 +61,11 @@ export function create_ajax_request(
         data[item.name] = item.value;
     }
 
-    $.ajax({
+    void $.ajax({
         type,
         url,
         data,
-        success(response) {
+        success(response: unknown) {
             $(form_loading).hide();
             $(form_error).hide();
             $(form_success).show();
@@ -66,7 +88,7 @@ export function create_ajax_request(
     });
 }
 
-export function format_money(cents) {
+export function format_money(cents: number): string {
     // allow for small floating point errors
     cents = Math.ceil(cents - 0.001);
     let precision;
@@ -78,17 +100,17 @@ export function format_money(cents) {
     return new Intl.NumberFormat("en-US", {
         minimumFractionDigits: precision,
         maximumFractionDigits: precision,
-    }).format((cents / 100).toFixed(precision));
+    }).format(Number.parseFloat((cents / 100).toFixed(precision)));
 }
 
-export function update_charged_amount(prices, schedule) {
+export function update_charged_amount(prices: Prices, schedule: keyof Prices): void {
     $("#charged_amount").text(format_money(page_params.seat_count * prices[schedule]));
 }
 
-export function update_discount_details(organization_type) {
+export function update_discount_details(organization_type: keyof DiscountDetails): void {
     let discount_notice =
         "Your organization may be eligible for a discount on Zulip Cloud Standard. Organizations whose members are not employees are generally eligible.";
-    const discount_details = {
+    const discount_details: DiscountDetails = {
         opensource: "Zulip Cloud Standard is free for open-source projects.",
         research: "Zulip Cloud Standard is free for academic research.",
         nonprofit: "Zulip Cloud Standard is discounted 85%+ for registered non-profits.",
@@ -103,7 +125,7 @@ export function update_discount_details(organization_type) {
     $("#sponsorship-discount-details").text(discount_notice);
 }
 
-export function show_license_section(license) {
+export function show_license_section(license: string): void {
     $("#license-automatic-section").hide();
     $("#license-manual-section").hide();
 
@@ -116,14 +138,14 @@ export function show_license_section(license) {
     $(input_id).prop("disabled", false);
 }
 
-let current_page;
+let current_page: string;
 
-function handle_hashchange() {
+function handle_hashchange(): void {
     $(`#${CSS.escape(current_page)}-tabs.nav a[href="${CSS.escape(location.hash)}"]`).tab("show");
     $("html").scrollTop(0);
 }
 
-export function set_tab(page) {
+export function set_tab(page: string): void {
     const hash = location.hash;
     if (hash) {
         $(`#${CSS.escape(page)}-tabs.nav a[href="${CSS.escape(hash)}"]`).tab("show");
@@ -131,14 +153,14 @@ export function set_tab(page) {
     }
 
     $(`#${CSS.escape(page)}-tabs.nav-tabs a`).on("click", function () {
-        location.hash = this.hash;
+        location.hash = (this as HTMLAnchorElement).hash;
     });
 
     current_page = page;
     window.addEventListener("hashchange", handle_hashchange);
 }
 
-export function set_sponsorship_form() {
+export function set_sponsorship_form(): void {
     $("#sponsorship-button").on("click", (e) => {
         if (!is_valid_input($("#sponsorship-form"))) {
             return;
@@ -150,6 +172,6 @@ export function set_sponsorship_form() {
     });
 }
 
-export function is_valid_input(elem) {
+export function is_valid_input(elem: JQuery<HTMLFormElement>): boolean {
     return elem[0].checkValidity();
 }

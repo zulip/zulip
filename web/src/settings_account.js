@@ -273,6 +273,7 @@ export function initialize_custom_date_type_fields(element_id) {
         altInput: true,
         altFormat: "F j, Y",
         allowInput: true,
+        static: true,
     });
 
     $(element_id)
@@ -346,13 +347,17 @@ export function initialize_custom_user_type_fields(
             if (is_editable) {
                 const $input = $pill_container.children(".input");
                 if (set_handler_on_update) {
-                    const opts = {update_func: update_custom_user_field, user: true};
+                    const opts = {
+                        update_func: update_custom_user_field,
+                        user: true,
+                        exclude_bots: true,
+                    };
                     pill_typeahead.set_up($input, pills, opts);
                     pills.onPillRemove(() => {
                         update_custom_user_field();
                     });
                 } else {
-                    pill_typeahead.set_up($input, pills, {user: true});
+                    pill_typeahead.set_up($input, pills, {user: true, exclude_bots: true});
                 }
             }
             user_pills.set(field.id, pills);
@@ -562,9 +567,7 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
 
-        function validate_input(e) {
-            e.preventDefault();
-            e.stopPropagation();
+        function validate_input() {
             const old_password = $("#old_password").val();
             const new_password = $("#new_password").val();
 
@@ -617,9 +620,7 @@ export function set_up() {
         }
     });
 
-    function do_change_password(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    function do_change_password() {
         const $change_password_error = $("#change_password_modal").find("#dialog_error");
         $change_password_error.hide();
 
@@ -682,9 +683,7 @@ export function set_up() {
         );
     });
 
-    function do_change_email(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    function do_change_email() {
         const $change_email_error = $("#change_email_modal").find("#dialog_error");
         const data = {};
         data.email = $("#change_email_form").find("input[name='email']").val();

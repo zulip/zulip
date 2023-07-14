@@ -29,6 +29,7 @@ from zerver.lib.mention import MentionBackend, MentionData, silent_mention_synta
 from zerver.lib.message import (
     access_message,
     bulk_access_messages,
+    check_user_group_mention_allowed,
     normalize_body,
     truncate_topic,
     update_to_dict_cache,
@@ -257,7 +258,7 @@ def get_mentions_for_message_updates(message_id: int) -> Set[int]:
 def update_user_message_flags(
     rendering_result: MessageRenderingResult, ums: Iterable[UserMessage]
 ) -> None:
-    wildcard = rendering_result.mentions_wildcard
+    wildcard = rendering_result.mentions_stream_wildcard
     mentioned_ids = rendering_result.mentions_user_ids
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
     changed_ums: Set[UserMessage] = set()
@@ -465,7 +466,8 @@ def do_update_message(
             recipient=target_message.recipient,
             sender_id=target_message.sender_id,
             stream_topic=stream_topic,
-            possible_wildcard_mention=mention_data.message_has_wildcards(),
+            possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
+            possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
         )
 
         event["online_push_user_ids"] = list(info.online_push_user_ids)
@@ -479,14 +481,14 @@ def do_update_message(
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
         event["all_bot_user_ids"] = list(info.all_bot_user_ids)
-        if rendering_result.mentions_wildcard:
-            event["wildcard_mention_user_ids"] = list(info.wildcard_mention_user_ids)
-            event["followed_topic_wildcard_mention_user_ids"] = list(
-                info.followed_topic_wildcard_mention_user_ids
+        if rendering_result.mentions_stream_wildcard:
+            event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
+            event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
+                info.stream_wildcard_mention_in_followed_topic_user_ids
             )
         else:
-            event["wildcard_mention_user_ids"] = []
-            event["followed_topic_wildcard_mention_user_ids"] = []
+            event["stream_wildcard_mention_user_ids"] = []
+            event["stream_wildcard_mention_in_followed_topic_user_ids"] = []
 
         do_update_mobile_push_notification(
             target_message,
@@ -1247,12 +1249,16 @@ def check_update_message(
         )
         links_for_embed |= rendering_result.links_for_preview
 
-        if message.is_stream_message() and rendering_result.mentions_wildcard:
+        if message.is_stream_message() and rendering_result.mentions_stream_wildcard:
             stream = access_stream_by_id(user_profile, message.recipient.type_id)[0]
             if not wildcard_mention_allowed(message.sender, stream):
                 raise JsonableError(
                     _("You do not have permission to use wildcard mentions in this stream.")
                 )
+
+        if rendering_result.mentions_user_group_ids:
+            mentioned_group_ids = list(rendering_result.mentions_user_group_ids)
+            check_user_group_mention_allowed(user_profile, mentioned_group_ids)
 
     new_stream = None
     number_changed = 0

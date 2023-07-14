@@ -171,7 +171,7 @@ validate the message and do the following:
 
 * Send a public (stream) message if the `stream` query parameter is
   specified in the webhook URL.
-* If the `stream` query parameter isn't specified, it will send a private
+* If the `stream` query parameter isn't specified, it will send a direct
   message to the owner of the webhook bot.
 
 Finally, we return a 200 http status with a JSON format success message via
@@ -627,8 +627,8 @@ payloads, the absence of such a header usually indicates a configuration
 issue, where one either entered the URL for a different integration, or happens to
 be running an older version of the integration that doesn't set that header.
 
-If the requisite header is missing, this function sends a PM to the owner of the
-webhook bot, notifying them of the missing header.
+If the requisite header is missing, this function sends a direct message to the
+owner of the webhook bot, notifying them of the missing header.
 
 ### Handling unexpected webhook event types
 

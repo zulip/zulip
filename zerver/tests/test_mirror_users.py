@@ -50,7 +50,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
     )
     def test_zephyr_mirror_new_recipient(self, ignored: object) -> None:
-        """Test mirror dummy user creation for PM recipients"""
+        """Test mirror dummy user creation for direct message recipients"""
         user = self.mit_user("starnine")
         sender = self.mit_user("sipbtest")
         new_user_email = "bob_the_new_user@mit.edu"

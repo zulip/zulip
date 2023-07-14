@@ -253,7 +253,7 @@ export function initialize_kitchen_sink_stuff() {
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.js.
 
-    const throttled_mousewheelhandler = _.throttle((e, delta) => {
+    const throttled_mousewheelhandler = _.throttle((_e, delta) => {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
@@ -535,7 +535,7 @@ export function initialize_everything() {
             - tracking all streams
             - tracking presence data
             - tracking user groups and bots
-            - tracking recent PMs
+            - tracking recent direct messages
 
         Using stream data as an example, we use a
         module called `stream_data` to actually track
@@ -700,7 +700,9 @@ export function initialize_everything() {
     server_events.initialize();
     user_status.initialize(user_status_params);
     compose_recipient.initialize();
-    compose_pm_pill.initialize();
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
     compose_closed_ui.initialize();
     reload.initialize();
     user_groups.initialize(user_groups_params);
@@ -712,9 +714,14 @@ export function initialize_everything() {
     linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     compose.initialize();
-    composebox_typeahead.initialize(); // Must happen after compose.initialize()
+    // Typeahead must be initialized after compose.initialize()
+    composebox_typeahead.initialize({
+        on_enter_send: compose.finish,
+    });
     compose_textarea.initialize();
-    search.initialize();
+    search.initialize({
+        on_narrow_search: narrow.activate,
+    });
     tutorial.initialize();
     notifications.initialize({on_click_scroll_to_selected: navigate.scroll_to_selected});
     unread_ops.initialize();

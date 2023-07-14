@@ -33,6 +33,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
+from sentry_sdk import capture_exception
 from two_factor.utils import default_device
 from typing_extensions import Concatenate, ParamSpec
 
@@ -298,23 +299,25 @@ def access_user_by_api_key(
     return user_profile
 
 
-def log_unsupported_webhook_event(summary: str) -> None:
+def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
     # This helper is primarily used by some of our more complicated
     # webhook integrations (e.g. GitHub) that need to log an unsupported
     # event based on attributes nested deep within a complicated JSON
     # payload. In such cases, the error message we want to log may not
     # really fit what a regular UnsupportedWebhookEventTypeError exception
     # represents.
-    webhook_unsupported_events_logger.exception(summary, stack_info=True)
+    extra = {"request": request}
+    webhook_unsupported_events_logger.exception(summary, stack_info=True, extra=extra)
 
 
-def log_exception_to_webhook_logger(err: Exception) -> None:
+def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
+    extra = {"request": request}
     if isinstance(err, AnomalousWebhookPayloadError):
-        webhook_anomalous_payloads_logger.exception(str(err), stack_info=True)
+        webhook_anomalous_payloads_logger.exception(str(err), stack_info=True, extra=extra)
     elif isinstance(err, UnsupportedWebhookEventTypeError):
-        webhook_unsupported_events_logger.exception(str(err), stack_info=True)
+        webhook_unsupported_events_logger.exception(str(err), stack_info=True, extra=extra)
     else:
-        webhook_logger.exception(str(err), stack_info=True)
+        webhook_logger.exception(str(err), stack_info=True, extra=extra)
 
 
 def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[str]:
@@ -366,7 +369,9 @@ def webhook_view(
                 else:
                     if isinstance(err, WebhookError):
                         err.webhook_name = webhook_client_name
-                    log_exception_to_webhook_logger(err)
+                    if isinstance(err, UnsupportedWebhookEventTypeError):
+                        capture_exception(err)
+                    log_exception_to_webhook_logger(request, err)
                 raise err
 
         # Store the event types registered for this webhook as an attribute, which can be access
@@ -455,7 +460,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     and also adds helpful data needed by our server logs.
     """
     django_login(request, user_profile)
-    RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
+    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
         # Log in with two factor authentication as well.
@@ -775,7 +780,9 @@ def authenticated_rest_api_view(
 
                 if isinstance(err, WebhookError):
                     err.webhook_name = webhook_client_name
-                log_exception_to_webhook_logger(err)
+                if isinstance(err, UnsupportedWebhookEventTypeError):
+                    capture_exception(err)
+                log_exception_to_webhook_logger(request, err)
                 raise err
 
         return _wrapped_func_arguments
@@ -930,7 +937,7 @@ def internal_notify_view(
                 raise RuntimeError("Tornado notify view called with no Tornado handler")
             if not is_tornado_view and is_tornado_request:
                 raise RuntimeError("Django notify view called with Tornado handler")
-            request_notes.requestor_for_logs = "internal"
+            request_notes.requester_for_logs = "internal"
             return view_func(request, *args, **kwargs)
 
         return _wrapped_func_arguments

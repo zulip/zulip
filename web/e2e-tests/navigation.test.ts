@@ -54,7 +54,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 }
 
 async function navigate_to_private_messages(page: Page): Promise<void> {
-    console.log("Navigate to private messages");
+    console.log("Navigate to direct messages");
 
     const all_private_messages_icon = "#show_all_private_messages";
     await page.waitForSelector(all_private_messages_icon, {visible: true});
@@ -107,7 +107,7 @@ async function navigation_tests(page: Page): Promise<void> {
     // Verify that we're narrowed to the target stream
     await page.waitForSelector(
         `xpath///*[@id="message_view_header"]//*[${common.has_class_x(
-            "stream",
+            "message-header-stream-settings-button",
         )} and normalize-space()="Verona"]`,
     );
 }

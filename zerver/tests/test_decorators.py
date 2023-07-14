@@ -406,7 +406,9 @@ class DecoratorTestCase(ZulipTestCase):
         request = HostRequestMock()
         request.host = "zulip.testserver"
         request.POST["api_key"] = webhook_bot_api_key
-        exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook"
+        exception_msg = (
+            "The 'test_event' event isn't currently supported by the ClientName webhook; ignoring"
+        )
         with self.assertLogs("zulip.zerver.webhooks.unsupported", level="ERROR") as log:
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 request.body = b"invalidjson"
@@ -577,13 +579,13 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         with mock.patch(
             "zerver.decorator.webhook_unsupported_events_logger.exception"
         ) as mock_exception:
-            exception_msg = (
-                "The 'test_event' event isn't currently supported by the ClientName webhook"
-            )
+            exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook; ignoring"
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 my_webhook_raises_exception(request)
 
-        mock_exception.assert_called_with(exception_msg, stack_info=True)
+        mock_exception.assert_called_with(
+            exception_msg, stack_info=True, extra={"request": request}
+        )
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()
@@ -1541,7 +1543,7 @@ class TestInternalNotifyView(ZulipTestCase):
                 orjson.loads(self.internal_notify(False, request).content).get("msg"),
                 self.BORING_RESULT,
             )
-            self.assertEqual(RequestNotes.get_notes(request).requestor_for_logs, "internal")
+            self.assertEqual(RequestNotes.get_notes(request).requester_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(True, request)
@@ -1557,7 +1559,7 @@ class TestInternalNotifyView(ZulipTestCase):
                 orjson.loads(self.internal_notify(True, request).content).get("msg"),
                 self.BORING_RESULT,
             )
-            self.assertEqual(RequestNotes.get_notes(request).requestor_for_logs, "internal")
+            self.assertEqual(RequestNotes.get_notes(request).requester_for_logs, "internal")
 
             with self.assertRaises(RuntimeError):
                 self.internal_notify(False, request)

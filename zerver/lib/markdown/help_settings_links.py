@@ -24,7 +24,7 @@ link_mapping = {
         "Account & privacy",
         "/#settings/account-and-privacy",
     ],
-    "display-settings": ["Personal settings", "Display settings", "/#settings/display-settings"],
+    "preferences": ["Personal settings", "Preferences", "/#settings/preferences"],
     "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
     "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
     "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],

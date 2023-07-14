@@ -101,6 +101,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
+    do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
@@ -455,7 +456,7 @@ class NormalActionsTest(BaseAction):
                 lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
             )
 
-    def test_wildcard_mentioned_send_message_events(self) -> None:
+    def test_stream_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**all** hello " + str(i)
             self.verify_action(
@@ -469,7 +470,7 @@ class NormalActionsTest(BaseAction):
             ),
         )
 
-        # Verify private message editing - content only edit
+        # Verify direct message editing - content only edit
         pm = Message.objects.order_by("-id")[0]
         content = "new content"
         rendering_result = render_markdown(pm, content)
@@ -1396,6 +1397,17 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_user_group_description(backend, description, acting_user=None)
         )
         check_user_group_update("events[0]", events[0], "description")
+
+        # Test can_mention_group setting update
+        moderators_group = UserGroup.objects.get(
+            name="role:moderators", realm=self.user_profile.realm, is_system_group=True
+        )
+        events = self.verify_action(
+            lambda: do_change_user_group_permission_setting(
+                backend, "can_mention_group", moderators_group, acting_user=None
+            )
+        )
+        check_user_group_update("events[0]", events[0], "can_mention_group_id")
 
         # Test add members
         hamlet = self.example_user("hamlet")
@@ -3249,6 +3261,18 @@ class SubscribeActionTest(BaseAction):
             10,
         )
 
+        stream.invite_only = False
+        stream.save()
+
+        # Subscribe as a guest to a public stream.
+        self.user_profile = self.example_user("polonius")
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [self.user_profile], acting_user=None
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_stream_create("events[0]", events[0])
+        check_subscription_add("events[1]", events[1])
+
 
 class DraftActionTest(BaseAction):
     def do_enable_drafts_synchronization(self, user_profile: UserProfile) -> None:
@@ -3338,14 +3362,14 @@ class ScheduledMessagesEventsTest(BaseAction):
         self.verify_action(action)
 
     def test_private_scheduled_message_create_event(self) -> None:
-        # Create private scheduled message
+        # Create direct scheduled message
         action = lambda: check_schedule_message(
             self.user_profile,
             get_client("website"),
             "private",
             [self.example_user("hamlet").id],
             None,
-            "Private message",
+            "Direct message",
             convert_to_UTC(dateparser("2023-04-19 18:24:56")),
             self.user_profile.realm,
         )

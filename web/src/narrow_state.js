@@ -315,7 +315,8 @@ export function narrowed_by_topic_reply() {
 }
 
 // We auto-reply under certain conditions, namely when you're narrowed
-// to a PM (or huddle), and when you're narrowed to some stream/topic pair
+// to a 1:1 or group direct message conversation, and when you're
+// narrowed to some stream/topic pair.
 export function narrowed_by_reply() {
     return narrowed_by_pm_reply() || narrowed_by_topic_reply();
 }

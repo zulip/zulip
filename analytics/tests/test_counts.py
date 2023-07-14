@@ -657,7 +657,7 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(user1, recipient_huddle1)
         self.create_message(user2, recipient_huddle2)
 
-        # private messages
+        # direct messages
         recipient_user1 = Recipient.objects.get(type_id=user1.id, type=Recipient.PERSONAL)
         recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
         recipient_user3 = Recipient.objects.get(type_id=user3.id, type=Recipient.PERSONAL)

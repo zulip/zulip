@@ -1,4 +1,3 @@
-import threading
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import wraps
@@ -57,7 +56,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     client_version: Optional[str] = None
     log_data: Optional[MutableMapping[str, Any]] = None
     rate_limit: Optional[str] = None
-    requestor_for_logs: Optional[str] = None
+    requester_for_logs: Optional[str] = None
     # We use realm_cached to indicate whether the realm is cached or not.
     # Because the default value of realm is None, which can indicate "unset"
     # and "nonexistence" at the same time.
@@ -490,25 +489,3 @@ def has_request_variables(
         return return_value
 
     return _wrapped_req_func
-
-
-local = threading.local()
-
-
-def get_current_request() -> Optional[HttpRequest]:
-    """Returns the current HttpRequest object; this should only be used by
-    logging frameworks, which have no other access to the current
-    request.  All other codepaths should pass through the current
-    request object, rather than rely on this thread-local global.
-
-    """
-    return getattr(local, "request", None)
-
-
-def set_request(req: HttpRequest) -> None:
-    local.request = req
-
-
-def unset_request() -> None:
-    if hasattr(local, "request"):
-        del local.request

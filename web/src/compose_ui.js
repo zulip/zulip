@@ -189,7 +189,9 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
     // for details.
 
+    const old_text = $textarea.val();
     replace($textarea[0], old_syntax, () => new_syntax, "after-replacement");
+    const new_text = $textarea.val();
 
     // When replacing content in a textarea, we need to move the cursor
     // to preserve its logical position if and only if the content we
@@ -207,6 +209,9 @@ export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-t
         // Otherwise we simply restore it to it's original position
         $textarea.caret(prev_caret);
     }
+
+    // Return if anything was actually replaced.
+    return old_text !== new_text;
 }
 
 export function compute_placeholder_text(opts) {
@@ -227,7 +232,7 @@ export function compute_placeholder_text(opts) {
         }
     }
 
-    // For private messages
+    // For direct messages
     if (opts.private_message_recipient) {
         const recipient_list = opts.private_message_recipient.split(",");
         const recipient_names = recipient_list
@@ -327,7 +332,7 @@ export function handle_keydown(event, $textarea) {
     }
 }
 
-export function handle_keyup(event, $textarea) {
+export function handle_keyup(_event, $textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea($textarea);
 }

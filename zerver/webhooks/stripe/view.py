@@ -196,10 +196,16 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
                 )
             if event == "created":
                 if object_["plan"]:
-                    body += "\nPlan: [{plan_nickname}](https://dashboard.stripe.com/plans/{plan_id})".format(
-                        plan_nickname=object_["plan"]["nickname"].tame(check_string),
-                        plan_id=object_["plan"]["id"].tame(check_string),
-                    )
+                    nickname = object_["plan"]["nickname"].tame(check_none_or(check_string))
+                    if nickname is not None:
+                        body += "\nPlan: [{plan_nickname}](https://dashboard.stripe.com/plans/{plan_id})".format(
+                            plan_nickname=object_["plan"]["nickname"].tame(check_string),
+                            plan_id=object_["plan"]["id"].tame(check_string),
+                        )
+                    else:
+                        body += "\nPlan: https://dashboard.stripe.com/plans/{plan_id}".format(
+                            plan_id=object_["plan"]["id"].tame(check_string),
+                        )
                 if object_["quantity"]:
                     body += "\nQuantity: {}".format(object_["quantity"].tame(check_int))
                 if "billing" in object_:  # nocoverage

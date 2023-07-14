@@ -10,8 +10,6 @@ from django.utils.translation import gettext as _
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import (
     default_stream_groups_to_dicts_sorted,
-    get_default_streams_for_realm,
-    streams_to_dicts_sorted,
 )
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
@@ -19,6 +17,7 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
+from zerver.lib.default_streams import get_default_streams_for_realm_as_dicts
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.hotspots import get_next_hotspots
@@ -35,7 +34,8 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.narrow import check_supported_events_narrow_filter, read_stop_words
+from zerver.lib.narrow import check_narrow_for_events, read_stop_words
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
@@ -515,10 +515,12 @@ def fetch_initial_state_data(
         #
         #   [{'max_message_id': 700175, 'user_ids': [801]}]
         #
-        # for all recent private message conversations, ordered by the
-        # highest message ID in the conversation.  The user_ids list
+        # for all recent direct message conversations, ordered by the
+        # highest message ID in the conversation. The user_ids list
         # is the list of users other than the current user in the
-        # private message conversation (so it is [] for PMs to self).
+        # direct message conversation (so it is [] for direct messages
+        # to self).
+        #
         # Note that raw_recent_private_conversations is an
         # intermediate form as a dictionary keyed by recipient_id,
         # which is more efficient to update, and is rewritten to the
@@ -580,9 +582,8 @@ def fetch_initial_state_data(
             # doesn't have any.
             state["realm_default_streams"] = []
         else:
-            state["realm_default_streams"] = streams_to_dicts_sorted(
-                get_default_streams_for_realm(realm.id)
-            )
+            state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(realm.id)
+
     if want("default_stream_groups"):
         if settings_user.is_guest:
             state["realm_default_stream_groups"] = []
@@ -895,8 +896,8 @@ def apply_event(
                     if state["is_guest"]:
                         state["realm_default_streams"] = []
                     else:
-                        state["realm_default_streams"] = streams_to_dicts_sorted(
-                            get_default_streams_for_realm(user_profile.realm_id)
+                        state["realm_default_streams"] = get_default_streams_for_realm_as_dicts(
+                            user_profile.realm_id
                         )
 
                 for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
@@ -1459,15 +1460,15 @@ def do_events_register(
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: Mapping[str, bool] = {},
-    narrow: Collection[Sequence[str]] = [],
+    narrow: Collection[NarrowTerm] = [],
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
-    # build_narrow_filter will check it, but it's nicer from an error
+    # build_narrow_predicate will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
-    check_supported_events_narrow_filter(narrow)
+    check_narrow_for_events(narrow)
 
     notification_settings_null = client_capabilities.get("notification_settings_null", False)
     bulk_message_deletion = client_capabilities.get("bulk_message_deletion", False)
@@ -1515,6 +1516,8 @@ def do_events_register(
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)
 
+    legacy_narrow = [[nt.operator, nt.operand] for nt in narrow]
+
     while True:
         # Note that we pass event_types, not fetch_event_types here, since
         # that's what controls which future events are sent.
@@ -1527,7 +1530,7 @@ def do_events_register(
             queue_lifespan_secs,
             event_types,
             all_public_streams,
-            narrow=narrow,
+            narrow=legacy_narrow,
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,

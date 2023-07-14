@@ -50,7 +50,7 @@ function test(label, f) {
 }
 
 test("edge_cases", () => {
-    // private messages
+    // direct messages
     assert.ok(!user_topics.is_topic_muted(undefined, undefined));
 });
 

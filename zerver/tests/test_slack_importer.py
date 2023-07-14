@@ -28,6 +28,7 @@ from zerver.data_import.slack import (
     SlackBotEmail,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
+    check_token_access,
     convert_slack_workspace_messages,
     do_convert_data,
     fetch_shared_channel_users,
@@ -69,7 +70,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
     if not valid_endpoint:
         return (404, {}, b"")
 
-    if request.headers.get("Authorization") != "Bearer xoxp-valid-token":
+    if request.headers.get("Authorization") != "Bearer xoxb-valid-token":
         return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
 
     if request.url == "https://slack.com/api/users.list":
@@ -114,7 +115,7 @@ def request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], byt
 class SlackImporter(ZulipTestCase):
     @responses.activate
     def test_get_slack_api_data(self) -> None:
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # Users list
         slack_user_list_url = "https://slack.com/api/users.list"
@@ -151,7 +152,7 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_team_info_url, "team", token=token)
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: team_not_found",))
 
-        token = "xoxp-invalid-token"
+        token = "xoxb-invalid-token"
         with self.assertRaises(Exception) as invalid:
             get_slack_api_data(slack_user_list_url, "members", token=token)
         self.assertEqual(invalid.exception.args, ("Error accessing Slack API: invalid_auth",))
@@ -160,7 +161,7 @@ class SlackImporter(ZulipTestCase):
             get_slack_api_data(slack_user_list_url, "members")
         self.assertEqual(invalid.exception.args, ("Slack token missing in kwargs",))
 
-        token = "xoxp-status404"
+        token = "xoxb-status404"
         wrong_url = "https://slack.com/api/wrong"
         responses.add_callback(responses.GET, wrong_url, callback=request_callback)
         with self.assertRaises(Exception) as invalid:
@@ -180,6 +181,79 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_realm_dict["string_id"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["name"], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict["date_created"], time)
+
+    @responses.activate
+    def test_check_token_access(self) -> None:
+        def token_request_callback(request: PreparedRequest) -> Tuple[int, Dict[str, str], bytes]:
+            auth = request.headers.get("Authorization")
+            if auth == "Bearer xoxb-broken-request":
+                return (400, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
+
+            if auth == "Bearer xoxb-invalid-token":
+                return (200, {}, orjson.dumps({"ok": False, "error": "invalid_auth"}))
+
+            if auth == "Bearer xoxb-very-limited-scopes":
+                return (
+                    200,
+                    {"x-oauth-scopes": "emoji:read,bogus:scope"},
+                    orjson.dumps(
+                        {
+                            "ok": False,
+                            "error": "missing_scope",
+                            "needed": "team:read",
+                            "provided": "emoji:read,bogus:scope",
+                        }
+                    ),
+                )
+            if auth == "Bearer xoxb-limited-scopes":
+                return (
+                    200,
+                    {"x-oauth-scopes": "team:read,bogus:scope"},
+                    orjson.dumps({"ok": True}),
+                )
+            if auth == "Bearer xoxb-valid-token":
+                return (
+                    200,
+                    {"x-oauth-scopes": "emoji:read,users:read,users:read.email,team:read"},
+                    orjson.dumps({"ok": True}),
+                )
+            else:  # nocoverage
+                raise Exception("Unknown token mock")
+
+        responses.add_callback(
+            responses.GET, "https://slack.com/api/team.info", callback=token_request_callback
+        )
+
+        def exception_for(token: str) -> str:
+            with self.assertRaises(Exception) as invalid:
+                check_token_access(token)
+            return invalid.exception.args[0]
+
+        self.assertEqual(
+            exception_for("xoxq-unknown"),
+            "Unknown token type -- must start with xoxb- or xoxp-",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-invalid-token"),
+            "Invalid Slack token: xoxb-invalid-token, invalid_auth",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-broken-request"),
+            "Failed to fetch data (HTTP status 400) for Slack token: xoxb-broken-request",
+        )
+
+        self.assertEqual(
+            exception_for("xoxb-limited-scopes"),
+            "Slack token is missing the following required scopes: ['emoji:read', 'users:read', 'users:read.email']",
+        )
+        self.assertEqual(
+            exception_for("xoxb-very-limited-scopes"),
+            "Slack token is missing the following required scopes: ['team:read', 'users:read', 'users:read.email']",
+        )
+
+        check_token_access("xoxb-valid-token")
 
     def test_get_owner(self) -> None:
         user_data = [
@@ -245,7 +319,7 @@ class SlackImporter(ZulipTestCase):
         slack_team_info_url = "https://slack.com/api/team.info"
         responses.add_callback(responses.GET, slack_team_info_url, callback=request_callback)
         slack_data_dir = self.fixture_file_name("", type="slack_fixtures")
-        fetch_shared_channel_users(users, slack_data_dir, "xoxp-valid-token")
+        fetch_shared_channel_users(users, slack_data_dir, "xoxb-valid-token")
 
         # Normal users
         self.assert_length(users, 5)
@@ -1186,8 +1260,10 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.check_token_access")
     def test_slack_import_to_existing_database(
         self,
+        mock_check_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -1203,7 +1279,7 @@ class SlackImporter(ZulipTestCase):
 
         test_realm_subdomain = "test-slack-import"
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-importer-data")
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
@@ -1258,6 +1334,11 @@ class SlackImporter(ZulipTestCase):
                 RealmAuditLog.SUBSCRIPTION_CREATED,
                 RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
                 RealmAuditLog.REALM_CREATED,
+                RealmAuditLog.USER_GROUP_CREATED,
+                RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                RealmAuditLog.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                RealmAuditLog.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+                RealmAuditLog.USER_GROUP_GROUP_BASED_SETTING_CHANGED,
             },
         )
 
@@ -1385,8 +1466,10 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")
     @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.check_token_access")
     def test_slack_import_unicode_filenames(
         self,
+        mock_check_token_access: mock.Mock,
         mock_get_slack_api_data: mock.Mock,
         mock_build_avatar_url: mock.Mock,
         mock_build_avatar: mock.Mock,
@@ -1400,7 +1483,7 @@ class SlackImporter(ZulipTestCase):
         test_slack_zip_file = os.path.join(test_slack_dir, "test_unicode_slack_importer.zip")
         test_slack_unzipped_file = os.path.join(test_slack_dir, "test_unicode_slack_importer")
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-unicode-slack-importer-data")
-        token = "xoxp-valid-token"
+        token = "xoxb-valid-token"
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
         # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'

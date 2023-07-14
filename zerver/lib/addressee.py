@@ -40,8 +40,8 @@ class Addressee:
     # around in a non-type-safe way before this class was introduced.
     #
     # It also avoids some nonsense where you have to think about whether
-    # topic should be None or '' for a PM, or you have to make an array
-    # of one stream.
+    # topic should be None or '' for a direct message, or you have to
+    # make an array of one stream.
     #
     # Eventually we can use this to cache Stream and UserProfile objects
     # in memory.

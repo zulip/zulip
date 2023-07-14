@@ -22,7 +22,6 @@ import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
@@ -388,7 +387,7 @@ export function initialize() {
     // Mute topic in a unmuted stream
     $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.MUTED,
         );
@@ -397,7 +396,7 @@ export function initialize() {
     // Unmute topic in a unmuted stream
     $("body").on("click", ".message_header .stream_unmuted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );
@@ -406,7 +405,7 @@ export function initialize() {
     // Unmute topic in a muted stream
     $("body").on("click", ".message_header .stream_muted.on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.UNMUTED,
         );
@@ -415,7 +414,7 @@ export function initialize() {
     // Mute topic in a muted stream
     $("body").on("click", ".message_header .stream_muted.on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        muted_topics_ui.mute_or_unmute_topic(
+        user_topics.set_visibility_policy_for_element(
             $(e.target),
             user_topics.all_visibility_policies.INHERIT,
         );
@@ -584,7 +583,7 @@ export function initialize() {
         );
     });
 
-    // PM LIST TOOLTIPS (not displayed on touch devices)
+    // DIRECT MESSAGE LIST TOOLTIPS (not displayed on touch devices)
     $("body").on("mouseenter", ".pm_user_status", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
@@ -617,12 +616,12 @@ export function initialize() {
         );
     });
 
-    // Recent conversations PMs (Not displayed on small widths)
+    // Recent conversations direct messages (Not displayed on small widths)
     $("body").on("mouseenter", ".recent_topic_stream .pm_status_icon", (e) => {
         e.stopPropagation();
         const $elem = $(e.currentTarget);
         const user_ids_string = $elem.attr("data-user-ids-string");
-        // Don't show tooltip for group PMs.
+        // Don't show tooltip for group direct messages.
         if (!user_ids_string || user_ids_string.split(",").length !== 1) {
             return;
         }
@@ -733,7 +732,7 @@ export function initialize() {
         ".private_messages_container.zoom-out #private_messages_section_header",
         (e) => {
             if (e.target.classList.value === "fa fa-align-right") {
-                // Let the browser handle the "all private messages" widget.
+                // Let the browser handle the "all direct messages" widget.
                 return;
             }
 
@@ -745,7 +744,7 @@ export function initialize() {
             const scroll_position = $left_sidebar_scrollbar.scrollTop();
 
             // This next bit of logic is a bit subtle; this header
-            // button scrolls to the top of the private messages
+            // button scrolls to the top of the direct messages
             // section is uncollapsed but out of view; otherwise, we
             // toggle its collapsed state.
             if (scroll_position === 0 || pm_list.is_private_messages_collapsed()) {
@@ -847,15 +846,19 @@ export function initialize() {
     $("body").on("click", "#gear-menu .dark-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
-        dark_theme.enable();
-        message_lists.update_recipient_bar_background_color();
+        requestAnimationFrame(() => {
+            dark_theme.enable();
+            message_lists.update_recipient_bar_background_color();
+        });
     });
 
     $("body").on("click", "#gear-menu .light-theme", (e) => {
         // Allow propagation to close gear menu.
         e.preventDefault();
-        dark_theme.disable();
-        message_lists.update_recipient_bar_background_color();
+        requestAnimationFrame(() => {
+            dark_theme.disable();
+            message_lists.update_recipient_bar_background_color();
+        });
     });
 
     $("body").on("click", "#header-container .brand", (e) => {

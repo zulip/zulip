@@ -15,7 +15,7 @@ import * as stream_list_sort from "./stream_list_sort";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as util from "./util";
-// Returns an array of private message recipients, removing empty elements.
+// Returns an array of direct message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
 export function get_cleaned_pm_recipients(query_string) {
     let recipients = util.extract_pm_recipients(query_string);
@@ -220,7 +220,7 @@ export function compare_people_for_relevance(
         }
     }
 
-    // give preference to pm partners if both (are)/(are not) subscribers
+    // give preference to direct message partners if both (are)/(are not) subscribers
     const a_is_partner = pm_conversations.is_partner(person_a.user_id);
     const b_is_partner = pm_conversations.is_partner(person_b.user_id);
 

@@ -98,7 +98,7 @@ export function add_subscriber(stream_id, user_id) {
     // If stream_id/user_id are unknown to us, we will
     // still track it, but we will warn.
     const subscribers = get_user_set(stream_id);
-    const person = people.get_by_user_id(user_id);
+    const person = people.maybe_get_user_by_id(user_id);
     if (person === undefined) {
         blueslip.warn("We tried to add invalid subscriber: " + user_id);
     }

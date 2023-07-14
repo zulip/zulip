@@ -306,7 +306,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
                 "email": email,
                 "realm_name": "Zulip test",
                 "realm_type": Realm.ORG_TYPES["business"]["id"],
-                "realm_subdomain": "zuliptest",
+                "realm_subdomain": "custom-test",
             },
         )
         self.assertEqual(result.status_code, 302)
@@ -324,7 +324,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
     def test_generate_link_confirm_email(self) -> None:
         email = "user1@test.com"
         realm_name = "Zulip test"
-        string_id = "zuliptest"
+        string_id = "custom-test"
         generated_link = generate_realm_creation_url(by_admin=False)
 
         result = self.client_post(
@@ -342,7 +342,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             result["Location"],
         )
         result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email", result)
+        self.assert_in_response("check your email", result)
 
         # Original link is now dead
         result = self.client_get(generated_link)

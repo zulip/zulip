@@ -23,7 +23,6 @@ import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
-import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as narrow_banner from "./narrow_banner";
@@ -539,8 +538,6 @@ export function activate(raw_operators, opts) {
         }
         compose_closed_ui.update_reply_recipient_label();
 
-        search.update_button_visibility();
-
         compose_actions.on_narrow(opts);
 
         const current_filter = narrow_state.filter();
@@ -549,7 +546,7 @@ export function activate(raw_operators, opts) {
         pm_list.handle_narrow_activated(current_filter);
         stream_list.handle_narrow_activated(current_filter);
         typing_events.render_notifications_for_narrow();
-        message_view_header.initialize();
+        message_view_header.render_title_area();
         unread_ui.update_unread_banner();
 
         // It is important to call this after other important updates
@@ -918,23 +915,32 @@ export function by_recipient(target_id, opts) {
     // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
 
-    if (
-        user_settings.web_mark_read_on_scroll_policy !==
-        web_mark_read_on_scroll_policy_values.never.code
-    ) {
-        // We don't check message_list.can_mark_messages_read
-        // here because the target message_list isn't initialized;
-        // but the targeted message is about to be marked read
-        // in the new view.
-        unread_ops.notify_server_message_read(message);
-    }
-
     switch (message.type) {
         case "private":
+            if (
+                user_settings.web_mark_read_on_scroll_policy !==
+                web_mark_read_on_scroll_policy_values.never.code
+            ) {
+                // We don't check message_list.can_mark_messages_read
+                // here because the target message_list isn't initialized;
+                // but the targeted message is about to be marked read
+                // in the new view.
+                unread_ops.notify_server_message_read(message);
+            }
             by("dm", message.reply_to, opts);
             break;
 
         case "stream":
+            if (
+                user_settings.web_mark_read_on_scroll_policy ===
+                web_mark_read_on_scroll_policy_values.always.code
+            ) {
+                // We don't check message_list.can_mark_messages_read
+                // here because the target message_list isn't initialized;
+                // but the targeted message is about to be marked read
+                // in the new view.
+                unread_ops.notify_server_message_read(message);
+            }
             by("stream", message.stream, opts);
             break;
     }
@@ -991,12 +997,12 @@ function handle_post_narrow_deactivate_processes() {
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
-    message_view_header.initialize();
+    message_view_header.render_title_area();
     update_narrow_title(narrow_state.filter());
     message_feed_top_notices.update_top_of_narrow_notices(message_lists.home);
 }
 
-export function deactivate(coming_from_recent_topics = false) {
+export function deactivate(coming_from_recent_topics = false, is_actively_scrolling = false) {
     // NOTE: Never call this function independently,
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
@@ -1020,7 +1026,7 @@ export function deactivate(coming_from_recent_topics = false) {
     }
     blueslip.debug("Unnarrowed");
 
-    if (message_scroll.is_actively_scrolling()) {
+    if (is_actively_scrolling) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is over.

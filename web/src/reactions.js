@@ -5,9 +5,7 @@ import render_message_reaction from "../templates/message_reaction.hbs";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as emoji from "./emoji";
-import * as emoji_picker from "./emoji_picker";
 import {$t} from "./i18n";
-import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -20,21 +18,6 @@ export const view = {
 
 export function get_local_reaction_id(reaction_info) {
     return [reaction_info.reaction_type, reaction_info.emoji_code].join(",");
-}
-
-export function open_reactions_popover() {
-    const message = message_lists.current.selected_message();
-    let target;
-
-    // Use verbose style to ensure we test both sides of the condition.
-    if (message.sent_by_me) {
-        target = $(message_lists.current.selected_row()).find(".actions_hover")[0];
-    } else {
-        target = $(message_lists.current.selected_row()).find(".reaction_button")[0];
-    }
-
-    emoji_picker.toggle_emoji_popover(target, message_lists.current.selected_id());
-    return true;
 }
 
 export function current_user_has_reacted_to_emoji(message, local_id) {

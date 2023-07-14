@@ -79,9 +79,9 @@ export class DropdownListWidget {
         $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
     }
 
-    update(value) {
+    update(value, e) {
         this.render(value);
-        this.on_update(value);
+        this.on_update(value, e);
     }
 
     register_event_handlers() {
@@ -90,11 +90,11 @@ export class DropdownListWidget {
             ".list_item",
             (e) => {
                 const value = $(e.currentTarget).attr("data-value");
-                this.update(value);
+                this.update(value, e);
             },
         );
         $(`#${CSS.escape(this.container_id)} .dropdown_list_reset_button`).on("click", (e) => {
-            this.update(this.null_value);
+            this.update(this.null_value, e);
             e.preventDefault();
         });
     }

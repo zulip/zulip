@@ -39,7 +39,7 @@ from zerver.models import (
     get_fake_email_domain,
     get_user_profile_by_id,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
@@ -65,7 +65,7 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
         user_profile.delete()
         # Recipient objects don't get deleted through CASCADE, so we need to handle
         # the user's personal recipient manually. This will also delete all Messages pointing
-        # to this recipient (all private messages sent to the user).
+        # to this recipient (all direct messages sent to the user).
         assert personal_recipient is not None
         personal_recipient.delete()
         replacement_user = create_user(
@@ -297,10 +297,8 @@ def do_deactivate_user(
             op="remove",
             person=dict(user_id=user_profile.id, full_name=user_profile.full_name),
         )
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm, event_remove_user, active_user_ids(user_profile.realm_id)
-            )
+        send_event_on_commit(
+            user_profile.realm, event_remove_user, active_user_ids(user_profile.realm_id)
         )
 
         if user_profile.is_bot:
@@ -309,10 +307,8 @@ def do_deactivate_user(
                 op="remove",
                 bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
             )
-            transaction.on_commit(
-                lambda: send_event(
-                    user_profile.realm, event_remove_bot, bot_owner_user_ids(user_profile)
-                )
+            send_event_on_commit(
+                user_profile.realm, event_remove_bot, bot_owner_user_ids(user_profile)
             )
 
 
@@ -342,16 +338,35 @@ def do_change_user_role(
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
     )
-    transaction.on_commit(
-        lambda: send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
-    )
+    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     UserGroupMembership.objects.filter(
         user_profile=user_profile, user_group=old_system_group
     ).delete()
 
     system_group = get_system_user_group_for_user(user_profile)
+    now = timezone_now()
     UserGroupMembership.objects.create(user_profile=user_profile, user_group=system_group)
+    RealmAuditLog.objects.bulk_create(
+        [
+            RealmAuditLog(
+                realm=user_profile.realm,
+                modified_user=user_profile,
+                modified_user_group=old_system_group,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+                event_time=now,
+                acting_user=acting_user,
+            ),
+            RealmAuditLog(
+                realm=user_profile.realm,
+                modified_user=user_profile,
+                modified_user_group=system_group,
+                event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                event_time=now,
+                acting_user=acting_user,
+            ),
+        ]
+    )
 
     do_send_user_group_members_update_event("remove_members", old_system_group, [user_profile.id])
 

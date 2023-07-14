@@ -22,7 +22,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertFalse(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
-        # Private message
+        # Direct message
         user_data = self.create_user_notifications_data_object(user_id=user_id, pm_push_notify=True)
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -40,13 +40,13 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
-        # Wildcard mention
+        # Stream Wildcard mention
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, wildcard_mention_push_notify=True
+            user_id=user_id, stream_wildcard_mention_push_notify=True
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "wildcard_mentioned",
+            "stream_wildcard_mentioned",
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -70,13 +70,13 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
-        # Followed Topic wildcard mention
+        # Stream wildcard mention in followed topic
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, followed_topic_wildcard_mention_push_notify=True
+            user_id=user_id, stream_wildcard_mention_in_followed_topic_push_notify=True
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "followed_topic_wildcard_mentioned",
+            "stream_wildcard_mentioned_in_followed_topic",
         )
         self.assertTrue(user_data.is_push_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -108,8 +108,8 @@ class TestNotificationData(ZulipTestCase):
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
-            wildcard_mention_push_notify=True,
-            wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -124,8 +124,8 @@ class TestNotificationData(ZulipTestCase):
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
-            wildcard_mention_push_notify=True,
-            wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_push_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -140,8 +140,8 @@ class TestNotificationData(ZulipTestCase):
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
-            wildcard_mention_push_notify=True,
-            wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
             disable_external_notifications=True,
         )
         self.assertEqual(
@@ -162,7 +162,7 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertFalse(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
-        # Private message
+        # Direct message
         user_data = self.create_user_notifications_data_object(
             user_id=user_id, pm_email_notify=True
         )
@@ -182,13 +182,13 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
-        # Wildcard mention
+        # Stream Wildcard mention
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, wildcard_mention_email_notify=True
+            user_id=user_id, stream_wildcard_mention_email_notify=True
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "wildcard_mentioned",
+            "stream_wildcard_mentioned",
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -212,13 +212,13 @@ class TestNotificationData(ZulipTestCase):
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
-        # Followed Topic wildcard mention
+        # Stream wildcard mention in followed topic
         user_data = self.create_user_notifications_data_object(
-            user_id=user_id, followed_topic_wildcard_mention_email_notify=True
+            user_id=user_id, stream_wildcard_mention_in_followed_topic_email_notify=True
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
-            "followed_topic_wildcard_mentioned",
+            "stream_wildcard_mentioned_in_followed_topic",
         )
         self.assertTrue(user_data.is_email_notifiable(acting_user_id=acting_user_id, idle=True))
 
@@ -241,8 +241,8 @@ class TestNotificationData(ZulipTestCase):
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
-            wildcard_mention_push_notify=True,
-            wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -257,8 +257,8 @@ class TestNotificationData(ZulipTestCase):
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
-            wildcard_mention_push_notify=True,
-            wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
         )
         self.assertEqual(
             user_data.get_email_notification_trigger(acting_user_id=acting_user_id, idle=True),
@@ -273,8 +273,8 @@ class TestNotificationData(ZulipTestCase):
             pm_email_notify=True,
             mention_push_notify=True,
             mention_email_notify=True,
-            wildcard_mention_push_notify=True,
-            wildcard_mention_email_notify=True,
+            stream_wildcard_mention_push_notify=True,
+            stream_wildcard_mention_email_notify=True,
             disable_external_notifications=True,
         )
         self.assertEqual(
@@ -306,10 +306,10 @@ class TestNotificationData(ZulipTestCase):
                 muted_sender_user_ids=set(),
                 stream_email_user_ids=set(),
                 stream_push_user_ids=set(),
-                wildcard_mention_user_ids=set(),
+                stream_wildcard_mention_user_ids=set(),
                 followed_topic_email_user_ids=set(),
                 followed_topic_push_user_ids=set(),
-                followed_topic_wildcard_mention_user_ids=set(),
+                stream_wildcard_mention_in_followed_topic_user_ids=set(),
             )
             self.assertEqual(user_data.is_notifiable(acting_user_id=1000, idle=True), notifiable)
 

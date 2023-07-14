@@ -81,7 +81,6 @@
         & kbd {
             background-color: hsl(211deg 29% 14%);
             border-color: hsl(211deg 29% 14%);
-            box-shadow: inset 0 -1px 0 hsl(210deg 5% 34% / 20%);
             text-shadow: none;
             color: hsl(236deg 33% 90%);
         }
@@ -195,17 +194,16 @@
 
     #navbar-middle .column-middle-inner,
     #userlist-toggle-button,
-    .header-main,
+    .header,
     #message_view_header {
-        background-color: hsl(0deg 0% 13%);
+        background-color: var(--color-background-navbar);
     }
 
     & body,
     .app-main,
     .column-middle,
     #streams_header,
-    .private_messages_container,
-    .header {
+    .private_messages_container {
         background-color: var(--color-background);
     }
 
@@ -334,7 +332,8 @@
                 }
             }
 
-            .main-view-banner-action-button {
+            .main-view-banner-action-button,
+            .upload_banner_cancel_button {
                 background-color: hsl(205deg 58% 69% / 10%);
                 border-color: transparent;
                 color: hsl(205deg 58% 69%);
@@ -480,7 +479,9 @@
     .new-style .tab-switcher .ind-tab:not(.selected),
     select,
     .pill-container,
-    .user-status-content-wrapper {
+    .user-status-content-wrapper,
+    #custom-expiration-time-input,
+    #searchbox #search_query {
         background-color: hsl(0deg 0% 0% / 20%);
         border-color: hsl(0deg 0% 0% / 60%);
         color: inherit;

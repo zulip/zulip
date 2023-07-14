@@ -13,7 +13,7 @@ class Clipboard {
     constructor(...args) {
         clipboard_args = args;
     }
-    on(success, show_copied_confirmation) {
+    on(_success, show_copied_confirmation) {
         show_copied_confirmation();
     }
 }
@@ -78,6 +78,17 @@ const $array = (array) => {
     return {each};
 };
 
+function set_closest_dot_find_result($content, value) {
+    $content.closest = (closest_opts) => {
+        assert.equal(closest_opts, ".recipient_row");
+        const find = (find_opts) => {
+            assert.equal(find_opts, ".message_header.message_header_stream");
+            return value;
+        };
+        return {find};
+    };
+}
+
 const get_content_element = () => {
     const $content = $.create("content-stub");
     $content.set_find_results(".user-mention", $array([]));
@@ -89,6 +100,7 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
+    set_closest_dot_find_result($content, []);
 
     // Fend off dumb security bugs by forcing devs to be
     // intentional about HTML manipulation.
@@ -141,7 +153,7 @@ run_test("user-mention", () => {
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
 });
 
-run_test("user-mention (wildcard)", () => {
+run_test("user-mention PM (wildcard)", () => {
     // Setup
     const $content = get_content_element();
     const $mention = $.create("mention");
@@ -151,6 +163,37 @@ run_test("user-mention (wildcard)", () => {
     assert.ok(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert.ok($mention.hasClass("user-mention-me"));
+});
+
+run_test("user-mention Stream subbed (wildcard)", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $mention.attr("data-user-id", "*");
+    $content.set_find_results(".user-mention", $array([$mention]));
+    const attr = () => stream.stream_id;
+    set_closest_dot_find_result($content, {attr, length: 1});
+    stream_data.is_user_subscribed = () => true;
+
+    assert.ok(!$mention.hasClass("user-mention-me"));
+    rm.update_elements($content);
+    assert.ok($mention.hasClass("user-mention-me"));
+});
+
+run_test("user-mention Stream not subbed (wildcard)", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $mention.attr("data-user-id", "*");
+    $content.set_find_results(".user-mention", $array([$mention]));
+    const attr = () => 1;
+    set_closest_dot_find_result($content, {attr, length: 1});
+    stream_data.is_user_subscribed = () => false;
+
+    // Don't add user-mention-me class.
+    assert.ok(!$mention.hasClass("user-mention-me"));
+    rm.update_elements($content);
+    assert.ok(!$mention.hasClass("user-mention-me"));
 });
 
 run_test("user-mention (email)", () => {

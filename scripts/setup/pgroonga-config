@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -eux
+
+dbversion=$(crudini --get /etc/zulip/zulip.conf postgresql version)
+dbname=$(crudini --get /etc/zulip/zulip.conf postgresql database_name 2>/dev/null || echo zulip)
+
+sharedir="${1:-/usr/share/postgresql/$dbversion}"
+applied_file="$sharedir/pgroonga_setup.sql.applied"
+
+installed_version=$(dpkg-query --show --showformat='${Version}' "postgresql-$dbversion-pgdg-pgroonga")
+
+if [ ! -f "$applied_file" ]; then
+    sql="CREATE EXTENSION PGROONGA"
+else
+    sql="ALTER EXTENSION pgroonga UPDATE"
+fi
+
+echo "$sql" | su postgres -c "psql -v ON_ERROR_STOP=1 $dbname"
+
+echo "$installed_version" >"$applied_file"

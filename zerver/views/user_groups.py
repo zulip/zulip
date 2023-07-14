@@ -11,6 +11,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
+    do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
     remove_members_from_user_group,
@@ -23,7 +24,9 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.user_groups import (
     access_user_group_by_id,
+    access_user_group_for_setting,
     access_user_groups_as_potential_subgroups,
+    check_user_group_name,
     get_direct_memberships_of_users,
     get_recursive_subgroups_for_groups,
     get_subgroup_ids,
@@ -46,10 +49,39 @@ def add_user_group(
     name: str = REQ(),
     members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
     description: str = REQ(),
+    can_mention_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
+    name = check_user_group_name(name)
+
+    group_settings_map = {}
+    request_settings_dict = locals()
+    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+        setting_group_id_name = setting_name + "_id"
+
+        if setting_group_id_name not in request_settings_dict:  # nocoverage
+            continue
+
+        if request_settings_dict[setting_group_id_name] is not None:
+            setting_value_group_id = request_settings_dict[setting_group_id_name]
+            setting_value_group = access_user_group_for_setting(
+                setting_value_group_id,
+                user_profile,
+                setting_name=setting_name,
+                require_system_group=permission_config.require_system_group,
+                allow_internet_group=permission_config.allow_internet_group,
+                allow_owners_group=permission_config.allow_owners_group,
+                allow_nobody_group=permission_config.allow_nobody_group,
+            )
+            group_settings_map[setting_name] = setting_value_group
+
     check_add_user_group(
-        user_profile.realm, name, user_profiles, description, acting_user=user_profile
+        user_profile.realm,
+        name,
+        user_profiles,
+        description,
+        group_settings_map=group_settings_map,
+        acting_user=user_profile,
     )
     return json_success(request)
 
@@ -69,17 +101,41 @@ def edit_user_group(
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
     name: Optional[str] = REQ(default=None),
     description: Optional[str] = REQ(default=None),
+    can_mention_group_id: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
-    if name is None and description is None:
+    if name is None and description is None and can_mention_group_id is None:
         raise JsonableError(_("No new data supplied"))
 
     user_group = access_user_group_by_id(user_group_id, user_profile)
 
     if name is not None and name != user_group.name:
+        name = check_user_group_name(name)
         do_update_user_group_name(user_group, name, acting_user=user_profile)
 
     if description is not None and description != user_group.description:
         do_update_user_group_description(user_group, description, acting_user=user_profile)
+
+    request_settings_dict = locals()
+    for setting_name, permission_config in UserGroup.GROUP_PERMISSION_SETTINGS.items():
+        setting_group_id_name = setting_name + "_id"
+
+        if setting_group_id_name not in request_settings_dict:  # nocoverage
+            continue
+
+        if request_settings_dict[setting_group_id_name] is not None:
+            setting_value_group_id = request_settings_dict[setting_group_id_name]
+            setting_value_group = access_user_group_for_setting(
+                setting_value_group_id,
+                user_profile,
+                setting_name=setting_name,
+                require_system_group=permission_config.require_system_group,
+                allow_internet_group=permission_config.allow_internet_group,
+                allow_owners_group=permission_config.allow_owners_group,
+                allow_nobody_group=permission_config.allow_nobody_group,
+            )
+            do_change_user_group_permission_setting(
+                user_group, setting_name, setting_value_group, acting_user=user_profile
+            )
 
     return json_success(request)
 

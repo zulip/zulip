@@ -5,7 +5,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.realm_logo import get_realm_logo_data
 from zerver.models import Realm, RealmAuditLog, UserProfile, active_user_ids
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 @transaction.atomic(durable=True)
@@ -35,4 +35,4 @@ def do_change_logo_source(
         property="night_logo" if night else "logo",
         data=get_realm_logo_data(realm, night),
     )
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))

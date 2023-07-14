@@ -292,10 +292,7 @@ export function add_a_new_bot() {
         });
     }
 
-    function validate_input(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+    function validate_input() {
         const bot_short_name = $("#create_bot_short_name").val();
 
         if (is_local_part(bot_short_name)) {
@@ -340,7 +337,7 @@ export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner
 }
 
 export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
-    const bot = people.get_by_user_id(user_id);
+    const bot = people.maybe_get_user_by_id(user_id);
     const owner_id = bot_data.get(user_id).owner_id;
     const owner_full_name = people.get_full_name(owner_id);
 
@@ -418,7 +415,7 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
 
         function get_options() {
-            const user_ids = people.get_active_human_ids();
+            const user_ids = people.get_realm_active_human_user_ids();
             return user_ids.map((user_id) => ({
                 name: people.get_full_name(user_id),
                 unique_id: user_id,

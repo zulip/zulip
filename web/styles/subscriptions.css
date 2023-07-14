@@ -76,7 +76,7 @@
 .create_user_group_plus_button,
 .create_stream_plus_button {
     font-size: 24px;
-    font-weight: 500;
+    font-weight: 400;
     position: relative;
     top: 2px;
     border: 1px solid hsl(0deg 0% 80%);
@@ -300,7 +300,7 @@ h4.user_group_setting_subsection_title {
     width: 97%;
     overflow: hidden;
     max-width: 1200px;
-    max-height: 1000px;
+    max-height: var(--modal-container-max-height);
 
     .search-container .tab-switcher .ind-tab {
         width: auto;
@@ -700,10 +700,18 @@ h4.user_group_setting_subsection_title {
         -webkit-overflow-scrolling: touch;
 
         .stream-creation-simplebar-container {
-            /*
-                45px (.subscriptions-header) +  44px (.display-type) + 60px (.modal-footer)
-            */
-            height: calc(95vh - 149px);
+            height: calc(
+                var(--modal-container-height) -
+                    var(--modal-container-subscriptions-header-height) -
+                    var(--modal-container-subscriptions-display-type-height) -
+                    var(--modal-container-subscriptions-modal-footer-height)
+            );
+            max-height: calc(
+                var(--modal-container-max-height) -
+                    var(--modal-container-subscriptions-header-height) -
+                    var(--modal-container-subscriptions-display-type-height) -
+                    var(--modal-container-subscriptions-modal-footer-height)
+            );
         }
 
         .user-group-creation-body,
@@ -860,7 +868,7 @@ h4.user_group_setting_subsection_title {
             &.hash::after {
                 top: -1px;
                 font-size: 1.09em;
-                font-weight: 800;
+                font-weight: 700;
             }
 
             .zulip-icon {
@@ -1016,7 +1024,7 @@ div.settings-radio-input-parent {
         /* Match with select elements in settings page */
         min-width: 325px;
         max-width: 100%;
-        height: fit-content;
+        height: 30px;
     }
 
     & select.stream_post_policy_setting {

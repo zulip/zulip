@@ -79,13 +79,17 @@ export function hide_dialog_spinner(): void {
 }
 
 export function show_dialog_spinner(): void {
-    $(".dialog_submit_button span").hide();
     // Disable both the buttons.
     $("#dialog_widget_modal .modal__btn").prop("disabled", true);
 
     const $spinner = $("#dialog_widget_modal .modal__spinner");
     const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
     const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
+
+    // Hide the submit button after computing its height, since submit
+    // buttons with long text might affect the size of the button.
+    $(".dialog_submit_button span").hide();
+
     loading.make_indicator($spinner, {
         width: dialog_submit_button_span_width,
         height: dialog_submit_button_span_height,
@@ -186,6 +190,8 @@ export function launch(conf: DialogWidgetConfig): void {
 
     // Set up handlers.
     $submit_button.on("click", (e) => {
+        e.preventDefault();
+
         if (conf.validate_input && !conf.validate_input(e)) {
             return;
         }

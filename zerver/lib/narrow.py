@@ -9,8 +9,8 @@ from typing import (
     Generic,
     Iterable,
     List,
-    Mapping,
     Optional,
+    Protocol,
     Sequence,
     Set,
     Tuple,
@@ -47,6 +47,7 @@ from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import get_first_visible_message_id
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -100,9 +101,9 @@ def read_stop_words() -> List[str]:
     return stop_words_list
 
 
-def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> None:
-    for element in narrow:
-        operator = element[0]
+def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
+    for narrow_term in narrow:
+        operator = narrow_term.operator
         if operator not in ["stream", "topic", "sender", "is"]:
             raise JsonableError(_("Operator {} not supported.").format(operator))
 
@@ -132,17 +133,20 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     )
 
 
-def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
+class NarrowPredicate(Protocol):
+    def __call__(self, *, message: Dict[str, Any], flags: List[str]) -> bool:
+        ...
+
+
+def build_narrow_predicate(
+    narrow: Collection[NarrowTerm],
+) -> NarrowPredicate:
     """Changes to this function should come with corresponding changes to
     NarrowLibraryTest."""
-    check_supported_events_narrow_filter(narrow)
+    check_narrow_for_events(narrow)
 
-    def narrow_filter(event: Mapping[str, Any]) -> bool:
-        message = event["message"]
-        flags = event["flags"]
-        for element in narrow:
-            operator = element[0]
-            operand = element[1]
+    def narrow_predicate(*, message: Dict[str, Any], flags: List[str]) -> bool:
+        def satisfies_operator(*, operator: str, operand: str) -> bool:
             if operator == "stream":
                 if message["type"] != "stream":
                     return False
@@ -176,10 +180,16 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
                 topic_name = get_topic_from_message_info(message)
                 if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
                     return False
+            return True
+
+        for narrow_term in narrow:
+            # TODO: Eventually handle negated narrow terms.
+            if not satisfies_operator(operator=narrow_term.operator, operand=narrow_term.operand):
+                return False
 
         return True
 
-    return narrow_filter
+    return narrow_predicate
 
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000

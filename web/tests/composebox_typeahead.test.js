@@ -7,13 +7,14 @@ const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
-const {user_settings} = require("./lib/zpage_params");
+const {page_params, user_settings} = require("./lib/zpage_params");
 
 const noop = () => {};
 
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
     warn_if_topic_resolved: noop,
+    wildcard_mention_allowed: () => true,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
@@ -70,9 +71,14 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
     assert.equal(mention_all.special_item_text, "all (translated: Notify stream)");
     assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify stream)");
     assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
+
+    compose_validate.wildcard_mention_allowed = () => false;
+    const mentionNobody = ct.broadcast_mentions();
+    assert.equal(mentionNobody.length, 0);
+    compose_validate.wildcard_mention_allowed = () => true;
 });
 
-run_test("verify wildcard mentions typeahead for private message", () => {
+run_test("verify wildcard mentions typeahead for direct message", () => {
     compose_state.set_message_type("private");
     assert.equal(ct.broadcast_mentions().length, 2);
     const mention_all = ct.broadcast_mentions()[0];
@@ -324,25 +330,28 @@ const hamletcharacters = {
     description: "Characters of Hamlet",
     members: new Set([100, 104]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([10, 11]),
+    direct_subgroup_ids: new Set([]),
+    can_mention_group_id: 2,
 };
 
 const backend = {
     name: "Backend",
     id: 2,
     description: "Backend team",
-    members: new Set([]),
+    members: new Set([101]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set([1]),
+    can_mention_group_id: 1,
 };
 
 const call_center = {
     name: "Call Center",
     id: 3,
     description: "folks working in support",
-    members: new Set([]),
+    members: new Set([102]),
     is_system_group: false,
     direct_subgroup_ids: new Set([]),
+    can_mention_group_id: 2,
 };
 
 const make_emoji = (emoji_dict) => ({
@@ -705,7 +714,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             appended_names.push(item.display_value);
         },
     }));
-    compose_pm_pill.initialize();
+    compose_pm_pill.initialize({
+        on_pill_create_or_remove: compose_recipient.update_placeholder_text,
+    });
 
     let expected_value;
 
@@ -1110,8 +1121,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
 
     user_settings.enter_sends = false;
+    let compose_finish_called = false;
+    override_rewire(compose, "finish", () => {
+        compose_finish_called = true;
+    });
 
-    ct.initialize();
+    ct.initialize({
+        on_enter_send: compose.finish,
+    });
 
     $("#private_message_recipient").val("othello@zulip.com, ");
     $("#private_message_recipient").trigger("blur");
@@ -1153,10 +1170,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.target.id = "compose-textarea";
     user_settings.enter_sends = false;
     event.metaKey = true;
-    let compose_finish_called = false;
-    override_rewire(compose, "finish", () => {
-        compose_finish_called = true;
-    });
 
     $("form#send_message_form").trigger(event);
     assert.ok(compose_finish_called);
@@ -1209,7 +1222,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").off("keyup");
     $("#private_message_recipient").off("blur");
     $("#send_later").css = noop;
-    ct.initialize();
+    ct.initialize({
+        on_enter_send: compose.finish,
+    });
 
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
@@ -1524,18 +1539,38 @@ test("content_highlighter", ({override_rewire}) => {
 test("filter_and_sort_mentions (normal)", () => {
     compose_state.set_message_type("stream");
     const is_silent = false;
-
-    const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    page_params.user_id = 101;
+    let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
     const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
+
+    // call_center group is shown in typeahead even when user is member of
+    // one of the subgroups of can_mention_group.
+    page_params.user_id = 104;
+    suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    assert.deepEqual(suggestions, [mention_all, ali, alice, hal, call_center]);
+
+    // call_center group is not shown in typeahead when user is neither
+    // a direct member of can_mention_group nor a member of any of its
+    // recursive subgroups.
+    page_params.user_id = 102;
+    suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    assert.deepEqual(suggestions, [mention_all, ali, alice, hal]);
 });
 
 test("filter_and_sort_mentions (silent)", () => {
     const is_silent = true;
 
-    const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
+    let suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
+    assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
+
+    // call_center group is shown in typeahead irrespective of whether
+    // user is member of can_mention_group or its subgroups for a
+    // silent mention.
+    page_params.user_id = 102;
+    suggestions = ct.filter_and_sort_mentions(is_silent, "al");
     assert.deepEqual(suggestions, [ali, alice, hal, call_center]);
 });
 
@@ -1645,7 +1680,7 @@ test("typeahead_results", () => {
     // Earlier user group and stream mentions were autocompleted by their
     // description too. This is now removed as it often led to unexpected
     // behaviour, and did not have any great discoverability advantage.
-
+    page_params.user_id = 101;
     // Autocomplete user group mentions by group name.
     assert_mentions_matches("hamletchar", [hamletcharacters]);
 
@@ -1714,8 +1749,8 @@ test("message people", ({override, override_rewire}) => {
 });
 
 test("muted users excluded from results", () => {
-    // This logic is common to PM recipients as well as
-    // mentions typeaheads, so we need only test once.
+    // This logic is common to direct message recipients as
+    // well as mentions typeaheads, so we need only test once.
     let results;
     const opts = {
         want_broadcast: true,
@@ -1737,11 +1772,13 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [mention_all, call_center]);
 });
 
-test("PM recipients sorted according to stream / topic being viewed", ({override_rewire}) => {
-    // This tests that PM recipient results are sorted with subscribers of
-    // the stream / topic being viewed being given priority. If no stream
-    // is being viewed, the sort is alphabetical (for testing, since we do not
-    // simulate PM history)
+test("direct message recipients sorted according to stream / topic being viewed", ({
+    override_rewire,
+}) => {
+    // This tests that direct message recipient results are sorted with
+    // subscribers of the stream / topic being viewed being given priority.
+    // If no stream is being viewed, the sort is alphabetical (for testing,
+    // since we do not simulate direct message history)
     let results;
 
     // Simulating just cordelia being subscribed to denmark.

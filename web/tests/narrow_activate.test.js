@@ -28,7 +28,6 @@ const message_feed_top_notices = mock_esm("../src/message_feed_top_notices");
 const message_feed_loading = mock_esm("../src/message_feed_loading");
 const message_view_header = mock_esm("../src/message_view_header");
 const notifications = mock_esm("../src/notifications");
-const search = mock_esm("../src/search");
 const stream_list = mock_esm("../src/stream_list");
 const top_left_corner = mock_esm("../src/top_left_corner");
 const typing_events = mock_esm("../src/typing_events");
@@ -88,9 +87,8 @@ function test_helper() {
     stub(message_feed_loading, "show_loading_older");
     stub(message_feed_top_notices, "hide_top_of_narrow_notices");
     stub(notifications, "redraw_title");
-    stub(search, "update_button_visibility");
     stub(stream_list, "handle_narrow_activated");
-    stub(message_view_header, "initialize");
+    stub(message_view_header, "render_title_area");
     stub(top_left_corner, "handle_narrow_activated");
     stub(typing_events, "render_notifications_for_narrow");
     stub(compose_recipient, "update_narrow_to_recipient_visibility");
@@ -193,12 +191,11 @@ run_test("basics", () => {
         [hashchange, "save_narrow"],
         [compose_closed_ui, "update_buttons_for_stream"],
         [compose_closed_ui, "update_reply_recipient_label"],
-        [search, "update_button_visibility"],
         [compose_actions, "on_narrow"],
         [top_left_corner, "handle_narrow_activated"],
         [stream_list, "handle_narrow_activated"],
         [typing_events, "render_notifications_for_narrow"],
-        [message_view_header, "initialize"],
+        [message_view_header, "render_title_area"],
         [compose_recipient, "update_narrow_to_recipient_visibility"],
     ]);
 

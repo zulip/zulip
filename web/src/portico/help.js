@@ -9,18 +9,18 @@ import * as common from "../common";
 import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 
-function registerCodeSection($codeSection) {
-    const $li = $codeSection.find("ul.nav li");
-    const $blocks = $codeSection.find(".blocks div");
+function register_code_section($code_section) {
+    const $li = $code_section.find("ul.nav li");
+    const $blocks = $code_section.find(".blocks div");
 
     $li.on("click", function () {
-        const language = this.dataset.language;
+        const tab_key = this.dataset.tabKey;
 
         $li.removeClass("active");
-        $li.filter("[data-language=" + language + "]").addClass("active");
+        $li.filter("[data-tab-key=" + tab_key + "]").addClass("active");
 
         $blocks.removeClass("active");
-        $blocks.filter("[data-language=" + language + "]").addClass("active");
+        $blocks.filter("[data-tab-key=" + tab_key + "]").addClass("active");
     });
 
     $li.on("keydown", (e) => {
@@ -30,33 +30,49 @@ function registerCodeSection($codeSection) {
     });
 }
 
-// Display the copy-to-clipboard button inside the markdown.pre element
+// Display the copy-to-clipboard button inside the .codehilite element
 // within the API and Help Center docs using clipboard.js
-function add_copy_to_clipboard_element($pre) {
+function add_copy_to_clipboard_element($codehilite) {
     const $copy_button = $("<button>").addClass("copy-codeblock");
     $copy_button.html(copy_to_clipboard_svg());
 
-    $($pre).append($copy_button);
+    $($codehilite).append($copy_button);
 
     const clipboard = new ClipboardJS($copy_button[0], {
         text(copy_element) {
-            return $(copy_element).siblings("code").text();
+            // trim to remove trailing whitespace introduced
+            // by additional elements inside <pre>
+            return $(copy_element).siblings("pre").text().trim();
         },
     });
 
+    // Show a tippy tooltip when the button is hovered
+    const tooltip_copy = tippy($copy_button[0], {
+        content: "Copy code",
+        trigger: "mouseenter",
+        placement: "top",
+    });
+
     // Show a tippy tooltip when the code is copied
+    const tooltip_copied = tippy($copy_button[0], {
+        content: "Copied!",
+        trigger: "manual",
+        placement: "top",
+    });
+
+    // Copy code on button click
+    $copy_button.on("click", () => {
+        clipboard.onClick({currentTarget: $copy_button[0]});
+    });
+
+    // Show "Copied!" tooltip when code is successfully copied
     clipboard.on("success", () => {
-        const tooltip = tippy($copy_button[0], {
-            content: "Copied!",
-            trigger: "manual",
-            placement: "top",
-        });
+        tooltip_copy.hide();
+        tooltip_copied.show();
 
-        tooltip.show();
-
-        // Show the tooltip for 1s
+        // Hide the "Copied!" tooltip after 1 second
         setTimeout(() => {
-            tooltip.hide();
+            tooltip_copied.hide();
         }, 1000);
     });
 }
@@ -87,11 +103,11 @@ function highlight_current_article() {
 function render_code_sections() {
     $(".code-section").each(function () {
         activate_correct_tab($(this));
-        registerCodeSection($(this));
+        register_code_section($(this));
     });
 
-    // Add a copy-to-clipboard button for each pre element
-    $(".markdown pre").each(function () {
+    // Add a copy-to-clipboard button for each .codehilite element
+    $(".markdown .codehilite").each(function () {
         add_copy_to_clipboard_element($(this));
     });
 

@@ -65,7 +65,7 @@ run_test("blueslip", () => {
     blueslip.expect("warn", "Unknown user ids: 1,2");
     people.user_ids_string_to_emails_string("1,2");
 
-    blueslip.expect("warn", "Unknown emails: " + unknown_email);
+    blueslip.expect("warn", "Unknown emails");
     people.email_list_to_user_ids_string([unknown_email]);
 
     let message = {
@@ -101,7 +101,7 @@ run_test("blueslip", () => {
     const reply_to = people.pm_reply_to(message);
     assert.ok(reply_to.includes("?"));
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id");
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     blueslip.expect("error", "Unknown people in message");
     const url = people.pm_with_url({type: "private", display_recipient: [{id: 42}]});
     assert.equal(url.indexOf("unk"), url.length - 3);

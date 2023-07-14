@@ -212,7 +212,7 @@ test("errors", ({disallow_rewire}) => {
         display_recipient: [{id: 92714}],
     };
 
-    blueslip.expect("error", "Unknown user_id in get_by_user_id", 2);
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id", 2);
     blueslip.expect("error", "Unknown user id", 2); // From person.js
 
     // Expect each to throw two blueslip errors

@@ -133,15 +133,22 @@ run_test("muting", () => {
     const msgs = [
         {id: 1, type: "stream", stream_id: 1, topic: "muted"},
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
-        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
+        // mentions override muting
+        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
 
         // 10 = muted user, 9 = non-muted user, 11 = you
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
-        {id: 6, type: "private", to_user_ids: "11", sender_id: 10}, // muted to 1:1 PM
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
-        {id: 8, type: "private", to_user_ids: "10", sender_id: 11}, // 1:1 PM to muted
-        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
+        // muted to group direct message
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        // non-muted to group direct message
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        // muted to 1:1 direct message
+        {id: 6, type: "private", to_user_ids: "11", sender_id: 10},
+        // non-muted to 1:1 direct message
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        // 1:1 direct message to muted
+        {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
+        // 1:1 direct message to non-muted
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ];
 
     user_topics.update_user_topics(1, "muted", user_topics.all_visibility_policies.MUTED);
@@ -151,8 +158,8 @@ run_test("muting", () => {
     // messages if `excludes_muted_topics` is false.
     assert.deepEqual(mld.messages_filtered_for_topic_mutes(msgs), msgs);
 
-    // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
-    // filtering messages.
+    // If we are in a 1:1 direct message narrow, `messages_filtered_for_user_mutes`
+    // should skip filtering messages.
     assert.deepEqual(mld.messages_filtered_for_user_mutes(msgs), msgs);
 
     // Test actual behaviour of `messages_filtered_for_*` methods.
@@ -163,7 +170,7 @@ run_test("muting", () => {
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
 
-        // `messages_filtered_for_topic_mutes` does not affect private messages
+        // `messages_filtered_for_topic_mutes` does not affect direct messages
         {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
         {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
         {id: 6, type: "private", to_user_ids: "11", sender_id: 10},
@@ -178,11 +185,14 @@ run_test("muting", () => {
         {id: 1, type: "stream", stream_id: 1, topic: "muted"},
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
-
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
-        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
+        // muted to group direct message
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        // non-muted to group direct message
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        // non-muted to 1:1 direct message
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        // 1:1 direct message to non-muted
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ]);
 
     // Output filtered based on both topic and user muting.

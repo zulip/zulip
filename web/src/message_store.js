@@ -39,7 +39,7 @@ export function get_pm_emails(message) {
     const user_ids = people.pm_with_user_ids(message);
     const emails = user_ids
         .map((user_id) => {
-            const person = people.get_by_user_id(user_id);
+            const person = people.maybe_get_user_by_id(user_id);
             if (!person) {
                 blueslip.error("Unknown user id", {user_id});
                 return "?";

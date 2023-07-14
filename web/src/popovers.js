@@ -19,7 +19,6 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
-import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -234,20 +233,19 @@ function render_user_info_popover(
         invisible_mode = !user_settings.presence_enabled;
     }
 
-    const muting_allowed = !is_me && !user.is_bot;
     const is_active = people.is_active_user_for_popover(user.user_id);
     const is_system_bot = user.is_system_bot;
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
     const spectator_view = page_params.is_spectator;
 
-    // TODO: The show_manage_menu calculation can get a lot simpler
-    // if/when we allow muting bot users.
-    const can_manage_user = page_params.is_admin && !is_me && !is_system_bot;
-    const show_manage_menu = !spectator_view && (muting_allowed || can_manage_user);
+    const show_manage_menu = !spectator_view && !is_me;
 
     let date_joined;
-    if (spectator_view) {
+
+    // Some users might not have `date_joined` field because of the missing server data.
+    // These users are added late in `people.js` via `extract_people_from_message`.
+    if (spectator_view && !user.is_missing_server_data) {
         date_joined = timerender.get_localized_date_or_time_for_format(
             parseISO(user.date_joined),
             "dayofyear_year",
@@ -451,7 +449,7 @@ function get_user_info_popover_manage_menu_items() {
 
 function fetch_group_members(member_ids) {
     return member_ids
-        .map((m) => people.get_by_user_id(m))
+        .map((m) => people.maybe_get_user_by_id(m))
         .filter((m) => m !== undefined)
         .map((p) => ({
             ...p,
@@ -669,7 +667,7 @@ export function user_info_popover_manage_menu_handle_keyboard(key) {
 
 export function show_sender_info() {
     const $message = $(".selected_message");
-    let $sender = $message.find(".inline_profile_picture");
+    let $sender = $message.find(".message-avatar");
     if ($sender.length === 0) {
         // Messages without an avatar have an invisible message_sender
         // element that's roughly in the right place.
@@ -732,17 +730,13 @@ export function hide_playground_links_popover() {
 }
 
 export function register_click_handlers() {
-    $("#main_div").on(
-        "click",
-        ".sender_name, .sender_name-in-status, .inline_profile_picture",
-        function (e) {
-            const $row = $(this).closest(".message_row");
-            e.stopPropagation();
-            const message = message_lists.current.get(rows.id($row));
-            const user = people.get_by_user_id(message.sender_id);
-            show_user_info_popover_for_message(this, user, message);
-        },
-    );
+    $("#main_div").on("click", ".sender_name, .message-avatar", function (e) {
+        const $row = $(this).closest(".message_row");
+        e.stopPropagation();
+        const message = message_lists.current.get(rows.id($row));
+        const user = people.get_by_user_id(message.sender_id);
+        show_user_info_popover_for_message(this, user, message);
+    });
 
     $("#main_div").on("click", ".user-mention", function (e) {
         const id_string = $(this).attr("data-user-id");
@@ -1089,7 +1083,6 @@ export function hide_all_except_sidebars(opts) {
         hideAll();
     }
     emoji_picker.hide_emoji_popover();
-    giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     hide_all_user_info_popovers();
     hide_playground_links_popover();

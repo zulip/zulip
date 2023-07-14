@@ -24,7 +24,7 @@ body {
     width: 100%;
     font-size: 14px;
     line-height: calc(20 / 14);
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     color: var(--color-text-default);
     background-color: var(--color-background);
     transition: background-color 200ms linear;
@@ -83,6 +83,11 @@ body {
     --right-sidebar-width: 250px;
 
     /*
+    Message box line-height.
+    */
+    --message-box-line-height: 1.214;
+
+    /*
     Left position of unread marker. Only needs to be tracked if it is negative so that
     it doesn't leak through message header.
     */
@@ -114,6 +119,16 @@ body {
     /* This is a rough estimate for height occupied by recent topics filters.
        We expect `resize.js` to update this once UI is initialized. */
     --recent-topics-filters-height: 50px;
+
+    /* Overlay heights for streams modal */
+    --modal-container-height: 95vh;
+    --modal-container-max-height: 1000px;
+    /* .subscriptions-header */
+    --modal-container-subscriptions-header-height: 45px;
+    /* .display-type */
+    --modal-container-subscriptions-display-type-height: 44px;
+    /* .modal-footer */
+    --modal-container-subscriptions-modal-footer-height: 60px;
 
     /*
     Maximum height of the compose box when it is not in expanded state. This
@@ -153,6 +168,9 @@ body {
     --color-text-dropdown-input: hsl(0deg 0% 13.33%);
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
+
+    /* Icon colors */
+    --color-icon-bot: hsl(180deg 8% 65% / 100%);
 
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 52% 95%);
@@ -197,6 +215,9 @@ body {
     --color-text-self-direct-mention: hsl(240deg 100% 88% / 100%);
     --color-text-self-group-mention: hsl(184deg 52% 63% / 100%);
 
+    /* Icon colors */
+    --color-icon-bot: hsl(180deg 5% 50% / 100%);
+
     /* Mention pill colors */
     --color-background-direct-mention: hsl(240deg 13% 20%);
     --color-background-group-mention: hsl(180deg 13% 15%);
@@ -220,7 +241,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
     /* Disable bootstrap size CSS; we want to use our default font size on
        body for input elements. */
     line-height: normal;
@@ -448,7 +469,7 @@ p.n-margin {
 
 #navbar-middle .column-middle-inner,
 #userlist-toggle-button,
-.header-main,
+.header,
 #message_view_header {
     background-color: var(--color-background-navbar);
     box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
@@ -704,7 +725,7 @@ body.has-overlay-scrollbar {
 
 textarea,
 input {
-    font-family: "Source Sans 3", sans-serif;
+    font-family: "Source Sans 3 VF", sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -800,6 +821,7 @@ li,
     margin-right: -32px;
     margin-top: -1px;
     padding: 6px 3px 6px 13px;
+    float: right;
 
     /* This property nullifies the box-shadow rendered by .btn class */
     &:active {
@@ -1044,19 +1066,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.include-sender {
-    .message_edit_notice {
-        display: inline-block;
-        vertical-align: top;
-        line-height: 14px;
-        /* A bit of margin here helps these not look associated with the name. */
-        margin-left: 4px;
-        position: static;
-        padding: 0;
-        width: auto;
-    }
-}
-
 .sender-status {
     display: inline-block;
     margin: 8px 0 8px -3px;
@@ -1134,9 +1143,6 @@ td.pointer {
 }
 
 .message_controls {
-    display: inline-block;
-    z-index: 1;
-
     /* This is a bit tricky; we need to reserve space for the message
        controls even when the message isn't hovered, so that hover
        doesn't disturb the layout.  Usually that would be just
@@ -1571,21 +1577,11 @@ td.pointer {
 .sender_name {
     display: inline-block;
     font-weight: 700;
-}
-
-.sender_name-in-status {
-    margin-right: 3px;
-    font-weight: 700;
-}
-
-.sender_name,
-.sender_name-in-status {
     color: var(--color-text-sender-name);
 }
 
 .sender_name_hovered {
-    .sender_name,
-    .sender_name-in-status {
+    .sender_name {
         color: hsl(200deg 100% 40%);
     }
 }
@@ -1666,7 +1662,7 @@ div.focused_table {
 
 .message_content {
     color: var(--color-text-message-default);
-    line-height: 1.214;
+    line-height: var(--message-box-line-height);
     min-height: 17px;
     display: block;
     position: relative;
@@ -1769,6 +1765,17 @@ div.focused_table {
         vertical-align: baseline;
         line-height: 0px;
         box-shadow: none;
+        color: hsl(0deg 0% 33%);
+        border-radius: 4px;
+        border: 1px solid hsl(0deg 0% 80%);
+        transition: border linear 0.2s, box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsl(206deg 80% 62% / 80%);
+            outline: 0;
+            box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206deg 80% 62% / 60%);
+        }
     }
 }
 
@@ -1901,7 +1908,7 @@ div.focused_table {
     }
 
     .sub_count,
-    .stream,
+    .message-header-stream-settings-button,
     & > span {
         white-space: nowrap;
         list-style-type: none;
@@ -1932,13 +1939,12 @@ div.focused_table {
 
             .fa-hashtag {
                 font-size: 1.2rem;
-                /* font-weight: 800; */
                 margin: 0 2px 0 5px;
             }
         }
     }
 
-    .stream {
+    .message-header-stream-settings-button {
         text-overflow: clip;
         color: inherit;
         text-decoration: none;
@@ -2395,11 +2401,9 @@ textarea.invitee_emails {
     }
 }
 
-#invite-user-modal {
-    #custom-expiration-time-input,
-    #invite-user-form {
-        margin: 0;
-    }
+#custom-expiration-time-input,
+#invite-user-form {
+    margin: 0;
 }
 
 select.invite-expires-in,
@@ -2452,15 +2456,27 @@ select.invite-as {
     width: fit-content;
 }
 
-#custom-invite-expiration-time {
-    #custom-expiration-time-input {
-        width: 5ch;
-        margin-right: 15px;
-    }
+#custom-expiration-time-input {
+    width: 5ch;
+    margin-right: 15px;
 
-    #custom-expiration-time-unit {
-        width: auto;
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition: border linear 0.2s, box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+#custom-expiration-time-unit {
+    width: auto;
 }
 
 .empty_feed_notice {
@@ -3065,6 +3081,9 @@ select.invite-as {
     /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
         but we don't want it to have an outline when focused anywhere in the app. */
     outline: none;
+
+    /* This prevents the popover from closing once the top/bottom is reached */
+    overscroll-behavior: contain;
 }
 
 .dropdown-list-container {

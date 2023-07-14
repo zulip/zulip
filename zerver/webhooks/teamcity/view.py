@@ -109,7 +109,7 @@ def api_teamcity_webhook(
     else:
         topic = build_name
 
-    # Check if this is a personal build, and if so try to private message the user who triggered it.
+    # Check if this is a personal build, and if so try to direct message the user who triggered it.
     if (
         get_teamcity_property_value(message["teamcityProperties"], "env.BUILD_IS_PERSONAL")
         == "true"

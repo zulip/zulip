@@ -28,6 +28,7 @@ from scripts.lib.zulip_tools import (
     DEPLOYMENTS_DIR,
     assert_running_as_root,
     get_config,
+    get_config_bool,
     get_config_file,
     get_zulip_pwent,
     listening_publicly,
@@ -205,6 +206,7 @@ def shutdown_server() -> None:
 
 # postgresql.version is required for database servers, but wasn't
 # previously; fill it in based on what the OS provides.
+postgresql_version = None
 if os.path.exists("/etc/init.d/postgresql"):
     postgresql_version = get_config(config_file, "postgresql", "version")
     django_pg_version = subprocess.check_output(
@@ -269,9 +271,20 @@ if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 
 if not (minimal_change or args.skip_puppet):
+    # We need to temporarily hold pgroonga, if installed -- upgrading
+    # it without running the appropriate upgrade SQL can cause
+    # PostgreSQL to crash
+    if postgresql_version is not None and get_config_bool(config_file, "machine", "pgroonga"):
+        subprocess.check_call(
+            ["apt-mark", "hold", f"postgresql-{postgresql_version}-pgdg-pgroonga"]
+        )
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
+    if postgresql_version is not None and get_config_bool(config_file, "machine", "pgroonga"):
+        subprocess.check_call(
+            ["apt-mark", "unhold", f"postgresql-{postgresql_version}-pgdg-pgroonga"]
+        )
 
 # To bootstrap zulip-puppet-apply, we need to install the system yaml
 # package; new installs get this, but old installs may not have it.
@@ -482,12 +495,8 @@ def run_hooks(kind: Literal["pre-deploy", "post-deploy"]) -> None:
     env["HOME"] = get_zulip_pwent().pw_dir
 
     def resolve_version_string(version: str) -> str:
-        matches = re.search(r"-\d+-g([a-f0-9]{7,})$", version)
-        to_parse = version
-        if matches is not None:
-            to_parse = matches.group(1)
         return subprocess.check_output(
-            ["git", "rev-parse", to_parse], cwd=deploy_path, preexec_fn=su_to_zulip, text=True
+            ["git", "rev-parse", version], cwd=deploy_path, preexec_fn=su_to_zulip, text=True
         ).strip()
 
     if args.from_git:

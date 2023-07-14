@@ -28,7 +28,7 @@ run_test("settings", ({override}) => {
         1577836800,
     );
     let populate_list_called = false;
-    override(list_widget, "create", ($container, list) => {
+    override(list_widget, "create", (_$container, list) => {
         assert.deepEqual(list, [
             {
                 date_updated: 1577836800000,

@@ -218,18 +218,30 @@ async function test_custom_realm_emoji(page: Page): Promise<void> {
     await test_delete_emoji(page);
 }
 
-async function test_add_default_stream(
-    page: Page,
-    stream_name: string,
-    row: string,
-): Promise<void> {
-    // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona
-    // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
-    // Uppercase 'O' is used instead of the lowercase version to make sure that the suggestions
-    // are case insensitive.
-    await common.select_item_via_typeahead(page, ".create_default_stream", "O", stream_name);
-    await page.click(".default-stream-form #do_submit_stream");
+async function test_add_default_stream(page: Page): Promise<void> {
+    const streams = ["Denmark", "Venice"];
+    for (let i = 0; i < 2; i += 1) {
+        await page.click(`#select_default_stream_${i}_widget`);
+        await page.waitForSelector(".dropdown-list-container .list-item", {
+            visible: true,
+        });
 
+        const stream_to_select = `.dropdown-list-container .list-item[data-name="${streams[i]}"]`;
+        await page.waitForSelector(stream_to_select, {visible: true});
+        await page.click(stream_to_select);
+        assert((await page.$(".dropdown-list-container")) === null);
+    }
+
+    await page.click("#add-default-stream-modal .dialog_submit_button");
+
+    await common.wait_for_micromodal_to_close(page);
+
+    let stream_id = await common.get_stream_id(page, "Denmark");
+    let row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
+    await page.waitForSelector(row, {visible: true});
+
+    stream_id = await common.get_stream_id(page, "Venice");
+    row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
     await page.waitForSelector(row, {visible: true});
 }
 
@@ -242,13 +254,14 @@ async function test_remove_default_stream(page: Page, row: string): Promise<void
 
 async function test_default_streams(page: Page): Promise<void> {
     await page.click("li[data-section='default-streams-list']");
-    await page.waitForSelector(".create_default_stream", {visible: true});
+    await page.click("#show-add-default-streams-modal");
+    await common.wait_for_micromodal_to_open(page);
 
-    const stream_name = "Scotland";
+    const stream_name = "Denmark";
     const stream_id = await common.get_stream_id(page, stream_name);
     const row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
 
-    await test_add_default_stream(page, stream_name, row);
+    await test_add_default_stream(page);
     await test_remove_default_stream(page, row);
 }
 

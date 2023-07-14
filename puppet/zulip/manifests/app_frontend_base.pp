@@ -59,6 +59,12 @@ class zulip::app_frontend_base {
       source  => 'puppet:///modules/zulip/nginx/zulip-include-app.d/keepalive-loadbalancer.conf',
       notify  => Service['nginx'],
     }
+  } else {
+    file { ['/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf',
+            '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf']:
+      ensure => absent,
+      notify => Service['nginx'],
+    }
   }
 
   file { '/etc/nginx/zulip-include/upstreams':
@@ -78,6 +84,9 @@ class zulip::app_frontend_base {
     # This may fail in the unlikely change that there is no configured
     # resolver in /etc/resolv.conf, so only call it is unset in zulip.conf
     $nginx_resolver_ip = resolver_ip()
+  } elsif (':' in $configured_nginx_resolver) and ! ('.' in $configured_nginx_resolver)  and ! ('[' in $configured_nginx_resolver) {
+    # Assume this is IPv6, which needs square brackets.
+    $nginx_resolver_ip = "[${configured_nginx_resolver}]"
   } else {
     $nginx_resolver_ip = $configured_nginx_resolver
   }

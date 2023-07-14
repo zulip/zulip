@@ -55,7 +55,7 @@ There are over 100 feature articles and longer guides in the
 the current documentation as a resource and guide as you begin.
 
 - Use the list on [Zulip help center home](https://zulip.com/help/)
-  to find the section of the docs (e.g. Display settings, Sending
+  to find the section of the docs (e.g. Preferences, Sending
   messages, Reading messages, etc.) that relates to the new feature
   you're documenting.
 

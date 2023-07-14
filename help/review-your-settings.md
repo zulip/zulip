@@ -14,13 +14,13 @@ you use Zulip.
 
 {end_tabs}
 
-## Review your display settings
+## Review your preferences
 
 {start_tabs}
 
 {relative|gear|settings}
 
-1. Click on the **Display settings** tab on the left.
+1. Click on the **Preferences** tab on the left.
 
 {end_tabs}
 

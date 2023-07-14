@@ -95,6 +95,7 @@ test("unknown user", ({override}) => {
     const presences = {};
     presences[unknown_user_id.toString()] = "does-not-matter";
 
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id", 3);
     blueslip.expect("error", "Unknown user ID in presence data");
     presence.set_info(presences, now);
 

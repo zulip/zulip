@@ -23,7 +23,6 @@ OPENAPI_SPEC_PATH = os.path.abspath(
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
 EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
-    ("/realm/emoji/{emoji_name}", "delete"),
     ("/users", "patch"),
 }
 # Consists of endpoints with some documentation remaining.

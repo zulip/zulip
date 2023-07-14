@@ -6,7 +6,6 @@ import $ from "jquery";
 import * as fenced_code from "../shared/src/fenced_code";
 
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_banner from "./compose_banner";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -31,6 +30,23 @@ import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
+
+const compose_clear_box_hooks = [];
+const compose_cancel_hooks = [];
+
+export function register_compose_box_clear_hook(hook) {
+    compose_clear_box_hooks.push(hook);
+}
+
+export function register_compose_cancel_hook(hook) {
+    compose_cancel_hooks.push(hook);
+}
+
+function call_hooks(hooks) {
+    for (const f of hooks) {
+        f();
+    }
+}
 
 export function blur_compose_inputs() {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
@@ -61,16 +77,14 @@ export function clear_textarea() {
 }
 
 function clear_box() {
-    compose.clear_invites();
+    call_hooks(compose_clear_box_hooks);
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
     compose_validate.clear_wildcard_warnings($("#compose_banners"));
-    compose.clear_private_stream_alert();
     compose_validate.set_user_acknowledged_wildcard_flag(false);
 
     compose_state.set_recipient_edited_manually(false);
-    compose.clear_preview_area();
     clear_textarea();
     compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
@@ -78,6 +92,7 @@ function clear_box() {
     compose_ui.autosize_textarea($("#compose-textarea"));
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
+    compose_banner.clear_uploads();
 }
 
 export function autosize_message_content() {
@@ -185,11 +200,11 @@ export function start(msg_type, opts) {
 
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
-    // PM recipient should be.
+    // direct message recipient should be.
     if (
         opts.trigger === "compose_hotkey" ||
         opts.trigger === "new topic button" ||
-        opts.trigger === "new private message"
+        opts.trigger === "new direct message"
     ) {
         opts.topic = "";
         opts.private_message_recipient = "";
@@ -280,8 +295,7 @@ export function cancel() {
     $("#compose_close").hide();
     clear_box();
     compose_banner.clear_message_sent_banners();
-    compose.abort_xhr();
-    compose.abort_video_callbacks(undefined);
+    call_hooks(compose_cancel_hooks);
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
     $(document).trigger("compose_canceled.zulip");
@@ -339,7 +353,7 @@ export function respond_to_message(opts) {
     }
 
     // Important note: A reply_type of 'personal' is for the R hotkey
-    // (replying to a message's sender with a private message).  All
+    // (replying to a message's sender with a direct message). All
     // other replies can just copy message.type.
     if (opts.reply_type === "personal" || message.type === "private") {
         msg_type = "private";
@@ -356,8 +370,8 @@ export function respond_to_message(opts) {
     } else {
         pm_recipient = message.reply_to;
         if (opts.reply_type === "personal") {
-            // reply_to for private messages is everyone involved, so for
-            // personals replies we need to set the private message
+            // reply_to for direct messages is everyone involved, so for
+            // personals replies we need to set the direct message
             // recipient to just the sender
             pm_recipient = people.get_by_user_id(message.sender_id).email;
         } else {
@@ -483,9 +497,9 @@ export function quote_and_reply(opts) {
 }
 
 export function on_narrow(opts) {
-    // We use force_close when jumping between PM narrows with the "p" key,
-    // so that we don't have an open compose box that makes it difficult
-    // to cycle quickly through unread messages.
+    // We use force_close when jumping between direct message narrows with
+    // the "p" key, so that we don't have an open compose box that makes
+    // it difficult to cycle quickly through unread messages.
     if (opts.force_close) {
         // This closes the compose box if it was already open, and it is
         // basically a noop otherwise.
@@ -518,7 +532,7 @@ export function on_narrow(opts) {
             return;
         }
         // Do not open compose box if organization has disabled sending
-        // private messages and recipient is not a bot.
+        // direct messages and recipient is not a bot.
         if (
             page_params.realm_private_message_policy ===
                 settings_config.private_message_policy_values.disabled.code &&
@@ -526,7 +540,7 @@ export function on_narrow(opts) {
         ) {
             const emails = opts.private_message_recipient.split(",");
             if (emails.length !== 1 || !people.get_by_email(emails[0]).is_bot) {
-                // If we are navigating between private message conversations,
+                // If we are navigating between direct message conversations,
                 // we want the compose box to close for non-bot users.
                 if (compose_state.composing()) {
                     cancel();

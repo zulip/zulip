@@ -13,6 +13,7 @@ from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
@@ -101,27 +102,27 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
 def detect_narrowed_window(
     request: HttpRequest, user_profile: Optional[UserProfile]
-) -> Tuple[List[List[str]], Optional[Stream], Optional[str]]:
+) -> Tuple[List[NarrowTerm], Optional[Stream], Optional[str]]:
     """This function implements Zulip's support for a mini Zulip window
     that just handles messages from a single narrow"""
     if user_profile is None:
         return [], None, None
 
-    narrow: List[List[str]] = []
+    narrow: List[NarrowTerm] = []
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
 
     if "stream" in request.GET:
         try:
-            # TODO: We should support stream IDs and PMs here as well.
+            # TODO: We should support stream IDs and direct messages here as well.
             narrow_stream_name = request.GET.get("stream")
             assert narrow_stream_name is not None
             (narrow_stream, ignored_sub) = access_stream_by_name(user_profile, narrow_stream_name)
-            narrow = [["stream", narrow_stream.name]]
+            narrow = [NarrowTerm(operator="stream", operand=narrow_stream.name)]
         except Exception:
             logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))
         if narrow_stream is not None and narrow_topic is not None:
-            narrow.append(["topic", narrow_topic])
+            narrow.append(NarrowTerm(operator="topic", operand=narrow_topic))
     return narrow, narrow_stream, narrow_topic
 
 

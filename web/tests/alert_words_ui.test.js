@@ -22,7 +22,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     alert_words_ui.reset();
     const ListWidget = mock_esm("../src/list_widget", {
         modifier: noop,
-        create(container, words, opts) {
+        create(_container, words, opts) {
             const alert_words = [];
             ListWidget.modifier = opts.modifier;
             for (const word of words) {

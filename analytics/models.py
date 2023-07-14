@@ -79,7 +79,12 @@ class RealmCount(BaseCount):
                 name="unique_realm_count_null_subgroup",
             ),
         ]
-        index_together = ["property", "end_time"]
+        indexes = [
+            models.Index(
+                fields=["property", "end_time"],
+                name="analytics_realmcount_property_end_time_3b60396b_idx",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.realm!r} {self.property} {self.subgroup} {self.value}"
@@ -105,7 +110,12 @@ class UserCount(BaseCount):
         ]
         # This index dramatically improves the performance of
         # aggregating from users to realms
-        index_together = ["property", "realm", "end_time"]
+        indexes = [
+            models.Index(
+                fields=["property", "realm", "end_time"],
+                name="analytics_usercount_property_realm_id_end_time_591dbec1_idx",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.user!r} {self.property} {self.subgroup} {self.value}"
@@ -131,7 +141,12 @@ class StreamCount(BaseCount):
         ]
         # This index dramatically improves the performance of
         # aggregating from streams to realms
-        index_together = ["property", "realm", "end_time"]
+        indexes = [
+            models.Index(
+                fields=["property", "realm", "end_time"],
+                name="analytics_streamcount_property_realm_id_end_time_155ae930_idx",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.stream!r} {self.property} {self.subgroup} {self.value} {self.id}"
