@@ -3925,7 +3925,7 @@ def get_system_bot(email: str, realm_id: int) -> UserProfile:
     the same realm as the one *to* which the message will be sent should be used - because
     cross-realm messages will be eliminated as part of the migration.
     """
-    return UserProfile.objects.select_related().get(email__iexact=email.strip())
+    return UserProfile.objects.select_related("realm").get(email__iexact=email.strip())
 
 
 def get_user_by_id_in_realm_including_cross_realm(
