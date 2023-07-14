@@ -1166,12 +1166,8 @@ def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Di
     # of being uploaded, and we expect to be cleaned up by a
     # try/finally block if the upload fails, so it's correct to
     # exclude them.
-    query = (
-        RealmEmoji.objects.filter(realm_id=realm_id)
-        .exclude(
-            file_name=None,
-        )
-        .select_related("author")
+    query = RealmEmoji.objects.filter(realm_id=realm_id).exclude(
+        file_name=None,
     )
     if only_active_emojis:
         query = query.filter(deactivated=False)
@@ -1179,9 +1175,7 @@ def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Di
     from zerver.lib.emoji import get_emoji_url
 
     for realm_emoji in query.all():
-        author_id = None
-        if realm_emoji.author:
-            author_id = realm_emoji.author_id
+        author_id = realm_emoji.author_id
         assert realm_emoji.file_name is not None
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
 
