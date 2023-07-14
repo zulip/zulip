@@ -42,6 +42,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     UserTopic,
+    get_name_keyed_dict_for_active_realm_emoji,
     get_realm,
     get_stream,
 )
@@ -1492,7 +1493,8 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("hamlet"),
             "Extremely personal message with a realm emoji :green_tick:!",
         )
-        realm_emoji_id = realm.get_active_emoji()["green_tick"]["id"]
+        realm_emoji_dict = get_name_keyed_dict_for_active_realm_emoji(realm.id)
+        realm_emoji_id = realm_emoji_dict["green_tick"]["id"]
         realm_emoji_url = (
             f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_id}.png"
         )

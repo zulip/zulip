@@ -84,6 +84,7 @@ from zerver.models import (
     Subscription,
     UserGroup,
     UserProfile,
+    get_all_custom_emoji_for_realm,
     get_realm,
     get_realm_domains,
     get_realm_playgrounds,
@@ -1001,7 +1002,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_realm_emoji_entries(self) -> None:
         user = self.example_user("iago")
-        realm_emoji_dict = user.realm.get_emoji()
+        realm_emoji_dict = get_all_custom_emoji_for_realm(user.realm_id)
         now = timezone_now()
         with get_test_image_file("img.png") as img_file:
             # Because we want to verify the IntegrityError handling

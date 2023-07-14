@@ -11,7 +11,15 @@ from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import upload_emoji_image
-from zerver.models import EmojiInfo, Realm, RealmAuditLog, RealmEmoji, UserProfile, active_user_ids
+from zerver.models import (
+    EmojiInfo,
+    Realm,
+    RealmAuditLog,
+    RealmEmoji,
+    UserProfile,
+    active_user_ids,
+    get_all_custom_emoji_for_realm,
+)
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -49,7 +57,7 @@ def check_add_realm_emoji(
     realm_emoji.is_animated = is_animated
     realm_emoji.save(update_fields=["file_name", "is_animated"])
 
-    realm_emoji_dict = realm.get_emoji()
+    realm_emoji_dict = get_all_custom_emoji_for_realm(realm.id)
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=author,
@@ -72,7 +80,7 @@ def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: Optional[User
     emoji.deactivated = True
     emoji.save(update_fields=["deactivated"])
 
-    realm_emoji_dict = realm.get_emoji()
+    realm_emoji_dict = get_all_custom_emoji_for_realm(realm.id)
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,

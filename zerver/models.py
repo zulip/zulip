@@ -239,12 +239,8 @@ def get_recipient_ids(
     return to, recipient_type_str
 
 
-def get_realm_emoji_cache_key(realm_id: int) -> str:
+def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:
     return f"realm_emoji:{realm_id}"
-
-
-def get_active_realm_emoji_cache_key(realm_id: int) -> str:
-    return f"active_realm_emoji:{realm_id}"
 
 
 # This simple call-once caching saves ~500us in auth_enabled_helper,
@@ -837,16 +833,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
                 ret[realm_authentication_method.name] = True
         return ret
 
-    # `realm` instead of `self` here to make sure the parameters of the cache key
-    # function matches the original method.
-    @cache_with_key(lambda realm: get_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
-    def get_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_realm_emoji_uncached(realm.id)
-
-    @cache_with_key(lambda realm: get_active_realm_emoji_cache_key(realm.id), timeout=3600 * 24 * 7)
-    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:  # noqa: N805
-        return get_active_realm_emoji_uncached(realm.id)
-
     def get_admin_users_and_bots(
         self, include_realm_owners: bool = True
     ) -> QuerySet["UserProfile"]:
@@ -1161,7 +1147,7 @@ class RealmEmoji(models.Model):
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
-def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
+def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
     # RealmEmoji objects with file_name=None are still in the process
     # of being uploaded, and we expect to be cleaned up by a
     # try/finally block if the upload fails, so it's correct to
@@ -1169,8 +1155,6 @@ def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Di
     query = RealmEmoji.objects.filter(realm_id=realm_id).exclude(
         file_name=None,
     )
-    if only_active_emojis:
-        query = query.filter(deactivated=False)
     d = {}
     from zerver.lib.emoji import get_emoji_url
 
@@ -1202,16 +1186,15 @@ def get_realm_emoji_dicts(realm_id: int, only_active_emojis: bool = False) -> Di
     return d
 
 
-def get_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
-    return get_realm_emoji_dicts(realm_id)
+@cache_with_key(get_all_custom_emoji_for_realm_cache_key, timeout=3600 * 24 * 7)
+def get_all_custom_emoji_for_realm(realm_id: int) -> Dict[str, EmojiInfo]:
+    return get_all_custom_emoji_for_realm_uncached(realm_id)
 
 
-def get_active_realm_emoji_uncached(realm_id: int) -> Dict[str, EmojiInfo]:
-    realm_emojis = get_realm_emoji_dicts(realm_id, only_active_emojis=True)
-    d = {}
-    for emoji_id, emoji_dict in realm_emojis.items():
-        d[emoji_dict["name"]] = emoji_dict
-    return d
+def get_name_keyed_dict_for_active_realm_emoji(realm_id: int) -> Dict[str, EmojiInfo]:
+    # It's important to use the cached version here.
+    realm_emojis = get_all_custom_emoji_for_realm(realm_id)
+    return {row["name"]: row for row in realm_emojis.values() if not row["deactivated"]}
 
 
 def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
@@ -1227,13 +1210,8 @@ def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
         return
     realm_id = instance.realm_id
     cache_set(
-        get_realm_emoji_cache_key(realm_id),
-        get_realm_emoji_uncached(realm_id),
-        timeout=3600 * 24 * 7,
-    )
-    cache_set(
-        get_active_realm_emoji_cache_key(realm_id),
-        get_active_realm_emoji_uncached(realm_id),
+        get_all_custom_emoji_for_realm_cache_key(realm_id),
+        get_all_custom_emoji_for_realm_uncached(realm_id),
         timeout=3600 * 24 * 7,
     )
 

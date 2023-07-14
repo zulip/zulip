@@ -67,6 +67,7 @@ from zerver.models import (
     UserStatus,
     UserTopic,
     custom_profile_fields_for_realm,
+    get_all_custom_emoji_for_realm,
     get_default_stream_groups,
     get_realm_domains,
     get_realm_playgrounds,
@@ -384,7 +385,7 @@ def fetch_initial_state_data(
         state["realm_domains"] = get_realm_domains(realm)
 
     if want("realm_emoji"):
-        state["realm_emoji"] = realm.get_emoji()
+        state["realm_emoji"] = get_all_custom_emoji_for_realm(realm.id)
 
     if want("realm_linkifiers"):
         if linkifier_url_template:
