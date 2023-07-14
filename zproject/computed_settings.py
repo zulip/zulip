@@ -432,6 +432,8 @@ else:
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     )
 
+PUSH_NOTIFICATION_ENCRYPTION = False
+
 ########################################################################
 # API/BOT SETTINGS
 ########################################################################

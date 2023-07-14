@@ -19,12 +19,14 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
 from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.encryption import bytes_to_b64, encrypt_data
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
@@ -1039,6 +1041,37 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
 
 
+def encrypt_payload(payload: Dict[str, Any], key: bytes) -> Dict[str, str]:
+    """Encrypt the JSON dumped payload with the given key using a symmetric
+    encryption algorithm and store the encrypted payload and nonce using base64
+    encoding in a JSON serializable dict.
+    """
+    encrypted_data, nonce = encrypt_data(key, orjson.dumps(payload))
+    return {
+        "encrypted_data": bytes_to_b64(encrypted_data),
+        "nonce": bytes_to_b64(nonce),
+    }
+
+
+def split_devices_for_encryption(
+    devices: List[PushDeviceToken],
+) -> Tuple[List[PushDeviceToken], List[PushDeviceToken]]:
+    """Unencrypted payloads can be sent to the third party in a single request
+    because they don't need to be encrypted with different keys.
+    For encrypted notifications, we send one request per device, so they need
+    to be separated.
+
+    Returns a tuple of encrypted devices and non encrypted devices.
+    """
+    if not settings.PUSH_NOTIFICATION_ENCRYPTION:
+        return [], devices
+
+    return (
+        [device for device in devices if device.notification_encryption_key is not None],
+        [device for device in devices if device.notification_encryption_key is None],
+    )
+
+
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
@@ -1143,7 +1176,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
     android_devices = list(
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
     )
-
     apple_devices = list(
         PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.APNS)
     )
@@ -1155,5 +1187,26 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         len(apple_devices),
     )
     user_identity = UserPushIdentityCompat(user_id=user_profile.id)
-    send_apple_push_notification(user_identity, apple_devices, apns_payload)
-    send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)
+    encrypted_gcm_devices, non_encrypted_android_devices = split_devices_for_encryption(
+        android_devices
+    )
+    encrypted_apns_devices, non_encrypted_apple_devices = split_devices_for_encryption(
+        apple_devices
+    )
+    # Send notifications for devices that do not need to have the payload encrypted.
+    send_android_push_notification(
+        user_identity, non_encrypted_android_devices, gcm_payload, gcm_options
+    )
+    send_apple_push_notification(user_identity, non_encrypted_apple_devices, apns_payload)
+
+    # Encrypt and send the payloads to the remaining devices that do use
+    # end-to-end encryption. We have to do it one by one because each device has
+    # a different payload.
+    for device in encrypted_gcm_devices:
+        key = assert_is_not_none(device.notification_encryption_key)
+        payload = encrypt_payload(gcm_payload, key)
+        send_android_push_notification(user_identity, [device], payload, gcm_options)
+    for device in encrypted_apns_devices:
+        key = assert_is_not_none(device.notification_encryption_key)
+        payload = encrypt_payload(apns_payload, key)
+        send_apple_push_notification(user_identity, [device], payload)

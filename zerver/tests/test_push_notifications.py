@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import datetime
+import os
 import re
 import uuid
 from contextlib import contextmanager
@@ -29,6 +30,7 @@ from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.encryption import b64_to_bytes, bytes_to_b64, decrypt_data, generate_encryption_key
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     APNsContext,
@@ -1481,6 +1483,164 @@ class HandlePushNotificationTest(PushNotificationTest):
             )
             user_message = UserMessage.objects.get(user_profile=self.user_profile, message=message)
             self.assertEqual(user_message.flags.active_mobile_push_notification, False)
+
+    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
+    def test_non_bouncer_push_encrypted(self, mock_push_notifications_enabled: Any) -> None:
+        # The number of devices created per create_devices call.
+        device_count = 3
+
+        def create_devices(
+            device_kind: int, use_encryption: bool
+        ) -> Tuple[List[PushDeviceToken], List[bytes]]:
+            """Create several devices of a certain kind with randomly generated
+            tokens. If use_encryption is true, each device will be generated
+            with a key. This Returns a tuple of a list of devices and a list of
+            keys (empty when not using encryption)."""
+            devices = []
+            keys = []
+            for _ in range(device_count):
+                device = PushDeviceToken(
+                    kind=device_kind, token=bytes_to_b64(os.urandom(8)), user=self.user_profile
+                )
+                if use_encryption:
+                    key = generate_encryption_key()
+                    device.notification_encryption_key = key
+                    keys.append(key)
+                devices.append(device)
+            PushDeviceToken.objects.bulk_create(devices)
+            return devices, keys
+
+        def verify_send_push_notification_call(
+            call_mock: mock._Call,
+            expected_devices: List[PushDeviceToken],
+            expected_data: Dict[str, Any],
+            key: Optional[bytes] = None,
+        ) -> None:
+            """Verify if a call to send push notification receives the expected
+            arguments. When a key a provided, the data is assumed to be
+            encrypted."""
+            user_identity, device, payload = call_mock[0]
+            self.assertEqual(user_identity.user_id, self.user_profile.id)
+            self.assertCountEqual(device, expected_devices)
+            if key is None:
+                self.assertDictEqual(payload, expected_data)
+
+            if key is not None:
+                nonce = b64_to_bytes(payload["nonce"])
+                decrypted_data = decrypt_data(key, nonce, b64_to_bytes(payload["encrypted_data"]))
+                self.assertDictEqual(orjson.loads(decrypted_data), expected_data)
+
+        non_encrypted_android_devices, _ = create_devices(PushDeviceToken.GCM, use_encryption=False)
+        non_encrypted_apple_devices, _ = create_devices(PushDeviceToken.APNS, use_encryption=False)
+        encrypted_android_devices, android_keys = create_devices(
+            PushDeviceToken.GCM, use_encryption=True
+        )
+        encrypted_apple_devices, apple_keys = create_devices(
+            PushDeviceToken.APNS, use_encryption=True
+        )
+
+        # Test encryption with PUSH_NOTIFICATION_ENCRYPTION enabled.
+        message = self.get_message(
+            Recipient.PERSONAL,
+            type_id=self.personal_recipient_user.id,
+            realm_id=self.personal_recipient_user.realm_id,
+        )
+        UserMessage.objects.create(user_profile=self.user_profile, message=message)
+        missed_message = {
+            "message_id": message.id,
+            "trigger": "private_message",
+        }
+        with mock.patch(
+            "zerver.lib.push_notifications.get_message_payload_gcm",
+            return_value=({"gcm": True}, {}),
+        ), mock.patch(
+            "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
+        ), mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android, mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple, self.settings(
+            PUSH_NOTIFICATION_ENCRYPTION=True
+        ):
+            handle_push_notification(self.user_profile.id, missed_message)
+
+            verify_send_push_notification_call(
+                mock_send_android.call_args_list[0], non_encrypted_android_devices, {"gcm": True}
+            )
+            verify_send_push_notification_call(
+                mock_send_apple.call_args_list[0], non_encrypted_apple_devices, {"apns": True}
+            )
+
+            # Sort by the device ID in the first item from devices in each call
+            # to match each call with the corresponding expected device and key.
+            sorted_call_list = sorted(
+                mock_send_android.call_args_list[1:], key=lambda o: o[0][1][0].id
+            )
+            for device, key, call_mock in zip(
+                encrypted_android_devices, android_keys, sorted_call_list
+            ):
+                verify_send_push_notification_call(
+                    call_mock,
+                    [device],
+                    {"gcm": True},
+                    key,
+                )
+            sorted_call_list = sorted(
+                mock_send_apple.call_args_list[1:], key=lambda o: o[0][1][0].id
+            )
+            for device, key, call_mock in zip(
+                encrypted_apple_devices, apple_keys, sorted_call_list
+            ):
+                verify_send_push_notification_call(
+                    call_mock,
+                    [device],
+                    {"apns": True},
+                    key,
+                )
+
+            # Non-encrypted devices share a single request, while encrypted
+            # devices has one request once per device.
+            self.assertEqual(mock_send_android.call_count, device_count + 1)
+            self.assertEqual(mock_send_apple.call_count, device_count + 1)
+
+        # Test encryption with PUSH_NOTIFICATION_ENCRYPTION disabled.
+        message = self.get_message(
+            Recipient.PERSONAL,
+            type_id=self.personal_recipient_user.id,
+            realm_id=self.personal_recipient_user.realm_id,
+        )
+        UserMessage.objects.create(user_profile=self.user_profile, message=message)
+        missed_message = {
+            "message_id": message.id,
+            "trigger": "private_message",
+        }
+        with mock.patch(
+            "zerver.lib.push_notifications.get_message_payload_gcm",
+            return_value=({"gcm": True}, {}),
+        ), mock.patch(
+            "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
+        ), mock.patch(
+            "zerver.lib.push_notifications.send_android_push_notification"
+        ) as mock_send_android, mock.patch(
+            "zerver.lib.push_notifications.send_apple_push_notification"
+        ) as mock_send_apple, self.settings(
+            PUSH_NOTIFICATION_ENCRYPTION=False
+        ):
+            # All devices are treated the same way when push notification
+            # encryption is not enabled.
+            handle_push_notification(self.user_profile.id, missed_message)
+            verify_send_push_notification_call(
+                mock_send_android.call_args_list[0],
+                non_encrypted_android_devices + encrypted_android_devices,
+                {"gcm": True},
+            )
+            verify_send_push_notification_call(
+                mock_send_apple.call_args_list[0],
+                non_encrypted_apple_devices + encrypted_apple_devices,
+                {"apns": True},
+            )
+            self.assertEqual(mock_send_android.call_count, 1)
+            self.assertEqual(mock_send_apple.call_count, 1)
 
     def test_non_bouncer_push_remove(self) -> None:
         self.setup_apns_tokens()
